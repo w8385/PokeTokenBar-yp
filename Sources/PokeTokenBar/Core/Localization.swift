@@ -456,6 +456,12 @@ struct L {
     var floatingPetMenuHide: String {
         t("플로팅 펫 끄기", "Turn off floating pet", "フローティングペットをオフ", "Desactivar mascota flotante", "Désactiver le compagnon flottant", "Desativar mascote flutuante", "Schwebendes Pokémon ausschalten", "Выключить питомца на экране")
     }
+    var petButton: String {
+        t("쓰다듬기", "Pet", "なでる", "Acariciar", "Caresser", "Fazer carinho", "Streicheln", "Погладить")
+    }
+    var clickGrowthCapped: String {
+        t("오늘은 충분히 놀았어요", "That's enough play for today", "今日はたくさん遊びました", "Ya jugamos bastante hoy", "Assez joué pour aujourd'hui", "Já brincamos bastante hoje", "Für heute genug gespielt", "На сегодня наигрались")
+    }
     var floatingPetHeartsLabel: String {
         t("펫이 기분 좋아해요", "Your pet is happy", "ペットが喜んでいます", "Tu mascota está feliz", "Votre compagnon est content", "Seu mascote está feliz", "Dein Pokémon freut sich", "Питомцу приятно")
     }

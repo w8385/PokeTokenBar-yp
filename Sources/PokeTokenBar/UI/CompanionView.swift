@@ -813,6 +813,13 @@ struct CompanionHeader: View {
                         }
                     }
                     Text(statusLine).font(.caption2).foregroundStyle(.secondary)
+                    HStack(spacing: 6) {
+                        Button("\(store.l.petButton) \(PrayerBurst.heart)") { pet() }
+                            .buttonStyle(.bordered).controlSize(.small)
+                        if store.clickCapReachedToday {
+                            Text(store.l.clickGrowthCapped).font(.caption2).foregroundStyle(.secondary)
+                        }
+                    }
                 }
                 Spacer()
             }
@@ -880,8 +887,20 @@ struct CompanionHeader: View {
     private func showCandyXPIfNeeded() {
         guard store.candyFeedbackAmount > 0, store.candyFeedbackSeq != seenCandySeq else { return }
         seenCandySeq = store.candyFeedbackSeq
-        candyXPAmount = store.candyFeedbackAmount
+        let amount = store.candyFeedbackAmount
         store.consumeCandyFeedback()
+        flashXP(amount)
+    }
+
+    /// A press always bounces the sprite; only a counted click shows "+XP".
+    private func pet() {
+        celebScale = 0.9
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) { celebScale = 1 }
+        if case .counted(let xp) = store.growByClick() { flashXP(xp) }
+    }
+
+    private func flashXP(_ amount: Int) {
+        candyXPAmount = amount
         withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { candyXPShown = true }
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 1_300_000_000)
