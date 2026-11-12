@@ -37,14 +37,19 @@ final class UpdateChecker {
     private var checkInFlight = false
 
     static let skippedVersionKey = "skippedUpdateVersion"
+    /// Releases come from the fork. Upstream releases would drop the YPoke features.
+    nonisolated static let releaseRepo = "w8385/PokeTokenBar-yp"
+    /// nil: the upstream cask would replace the fork, so updates always open the release page.
+    nonisolated static let brewCask: String? = nil
 
     init(currentVersion: String? = nil, clock: @escaping () -> Date = Date.init, defaults: UserDefaults = .standard,
          fetchLatest: (() async -> LatestRelease?)? = nil) {
         self.currentVersion = currentVersion
+            ?? (Bundle.main.object(forInfoDictionaryKey: "PTBForkVersion") as? String)
             ?? (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? "0"
         self.clock = clock
         self.defaults = defaults
-        self.fetchLatest = fetchLatest ?? { await Self.liveLatestRelease(repo: "chattymin/PokeTokenBar") }
+        self.fetchLatest = fetchLatest ?? { await Self.liveLatestRelease(repo: Self.releaseRepo) }
     }
 
     var settingsNotice: SettingsNotice {
@@ -78,19 +83,29 @@ final class UpdateChecker {
         return true
     }
 
-    /// Release tag → comparable version, or nil when the tag is not a plain `MAJOR.MINOR.PATCH`
-    /// (optionally `v`-prefixed). `isNewer` reads non-numeric parts as 0, so a prerelease such as
-    /// `v2.6.0-beta.1` would compare equal to `2.6.0` and garbage would compare as `0.0.0`; neither
-    /// may be applied or counted as a successful check.
+    /// Release tag → comparable version, or nil when the tag is not `MAJOR.MINOR.PATCH` with an
+    /// optional fork suffix `-ypN` (optionally `v`-prefixed). `isNewer` reads non-numeric parts as 0,
+    /// so a prerelease such as `v2.6.0-beta.1` would compare equal to `2.6.0` and garbage would
+    /// compare as `0.0.0`; neither may be applied or counted as a successful check.
     nonisolated static func normalizedReleaseVersion(_ tag: String) -> String? {
         var version = Substring(tag.trimmingCharacters(in: .whitespacesAndNewlines))
         if version.first == "v" || version.first == "V" { version = version.dropFirst() }
-        let parts = version.split(separator: ".", omittingEmptySubsequences: false)
-        guard parts.count == 3,
-              parts.allSatisfy({ part in
-                  !part.isEmpty && part.count <= 9 && part.allSatisfy { $0.isASCII && $0.isNumber }
-              }) else { return nil }
-        return parts.map { String(Int($0)!) }.joined(separator: ".")
+        let halves = version.split(separator: "-", maxSplits: 1, omittingEmptySubsequences: false)
+        var fork: Int?
+        if halves.count == 2 {
+            guard halves[1].hasPrefix("yp"), let number = plainNumber(halves[1].dropFirst(2)) else { return nil }
+            fork = number
+        }
+        let fields = halves[0].split(separator: ".", omittingEmptySubsequences: false)
+        let parts = fields.compactMap(plainNumber)
+        guard fields.count == 3, parts.count == 3 else { return nil }
+        let base = parts.map(String.init).joined(separator: ".")
+        return fork.map { "\(base)-yp\($0)" } ?? base
+    }
+
+    private nonisolated static func plainNumber(_ part: Substring) -> Int? {
+        guard !part.isEmpty, part.count <= 9, part.allSatisfy({ $0.isASCII && $0.isNumber }) else { return nil }
+        return Int(part)
     }
 
     /// Live GitHub latest-release fetch. nil on any transport or payload failure.
@@ -164,25 +179,32 @@ final class UpdateChecker {
     // MARK: 버전 비교
 
     /// a 가 b 보다 높은 semver 인가. ("2.0.10" > "2.0.9" 등 숫자 비교)
+    /// Same base: the higher `-ypN` wins, and no suffix counts as yp0.
     nonisolated static func isNewer(_ a: String, than b: String) -> Bool {
-        let pa = a.split(separator: ".").map { Int($0) ?? 0 }
-        let pb = b.split(separator: ".").map { Int($0) ?? 0 }
+        let (pa, forkA) = versionParts(a)
+        let (pb, forkB) = versionParts(b)
         for i in 0..<max(pa.count, pb.count) {
             let x = i < pa.count ? pa[i] : 0
             let y = i < pb.count ? pb[i] : 0
             if x != y { return x > y }
         }
-        return false
+        return forkA > forkB
+    }
+
+    private nonisolated static func versionParts(_ version: String) -> ([Int], Int) {
+        let halves = version.components(separatedBy: "-yp")
+        let numbers = halves[0].split(separator: ".").map { Int($0) ?? 0 }
+        return (numbers, halves.count > 1 ? Int(halves[1]) ?? 0 : 0)
     }
 
     // MARK: brew 적용 (nonisolated — 블로킹 Process 는 detached 에서)
 
     /// poke-token-bar 가 brew cask 로 설치돼 있으면 brew 경로 반환, 아니면 nil(→ 릴리스 페이지 폴백).
     private nonisolated static func brewCaskPath() -> String? {
-        guard let brew = BinaryLocator.resolve("brew", staticPaths: [
+        guard let cask = brewCask, let brew = BinaryLocator.resolve("brew", staticPaths: [
             "/opt/homebrew/bin/brew", "/usr/local/bin/brew",
         ]) else { return nil }
-        return run(brew, ["list", "--cask", "poke-token-bar"], timeout: 20) ? brew : nil
+        return run(brew, ["list", "--cask", cask], timeout: 20) ? brew : nil
     }
 
     private nonisolated static func run(_ binary: String, _ args: [String], timeout: TimeInterval) -> Bool {
