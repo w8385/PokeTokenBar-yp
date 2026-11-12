@@ -1,4 +1,4 @@
-"""SQLite storage: upload tokens, latest party per user, battle records and the PokéAPI cache."""
+"""SQLite storage: upload tokens, latest party per user, battle records and the PokéAPI caches."""
 
 import hashlib
 import json
@@ -27,6 +27,10 @@ CREATE INDEX IF NOT EXISTS battles_challenger ON battles (challenger_id);
 CREATE INDEX IF NOT EXISTS battles_opponent ON battles (opponent_id);
 CREATE TABLE IF NOT EXISTS pokemon_cache (
     pokemon_id INTEGER PRIMARY KEY,
+    data_json TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS api_cache (
+    cache_key TEXT PRIMARY KEY,
     data_json TEXT NOT NULL
 );
 """
@@ -128,6 +132,18 @@ class Store:
             connection.execute(
                 "INSERT OR REPLACE INTO pokemon_cache (pokemon_id, data_json) VALUES (?, ?)",
                 (pokemon_id, json.dumps(data, ensure_ascii=False)),
+            )
+
+    def cached(self, cache_key: str) -> object | None:
+        with closing(self._connect()) as connection:
+            row = connection.execute("SELECT data_json FROM api_cache WHERE cache_key = ?", (cache_key,)).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def cache(self, cache_key: str, data: object) -> None:
+        with closing(self._connect()) as connection, connection:
+            connection.execute(
+                "INSERT OR REPLACE INTO api_cache (cache_key, data_json) VALUES (?, ?)",
+                (cache_key, json.dumps(data, ensure_ascii=False)),
             )
 
     def _connect(self) -> sqlite3.Connection:

@@ -1,4 +1,4 @@
-"""Automatic battle, parties fought in order: base stats, level, IVs and type effectiveness. No moves or items."""
+"""Automatic battle, entries fought in order: base stats, level, IVs, type effectiveness and level-up moves. No items or switching."""
 
 import random
 from dataclasses import dataclass, field
@@ -25,6 +25,15 @@ class BaseStats:
 
 
 @dataclass(frozen=True)
+class Move:
+    name: str
+    type: str
+    power: int
+    physical: bool
+    accuracy: int | None = None
+
+
+@dataclass(frozen=True)
 class Combatant:
     name: str
     level: int
@@ -32,6 +41,7 @@ class Combatant:
     base: BaseStats
     ivs: BaseStats
     shiny: bool = False
+    moves: tuple[Move, ...] = ()
 
     @property
     def label(self) -> str:
@@ -42,10 +52,13 @@ class Combatant:
 class Hit:
     turn: int
     attacker_side: int
+    attacker: str
+    defender: str
     move: str
     multiplier: float
     critical: bool
     knockout: bool
+    missed: bool = False
 
 
 @dataclass
@@ -58,14 +71,10 @@ class BattleResult:
 
 
 def simulate(sides: tuple[list[Combatant], list[Combatant]], seed: int) -> BattleResult:
-    """Fight both parties in order until one side has no Pokémon left.
+    """Fight both entries in order until one side has no Pokémon left.
 
-    Args:
-        sides: Two non-empty parties in battle order. Index 0 is the challenger.
-        seed: RNG seed, so a stored battle can be replayed.
-
-    Returns:
-        Winner index (0 or 1), turn count, KO log and survivors per side.
+    A Pokémon with moves uses the one with the highest expected damage each turn;
+    one without moves attacks with its best type.
     """
     rng = random.Random(seed)
     fighters = (
@@ -85,7 +94,10 @@ def simulate(sides: tuple[list[Combatant], list[Combatant]], seed: int) -> Battl
             if attacker.hp <= 0 or defender.hp <= 0:
                 continue
             hit = _attack(attacker, defender, rng)
-            hits.append(Hit(turn, attacker_side, _move_name(hit), hit.multiplier, hit.critical, defender.hp <= 0))
+            hits.append(Hit(
+                turn, attacker_side, attacker.combatant.name, defender.combatant.name,
+                hit.move, hit.multiplier, hit.critical, defender.hp <= 0, hit.missed,
+            ))
             if defender.hp <= 0:
                 log.append(_knockout_line(turn, attacker_side, attacker, defender, hit))
         for side in (0, 1):
@@ -130,9 +142,10 @@ class _Fighter:
 
 @dataclass(frozen=True)
 class _Hit:
-    attack_type: str | None
+    move: str
     multiplier: float
     critical: bool
+    missed: bool = False
 
 
 def _turn_order(current: tuple[_Fighter, _Fighter], rng: random.Random) -> tuple[int, int]:
@@ -142,30 +155,67 @@ def _turn_order(current: tuple[_Fighter, _Fighter], rng: random.Random) -> tuple
 
 
 def _attack(attacker: _Fighter, defender: _Fighter, rng: random.Random) -> _Hit:
+    move = _best_move(attacker, defender)
+    if move is None:
+        return _type_attack(attacker, defender, rng)
+    if move.accuracy is not None and rng.random() * 100 >= move.accuracy:
+        return _Hit(move=move.name, multiplier=_multiplier(move, defender), critical=False, missed=True)
+    multiplier = _multiplier(move, defender)
+    stab = STAB_MULTIPLIER if move.type in attacker.combatant.types else 1.0
+    attack_stat, defense_stat = _stats_for(attacker, defender, move.physical)
+    critical = _deal_damage(attacker, defender, rng, move.power, attack_stat, defense_stat, stab * multiplier)
+    return _Hit(move=move.name, multiplier=multiplier, critical=critical)
+
+
+def _type_attack(attacker: _Fighter, defender: _Fighter, rng: random.Random) -> _Hit:
     attack_type, multiplier = _best_attack_type(attacker, defender)
     if attack_type is None:
         power, stab = TYPELESS_POWER, 1.0
     else:
         power, stab = ATTACK_POWER, STAB_MULTIPLIER
-    if attacker.attack >= attacker.special_attack:
-        attack_stat, defense_stat = attacker.attack, defender.defense
-    else:
-        attack_stat, defense_stat = attacker.special_attack, defender.special_defense
+    attack_stat, defense_stat = _stats_for(attacker, defender, attacker.attack >= attacker.special_attack)
+    critical = _deal_damage(attacker, defender, rng, power, attack_stat, defense_stat, stab * multiplier)
+    name = TYPELESS_MOVE_NAME if attack_type is None else f"{TYPE_NAMES_KO[attack_type]} 공격"
+    return _Hit(move=name, multiplier=multiplier, critical=critical)
+
+
+def _deal_damage(
+    attacker: _Fighter, defender: _Fighter, rng: random.Random,
+    power: int, attack_stat: int, defense_stat: int, modifier: float,
+) -> bool:
     level = attacker.combatant.level
     damage = ((2 * level // 5 + 2) * power * attack_stat // max(1, defense_stat)) // 50 + 2
     critical = rng.random() < CRITICAL_CHANCE
-    scaled = damage * stab * multiplier * (CRITICAL_MULTIPLIER if critical else 1.0)
+    scaled = damage * modifier * (CRITICAL_MULTIPLIER if critical else 1.0)
     scaled *= rng.randint(85, 100) / 100
     defender.hp -= max(1, int(scaled))
-    return _Hit(attack_type=attack_type, multiplier=multiplier, critical=critical)
+    return critical
 
 
-def _move_name(hit: _Hit) -> str:
-    return TYPELESS_MOVE_NAME if hit.attack_type is None else f"{TYPE_NAMES_KO[hit.attack_type]} 공격"
+def _best_move(attacker: _Fighter, defender: _Fighter) -> Move | None:
+    """Highest power × STAB × type × accuracy × attack/defense ratio; None if every move does nothing."""
+    best, best_score = None, 0.0
+    for move in attacker.combatant.moves:
+        stab = STAB_MULTIPLIER if move.type in attacker.combatant.types else 1.0
+        attack_stat, defense_stat = _stats_for(attacker, defender, move.physical)
+        accuracy = 100 if move.accuracy is None else move.accuracy
+        score = move.power * stab * _multiplier(move, defender) * accuracy / 100 * attack_stat / max(1, defense_stat)
+        if score > best_score:
+            best, best_score = move, score
+    return best
+
+
+def _multiplier(move: Move, defender: _Fighter) -> float:
+    return effectiveness(move.type, defender.combatant.types)
+
+
+def _stats_for(attacker: _Fighter, defender: _Fighter, physical: bool) -> tuple[int, int]:
+    if physical:
+        return attacker.attack, defender.defense
+    return attacker.special_attack, defender.special_defense
 
 
 def _knockout_line(turn: int, attacker_side: int, attacker: _Fighter, defender: _Fighter, hit: _Hit) -> str:
-    move = _move_name(hit)
     notes = []
     if hit.critical:
         notes.append("급소!")
@@ -175,7 +225,7 @@ def _knockout_line(turn: int, attacker_side: int, attacker: _Fighter, defender: 
         notes.append("효과가 별로인 듯하다…")
     suffix = f" ({' '.join(notes)})" if notes else ""
     marker = "🔵" if attacker_side == 0 else "🔴"
-    return f"{turn}턴 {marker} {attacker.combatant.label}의 {move}{suffix} → {defender.combatant.label} 쓰러짐"
+    return f"{turn}턴 {marker} {attacker.combatant.label}의 {hit.move}{suffix} → {defender.combatant.label} 쓰러짐"
 
 
 def _decide_winner(fighters: tuple[list[_Fighter], list[_Fighter]], active: list[int], remaining: tuple[int, int]) -> int:
