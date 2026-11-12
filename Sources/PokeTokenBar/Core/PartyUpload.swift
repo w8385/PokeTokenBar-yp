@@ -7,6 +7,8 @@ struct PartyMember: Encodable, Equatable, Sendable {
     let level: Int
     let shiny: Bool
     let ivs: PokemonIVs?
+    /// PokéAPI move ids; nil lets the bot pick the 4 most recently learned.
+    var moves: [Int]? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
@@ -22,7 +24,7 @@ struct PartyPayload: Encodable, Equatable, Sendable {
 }
 
 enum PartyBuilder {
-    /// Battles are 1v1 between the Pokémon each player is raising now; an egg has none.
+    /// The Pokémon being raised now, sent when no battle entry is chosen; an egg has none.
     static func party(from state: CompanionState) -> [PartyMember] {
         guard let active = state.active else { return [] }
         let raised = member(speciesID: active.currentID, form: active.form,
@@ -116,6 +118,7 @@ final class PartyUploader {
     nonisolated static let resendInterval: TimeInterval = 300
 
     typealias Send = @Sendable (URLRequest) async throws -> Int
+    typealias Fetch = @Sendable (URLRequest) async throws -> (Data, Int)
 
     private(set) var hasToken: Bool
     private(set) var lastSuccessAt: Date?
@@ -130,6 +133,7 @@ final class PartyUploader {
     @ObservationIgnored private let tokenStore: PartyTokenStore
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let send: Send
+    @ObservationIgnored private let fetch: Fetch
     @ObservationIgnored private let appVersion: String?
     @ObservationIgnored private let partySource: @MainActor () -> [PartyMember]
     @ObservationIgnored private var lastAttemptAt: Date?
@@ -140,11 +144,13 @@ final class PartyUploader {
          defaults: UserDefaults = .standard,
          appVersion: String? = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
          send: @escaping Send = PartyUploader.urlSessionSend,
+         fetch: @escaping Fetch = PartyUploader.urlSessionFetch,
          partySource: @escaping @MainActor () -> [PartyMember]) {
         self.tokenStore = tokenStore
         self.defaults = defaults
         self.appVersion = appVersion
         self.send = send
+        self.fetch = fetch
         self.partySource = partySource
         hasToken = tokenStore.load() != nil
         serverURL = defaults.string(forKey: Self.serverURLDefaultsKey) ?? ""
@@ -205,6 +211,15 @@ final class PartyUploader {
         }
     }
 
+    /// Nil when there is no token or server, or the bot cannot answer.
+    func learnableMoves(pokemonID: Int, level: Int) async -> LearnableMoves? {
+        guard let token = tokenStore.load(),
+              let request = Self.movesRequest(serverURL: serverURL, token: token, pokemonID: pokemonID, level: level),
+              let (data, status) = try? await fetch(request), status == 200
+        else { return nil }
+        return try? LearnableMoves.decode(data)
+    }
+
     private func resetThrottle() {
         lastAttemptAt = nil
         lastAttemptBody = nil
@@ -233,6 +248,17 @@ final class PartyUploader {
         return request
     }
 
+    nonisolated static func movesRequest(serverURL: String, token: String, pokemonID: Int, level: Int) -> URLRequest? {
+        guard let base = baseURL(serverURL) else { return nil }
+        let url = base.appending(path: "v1/moves").appending(queryItems: [
+            URLQueryItem(name: "pokemon_id", value: String(pokemonID)),
+            URLQueryItem(name: "level", value: String(level)),
+        ])
+        var request = URLRequest(url: url, timeoutInterval: 30)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return request
+    }
+
     private static let session: URLSession = {
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 5
@@ -245,4 +271,31 @@ final class PartyUploader {
         let (_, response) = try await session.data(for: request)
         return (response as? HTTPURLResponse)?.statusCode ?? 0
     }
+
+    static let urlSessionFetch: Fetch = { request in
+        let (data, response) = try await URLSession.shared.data(for: request)
+        return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
+    }
+}
+
+/// `GET /v1/moves`: attacking level-up moves learnable at a level, oldest first.
+struct LearnableMoves: Decodable, Equatable, Sendable {
+    let moves: [LearnableMove]
+    let `default`: [Int]
+
+    static func decode(_ data: Data) throws -> LearnableMoves {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return try decoder.decode(LearnableMoves.self, from: data)
+    }
+}
+
+struct LearnableMove: Decodable, Equatable, Sendable, Identifiable {
+    let id: Int
+    let name: String
+    let type: String
+    let power: Int
+    let damageClass: String
+    let accuracy: Int?
+    let level: Int
 }

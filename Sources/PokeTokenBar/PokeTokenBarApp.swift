@@ -24,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var companion: CompanionStore!
     private var updater: UpdateChecker!
     private var partyUploader: PartyUploader!
+    private let battleEntry = BattleEntryStore()
     private var pendingPartyLink: PartyRegistrationLink?
     private var floatingPet: FloatingPetController!
     private let navigation = PopoverNavigation()
@@ -125,8 +126,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         companion = CompanionStore()
         Task { await companion.preparePokemonProfiles() }
         updater = UpdateChecker()
-        partyUploader = PartyUploader { [weak companion] in
-            companion.map { PartyBuilder.party(from: $0.state) } ?? []
+        partyUploader = PartyUploader { [weak companion, battleEntry] in
+            companion.map { BattleEntry.party(state: $0.state, slots: battleEntry.slots) } ?? []
         }
         partyUploader.start()
         store.localizationLanguage = companion.language   // 알림 현지화용 미러 시드
@@ -612,7 +613,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         popover.contentViewController = NSHostingController(
             rootView: PopoverView()
                 .environment(store).environment(companion).environment(updater).environment(navigation)
-                .environment(partyUploader))
+                .environment(partyUploader).environment(battleEntry))
     }
 
     @objc private func statusItemClicked() {
