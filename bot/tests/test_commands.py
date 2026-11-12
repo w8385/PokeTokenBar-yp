@@ -14,6 +14,8 @@ from ypoke.commands import (
     UMBRELLA_COMMAND,
     CommandHandler,
     bot_species,
+    parse_mention,
+    reply_thread_ts,
     week_start,
 )
 from ypoke.store import Record, Store
@@ -254,8 +256,63 @@ def test_bot_battle_needs_my_party(store):
 
 
 @pytest.mark.parametrize("text", ["<@UBOT>", "<@UBOT> 안녕"])
-def test_mention_without_battle_word_shows_help(store, text):
+def test_mention_without_a_command_word_shows_help(store, text):
     assert handler(store).handle_mention("UA", text).text == HELP_TEXT
+
+
+@pytest.mark.parametrize("text,command,rest", [
+    ("<@UBOT> 대결 <@UB>", BATTLE_COMMAND, "대결 <@UB>"),
+    ("<@UBOT|ypoke> 대결 <@UB|bob>", BATTLE_COMMAND, "대결 <@UB|bob>"),
+    ("<@UBOT> 대결 <@UBOT>", BATTLE_COMMAND, "대결"),
+    ("<@UBOT> 대결", BATTLE_COMMAND, "대결"),
+    ("<@UBOT> Battle", BATTLE_COMMAND, "Battle"),
+    ("<@UBOT> 전적 <@UB>", RECORD_COMMAND, "전적 <@UB>"),
+    ("<@UBOT> 랭킹", RANKING_COMMAND, "랭킹"),
+    ("<@UBOT> 연결", LINK_COMMAND, "연결"),
+    ("<@UBOT>", None, ""),
+])
+def test_parse_mention_strips_the_bot_mention(text, command, rest):
+    assert parse_mention(text, "UBOT") == (command, rest)
+
+
+def test_mention_battle_fights_the_other_person_not_the_bot(store):
+    upload(store, "UA", 25, 60)
+    upload(store, "UB", 7, 20)
+    reply = handler(store).handle_mention("UA", "<@UBOT> 대결 <@UB>")
+    assert reply.text.splitlines()[0] == "<@UB>에게 <@UA>이(가) 승부를 걸어왔다!"
+    assert store.record("UA") == Record(1, 0)
+
+
+def test_mention_battle_with_only_the_bot_mentioned_twice_is_practice(store):
+    upload(store, "UA", 25, 60)
+    reply = handler(store).handle_mention("UA", "<@UBOT> 대결 <@UBOT>")
+    assert reply.text.endswith("(연습 대결 — 전적에 안 남아요)")
+    assert store.record("UA") == Record(0, 0)
+
+
+def test_mention_record_ranking_and_link(store):
+    store.record_battle("UA", "UB", "UA", 0, at=NOW)
+    bot = handler(store)
+    assert bot.handle_mention("UA", "<@UBOT> 전적").text == "<@UA> 전적: 1승 0패"
+    assert bot.handle_mention("UA", "<@UBOT> 전적 <@UB>").text == "<@UB> 전적: 0승 1패"
+    assert bot.handle_mention("UA", "<@UBOT> 랭킹").text.startswith("🏆 이번 주 랭킹")
+    link = bot.handle_mention("UA", "<@UBOT> 연결")
+    assert link.direct_message_blocks is not None
+    assert not link.in_channel
+
+
+@pytest.mark.parametrize("event,expected", [
+    ({"ts": "1.1"}, "1.1"),
+    ({"ts": "2.2", "thread_ts": "1.1"}, "1.1"),
+])
+def test_reply_thread_ts_stays_in_the_thread(event, expected):
+    assert reply_thread_ts(event) == expected
+
+
+def test_help_links_the_home_channel_when_configured(store):
+    bot = CommandHandler(store, FakePokeAPI(), home_channel="CHOME")
+    assert bot.handle("UA", "", UMBRELLA_COMMAND).text.endswith("<#CHOME>")
+    assert "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요." in HELP_TEXT
 
 
 def test_bot_species_is_seeded_and_in_the_national_dex():

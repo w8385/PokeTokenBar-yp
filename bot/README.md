@@ -14,6 +14,9 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads that Pokémon to
 - `/전적 [@누구]` shows win/loss.
 - `/랭킹` posts this week's top 10 (since Monday 00:00 KST) by wins, then win rate, then fewer battles.
 - `/ypoke` shows help.
+- Slack runs no slash commands in threads, so mentions cover them all and answer in the thread:
+  `@YPoke 대결 @상대`, `@YPoke 대결` (practice), `@YPoke 전적 [@누구]`, `@YPoke 랭킹`,
+  `@YPoke 연결` (link by DM). `@YPoke` alone shows help. A top-level mention starts a thread.
 
 ## Run locally
 
@@ -27,7 +30,8 @@ set -a; . ./.env; set +a; uv run python -m ypoke
 
 Env ([.env.example](.env.example)): `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN` (required),
 `YPOKE_PUBLIC_URL` (how apps reach the upload server, sent in the `/포켓몬연결` link),
-`YPOKE_DB` (SQLite path), `YPOKE_HTTP_HOST` (default `0.0.0.0`), `YPOKE_HTTP_PORT` (default `8790`).
+`YPOKE_DB` (SQLite path), `YPOKE_HTTP_HOST` (default `0.0.0.0`), `YPOKE_HTTP_PORT` (default `8790`),
+`YPOKE_HOME_CHANNEL` (optional channel id: the bot joins it at startup and help links to it).
 
 ## Slack app
 
