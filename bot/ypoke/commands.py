@@ -22,7 +22,6 @@ REGISTER_ACTION_ID = "open_poketokenbar"
 _MENTION = re.compile(r"<@([UW][A-Z0-9]+)(?:\|[^>]*)?>")
 KST = timezone(timedelta(hours=9), "KST")
 MAX_SPECIES_ID = 1025
-_BOT_BATTLE_WORDS = {"대결", "battle"}
 RANKING_SIZE = 10
 
 BATTLE_COMMAND = "/대결"
@@ -31,6 +30,13 @@ RECORD_COMMAND = "/전적"
 RANKING_COMMAND = "/랭킹"
 UMBRELLA_COMMAND = "/ypoke"
 COMMAND_NAMES = (BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, UMBRELLA_COMMAND)
+MENTION_WORDS = {
+    "대결": BATTLE_COMMAND,
+    "battle": BATTLE_COMMAND,
+    "전적": RECORD_COMMAND,
+    "랭킹": RANKING_COMMAND,
+    "연결": LINK_COMMAND,
+}
 
 HELP_TEXT = (
     "*YPoke 대결*\n"
@@ -39,6 +45,7 @@ HELP_TEXT = (
     f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
     f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
+    "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 연결`도 돼요.\n"
     "전적만 남고 포켓몬은 오가지 않아요.\n"
     f"앱 받기: <{DOWNLOAD_URL}|PokeTokenBar>"
 )
@@ -60,12 +67,23 @@ class CommandHandler:
         public_url: str | None = None,
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
         bot_user_id: str | None = None,
+        home_channel: str | None = None,
     ):
         self._store = store
         self._pokeapi = pokeapi
         self._public_url = public_url
         self._now = now
         self._bot_user_id = bot_user_id
+        self._help = f"{HELP_TEXT}\n대결 채널: <#{home_channel}>" if home_channel else HELP_TEXT
+
+    def handle_mention(self, user_id: str, text: str) -> Reply:
+        """An `@YPoke …` message. Slack runs no slash commands in threads, so this covers every command."""
+        command, rest = parse_mention(text, self._bot_user_id)
+        if command is None:
+            return Reply(self._help)
+        if command == BATTLE_COMMAND and not _MENTION.search(rest):
+            return self._bot_battle(user_id)
+        return self.handle(user_id, rest, command)
 
     def handle(self, user_id: str, text: str, command: str = BATTLE_COMMAND) -> Reply:
         mention = _MENTION.search(text)
@@ -79,13 +97,7 @@ class CommandHandler:
             if mention.group(1) == self._bot_user_id:
                 return self._bot_battle(user_id)
             return self._battle(user_id, mention.group(1))
-        return Reply(HELP_TEXT)
-
-    def handle_mention(self, user_id: str, text: str) -> Reply:
-        """An `@YPoke …` message in a channel."""
-        if _BOT_BATTLE_WORDS & set(text.lower().split()):
-            return self._bot_battle(user_id)
-        return Reply(HELP_TEXT)
+        return Reply(self._help)
 
     def _register(self, user_id: str) -> Reply:
         token = self._store.issue_token(user_id)
@@ -200,6 +212,18 @@ class CommandHandler:
                 shiny=member["shiny"],
             ))
         return combatants
+
+
+def parse_mention(text: str, bot_user_id: str | None) -> tuple[str | None, str]:
+    """Return the slash command an `@YPoke …` message asks for, and its text without the bot's own mentions."""
+    rest = _MENTION.sub(lambda match: "" if match.group(1) == bot_user_id else match.group(0), text)
+    command = next((MENTION_WORDS[word] for word in rest.lower().split() if word in MENTION_WORDS), None)
+    return command, rest.strip()
+
+
+def reply_thread_ts(event: dict) -> str:
+    """Answer inside the mention's thread; a top-level mention starts one."""
+    return event.get("thread_ts") or event["ts"]
 
 
 def bot_species(seed: int) -> int:
