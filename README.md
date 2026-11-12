@@ -6,10 +6,9 @@
 
 **Your AI coding tokens, hatched into Pokémon — right in your menu bar.**
 
-[![Release](https://img.shields.io/github/v/release/chattymin/PokeTokenBar?color=444d56&label=release)](https://github.com/chattymin/PokeTokenBar/releases)
+[![Release](https://img.shields.io/github/v/release/w8385/PokeTokenBar-yp?color=444d56&label=release)](https://github.com/w8385/PokeTokenBar-yp/releases)
 [![macOS](https://img.shields.io/badge/macOS-14%2B-0969da)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-6-f05138)](https://swift.org)
-[![Homebrew](https://img.shields.io/badge/Homebrew-cask-8957e5)](#homebrew)
 [![License](https://img.shields.io/badge/license-MIT-3fb950)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%99%A5-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/chattymin)
 
@@ -280,24 +279,27 @@ All read locally — no external usage CLI required. Adding a tool is a provider
 
 macOS 14+ (Apple Silicon or Intel). That's it — token usage is read directly from local Claude Code, Codex, Gemini CLI, Antigravity, OpenCode, Hermes Agent, Cursor, Grok CLI, Copilot CLI, Kiro CLI, Pi Agent, omp, omo, Aside, Kimi Code, and Devin CLI data, with no external usage CLI required.
 
-### Homebrew
+### Install or upgrade
+
+Release builds of this fork are **Apple Silicon only**. Quit PokeTokenBar first if it is running, then:
 
 ```bash
-brew install --cask chattymin/tap/poke-token-bar
+curl -L https://github.com/w8385/PokeTokenBar-yp/releases/latest/download/PokeTokenBar-yp-arm64.zip -o /tmp/PokeTokenBar-yp.zip \
+  && ditto -x -k /tmp/PokeTokenBar-yp.zip /Applications \
+  && xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app \
+  && open /Applications/PokeTokenBar.app
 ```
 
-ad-hoc/self-signed; the cask strips the quarantine attribute on install.
+Upgrading keeps your progress: save data stays in `~/Library/Application Support/PokeTokenBar`.
 
-### Manual install (without Homebrew)
+The fork has no Homebrew cask. `chattymin/tap/poke-token-bar` installs the upstream app, which lacks the fork features.
 
-Prefer not to use Homebrew? Download `PokeTokenBar.zip` from the [latest release](https://github.com/chattymin/PokeTokenBar/releases/latest), unzip it, and drag `PokeTokenBar.app` into `/Applications`.
+### Downloaded with a browser?
 
-Because the app is ad-hoc/self-signed (not notarized under an Apple Developer account), Gatekeeper shows an "unidentified developer" warning on first launch. Clear it once, either way:
+Unzip it and move `PokeTokenBar.app` into `/Applications`. The app is ad-hoc signed (not notarized), so Gatekeeper shows an "unidentified developer" warning on first launch. Clear it once, either way:
 
 - **Finder:** right-click (or Control-click) `PokeTokenBar.app` → **Open** → **Open** again in the dialog.
 - **Terminal:** `xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app`
-
-(The Homebrew cask strips quarantine for you, so it needs no extra step.)
 
 ### Build from source
 

@@ -6,10 +6,9 @@
 
 **당신의 AI 코딩 토큰을 포켓몬으로 — 메뉴바에서.**
 
-[![Release](https://img.shields.io/github/v/release/chattymin/PokeTokenBar?color=444d56&label=release)](https://github.com/chattymin/PokeTokenBar/releases)
+[![Release](https://img.shields.io/github/v/release/w8385/PokeTokenBar-yp?color=444d56&label=release)](https://github.com/w8385/PokeTokenBar-yp/releases)
 [![macOS](https://img.shields.io/badge/macOS-14%2B-0969da)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-6-f05138)](https://swift.org)
-[![Homebrew](https://img.shields.io/badge/Homebrew-cask-8957e5)](#homebrew)
 [![License](https://img.shields.io/badge/license-MIT-3fb950)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%99%A5-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/chattymin)
 
@@ -281,24 +280,27 @@ Grok 토큰 사용량은 Grok Build CLI의 로컬 세션 로그에서, 주간 �
 
 macOS 14+ (Apple Silicon 또는 Intel). 끝입니다 — 토큰 사용량은 로컬 Claude Code·Codex·Gemini CLI·Antigravity·OpenCode·Hermes Agent·Cursor·Grok CLI·Copilot CLI·Kiro CLI·Pi Agent·omp·omo·Aside·Kimi Code·Devin CLI 데이터에서 직접 읽으며 외부 사용량 CLI가 필요 없습니다.
 
-### Homebrew
+### 설치 · 업데이트
+
+이 포크의 릴리스 빌드는 **Apple Silicon 전용**입니다. 실행 중인 PokeTokenBar를 먼저 종료한 뒤:
 
 ```bash
-brew install --cask chattymin/tap/poke-token-bar
+curl -L https://github.com/w8385/PokeTokenBar-yp/releases/latest/download/PokeTokenBar-yp-arm64.zip -o /tmp/PokeTokenBar-yp.zip \
+  && ditto -x -k /tmp/PokeTokenBar-yp.zip /Applications \
+  && xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app \
+  && open /Applications/PokeTokenBar.app
 ```
 
-ad-hoc/자체 서명 앱이라 Cask 설치 시 격리 속성을 자동 제거합니다.
+업데이트해도 진행은 이어집니다. 세이브는 `~/Library/Application Support/PokeTokenBar`에 남습니다.
 
-### 직접 설치 (Homebrew 없이)
+포크에는 Homebrew Cask가 없습니다. `chattymin/tap/poke-token-bar`는 포크 기능이 없는 원본 앱을 설치합니다.
 
-Homebrew를 쓰지 않는다면 [최신 릴리스](https://github.com/chattymin/PokeTokenBar/releases/latest)에서 `PokeTokenBar.zip`을 내려받아 압축을 풀고 `PokeTokenBar.app`을 `/Applications`로 드래그합니다.
+### 브라우저로 받았다면
 
-이 앱은 ad-hoc/자체 서명(Apple 개발자 계정 공증 없음)이라 첫 실행 시 Gatekeeper가 "확인되지 않은 개발자" 경고를 띄웁니다. 아래 둘 중 하나로 한 번만 해제하면 됩니다.
+압축을 풀고 `PokeTokenBar.app`을 `/Applications`로 옮깁니다. ad-hoc 서명(공증 없음)이라 첫 실행 시 Gatekeeper가 "확인되지 않은 개발자" 경고를 띄웁니다. 아래 둘 중 하나로 한 번만 해제하면 됩니다.
 
 - **Finder:** `PokeTokenBar.app`을 우클릭(또는 Control+클릭) → **열기** → 대화상자에서 **열기**를 다시 클릭.
 - **터미널:** `xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app`
-
-(Homebrew Cask는 격리 속성을 자동 제거하므로 이 과정이 필요 없습니다.)
 
 ### 소스 빌드
 

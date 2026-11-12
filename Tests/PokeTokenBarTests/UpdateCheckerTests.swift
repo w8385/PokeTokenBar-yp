@@ -20,6 +20,22 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertTrue(UpdateChecker.isNewer("2.1.0", than: "2.0.9"))
         XCTAssertTrue(UpdateChecker.isNewer("3.0.0", than: "2.9.9"))
     }
+    func testHigherForkNumberIsNewer() {
+        XCTAssertTrue(UpdateChecker.isNewer("2.5.7-yp4", than: "2.5.7-yp3"))
+        XCTAssertTrue(UpdateChecker.isNewer("2.5.7-yp10", than: "2.5.7-yp9"))
+        XCTAssertTrue(UpdateChecker.isNewer("2.5.7-yp1", than: "2.5.7"))
+        XCTAssertFalse(UpdateChecker.isNewer("2.5.7-yp3", than: "2.5.7-yp3"))
+        XCTAssertFalse(UpdateChecker.isNewer("2.5.7-yp3", than: "2.5.7-yp4"))
+        XCTAssertFalse(UpdateChecker.isNewer("2.5.7", than: "2.5.7-yp3"))
+    }
+    func testBaseVersionOutranksForkNumber() {
+        XCTAssertTrue(UpdateChecker.isNewer("2.5.8-yp1", than: "2.5.7-yp9"))
+        XCTAssertFalse(UpdateChecker.isNewer("2.5.7-yp9", than: "2.5.8-yp1"))
+    }
+    func testReleasesComeFromTheFork() {
+        XCTAssertEqual(UpdateChecker.releaseRepo, "w8385/PokeTokenBar-yp")
+        XCTAssertNil(UpdateChecker.brewCask, "the upstream cask would replace the fork build")
+    }
     func testDifferentComponentCounts() {
         XCTAssertTrue(UpdateChecker.isNewer("2.0.1", than: "2.0"))   // 2.0.1 > 2.0.0
         XCTAssertFalse(UpdateChecker.isNewer("2.0", than: "2.0.0"))  // 동일
@@ -114,7 +130,8 @@ final class UpdateCheckerTests: XCTestCase {
     func testMalformedOrPrereleaseTagIsAFailedCheckAndDoesNotBlockTheNextOne() async {
         let badTags = ["", "latest", "v", "v2.5", "2.5.5.1", "v2..5", "2.5.x", "release-2.5.5", "v 2.5.5",
                        "v2.6.0-beta.1", "2.6.0-rc1", "v2.6.0+build.5", "v2.6.0.beta", "v-2.6.0",
-                       "v1234567890.0.0", "v٢.٥.٥"]
+                       "v1234567890.0.0", "v٢.٥.٥", "v2.5.7-yp", "v2.5.7-ypx", "v2.5.7-yp3-1", "v2.5-yp3",
+                       "v2.5.7-YP3"]
         for bad in badTags {
             var tag = bad
             var fetches = 0
@@ -142,6 +159,26 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertNil(UpdateChecker.normalizedReleaseVersion("v2.6.0-beta.1"))
         XCTAssertNil(UpdateChecker.normalizedReleaseVersion("v2.5"))
         XCTAssertNil(UpdateChecker.normalizedReleaseVersion("v1234567890.0.0"), "component would overflow comparisons")
+        XCTAssertEqual(UpdateChecker.normalizedReleaseVersion("v2.5.7-yp3"), "2.5.7-yp3")
+        XCTAssertEqual(UpdateChecker.normalizedReleaseVersion("2.5.7-yp04"), "2.5.7-yp4")
+    }
+
+    @MainActor
+    func testForkReleaseWithHigherNumberIsOffered() async {
+        let checker = UpdateChecker(currentVersion: "2.5.7-yp3", defaults: isolatedDefaults()) {
+            UpdateChecker.LatestRelease(tag: "v2.5.7-yp4", url: "https://github.com/w8385/PokeTokenBar-yp/releases/tag/v2.5.7-yp4")
+        }
+        await checker.check(minInterval: 0)
+        XCTAssertEqual(checker.available?.version, "2.5.7-yp4")
+    }
+
+    @MainActor
+    func testSameForkReleaseIsNotOffered() async {
+        let checker = UpdateChecker(currentVersion: "2.5.7-yp4", defaults: isolatedDefaults()) {
+            UpdateChecker.LatestRelease(tag: "v2.5.7-yp4", url: "https://github.com/w8385/PokeTokenBar-yp/releases/tag/v2.5.7-yp4")
+        }
+        await checker.check(minInterval: 0)
+        XCTAssertNil(checker.available)
     }
 
     /// With no early stamp, overlapping popover opens would each hit GitHub. One fetch at a time.
