@@ -1763,9 +1763,9 @@ final class CompanionIdentityTests: XCTestCase {
     /// 복구하고 단계 수를 현재 에셋 개수에 맞춘다. 그렇지 않으면 트리에서 현재 종을 못 찾아 성장이 멈춘다.
     func testLineLoadMigratesPersistedUnsupportedEvolution() async throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-assets-\(UUID().uuidString).json")
-        let json = #"{"installBaselineSet":true,"lastDate":"d1","active":{"baseID":56,"pathIDs":[56,57,979],"stageIndex":2,"usedAtStage":123,"rarity":"common","totalForms":3},"dex":[]}"#
+        let json = #"{"installBaselineSet":true,"lastDate":"d1","active":{"baseID":56,"pathIDs":[56,57,1026],"stageIndex":2,"usedAtStage":123,"rarity":"common","totalForms":3},"dex":[]}"#
         try Data(json.utf8).write(to: url)
-        let supportedLine = makeLine(base: 56, tree: node(56, [node(57, [node(979)])]))
+        let supportedLine = makeLine(base: 56, tree: node(56, [node(57, [node(1026)])]))
         let s = CompanionStore(provider: StubProvider(value: supportedLine), clock: { fixedNow },
                                fileURL: url, rng: SeededRNG(seed: 5))
 

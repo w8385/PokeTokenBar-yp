@@ -77,7 +77,7 @@ final class PokemonFormTests: XCTestCase {
     func testCatalogListsDefaultFirstWithinTheHatchableRange() {
         XCTAssertEqual(PokemonForm.catalog.count, 23)
         for (speciesID, entries) in PokemonForm.catalog {
-            XCTAssertTrue(PokemonAssets.animatedSpeciesIDs.contains(speciesID))
+            XCTAssertTrue(PokemonAssets.supportedSpeciesIDs.contains(speciesID))
             XCTAssertGreaterThanOrEqual(entries.count, 2, "#\(speciesID)")
             XCTAssertEqual(Set(entries.map(\.form)).count, entries.count, "#\(speciesID) repeats a form")
             XCTAssertEqual(entries.first?.formID, speciesID, "#\(speciesID) default is the species' own form")

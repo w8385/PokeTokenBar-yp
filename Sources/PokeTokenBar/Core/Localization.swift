@@ -749,6 +749,53 @@ struct L {
     var close: String { t("닫기", "Close", "閉じる", "Cerrar", "Fermer", "Fechar", "Schließen", "Закрыть") }
 
     // MARK: 세이브 이전 (설정 → 백업 & 이전)
+    var partyUploadSectionTitle: String { t("YPoke 대결", "YPoke battles", "YPoke対戦", "Combates YPoke", "Combats YPoke", "Batalhas YPoke", "YPoke-Kämpfe", "Бои YPoke") }
+    var partyUploadTokenLabel: String { t("업로드 토큰", "Upload token", "アップロードトークン", "Token de subida", "Jeton d'envoi", "Token de envio", "Upload-Token", "Токен загрузки") }
+    var partyUploadHint: String {
+        t("지금 키우는 포켓몬을 몇 분마다 YPoke 대결 봇에 보내요. 대결은 서로 키우는 포켓몬끼리 1:1이에요.",
+          "Sends the Pokémon you're raising to the YPoke battle bot every few minutes. Battles are 1v1 between the Pokémon each player is raising.",
+          "育成中のポケモンを数分ごとにYPoke対戦ボットへ送ります。対戦は互いに育成中のポケモン同士の1対1です。",
+          "Envía el Pokémon que crías al bot de combate YPoke cada pocos minutos. Los combates son 1 contra 1 entre los Pokémon que cría cada jugador.",
+          "Envoie le Pokémon que tu élèves au bot de combat YPoke toutes les quelques minutes. Les combats sont en 1 contre 1 entre les Pokémon élevés par chaque joueur.",
+          "Envia o Pokémon que você cria ao bot de batalha YPoke a cada poucos minutos. As batalhas são 1 contra 1 entre os Pokémon que cada jogador cria.",
+          "Sendet dein aktuelles Pokémon alle paar Minuten an den YPoke-Kampfbot. Kämpfe sind 1 gegen 1 zwischen den Pokémon, die jeder gerade aufzieht.",
+          "Каждые несколько минут отправляет выращиваемого покемона боту сражений YPoke. Бои идут 1 на 1 между покемонами, которых растят игроки.")
+    }
+    var partyUploadLinkHint: String {
+        t("Slack에서 /포켓몬연결 → DM 링크 클릭",
+          "In Slack: /포켓몬연결 → click the link in the DM",
+          "Slackで /포켓몬연결 → DMのリンクをクリック",
+          "En Slack: /포켓몬연결 → pulsa el enlace del DM",
+          "Dans Slack : /포켓몬연결 → clique sur le lien du DM",
+          "No Slack: /포켓몬연결 → clique no link da DM",
+          "In Slack: /포켓몬연결 → Link in der DM anklicken",
+          "В Slack: /포켓몬연결 → нажмите ссылку в личном сообщении")
+    }
+    var partyUploadConnected: String { t("YPoke 연결됨", "YPoke connected", "YPoke接続済み", "YPoke conectado", "YPoke connecté", "YPoke conectado", "YPoke verbunden", "YPoke подключён") }
+    var partyUploadServerLabel: String { t("서버", "Server", "サーバー", "Servidor", "Serveur", "Servidor", "Server", "Сервер") }
+    var partyUploadTokenSaved: String { t("설정됨", "Saved", "設定済み", "Guardado", "Enregistré", "Salvo", "Gespeichert", "Сохранён") }
+    var partyUploadTokenRejected: String { t("토큰 거부됨", "Token rejected", "トークン拒否", "Token rechazado", "Jeton refusé", "Token recusado", "Token abgelehnt", "Токен отклонён") }
+    var partyUploadTokenInvalid: String {
+        t("봇이 DM으로 보낸 토큰을 공백 없이 붙여 넣어 주세요.",
+          "Paste the token the bot sent you by DM, without spaces.",
+          "ボットがDMで送ったトークンを空白なしで貼り付けてください。",
+          "Pega el token que el bot te envió por DM, sin espacios.",
+          "Colle le jeton envoyé par le bot en DM, sans espaces.",
+          "Cole o token que o bot enviou por DM, sem espaços.",
+          "Füge das Token aus der DM des Bots ohne Leerzeichen ein.",
+          "Вставьте токен из личного сообщения бота без пробелов.")
+    }
+    var partyUploadLastSent: String { t("마지막 업로드", "Last upload", "最終アップロード", "Última subida", "Dernier envoi", "Último envio", "Letzter Upload", "Последняя загрузка") }
+    var partyUploadStorageNote: String {
+        t("토큰은 이 Mac 사용자만 읽을 수 있는 파일에 저장돼요.",
+          "The token is stored in a file only your Mac user can read.",
+          "トークンはこのMacのユーザーだけが読めるファイルに保存されます。",
+          "El token se guarda en un archivo que solo tu usuario del Mac puede leer.",
+          "Le jeton est stocké dans un fichier lisible uniquement par ton utilisateur Mac.",
+          "O token fica em um arquivo que só o seu usuário do Mac pode ler.",
+          "Das Token liegt in einer Datei, die nur dein Mac-Benutzer lesen kann.",
+          "Токен хранится в файле, который может читать только ваш пользователь Mac.")
+    }
     var transferSectionTitle: String { t("백업 & 이전", "Backup & Transfer", "バックアップと移行", "Copia de seguridad y transferencia", "Sauvegarde et transfert", "Backup e transferência", "Sicherung & Übertragung", "Резервная копия и перенос") }
     var exportSaveLabel: String { t("세이브 내보내기", "Export save", "セーブを書き出す", "Exportar partida", "Exporter la sauvegarde", "Exportar save", "Spielstand exportieren", "Экспорт сохранения") }
     var exportSaveHint: String {
@@ -1462,6 +1509,10 @@ struct L {
         case .hoenn: return t("호연", "Hoenn", "ホウエン", "Hoenn", "Hoenn", "Hoenn", "Hoenn", "Хоэнн")
         case .sinnoh: return t("신오", "Sinnoh", "シンオウ", "Sinnoh", "Sinnoh", "Sinnoh", "Sinnoh", "Синно")
         case .unova: return t("하나", "Unova", "イッシュ", "Teselia", "Unys", "Unova", "Einall", "Юнова")
+        case .kalos: return t("칼로스", "Kalos", "カロス", "Kalos", "Kalos", "Kalos", "Kalos", "Калос")
+        case .alola: return t("알로라", "Alola", "アローラ", "Alola", "Alola", "Alola", "Alola", "Алола")
+        case .galar: return t("가라르", "Galar", "ガラル", "Galar", "Galar", "Galar", "Galar", "Галар")
+        case .paldea: return t("팔데아", "Paldea", "パルデア", "Paldea", "Paldea", "Paldea", "Paldea", "Пальдея")
         }
     }
 
@@ -1536,9 +1587,9 @@ struct L {
           "🌍 Pokédex national terminé !", "🌍 Pokédex Nacional completa!", "🌍 National-Dex komplett!", "🌍 Национальный Покедекс завершён!")
     }
     var notifDexNationalCompleteBody: String {
-        t("1~5세대 모든 포켓몬을 모았어요!", "You've caught every Pokémon from Gen 1–5!", "第1〜5世代のすべてのポケモンを集めました！",
-          "¡Has capturado todos los Pokémon de la 1.ª a la 5.ª generación!", "Tu as capturé tous les Pokémon des générations 1 à 5 !",
-          "Você capturou todos os Pokémon das gerações 1 a 5!", "Du hast alle Pokémon der Generationen 1–5 gefangen!", "Вы поймали всех покемонов 1–5 поколений!")
+        t("1~9세대 모든 포켓몬을 모았어요!", "You've caught every Pokémon from Gen 1–9!", "第1〜9世代のすべてのポケモンを集めました！",
+          "¡Has capturado todos los Pokémon de la 1.ª a la 9.ª generación!", "Tu as capturé tous les Pokémon des générations 1 à 9 !",
+          "Você capturou todos os Pokémon das gerações 1 a 9!", "Du hast alle Pokémon der Generationen 1–9 gefangen!", "Вы поймали всех покемонов 1–9 поколений!")
     }
 
     var notifDexNationalShinyCompleteTitle: String {

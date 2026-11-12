@@ -9,7 +9,8 @@ import SwiftUI
 ///     PTB_SCREENSHOT_DIR=/tmp/ptb-shots swift test --filter GenerationDexScreenshotTests
 final class GenerationDexScreenshotTests: XCTestCase {
 
-    /// Sample mid-to-late game: Kanto/Hoenn done, Johto done shiny, Sinnoh in progress (selected), Unova started.
+    /// Sample mid-to-late game: Kanto/Hoenn done, Johto done shiny, Sinnoh in progress (selected),
+    /// Unova onward started.
     private func sampleCompletions() -> [DexCompletion] {
         [
             DexCompletion(region: .kanto, owned: 151, shinyOwned: 0),
@@ -17,6 +18,10 @@ final class GenerationDexScreenshotTests: XCTestCase {
             DexCompletion(region: .hoenn, owned: 135, shinyOwned: 0),
             DexCompletion(region: .sinnoh, owned: 62, shinyOwned: 4),
             DexCompletion(region: .unova, owned: 9, shinyOwned: 0),
+            DexCompletion(region: .kalos, owned: 14, shinyOwned: 0),
+            DexCompletion(region: .alola, owned: 7, shinyOwned: 1),
+            DexCompletion(region: .galar, owned: 5, shinyOwned: 0),
+            DexCompletion(region: .paldea, owned: 3, shinyOwned: 0),
         ]
     }
 

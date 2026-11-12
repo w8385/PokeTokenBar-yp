@@ -48,6 +48,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
+    <key>NSAppTransportSecurity</key>
+    <dict><key>NSAllowsLocalNetworking</key><true/></dict>
+    <key>NSLocalNetworkUsageDescription</key><string>Uploads your battle party to the YPoke bot on your local network.</string>
     <key>CFBundleURLTypes</key>
     <array>
         <dict>

@@ -1,0 +1,21 @@
+name: Bot
+
+on:
+  push:
+    branches: [main]
+    paths: ["bot/**", ".github/workflows/bot.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["bot/**", ".github/workflows/bot.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bot
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run pytest -q

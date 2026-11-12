@@ -21,6 +21,9 @@
 
 </div>
 
+> [!NOTE]
+> **PokeTokenBar-yp는 [chattymin/PokeTokenBar](https://github.com/chattymin/PokeTokenBar)(MIT)의 비공식 포크입니다.** 도감을 #1025까지 늘리고 [YPoke](bot/README.md) 슬랙 대결 봇을 더했습니다. 설치는 [이 포크의 릴리스](https://github.com/w8385/PokeTokenBar-yp/releases)에서 받습니다. 원본 프로젝트와 관계없고 원본에서 지원하지 않으니, 포크 문제는 원본이 아니라 여기에 올려 주세요.
+
 PokeTokenBar는 당신이 이미 태우고 있는 AI 코딩 토큰(Claude Code · Codex · Gemini CLI · Antigravity · OpenCode · Hermes Agent · Cursor · Grok CLI · Copilot CLI · Kiro CLI · Pi Agent · omp · omo · Aside · Kimi Code · Devin CLI)을 macOS 메뉴바 속 자라나는 **포켓몬 companion**으로 바꿔줍니다. 토큰을 쓰면 알이 부화하고, 실제 진화 라인을 따라 진화하며, 최종 진화 후 도감에 졸업하고, 다시 새 알이 시작됩니다. companion 아래에는 정확한 사용량 트래커가 있습니다 — 오늘의 사용량·비용, 공식 5시간/주간 한도를 로컬 로그에서 직접 읽습니다.
 
 > 토큰 사용량은 로컬 Claude Code·Codex·Gemini CLI·Antigravity·OpenCode·Hermes Agent·Cursor·Grok CLI·Copilot CLI·Kiro CLI·Pi Agent·omp·omo·Aside·Kimi Code·Devin CLI 데이터에서 직접 읽습니다(`totalTokens` = input + output + cache, 로컬 날짜) — 외부 CLI 불필요. 비공식·비상업 포켓몬 팬 프로젝트 — [라이선스 & 면책](#라이선스--면책) 참고.
@@ -38,7 +41,7 @@ PokeTokenBar는 당신이 이미 태우고 있는 AI 코딩 토큰(Claude Code �
 ## 어떻게 자라나요
 
 1. 🥚 **평소처럼 코딩하세요.** Claude Code·Codex·Gemini CLI·Antigravity·OpenCode·Hermes Agent·Cursor·Grok CLI·Copilot CLI·Kiro CLI·Pi Agent·omp·omo·Aside·Kimi Code·Devin CLI에서 태우는 토큰이 알을 품습니다 — 따로 돌릴 건 없어요.
-2. 🐣 **부화.** [PokéAPI](https://pokeapi.co/)의 **1~5세대 모든 진화 계보(시작점 329종)**에서 공식 capture rate 가중으로 태어납니다 — 흔한 포켓몬은 자주, 전설은 부화 129번에 1번. 부화한 포켓몬은 키우는 동안에도 **도감**에 바로 나타납니다. 부화마다 25종 성격 중 하나가 정해지고 — **아주 특별한 우연으론 ✨ 이로치가 태어납니다**.
+2. 🐣 **부화.** [PokéAPI](https://pokeapi.co/)의 **1~9세대 모든 진화 계보(시작점 540종)**에서 공식 capture rate 가중으로 태어납니다 — 흔한 포켓몬은 자주, 전설은 부화 48번에 1번꼴. 650번부터는 Pokémon Showdown 움직이는 스프라이트를 씁니다. 부화한 포켓몬은 키우는 동안에도 **도감**에 바로 나타납니다. 부화마다 25종 성격 중 하나가 정해지고 — **아주 특별한 우연으론 ✨ 이로치가 태어납니다**.
 3. ⚡ **진화.** 계속 코딩하면 실제 진화 트리(1/2/3단, 분기)를 따라 자라고, 단계마다 작은 연출이 반겨줍니다.
 4. 🎓 **졸업 & 수집.** 최종 진화 + 임계 도달 시 **도감**에 영구 보존됩니다 — 희귀할수록 오래 걸리고(헤비 유저 기준 common ≈3일 → legendary ≈24일) — 새 알이 도착합니다.
 5. 🍬 **한도 채우고 사탕 받기.** 5시간 또는 주간 사용량 한도를 다 채우면 **이상한 사탕**을 받아요 — 새 **가방** 탭에서 써서 현재 포켓몬을 키우세요.
@@ -87,7 +90,7 @@ PokeTokenBar는 당신이 이미 태우고 있는 AI 코딩 토큰(Claude Code �
 <td width="45%" align="center"><img src="assets/screenshot-regional-dex-ko.png" width="300" alt="지방별 수집 수·완성 배지의 실제 UI 컴포넌트 샘플"><br><small>실제 UI 컴포넌트 · 샘플 상태</small></td>
 <td width="55%" valign="middle">
 <h3>지방을 완성하고 배지를 모으세요</h3>
-도감을 <b>관동·성도·호연·신오·하나</b> 지방으로 좁혀 보유 종과 이로치 수를 확인하세요. 지방별 일반·이로치 도감, 안농 28가지 폼, 전국 649종 수집에 완성 배지가 주어집니다. 배지는 수집 기록이며 부화 확률이나 성장을 바꾸지 않아요.
+도감을 <b>관동·성도·호연·신오·하나·칼로스·알로라·가라르·팔데아</b> 지방으로 좁혀 보유 종과 이로치 수를 확인하세요. 지방별 일반·이로치 도감, 안농 28가지 폼, 전국 1025종 수집에 완성 배지가 주어집니다. 배지는 수집 기록이며 부화 확률이나 성장을 바꾸지 않아요.
 </td>
 </tr>
 <tr>

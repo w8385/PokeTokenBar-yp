@@ -319,13 +319,21 @@ struct CandyGrant: Equatable, Sendable {
     let count: Int
 }
 
-/// 현재 서비스가 제공하는 움직이는 포켓몬 스프라이트 범위.
-/// PokéAPI 의 Gen-V animated 에셋은 전국도감 #1...649까지만 존재한다.
+/// Species the app hatches and lists. #1–649 animate with the Gen-V Black/White GIFs, #650+ with the
+/// Showdown GIFs from the same PokéAPI sprites repo.
 enum PokemonAssets {
-    static let animatedSpeciesIDs = 1...649
+    static let supportedSpeciesIDs = 1...1025
+    static let blackWhiteAnimatedIDs = 1...649
+    /// Gen IX species the PokéAPI Showdown set has no GIF for; they show the static sprite.
+    static let missingShowdownIDs: Set<Int> = [990, 991, 992, 993, 994, 995, 1006, 1008, 1010, 1017,
+                                               1022, 1023, 1024, 1025]
+
+    static func isSupported(speciesID: Int) -> Bool {
+        supportedSpeciesIDs.contains(speciesID)
+    }
 
     static func hasAnimatedSprite(speciesID: Int) -> Bool {
-        animatedSpeciesIDs.contains(speciesID)
+        isSupported(speciesID: speciesID) && !missingShowdownIDs.contains(speciesID)
     }
 }
 
@@ -346,10 +354,10 @@ struct EvoNode: Codable, Sendable {
         children.isEmpty ? [speciesID] : children.flatMap(\.finalIDs)
     }
 
-    /// 서비스에 GIF 에셋이 있는 종만 남긴 진화 트리. 지원하지 않는 종부터 그 하위 체인도 제외한다.
-    func keepingAnimatedSprites() -> EvoNode? {
-        guard PokemonAssets.hasAnimatedSprite(speciesID: speciesID) else { return nil }
-        return EvoNode(speciesID: speciesID, children: children.compactMap { $0.keepingAnimatedSprites() })
+    /// 지원 범위 안의 종만 남긴 진화 트리. 지원하지 않는 종부터 그 하위 체인도 제외한다.
+    func keepingSupportedSpecies() -> EvoNode? {
+        guard PokemonAssets.isSupported(speciesID: speciesID) else { return nil }
+        return EvoNode(speciesID: speciesID, children: children.compactMap { $0.keepingSupportedSpecies() })
     }
 }
 
@@ -385,7 +393,7 @@ struct EvoLine: Sendable {
 
     init(baseID: Int, tree: EvoNode, rarity: Rarity, names: [Int: [String: String]]) {
         self.baseID = baseID
-        self.tree = tree.keepingAnimatedSprites() ?? EvoNode(speciesID: baseID, children: [])
+        self.tree = tree.keepingSupportedSpecies() ?? EvoNode(speciesID: baseID, children: [])
         self.rarity = rarity
         self.names = names
     }
@@ -822,4 +830,4 @@ struct CompanionState: Codable, Sendable {
 }
 
 // NOTE: 부화 후보는 더 이상 하드코딩하지 않는다 — CompanionStore.chooseBase() 가
-// PokéAPI 전수(1~5세대)를 capture_rate 가중 rejection sampling 으로 선정한다.
+// PokéAPI 전수(지원 범위)를 capture_rate 가중 rejection sampling 으로 선정한다.

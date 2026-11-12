@@ -1,0 +1,63 @@
+{
+  "display_information": {
+    "name": "YPoke",
+    "description": "PokeTokenBar 포켓몬 대결 봇",
+    "background_color": "#2c303a"
+  },
+  "features": {
+    "app_home": {
+      "home_tab_enabled": false,
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": true
+    },
+    "bot_user": {
+      "display_name": "YPoke",
+      "always_online": true
+    },
+    "slash_commands": [
+      {
+        "command": "/대결",
+        "description": "지금 키우는 포켓몬끼리 1:1 대결",
+        "usage_hint": "@상대",
+        "should_escape": true
+      },
+      {
+        "command": "/포켓몬연결",
+        "description": "PokeTokenBar 앱 연결 링크를 DM으로 받기",
+        "should_escape": true
+      },
+      {
+        "command": "/전적",
+        "description": "승패 보기",
+        "usage_hint": "[@누구]",
+        "should_escape": true
+      },
+      {
+        "command": "/랭킹",
+        "description": "이번 주 승리 순위",
+        "should_escape": true
+      },
+      {
+        "command": "/ypoke",
+        "description": "YPoke 도움말",
+        "should_escape": true
+      }
+    ]
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": ["app_mentions:read", "commands", "chat:write"]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "bot_events": ["app_mention"]
+    },
+    "interactivity": {
+      "is_enabled": true
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": true,
+    "token_rotation_enabled": false
+  }
+}

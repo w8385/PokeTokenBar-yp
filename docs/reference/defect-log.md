@@ -16,6 +16,12 @@ read_when:
 
 ## 스프라이트 전환
 
+- **Tests that need an unsupported species use an id past `PokemonAssets.supportedSpeciesIDs`.**
+  Raising the range from #649 to #1025 turned the old stand-ins (#979, #982, #1000) into supported
+  species. `testUnsupportedSpeciesLoadsStaticOnceWithoutRetry` then entered the recovery loop, its
+  `XCTFail` retry hook never threw, and `swift test` hung. The stand-in is now #1026; a species
+  that is supported but has no GIF uses #1025 (`PokemonAssets.missingShowdownIDs`).
+
 - **A transient GIF request failure must not become a permanent static state.** `SpriteView` used
   one `.task(id:)` request, showed its PNG fallback, then returned; neither a later cache fill nor
   network recovery changed the task ID. The menu had the same class of defect: nonempty bob

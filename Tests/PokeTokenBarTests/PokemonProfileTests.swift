@@ -215,7 +215,7 @@ final class PokemonDetailNormalizationTests: XCTestCase {
         let supported = PokemonMoveVersionDTO(
             level_learned_at: 5,
             move_learn_method: NamedRef(name: "level-up", url: nil),
-            version_group: NamedRef(name: PokemonDetails.preferredVersionGroup, url: nil))
+            version_group: NamedRef(name: "black-2-white-2", url: nil))
         let unsupported = PokemonMoveVersionDTO(
             level_learned_at: 9,
             move_learn_method: NamedRef(name: "level-up", url: nil),
@@ -232,6 +232,25 @@ final class PokemonDetailNormalizationTests: XCTestCase {
         XCTAssertEqual(normalized.map(\.name), ["mixed"])
         XCTAssertEqual(normalized[0].learnMethods,
                        [PokemonMoveLearnMethod(method: "level-up", level: 5)])
+    }
+
+    func testSpeciesWithoutB2W2MovesUsesItsEarliestPreferredGroup() {
+        func row(_ group: String, level: Int) -> PokemonMoveVersionDTO {
+            PokemonMoveVersionDTO(level_learned_at: level,
+                                  move_learn_method: NamedRef(name: "level-up", url: nil),
+                                  version_group: NamedRef(name: group, url: nil))
+        }
+        let moves = [
+            PokemonMoveDTO(move: NamedRef(name: "tackle", url: nil),
+                           version_group_details: [row("scarlet-violet", level: 1), row("x-y", level: 3)]),
+            PokemonMoveDTO(move: NamedRef(name: "sv-only", url: nil),
+                           version_group_details: [row("scarlet-violet", level: 9)]),
+        ]
+
+        let normalized = PokeAPIClient.normalizedMoves(moves)
+
+        XCTAssertEqual(normalized.map(\.name), ["tackle"])
+        XCTAssertEqual(normalized[0].learnMethods, [PokemonMoveLearnMethod(method: "level-up", level: 3)])
     }
 }
 

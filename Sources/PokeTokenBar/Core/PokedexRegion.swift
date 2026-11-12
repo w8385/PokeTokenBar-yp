@@ -4,9 +4,10 @@ import Foundation
 /// the companion code already uses `generation`/`activeGeneration` for egg-hatch attempt tokens.
 ///
 /// Membership is derived purely from the National Dex number — Gen 1 = 1–151, Gen 2 = 152–251,
-/// Gen 3 = 252–386, Gen 4 = 387–493, Gen 5 = 494–649 — so no PokéAPI call is needed to place a species.
+/// Gen 3 = 252–386, Gen 4 = 387–493, Gen 5 = 494–649, Gen 6 = 650–721, Gen 7 = 722–809,
+/// Gen 8 = 810–905 (Hisui included), Gen 9 = 906–1025 — so no PokéAPI call is needed to place a species.
 enum PokedexRegion: String, CaseIterable, Codable, Sendable, Identifiable {
-    case kanto, johto, hoenn, sinnoh, unova
+    case kanto, johto, hoenn, sinnoh, unova, kalos, alola, galar, paldea
 
     var id: String { rawValue }
 
@@ -18,19 +19,22 @@ enum PokedexRegion: String, CaseIterable, Codable, Sendable, Identifiable {
         case .hoenn: return 252...386
         case .sinnoh: return 387...493
         case .unova: return 494...649
+        case .kalos: return 650...721
+        case .alola: return 722...809
+        case .galar: return 810...905
+        case .paldea: return 906...1025
         }
     }
 
     /// Number of species in the generation (what a complete regional dex requires).
     var total: Int { dexRange.count }
 
-    /// The region a National Dex number belongs to, or `nil` outside Gen 1–5.
+    /// The region a National Dex number belongs to, or `nil` outside the supported range.
     static func region(forDexNumber dexNumber: Int) -> PokedexRegion? {
         allCases.first { $0.dexRange.contains(dexNumber) }
     }
 
-    /// The full Gen 1–5 National Dex.
-    static let nationalRange = 1...649
+    static let nationalRange = PokemonAssets.supportedSpeciesIDs
     static var nationalTotal: Int { nationalRange.count }
 }
 
@@ -86,7 +90,7 @@ enum DexProgress {
         }
     }
 
-    /// National (Gen 1–5) owned/total, reusing `DexCompletion` with a nil-less synthetic region slot
+    /// National owned/total, reusing `DexCompletion` with a nil-less synthetic region slot
     /// is avoided — national progress is returned as a plain tuple the header formats directly.
     static func nationalProgress(owned: [(id: Int, isShiny: Bool)]) -> (owned: Int, shinyOwned: Int, total: Int) {
         var shinyByID: [Int: Bool] = [:]

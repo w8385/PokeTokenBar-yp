@@ -16,9 +16,12 @@ struct PokemonDetails: Codable, Sendable, Equatable {
 
     var baseStatTotal: Int { baseStats.values.reduce(0, +) }
 
-    /// Invariant: hatchable species are capped at Gen V by animated-sprite availability.
-    /// Keep this learnset selection in sync if that species bound is ever raised.
-    static let preferredVersionGroup = "black-2-white-2"
+    /// Learnset source in order of preference: a species uses the first group it has any move in.
+    /// Every Gen I–V species has B2W2 moves, so the later groups only serve #650+.
+    static let preferredVersionGroups = [
+        "black-2-white-2", "x-y", "omega-ruby-alpha-sapphire", "sun-moon", "ultra-sun-ultra-moon",
+        "sword-shield", "scarlet-violet", "lets-go-pikachu-lets-go-eevee", "legends-arceus",
+    ]
 
     func levelUpMoves(through level: Int) -> [PokemonKnownMove] {
         var bestByName: [String: Int] = [:]

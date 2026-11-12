@@ -37,7 +37,14 @@ actor SpriteStore {
                           back: Bool = false) -> URL {
         let name = animated ? PokemonForm.assetName(speciesID: speciesID, form: form)
                             : PokemonForm.staticAssetName(speciesID: speciesID, form: form)
-        let path = animated ? "versions/generation-v/black-white/animated/" : ""
+        let path: String
+        if !animated {
+            path = ""
+        } else if PokemonAssets.blackWhiteAnimatedIDs.contains(speciesID) {
+            path = "versions/generation-v/black-white/animated/"
+        } else {
+            path = "other/showdown/"
+        }
         let facing = back ? "back/" : ""
         let color = shiny ? "shiny/" : ""
         let ext = animated ? "gif" : "png"

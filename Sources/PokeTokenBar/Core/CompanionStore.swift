@@ -500,7 +500,7 @@ final class CompanionStore {
         DexProgress.regionCompletions(owned: ownedDexForProgress)
     }
 
-    /// National (Gen 1–5) progress for the Pokédex header.
+    /// National progress for the Pokédex header.
     var nationalDexProgress: (owned: Int, shinyOwned: Int, total: Int) {
         DexProgress.nationalProgress(owned: ownedDexForProgress)
     }
@@ -1903,7 +1903,7 @@ final class CompanionStore {
         }
     }
 
-    /// 부화 종 선정 — 하드코딩 풀 없이 PokéAPI 1~5세대 base 전체(329종)에서 가중 선택.
+    /// 부화 종 선정 — 하드코딩 풀 없이 PokéAPI 지원 범위 base 전체에서 가중 선택.
     ///   ① base 인덱스(id + capture_rate)를 GraphQL 1쿼리로 취득(30일 디스크 캐시 → 보통 0콜)
     ///   ② 가중치 = 공식 capture_rate 그대로(캐터피 255 vs 뮤츠 3 = 85:1, 전설군 ≈ 0.77%)
     ///      단, 이미 수집한 base 는 가중치 ½(미수집 부스트 — 재부화/shiny 사냥은 열어둠)
@@ -1942,7 +1942,7 @@ final class CompanionStore {
     private func chooseBaseViaREST() async -> Int? {
         let tier = state.eggTier
         for attempt in 1...16 {
-            let ids = PokemonAssets.animatedSpeciesIDs
+            let ids = PokemonAssets.supportedSpeciesIDs
             let id = Int(rng.next() % UInt64(ids.count)) + ids.lowerBound
             do {
                 if let bs = try await provider.baseSpecies(id: id) {

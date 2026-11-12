@@ -1,0 +1,13 @@
+[project]
+name = "ypoke-bot"
+version = "0.1.0"
+description = "YPoke Slack battle bot for the PokeTokenBar internal build"
+requires-python = ">=3.12"
+dependencies = ["slack-bolt>=1.21"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(UsageStore.self) private var store
     @Environment(CompanionStore.self) private var companion
     @Environment(UpdateChecker.self) private var updater
+    @Environment(PartyUploader.self) private var partyUploader: PartyUploader?
     /// 팝오버 내부 화면 전환 방식 — sheet/dismiss 를 쓰지 않는다 (PopoverView 의 NOTE 참조)
     var onClose: () -> Void
     /// 기존 컬렉션의 도감으로 돌아가 대표 포켓몬을 고르게 한다.
@@ -23,6 +24,8 @@ struct SettingsView: View {
     /// 두 번째 진입부터 접힌 채로 열린다. onAppear 에서 1회 반영한다.
     @State private var didApplyStartExpanded = false
     @State private var sessionKeyInput = ""
+    @State private var partyTokenInput = ""
+    @State private var partyTokenInvalid = false
     /// Pasted keys of the additional accounts, by folder path. Emptied once saved, like the default one.
     @State private var accountSessionKeyInputs: [String: String] = [:]
     @State private var isCheckingUpdate = false
@@ -79,6 +82,9 @@ struct SettingsView: View {
                         notificationsGroup(store)
                         updateGroup(store)
                         transferGroup(store)
+                        if let partyUploader {
+                            partyUploadGroup(partyUploader)
+                        }
                         advancedGroup(store)
                             .id("advancedSettingsSection")
                         aboutSupportGroup
@@ -515,6 +521,70 @@ struct SettingsView: View {
     }
 
     @ViewBuilder
+    private func partyUploadGroup(_ uploader: PartyUploader) -> some View {
+        settingsSection(l.partyUploadSectionTitle) {
+            groupRow {
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 6) {
+                        Text(l.partyUploadTokenLabel)
+                        if uploader.tokenRejected {
+                            Text(l.partyUploadTokenRejected).font(.caption2).foregroundStyle(.orange)
+                        } else if uploader.lastSuccessAt != nil {
+                            Text(l.partyUploadConnected).font(.caption2).foregroundStyle(.green)
+                        } else if uploader.hasToken {
+                            Text(l.partyUploadTokenSaved).font(.caption2).foregroundStyle(.green)
+                        }
+                    }
+                    Text(uploader.hasToken && uploader.hasServer ? l.partyUploadHint : l.partyUploadLinkHint)
+                        .font(.caption2).foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+            }
+            groupRow {
+                SecureField(uploader.hasToken ? "••••••••" : l.partyUploadTokenLabel, text: $partyTokenInput)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(maxWidth: 220)
+                    .onSubmit { submitPartyToken(uploader) }
+                Button(l.save) { submitPartyToken(uploader) }
+                    .disabled(partyTokenInput.isEmpty)
+                if uploader.hasToken {
+                    Button(l.delete) {
+                        partyTokenInput = ""
+                        partyTokenInvalid = false
+                        uploader.clearToken()
+                    }
+                }
+                Spacer()
+            }
+            if partyTokenInvalid {
+                Text(l.partyUploadTokenInvalid)
+                    .font(.caption2).foregroundStyle(.orange)
+                    .padding(.horizontal, 12).padding(.bottom, 6)
+            } else if uploader.hasToken {
+                VStack(alignment: .leading, spacing: 2) {
+                    if let sent = uploader.lastSuccessAt {
+                        Text("\(l.partyUploadLastSent): \(sent, format: .dateTime.hour().minute())")
+                    }
+                    Text(l.partyUploadStorageNote)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .font(.caption2).foregroundStyle(.tertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12).padding(.bottom, 6)
+            }
+        }
+    }
+
+    private func submitPartyToken(_ uploader: PartyUploader) {
+        partyTokenInvalid = !uploader.saveToken(partyTokenInput)
+        if !partyTokenInvalid {
+            partyTokenInput = ""
+            Task { await uploader.tick() }
+        }
+    }
+
+    @ViewBuilder
     private func snapshotsSection(_ store: UsageStore) -> some View {
         groupRow {
             Text(l.createSnapshotHint).font(.caption2).foregroundStyle(.tertiary)
@@ -862,11 +932,27 @@ struct SettingsView: View {
                 .onChange(of: customScanFocused) { _, focused in
                     if !focused { commitCustomScanDraft() }
                 }
+                if let partyUploader {
+                    Divider()
+                    partyServerRow(partyUploader)
+                }
                 Divider()
                 Text(l.aggregationNote)
                     .font(.caption2).foregroundStyle(.tertiary)
                     .padding(.horizontal, 12).padding(.vertical, 8)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func partyServerRow(_ uploader: PartyUploader) -> some View {
+        @Bindable var uploader = uploader
+        groupRow {
+            Text(l.partyUploadServerLabel)
+            Spacer()
+            TextField("http://bot-host:8790", text: $uploader.serverURL)
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: 220)
         }
     }
 

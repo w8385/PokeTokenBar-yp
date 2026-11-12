@@ -9,7 +9,7 @@ struct BaseSpecies: Sendable, Codable {
 /// 포켓몬 라인 데이터 제공(주입 가능 — 테스트는 스텁 사용).
 protocol PokeProviding: Sendable {
     func line(baseSpeciesID: Int) async throws -> EvoLine
-    /// 1~5세대 base 전체 인덱스 (GraphQL 1쿼리, 디스크 캐시).
+    /// 지원 범위 base 전체 인덱스 (GraphQL 1쿼리, 디스크 캐시).
     func baseSpeciesIndex() async throws -> [BaseSpecies]
     /// 단일 종이 base(진화 시작점)면 BaseSpecies, 아니면 nil.
     /// GraphQL 인덱스 엔드포인트 장애 시 REST(pokemon-species)로 부화 후보를 뽑는 폴백용.
@@ -82,11 +82,13 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
     }
 
     /// Reduce PokéAPI's cross-generation move history at the trust boundary, before it reaches
-    /// either memory or disk. Moves absent from the supported version group are omitted entirely.
+    /// either memory or disk. Only the species' first available preferred version group is kept.
     static func normalizedMoves(_ moves: [PokemonMoveDTO]) -> [PokemonMoveOption] {
-        moves.compactMap { move in
+        let present = Set(moves.flatMap { $0.version_group_details.map(\.version_group.name) })
+        guard let group = PokemonDetails.preferredVersionGroups.first(where: present.contains) else { return [] }
+        return moves.compactMap { move in
             let methods = move.version_group_details.compactMap { row -> PokemonMoveLearnMethod? in
-                guard row.version_group.name == PokemonDetails.preferredVersionGroup else { return nil }
+                guard row.version_group.name == group else { return nil }
                 return PokemonMoveLearnMethod(method: row.move_learn_method.name,
                                               level: row.level_learned_at)
             }
@@ -129,28 +131,36 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("base-index.json")
     }()
-    private struct BaseIndexSnapshot: Codable { let fetchedAt: Date; let entries: [BaseSpecies] }
+    struct BaseIndexSnapshot: Codable {
+        let fetchedAt: Date
+        let entries: [BaseSpecies]
+        /// Nil in snapshots written before the range grew past #649.
+        let maxSpeciesID: Int?
+
+        var coversSupportedRange: Bool { maxSpeciesID == PokemonAssets.supportedSpeciesIDs.upperBound }
+    }
     private struct GraphQLBaseResponse: Decodable {
         struct DataBox: Decodable { let pokemonspecies: [Row] }
         struct Row: Decodable { let id: Int; let capture_rate: Int }
         let data: DataBox
     }
 
-    /// 1~5세대 base(진화라인 시작점) 전체 — PokéAPI GraphQL 1쿼리.
+    /// 지원 범위 base(진화라인 시작점) 전체 — PokéAPI GraphQL 1쿼리.
     /// 우선순위: 메모리 캐시 → 디스크 캐시(30일 TTL) → GraphQL fetch(성공 시 디스크 갱신)
     /// → TTL 지난 디스크라도 있으면 사용(오프라인 폴백). 전부 실패 시 throw(알 유지, 다음 틱 재시도).
     func baseSpeciesIndex() async throws -> [BaseSpecies] {
         if let c = baseIndexCache { return c }
         let disk = (try? Data(contentsOf: Self.baseIndexFile))
             .flatMap { try? JSONDecoder().decode(BaseIndexSnapshot.self, from: $0) }
-        if let disk, Date().timeIntervalSince(disk.fetchedAt) < 30 * 86400, !disk.entries.isEmpty {
+        if let disk, disk.coversSupportedRange, Date().timeIntervalSince(disk.fetchedAt) < 30 * 86400,
+           !disk.entries.isEmpty {
             baseIndexCache = disk.entries
             return disk.entries
         }
         do {
             let entries = try await fetchBaseIndex()
             baseIndexCache = entries
-            if let data = try? JSONEncoder().encode(BaseIndexSnapshot(fetchedAt: Date(), entries: entries)) {
+            if let data = try? JSONEncoder().encode(BaseIndexSnapshot(fetchedAt: Date(), entries: entries, maxSpeciesID: PokemonAssets.supportedSpeciesIDs.upperBound)) {
                 try? data.write(to: Self.baseIndexFile, options: .atomic)
             }
             return entries
@@ -182,7 +192,7 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
         var bases: [BaseSpecies] = []
         let batchSize = 6
         var start = 1
-        let maxID = PokemonAssets.animatedSpeciesIDs.upperBound
+        let maxID = PokemonAssets.supportedSpeciesIDs.upperBound
         while start <= maxID {
             let end = min(start + batchSize - 1, maxID)
             let found = await withTaskGroup(of: BaseSpecies?.self) { group -> [BaseSpecies] in
@@ -201,21 +211,21 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
         }
         bases.sort { $0.id < $1.id }
         baseIndexCache = bases
-        if let data = try? JSONEncoder().encode(BaseIndexSnapshot(fetchedAt: Date(), entries: bases)) {
+        if let data = try? JSONEncoder().encode(BaseIndexSnapshot(fetchedAt: Date(), entries: bases, maxSpeciesID: PokemonAssets.supportedSpeciesIDs.upperBound)) {
             try? data.write(to: Self.baseIndexFile, options: .atomic)
         }
         AppLog.write("base index: REST build done — \(bases.count) bases persisted (offline-capable now)")
     }
 
     private func fetchBaseIndex() async throws -> [BaseSpecies] {
-        // 공식 GraphQL — evolves_from IS NULL(=base) + id ≤ 649(Gen-V 애니메이션 스프라이트 상한)
+        // 공식 GraphQL — evolves_from IS NULL(=base) + 지원 범위 상한
         guard let url = URL(string: "https://graphql.pokeapi.co/v1beta2") else { throw URLError(.badURL) }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.timeoutInterval = 15
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         // 메타몽(#132)은 위장 리빌 전용 → 일반 부화 풀에서 제외(_neq).
-        let maxID = PokemonAssets.animatedSpeciesIDs.upperBound
+        let maxID = PokemonAssets.supportedSpeciesIDs.upperBound
         let query = "{ pokemonspecies(where: {evolves_from_species_id: {_is_null: true}, id: {_lte: \(maxID), _neq: \(PokemonOdds.dittoSpeciesID)}}, order_by: {id: asc}) { id capture_rate } }"
         req.httpBody = try JSONSerialization.data(withJSONObject: ["query": query])
         let (data, resp) = try await URLSession.shared.data(for: req)

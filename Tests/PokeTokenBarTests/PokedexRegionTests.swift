@@ -17,12 +17,20 @@ final class PokedexRegionTests: XCTestCase {
         XCTAssertEqual(PokedexRegion.region(forDexNumber: 493), .sinnoh)
         XCTAssertEqual(PokedexRegion.region(forDexNumber: 494), .unova)
         XCTAssertEqual(PokedexRegion.region(forDexNumber: 649), .unova)
+        XCTAssertEqual(PokedexRegion.region(forDexNumber: 650), .kalos)
+        XCTAssertEqual(PokedexRegion.region(forDexNumber: 721), .kalos)
+        XCTAssertEqual(PokedexRegion.region(forDexNumber: 722), .alola)
+        XCTAssertEqual(PokedexRegion.region(forDexNumber: 809), .alola)
+        XCTAssertEqual(PokedexRegion.region(forDexNumber: 810), .galar)
+        XCTAssertEqual(PokedexRegion.region(forDexNumber: 905), .galar)
+        XCTAssertEqual(PokedexRegion.region(forDexNumber: 906), .paldea)
+        XCTAssertEqual(PokedexRegion.region(forDexNumber: 1025), .paldea)
     }
 
-    func testRegionIsNilOutsideGen1Through5() {
+    func testRegionIsNilOutsideSupportedRange() {
         XCTAssertNil(PokedexRegion.region(forDexNumber: 0))
         XCTAssertNil(PokedexRegion.region(forDexNumber: -5))
-        XCTAssertNil(PokedexRegion.region(forDexNumber: 650))
+        XCTAssertNil(PokedexRegion.region(forDexNumber: 1026))
         XCTAssertNil(PokedexRegion.region(forDexNumber: 10_000))
     }
 
@@ -32,6 +40,10 @@ final class PokedexRegionTests: XCTestCase {
         XCTAssertEqual(PokedexRegion.hoenn.total, 135)
         XCTAssertEqual(PokedexRegion.sinnoh.total, 107)
         XCTAssertEqual(PokedexRegion.unova.total, 156)
+        XCTAssertEqual(PokedexRegion.kalos.total, 72)
+        XCTAssertEqual(PokedexRegion.alola.total, 88)
+        XCTAssertEqual(PokedexRegion.galar.total, 96)
+        XCTAssertEqual(PokedexRegion.paldea.total, 120)
     }
 
     func testIdentifiableIdsAreStable() {
@@ -41,7 +53,7 @@ final class PokedexRegionTests: XCTestCase {
 
     func testNationalTotalIsSumOfAllRegions() {
         XCTAssertEqual(PokedexRegion.allCases.map(\.total).reduce(0, +), PokedexRegion.nationalTotal)
-        XCTAssertEqual(PokedexRegion.nationalTotal, 649)
+        XCTAssertEqual(PokedexRegion.nationalTotal, 1025)
     }
 
     func testRegionRangesAreContiguousAndNonOverlapping() {

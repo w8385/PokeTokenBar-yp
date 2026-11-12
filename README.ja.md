@@ -21,6 +21,9 @@
 
 </div>
 
+> [!NOTE]
+> **PokeTokenBar-yp は [chattymin/PokeTokenBar](https://github.com/chattymin/PokeTokenBar)（MIT）の非公式フォークです。** 図鑑を #1025 まで広げ、[YPoke](bot/README.md) Slack 対戦ボットを追加しています。[このフォークのリリース](https://github.com/w8385/PokeTokenBar-yp/releases)から入手してください。元のプロジェクトとは無関係で、サポート対象外です。
+
 PokeTokenBar は、あなたがすでに使っている AI コーディングトークン（Claude Code・Codex・Gemini CLI・Antigravity・OpenCode・Hermes Agent・Cursor・Grok CLI・Copilot CLI・Kiro CLI・Pi Agent・omp・omo・Aside・Kimi Code・Devin CLI）を、macOS メニューバーの中で育っていく **ポケモンのパートナー** に変えます。トークンを使うとタマゴが孵化し、実際の進化ラインに沿って進化し、最終進化後に図鑑へ卒業して、また新しいタマゴが始まります。パートナーの下には正確な使用量トラッカーがあります — 今日の使用量・コスト、公式の5時間／週間上限をローカルログから直接読み取ります。
 
 > トークン使用量はローカルの Claude Code・Codex・Gemini CLI・Antigravity・OpenCode・Hermes Agent・Cursor・Grok CLI・Copilot CLI・Kiro CLI・Pi Agent・omp・omo・Aside・Kimi Code・Devin CLI データから直接読み取ります（`totalTokens` = input + output + cache、ローカル日付）— 外部 CLI 不要。非公式・非商用のポケモンファンプロジェクトです — [ライセンス & 免責](#ライセンス--免責) を参照。
@@ -38,7 +41,7 @@ PokeTokenBar は、あなたがすでに使っている AI コーディングト
 ## しくみ
 
 1. 🥚 **いつも通りコーディング。** Claude Code・Codex・Gemini CLI・Antigravity・OpenCode・Hermes Agent・Cursor・Grok CLI・Copilot CLI・Kiro CLI・Pi Agent・omp・omo・Aside・Kimi Code・Devin CLI で使うトークンがタマゴを温めます — 追加の操作は不要です。
-2. 🐣 **孵化。** [PokéAPI](https://pokeapi.co/) の**第1〜5世代すべての進化系統（起点329種）**から、公式の捕獲率で重み付けされて生まれます — よくいるポケモンは頻繁に、伝説は129回に1回。孵化したポケモンは育成中もすぐに **図鑑** に表示されます。孵化ごとに25種類のせいかくがひとつ決まり — **ごくまれな偶然で ✨ 色違いが生まれます**。
+2. 🐣 **孵化。** [PokéAPI](https://pokeapi.co/) の**第1〜9世代すべての進化系統（起点540種）**から、公式の捕獲率で重み付けされて生まれます — よくいるポケモンは頻繁に、伝説は約48回に1回。650番以降は Pokémon Showdown のアニメーションスプライトを使います。孵化したポケモンは育成中もすぐに **図鑑** に表示されます。孵化ごとに25種類のせいかくがひとつ決まり — **ごくまれな偶然で ✨ 色違いが生まれます**。
 3. ⚡ **進化。** コーディングを続けると実際の進化ツリー（1/2/3段階、分岐）に沿って育ち、各段階で小さな演出が流れます。
 4. 🎓 **卒業 & 収集。** 最終進化 + 閾値で **図鑑** に永久保存されます — レアなほど時間がかかり（ヘビーユーザーで common ≈3日 → legendary ≈24日）— 新しいタマゴが届きます。
 5. 🍬 **上限を使い切ってごほうび。** 5時間または週間の使用量上限を使い切ると **ふしぎなアメ** がもらえます — 新しい **バッグ** タブから使って、いまのポケモンを育てましょう。
@@ -87,7 +90,7 @@ PokeTokenBar は、あなたがすでに使っている AI コーディングト
 <td width="45%" align="center"><img src="assets/screenshot-regional-dex-ja.png" width="300" alt="地方ごとの収集数・完成バッジを描画した実際の UI コンポーネントサンプル"><br><small>実際の UI コンポーネント · サンプル状態</small></td>
 <td width="55%" valign="middle">
 <h3>地方を完成させてバッジを集める</h3>
-図鑑を<b>カントー・ジョウト・ホウエン・シンオウ・イッシュ</b>で絞り、所有数と色違いの数を確認できます。地方ごとの通常・色違い図鑑、アンノーン28フォルム、全国649種の完成バッジを集めましょう。バッジは収集の記録で、孵化確率や成長には影響しません。
+図鑑を<b>カントー・ジョウト・ホウエン・シンオウ・イッシュ・カロス・アローラ・ガラル・パルデア</b>で絞り、所有数と色違いの数を確認できます。地方ごとの通常・色違い図鑑、アンノーン28フォルム、全国1025種の完成バッジを集めましょう。バッジは収集の記録で、孵化確率や成長には影響しません。
 </td>
 </tr>
 <tr>

@@ -23,6 +23,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var store: UsageStore!
     private var companion: CompanionStore!
     private var updater: UpdateChecker!
+    private var partyUploader: PartyUploader!
+    private var pendingPartyLink: PartyRegistrationLink?
     private var floatingPet: FloatingPetController!
     private let navigation = PopoverNavigation()
 
@@ -68,8 +70,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     @objc private func handleGetURL(_ event: NSAppleEventDescriptor, withReply reply: NSAppleEventDescriptor) {
-        guard let url = Self.url(fromGetURLEvent: event), let agentEvent = AgentActivityEvent(url: url) else { return }
+        guard let url = Self.url(fromGetURLEvent: event) else { return }
+        if let link = PartyRegistrationLink(url: url) {
+            pendingPartyLink = link   // a link that launched the app arrives before launch finishes
+            registerPendingPartyLink()
+            return
+        }
+        guard let agentEvent = AgentActivityEvent(url: url) else { return }
         floatingPet?.handleAgentEvent(agentEvent)   // nil until launch finishes; the event is dropped
+    }
+
+    private func registerPendingPartyLink() {
+        guard let link = pendingPartyLink, let partyUploader, statusItem != nil else { return }
+        pendingPartyLink = nil
+        guard partyUploader.register(link) else { return }
+        Task { await partyUploader.tick() }
+        showPopover { $0.showSettings = true }
+        navigation.showSettings = true
     }
 
     nonisolated static func url(fromGetURLEvent event: NSAppleEventDescriptor) -> URL? {
@@ -96,6 +113,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         CrashReporter.install(
             version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?")
         NSApp.setActivationPolicy(.accessory)
+        EditShortcuts.install()
         // Tooltips show 40% sooner than AppKit's 1 s default; the app's hover hints are short and
         // the popover closes quickly. Registration domain only, so a user `defaults write` still wins.
         UserDefaults.standard.register(defaults: ["NSInitialToolTipDelay": 600])
@@ -107,6 +125,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         companion = CompanionStore()
         Task { await companion.preparePokemonProfiles() }
         updater = UpdateChecker()
+        partyUploader = PartyUploader { [weak companion] in
+            companion.map { PartyBuilder.party(from: $0.state) } ?? []
+        }
+        partyUploader.start()
         store.localizationLanguage = companion.language   // 알림 현지화용 미러 시드
         store.onRefresh = { [weak self] in self?.onStoreRefreshed() }   // 한도 로드 후 companion·사탕 지급
         floatingPet = FloatingPetController(
@@ -137,6 +159,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         observeDisplaySleep()
         observePowerState()
         applyState()
+        registerPendingPartyLink()
     }
 
     /// Observe usage settings and the enabled growth text together, including companion-only changes.
@@ -588,7 +611,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func buildPopoverContent() {
         popover.contentViewController = NSHostingController(
             rootView: PopoverView()
-                .environment(store).environment(companion).environment(updater).environment(navigation))
+                .environment(store).environment(companion).environment(updater).environment(navigation)
+                .environment(partyUploader))
     }
 
     @objc private func statusItemClicked() {

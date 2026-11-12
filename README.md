@@ -20,6 +20,9 @@
 
 </div>
 
+> [!NOTE]
+> **PokeTokenBar-yp is an unofficial fork of [chattymin/PokeTokenBar](https://github.com/chattymin/PokeTokenBar) (MIT).** It adds the Pokédex up to #1025 and the [YPoke](bot/README.md) Slack battle bot. Get it from [this fork's releases](https://github.com/w8385/PokeTokenBar-yp/releases). It is not affiliated with or supported by the original project; report fork issues here, not upstream.
+
 PokeTokenBar turns the AI coding tokens you're already burning — Claude Code, Codex, Gemini CLI, Antigravity, OpenCode, Hermes Agent, Cursor, Grok CLI, Copilot CLI, Kiro CLI, Pi Agent, omp, omo, Aside, Kimi Code & Devin CLI — into a growing **Pokémon companion** in your macOS menu bar. Spend tokens, hatch an egg, evolve it through its real evolution line, graduate it into your Pokédex, and start again. Underneath the companion it's a precise usage tracker — today's spend, cost, and official 5-hour / weekly limits, read straight from your local logs.
 
 > Token usage is read directly from local Claude Code, Codex, Gemini CLI, Antigravity, OpenCode, Hermes Agent, Cursor, Grok CLI, Copilot CLI, Kiro CLI, Pi Agent, omp, omo, Aside, Kimi Code, and Devin CLI data (`totalTokens` = input + output + cache, local date) — no external CLI needed. Unofficial, non-commercial Pokémon fan project — see [License & disclaimer](#license--disclaimer).
@@ -37,7 +40,7 @@ PokeTokenBar turns the AI coding tokens you're already burning — Claude Code, 
 ## How it works
 
 1. 🥚 **Code as usual.** The tokens you burn in Claude Code, Codex, Gemini CLI, Antigravity, OpenCode, Hermes Agent, Cursor, Grok CLI, Copilot CLI, Kiro CLI, Pi Agent, omp, omo, Aside, Kimi Code, or Devin CLI incubate an egg — nothing extra to run.
-2. 🐣 **Hatch.** Eggs hatch into Pokémon with real evolution lines from [PokéAPI](https://pokeapi.co/) — any Gen 1–5 line (329 possible starts), weighted by the official capture rate: commons hatch often, a legendary is a 1-in-129 event. It appears in your **Pokédex** immediately while you raise it. Every hatch rolls one of 25 natures — and once in a rare while, the egg hatches **✨ Shiny**.
+2. 🐣 **Hatch.** Eggs hatch into Pokémon with real evolution lines from [PokéAPI](https://pokeapi.co/) — any Gen 1–9 line (540 possible starts), weighted by the official capture rate: commons hatch often, a legendary is about a 1-in-48 event. #650 onward use the Pokémon Showdown animated sprites. It appears in your **Pokédex** immediately while you raise it. Every hatch rolls one of 25 natures — and once in a rare while, the egg hatches **✨ Shiny**.
 3. ⚡ **Evolve.** Keep coding and it grows through its actual evolution tree (1/2/3 stages, branching), with a little flash celebration at each step.
 4. 🎓 **Graduate & collect.** Final form + threshold permanently archives it in your **Pokédex** — rarer takes longer (≈3 days common → ≈24 days legendary at heavy use) — and a fresh egg arrives.
 5. 🍬 **Max out, get a candy.** Fill a 5-hour or weekly usage limit and you earn **Rare Candy** — spend it from the **Bag** to grow your current Pokémon.
@@ -86,7 +89,7 @@ The <b>Pokédex</b> folds every species you've owned into one cell — 16 per pa
 <td width="45%" align="center"><img src="assets/screenshot-regional-dex.png" width="300" alt="Native regional collection counts and completion-badge component samples"><br><small>Native UI components · sample states</small></td>
 <td width="55%" valign="middle">
 <h3>Complete a region, keep a badge</h3>
-Filter the Pokédex to <b>Kanto, Johto, Hoenn, Sinnoh, or Unova</b> and check each region's owned and shiny counts. Collect completion badges for a region, its shiny set, all 28 Unown forms, or the national collection of 649 species. Badges record collection milestones and do not change hatch odds or growth.
+Filter the Pokédex to <b>Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, or Paldea</b> and check each region's owned and shiny counts. Collect completion badges for a region, its shiny set, all 28 Unown forms, or the national collection of 1,025 species. Badges record collection milestones and do not change hatch odds or growth.
 </td>
 </tr>
 <tr>

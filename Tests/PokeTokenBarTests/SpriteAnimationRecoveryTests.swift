@@ -195,13 +195,13 @@ final class SpriteAnimationRecoveryTests: XCTestCase {
         let fixture = try fixture()
         defer { try? FileManager.default.removeItem(at: fixture.directory) }
         try FileManager.default.copyItem(at: fixture.directory.appendingPathComponent("176-s.png"),
-                                        to: fixture.directory.appendingPathComponent("1000-s.png"))
+                                        to: fixture.directory.appendingPathComponent("1025-s.png"))
         let store = SpriteStore(directory: fixture.directory)
         var fallback: NSImage?
         let frames = await SpriteLoader.recoveringAnimationFrames(
-            speciesID: 1000, shiny: false, store: store,
+            speciesID: 1025, shiny: false, store: store,
             waitBeforeRetry: { _ in XCTFail("a species without GIF support must not retry") },
-            onUnavailable: { fallback = await SpriteLoader.image(speciesID: 1000, store: store) })
+            onUnavailable: { fallback = await SpriteLoader.image(speciesID: 1025, store: store) })
         XCTAssertTrue(frames.isEmpty)
         XCTAssertNotNil(fallback)
         XCTAssertTrue(AnimationRecoveryURLProtocol.state.requests.isEmpty)

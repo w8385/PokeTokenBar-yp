@@ -138,15 +138,15 @@ final class PremiumEggTests: XCTestCase {
     ///
     /// 미수집 부스트(`chooseBase` 가 이미 수집한 base 의 가중을 절반으로)는 정가 계산에서 뺐다. 그 방향은
     /// 중립이 아니라 **불리**하다 — 고급 밴드가 먼저 포화되면 그쪽 가중만 깎여 희귀+ 비중이 올라간다:
-    /// 고급 ×0.75 → 0.5906, ×0.70 → 0.6072, ×0.5 → 0.6839. 뒤집히는 지점은 **×0.6492**이고 그보다
+    /// 고급 ×0.75 → 0.6037, ×0.70 → 0.6201, ×0.5 → 0.6956. 뒤집히는 지점은 **×0.6856**이고 그보다
     /// 낮아지면 손익분기 0.625를 넘는다. 도감을 많이 채운 후반일수록 마진이 준다는 뜻이다.
     /// 그 너머(고급 밴드 거의 수집 + 희귀 밴드 거의 미수집)는 뒤집히지만 재가격하지 않는다 — 1인 로컬·
     /// 금전가치 없음이라 후반 코너에서 상위 알이 약간 손해인 것은 수용 범위다.
     ///
-    /// 출처: PokéAPI GraphQL v1beta2, `evolves_from_species_id IS NULL` · id ≤ 649 · 메타몽 제외,
-    /// 2026-08-04 측정(base 328종). 풀이 크게 바뀌면 이 값을 다시 재고 결론을 재확인해야 한다.
+    /// 출처: PokéAPI GraphQL v1beta2, `evolves_from_species_id IS NULL` · id ≤ 1025 · 메타몽 제외,
+    /// 2026-11-12 측정(base 540종, flip ×0.6856). 풀이 크게 바뀌면 이 값을 다시 재고 결론을 재확인해야 한다.
     func testRareEggIsNotDominatedAtMeasuredPoolComposition() {
-        let weight: [Rarity: Double] = [.common: 37_240, .uncommon: 3_135, .rare: 3_053, .legendary: 339]
+        let weight: [Rarity: Double] = [.common: 53_405, .uncommon: 5_870, .rare: 5_338, .legendary: 1_369]
         // 고급 알 = 고급 이상 풀(전설 포함). 그 안에서 희귀 이상이 나올 확률.
         let uncommonEggPool = weight[.uncommon]! + weight[.rare]! + weight[.legendary]!
         let rarePlusShare = (weight[.rare]! + weight[.legendary]!) / uncommonEggPool
@@ -161,9 +161,9 @@ final class PremiumEggTests: XCTestCase {
                           "실측 희귀+ 비중 \(rarePlusShare) 가 손익분기 \(uncommonPrice / rarePrice) 를 넘었다 — 가격 재조정 필요")
 
         // 후반 코너의 안전 경계 — 고급 밴드만 미수집 부스트로 30% 깎여도 아직 지배당하지 않는다.
-        // 계수는 flip 지점(×0.6492)이 아니라 **그보다 위**로 잡는다: 정확히 flip 에 걸면 여유가 0.0003 이라
-        // 풀을 다시 잴 때 고급 가중이 0.13%(≈4)만 움직여도 설계와 무관하게 실패한다(오탐). ×0.70 은 여유
-        // 0.018 이라 재측정을 견디면서도 "부스트가 마진을 깎는다"는 성질은 그대로 잡는다.
+        // 계수는 flip 지점(×0.6856)이 아니라 **그보다 위**로 잡는다: 정확히 flip 에 걸면 재측정 때 고급
+        // 가중이 조금만 움직여도 설계와 무관하게 실패한다(오탐). ×0.70 은 여유 0.005 로, 1~9세대 풀에서는
+        // 1~5세대(0.018)보다 마진이 얇다.
         let boostedUncommon = weight[.uncommon]! * 0.70
         let boostedShare = (weight[.rare]! + weight[.legendary]!)
             / (boostedUncommon + weight[.rare]! + weight[.legendary]!)
