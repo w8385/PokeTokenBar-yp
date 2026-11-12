@@ -503,7 +503,13 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     /// A plain click answers waiting/done agents, then prays over an egg or opens a hatched pet.
     func petClicked() {
         if tracker.dismissBubble() { agentDidChange() }
+        let growth = companion.growByClick()
         clickRouter.handle(subjectIsEgg: companion.representativeSubject.speciesID == nil)
+        switch growth {
+        case .counted: prayerBurst.spawn(glyph: PrayerBurst.heart)
+        case .capped: popLine(L(companion.language).clickGrowthCapped)
+        case .tooSoon: break
+        }
     }
 
     /// Context-menu Open always opens, including when the representative is an egg.
@@ -663,7 +669,12 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
                                             petVisible: panel?.isVisible == true, bubbleShowing: showingBubble)
         lastSeenEventSeq = event.seq   // seen either way: a missed event is not queued
         guard shouldPop else { return }
-        eventPopText = event.text
+        popLine(event.text)
+    }
+
+    private func popLine(_ text: String) {
+        guard panel?.isVisible == true, !showingBubble else { return }
+        eventPopText = text
         sync()   // refresh the native tooltip text too
         showHoverCallout()
         eventPopExpiry?.cancel()
@@ -1109,7 +1120,11 @@ final class PrayerBurst {
         let id = UUID()
         /// 0...1 across the usable width of the pet (the emoji's own width is already excluded).
         let xFraction: Double
+        var glyph = PrayerBurst.prayer
     }
+
+    nonisolated static let prayer = "🙏"
+    nonisolated static let heart = "💗"
 
     /// A little longer than the 1 s float-and-fade, so a particle is gone only once it is invisible.
     static let lifetime: Duration = .milliseconds(1100)
@@ -1118,8 +1133,8 @@ final class PrayerBurst {
     /// Bumped on every prayer; the egg wobbles once per change.
     private(set) var wobbleCount = 0
 
-    func spawn(xFraction: Double = .random(in: 0...1)) {
-        let particle = Particle(xFraction: min(max(xFraction, 0), 1))
+    func spawn(glyph: String = PrayerBurst.prayer, xFraction: Double = .random(in: 0...1)) {
+        let particle = Particle(xFraction: min(max(xFraction, 0), 1), glyph: glyph)
         particles.append(particle)
         wobbleCount += 1
         Task {
@@ -1143,7 +1158,7 @@ struct PrayerEmojiLayer: View {
         let emojiSize = Self.emojiSize(petSize: size)
         ZStack {
             ForEach(burst.particles) { particle in
-                PrayerEmoji(xFraction: particle.xFraction, petSize: size, emojiSize: emojiSize)
+                PrayerEmoji(xFraction: particle.xFraction, petSize: size, emojiSize: emojiSize, glyph: particle.glyph)
             }
         }
         .frame(width: size, height: size)
@@ -1158,13 +1173,14 @@ struct PrayerEmojiFrame: View {
     let petSize: CGFloat
     let emojiSize: CGFloat
     let progress: Double
+    var glyph = PrayerBurst.prayer
 
     var body: some View {
         // Centre x keeps the glyph fully inside [0, petSize]; it rises from the lower middle to the top edge.
         let x = emojiSize / 2 + CGFloat(xFraction) * (petSize - emojiSize)
         let startY = petSize * 0.7
         let endY = emojiSize / 2
-        Text("🙏")
+        Text(glyph)
             .font(.system(size: emojiSize * 0.8))
             .frame(width: emojiSize, height: emojiSize)
             .position(x: x, y: startY + (endY - startY) * CGFloat(progress))
@@ -1177,10 +1193,11 @@ private struct PrayerEmoji: View {
     let xFraction: Double
     let petSize: CGFloat
     let emojiSize: CGFloat
+    let glyph: String
     @State private var progress = 0.0
 
     var body: some View {
-        PrayerEmojiFrame(xFraction: xFraction, petSize: petSize, emojiSize: emojiSize, progress: progress)
+        PrayerEmojiFrame(xFraction: xFraction, petSize: petSize, emojiSize: emojiSize, progress: progress, glyph: glyph)
             .onAppear { withAnimation(.easeOut(duration: 1)) { progress = 1 } }
     }
 }
