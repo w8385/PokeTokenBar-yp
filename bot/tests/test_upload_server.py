@@ -8,13 +8,33 @@ from ypoke.store import Store
 from ypoke.upload_server import PartyError, serve, validate_party
 
 PIKACHU = {"pokemon_id": 25, "level": 42, "name": "피카츄", "shiny": True, "ivs": {"hp": 31}}
+LEARNABLE = [
+    {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100, "level": 1},
+    {"id": 209, "name": "스파크", "type": "electric", "power": 65, "damage_class": "physical", "accuracy": 100, "level": 20},
+    {"id": 85, "name": "10만볼트", "type": "electric", "power": 90, "damage_class": "special", "accuracy": 100, "level": 36},
+    {"id": 87, "name": "번개", "type": "electric", "power": 110, "damage_class": "special", "accuracy": 70, "level": 44},
+]
+
+
+class FakeMoves:
+    offline = False
+
+    def __call__(self, pokemon_id, level):
+        if self.offline:
+            raise OSError("offline")
+        return [move for move in LEARNABLE if move["level"] <= level]
 
 
 @pytest.fixture
-def server(tmp_path):
+def moves_for():
+    return FakeMoves()
+
+
+@pytest.fixture
+def server(tmp_path, moves_for):
     store = Store(str(tmp_path / "bot.sqlite3"))
     uploads = []
-    http_server = serve(store, "127.0.0.1", 0, uploads.append)
+    http_server = serve(store, "127.0.0.1", 0, uploads.append, moves_for)
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}", uploads
     http_server.shutdown()
 
@@ -97,3 +117,63 @@ def test_validate_fills_defaults():
 def test_validate_rejects(payload, message):
     with pytest.raises(PartyError, match=message):
         validate_party(payload)
+
+
+def test_entry_with_chosen_moves_is_stored(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    entry = [{**PIKACHU, "moves": [85, 84]}, {"pokemon_id": 7, "level": 20, "moves": []}]
+    assert call(f"{base}/v1/party", "POST", token, {"party": entry}) == (200, {"ok": True, "party_size": 2})
+    stored = store.party("U1").party
+    assert stored[0]["moves"] == [85, 84]
+    assert "moves" not in stored[1]
+
+
+@pytest.mark.parametrize("moves, message", [
+    ([87], "87 is not an attacking move learnable at level 42"),
+    ([999], "999 is not"),
+])
+def test_moves_must_be_learnable_attacking_moves_at_the_level(server, moves, message):
+    store, base, uploads = server
+    token = store.issue_token("U1")
+    status, body = call(f"{base}/v1/party", "POST", token, {"party": [{**PIKACHU, "moves": moves}]})
+    assert status == 400
+    assert message in body["error"]
+    assert store.party("U1") is None
+    assert uploads == []
+
+
+def test_moves_check_needs_pokeapi(server, moves_for):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    moves_for.offline = True
+    assert call(f"{base}/v1/party", "POST", token, {"party": [{**PIKACHU, "moves": [85]}]}) == (
+        503, {"ok": False, "error": "pokeapi_unavailable"})
+    assert call(f"{base}/v1/party", "POST", token, {"party": [PIKACHU]})[0] == 200
+
+
+def test_learnable_moves_with_defaults(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=42", token=token)
+    assert status == 200
+    assert [move["id"] for move in body["moves"]] == [84, 209, 85]
+    assert body["moves"][2] == LEARNABLE[2]
+    assert body["default"] == [84, 209, 85]
+
+
+def test_learnable_moves_needs_auth_and_valid_query(server, moves_for):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    assert call(f"{base}/v1/moves?pokemon_id=25&level=42")[0] == 401
+    assert call(f"{base}/v1/moves?pokemon_id=25", token=token)[0] == 400
+    assert call(f"{base}/v1/moves?pokemon_id=25&level=101", token=token)[0] == 400
+    assert call(f"{base}/v1/moves?pokemon_id=x&level=5", token=token)[0] == 400
+    moves_for.offline = True
+    assert call(f"{base}/v1/moves?pokemon_id=25&level=5", token=token)[0] == 503
+
+
+@pytest.mark.parametrize("moves", [[1, 2, 3, 4, 5], [85, 85], ["85"], [0], 85, [True]])
+def test_validate_rejects_bad_move_lists(moves):
+    with pytest.raises(PartyError, match="moves must be a list of up to 4 distinct move ids"):
+        validate_party({"party": [{**PIKACHU, "moves": moves}]})

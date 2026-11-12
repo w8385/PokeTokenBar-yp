@@ -10,14 +10,20 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, CommandHandler, Reply, reply_thread_ts
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
-from ypoke.upload_server import serve
+from ypoke.upload_server import MAX_ENTRY_SIZE, serve
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     store = Store(os.environ.get("YPOKE_DB", "ypoke.sqlite3"))
     pokeapi = PokeAPIService(store)
     port = int(os.environ.get("YPOKE_HTTP_PORT", "8790"))
-    serve(store, os.environ.get("YPOKE_HTTP_HOST", "0.0.0.0"), port, lambda party: _warm_cache(pokeapi, party))
+    serve(
+        store,
+        os.environ.get("YPOKE_HTTP_HOST", "0.0.0.0"),
+        port,
+        lambda party: _warm_cache(pokeapi, party),
+        pokeapi.attacking_moves,
+    )
     app = App(token=os.environ["SLACK_BOT_TOKEN"])
     home_channel = os.environ.get("YPOKE_HOME_CHANNEL") or None
     if home_channel:
@@ -89,9 +95,10 @@ def _mention_listener(handler: CommandHandler):
 
 
 def _fetch_all(pokeapi: PokeAPIService, party: list[dict]) -> None:
-    for member in party:
+    for member in party[:MAX_ENTRY_SIZE]:
         try:
             pokeapi.pokemon(member["pokemon_id"])
+            pokeapi.attacking_moves(member["pokemon_id"], member["level"])
         except Exception:
             logging.getLogger(__name__).warning("PokéAPI prefetch failed for %s", member["pokemon_id"])
 

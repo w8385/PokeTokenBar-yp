@@ -10,10 +10,11 @@ from datetime import UTC, datetime, timedelta, timezone
 from urllib.parse import urlencode
 
 from ypoke.battle import BaseStats, Combatant, simulate
+from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
 from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.store import Record, Store
-from ypoke.upload_server import IV_KEYS
+from ypoke.upload_server import IV_KEYS, MAX_ENTRY_SIZE
 
 DEFAULT_IV = 15
 REGISTER_LINK = "poketokenbar://ypoke-register"
@@ -40,8 +41,9 @@ MENTION_WORDS = {
 
 HELP_TEXT = (
     "*YPoke 대결*\n"
-    f"`{BATTLE_COMMAND} @상대` 서로 지금 키우는 포켓몬끼리 1:1로 한 판 붙어요. 결과는 이 채널에 올라가요.\n"
-    f"`{BATTLE_COMMAND} @YPoke` 또는 `@YPoke 대결` 봇이 내보낸 포켓몬과 연습 대결을 해요. 전적에 안 남아요.\n"
+    f"`{BATTLE_COMMAND} @상대` 서로 엔트리(최대 3마리)로 한 판 붙어요. 엔트리를 안 골랐으면 지금 키우는 포켓몬이 나가요. "
+    "결과는 이 채널에 올라가요.\n"
+    f"`{BATTLE_COMMAND} @YPoke` 또는 `@YPoke 대결` 봇이 내보낸 포켓몬 3마리와 연습 대결을 해요. 전적에 안 남아요.\n"
     f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
     f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
@@ -156,37 +158,35 @@ class CommandHandler:
         if opponent_party is None:
             return Reply(f"<@{opponent_id}>님은 아직 파티를 올리지 않았어요.")
         try:
-            sides = (self._combatants(challenger_party.party[:1]), self._combatants(opponent_party.party[:1]))
+            sides = (
+                self._combatants(challenger_party.party[:MAX_ENTRY_SIZE]),
+                self._combatants(opponent_party.party[:MAX_ENTRY_SIZE]),
+            )
         except OSError:
             return Reply("포켓몬 정보를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.")
         seed = secrets.randbits(31)
         result = simulate(sides, seed)
         winner_id = challenger_id if result.winner == 0 else opponent_id
         self._store.record_battle(challenger_id, opponent_id, winner_id, seed)
-        lines = battle_lines((f"<@{challenger_id}>", f"<@{opponent_id}>"), (sides[0][0], sides[1][0]), result)
+        lines = battle_lines((f"<@{challenger_id}>", f"<@{opponent_id}>"), sides, result)
         return Reply("\n".join(lines), in_channel=True)
 
     def _bot_battle(self, challenger_id: str) -> Reply:
-        """Practice battle against a seeded random species at the challenger's level; nothing is stored."""
+        """Practice battle against seeded random species at the challenger's lead level; nothing is stored."""
         challenger_party = self._store.party(challenger_id)
         if challenger_party is None:
             return self._no_party_reply()
         seed = secrets.randbits(31)
+        entry = challenger_party.party[:MAX_ENTRY_SIZE]
+        wild = [{"pokemon_id": pokemon_id, "level": entry[0]["level"], "shiny": False, "ivs": {}}
+                for pokemon_id in bot_entry(seed)]
         try:
-            challenger = self._combatants(challenger_party.party[:1])[0]
-            data = self._pokeapi.pokemon(bot_species(seed))
+            sides = (self._combatants(entry), self._combatants(wild))
         except OSError:
             return Reply("포켓몬 정보를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.")
-        wild = Combatant(
-            name=data["name_ko"],
-            level=challenger.level,
-            types=tuple(data["types"]),
-            base=base_stats(data),
-            ivs=BaseStats(*[DEFAULT_IV] * len(IV_KEYS)),
-        )
-        result = simulate(([challenger], [wild]), seed)
+        result = simulate(sides, seed)
         bot = f"<@{self._bot_user_id}>" if self._bot_user_id else "YPoke"
-        lines = battle_lines((f"<@{challenger_id}>", bot), (challenger, wild), result, practice=True)
+        lines = battle_lines((f"<@{challenger_id}>", bot), sides, result, practice=True)
         return Reply("\n".join(lines), in_channel=True)
 
     def _no_party_reply(self) -> Reply:
@@ -195,23 +195,23 @@ class CommandHandler:
             f"앱은 <{DOWNLOAD_URL}|여기서> 받아요."
         )
 
-    def _combatants(self, party: list[dict]) -> list[Combatant]:
-        pokemon_ids = list({member["pokemon_id"] for member in party})
-        with ThreadPoolExecutor(max_workers=len(pokemon_ids)) as pool:
-            species = dict(zip(pokemon_ids, pool.map(self._pokeapi.pokemon, pokemon_ids)))
-        combatants = []
-        for member in party:
-            data = species[member["pokemon_id"]]
-            ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
-            combatants.append(Combatant(
-                name=member.get("name") or data["name_ko"],
-                level=member["level"],
-                types=tuple(data["types"]),
-                base=base_stats(data),
-                ivs=BaseStats(**ivs),
-                shiny=member["shiny"],
-            ))
-        return combatants
+    def _combatants(self, entry: list[dict]) -> list[Combatant]:
+        with ThreadPoolExecutor(max_workers=len(entry)) as pool:
+            return list(pool.map(self._combatant, entry))
+
+    def _combatant(self, member: dict) -> Combatant:
+        data = self._pokeapi.pokemon(member["pokemon_id"])
+        learnable = self._pokeapi.attacking_moves(member["pokemon_id"], member["level"])
+        ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
+        return Combatant(
+            name=member.get("name") or data["name_ko"],
+            level=member["level"],
+            types=tuple(data["types"]),
+            base=base_stats(data),
+            ivs=BaseStats(**ivs),
+            shiny=member["shiny"],
+            moves=battle_moves(learnable, member.get("moves")),
+        )
 
 
 def parse_mention(text: str, bot_user_id: str | None) -> tuple[str | None, str]:
@@ -226,8 +226,8 @@ def reply_thread_ts(event: dict) -> str:
     return event.get("thread_ts") or event["ts"]
 
 
-def bot_species(seed: int) -> int:
-    return random.Random(seed).randint(1, MAX_SPECIES_ID)
+def bot_entry(seed: int) -> list[int]:
+    return random.Random(seed).sample(range(1, MAX_SPECIES_ID + 1), MAX_ENTRY_SIZE)
 
 
 def week_start(now: datetime) -> datetime:
