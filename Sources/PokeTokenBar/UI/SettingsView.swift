@@ -7,6 +7,7 @@ struct SettingsView: View {
     @Environment(CompanionStore.self) private var companion
     @Environment(UpdateChecker.self) private var updater
     @Environment(PartyUploader.self) private var partyUploader: PartyUploader?
+    @Environment(BattleEntryStore.self) private var battleEntry: BattleEntryStore?
     /// 팝오버 내부 화면 전환 방식 — sheet/dismiss 를 쓰지 않는다 (PopoverView 의 NOTE 참조)
     var onClose: () -> Void
     /// 기존 컬렉션의 도감으로 돌아가 대표 포켓몬을 고르게 한다.
@@ -572,6 +573,10 @@ struct SettingsView: View {
                 .font(.caption2).foregroundStyle(.tertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12).padding(.bottom, 6)
+            }
+            if uploader.hasToken, uploader.hasServer, let battleEntry {
+                Divider()
+                BattleEntrySection(entry: battleEntry, uploader: uploader)
             }
         }
     }

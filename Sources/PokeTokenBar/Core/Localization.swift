@@ -758,14 +758,38 @@ struct L {
     var partyUploadSectionTitle: String { t("YPoke 대결", "YPoke battles", "YPoke対戦", "Combates YPoke", "Combats YPoke", "Batalhas YPoke", "YPoke-Kämpfe", "Бои YPoke") }
     var partyUploadTokenLabel: String { t("업로드 토큰", "Upload token", "アップロードトークン", "Token de subida", "Jeton d'envoi", "Token de envio", "Upload-Token", "Токен загрузки") }
     var partyUploadHint: String {
-        t("지금 키우는 포켓몬을 몇 분마다 YPoke 대결 봇에 보내요. 대결은 서로 키우는 포켓몬끼리 1:1이에요.",
-          "Sends the Pokémon you're raising to the YPoke battle bot every few minutes. Battles are 1v1 between the Pokémon each player is raising.",
-          "育成中のポケモンを数分ごとにYPoke対戦ボットへ送ります。対戦は互いに育成中のポケモン同士の1対1です。",
-          "Envía el Pokémon que crías al bot de combate YPoke cada pocos minutos. Los combates son 1 contra 1 entre los Pokémon que cría cada jugador.",
-          "Envoie le Pokémon que tu élèves au bot de combat YPoke toutes les quelques minutes. Les combats sont en 1 contre 1 entre les Pokémon élevés par chaque joueur.",
-          "Envia o Pokémon que você cria ao bot de batalha YPoke a cada poucos minutos. As batalhas são 1 contra 1 entre os Pokémon que cada jogador cria.",
-          "Sendet dein aktuelles Pokémon alle paar Minuten an den YPoke-Kampfbot. Kämpfe sind 1 gegen 1 zwischen den Pokémon, die jeder gerade aufzieht.",
-          "Каждые несколько минут отправляет выращиваемого покемона боту сражений YPoke. Бои идут 1 на 1 между покемонами, которых растят игроки.")
+        t("대결 엔트리를 몇 분마다, 바꾸면 바로 YPoke 대결 봇에 보내요.",
+          "Sends your battle entry to the YPoke battle bot every few minutes, and right away when you change it.",
+          "対戦エントリーを数分ごと、変更したらすぐにYPoke対戦ボットへ送ります。",
+          "Envía tu equipo de combate al bot YPoke cada pocos minutos y al instante cuando lo cambias.",
+          "Envoie ton équipe de combat au bot YPoke toutes les quelques minutes, et tout de suite quand tu la modifies.",
+          "Envia sua equipe de batalha ao bot YPoke a cada poucos minutos e na hora quando você a muda.",
+          "Sendet dein Kampfteam alle paar Minuten an den YPoke-Kampfbot und sofort, wenn du es änderst.",
+          "Каждые несколько минут и сразу после изменения отправляет вашу команду боту сражений YPoke.")
+    }
+    var battleEntryLabel: String { t("대결 엔트리", "Battle entry", "対戦エントリー", "Equipo de combate", "Équipe de combat", "Equipe de batalha", "Kampfteam", "Команда для боя") }
+    var battleEntryHint: String {
+        t("최대 3마리가 순서대로 나가요. 비워 두면 지금 키우는 포켓몬이 나가요.",
+          "Up to 3 Pokémon fight in this order. Leave it empty to send the Pokémon you're raising.",
+          "最大3匹がこの順番で戦います。空なら育成中のポケモンが出ます。",
+          "Hasta 3 Pokémon luchan en este orden. Déjalo vacío para enviar el Pokémon que crías.",
+          "Jusqu'à 3 Pokémon combattent dans cet ordre. Laisse vide pour envoyer le Pokémon que tu élèves.",
+          "Até 3 Pokémon lutam nesta ordem. Deixe vazio para enviar o Pokémon que você cria.",
+          "Bis zu 3 Pokémon kämpfen in dieser Reihenfolge. Leer lassen, um dein aktuelles Pokémon zu schicken.",
+          "До 3 покемонов сражаются в этом порядке. Оставьте пустым, чтобы отправить выращиваемого покемона.")
+    }
+    var battleEntryAdd: String { t("추가", "Add", "追加", "Añadir", "Ajouter", "Adicionar", "Hinzufügen", "Добавить") }
+    var battleEntryRaising: String { t("육성 중", "Raising", "育成中", "Criando", "En élevage", "Criando", "Wird aufgezogen", "Растёт") }
+    var battleEntryMoves: String { t("기술", "Moves", "わざ", "Movimientos", "Capacités", "Golpes", "Attacken", "Приёмы") }
+    var battleEntryAutoMoves: String {
+        t("자동 (최근 배운 4개)", "Auto (4 most recent)", "自動(最近覚えた4つ)", "Auto (los 4 más recientes)",
+          "Auto (les 4 plus récentes)", "Auto (os 4 mais recentes)", "Automatisch (4 neueste)", "Авто (4 последних)")
+    }
+    var battleEntryMovesUnavailable: String {
+        t("봇에서 기술 목록을 불러오지 못했어요.", "Couldn't load moves from the bot.", "ボットからわざを読み込めませんでした。",
+          "No se pudieron cargar los movimientos del bot.", "Impossible de charger les capacités depuis le bot.",
+          "Não foi possível carregar os golpes do bot.", "Attacken konnten nicht vom Bot geladen werden.",
+          "Не удалось загрузить приёмы от бота.")
     }
     var partyUploadLinkHint: String {
         t("Slack에서 /포켓몬연결 → DM 링크 클릭",
