@@ -1,6 +1,12 @@
+import json
+import threading
+import time
+import urllib.error
+
 import pytest
 
 from ypoke import pokeapi
+from ypoke.commands import CommandHandler
 from ypoke.pokeapi import PokeAPIService, learnset_from, move_from
 from ypoke.store import Store
 
@@ -59,6 +65,16 @@ PIKACHU = {"moves": [
 ]}
 
 
+POKEMON_BODY = {
+    **PIKACHU, "name": "pikachu", "species": {"url": "https://pokeapi.co/api/v2/pokemon-species/25/"},
+    "types": [{"slot": 1, "type": {"name": "electric"}}],
+    "stats": [{"stat": {"name": "hp"}, "base_stat": 35}, {"stat": {"name": "attack"}, "base_stat": 55},
+              {"stat": {"name": "defense"}, "base_stat": 40}, {"stat": {"name": "special-attack"}, "base_stat": 50},
+              {"stat": {"name": "special-defense"}, "base_stat": 50}, {"stat": {"name": "speed"}, "base_stat": 90}],
+}
+SPECIES_BODY = {"names": [{"language": {"name": "ko"}, "name": "피카츄"}]}
+
+
 @pytest.fixture
 def service(tmp_path, monkeypatch):
     fetched = []
@@ -66,7 +82,9 @@ def service(tmp_path, monkeypatch):
     def get_json(url):
         fetched.append(url)
         kind, item = url.rstrip("/").rsplit("/", 2)[-2:]
-        return PIKACHU if kind == "pokemon" else MOVES[int(item)]
+        if kind == "pokemon-species":
+            return SPECIES_BODY
+        return POKEMON_BODY if kind == "pokemon" else MOVES[int(item)]
 
     monkeypatch.setattr(pokeapi, "_get_json", get_json)
     return PokeAPIService(Store(str(tmp_path / "bot.sqlite3"))), fetched
@@ -96,23 +114,69 @@ def test_move_from_flags_weather_setters_and_moves_that_never_miss_in_weather(mo
     assert (data["weather"], data["always_hits_in"]) == (weather, always_hits_in)
 
 
-@pytest.mark.parametrize("timeouts, succeeds", [(2, True), (3, False)])
-def test_read_timeouts_are_retried_up_to_three_attempts(monkeypatch, timeouts, succeeds):
+def timeout_error():
+    return TimeoutError("timed out")
+
+
+def connect_timeout():
+    return urllib.error.URLError(TimeoutError("timed out"))
+
+
+def server_error():
+    return urllib.error.HTTPError("https://pokeapi.co", 503, "unavailable", None, None)
+
+
+@pytest.fixture
+def no_sleep(monkeypatch):
+    sleeps = []
+    monkeypatch.setattr(pokeapi.time, "sleep", sleeps.append)
+    return sleeps
+
+
+@pytest.mark.parametrize("make_error", [timeout_error, connect_timeout, server_error])
+def test_one_transient_failure_is_retried_after_a_backoff(monkeypatch, no_sleep, make_error):
     calls = []
 
     def read(request):
         calls.append(request)
-        if len(calls) <= timeouts:
-            raise TimeoutError
+        if len(calls) == 1:
+            raise make_error()
         return {"ok": True}
 
     monkeypatch.setattr(pokeapi, "_read", read)
-    if succeeds:
-        assert pokeapi._get_json("https://pokeapi.co/api/v2/move/85/") == {"ok": True}
-    else:
-        with pytest.raises(TimeoutError):
-            pokeapi._get_json("https://pokeapi.co/api/v2/move/85/")
-    assert len(calls) == min(timeouts + 1, 3)
+    assert pokeapi._get_json("https://pokeapi.co/api/v2/move/85/") == {"ok": True}
+    assert (len(calls), no_sleep) == (2, [pokeapi.RETRY_BACKOFF_SECONDS])
+
+
+@pytest.mark.parametrize("make_error", [timeout_error, connect_timeout, server_error])
+def test_two_transient_failures_raise_the_error(monkeypatch, no_sleep, make_error):
+    calls = []
+
+    def read(request):
+        calls.append(request)
+        raise make_error()
+
+    monkeypatch.setattr(pokeapi, "_read", read)
+    with pytest.raises(OSError):
+        pokeapi._get_json("https://pokeapi.co/api/v2/move/85/")
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("error", [
+    urllib.error.HTTPError("https://pokeapi.co", 404, "missing", None, None),
+    urllib.error.URLError(ConnectionRefusedError()),
+])
+def test_other_failures_are_not_retried(monkeypatch, no_sleep, error):
+    calls = []
+
+    def read(request):
+        calls.append(request)
+        raise error
+
+    monkeypatch.setattr(pokeapi, "_read", read)
+    with pytest.raises(OSError):
+        pokeapi._get_json("https://pokeapi.co/api/v2/move/85/")
+    assert len(calls) == 1
 
 
 def test_learnsets_and_moves_are_cached(service):
@@ -159,3 +223,109 @@ def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chanc
 def test_move_keeps_only_the_simulated_secondary_effects(move, expected):
     data = move_from(move)
     assert {key: data[key] for key in expected} == expected
+
+
+def test_warm_caches_every_member_so_a_later_lookup_makes_no_network_call(service):
+    api, fetched = service
+    members = [{"pokemon_id": 25, "level": 36}, {"pokemon_id": 25, "level": 50}, {"pokemon_id": 7, "level": 10}]
+    assert api.warm(members) == 2
+    warmed = len(fetched)
+    api.pokemon(25)
+    api.attacking_moves(25, 36)
+    api.attacking_moves(25, 50)
+    assert len(fetched) == warmed
+
+
+def test_warm_tries_every_member_and_raises_the_first_network_error(service, monkeypatch):
+    api, _ = service
+    real = pokeapi._get_json
+
+    def get_json(url):
+        if url.endswith("/pokemon/7"):
+            raise TimeoutError
+        return real(url)
+
+    monkeypatch.setattr(pokeapi, "_get_json", get_json)
+    with pytest.raises(TimeoutError):
+        api.warm([{"pokemon_id": 7, "level": 5}, {"pokemon_id": 25, "level": 36}])
+    assert api.attacking_moves(25, 36)
+
+
+def test_warming_never_has_more_requests_in_flight_than_the_slot_limit(tmp_path, monkeypatch):
+    api = PokeAPIService(Store(str(tmp_path / "bot.sqlite3")))
+    active = peak = 0
+    lock = threading.Lock()
+
+    class Response:
+        def __init__(self, body):
+            self.body = body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self, *args):
+            return json.dumps(self.body).encode()
+
+    def urlopen(request, timeout):
+        nonlocal active, peak
+        with lock:
+            active += 1
+            peak = max(peak, active)
+        time.sleep(0.02)
+        with lock:
+            active -= 1
+        return Response(SPECIES_BODY if "pokemon-species" in request.full_url else POKEMON_BODY)
+
+    monkeypatch.setattr(pokeapi.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(pokeapi, "move_from", lambda body: {"id": 1, "weather": None, "power": 0, "damage_class": "status"})
+    monkeypatch.setattr(pokeapi, "learnset_from", lambda body: [{"move_id": n, "level": 1} for n in range(1, 13)])
+    api.warm([{"pokemon_id": species, "level": 50} for species in range(1, 4)])
+    assert 1 < peak <= pokeapi.MOVE_FETCH_WORKERS
+
+
+def battle_over(tmp_path, monkeypatch, outcomes):
+    """Run one 1v1 battle through the real service; `outcomes` are the first reads' results, later reads succeed."""
+    monkeypatch.setattr(pokeapi.time, "sleep", lambda seconds: None)
+    reads = []
+
+    def read(request):
+        reads.append(request.full_url)
+        if len(reads) <= len(outcomes):
+            raise outcomes[len(reads) - 1]
+        kind, item = request.full_url.rstrip("/").rsplit("/", 2)[-2:]
+        if kind == "pokemon-species":
+            return SPECIES_BODY
+        return POKEMON_BODY if kind == "pokemon" else MOVES[int(item)]
+
+    monkeypatch.setattr(pokeapi, "_read", read)
+    store = Store(str(tmp_path / "bot.sqlite3"))
+    for user_id, species in (("UA", 25), ("UB", 7)):
+        store.issue_token(user_id)
+        store.save_party(user_id, [{"pokemon_id": species, "level": 36, "shiny": False, "ivs": {}}])
+    handler = CommandHandler(store, PokeAPIService(store), None, bot_user_id="UBOT")
+    return handler.handle("UA", "<@UB>"), store, reads
+
+
+def test_a_battle_survives_one_timeout_while_the_cache_is_cold(tmp_path, monkeypatch):
+    reply, store, _ = battle_over(tmp_path, monkeypatch, [timeout_error()])
+    assert "불러오지 못했어요" not in reply.text
+    assert store.record("UA").wins + store.record("UA").losses == 1
+
+
+def test_a_battle_with_two_timeouts_in_a_row_gives_the_ephemeral_message(tmp_path, monkeypatch):
+    reply, store, _ = battle_over(tmp_path, monkeypatch, [timeout_error(), connect_timeout()])
+    assert "포켓몬 정보를 불러오지 못했어요" in reply.text
+    assert not reply.in_channel
+    assert store.record("UA").wins + store.record("UA").losses == 0
+
+
+def test_a_battle_with_every_species_cached_makes_no_network_call(tmp_path, monkeypatch):
+    _, store, reads = battle_over(tmp_path, monkeypatch, [])
+    assert reads
+    reads.clear()
+    handler = CommandHandler(store, PokeAPIService(store), None, bot_user_id="UBOT")
+    assert "불러오지 못했어요" not in handler.handle("UA", "<@UB>").text
+    assert reads == []

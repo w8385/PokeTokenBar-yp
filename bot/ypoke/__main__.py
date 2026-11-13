@@ -3,6 +3,7 @@
 import logging
 import os
 import threading
+import time
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -52,6 +53,7 @@ def main() -> None:
         trades,
         lambda messages: post_direct_messages(app.client, messages),
     )
+    threading.Thread(target=_warm_stored_parties, args=(pokeapi, store), daemon=True).start()
     for name in COMMAND_NAMES:
         app.command(name)(slash_listener(handler))
     # Slack still sends an interaction for a URL button and shows a warning unless it is acked.
@@ -82,7 +84,7 @@ def _after_upload(
 def _run_after_upload(
     pokeapi: PokeAPIService, handler: CommandHandler, client: WebClient, user_id: str, party: list[dict]
 ) -> None:
-    _prefetch_entry(pokeapi, party)
+    _warm(pokeapi, party[:MAX_ENTRY_SIZE])
     try:
         deliveries = handler.run_pending(user_id)
     except Exception:
@@ -92,13 +94,22 @@ def _run_after_upload(
         deliver(client, delivery)
 
 
-def _prefetch_entry(pokeapi: PokeAPIService, party: list[dict]) -> None:
-    for member in party[:MAX_ENTRY_SIZE]:
-        try:
-            pokeapi.pokemon(member["pokemon_id"])
-            pokeapi.attacking_moves(member["pokemon_id"], member["level"])
-        except Exception:
-            logging.getLogger(__name__).warning("PokéAPI prefetch failed for %s", member["pokemon_id"])
+def _warm(pokeapi: PokeAPIService, members: list[dict]) -> None:
+    started = time.monotonic()
+    try:
+        count = pokeapi.warm(members)
+    except Exception:
+        logging.getLogger(__name__).warning("PokéAPI warming failed", exc_info=True)
+        return
+    logging.getLogger(__name__).info("warmed %d Pokémon in %.1fs", count, time.monotonic() - started)
+
+
+def _warm_stored_parties(pokeapi: PokeAPIService, store: Store) -> None:
+    """One member at a time so live battles still get request slots."""
+    for user_id in store.linked_user_ids():
+        stored = store.party(user_id)
+        for member in stored.party[:MAX_ENTRY_SIZE] if stored else []:
+            _warm(pokeapi, [member])
 
 
 if __name__ == "__main__":
