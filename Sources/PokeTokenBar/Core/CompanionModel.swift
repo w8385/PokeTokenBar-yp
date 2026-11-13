@@ -550,7 +550,7 @@ struct EvoLine: Sendable {
 
     /// The line a trade-gated individual follows: its trade evolutions are reached only by a trade.
     func prunedTradeOnly() -> EvoLine {
-        EvoLine(baseID: baseID, tree: tree.prunedTradeOnly(), rarity: rarity, names: names)
+        EvoLine(baseID: baseID, tree: tree.prunedTradeOnly(), rarity: rarity, names: names, genderRate: genderRate)
     }
 
     func localizedName(_ id: Int, _ lang: AppLanguage) -> String {

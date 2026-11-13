@@ -323,6 +323,18 @@ final class TradeEvolutionTests: XCTestCase {
         XCTAssertTrue(EvoNode(speciesID: 1, children: [], methods: Array(methods.suffix(1))).viaTrade)
     }
 
+    func testTradeGatedLineKeepsGenderRateAndGenderLocks() {
+        let tree = EvoNode(speciesID: 281, children: [
+            EvoNode(speciesID: 282, children: [], requiredGender: nil),
+            EvoNode(speciesID: 475, children: [], requiredGender: .male),
+        ])
+        let line = EvoLine(baseID: 281, tree: tree, rarity: .common, names: [:], genderRate: 4)
+        let pruned = line.prunedTradeOnly()
+        XCTAssertEqual(pruned.genderRate, 4)
+        XCTAssertEqual(pruned.tree.children(for: .female).map(\.speciesID), [282])
+        XCTAssertEqual(pruned.tree.children(for: .male).map(\.speciesID), [282, 475])
+    }
+
     func testReplyDropsBadEntriesAndIgnoresUnknownKeys() throws {
         let good = try delivery(tradeID: "ok", give: "a", receiving: entry(id: "n", base: 92, final: 93, chain: [92, 93]))
         XCTAssertEqual(good.tradeID, "ok")
