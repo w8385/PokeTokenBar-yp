@@ -16,7 +16,7 @@ concurrency:
 env:
   UI_TESTS_DEX: DexBackNavigationTests|DexColorRenderingTests|CollectionReadabilityRenderingTests
   FLAKY_TEST: DexBackNavigationTests/testRegionChipFiltersMountedCollectionAndTogglesBack
-  UI_TESTS_SETTINGS:SnapshotHistoryRenderingTests|FormMetadataNoteRenderingTests|ZeroUsageHomeRenderingTests|SessionKeySettingsRenderingTests
+  UI_TESTS_SETTINGS: SnapshotHistoryRenderingTests|FormMetadataNoteRenderingTests|ZeroUsageHomeRenderingTests|SessionKeySettingsRenderingTests
 
 jobs:
   build-test:
