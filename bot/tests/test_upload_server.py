@@ -78,6 +78,16 @@ def test_upload_then_read_back(server):
     assert body["uploaded_at"].endswith("+00:00")
 
 
+def test_the_dex_summary_is_stored_and_a_broken_one_never_fails_the_upload(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    dex = {"owned": 10, "shiny": 1, "regions": {"kanto": 10}, "representative": {"pokemon_id": 25, "shiny": False}}
+    assert call(f"{base}/v1/party", "POST", token, {"party": [PIKACHU], "dex": dex})[0] == 200
+    assert store.dex("U1") == dex
+    assert call(f"{base}/v1/party", "POST", token, {"party": [PIKACHU], "dex": "broken"})[0] == 200
+    assert store.dex("U1") == dex
+
+
 def test_reregistering_revokes_the_old_token(server):
     store, base, _ = server
     old = store.issue_token("U1")

@@ -10,6 +10,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from urllib.parse import urlencode
 
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, simulate
+from ypoke.dex import NATIONAL_TOTAL, REGIONS, sprite_url
 from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
 from ypoke.pokeapi import PokeAPIService, base_stats
@@ -41,14 +42,16 @@ BATTLE_COMMAND = "/대결"
 LINK_COMMAND = "/포켓몬연결"
 RECORD_COMMAND = "/전적"
 RANKING_COMMAND = "/랭킹"
+DEX_COMMAND = "/도감"
 UMBRELLA_COMMAND = "/ypoke"
-COMMAND_NAMES = (BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, UMBRELLA_COMMAND)
+COMMAND_NAMES = (BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, DEX_COMMAND, UMBRELLA_COMMAND)
 MENTION_WORDS = {
     "대결": BATTLE_COMMAND,
     "battle": BATTLE_COMMAND,
     "전적": RECORD_COMMAND,
     "랭킹": RANKING_COMMAND,
     "연결": LINK_COMMAND,
+    "도감": DEX_COMMAND,
 }
 
 HELP_TEXT = (
@@ -59,7 +62,9 @@ HELP_TEXT = (
     f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
     f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
-    "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 연결`도 돼요.\n"
+    f"`{DEX_COMMAND} [@누구]` 도감 수·이로치 수·지역별 진행·대표 포켓몬을 보여줘요. 앱을 켜 둬야 도감이 올라가요.\n"
+    "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`도 돼요. "
+    f"`{UMBRELLA_COMMAND} 도감`처럼 `{UMBRELLA_COMMAND}` 뒤에 붙여도 돼요.\n"
     "전적만 남고 포켓몬은 오가지 않아요.\n"
     f"앱 받기: <{DOWNLOAD_URL}|PokeTokenBar>"
 )
@@ -86,7 +91,7 @@ class Reply:
     """`echo` names who ran which slash command; it heads the visible messages (`in_channel` or `public`).
 
     A battle result has `summary` (one line) and `rematch` (the button value), and `text` is its turn log.
-    `public` is a line the channel sees beside a private `text`.
+    `public` is a line the channel sees beside a private `text`. `image_url` is shown beside `text`.
     """
 
     text: str
@@ -96,6 +101,7 @@ class Reply:
     summary: str | None = None
     rematch: str | None = None
     public: str | None = None
+    image_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -145,7 +151,8 @@ class CommandHandler:
             return Reply(self._help)
         if command == BATTLE_COMMAND and not _MENTION.search(rest):
             return self._start(user_id, self._bot_user_id, where)
-        return self.handle(user_id, rest, command, where)
+        reply = self.handle(user_id, rest, command, where)
+        return replace(reply, in_channel=True) if command == DEX_COMMAND else reply
 
     @property
     def bot_user_id(self) -> str | None:
@@ -188,11 +195,15 @@ class CommandHandler:
         return deliveries
 
     def _dispatch(self, user_id: str, text: str, command: str, where: Where | None, echo: str | None) -> Reply:
+        if command == UMBRELLA_COMMAND:
+            command, text = parse_mention(text, self._bot_user_id)
         mention = _MENTION.search(text)
         if command == LINK_COMMAND:
             return self._register(user_id)
         if command == RECORD_COMMAND:
             return self._record(mention.group(1) if mention else user_id)
+        if command == DEX_COMMAND:
+            return self._dex(user_id, mention.group(1) if mention else user_id)
         if command == RANKING_COMMAND:
             return self._ranking()
         if command == BATTLE_COMMAND and mention:
@@ -234,6 +245,39 @@ class CommandHandler:
     def _record(self, user_id: str) -> Reply:
         record = self._store.record(user_id)
         return Reply(f"<@{user_id}> 전적: {record.wins}승 {record.losses}패")
+
+    def _dex(self, user_id: str, target_id: str) -> Reply:
+        """The target's uploaded dex summary. In a thread the mention listener makes it visible; a slash reply is private."""
+        who = f"<@{target_id}>"
+        if target_id == self._bot_user_id:
+            return Reply("YPoke는 도감이 없어요.")
+        summary = self._store.dex(target_id)
+        if summary is None:
+            if not self._store.is_linked(target_id):
+                hint = f" `{LINK_COMMAND}`로 연결해 주세요." if target_id == user_id else ""
+                return Reply(f"{who}님은 아직 YPoke에 연결하지 않았어요.{hint}")
+            return Reply(f"{who}님의 도감은 아직 올라오지 않았어요. 앱을 최신 버전으로 켜 두면 올라와요.")
+        lines = [
+            f"📖 {who}님의 도감",
+            f"전체 *{summary['owned']}*/{NATIONAL_TOTAL} · ✨ 이로치 *{summary['shiny']}*",
+        ]
+        progress = [
+            f"{name} {summary['regions'][key]}/{total}" + (" ✅" if summary["regions"][key] == total else "")
+            for key, (name, total) in REGIONS.items() if key in summary["regions"]
+        ]
+        if progress:
+            lines.append(" · ".join(progress))
+        representative = summary.get("representative")
+        if representative is None:
+            return Reply("\n".join(lines))
+        lines.append(f"대표 포켓몬: {self._species_name(representative['pokemon_id'])}{' ✨' if representative['shiny'] else ''}")
+        return Reply("\n".join(lines), image_url=sprite_url(representative["pokemon_id"], representative["shiny"]))
+
+    def _species_name(self, pokemon_id: int) -> str:
+        try:
+            return self._pokeapi.pokemon(pokemon_id)["name_ko"]
+        except OSError:
+            return f"#{pokemon_id}"
 
     def _ranking(self) -> Reply:
         start = week_start(self._now())
@@ -444,6 +488,16 @@ def result_blocks(reply: Reply, with_log: bool = False) -> list[dict]:
     if with_log:
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": fit(reply.text, SECTION_TEXT_LIMIT)}})
     return blocks
+
+
+def image_blocks(text: str, image_url: str | None) -> list[dict] | None:
+    """`text` with a thumbnail beside it, or None when there is no image and the plain text is enough."""
+    if image_url is None:
+        return None
+    return [{
+        "type": "section", "text": {"type": "mrkdwn", "text": fit(text, SECTION_TEXT_LIMIT)},
+        "accessory": {"type": "image", "image_url": image_url, "alt_text": "대표 포켓몬"},
+    }]
 
 
 def fit(text: str, limit: int) -> str:

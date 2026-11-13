@@ -47,6 +47,27 @@ Replaces the caller's stored party.
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
 | `moves` | array | optional, up to 4 distinct PokéAPI move ids, each an attacking move from `GET /v1/moves` at that level. Missing or empty: the 4 most recently learned |
 
+### `dex` (optional)
+
+A summary of the user's Pokédex for `/도감`. The bot keeps the latest one beside the party. An upload without
+`dex` (an older app) keeps the stored one. A malformed `dex` is ignored, never a `400`.
+
+```json
+"dex": {
+  "owned": 120,
+  "shiny": 3,
+  "regions": {"kanto": 151, "johto": 40},
+  "representative": {"pokemon_id": 25, "shiny": true}
+}
+```
+
+| Field | Type | Rules |
+|---|---|---|
+| `owned` | int | Species owned, `0..1025` |
+| `shiny` | int | Species owned as shiny, `0..1025` |
+| `regions` | object | Species owned per region. Keys `kanto johto hoenn sinnoh unova kalos alola galar paldea`; a value above the region's size, or an unknown key, is dropped |
+| `representative` | object | optional, the Pokémon the app shows (`pokemon_id` as in `party`, `shiny` bool). Missing while the user has only an egg |
+
 Unknown keys are ignored, so the app can send more fields later.
 At battle time, chosen moves the Pokémon can no longer use (it evolved, say) are dropped; if none
 are left it uses the defaults.

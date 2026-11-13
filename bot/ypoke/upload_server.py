@@ -8,6 +8,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Callable
 from urllib.parse import parse_qs, urlsplit
 
+from ypoke.dex import normalize_dex
 from ypoke.moves import MAX_MOVES, default_move_ids
 from ypoke.store import Store
 
@@ -130,7 +131,8 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(413, {"ok": False, "error": "too_large"})
             return
         try:
-            party = validate_party(json.loads(self.rfile.read(length) or b"null"))
+            payload = json.loads(self.rfile.read(length) or b"null")
+            party = validate_party(payload)
             check_moves(party, self.moves_for)
         except json.JSONDecodeError:
             self._reply(400, {"ok": False, "error": "invalid JSON"})
@@ -141,7 +143,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
         except OSError:
             self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
             return
-        self.store.save_party(user_id, party)
+        self.store.save_party(user_id, party, normalize_dex(payload))
         self.on_upload(user_id, party)
         self._reply(200, {"ok": True, "party_size": len(party), **battle_overview(self.store, user_id, self.name_for)})
 
