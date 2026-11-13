@@ -188,7 +188,9 @@ private struct ItemCard: View {
         case .rareCandy: _ = store.useRareCandy(count: selectedCandyCount)
         case .mint:      _ = store.useMint()
         case .shinyCharm: break   // 보유형 — 사용 동작 없음
-        default:         return store.useEvolutionStone(kind) != .wrongStone
+        default:
+            let result = store.useEvolutionStone(kind)
+            return result != .wrongStone && result != .notReady
         }
         return true
     }

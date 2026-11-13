@@ -750,6 +750,8 @@ struct MonState: Codable, Sendable {
     var dittoRevealed = false       // 위장 → 리빌(정체 공개) 전환 여부
     /// Prayers said over the egg this individual hatched from. Nil = none (and every pre-prayer save).
     var prayers: PrayerRecord?
+    /// What the individual has done since it reached this form; the special-evolution gates read it.
+    var evolution = EvolutionProgress()
     /// 화면에 이로치로 보여도 되는가 — 위장 중 메타몽은 리빌 전까지 숨긴다. 표시 경로는 전부 이것만 쓴다.
     var displaysShiny: Bool { isShiny && (dittoDisguise == nil || dittoRevealed) }
     // pathIDs 가 비면(손상된 상태 파일) baseID 로 폴백 — 렌더마다 읽히므로 out-of-bounds 크래시 방지.
@@ -817,6 +819,7 @@ struct MonState: Codable, Sendable {
         dittoDisguise = try c.decodeIfPresent(Int.self, forKey: .dittoDisguise)
         dittoRevealed = try c.decodeIfPresent(Bool.self, forKey: .dittoRevealed) ?? false
         prayers = (try? c.decodeIfPresent(PrayerRecord.self, forKey: .prayers)) ?? nil
+        evolution = c.lenient(EvolutionProgress.self, forKey: .evolution, default: EvolutionProgress())
         form = PokemonForm.resolved(baseID: baseID, form: PokemonForm.decoded(from: decoder, keys: "form", "unownForm"))
     }
 }
@@ -919,7 +922,7 @@ private struct Lossy<T: Decodable>: Decodable {
     init(from decoder: Decoder) throws { value = try? decoder.singleValueContainer().decode(T.self) }
 }
 
-private extension KeyedDecodingContainer {
+extension KeyedDecodingContainer {
     /// 관대 디코드 — 키 없음/null/타입 불일치를 모두 기본값으로 흡수한다. 한 필드 손상이 상태 전체
     /// (도감·인벤토리)를 날리지 않게(부분 복원 > 전면 리셋). 최상위가 JSON 객체가 아닌 전면 손상은 여전히 throw.
     func lenient<T: Decodable>(_ type: T.Type, forKey key: Key, default def: T) -> T {

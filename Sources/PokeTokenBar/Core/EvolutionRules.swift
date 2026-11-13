@@ -156,6 +156,24 @@ enum EvolutionRules {
         return free.isEmpty ? pool : free
     }
 
+    /// The requirements that open the step into `species` right now; empty when it has no rule, nil while closed.
+    static func openPath(into species: Int, in context: EvolutionContext) -> [EvolutionRequirement]? {
+        guard let rule = rule(for: species) else { return [] }
+        return rule.openPath(in: context)
+    }
+
+    /// The children growth can reach; an item-only child is reached by using its item on the current form.
+    static func growthChildren(_ options: [EvoNode]) -> [EvoNode] {
+        options.filter { rule(for: $0.speciesID)?.isItemOnly != true }
+    }
+
+    /// At the moment of evolving, a branch chosen by a selector follows the traits as they are now (a mint
+    /// changes the nature after the plan was made).
+    static func resolvingSelector(_ planned: EvoNode, among siblings: [EvoNode], traits: EvolutionTraits?) -> EvoNode {
+        guard let selector = rule(for: planned.speciesID)?.selector, !selector.matches(traits) else { return planned }
+        return siblings.first { rule(for: $0.speciesID)?.selector?.matches(traits) == true } ?? planned
+    }
+
     private static let byID: [Int: EvolutionRule] = Dictionary(table.map { ($0.species, $0) }, uniquingKeysWith: { a, _ in a })
 
     static var all: [EvolutionRule] { table.sorted { $0.species < $1.species } }
