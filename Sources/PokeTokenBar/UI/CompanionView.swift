@@ -2247,17 +2247,20 @@ struct DexSpeciesCell: View {
     /// Set by the battle picker, where a cell is one individual: shows its level and drops the
     /// Pokédex-only actions. `isSelected` then marks the current battle pick.
     let level: Int?
+    /// Set by the scout picker: an unowned species keeps its badge but is not dimmed, since it is the one to want.
+    let isScoutPick: Bool
     let onTap: () -> Void
     @State private var isHovered = false
 
     init(store: CompanionStore, species: CompanionStore.DexSpecies, isSelected: Bool, isRepresentative: Bool,
-         formCount: Int?, level: Int? = nil, onTap: @escaping () -> Void) {
+         formCount: Int?, level: Int? = nil, isScoutPick: Bool = false, onTap: @escaping () -> Void) {
         self.store = store
         self.species = species
         self.isSelected = isSelected
         self.isRepresentative = isRepresentative
         self.formCount = formCount
         self.level = level
+        self.isScoutPick = isScoutPick
         self.onTap = onTap
     }
 
@@ -2274,8 +2277,8 @@ struct DexSpeciesCell: View {
                 SpriteView(speciesID: species.id, size: Self.thumb,
                            shiny: formCount == nil && species.isShiny, form: species.form)
                     .frame(width: Self.thumb, height: Self.thumb)
-                    .opacity(species.isOwned ? 1 : 0.4)
-                    .saturation(species.isOwned ? 1 : 0.3)
+                    .opacity(species.isOwned || isScoutPick ? 1 : 0.4)
+                    .saturation(species.isOwned || isScoutPick ? 1 : 0.3)
                     // Keep the raising badge over the sprite to leave room for the name.
                     .overlay(alignment: .bottom) {
                         if let level { levelBadge(level).fixedSize() }
@@ -2329,7 +2332,7 @@ struct DexSpeciesCell: View {
         .help(tooltip)
         .accessibilityLabel(tooltip)
         .contextMenu {
-            if !species.isOwned || level != nil {
+            if !species.isOwned || level != nil || isScoutPick {
                 EmptyView()
             } else if formCount != nil {
                 Button(store.l.chooseForm, action: onTap)

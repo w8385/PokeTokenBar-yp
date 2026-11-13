@@ -311,6 +311,43 @@ enum FreshEgg {
     }
 }
 
+/// 스카우트 티켓이 뽑는 풀 — 지역 하나 또는 전국. 티켓은 `ItemKind` 가 아니라 인벤토리의 `inventoryKey` 로 센다.
+enum ScoutPool: Hashable, Sendable {
+    case region(PokedexRegion)
+    case national
+
+    static var all: [ScoutPool] { PokedexRegion.allCases.map { .region($0) } + [.national] }
+
+    /// 티켓 개수 키(`inventoryKey`)와 후보 목록 키(`CompanionState.scoutDraws`)에 저장되므로 바꾸지 않는다.
+    var key: String {
+        switch self {
+        case .region(let region): return region.rawValue
+        case .national: return "national"
+        }
+    }
+    var inventoryKey: String { "scout.\(key)" }
+
+    init?(key: String) {
+        guard let pool = Self.all.first(where: { $0.key == key }) else { return nil }
+        self = pool
+    }
+
+    var dexRange: ClosedRange<Int> {
+        switch self {
+        case .region(let region): return region.dexRange
+        case .national: return PokedexRegion.nationalRange
+        }
+    }
+}
+
+/// 스카우트 티켓 밸런스 상수.
+enum ScoutTicket {
+    /// 한 번에 보여 주는 후보 수.
+    static let drawSize = 10
+    /// 모든 지역·전국 공통 가격. 종을 **고르게** 해 주므로 등급 보증 알 중 가장 비싼 희귀 알(4B)보다 비싸다.
+    static let price = 5_000_000_000
+}
+
 /// 상점 표시 한 줄 — 판매 아이템(ItemKind) 또는 알 리롤(즉시 액션이라 ItemKind 가 아님).
 /// `egg` 의 연관값은 **보증 등급 하한**(nil = 보증 없는 기존 알).
 /// CompanionStore.shopEntries 가 이 둘을 가격 오름차순으로 병합해 뷰가 단일 목록으로 그린다.
@@ -776,6 +813,10 @@ struct CompanionState: Codable, Sendable {
     var language: AppLanguage = .systemDefault   // 신규 설치 = 시스템 로케일
     // 인벤토리 (ItemKind.rawValue → 개수)
     var inventory: [String: Int] = [:]
+    // 스카우트 티켓으로 뽑아 둔 후보(ScoutPool.key → 종 id). 고르기 전에 닫아도 같은 후보를 다시 보이려고 영속.
+    var scoutDraws: [String: [Int]] = [:]
+    // 지금 품은 알이 스카우트로 고른 종인가 — 메타몽 위장 롤을 건너뛰어 고른 종이 그대로 부화하게 한다.
+    var scoutedEgg = false
     // 사탕 지급 엣지 상태(창 key → 지급한 tier). ★영속 — notifiedTier(인메모리)와 달리 재시작 무한지급 방지.
     var candyGrantTier: [String: Int] = [:]
     // 창 key → 마지막으로 본 epoch(`resets_at`). util 이 계속 100%여도 epoch 교체로 재무장(#326).
@@ -825,6 +866,8 @@ struct CompanionState: Codable, Sendable {
         collectedFinals    = c.lenient(Set<String>.self, forKey: .collectedFinals, default: [])
         language           = c.lenient(AppLanguage.self, forKey: .language, default: .systemDefault)
         inventory          = c.lenient([String: Int].self, forKey: .inventory, default: [:])
+        scoutDraws         = c.lenient([String: [Int]].self, forKey: .scoutDraws, default: [:])
+        scoutedEgg         = c.lenient(Bool.self, forKey: .scoutedEgg, default: false)
         candyGrantTier     = c.lenient([String: Int].self, forKey: .candyGrantTier, default: [:])
         candyWindowEpoch   = c.lenient([String: String].self, forKey: .candyWindowEpoch, default: [:])
         candyFeatureSeeded = c.lenient(Bool.self, forKey: .candyFeatureSeeded, default: false)

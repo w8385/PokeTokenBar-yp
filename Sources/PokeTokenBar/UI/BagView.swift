@@ -6,8 +6,16 @@ struct BagView: View {
     let store: CompanionStore
     let nav: PopoverNavigation
 
+    /// The ticket whose scout screen is open; it replaces the list while set.
+    @State private var scoutPool: ScoutPool?
+
     var body: some View {
-        if store.ownedItems.isEmpty {
+        if let pool = scoutPool {
+            ScoutPickerView(store: store, pool: pool,
+                            onPicked: { scoutPool = nil; nav.tab = .home },
+                            onBack: { scoutPool = nil })
+                .frame(height: 520)
+        } else if store.ownedItems.isEmpty && store.ownedScoutTickets.isEmpty {
             emptyState
         } else {
             // 고정 높이 — 컬렉션과 동일(팝오버 재오픈 시 fitting size 축소 방지).
@@ -15,6 +23,11 @@ struct BagView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(store.ownedItems, id: \.kind) { item in
                         ItemCard(store: store, nav: nav, kind: item.kind, count: item.count)
+                    }
+                    ForEach(store.ownedScoutTickets, id: \.pool) { ticket in
+                        ScoutTicketCard(store: store, pool: ticket.pool, count: ticket.count) {
+                            scoutPool = ticket.pool
+                        }
                     }
                 }
                 .reservesScrollerLane()

@@ -2247,6 +2247,65 @@ struct L {
     var freshEggShinyWarning: String { t("⚠️ 이로치 포켓몬이에요! 정말 놓아줄까요?", "⚠️ This one is shiny! Really send it off?", "⚠️ 色違いです！本当に手放しますか？", "⚠️ ¡Este es variocolor! ¿Seguro que quieres soltarlo?", "⚠️ Celui-ci est chromatique ! Vraiment le laisser partir ?", "⚠️ Esse é shiny! Quer mesmo soltar?", "⚠️ Dieses Pokémon ist schillernd! Wirklich verabschieden?", "⚠️ Это шайни! Точно отпустить?") }
     var freshEggLegendaryWarning: String { t("⚠️ 전설 포켓몬이에요! 정말 놓아줄까요?", "⚠️ This is a Legendary Pokémon! Really send it off?", "⚠️ 伝説のポケモンです！本当に手放しますか？", "⚠️ ¡Es un Pokémon legendario! ¿Seguro que quieres soltarlo?", "⚠️ C'est un Pokémon légendaire ! Vraiment le laisser partir ?", "⚠️ Esse é um Pokémon lendário! Quer mesmo soltar?", "⚠️ Dieses Pokémon ist legendär! Wirklich verabschieden?", "⚠️ Это легендарный покемон! Точно отпустить?") }
     var freshEggDiscardShiny: String { t("이로치 놓아주기", "Send shiny off", "手放す", "Soltar variocolor", "Laisser partir le chromatique", "Soltar o shiny", "Schillerndes Pokémon verabschieden", "Отпустить шайни") }
+    // 스카우트 — 지역(또는 전국) 포켓몬 10마리를 보고 알 하나를 고르는 티켓.
+    var scoutSection: String { t("스카우트", "Scout", "スカウト", "Exploración", "Recrutement", "Recrutamento", "Scouting", "Разведка") }
+    func scoutPoolName(_ pool: ScoutPool) -> String {
+        switch pool {
+        case .region(let region): return regionName(region)
+        case .national: return t("전국", "National", "全国", "Nacional", "National", "Nacional", "National", "Все регионы")
+        }
+    }
+    func scoutTicketName(_ pool: ScoutPool) -> String {
+        let p = scoutPoolName(pool)
+        return t("\(p) 스카우트 티켓", "\(p) Scout Ticket", "\(p)スカウトチケット", "Boleto de exploración: \(p)",
+                 "Ticket de recrutement : \(p)", "Bilhete de recrutamento: \(p)", "\(p)-Scouting-Ticket", "Билет разведки: \(p)")
+    }
+    func scoutDescription(_ pool: ScoutPool) -> String {
+        let p = scoutPoolName(pool)
+        return t("\(p) 포켓몬 10마리를 보고 알 하나를 직접 골라요.",
+                 "See 10 random \(p) Pokémon and pick the egg you want.",
+                 "\(p)のポケモン10匹から、ほしいタマゴを選べます。",
+                 "Mira 10 Pokémon al azar de \(p) y elige el huevo que quieras.",
+                 "Découvre 10 Pokémon au hasard de \(p) et choisis l'œuf que tu veux.",
+                 "Veja 10 Pokémon aleatórios de \(p) e escolha o ovo que quiser.",
+                 "Sieh dir 10 zufällige Pokémon aus \(p) an und such dir das Ei aus.",
+                 "Покажет 10 случайных покемонов (\(p)) — выберите яйцо, какое хотите.")
+    }
+    var scoutShopHint: String {
+        t("지역마다 티켓이 있어요. 그 지역 포켓몬 10마리 중에서 알을 직접 골라요.",
+          "One ticket per region. See 10 Pokémon from it and pick the egg you want.",
+          "地方ごとにチケットがあります。その地方のポケモン10匹から、ほしいタマゴを選べます。",
+          "Hay un boleto por región. Mira 10 Pokémon de ella y elige el huevo que quieras.",
+          "Un ticket par région. Découvre 10 Pokémon de cette région et choisis l'œuf que tu veux.",
+          "Um bilhete por região. Veja 10 Pokémon dela e escolha o ovo que quiser.",
+          "Pro Region ein Ticket. Sieh dir 10 Pokémon daraus an und such dir das Ei aus.",
+          "Билет на каждый регион. Покажет 10 покемонов оттуда — выберите яйцо, какое хотите.")
+    }
+    var scoutViewPicks: String { t("후보 보기", "View picks", "候補を見る", "Ver candidatos", "Voir les candidats", "Ver candidatos", "Kandidaten ansehen", "Показать варианты") }
+    var scoutPick: String { t("고르기", "Pick", "選ぶ", "Elegir", "Choisir", "Escolher", "Wählen", "Выбрать") }
+    var scoutPickHint: String {
+        t("하나를 고르면 그 종의 알로 바뀌고 티켓 1장을 써요. 닫아도 이 10마리는 그대로예요.",
+          "Pick one to get its egg; the ticket is used up. Closing keeps these 10 for next time.",
+          "ひとつ選ぶとそのタマゴになり、チケットを1枚使います。閉じてもこの10匹はそのままです。",
+          "Elige uno para recibir su huevo; se gasta el boleto. Si cierras, estos 10 se mantienen.",
+          "Choisis-en un pour obtenir son œuf ; le ticket est utilisé. Si tu fermes, ces 10 restent.",
+          "Escolha um para receber o ovo dele; o bilhete é usado. Se fechar, estes 10 ficam guardados.",
+          "Wähle eines, um sein Ei zu bekommen; das Ticket wird verbraucht. Schließt du, bleiben diese 10 erhalten.",
+          "Выберите одного — получите его яйцо, билет будет потрачен. Если закрыть, эти 10 сохранятся.")
+    }
+    var scoutLoading: String { t("후보를 뽑는 중…", "Drawing picks…", "候補を選んでいます…", "Eligiendo candidatos…", "Tirage en cours…", "Sorteando candidatos…", "Kandidaten werden gezogen …", "Подбираем варианты…") }
+    var scoutLoadFailed: String { t("후보를 불러오지 못했어요. 티켓은 그대로예요.", "Couldn't load the picks. Your ticket is untouched.", "候補を読み込めませんでした。チケットは減っていません。", "No se pudieron cargar los candidatos. El boleto sigue intacto.", "Impossible de charger les candidats. Ton ticket est intact.", "Não deu para carregar os candidatos. O bilhete continua intacto.", "Kandidaten konnten nicht geladen werden. Dein Ticket ist unberührt.", "Не удалось загрузить варианты. Билет не потрачен.") }
+    var scoutPickLocked: String { t("알이 부화하면 고를 수 있어요.", "You can pick once your egg hatches.", "タマゴが孵ると選べます。", "Podrás elegir cuando eclosione tu huevo.", "Tu pourras choisir une fois ton œuf éclos.", "Dá para escolher quando seu ovo chocar.", "Auswählen kannst du, sobald dein Ei geschlüpft ist.", "Выбрать можно, когда вылупится яйцо.") }
+    func scoutPickConfirm(_ monName: String, _ speciesName: String) -> String {
+        t("\(KoreanParticle.object.attach(to: monName)) 놓아주고 \(speciesName) 알을 받을까요?",
+          "Send off \(monName) for a \(speciesName) egg?",
+          "\(monName) を手放して \(speciesName) のタマゴをもらいますか？",
+          "¿Soltar a \(monName) y recibir un huevo de \(speciesName)?",
+          "Laisser partir \(monName) pour un œuf de \(speciesName) ?",
+          "Soltar \(monName) e receber um ovo de \(speciesName)?",
+          "\(monName) verabschieden und ein \(speciesName)-Ei erhalten?",
+          "Отпустить \(monName) и получить яйцо \(speciesName)?")
+    }
     var freshEggDiscardValuable: String { t("놓아주기", "Send off", "手放す", "Soltar", "Laisser partir", "Soltar", "Verabschieden", "Отпустить") }
 
     // MARK: 사탕 획득 알림 ("왜 받는지" = 토큰 한도를 다 채운 수고에 대한 보상)

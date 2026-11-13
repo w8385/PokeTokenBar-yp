@@ -1466,6 +1466,13 @@ final class CompanionStore {
     func buyEgg(_ tier: Rarity?) -> Bool {
         guard canBuyEgg(tier) else { return false }
         state.spentTokens += price(of: .egg(tier))
+        releaseActiveForNewEgg(tier: tier, pendingHatchID: nil)
+        return true
+    }
+
+    /// 활성 포켓몬을 놓아주고 처음부터 인큐베이션하는 새 알로 — 상점 알과 스카우트가 같이 쓴다.
+    /// `pendingHatchID` 가 있으면(스카우트) 그 종으로 미리 정해 두고 메타몽 위장도 끈다.
+    private func releaseActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?) {
         if let a = state.active {
             state.dex.append(releasedDexEntry(from: a))   // 놓아줌 기록 — 도감에서 종이 사라지지 않게
         }
@@ -1479,14 +1486,93 @@ final class CompanionStore {
         state.resetEggPrayers()
         isHatchRetryDelayed = false
         state.eggTier = tier          // 등급 보증(nil = 보증 없음)
-        state.pendingHatchID = nil    // 새 보증으로 처음부터 롤(활성 포켓몬이 있는 동안엔 원래 비어 있다)
-        state.pendingForm = nil
+        state.pendingHatchID = pendingHatchID   // nil 이면 새 보증으로 처음부터 롤(활성 포켓몬이 있는 동안엔 원래 비어 있다)
+        state.pendingForm = pendingHatchID.flatMap { rollLineForm(baseID: $0) }
+        state.scoutedEgg = pendingHatchID != nil
         prefetchedLineID = nil
         justGraduated = nil; justEvolvedTo = nil; eventUntil = nil
-        AppLog.write("egg purchased: discarded active, tier=\(tier?.rawValue ?? "none")")
+        AppLog.write("egg purchased: discarded active, tier=\(tier?.rawValue ?? "none") scouted=\(pendingHatchID.map(String.init) ?? "no")")
         Task { await self.ensureEggPrefetch() }   // 다음 부화 예열
         save()
+    }
+
+    // MARK: 스카우트 (티켓 → 후보 10종 → 하나 골라 그 종의 알)
+
+    func scoutTicketCount(_ pool: ScoutPool) -> Int { max(0, state.inventory[pool.inventoryKey] ?? 0) }
+
+    /// 가방에 든 티켓 — 지역 순서(전국 마지막).
+    var ownedScoutTickets: [(pool: ScoutPool, count: Int)] {
+        ScoutPool.all.compactMap { pool in
+            let count = scoutTicketCount(pool)
+            return count > 0 ? (pool, count) : nil
+        }
+    }
+
+    var scoutPrice: Int { PokemonBalance.scaled(ScoutTicket.price, by: shopDifficulty) }
+    var canBuyScoutTicket: Bool { availableTokens >= scoutPrice }
+
+    @discardableResult
+    func buyScoutTicket(_ pool: ScoutPool) -> Bool {
+        guard canBuyScoutTicket else { return false }
+        state.spentTokens += scoutPrice
+        state.inventory[pool.inventoryKey, default: 0] += 1
+        save()
         return true
+    }
+
+    /// 이 티켓으로 이미 뽑아 둔 후보. 없으면 nil.
+    func scoutDraw(for pool: ScoutPool) -> [Int]? {
+        guard scoutTicketCount(pool) > 0, let ids = state.scoutDraws[pool.key], !ids.isEmpty else { return nil }
+        return ids
+    }
+
+    /// 후보를 돌려준다 — 이미 뽑아 둔 게 있으면 그대로, 없으면 알이 쓰는 가중치로 10종을 뽑아 저장한다.
+    /// 티켓은 여기서 쓰지 않는다(고를 때 쓴다). 종 인덱스를 못 받으면 nil — 티켓은 그대로다.
+    func drawScout(_ pool: ScoutPool) async -> [Int]? {
+        guard scoutTicketCount(pool) > 0 else { return nil }
+        if let existing = scoutDraw(for: pool) { return existing }
+        guard let full = try? await provider.baseSpeciesIndex() else { return nil }
+        // await 사이에 다른 호출이 먼저 뽑았거나 티켓이 줄었을 수 있다.
+        guard scoutTicketCount(pool) > 0 else { return nil }
+        if let existing = scoutDraw(for: pool) { return existing }
+        let candidates = full.filter { pool.dexRange.contains($0.id) && PokemonAssets.isSupported(speciesID: $0.id) }
+        let drawn = SpeciesRoll.drawDistinct(from: candidates, count: ScoutTicket.drawSize,
+                                             isCollected: { state.hasCollectedFinal(forBaseID: $0) }, rng: &rng)
+        guard !drawn.isEmpty else { return nil }
+        state.scoutDraws[pool.key] = drawn
+        save()
+        return drawn
+    }
+
+    /// 고르기는 놓아줄 포켓몬이 있을 때만 — 알 상태에서 알을 바꾸는 동작은 상점 알과 같은 이유로 만들지 않는다.
+    var canPickScout: Bool { hasActive }
+
+    /// 고른 종의 알로 바꾼다 — 티켓 1장과 그 풀의 후보를 지운다. 현재 포켓몬은 놓아준다(도감엔 남는다).
+    @discardableResult
+    func pickScout(_ pool: ScoutPool, speciesID: Int) -> Bool {
+        guard canPickScout, scoutTicketCount(pool) > 0, scoutDraw(for: pool)?.contains(speciesID) == true else { return false }
+        state.inventory[pool.inventoryKey] = scoutTicketCount(pool) - 1
+        state.scoutDraws[pool.key] = nil
+        releaseActiveForNewEgg(tier: nil, pendingHatchID: speciesID)
+        return true
+    }
+
+    /// 후보 한 칸의 표시 정보 — 종 인덱스(이름·타입·전설 여부)가 있어야 만든다.
+    struct ScoutPick: Identifiable {
+        let species: DexSpecies
+        let types: [String]
+        var id: Int { species.id }
+    }
+
+    func scoutPicks(_ ids: [Int]) -> [ScoutPick] {
+        guard let speciesIndex else { return [] }
+        return ids.compactMap { id in
+            guard let entry = speciesIndex.entry(id), let rarity = speciesIndex.rarity(of: id) else { return nil }
+            let species = DexSpecies(id: id, name: state.language.resolveName(entry.names) ?? "#\(id)",
+                                     rarity: rarity, isShiny: false, isRaising: false,
+                                     names: entry.names, isOwned: state.ownsSpecies(id))
+            return ScoutPick(species: species, types: entry.types)
+        }
     }
 
     // MARK: 클릭 성장
@@ -1888,6 +1974,8 @@ final class CompanionStore {
         let overflow = max(0, state.eggUsage - eggHatchThreshold)
         state.eggUsage = 0
         state.eggTier = nil   // 보증은 이 부화로 소비된다(다음 알은 다시 무보증)
+        let scouted = state.scoutedEgg
+        state.scoutedEgg = false
         let prayers = state.eggPrayers   // 부화체에 옮기고 알 쪽은 비운다
         state.resetEggPrayers()
         // 개체 롤 — shiny(1/64, 부적 1/48)·성격(25종)은 부화 순간 확정, 진화해도 유지.
@@ -1898,7 +1986,7 @@ final class CompanionStore {
         // 메타몽 위장 롤 — common·≥2형태에 한해 1/128. .app 게이트(&& 단락 → 비앱에선 rng 미소비로
         // 기존 테스트 RNG 시퀀스 무영향). 위장/리빌 로직은 상태 기반으로 별도 테스트한다.
         var dittoDisguise: Int?
-        if dittoDisguiseRollingEnabled,
+        if dittoDisguiseRollingEnabled, !scouted,   // 스카우트로 고른 종이 메타몽으로 바뀌면 산 걸 못 받는다
            Self.dittoDisguiseHit(rarity: line.rarity, totalForms: line.totalForms, roll: rng.next()) {
             dittoDisguise = line.baseID
         }
@@ -2033,16 +2121,7 @@ final class CompanionStore {
                 AppLog.write("hatch: no candidate for guaranteed \(tier?.rawValue ?? "none") — egg kept, retry next tick")
                 return nil
             }
-            let weights = index.map { e in
-                CollectionWeight.adjusted(e.captureRate, isCollected: state.hasCollectedFinal(forBaseID: e.id))
-            }
-            let total = weights.reduce(0, +)
-            var r = Int(rng.next() % UInt64(total))
-            for (i, w) in weights.enumerated() {
-                r -= w
-                if r < 0 { return index[i].id }
-            }
-            return index.last?.id   // 도달 불가(방어)
+            return SpeciesRoll.pick(from: index, isCollected: { state.hasCollectedFinal(forBaseID: $0) }, rng: &rng)?.id
         }
         // GraphQL base 인덱스 엔드포인트 장애 → REST 폴백. 부화가 한 엔드포인트에 묶이지 않게.
         AppLog.write("hatch: base index unavailable — REST fallback")

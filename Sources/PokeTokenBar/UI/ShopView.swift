@@ -31,6 +31,7 @@ struct ShopView: View {
                 ForEach(store.evolutionStoneItems, id: \.self) { kind in
                     ShopItemCard(store: store, kind: kind)
                 }
+                ShopScoutSection(store: store)
             }
             .reservesScrollerLane()
         }
