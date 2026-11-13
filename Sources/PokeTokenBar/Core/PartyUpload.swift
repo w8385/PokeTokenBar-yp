@@ -18,6 +18,7 @@ struct PartyMember: Encodable, Equatable, Sendable {
 struct PartyPayload: Encodable, Equatable, Sendable {
     let appVersion: String?
     let party: [PartyMember]
+    var dex: DexSummary? = nil
 
     func encoded() throws -> Data {
         let encoder = JSONEncoder()
@@ -153,6 +154,7 @@ final class PartyUploader {
     @ObservationIgnored private let fetch: Fetch
     @ObservationIgnored private let appVersion: String?
     @ObservationIgnored private let partySource: @MainActor () -> [PartyMember]
+    @ObservationIgnored private let dexSource: @MainActor () -> DexSummary?
     @ObservationIgnored private var lastAttemptAt: Date?
     @ObservationIgnored private var lastAttemptBody: Data?
     @ObservationIgnored private var loop: Task<Void, Never>?
@@ -163,13 +165,15 @@ final class PartyUploader {
          appVersion: String? = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
          exchange: @escaping Exchange = PartyUploader.urlSessionExchange,
          fetch: @escaping Fetch = PartyUploader.urlSessionFetch,
-         partySource: @escaping @MainActor () -> [PartyMember]) {
+         partySource: @escaping @MainActor () -> [PartyMember],
+         dexSource: @escaping @MainActor () -> DexSummary? = { nil }) {
         self.tokenStore = tokenStore
         self.defaults = defaults
         self.appVersion = appVersion
         self.exchange = exchange
         self.fetch = fetch
         self.partySource = partySource
+        self.dexSource = dexSource
         hasToken = tokenStore.load() != nil
         serverURL = defaults.string(forKey: Self.serverURLDefaultsKey) ?? ""
         lastSuccessAt = hasToken ? defaults.object(forKey: Self.lastSuccessDefaultsKey) as? Date : nil
@@ -231,7 +235,7 @@ final class PartyUploader {
         guard let token = tokenStore.load() else { return }
         let party = partySource()
         guard !party.isEmpty,
-              let body = try? PartyPayload(appVersion: appVersion, party: party).encoded(),
+              let body = try? PartyPayload(appVersion: appVersion, party: party, dex: dexSource()).encoded(),
               Self.shouldSend(body: body, lastBody: lastAttemptBody, lastAttemptAt: lastAttemptAt, now: now),
               let request = Self.request(serverURL: serverURL, token: token, body: body)
         else { return }

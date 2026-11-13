@@ -36,12 +36,15 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   The token is also in the DM for pasting by hand. Running it again rotates the token.
 - `/전적 [@누구]` shows win/loss.
 - `/랭킹` posts this week's top 10 (since Monday 00:00 KST) by wins, then win rate, then fewer battles.
-- `/ypoke` shows help.
+- `/도감 [@누구]` shows the target's (default: your own) dex summary the app uploaded: owned species, shiny count,
+  progress per region and the representative Pokémon with its sprite. Private for a slash command. An unlinked
+  target, or one whose app has not sent a dex yet, gets one short line.
+- `/ypoke` shows help. `/ypoke 도감 @누구` (or any command word after `/ypoke`) runs that command.
 - The upload response carries the app's "최근 대결" and "동료" lists ([API.md](API.md)). Display names come from Slack
   `users.info` (scope `users:read`, cached an hour); without the scope the names are `null` and the app shows a generic label.
 - Slack runs no slash commands in threads, so mentions cover them all and answer in the thread:
   `@YPoke 대결 @상대`, `@YPoke 대결` (practice), `@YPoke 전적 [@누구]`, `@YPoke 랭킹`,
-  `@YPoke 연결` (link by DM). `@YPoke` alone shows help. A top-level mention starts a thread.
+  `@YPoke 도감 [@누구]`, `@YPoke 연결` (link by DM). `@YPoke` alone shows help. A top-level mention starts a thread.
 
 ## Run locally
 

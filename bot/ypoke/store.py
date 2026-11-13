@@ -112,6 +112,8 @@ class Store:
             for column in ("challenger_pokemon", "opponent_pokemon", "turns"):
                 if column not in battle_columns:
                     connection.execute(f"ALTER TABLE battles ADD COLUMN {column} INTEGER")
+            if "dex_json" not in {row[1] for row in connection.execute("PRAGMA table_info(users)")}:
+                connection.execute("ALTER TABLE users ADD COLUMN dex_json TEXT")
 
     def issue_token(self, slack_user_id: str, keep_existing: bool = False) -> str:
         """Create a new upload token for the user. Unless `keep_existing`, every previous token is revoked."""
@@ -143,16 +145,30 @@ class Store:
             ).fetchone()
         return row[0] if row else None
 
-    def save_party(self, slack_user_id: str, party: list[dict]) -> None:
+    def save_party(self, slack_user_id: str, party: list[dict], dex: dict | None = None) -> None:
+        """Replace the party. A missing `dex` (an older app) keeps the last one stored."""
         with closing(self._connect()) as connection, connection:
             connection.execute(
-                "UPDATE users SET party_json = ?, uploaded_at = ? WHERE slack_user_id = ?",
-                (json.dumps(party, ensure_ascii=False), _now(), slack_user_id),
+                "UPDATE users SET party_json = ?, uploaded_at = ?, dex_json = COALESCE(?, dex_json) "
+                "WHERE slack_user_id = ?",
+                (json.dumps(party, ensure_ascii=False), _now(),
+                 json.dumps(dex, ensure_ascii=False) if dex is not None else None, slack_user_id),
             )
 
     def linked_user_ids(self) -> list[str]:
         with closing(self._connect()) as connection:
             return [row[0] for row in connection.execute("SELECT slack_user_id FROM users")]
+
+    def dex(self, slack_user_id: str) -> dict | None:
+        with closing(self._connect()) as connection:
+            row = connection.execute(
+                "SELECT dex_json FROM users WHERE slack_user_id = ? AND dex_json IS NOT NULL", (slack_user_id,)
+            ).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def is_linked(self, slack_user_id: str) -> bool:
+        with closing(self._connect()) as connection:
+            return connection.execute("SELECT 1 FROM users WHERE slack_user_id = ?", (slack_user_id,)).fetchone() is not None
 
     def party(self, slack_user_id: str) -> StoredParty | None:
         with closing(self._connect()) as connection:

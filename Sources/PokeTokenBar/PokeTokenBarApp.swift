@@ -130,6 +130,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             companion.map {
                 BattleEntry.party(state: $0.state, slot: battleEntry.slot, rentalSpeciesID: battleEntry.rentalSpeciesID)
             } ?? []
+        } dexSource: { [weak companion] in
+            companion.map { DexSummary($0) }
         }
         partyUploader.start()
         store.localizationLanguage = companion.language   // 알림 현지화용 미러 시드
