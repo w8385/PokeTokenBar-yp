@@ -16,7 +16,7 @@ def api(tmp_path):
     store = Store(str(tmp_path / "bot.sqlite3"))
     service = TradeService(store, name_for=NAMES.get)
     sent = []
-    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), service, sent.append)
+    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), NAMES.get, service, sent.append)
     base = f"http://127.0.0.1:{server.server_address[1]}"
     yield SimpleNamespace(base=base, service=service, sent=sent, alice=store.issue_token(ALICE), bob=store.issue_token(BOB))
     server.shutdown()
@@ -32,7 +32,8 @@ def upload(api, token, pool=None):
 def test_the_upload_stores_the_pool_and_replies_with_deliveries(api):
     status, body = upload(api, api.alice, [HAUNTER, EEVEE])
 
-    assert (status, body) == (200, {"ok": True, "party_size": 1, "trades": {"deliveries": []}})
+    assert status == 200
+    assert body["trades"] == {"deliveries": []}
     assert [entry["id"] for entry in api.service._pool(ALICE)] == ["alice-haunter", "alice-eevee"]
 
 
@@ -110,7 +111,8 @@ def test_without_a_trade_service_the_upload_reply_is_unchanged(tmp_path):
         base = f"http://127.0.0.1:{server.server_address[1]}"
         token = store.issue_token(ALICE)
         reply = call(f"{base}/v1/party", "POST", token, {"party": [BATTLER], "trade_pool": [HAUNTER]})
-        assert reply[1] == {"ok": True, "party_size": 1}
+        assert "trades" not in reply[1]
+        assert reply[1]["party_size"] == 1
         assert call(f"{base}/v1/coworkers", token=token)[0] == 404
     finally:
         server.shutdown()

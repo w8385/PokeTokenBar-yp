@@ -553,7 +553,8 @@ final class SaveTransferTests: XCTestCase {
         // eggPrayers = 진행 — 품고 있는 알에 붙은 기록이라 알과 함께 이동한다.
         // notifiedDexCompletions·dexCompletionsSeeded = 진행 — 완성 알림 기록은 도감(dex)에서 파생되므로
         // 도감과 함께 따라가야 한다(옮긴 기기에서 같은 완성분에 중복 알림을 울리지 않는다).
-        let progress: Set<String> = ["usedSinceInstall", "spentTokens", "eggUsage", "eggTier",
+        // appliedTradeIDs = 진행 — 적용한 교환 기록은 도감과 함께 가야 옮긴 기기에서 같은 교환이 다시 적용되지 않는다.
+        let progress: Set<String> = ["usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
                                      "collectedFinals", "inventory",

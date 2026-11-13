@@ -354,7 +354,7 @@ final class TradeUploaderTests: XCTestCase {
             return deliveries.map(\.tradeID)
         })
         return PartyUploader(tokenStore: tokenStore, defaults: defaults, appVersion: "t",
-                             send: { _ in 200 },
+                             exchange: { _ in (Data(), 200) },
                              fetch: { request in
                                  calls.add("\(request.httpMethod ?? "GET") \(request.url?.path ?? "")")
                                  if request.url?.path == "/v1/trades", request.httpMethod == nil || request.httpMethod == "GET" {
