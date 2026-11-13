@@ -5,9 +5,22 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
 
 - `/대결 @상대` runs one automatic one-on-one battle (PokéAPI base stats, level, IVs, type chart,
   level-up moves with PP, critical-hit stages, burn, paralysis and stat stages) and posts a turn-by-turn
-  log, written like the in-game battle text, in the channel it was called from. Each Pokémon uses its
+  log, written like the in-game battle text. The channel gets a context line ("who ran which command", since
+  Slack shows nobody a typed slash command), a one-line result and a "다시 붙기" button; the turn log is the
+  first reply in that message's thread. The bot posts it with `chat.postMessage`, so it must be a member of
+  the channel; where it cannot (a DM, a private channel it is not in) everything goes in one message through
+  the response URL instead. Each Pokémon uses its
   move with the highest expected damage every turn. Only win/loss is recorded. With no mention it shows
   help.
+- Every in-channel slash reply starts with that context line; ephemeral ones do not. A mention reply stays in
+  the mention's thread (summary + button, then the log) and needs no echo line.
+- "다시 붙기" reruns the same matchup with the current uploads and posts in the same thread. Only the two who
+  fought can press it (others get a private notice); a practice battle reruns as practice, and a side with no
+  upload goes through the pending flow below.
+- When the challenger has no upload, the thread/channel also sees one line saying so; the how-to stays in the DM
+  and the private reply.
+- The bot logs one INFO line per slash command, mention and button (`user`, `command`, `args`), never the
+  request body.
 - If a side has no Pokémon uploaded yet, the challenge waits (SQLite `pending_challenges`, one per pair,
   24 hours). That side gets the "PokeTokenBar 연결" button by DM, at most once a day; the new token works
   beside any older one. The channel hears about it only when the opponent is the one missing; a challenger
