@@ -14,9 +14,9 @@ from ypoke.commands import (
     Where,
     fallback_text,
     fit,
+    message_blocks,
     parse_mention,
     reply_thread_ts,
-    image_blocks,
     result_blocks,
 )
 from ypoke.trades import TradeService
@@ -177,9 +177,9 @@ def publish_in_thread(
             _fallback(respond, text=fallback_text(reply), blocks=result_blocks(reply, with_log=True), **visible)
     elif reply.in_channel:
         text = "\n".join(filter(None, (reply.echo, reply.text)))
-        _post_line(client, channel, thread_ts, text, respond, image_blocks(text, reply.image_url))
+        _post_line(client, channel, thread_ts, text, respond, message_blocks(reply, True))
     else:
-        _private(client, channel, user_id, thread_ts, reply.text, respond, image_blocks(reply.text, reply.image_url))
+        _private(client, channel, user_id, thread_ts, reply.text, respond, message_blocks(reply, False))
     if reply.public:
         _post_line(client, channel, thread_ts, "\n".join(filter(None, (reply.echo, reply.public))), respond)
 
@@ -229,4 +229,4 @@ def _publish_slash(client: WebClient, respond: Callable, channel: str, reply: Re
         respond(text="\n".join(filter(None, (reply.echo, reply.public))), response_type="in_channel")
     visible = reply.in_channel
     text = "\n".join(filter(None, (reply.echo, reply.text))) if visible else reply.text
-    respond(text=text, blocks=image_blocks(text, reply.image_url), response_type="in_channel" if visible else "ephemeral")
+    respond(text=text, blocks=message_blocks(reply, visible), response_type="in_channel" if visible else "ephemeral")
