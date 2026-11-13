@@ -1532,7 +1532,8 @@ final class CompanionStore {
     }
 
     private func equip(inventoryKey key: String, to instanceID: String) -> Bool {
-        guard state.inventory[key, default: 0] > 0, state.ownedInstanceIDs.contains(instanceID) else { return false }
+        guard !isTradeLocked(instanceID), state.inventory[key, default: 0] > 0,
+              state.ownedInstanceIDs.contains(instanceID) else { return false }
         if state.heldItems[instanceID] == key { return true }
         if let previous = state.heldItems[instanceID] { state.inventory[previous, default: 0] += 1 }
         state.inventory[key, default: 0] -= 1
@@ -1601,7 +1602,7 @@ final class CompanionStore {
 
     @discardableResult
     func unequip(from instanceID: String) -> Bool {
-        guard let key = state.heldItems[instanceID] else { return false }
+        guard !isTradeLocked(instanceID), let key = state.heldItems[instanceID] else { return false }
         state.inventory[key, default: 0] += 1
         state.heldItems[instanceID] = nil
         save()
@@ -2926,9 +2927,30 @@ final class CompanionStore {
     enum TradeEvolutionResult: Equatable { case evolved, noEvolution, notReady, unavailable }
     /// `wrongTarget` and `notReady` (it evolves by trade, but the item or friend it needs is missing) leave the
     /// cord in the bag.
-    enum CordUseResult: Equatable { case evolved, wrongTarget, notReady, unavailable }
+    /// `listed`: the individual is in an open trade, and a cord evolution would use up the item the trade carries.
+    enum CordUseResult: Equatable { case evolved, wrongTarget, notReady, unavailable, listed }
 
     private static let appliedTradeLimit = 200
+    /// An offer lives 24 hours on the bot; a lock the bot stops reporting is dropped at the next sync, and one it
+    /// can no longer report (bot unreachable) lapses with the offer.
+    private static let tradeLockLifetime: TimeInterval = 24 * 3600
+
+    /// Individuals in an open trade, each locked until the time shown. Their item slot stays as it was when the
+    /// offer was made, because that item travels with the Pokémon.
+    private(set) var tradeLocks: [String: Date] = [:]
+
+    func isTradeLocked(_ instanceID: String) -> Bool {
+        tradeLocks[instanceID].map { $0 > clock() } ?? false
+    }
+
+    func lockForTrade(_ instanceID: String) {
+        tradeLocks[instanceID] = clock().addingTimeInterval(Self.tradeLockLifetime)
+    }
+
+    func setTradeLocked(_ ids: Set<String>) {
+        let expiry = clock().addingTimeInterval(Self.tradeLockLifetime)
+        tradeLocks = Dictionary(uniqueKeysWithValues: ids.map { ($0, expiry) })
+    }
 
     func tradePool(fightingIDs: Set<String>) -> [TradePoolEntry] {
         TradePool.build(state: state, fightingIDs: fightingIDs, name: dexEntryName)
@@ -2964,9 +2986,7 @@ final class CompanionStore {
             if let index = state.dex.firstIndex(where: { $0.id == delivery.giveID && $0.releasedAt == nil }) {
                 state.dex[index].releasedAt = now
                 state.dex[index].tradedTo = sender
-                if heldItem(of: delivery.giveID)?.isTradeEvolutionItem == true {
-                    state.heldItems[delivery.giveID] = nil
-                }
+                settleSentItem(of: delivery)
             }
             state.dex.append(arrived)
             state.appliedTradeIDs.append(delivery.tradeID)
@@ -2986,6 +3006,23 @@ final class CompanionStore {
         save()
         Task { await resolveTradeEvolutions() }
         return settled
+    }
+
+    /// The trade item the bot says left with the Pokémon is taken out of the game: off the Pokémon if it still
+    /// holds it, else out of the bag where an earlier unequip put it. Anything else it holds goes back to the bag
+    /// with the orphan sweep in `save()`. An older bot does not say, so only a held trade item is removed.
+    private func settleSentItem(of delivery: TradeDelivery) {
+        let id = delivery.giveID
+        guard delivery.reportsGiveHeldItem else {
+            if heldItem(of: id)?.isTradeEvolutionItem == true { state.heldItems[id] = nil }
+            return
+        }
+        guard let traveled = delivery.giveHeldItem.flatMap(ItemKind.init(rawValue:))?.tradeItemKey else { return }
+        if state.heldItems[id] == traveled {
+            state.heldItems[id] = nil
+        } else {
+            state.inventory[traveled] = max(0, (state.inventory[traveled] ?? 0) - 1)
+        }
     }
 
     /// A received individual is a new one here: fresh id, no names, evolution pending until the line is known.
@@ -3037,6 +3074,7 @@ final class CompanionStore {
     /// Spends a Linking Cord to evolve a graduated individual as if it had been traded.
     @discardableResult
     func useLinkingCord(on entryID: String) async -> CordUseResult {
+        if isTradeLocked(entryID) { return .listed }
         guard itemCount(.linkingCord) > 0,
               state.dex.contains(where: { $0.id == entryID && $0.releasedAt == nil && $0.profile != nil })
         else { return .unavailable }

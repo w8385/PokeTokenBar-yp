@@ -73,6 +73,17 @@ extension L {
           "Не удалось отправить предложение. Повторите попытку чуть позже.")
     }
 
+    var tradeLockedItemText: String {
+        t("교환 중이라 지닌 도구를 바꿀 수 없어요. 교환이 끝나거나 취소되면 풀려요.",
+          "In a trade, so its held item is locked until the trade ends or is cancelled.",
+          "交換中のため持ち物は変更できません。交換が終わるか取り消されると解除されます。",
+          "Está en un intercambio: su objeto equipado queda bloqueado hasta que termine o se cancele.",
+          "En cours d'échange : son objet tenu est verrouillé jusqu'à la fin ou l'annulation de l'échange.",
+          "Está em uma troca: o item equipado fica bloqueado até a troca terminar ou ser cancelada.",
+          "Im Tausch: Das getragene Item ist gesperrt, bis der Tausch endet oder abgebrochen wird.",
+          "Участвует в обмене: предмет заблокирован, пока обмен не завершится или не будет отменён.")
+    }
+
     func tradeRefusalText(_ refusal: TradeRefusal) -> String {
         switch refusal {
         case .raising:

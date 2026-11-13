@@ -2195,6 +2195,7 @@ struct PokemonDetailView: View {
         case .wrongTarget: cordMessage = store.l.linkingCordWrongTarget(displayedSpecies.name)
         case .notReady: cordMessage = store.l.linkingCordNotReady(displayedSpecies.name)
         case .unavailable: cordMessage = store.l.linkingCordUnavailable
+        case .listed: cordMessage = store.l.tradeLockedItemText
         }
     }
 

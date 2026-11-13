@@ -179,7 +179,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
         if self.trades is not None:
             if "trade_pool" in payload:
                 self.trades.save_pool(user_id, payload["trade_pool"])
-            body["trades"] = {"deliveries": self.trades.deliveries(user_id)}
+            body["trades"] = {"deliveries": self.trades.deliveries(user_id), "locked_ids": self.trades.locked_ids(user_id)}
         self.on_upload(user_id, party)
         self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for)})
 
@@ -191,6 +191,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
         else:
             self._reply(200, {"ok": True, "trades": {
                 "deliveries": self.trades.deliveries(user_id), "history": self.trades.history(user_id),
+                "locked_ids": self.trades.locked_ids(user_id),
             }})
 
     def _propose(self, user_id: str, payload: object) -> None:

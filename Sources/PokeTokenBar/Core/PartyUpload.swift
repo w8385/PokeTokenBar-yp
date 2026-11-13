@@ -301,7 +301,9 @@ final class PartyUploader {
         else { return }
         if status == 404 { tradesUnsupported = true }
         guard status == 200 else { return }
-        let deliveries = TradeSyncReply.decode(data).deliveries
+        let reply = TradeSyncReply.decode(data)
+        trades.setLocked(reply.lockedIDs)
+        let deliveries = reply.deliveries
         guard !deliveries.isEmpty else { return }
         let settled = trades.apply(deliveries)
         guard !settled.isEmpty,
@@ -334,7 +336,10 @@ final class PartyUploader {
         guard let request = Self.proposeRequest(serverURL: serverURL, token: token, to: coworkerID, give: individualID),
               let (data, status) = try? await fetch(request)
         else { return .failed }
-        if status == 200 { return .sent }
+        if status == 200 {
+            trades?.lock(individualID)
+            return .sent
+        }
         struct Refusal: Decodable { let message: String? }
         if status == 400, let message = (try? JSONDecoder().decode(Refusal.self, from: data))?.message, !message.isEmpty {
             return .refused(message)

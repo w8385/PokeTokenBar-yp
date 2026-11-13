@@ -26,12 +26,27 @@ struct TradeDelivery: Decodable, Sendable {
     let giveID: String
     let fromName: String
     let receive: TradePoolEntry
+    /// The trade item that left with `giveID`, as the bot settled it. Nil with `reportsGiveHeldItem` false means
+    /// an older bot that does not say.
+    let giveHeldItem: String?
+    let reportsGiveHeldItem: Bool
 
     enum CodingKeys: String, CodingKey {
         case receive
         case tradeID = "trade_id"
         case giveID = "give_id"
         case fromName = "from_name"
+        case giveHeldItem = "give_held_item"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        tradeID = try c.decode(String.self, forKey: .tradeID)
+        giveID = try c.decode(String.self, forKey: .giveID)
+        fromName = try c.decode(String.self, forKey: .fromName)
+        receive = try c.decode(TradePoolEntry.self, forKey: .receive)
+        reportsGiveHeldItem = c.contains(.giveHeldItem)
+        giveHeldItem = try? c.decodeIfPresent(String.self, forKey: .giveHeldItem)
     }
 }
 
@@ -44,12 +59,19 @@ struct TradeCoworker: Decodable, Equatable, Sendable, Identifiable {
 /// again after an update; one bad entry never hides the others.
 struct TradeSyncReply: Sendable {
     let deliveries: [TradeDelivery]
+    /// Individuals in open trades. Empty from an older bot, which leaves nothing locked.
+    let lockedIDs: Set<String>
 
     static func decode(_ data: Data) -> TradeSyncReply {
         struct Root: Decodable { let trades: Inner? }
-        struct Inner: Decodable { let deliveries: [Lossy<TradeDelivery>]? }
+        struct Inner: Decodable {
+            let deliveries: [Lossy<TradeDelivery>]?
+            let lockedIDs: [String]?
+            enum CodingKeys: String, CodingKey { case deliveries, lockedIDs = "locked_ids" }
+        }
         let inner = (try? JSONDecoder().decode(Root.self, from: data))?.trades
-        return TradeSyncReply(deliveries: (inner?.deliveries ?? []).compactMap(\.value))
+        return TradeSyncReply(deliveries: (inner?.deliveries ?? []).compactMap(\.value),
+                              lockedIDs: Set(inner?.lockedIDs ?? []))
     }
 
     private struct Lossy<Value: Decodable>: Decodable {
@@ -138,4 +160,8 @@ struct TradeSync: Sendable {
     let pool: @MainActor @Sendable () -> [TradePoolEntry]
     /// Applies the deliveries and returns the trade ids to acknowledge.
     let apply: @MainActor @Sendable ([TradeDelivery]) -> [String]
+    /// The individuals the bot reports in open trades, replacing the previous set.
+    var setLocked: @MainActor @Sendable (Set<String>) -> Void = { _ in }
+    /// An offer the bot just accepted: its individual is locked before the next sync says so.
+    var lock: @MainActor @Sendable (String) -> Void = { _ in }
 }

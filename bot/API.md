@@ -184,11 +184,13 @@ shiny, nature, IVs, level and original trainer as sent. Entries that fail the ru
 |---|---|
 | `GET /v1/coworkers` | `{"ok": true, "coworkers": [{"id", "name"}]}`: linked players with a pool, not the caller. `id` is an opaque handle for `POST /v1/trades`, never a Slack id |
 | `POST /v1/trades` | `{"to": "<coworker id>", "give": "<individual id>"}` → `{"ok": true, "trade_id"}`. `400 {"ok": false, "error", "message"}` for `self`, `unknown_user`, `unknown_individual`, `locked` (already in an open trade), `too_many` (3 open offers). `message` is a short Korean reason to show as is |
-| `GET /v1/trades` | `{"ok": true, "trades": {"deliveries": [...], "history": [...]}}` |
+| `GET /v1/trades` | `{"ok": true, "trades": {"deliveries": [...], "history": [...], "locked_ids": ["..."]}}`. `locked_ids` are the caller's individuals in open trades (offered, or picked back); the app keeps their held item in place until the trade ends. The same `deliveries` and `locked_ids` ride in the `POST /v1/party` reply |
 | `POST /v1/trades/ack` | `{"trade_ids": ["..."]}` → `{"ok": true}` |
 
-A delivery is `{"trade_id", "give_id", "from_name", "receive": <pool entry>}`: remove `give_id` from your
-Pokémon, add `receive`. The bot repeats a delivery on every sync until the app acknowledges it, so the app
+A delivery is `{"trade_id", "give_id", "from_name", "receive": <pool entry>, "give_held_item"}`: remove `give_id` from your
+Pokémon, add `receive`. `give_held_item` is the trade item that left with `give_id` (null for none): the app
+takes exactly that one out of the game, so the item exists once. At completion the bot rewrites the item inside
+both offered entries to the one in each owner's latest pool. The bot repeats a delivery on every sync until the app acknowledges it, so the app
 applies each `trade_id` once and acknowledges ids it has already applied. Apply first, acknowledge after the
 save; a lost acknowledgement only means the delivery comes again.
 

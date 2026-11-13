@@ -132,7 +132,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                     store.tradePool(fightingIDs: TradePool.fightingIDs(state: store.state, slots: battleEntry.slots))
                 } ?? []
             },
-            apply: { [weak companion] deliveries in companion?.applyTrades(deliveries) ?? [] })
+            apply: { [weak companion] deliveries in companion?.applyTrades(deliveries) ?? [] },
+            setLocked: { [weak companion] ids in companion?.setTradeLocked(ids) },
+            lock: { [weak companion] id in companion?.lockForTrade(id) })
         partyUploader = PartyUploader(partySource: { [weak companion, battleEntry] in
             companion.map {
                 BattleEntry.party(state: $0.state, slots: battleEntry.slots, rentalSpeciesID: battleEntry.rentalSpeciesID)

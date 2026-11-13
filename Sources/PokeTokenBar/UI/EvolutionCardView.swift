@@ -58,13 +58,19 @@ struct EvolutionCardView: View {
                     .foregroundStyle(held ? Color.green : Color.secondary)
                 Text(l.evolutionItemName(kind))
                 Spacer(minLength: 4)
-                if held {
+                if store.isTradeLocked(id) {
+                    Image(systemName: "lock.fill").foregroundStyle(.secondary)
+                } else if held {
                     Button(l.heldItemRemove) { _ = store.unequip(from: id) }
                         .buttonStyle(.borderless).controlSize(.small)
                 } else if store.itemCount(kind) > 0 {
                     Button(l.heldItemEquip) { _ = store.equip(kind, to: id) }
                         .buttonStyle(.borderless).controlSize(.small)
                 }
+            }
+            if store.isTradeLocked(id) {
+                Text(l.tradeLockedItemText).font(.caption2).foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

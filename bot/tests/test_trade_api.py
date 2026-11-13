@@ -33,7 +33,7 @@ def test_the_upload_stores_the_pool_and_replies_with_deliveries(api):
     status, body = upload(api, api.alice, [HAUNTER, EEVEE])
 
     assert status == 200
-    assert body["trades"] == {"deliveries": []}
+    assert body["trades"] == {"deliveries": [], "locked_ids": []}
     assert [entry["id"] for entry in api.service._pool(ALICE)] == ["alice-haunter", "alice-eevee"]
 
 
@@ -76,7 +76,7 @@ def test_the_whole_trade_over_http_applies_on_the_next_upload_and_stops_after_th
 
     status, body = upload(api, api.alice, [])
     assert body["trades"]["deliveries"] == [
-        {"trade_id": trade_id, "give_id": "alice-haunter", "from_name": "밥", "receive": PIKACHU}]
+        {"trade_id": trade_id, "give_id": "alice-haunter", "from_name": "밥", "receive": PIKACHU, "give_held_item": None}]
     assert call(f"{api.base}/v1/trades", token=api.alice)[1]["trades"]["deliveries"] == body["trades"]["deliveries"]
     assert call(f"{api.base}/v1/trades/ack", "POST", api.alice, {"trade_ids": [trade_id]}) == (200, {"ok": True})
     assert upload(api, api.alice)[1]["trades"]["deliveries"] == []

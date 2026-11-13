@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 VERSION="2.5.7"
-FORK_VERSION="${PTB_FORK_VERSION:-$VERSION-yp22}"
+FORK_VERSION="${PTB_FORK_VERSION:-$VERSION-yp23}"
 APP_NAME="PokeTokenBar"
 BUILD_DIR="build"
 APP="$BUILD_DIR/$APP_NAME.app"
