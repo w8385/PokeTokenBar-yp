@@ -1,6 +1,8 @@
 import pytest
 
-from ypoke.battle import Action, BaseStats, BattleResult, BurnDamage, Change, Combatant, Move, simulate
+from ypoke.battle import (
+    Action, BaseStats, BattleResult, BurnDamage, Change, Combatant, Move, WeatherDamage, WeatherEnd, simulate,
+)
 from ypoke.narration import MAX_EVENT_LINES, PRACTICE_NOTE, SKIPPED_LINE, battle_lines, with_particle
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
@@ -72,6 +74,13 @@ def test_every_action_gets_a_turn_line_with_its_details():
      "1턴 🔵 피카츄의 발버둥! 피카츄는 반동으로 데미지를 입었다! 피카츄는 쓰러졌다!"),
     (BurnDamage(3, 1, "꼬부기", 12, False), "3턴 🔴 꼬부기는 화상 데미지를 입었다! (HP 12%)"),
     (BurnDamage(3, 1, "꼬부기", 0, True), "3턴 🔴 꼬부기는 화상 데미지를 입었다! 꼬부기는 쓰러졌다!"),
+    (act(1, 0, move="비바라기", weather="rain"), "1턴 🔵 피카츄의 비바라기! 비가 내리기 시작했다!"),
+    (act(1, 0, move="모래바람", weather="sandstorm"), "1턴 🔵 피카츄의 모래바람! 모래바람이 불기 시작했다!"),
+    (act(1, 0, move="비바라기", failed=True), "1턴 🔵 피카츄의 비바라기! 하지만 실패했다!"),
+    (WeatherDamage(2, 1, "꼬부기", 80, False, "sandstorm"), "2턴 🔴 꼬부기는 모래바람에 휩싸였다! (HP 80%)"),
+    (WeatherDamage(2, 0, "피카츄", 0, True, "hail"), "2턴 🔵 피카츄는 싸라기눈에 맞았다! 피카츄는 쓰러졌다!"),
+    (WeatherEnd(5, "rain"), "5턴 비가 그쳤다!"),
+    (WeatherEnd(5, "sun"), "5턴 햇살이 원래대로 돌아왔다!"),
 ])
 def test_event_lines(event, expected):
     assert lines_for(event)[3] == expected

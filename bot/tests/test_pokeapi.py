@@ -44,6 +44,9 @@ MOVES = {
          "type": {"name": "electric"}, "power": None, "damage_class": {"name": "status"}, "accuracy": 90, "pp": 20, "priority": 0},
     360: {"id": 360, "names": [{"language": {"name": "en"}, "name": "Gyro Ball"}], "name": "gyro-ball",
           "type": {"name": "steel"}, "power": None, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 5, "priority": 0},
+    240: {"id": 240, "names": [{"language": {"name": "ko"}, "name": "비바라기"}], "name": "rain-dance",
+          "type": {"name": "water"}, "power": None, "damage_class": {"name": "status"}, "accuracy": None, "pp": 5,
+          "priority": 0, "meta": {"ailment": {"name": "none"}, "category": {"name": "field-effect"}}},
     85: {"id": 85, "names": [], "name": "thunderbolt",
          "type": {"name": "electric"}, "power": 90, "damage_class": {"name": "special"}, "accuracy": 100, "pp": 15, "priority": 0, "meta": None},
 }
@@ -51,6 +54,7 @@ PIKACHU = {"moves": [
     learned(84, ("scarlet-violet", "level-up", 1)),
     learned(86, ("scarlet-violet", "level-up", 4)),
     learned(360, ("scarlet-violet", "level-up", 10)),
+    learned(240, ("scarlet-violet", "level-up", 20)),
     learned(85, ("scarlet-violet", "level-up", 36)),
 ]}
 
@@ -68,14 +72,26 @@ def service(tmp_path, monkeypatch):
     return PokeAPIService(Store(str(tmp_path / "bot.sqlite3"))), fetched
 
 
-def test_attacking_moves_skip_status_and_powerless_moves_and_respect_the_level(service):
+def test_attacking_moves_keep_weather_moves_skip_other_status_and_powerless_moves_and_respect_the_level(service):
     api, _ = service
     assert api.attacking_moves(25, 35) == [
         {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100,
          "pp": 30, "priority": 0, "crit_rate": 0, "ailment": "paralysis", "ailment_chance": 10, "stat_changes": [],
-         "stat_target": "target", "stat_chance": 0, "level": 1},
+         "stat_target": "target", "stat_chance": 0, "weather": None, "always_hits_in": [], "level": 1},
+        {"id": 240, "name": "비바라기", "type": "water", "power": 0, "damage_class": "status", "accuracy": None,
+         "pp": 5, "priority": 0, "crit_rate": 0, "ailment": None, "ailment_chance": 0, "stat_changes": [],
+         "stat_target": "target", "stat_chance": 0, "weather": "rain", "always_hits_in": [], "level": 20},
     ]
-    assert [move["name"] for move in api.attacking_moves(25, 36)] == ["전기쇼크", "thunderbolt"]
+    assert [move["name"] for move in api.attacking_moves(25, 36)] == ["전기쇼크", "비바라기", "thunderbolt"]
+
+
+@pytest.mark.parametrize("move_id, weather, always_hits_in", [
+    (241, "sun", []), (240, "rain", []), (201, "sandstorm", []), (258, "hail", []), (883, "snow", []),
+    (87, None, ["rain"]), (542, None, ["rain"]), (59, None, ["hail", "snow"]), (85, None, []),
+])
+def test_move_from_flags_weather_setters_and_moves_that_never_miss_in_weather(move_id, weather, always_hits_in):
+    data = move_from({**body("damage"), "id": move_id})
+    assert (data["weather"], data["always_hits_in"]) == (weather, always_hits_in)
 
 
 @pytest.mark.parametrize("timeouts, succeeds", [(2, True), (3, False)])

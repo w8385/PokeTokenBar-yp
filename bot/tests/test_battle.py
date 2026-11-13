@@ -1,7 +1,11 @@
+import random
 from dataclasses import replace
 
+import pytest
+
 from ypoke.battle import (
-    NATURE_MODIFIERS, STRUGGLE, TURN_LIMIT, Action, BaseStats, BurnDamage, Change, Combatant, Move, _Fighter, _stats_for, simulate,
+    NATURE_MODIFIERS, STRUGGLE, TURN_LIMIT, WEATHER_TURNS, Action, BaseStats, BurnDamage, Change, Combatant, Move,
+    WeatherDamage, WeatherEnd, _act, _best_move, _damage, _Fighter, _stats_for, _Weather, _weather_upkeep, simulate,
 )
 from ypoke.type_chart import effectiveness
 
@@ -214,3 +218,103 @@ def test_natures_match_the_main_series_table():
     assert NATURE_MODIFIERS["modest"] == ("special_attack", "attack")
     assert NATURE_MODIFIERS["careful"] == ("special_defense", "special_attack")
     assert len(NATURE_MODIFIERS) == 20
+
+
+RAIN_DANCE = Move("비바라기", "water", 0, physical=False, pp=5, weather="rain")
+SUNNY_DAY = Move("쾌청", "fire", 0, physical=False, pp=5, weather="sun")
+SANDSTORM = Move("모래바람", "rock", 0, physical=False, pp=5, weather="sandstorm")
+THUNDER = Move("번개", "electric", 110, physical=False, accuracy=70, always_hits_in=("rain",))
+SWIFT = Move("스피드스타", "normal", 60, physical=False)
+WEATHER_ARGS = (1, False)
+
+
+def weather_damage(move, weather, attacker_types=("water",), defender_types=("normal",)):
+    attacker = _Fighter.enter(mon("A", attacker_types, moves=[move], special_attack=150))
+    defender = _Fighter.enter(mon("B", defender_types, special_defense=100, defense=100))
+    return _damage(attacker, defender, move, 1.0, False, weather, random.Random(0))
+
+
+@pytest.mark.parametrize("move, weather, factor", [
+    (SURF, "rain", 1.5), (SURF, "sun", 0.5), (FLAMETHROWER, "sun", 1.5), (FLAMETHROWER, "rain", 0.5),
+    (TACKLE, "rain", 1.0), (SURF, "sandstorm", 1.0),
+])
+def test_sun_and_rain_scale_fire_and_water_moves(move, weather, factor):
+    clear = weather_damage(move, None, attacker_types=("normal",))
+    assert weather_damage(move, weather, attacker_types=("normal",)) / clear == pytest.approx(factor, abs=0.05)
+
+
+def test_sandstorm_raises_rock_special_defense_and_snow_raises_ice_defense():
+    rock, ice, plain = (_Fighter.enter(mon("X", [types])) for types in ("rock", "ice", "normal"))
+    assert _stats_for(plain, rock, False, "sandstorm")[1] == rock.stat("special_defense") * 1.5
+    assert _stats_for(plain, rock, True, "sandstorm")[1] == rock.stat("defense")
+    assert _stats_for(plain, plain, False, "sandstorm")[1] == plain.stat("special_defense")
+    assert _stats_for(plain, ice, True, "snow")[1] == ice.stat("defense") * 1.5
+    assert _stats_for(plain, ice, False, "snow")[1] == ice.stat("special_defense")
+
+
+def test_a_water_user_opens_with_rain_dance_and_weather_lasts_five_turns():
+    tank = dict(hp=255, defense=250, special_defense=250, attack=5, special_attack=5)
+    rainy = mon("물", ["water"], moves=[RAIN_DANCE, SURF], speed=200, **tank)
+    result = simulate((rainy, mon("불", ["fire"], moves=[EMBER], speed=10, **tank)), seed=1)
+    first = actions(result)[0]
+    assert (first.move, first.weather, first.turn) == ("비바라기", "rain", 1)
+    assert [event for event in result.events if isinstance(event, WeatherEnd)][0] == WeatherEnd(WEATHER_TURNS, "rain")
+    rain_turns = [action.turn for action in actions(result) if action.move == "비바라기"]
+    assert rain_turns[:2] == [1, WEATHER_TURNS + 1]
+
+
+def test_a_weather_move_that_changes_nothing_is_never_picked():
+    result = simulate((mon("A", ["normal"], moves=[RAIN_DANCE, TACKLE]), mon("B", ["normal"])), seed=0)
+    assert all(action.move != "비바라기" for action in actions(result))
+
+
+def test_a_move_for_the_weather_already_up_fails_and_does_not_restart_it():
+    fighters = (_Fighter.enter(mon("A", ["water"], moves=[RAIN_DANCE])), _Fighter.enter(mon("B", ["fire"], hp=255, special_defense=150)))
+    weather = _Weather("rain", 2)
+    action = _act(3, 0, fighters, 0, weather, random.Random(0))
+    assert (action.failed, action.weather, weather.turns_left) == (True, None, 2)
+
+
+def test_sandstorm_chips_a_non_immune_pokemon_and_spares_rock_ground_and_steel():
+    for spared in ("ground", "steel"):
+        result = simulate((mon("돌", ["rock"], moves=[SANDSTORM, SWIFT], hp=255, defense=250, special_defense=250),
+                           mon("상대", [spared], moves=[SWIFT], hp=255, special_defense=250)), seed=0)
+        assert "sandstorm" in [action.weather for action in actions(result)]
+        assert not [event for event in result.events if isinstance(event, WeatherDamage)]
+    result = simulate((mon("돌", ["rock"], moves=[SANDSTORM, SWIFT], hp=255, defense=250, special_defense=250),
+                       mon("상대", ["normal"], moves=[SWIFT], hp=255, special_defense=250)), seed=0)
+    chips = [event for event in result.events if isinstance(event, WeatherDamage)]
+    assert chips and {chip.side for chip in chips} == {1}
+    assert chips[0].turn == 1 and chips[0].weather == "sandstorm" and chips[0].hp < 100
+
+
+def test_sandstorm_chip_is_a_sixteenth_of_max_hp_and_can_knock_out():
+    fighters = (_Fighter.enter(mon("A", ["normal"])), _Fighter.enter(mon("B", ["rock"])))
+    events = []
+    assert _weather_upkeep(1, fighters, _Weather("sandstorm", 3), events) is None
+    assert fighters[0].hp == fighters[0].max_hp - fighters[0].max_hp // 16 and fighters[1].hp == fighters[1].max_hp
+    fighters[0].hp = 1
+    assert _weather_upkeep(2, fighters, _Weather("sandstorm", 3), events) == 0
+    assert events[-1] == WeatherDamage(2, 0, "A", 0, True, "sandstorm")
+
+
+def test_thunder_never_misses_in_the_rain_but_can_miss_otherwise():
+    fighters = (_Fighter.enter(mon("A", ["electric"], moves=[THUNDER])), _Fighter.enter(mon("B", ["normal"], hp=255)))
+    rain = [_act(1, 0, fighters, 0, _Weather("rain", 3), random.Random(seed)).missed for seed in range(60)]
+    clear = [_act(1, 0, fighters, 0, _Weather(), random.Random(seed)).missed for seed in range(60)]
+    assert not any(rain) and any(clear)
+
+
+def test_weather_never_blocks_a_battle_from_ending():
+    for seed in range(20):
+        result = simulate((mon("A", ["water"], moves=[RAIN_DANCE, SURF, SUNNY_DAY]),
+                           mon("B", ["fire"], moves=[SUNNY_DAY, EMBER, RAIN_DANCE])), seed)
+        assert result.winner in (0, 1) and result.turns <= TURN_LIMIT
+
+
+def test_a_weather_move_is_not_picked_when_an_attack_surely_finishes_the_foe():
+    fighters = (_Fighter.enter(mon("A", ["water"], moves=[RAIN_DANCE, SURF], special_attack=30)),
+                _Fighter.enter(mon("B", ["fire"], hp=255, special_defense=150)))
+    assert _best_move(*fighters, None) == 0
+    fighters[1].hp = 1
+    assert _best_move(*fighters, None) == 1
