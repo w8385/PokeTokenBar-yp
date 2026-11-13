@@ -2121,6 +2121,7 @@ struct L {
         case .duskStone: return t("어둠의돌", "Dusk Stone", "やみのいし", "Piedra Noche", "Pierre Nuit", "Pedra do Anoitecer", "Finsterstein", "Тёмный камень")
         case .dawnStone: return t("각성의돌", "Dawn Stone", "めざめいし", "Piedra Alba", "Pierre Aube", "Pedra do Amanhecer", "Funkelstein", "Рассветный камень")
         case .iceStone: return t("얼음의돌", "Ice Stone", "こおりのいし", "Piedra Hielo", "Pierre Glace", "Pedra do Gelo", "Eisstein", "Ледяной камень")
+        case .linkingCord: return t("연결의끈", "Linking Cord", "つながりのヒモ", "Cordón Unión", "Cordon Lien", "Cordão Elo", "Verbindungsband", "Связующий шнур")
         }
     }
 
@@ -2180,6 +2181,8 @@ struct L {
                      "Enquanto estiver na sua bolsa, aumenta a chance de nascer um Pokémon shiny.",
                      "Erhöht im Beutel die Chance, dass ein schillerndes Pokémon schlüpft.",
                      "Пока он у вас, повышает шанс, что вылупится шайни.")
+        case .linkingCord:
+            return linkingCordDescription
         default:
             return ""   // 진화의 돌은 위에서 처리
         }

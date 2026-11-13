@@ -36,6 +36,10 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
 - `/포켓몬연결` DMs the caller a "PokeTokenBar 연결" button. It opens
   `poketokenbar://ypoke-register?token=…&server=…`, which saves the upload token and server in the app.
   The token is also in the DM for pasting by hand. Running it again rotates the token.
+- Trades: the app's Battle tab offers one graduated Pokémon to a linked coworker. The bot DMs them a picker of
+  their own Pokémon with Accept/Decline; after they accept, the offerer confirms in a DM. Each app picks its side
+  up on its next sync, once. Offers expire after 24 hours. Needs the `users:read` scope for coworker names;
+  reinstall the Slack app after the manifest changes. Wire format: [API.md](API.md#trades).
 - `/전적 [@누구]` shows win/loss.
 - `/랭킹` posts this week's top 10 (since Monday 00:00 KST) by wins, then win rate, then fewer battles.
 - `/도감 [@누구]` shows the target's (default: your own) dex summary the app uploaded: owned species, shiny count,

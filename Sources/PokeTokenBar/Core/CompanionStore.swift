@@ -1458,7 +1458,7 @@ final class CompanionStore {
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
         ItemKind.allCases
-            .filter { $0.shopPrice != nil && !$0.isEvolutionStone }
+            .filter { $0.shopPrice != nil && !$0.isEvolutionStone && !$0.isLinkingCord }
             .sorted { a, b in
                 // 구매 완료한 보유형(이로치 부적 등)은 맨 아래로 — 재구매 불가라 위에 있을 이유가 없다.
                 let aDone = a.isPassive && itemCount(a) > 0
@@ -1470,6 +1470,9 @@ final class CompanionStore {
 
     /// 상점 "진화" 구역의 돌 — 별도 구역이라 `shopEntries` 의 가격순 목록에는 넣지 않는다.
     var evolutionStoneItems: [ItemKind] { ItemKind.allCases.filter(\.isEvolutionStone) }
+
+    /// The shop's evolution section: the stones, then the Linking Cord.
+    var shopEvolutionItems: [ItemKind] { evolutionStoneItems + [.linkingCord] }
 
     /// 상점 표시 순서 — 판매 아이템 + 알 3종을 하나의 가격 오름차순 목록으로 병합.
     /// 정렬 규칙은 purchasableItems 와 동일: 구매 완료한 보유형은 맨 아래, 나머지는 가격 저렴한 순.
@@ -2497,6 +2500,195 @@ final class CompanionStore {
         }
         return min(SaveTransfer.maxTokenValue,
                    completedGrowth + min(SaveTransfer.maxTokenValue, max(0, currentStageUsage)))
+    }
+
+    // MARK: 교환
+
+    /// The newest trade arrival or Linking Cord evolution, shown once by the popover banner.
+    struct TradeArrival: Equatable, Identifiable {
+        let id: Int
+        let entryID: String
+        /// Nil for a Linking Cord evolution, which has no trade partner.
+        let fromName: String?
+        let receivedID: Int
+        /// The sender's wording until the evolution line is known.
+        var receivedName: String
+        var evolvedID: Int?
+        var evolvedName: String?
+        let isShiny: Bool
+    }
+    private(set) var tradeArrival: TradeArrival?
+    @ObservationIgnored private var tradeArrivalSeq = 0
+    @ObservationIgnored private var isResolvingTradeEvolutions = false
+
+    func dismissTradeArrival() { tradeArrival = nil }
+
+    enum TradeEvolutionResult: Equatable { case evolved, noEvolution, unavailable }
+    /// `wrongTarget` leaves the cord in the bag.
+    enum CordUseResult: Equatable { case evolved, wrongTarget, unavailable }
+
+    private static let appliedTradeLimit = 200
+
+    func tradePool(fighterID: String?) -> [TradePoolEntry] {
+        TradePool.build(state: state, fighterID: fighterID, name: dexEntryName)
+    }
+
+    func tradeRefusal(for entry: DexEntry, fighterID: String?) -> TradeRefusal? {
+        TradePool.refusal(for: entry, fighterID: fighterID, activeID: activeDexEntry?.id)
+    }
+
+    /// Newest first, the same order the bot's pool uses.
+    func tradableEntries(fighterID: String?) -> [DexEntry] {
+        state.dex
+            .filter { tradeRefusal(for: $0, fighterID: fighterID) == nil }
+            .sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
+    }
+
+    /// Applies completed trades once each and returns the ids safe to acknowledge (applied now or earlier).
+    /// A delivery this build cannot show is left out, so the bot offers it again after an update.
+    @discardableResult
+    func applyTrades(_ deliveries: [TradeDelivery]) -> [String] {
+        var settled: [String] = []
+        var changed = false
+        for delivery in deliveries {
+            if state.appliedTradeIDs.contains(delivery.tradeID) {
+                settled.append(delivery.tradeID)
+                continue
+            }
+            let now = clock()
+            let sender = Self.cleanedTrainerName(delivery.fromName)
+            guard let arrived = Self.receivedEntry(delivery.receive.entry, from: sender, now: now) else { continue }
+            if let index = state.dex.firstIndex(where: { $0.id == delivery.giveID && $0.releasedAt == nil }) {
+                state.dex[index].releasedAt = now
+                state.dex[index].tradedTo = sender
+            }
+            state.dex.append(arrived)
+            state.appliedTradeIDs.append(delivery.tradeID)
+            if state.appliedTradeIDs.count > Self.appliedTradeLimit {
+                state.appliedTradeIDs.removeFirst(state.appliedTradeIDs.count - Self.appliedTradeLimit)
+            }
+            settled.append(delivery.tradeID)
+            changed = true
+            tradeArrivalSeq += 1
+            let name = delivery.receive.name
+            tradeArrival = TradeArrival(id: tradeArrivalSeq, entryID: arrived.id, fromName: sender,
+                                        receivedID: arrived.finalID, receivedName: name, isShiny: arrived.isShiny)
+            notifyCompanionEvent(l.notifTradeTitle, l.notifTradeBody(name, from: sender))
+        }
+        guard changed else { return settled }
+        state.reconcileRepresentativeSelection()
+        save()
+        Task { await resolveTradeEvolutions() }
+        return settled
+    }
+
+    /// A received individual is a new one here: fresh id, no names, evolution pending until the line is known.
+    nonisolated static func receivedEntry(_ wire: DexEntry, from sender: String, now: Date) -> DexEntry? {
+        guard var profile = wire.profile,
+              PokemonAssets.isSupported(speciesID: wire.baseID), PokemonAssets.isSupported(speciesID: wire.finalID)
+        else { return nil }
+        var entry = wire
+        let id = UUID().uuidString
+        profile.instanceID = id
+        profile.sanitize()
+        entry.id = id
+        entry.profile = profile
+        entry.names = nil
+        entry.namesVersion = nil
+        entry.releasedAt = nil
+        entry.tradedTo = nil
+        entry.caughtAt = now
+        entry.originalTrainer = sender
+        entry.tradeEvolutionPending = true
+        if entry.chainOrder.last != entry.finalID {
+            entry.chainOrder = entry.baseID == entry.finalID ? [entry.baseID] : [entry.baseID, entry.finalID]
+        }
+        return entry
+    }
+
+    nonisolated static func cleanedTrainerName(_ raw: String) -> String {
+        let name = raw.unicodeScalars.filter { !CharacterSet.controlCharacters.contains($0) }
+        let trimmed = String(String.UnicodeScalarView(name)).trimmingCharacters(in: .whitespacesAndNewlines)
+        return String(trimmed.prefix(40))
+    }
+
+    /// Evolves every received individual that has a trade evolution. Offline, the flag stays and the next
+    /// launch or sync tries again.
+    func resolveTradeEvolutions() async {
+        guard !isResolvingTradeEvolutions else { return }
+        isResolvingTradeEvolutions = true
+        defer { isResolvingTradeEvolutions = false }
+        let pending = state.dex.filter { $0.tradeEvolutionPending == true && $0.releasedAt == nil }.map(\.id)
+        for id in pending {
+            _ = await evolveByTrade(entryID: id, consuming: nil)
+        }
+    }
+
+    /// Spends a Linking Cord to evolve a graduated individual as if it had been traded.
+    @discardableResult
+    func useLinkingCord(on entryID: String) async -> CordUseResult {
+        guard itemCount(.linkingCord) > 0,
+              state.dex.contains(where: { $0.id == entryID && $0.releasedAt == nil && $0.profile != nil })
+        else { return .unavailable }
+        switch await evolveByTrade(entryID: entryID, consuming: .linkingCord) {
+        case .evolved: return .evolved
+        case .noEvolution: return .wrongTarget
+        case .unavailable: return .unavailable
+        }
+    }
+
+    private func evolveByTrade(entryID: String, consuming item: ItemKind?) async -> TradeEvolutionResult {
+        func owned(_ entry: DexEntry) -> Bool { entry.id == entryID && entry.releasedAt == nil }
+        guard let baseID = state.dex.first(where: owned)?.baseID else { return .noEvolution }
+        guard let line = try? await dexNameLine(baseID: baseID) else { return .unavailable }
+        // The store may have changed while the line loaded; read the entry again.
+        guard let index = state.dex.firstIndex(where: owned) else { return .noEvolution }
+        var entry = state.dex[index]
+        let next = line.tree.node(withID: entry.finalID)?.tradeEvolution
+        let fromID = entry.finalID
+        if let next {
+            if !entry.chainOrder.contains(next.speciesID) { entry.chainOrder.append(next.speciesID) }
+            entry.finalID = next.speciesID
+        }
+        entry.tradeEvolutionPending = nil
+        var names = entry.names ?? [:]
+        for id in entry.chainOrder {
+            if let incoming = line.names[id], !incoming.isEmpty {
+                names[id] = (names[id] ?? [:]).merging(incoming) { _, new in new }
+            }
+        }
+        entry.names = names.isEmpty ? nil : names
+        entry.namesVersion = entry.chainOrder.allSatisfy { line.names[$0]?.isEmpty == false }
+            ? DexEntry.currentNamesVersion : nil
+        state.dex[index] = entry
+        guard let next else {
+            save()
+            return .noEvolution
+        }
+        if let item { state.inventory[item.rawValue] = max(0, itemCount(item) - 1) }
+        state.reconcileRepresentativeSelection()
+        announceTradeEvolution(of: entry, from: fromID, to: next.speciesID, line: line)
+        save()
+        await loadPokemonDetails(speciesID: next.speciesID)
+        return .evolved
+    }
+
+    private func announceTradeEvolution(of entry: DexEntry, from fromID: Int, to toID: Int, line: EvoLine) {
+        func name(_ id: Int) -> String {
+            formDisplayName(line.localizedName(id, state.language), speciesID: id, form: entry.form)
+        }
+        if var arrival = tradeArrival, arrival.entryID == entry.id {
+            arrival.receivedName = name(fromID)
+            arrival.evolvedID = toID
+            arrival.evolvedName = name(toID)
+            tradeArrival = arrival
+        } else {
+            tradeArrivalSeq += 1
+            tradeArrival = TradeArrival(id: tradeArrivalSeq, entryID: entry.id, fromName: nil, receivedID: fromID,
+                                        receivedName: name(fromID), evolvedID: toID, evolvedName: name(toID),
+                                        isShiny: entry.isShiny)
+        }
+        notifyCompanionEvent(l.notifTradeEvolveTitle, l.notifTradeEvolveBody(name(fromID), name(toID)))
     }
 
     // MARK: 영속
