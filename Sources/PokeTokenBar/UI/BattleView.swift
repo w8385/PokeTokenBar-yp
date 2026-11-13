@@ -40,7 +40,7 @@ struct BattleView: View {
         } else if navigation.showingTradeOffer, let entry, let uploader {
             TradeOfferView(
                 store: store, uploader: uploader,
-                fighterID: BattleEntry.fighter(state: store.state, slot: entry.slot)?.id,
+                fightingIDs: TradePool.fightingIDs(state: store.state, slots: entry.slots),
                 initialGive: navigation.tradeGiveID,
                 onBack: { navigation.showingTradeOffer = false })
             .frame(height: 520)

@@ -285,12 +285,24 @@ final class TradeEvolutionTests: XCTestCase {
                                     rarity: .common, totalForms: 2, profile: raised)
             state.dex = [arriving, released, free, pick]
         }
-        XCTAssertEqual(store.tradeRefusal(for: pick, fighterID: "pick"), .fighting)
-        XCTAssertEqual(store.tradeRefusal(for: arriving, fighterID: nil), .arriving)
-        XCTAssertEqual(store.tradeRefusal(for: released, fighterID: nil), .unavailable)
-        XCTAssertNil(store.tradeRefusal(for: free, fighterID: "pick"))
-        XCTAssertEqual(store.tradePool(fighterID: "pick").map(\.id), ["free"])
-        XCTAssertEqual(store.tradableEntries(fighterID: "pick").map(\.id), ["free"])
+        XCTAssertEqual(store.tradeRefusal(for: pick, fightingIDs: ["pick"]), .fighting)
+        XCTAssertEqual(store.tradeRefusal(for: arriving, fightingIDs: []), .arriving)
+        XCTAssertEqual(store.tradeRefusal(for: released, fightingIDs: []), .unavailable)
+        XCTAssertNil(store.tradeRefusal(for: free, fightingIDs: ["pick"]))
+        XCTAssertEqual(store.tradePool(fightingIDs: ["pick"]).map(\.id), ["free"])
+        XCTAssertEqual(store.tradableEntries(fightingIDs: ["pick"]).map(\.id), ["free"])
+    }
+
+    func testEveryPokemonInTheThreeSlotLineupIsRefused() throws {
+        let ids = ["one", "two", "three", "spare"]
+        let store = try makeStore { state in
+            state.dex = ids.map { entry(id: $0, base: 25, final: 26, chain: [25, 26]) }
+        }
+        let slots = ["one", "two", "three"].map { BattleEntrySlot(instanceID: $0) }
+        let fighting = TradePool.fightingIDs(state: store.state, slots: slots)
+        XCTAssertEqual(fighting, ["one", "two", "three"])
+        XCTAssertEqual(store.tradePool(fightingIDs: fighting).map(\.id), ["spare"])
+        XCTAssertEqual(store.tradeRefusal(for: store.state.dex[2], fightingIDs: fighting), .fighting)
     }
 
     func testPoolSkipsIdsTheBotWouldRefuse() throws {
@@ -298,7 +310,7 @@ final class TradeEvolutionTests: XCTestCase {
         state.dex = [entry(id: "a|b", base: 25, final: 26, chain: [25, 26]),
                      entry(id: String(repeating: "x", count: 65), base: 25, final: 26, chain: [25, 26]),
                      entry(id: "ok", base: 25, final: 26, chain: [25, 26])]
-        XCTAssertEqual(TradePool.build(state: state, fighterID: nil, name: { _ in "n" }).map(\.id), ["ok"])
+        XCTAssertEqual(TradePool.build(state: state, fightingIDs: [], name: { _ in "n" }).map(\.id), ["ok"])
     }
 
     func testOldSaveWithoutTradeFieldsDecodesAndStaysUngated() throws {
@@ -349,7 +361,7 @@ final class TradeEvolutionTests: XCTestCase {
         XCTAssertEqual(try payload.encoded(), try payload.encoded(tradePool: nil))
         var state = CompanionState()
         state.dex = [entry(id: "keep", base: 92, final: 93, chain: [92, 93])]
-        let pool = TradePool.build(state: state, fighterID: nil, name: { _ in "고우스트" })
+        let pool = TradePool.build(state: state, fightingIDs: [], name: { _ in "고우스트" })
         let object = try XCTUnwrap(JSONSerialization.jsonObject(with: payload.encoded(tradePool: pool)) as? [String: Any])
         XCTAssertEqual(object["app_version"] as? String, "2.5.7")
         let wire = try XCTUnwrap((object["trade_pool"] as? [[String: Any]])?.first)

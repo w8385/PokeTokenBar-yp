@@ -67,14 +67,14 @@ final class TradeScreenshotTests: XCTestCase {
 
         let defaults = UserDefaults(suiteName: "trade-shot-\(UUID())")!
         let battle = BattleEntryStore(defaults: defaults)
-        battle.choose("raichu")
+        battle.add("raichu")
         let uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,
             appVersion: "shot", send: { _ in 200 }, fetch: { _ in (Data(), 200) }, partySource: { [] })
         uploader.saveToken("synthetic-token")
         uploader.serverURL = "http://bot-host:8790"
 
-        try await capture(TradeOfferView(store: store, uploader: uploader, fighterID: "raichu", initialGive: "haunter",
+        try await capture(TradeOfferView(store: store, uploader: uploader, fightingIDs: ["raichu"], initialGive: "haunter",
                                          initialCoworkers: [TradeCoworker(id: "u1", name: "Alex Kim"),
                                                             TradeCoworker(id: "u2", name: "Sam Lee"),
                                                             TradeCoworker(id: "u3", name: "Jordan Park")],

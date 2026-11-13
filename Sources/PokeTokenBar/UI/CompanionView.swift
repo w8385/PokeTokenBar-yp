@@ -2120,8 +2120,8 @@ struct PokemonDetailView: View {
     /// The trade offer and Linking Cord buttons of an owned individual, with the reason when it can't go.
     @ViewBuilder
     private func tradeControls(for individual: DexEntry) -> some View {
-        let fighterID = battleEntry.flatMap { BattleEntry.fighter(state: store.state, slot: $0.slot)?.id }
-        let refusal = store.tradeRefusal(for: individual, fighterID: fighterID)
+        let fightingIDs = battleEntry.map { TradePool.fightingIDs(state: store.state, slots: $0.slots) } ?? []
+        let refusal = store.tradeRefusal(for: individual, fightingIDs: fightingIDs)
         let owned = individual.releasedAt == nil && individual.profile != nil && !store.isActiveDexEntry(individual)
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {

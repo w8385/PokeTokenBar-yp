@@ -129,7 +129,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let trades = TradeSync(
             pool: { [weak companion, battleEntry] in
                 companion.map { store in
-                    store.tradePool(fighterID: BattleEntry.fighter(state: store.state, slot: battleEntry.slot)?.id)
+                    store.tradePool(fightingIDs: TradePool.fightingIDs(state: store.state, slots: battleEntry.slots))
                 } ?? []
             },
             apply: { [weak companion] deliveries in companion?.applyTrades(deliveries) ?? [] })

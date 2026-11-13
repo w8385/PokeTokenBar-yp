@@ -2529,18 +2529,18 @@ final class CompanionStore {
 
     private static let appliedTradeLimit = 200
 
-    func tradePool(fighterID: String?) -> [TradePoolEntry] {
-        TradePool.build(state: state, fighterID: fighterID, name: dexEntryName)
+    func tradePool(fightingIDs: Set<String>) -> [TradePoolEntry] {
+        TradePool.build(state: state, fightingIDs: fightingIDs, name: dexEntryName)
     }
 
-    func tradeRefusal(for entry: DexEntry, fighterID: String?) -> TradeRefusal? {
-        TradePool.refusal(for: entry, fighterID: fighterID, activeID: activeDexEntry?.id)
+    func tradeRefusal(for entry: DexEntry, fightingIDs: Set<String>) -> TradeRefusal? {
+        TradePool.refusal(for: entry, fightingIDs: fightingIDs, activeID: activeDexEntry?.id)
     }
 
     /// Newest first, the same order the bot's pool uses.
-    func tradableEntries(fighterID: String?) -> [DexEntry] {
+    func tradableEntries(fightingIDs: Set<String>) -> [DexEntry] {
         state.dex
-            .filter { tradeRefusal(for: $0, fighterID: fighterID) == nil }
+            .filter { tradeRefusal(for: $0, fightingIDs: fightingIDs) == nil }
             .sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
     }
 

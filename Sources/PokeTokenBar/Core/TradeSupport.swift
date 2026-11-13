@@ -75,20 +75,25 @@ enum TradePool {
     static let maxBytes = 48_000
     static let maxEntryBytes = 4_000
 
-    static func refusal(for entry: DexEntry, fighterID: String?, activeID: String?) -> TradeRefusal? {
+    /// Everyone in the battle lineup (up to three), which also covers the auto fighter when nothing is picked.
+    static func fightingIDs(state: CompanionState, slots: [BattleEntrySlot]) -> Set<String> {
+        Set(BattleEntry.lineup(state: state, slots: slots).map(\.id))
+    }
+
+    static func refusal(for entry: DexEntry, fightingIDs: Set<String>, activeID: String?) -> TradeRefusal? {
         if entry.id == activeID { return .raising }
         if entry.releasedAt != nil || entry.profile == nil || !isSendable(entry) { return .unavailable }
-        if entry.id == fighterID { return .fighting }
+        if fightingIDs.contains(entry.id) { return .fighting }
         if entry.tradeEvolutionPending == true { return .arriving }
         return nil
     }
 
     /// The individuals this player may offer, newest first and trimmed to what the bot accepts.
-    static func build(state: CompanionState, fighterID: String?, name: (DexEntry) -> String) -> [TradePoolEntry] {
+    static func build(state: CompanionState, fightingIDs: Set<String>, name: (DexEntry) -> String) -> [TradePoolEntry] {
         var entries: [TradePoolEntry] = []
         var bytes = 2
         let owned = state.dex.sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
-        for entry in owned where refusal(for: entry, fighterID: fighterID, activeID: nil) == nil {
+        for entry in owned where refusal(for: entry, fightingIDs: fightingIDs, activeID: nil) == nil {
             guard entries.count < maxEntries, let item = poolEntry(for: entry, name: name(entry)),
                   let size = try? encoder.encode(item).count, size <= maxEntryBytes,
                   bytes + size + 1 <= maxBytes else { continue }

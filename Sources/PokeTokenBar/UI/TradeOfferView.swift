@@ -6,7 +6,7 @@ import SwiftUI
 struct TradeOfferView: View {
     let store: CompanionStore
     let uploader: PartyUploader
-    let fighterID: String?
+    let fightingIDs: Set<String>
     let onBack: () -> Void
 
     @State private var give: String?
@@ -20,11 +20,11 @@ struct TradeOfferView: View {
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 4)
     private var l: L { store.l }
 
-    init(store: CompanionStore, uploader: PartyUploader, fighterID: String?, initialGive: String? = nil,
+    init(store: CompanionStore, uploader: PartyUploader, fightingIDs: Set<String>, initialGive: String? = nil,
          initialCoworkers: [TradeCoworker]? = nil, onBack: @escaping () -> Void) {
         self.store = store
         self.uploader = uploader
-        self.fighterID = fighterID
+        self.fightingIDs = fightingIDs
         self.onBack = onBack
         _give = State(initialValue: initialGive)
         _coworkers = State(initialValue: initialCoworkers)
@@ -51,7 +51,7 @@ struct TradeOfferView: View {
         .task { await loadCoworkers() }
     }
 
-    private var entries: [DexEntry] { store.tradableEntries(fighterID: fighterID) }
+    private var entries: [DexEntry] { store.tradableEntries(fightingIDs: fightingIDs) }
 
     private var pokemonSection: some View {
         VStack(alignment: .leading, spacing: 6) {
