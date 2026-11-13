@@ -5,7 +5,7 @@ import re
 import secrets
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
 from urllib.parse import urlencode
 
@@ -20,6 +20,13 @@ DEFAULT_IV = 15
 REGISTER_LINK = "poketokenbar://ypoke-register"
 DOWNLOAD_URL = "https://github.com/w8385/PokeTokenBar-yp/releases/latest"
 REGISTER_ACTION_ID = "open_poketokenbar"
+REMATCH_ACTION_ID = "rematch"
+REMATCH_LABEL = "다시 붙기"
+REMATCH_DENIED = "대결한 두 사람만 누를 수 있어요."
+SECTION_TEXT_LIMIT = 3000
+ECHO_ARG_LIMIT = 200
+_REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)")
+_MENTION_SPLIT = re.compile(r"(<@[UW][A-Z0-9]+(?:\|[^>]*)?>)")
 _MENTION = re.compile(r"<@([UW][A-Z0-9]+)(?:\|[^>]*)?>")
 KST = timezone(timedelta(hours=9), "KST")
 MAX_SPECIES_ID = 1025
@@ -76,9 +83,19 @@ class DirectMessage:
 
 @dataclass(frozen=True)
 class Reply:
+    """`echo` names who ran which slash command; it heads the visible messages (`in_channel` or `public`).
+
+    A battle result has `summary` (one line) and `rematch` (the button value), and `text` is its turn log.
+    `public` is a line the channel sees beside a private `text`.
+    """
+
     text: str
     in_channel: bool = False
     direct_messages: tuple[DirectMessage, ...] = ()
+    echo: str | None = None
+    summary: str | None = None
+    rematch: str | None = None
+    public: str | None = None
 
 
 @dataclass(frozen=True)
@@ -87,7 +104,11 @@ class Delivery:
 
     challenger_id: str
     where: Where
-    text: str
+    reply: Reply
+
+    @property
+    def text(self) -> str:
+        return self.reply.text
 
 
 @dataclass(frozen=True)
@@ -122,23 +143,30 @@ class CommandHandler:
         if command is None:
             return Reply(self._help)
         if command == BATTLE_COMMAND and not _MENTION.search(rest):
-            return self._bot_battle(user_id, where)
+            return self._start(user_id, self._bot_user_id, where)
         return self.handle(user_id, rest, command, where)
 
-    def handle(self, user_id: str, text: str, command: str = BATTLE_COMMAND, where: Where | None = None) -> Reply:
-        """`where` is needed to keep a challenge pending until both sides have uploaded."""
-        mention = _MENTION.search(text)
-        if command == LINK_COMMAND:
-            return self._register(user_id)
-        if command == RECORD_COMMAND:
-            return self._record(mention.group(1) if mention else user_id)
-        if command == RANKING_COMMAND:
-            return self._ranking()
-        if command == BATTLE_COMMAND and mention:
-            if mention.group(1) == self._bot_user_id:
-                return self._bot_battle(user_id, where)
-            return self._battle(user_id, mention.group(1), where)
-        return Reply(self._help)
+    @property
+    def bot_user_id(self) -> str | None:
+        return self._bot_user_id
+
+    def handle(
+        self, user_id: str, text: str, command: str = BATTLE_COMMAND, where: Where | None = None, echo: bool = False
+    ) -> Reply:
+        """`where` is needed to keep a challenge pending until both sides have uploaded.
+
+        With `echo`, a visible reply carries the line saying who typed the command (a slash command is invisible).
+        """
+        line = command_echo(user_id, command, text) if echo else None
+        return _echoed(self._dispatch(user_id, text, command, where, line), line)
+
+    def rematch(self, user_id: str, value: str, where: Where) -> Reply:
+        """The 다시 붙기 button: only the two who fought may rerun the matchup with their current uploads."""
+        parsed = _REMATCH_VALUE.fullmatch(value)
+        if parsed is None or user_id not in parsed.groups():
+            return Reply(REMATCH_DENIED)
+        line = f"<@{user_id}> 님이 {REMATCH_LABEL}를 눌렀어요"
+        return _echoed(self._start(*parsed.groups(), where, line), line)
 
     def run_pending(self, user_id: str) -> list[Delivery]:
         """After `user_id` uploads: play every pending challenge of theirs whose sides are now both ready, once."""
@@ -153,9 +181,26 @@ class CommandHandler:
                 continue
             fresh = now - challenge.created_at < RESPONSE_URL_LIFETIME
             where = Where(challenge.channel_id, challenge.thread_ts, challenge.response_url if fresh else None)
-            text = f"{PENDING_HEADER}\n{self._play(match)}"
-            deliveries.append(Delivery(challenge.challenger_id, where, text))
+            reply = self._result(match)
+            reply = replace(reply, text=f"{PENDING_HEADER}\n{reply.text}", echo=challenge.echo)
+            deliveries.append(Delivery(challenge.challenger_id, where, reply))
         return deliveries
+
+    def _dispatch(self, user_id: str, text: str, command: str, where: Where | None, echo: str | None) -> Reply:
+        mention = _MENTION.search(text)
+        if command == LINK_COMMAND:
+            return self._register(user_id)
+        if command == RECORD_COMMAND:
+            return self._record(mention.group(1) if mention else user_id)
+        if command == RANKING_COMMAND:
+            return self._ranking()
+        if command == BATTLE_COMMAND and mention:
+            if mention.group(1) == self._bot_user_id:
+                return self._start(user_id, self._bot_user_id, where, echo)
+            if mention.group(1) == user_id:
+                return Reply("자기 자신과는 대결할 수 없어요.")
+            return self._start(user_id, mention.group(1), where, echo)
+        return Reply(self._help)
 
     def _register(self, user_id: str) -> Reply:
         token = self._store.issue_token(user_id)
@@ -205,29 +250,21 @@ class CommandHandler:
             )
         return Reply("\n".join(lines), in_channel=True)
 
-    def _battle(self, challenger_id: str, opponent_id: str, where: Where | None) -> Reply:
-        if challenger_id == opponent_id:
-            return Reply("자기 자신과는 대결할 수 없어요.")
-        return self._start(challenger_id, opponent_id, where)
-
-    def _bot_battle(self, challenger_id: str, where: Where | None) -> Reply:
-        """Practice battle against a seeded random species at the challenger's level; nothing is stored."""
-        return self._start(challenger_id, self._bot_user_id, where)
-
-    def _start(self, challenger_id: str, opponent_id: str, where: Where | None) -> Reply:
+    def _start(self, challenger_id: str, opponent_id: str, where: Where | None, echo: str | None = None) -> Reply:
+        """A battle against `opponent_id`; against the bot it is a practice battle and nothing is stored."""
         try:
             match = self._prepare(challenger_id, opponent_id)
         except OSError:
             return Reply("포켓몬 정보를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.")
         if match is None:
-            return self._wait(challenger_id, opponent_id, where)
-        return Reply(self._play(match), in_channel=True)
+            return self._wait(challenger_id, opponent_id, where, echo)
+        return self._result(match)
 
-    def _wait(self, challenger_id: str, opponent_id: str, where: Where | None) -> Reply:
+    def _wait(self, challenger_id: str, opponent_id: str, where: Where | None, echo: str | None) -> Reply:
         """Keep the challenge until both sides have uploaded, and send the side(s) without one the link button."""
         if where is not None:
             self._store.save_pending(PendingChallenge(
-                challenger_id, opponent_id, where.channel_id, where.thread_ts, where.response_url, self._now(),
+                challenger_id, opponent_id, where.channel_id, where.thread_ts, where.response_url, self._now(), echo,
             ))
         not_ready = [user for user in (challenger_id, opponent_id)
                      if user != self._bot_user_id and self._store.party(user) is None]
@@ -242,7 +279,11 @@ class CommandHandler:
             if opponent_id in not_ready:
                 text += f" {opponent}님도 아직 준비 전이라 연결 안내를 보냈어요."
             text += f" DM이 안 보이면 `{LINK_COMMAND}`를 써 주세요. 앱은 <{DOWNLOAD_URL}|여기서> 받아요."
-            return Reply(text, direct_messages=prompts)
+            public = (
+                f"<@{challenger_id}>님은 아직 YPoke에 포켓몬이 없어요. "
+                "DM의 연결 버튼을 누르고 회사 네트워크에서 앱을 켜 두면 이 대결이 열려요."
+            )
+            return Reply(text, direct_messages=prompts, public=public)
         return Reply(
             f"{opponent}님은 아직 YPoke에 포켓몬이 없어서 연결 안내를 DM으로 보냈어요. "
             "준비되면 이 대결 결과를 여기에 올릴게요. 24시간이 지나면 취소돼요.",
@@ -285,13 +326,21 @@ class CommandHandler:
             return None
         return _Match(challenger_id, opponent_id, self._combatants(lead, opponent.party[0]), seed, practice=False)
 
-    def _play(self, match: _Match) -> str:
+    def _result(self, match: _Match) -> Reply:
         result = simulate(match.sides, match.seed)
         if not match.practice:
             winner_id = match.challenger_id if result.winner == 0 else match.opponent_id
             self._store.record_battle(match.challenger_id, match.opponent_id, winner_id, match.seed)
         trainers = (f"<@{match.challenger_id}>", self._label(match.opponent_id))
-        return "\n".join(battle_lines(trainers, match.sides, result, practice=match.practice))
+        summary = f"🏆 {trainers[result.winner]} 승 — {match.sides[0].name} vs {match.sides[1].name} ({result.turns}턴)"
+        if match.practice:
+            summary += " · 연습 대결"
+        return Reply(
+            "\n".join(battle_lines(trainers, match.sides, result, practice=match.practice)),
+            in_channel=True,
+            summary=summary,
+            rematch=f"{match.challenger_id}:{match.opponent_id}",
+        )
 
     def _label(self, user_id: str | None) -> str:
         return f"<@{user_id}>" if user_id else "YPoke"
@@ -351,3 +400,45 @@ def week_start(now: datetime) -> datetime:
 
 def _win_rate(record: Record) -> float:
     return record.wins / (record.wins + record.losses)
+
+
+def command_echo(user_id: str, command: str, text: str) -> str:
+    """Who ran which command: the command and its text in code, user mentions outside it so they stay mentions."""
+    parts = [f"`{command}`"]
+    for chunk in _MENTION_SPLIT.split(text[:ECHO_ARG_LIMIT]):
+        mention = _MENTION.fullmatch(chunk)
+        if mention:
+            parts.append(f"<@{mention.group(1)}>")
+            continue
+        plain = re.sub(r"[`<>]", "", chunk).strip()
+        if plain:
+            parts.append(f"`{plain}`")
+    return f"<@{user_id}> 님이 {' '.join(parts)} 을(를) 썼어요"
+
+
+def _echoed(reply: Reply, echo: str | None) -> Reply:
+    return replace(reply, echo=echo) if echo and (reply.in_channel or reply.public) else reply
+
+
+def fallback_text(reply: Reply) -> str:
+    """Notification text of a visible battle result."""
+    return "\n".join(line for line in (reply.echo, reply.summary) if line)
+
+
+def result_blocks(reply: Reply, with_log: bool = False) -> list[dict]:
+    """Echo line, one-line summary and the rematch button; `with_log` adds the turn log for a place with no thread."""
+    blocks: list[dict] = []
+    if reply.echo:
+        blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": reply.echo}]})
+    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": reply.summary}})
+    blocks.append({"type": "actions", "elements": [{
+        "type": "button", "action_id": REMATCH_ACTION_ID, "value": reply.rematch,
+        "text": {"type": "plain_text", "text": REMATCH_LABEL},
+    }]})
+    if with_log:
+        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": fit(reply.text, SECTION_TEXT_LIMIT)}})
+    return blocks
+
+
+def fit(text: str, limit: int) -> str:
+    return text if len(text) <= limit else f"{text[:limit - 1]}…"

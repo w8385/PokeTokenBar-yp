@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS pending_challenges (
     thread_ts TEXT,
     response_url TEXT,
     created_at TEXT NOT NULL,
+    echo TEXT,
     PRIMARY KEY (challenger_id, opponent_id)
 );
 CREATE TABLE IF NOT EXISTS link_prompts (
@@ -69,6 +70,7 @@ class PendingChallenge:
     thread_ts: str | None
     response_url: str | None
     created_at: datetime
+    echo: str | None = None
 
 
 @dataclass(frozen=True)
@@ -83,6 +85,9 @@ class Store:
         with closing(self._connect()) as connection, connection:
             connection.execute("PRAGMA journal_mode=WAL")
             connection.executescript(_SCHEMA)
+            columns = {row[1] for row in connection.execute("PRAGMA table_info(pending_challenges)")}
+            if "echo" not in columns:
+                connection.execute("ALTER TABLE pending_challenges ADD COLUMN echo TEXT")
 
     def issue_token(self, slack_user_id: str, keep_existing: bool = False) -> str:
         """Create a new upload token for the user. Unless `keep_existing`, every previous token is revoked."""
@@ -166,10 +171,10 @@ class Store:
         with closing(self._connect()) as connection, connection:
             connection.execute(
                 "INSERT OR REPLACE INTO pending_challenges "
-                "(challenger_id, opponent_id, channel_id, thread_ts, response_url, created_at) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "(challenger_id, opponent_id, channel_id, thread_ts, response_url, created_at, echo) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (challenge.challenger_id, challenge.opponent_id, challenge.channel_id, challenge.thread_ts,
-                 challenge.response_url, _timestamp(challenge.created_at)),
+                 challenge.response_url, _timestamp(challenge.created_at), challenge.echo),
             )
 
     def pending_for(self, slack_user_id: str, since: datetime) -> list[PendingChallenge]:
@@ -177,11 +182,11 @@ class Store:
         with closing(self._connect()) as connection, connection:
             connection.execute("DELETE FROM pending_challenges WHERE created_at < ?", (_timestamp(since),))
             rows = connection.execute(
-                "SELECT challenger_id, opponent_id, channel_id, thread_ts, response_url, created_at "
+                "SELECT challenger_id, opponent_id, channel_id, thread_ts, response_url, created_at, echo "
                 "FROM pending_challenges WHERE challenger_id = ?1 OR opponent_id = ?1 ORDER BY created_at",
                 (slack_user_id,),
             ).fetchall()
-        return [PendingChallenge(*row[:5], created_at=datetime.fromisoformat(row[5])) for row in rows]
+        return [PendingChallenge(*row[:5], created_at=datetime.fromisoformat(row[5]), echo=row[6]) for row in rows]
 
     def claim_pending(self, challenge: PendingChallenge) -> bool:
         """Delete the challenge; True only for the one caller that removed it."""
