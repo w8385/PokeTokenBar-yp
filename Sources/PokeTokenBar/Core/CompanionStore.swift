@@ -111,6 +111,10 @@ final class CompanionStore {
         defaults.set(shopDifficulty, forKey: "shopDifficulty")
         migratePokemonProfilesIfNeeded()
         seedDexCompletionsIfNeeded()
+        // A region finished before the reward shipped is paid on the first launch that sees it.
+        if !DexProgress.unrewardedRegions(earned: earnedDexBadges, rewarded: state.rewardedDexRegions).isEmpty {
+            save()
+        }
         refreshRepresentativeSubject()
         refreshFriendSubjects()
         refreshSnapshots()
@@ -565,13 +569,44 @@ final class CompanionStore {
     /// Guarded on seeding so pre-feature completions are announced by `seedDexCompletionsIfNeeded`, not here.
     func checkDexCompletions() {
         guard state.dexCompletionsSeeded else { return }
-        let newly = DexProgress.newlyEarnedBadges(earned: earnedDexBadges,
+        let earned = earnedDexBadges
+        let rewarded = grantRegionRewards(earned: earned)
+        let newly = DexProgress.newlyEarnedBadges(earned: earned,
                                                   alreadyNotified: state.notifiedDexCompletions)
         for badge in newly {
+            if case .region(let region) = badge, rewarded.contains(region) {
+                state.notifiedDexCompletions.insert(badge.notificationKey)
+                continue   // the reward notification already announced it
+            }
             let (title, body) = dexCompletionNotification(badge)
             notifyCompanionEvent(title, body)
             state.notifiedDexCompletions.insert(badge.notificationKey)
         }
+    }
+
+    func isDexRegionRewarded(_ region: PokedexRegion) -> Bool {
+        state.rewardedDexRegions.contains(region.rawValue)
+    }
+
+    /// Pay the one-time reward for every completed region not rewarded yet and announce each with the
+    /// completion notification plus the reward. The first region ever rewarded also brings the Shiny Charm
+    /// if it is not owned. Mutates state only; `save()` persists it in the same pass.
+    private func grantRegionRewards(earned: [DexBadge]) -> Set<PokedexRegion> {
+        let regions = DexProgress.unrewardedRegions(earned: earned, rewarded: state.rewardedDexRegions)
+        for region in regions {
+            let isFirst = state.rewardedDexRegions.isEmpty
+            state.rewardedDexRegions.insert(region.rawValue)
+            let count = DexRegionReward.candyCount
+            state.inventory[ItemKind.rareCandy.rawValue, default: 0] += count
+            var items = "\(l.itemName(.rareCandy)) ×\(count)"
+            if isFirst, itemCount(.shinyCharm) == 0 {
+                state.inventory[ItemKind.shinyCharm.rawValue] = 1
+                items += ", \(l.itemName(.shinyCharm))"
+            }
+            notifyCompanionEvent(l.notifDexRegionCompleteTitle(l.regionName(region)),
+                                 l.notifDexRegionRewardBody(l.regionName(region), items: items))
+        }
+        return Set(regions)
     }
 
     /// On first run after this feature ships, record already-earned badges as announced *without*
