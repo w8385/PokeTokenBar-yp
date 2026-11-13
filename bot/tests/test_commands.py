@@ -14,7 +14,7 @@ from ypoke.commands import (
     UMBRELLA_COMMAND,
     CommandHandler,
     Where,
-    bot_species,
+    bot_entry,
     parse_mention,
     reply_thread_ts,
     week_start,
@@ -129,15 +129,48 @@ def test_battle_is_one_on_one_and_records(store):
     assert handler(store).handle("UA", "<@UB>", RECORD_COMMAND).text == "<@UB> 전적: 0승 1패"
 
 
-def test_an_older_multi_pokemon_upload_sends_only_its_first(store):
+def test_a_four_member_upload_fights_with_its_first_three(store):
     upload(store, "UA", 7, 5)
     store.save_party("UA", [member(7, 5), member(25, 30), member(7, 10), member(25, 100)])
     upload(store, "UB", 25, 60)
     lines = handler(store).handle("UA", "<@UB>").text.splitlines()
     assert lines[1] == "<@UA>은(는) 꼬부기를 내보냈다! (Lv5)"
     assert lines[2] == "<@UB>은(는) 피카츄를 내보냈다! (Lv50)"
+    assert lines[3] == "🔵 꼬부기 → 피카츄 → 꼬부기"
+    assert not any("Lv100" in line for line in lines)
+
+
+def test_a_one_member_upload_still_battles_with_no_send_out_lines(store):
+    upload(store, "UA", 7, 5)
+    upload(store, "UB", 25, 60)
+    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
     assert lines[-1] == "<@UB>은(는) 승부에서 이겼다!"
     assert sum(line.endswith("쓰러졌다!") for line in lines) == 1
+    assert not any("가라," in line for line in lines)
+
+
+def test_three_against_one_ends_when_the_lone_pokemon_is_beaten(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50), member(25, 50), member(25, 50)])
+    store.issue_token("UB")
+    store.save_party("UB", [member(7, 5)])
+    reply = handler(store).handle("UA", "<@UB>")
+    lines = reply.text.splitlines()
+    assert lines[-1] == "<@UA>은(는) 승부에서 이겼다!"
+    assert "피카츄 · 피카츄 · 피카츄 vs 꼬부기" in reply.summary
+    assert store.record("UA") == Record(1, 0)
+
+
+def test_one_against_three_lists_the_three_and_the_stronger_side_wins(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(7, 1)])
+    store.issue_token("UB")
+    store.save_party("UB", [member(25, 50), member(7, 50), member(25, 50)])
+    reply = handler(store).handle("UA", "<@UB>")
+    lines = reply.text.splitlines()
+    assert "🔴 피카츄 → 꼬부기 → 피카츄" in lines
+    assert lines[-1] == "<@UB>은(는) 승부에서 이겼다!"
+    assert store.record("UB") == Record(1, 0)
 
 
 def battle_moves_of(store, monkeypatch, chosen, level=60):
@@ -147,7 +180,7 @@ def battle_moves_of(store, monkeypatch, chosen, level=60):
     store.save_party("UA", [{**member(25, level), **({"moves": chosen} if chosen is not None else {})}])
     upload(store, "UB", 7, 20)
     handler(store).handle("UA", "<@UB>")
-    return [m.name for m in captured[0][0].moves]
+    return [m.name for m in captured[0][0][0].moves]
 
 
 def test_default_moves_are_the_four_most_recently_learned(store, monkeypatch):
@@ -238,7 +271,7 @@ def sides_of(store, monkeypatch, challenger, opponent):
         store.issue_token(user)
         store.save_party(user, [party])
     handler(store).handle("UA", "<@UB>")
-    return captured[0]
+    return captured[0][0][0], captured[0][1][0]
 
 
 def test_a_fighter_above_fifty_fights_at_fifty_and_one_at_thirty_keeps_its_level(store, monkeypatch):
@@ -529,7 +562,7 @@ def test_bot_battle_is_practice_and_writes_nothing(store, monkeypatch, command, 
     assert lines[0] == "<@UBOT>에게 <@UA>이(가) 승부를 걸어왔다!"
     assert lines[2] == "<@UBOT>은(는) 야생몬을 내보냈다! (Lv42)"
     assert lines[-1].endswith("승부에서 이겼다! (연습 대결 — 전적에 안 남아요)")
-    assert bot_species(1234) in pokeapi.requested
+    assert bot_entry(1234, 1)[0] in pokeapi.requested
     assert store.record("UA") == Record(0, 0)
     assert store.records_since(datetime(2000, 1, 1, tzinfo=UTC)) == {}
 
@@ -600,17 +633,22 @@ def test_help_links_the_home_channel_when_configured(store):
     assert "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요." in HELP_TEXT
 
 
-def test_bot_species_is_seeded_and_spans_the_national_dex():
-    picks = [bot_species(seed) for seed in range(400)]
-    assert picks == [bot_species(seed) for seed in range(400)]
-    assert all(1 <= species <= 1025 for species in picks)
-    assert len(set(picks)) > 250
+def test_bot_entry_is_seeded_distinct_and_spans_the_national_dex():
+    picks = [bot_entry(seed, 3) for seed in range(400)]
+    assert picks == [bot_entry(seed, 3) for seed in range(400)]
+    assert all(1 <= species <= 1025 and len(set(entry)) == 3 for entry in picks for species in entry)
+    assert len({entry[0] for entry in picks}) > 250
 
 
-def test_bot_battle_uses_the_first_of_an_older_entry_at_its_level(store, monkeypatch):
+def test_bot_practice_brings_as_many_random_pokemon_as_the_challenger_at_each_level(store, monkeypatch):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 42), member(7, 10)])
+    store.save_party("UA", [member(25, 42), member(7, 10), member(25, 70), member(7, 99)])
     monkeypatch.setattr("ypoke.commands.secrets.randbits", lambda bits: 99)
-    lines = handler(store).handle("UA", "<@UBOT>", BATTLE_COMMAND).text.splitlines()
+    pokeapi = FakePokeAPI()
+    reply = handler(store, pokeapi=pokeapi).handle("UA", "<@UBOT>", BATTLE_COMMAND)
+    lines = reply.text.splitlines()
     assert lines[1] == "<@UA>은(는) 피카츄를 내보냈다! (Lv42)"
     assert lines[2] == "<@UBOT>은(는) 야생몬을 내보냈다! (Lv42)"
+    assert lines[4] == "🔴 야생몬 → 야생몬 → 야생몬"
+    assert set(bot_entry(99, 3)) <= set(pokeapi.requested)
+    assert store.record("UA") == Record(0, 0)

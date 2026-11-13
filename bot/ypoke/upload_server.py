@@ -15,6 +15,7 @@ from ypoke.store import Store
 
 MAX_BODY_BYTES = 64 * 1024
 MAX_PARTY_SIZE = 6
+MAX_ENTRY_SIZE = 3
 RECENT_BATTLE_LIMIT = 5
 COWORKER_LIMIT = 30
 COWORKER_WINDOW = timedelta(days=30)

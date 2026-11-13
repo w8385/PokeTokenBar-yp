@@ -1,11 +1,15 @@
 """In-game style battle narration built only from events the simulation produced."""
 
+from collections.abc import Sequence
+
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    AbilityTrigger, Action, BattleResult, Change, Combatant, Event, StatusDamage, WeatherDamage, WeatherEnd,
+    AbilityTrigger, Action, BattleResult, Change, Combatant, Event, SendOut, StatusDamage, WeatherDamage,
+    WeatherEnd,
 )
 
 MAX_EVENT_LINES = 24
+MAX_LOG_CHARS = 2900
 PRACTICE_NOTE = "(연습 대결 — 전적에 안 남아요)"
 SKIPPED_LINE = "⋯"
 RENTAL_PREFIX = "대여 포켓몬 "
@@ -59,24 +63,52 @@ BLOCKED_TEXT = {
 
 def battle_lines(
     trainers: tuple[str, str],
-    combatants: tuple[Combatant, Combatant],
+    sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[Combatant]],
     result: BattleResult,
     practice: bool = False,
 ) -> list[str]:
     """`trainers` are Slack mentions, challenger first; their particles are always written as "이(가)".
 
-    One line per action and status tick; a long battle keeps its first and last `MAX_EVENT_LINES // 2`.
+    One line per event. A long battle keeps its first and last `MAX_EVENT_LINES // 2` lines plus every send-out
+    and faint line, and drops more of the middle until the log fits `MAX_LOG_CHARS`.
     """
+    rosters = tuple((side,) if isinstance(side, Combatant) else tuple(side) for side in sides)
     lines = [f"{trainers[1]}에게 {trainers[0]}이(가) 승부를 걸어왔다!"]
-    lines += [_send_out_line(trainer, combatant) for trainer, combatant in zip(trainers, combatants)]
-    events = [_event_line(event) for event in result.events]
-    if len(events) > MAX_EVENT_LINES:
-        half = MAX_EVENT_LINES // 2
-        events = [*events[:half], SKIPPED_LINE, *events[-half:]]
-    lines += events
+    lines += [_send_out_line(trainer, roster[0]) for trainer, roster in zip(trainers, rosters)]
+    lines += [_roster_line(side, roster) for side, roster in enumerate(rosters) if len(roster) > 1]
     win_line = f"{trainers[result.winner]}은(는) 승부에서 이겼다!"
-    lines.append(f"{win_line} {PRACTICE_NOTE}" if practice else win_line)
-    return lines
+    closing = f"{win_line} {PRACTICE_NOTE}" if practice else win_line
+    budget = MAX_LOG_CHARS - sum(len(line) + 1 for line in (*lines, closing))
+    return [*lines, *_event_lines(result.events, budget), closing]
+
+
+def _event_lines(events: list[Event], budget: int) -> list[str]:
+    lines = [_event_line(event) for event in events]
+    essential = [isinstance(event, (SendOut, AbilityTrigger)) or _faints(event) for event in events]
+    half = MAX_EVENT_LINES // 2
+    while True:
+        keep = [
+            index < half or index >= len(lines) - half or essential[index] for index in range(len(lines))
+        ] if len(lines) > MAX_EVENT_LINES else [True] * len(lines)
+        shown = []
+        for index, line in enumerate(lines):
+            if keep[index]:
+                shown.append(line)
+            elif shown and shown[-1] != SKIPPED_LINE:
+                shown.append(SKIPPED_LINE)
+        if half == 0 or sum(len(line) + 1 for line in shown) <= budget:
+            return shown
+        half -= 1
+
+
+def _faints(event: Event) -> bool:
+    return isinstance(event, Action) and (event.knockout or event.attacker_fainted) or (
+        isinstance(event, (StatusDamage, WeatherDamage)) and event.fainted
+    )
+
+
+def _roster_line(side: int, roster: Sequence[Combatant]) -> str:
+    return f"{SIDE_MARKERS[side]} " + " → ".join(combatant.name for combatant in roster)
 
 
 def with_particle(word: str, pair: tuple[str, str]) -> str:
@@ -101,6 +133,8 @@ def _event_line(event: Event) -> str:
         effect = WEATHER_START[event.weather] if event.weather else _change_text(event.change)
         return f"{SIDE_MARKERS[event.side]} {event.pokemon}의 {ABILITY_NAMES[event.ability]}! {effect}"
     prefix = f"{event.turn}턴 {SIDE_MARKERS[event.side]}"
+    if isinstance(event, SendOut):
+        return f"{prefix} 가라, {event.pokemon}!"
     if isinstance(event, StatusDamage):
         name = with_particle(event.pokemon, ("은", "는"))
         tail = f"{name} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
