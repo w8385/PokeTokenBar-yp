@@ -1854,6 +1854,7 @@ struct PokemonDetailView: View {
     let species: CompanionStore.DexSpecies
     let onBack: () -> Void
     private let spriteStore: SpriteStore
+    private let flavorProvider: SpeciesFlavorProviding
     @Environment(BattleEntryStore.self) private var battleEntry: BattleEntryStore?
     @Environment(PartyUploader.self) private var uploader: PartyUploader?
     @State private var selectedInstanceID = ""
@@ -1862,11 +1863,13 @@ struct PokemonDetailView: View {
 
     init(store: CompanionStore, species: CompanionStore.DexSpecies,
          onBack: @escaping () -> Void, selectedShiny: Bool? = nil,
-         spriteStore: SpriteStore = .shared) {
+         spriteStore: SpriteStore = .shared,
+         flavorProvider: SpeciesFlavorProviding = SpeciesFlavorClient.shared) {
         self.store = store
         self.species = species
         self.onBack = onBack
         self.spriteStore = spriteStore
+        self.flavorProvider = flavorProvider
         _selectedShiny = State(initialValue: selectedShiny)
     }
 
@@ -1911,6 +1914,8 @@ struct PokemonDetailView: View {
                     if PokemonForm.hasForms(speciesID: species.id) { formPicker }
                     if displayedSpecies.hasNormal && displayedSpecies.isShiny { appearancePicker }
                     identityHeader
+                    SpeciesFlavorCard(speciesID: species.id, form: displayedSpecies.form,
+                                      language: store.language, provider: flavorProvider)
                     if individuals.count > 1 { individualPicker }
                     if individuals.isEmpty {
                         Text(store.l.dexAppearancePreview).font(.callout).foregroundStyle(.secondary)
