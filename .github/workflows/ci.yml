@@ -11,6 +11,12 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# The Vision/OCR render tests are about 60% of the test time and need no coverage, so they run
+# in the ui-tests jobs in parallel. Any other test class, including a new one, runs in build-test.
+env:
+  UI_TESTS_DEX: DexBackNavigationTests|DexColorRenderingTests|CollectionReadabilityRenderingTests
+  UI_TESTS_SETTINGS: SnapshotHistoryRenderingTests|FormMetadataNoteRenderingTests|ZeroUsageHomeRenderingTests|SessionKeySettingsRenderingTests
+
 jobs:
   build-test:
     name: build-test
@@ -23,23 +29,48 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
-      - name: Build
-        run: swift build -v
+      # Same flags as test-gate.sh's `swift test --enable-code-coverage`, so the gate reuses this
+      # build instead of recompiling. A compile error fails here, before any test starts.
+      - name: Build (app + tests, with coverage)
+        run: swift build --build-tests --enable-code-coverage
 
       # test-gate.sh runs `swift test --enable-code-coverage` and then enforces a
       # line-coverage floor on the logic-core files. It replaces a bare `swift test`:
       # the tests still run, and a coverage regression now fails the build.
-      - name: Test + coverage gate
+      - name: Test + coverage gate (all but the UI render tests)
+        env:
+          SWIFT_TEST_SKIP: ${{ env.UI_TESTS_DEX }}|${{ env.UI_TESTS_SETTINGS }}
+        run: ./scripts/test-gate.sh
+
+  ui-tests:
+    name: ui-tests (${{ matrix.shard }})
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: dex
+            artifact: dex-renders
+          - shard: settings
+            artifact: snapshot-history-renders
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build tests
+        run: swift build --build-tests
+
+      - name: Run UI render tests
         env:
           PTB_SNAPSHOT_SCREENSHOT_DIR: ${{ runner.temp }}/snapshot-history-renders
           PTB_ZERO_USAGE_SCREENSHOT_DIR: ${{ runner.temp }}/snapshot-history-renders/zero-usage
-        run: ./scripts/test-gate.sh
+          TESTS: ${{ matrix.shard == 'dex' && env.UI_TESTS_DEX || env.UI_TESTS_SETTINGS }}
+        run: swift test --skip-build --filter "$TESTS"
 
       - name: Preserve native snapshot-history renders
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: snapshot-history-renders
+          name: ${{ matrix.artifact }}
           path: ${{ runner.temp }}/snapshot-history-renders
           if-no-files-found: ignore
           retention-days: 7

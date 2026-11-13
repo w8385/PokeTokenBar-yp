@@ -1440,6 +1440,17 @@ read_when:
   On the same CI image, English-only recognition corrected the period label but still read
   the unrelated chart caption `Daily` as `Dally`; do not teach OCR that misspelling or relax
   the original chart guard to make a period-row regression pass.
+- **`FormMetadataNoteRenderingTests.assertNote` failed on CI with the loaded details never read.**
+  Two of five CI runs on one branch failed `testDexExplainsTheDisplayedFormRatherThanTheOriginalSelection`
+  in 10 to 13 s: the OCR text had no `grass` (the type chip) and no note, so the helper never saw a
+  loaded screen within its 5 s window. Main runs before and after did not show it. The window is
+  now 20 s, which only helps if the screen was merely slow; the root cause is not confirmed. If it
+  fails again, check whether the detail load or the OCR is the missing piece before widening
+  further.
+- **Do not OCR rendered pixels that the assertion does not read.** `SnapshotHistoryRenderingTests`
+  OCR'd the whole 1900 pt Settings page up to three times per state, plus a whole-page diagnostic
+  pass, so two tests took 217 of 358 s on CI. One render per state is checked for rows and texts
+  together, saved as the screenshot, and OCR starts at the backup section.
 
 ## YPoke 대결 봇
 
