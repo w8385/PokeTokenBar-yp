@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Settings rows for picking up to 3 owned Pokémon, their order, and each one's moves.
+/// Battle tab rows for picking up to 3 owned Pokémon, their order, and each one's moves.
 @MainActor
 struct BattleEntrySection: View {
     @Environment(CompanionStore.self) private var companion

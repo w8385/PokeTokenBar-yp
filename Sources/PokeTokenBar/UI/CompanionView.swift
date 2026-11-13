@@ -1063,7 +1063,6 @@ struct DexSummaryHeader: View {
 ///  - **도감**: 종 1개 = 1칸. 안농의 28개 글자는 상세 화면에서 모아 본다.
 ///  - **로그**: 개체 1마리 = 1행. 같은 라인이 여러 행으로 나오는 게 정상 — 성격·획득 시각처럼
 ///    개체에 딸린 정보는 여기에만 있다.
-/// 상위 탭(PopoverTab)은 그대로 4개 — 세그먼트 폭(332/2)이 넉넉해 탭바를 늘릴 필요가 없다.
 @MainActor
 struct CollectionView: View {
     let store: CompanionStore
