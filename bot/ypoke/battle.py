@@ -124,6 +124,7 @@ class Combatant:
     ability: str | None = None
     item: str | None = None
     mega: MegaForm | None = None
+    pokemon_id: int | None = None
 
     @property
     def label(self) -> str:
