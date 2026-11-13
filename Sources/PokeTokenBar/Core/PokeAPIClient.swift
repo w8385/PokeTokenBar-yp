@@ -115,7 +115,8 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
             let sp = try await species(id)
             names[id] = PokemonNameLocalization.collect(sp.names)
         }
-        let line = EvoLine(baseID: baseSpeciesID, tree: tree, rarity: rarity, names: names)
+        let line = EvoLine(baseID: baseSpeciesID, tree: tree, rarity: rarity, names: names,
+                           genderRate: baseSpecies.gender_rate)
         lineCache[baseSpeciesID] = line
         return line
     }
@@ -262,7 +263,8 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
     private func node(from link: ChainLink) -> EvoNode {
         EvoNode(speciesID: Self.id(from: link.species.url ?? ""),
                 children: link.evolves_to.map(node(from:)),
-                methods: Self.methods(from: link.evolution_details))
+                methods: Self.methods(from: link.evolution_details),
+                requiredGender: Self.requiredGender(of: link.evolution_details ?? []))
     }
 
     static func methods(from details: [EvolutionDetailDTO]?) -> [EvoMethod] {
@@ -271,6 +273,14 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
             let time = detail.time_of_day.flatMap { $0.isEmpty ? nil : $0 }
             return EvoMethod(trigger: trigger, item: detail.item?.name, timeOfDay: time)
         }
+    }
+
+    /// Restricted only when every way into the species names one and the same gender.
+    /// Meowstic (♂ and ♀ entries) and unrestricted links stay open to both.
+    static func requiredGender(of details: [EvolutionDetailDTO]) -> PokemonGender? {
+        let genders = Set(details.map { $0.gender.flatMap(PokemonGender.init(pokeAPIEvolutionGender:)) })
+        guard genders.count == 1, let only = genders.first else { return nil }
+        return only
     }
     private func allIDs(_ n: EvoNode) -> [Int] { [n.speciesID] + n.children.flatMap(allIDs) }
 
@@ -312,6 +322,7 @@ struct EvolutionDetailDTO: Decodable, Sendable {
     let trigger: NamedRef?
     let item: NamedRef?
     let time_of_day: String?
+    let gender: Int?
 }
 
 struct PokemonDTO: Decodable, Sendable {

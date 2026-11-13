@@ -1056,7 +1056,7 @@ struct FloatingPetView: View {
                        shiny: subject.isShiny,
                        minFrameDelay: store.animationQuality.effectiveFrameFloor(
                            lowPower: ProcessInfo.processInfo.isLowPowerModeEnabled), spriteStore: spriteStore, form: subject.form,
-                       back: companion.facesBack, reportsVisibleTop: true)
+                       back: companion.facesBack, female: subject.isFemale, reportsVisibleTop: true)
                 // One-shot wobble per prayer; keyframes run once per trigger change, never in a loop.
                 .keyframeAnimator(initialValue: 0.0, trigger: burst.wobbleCount) { sprite, angle in
                     sprite.rotationEffect(.degrees(angle))

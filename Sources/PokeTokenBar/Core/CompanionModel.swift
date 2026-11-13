@@ -371,6 +371,21 @@ enum PokemonAssets {
     static func hasAnimatedSprite(speciesID: Int) -> Bool {
         isSupported(speciesID: speciesID) && !missingShowdownIDs.contains(speciesID)
     }
+
+    /// Species with a `female/` sprite in the PokéAPI sprite set (animated Showdown/Black-White GIFs).
+    static let femaleAnimatedSpriteIDs: Set<Int> = [
+        3, 12, 19, 20, 25, 26, 41, 42, 44, 45, 64, 65, 84, 85, 97, 111, 112, 118, 119, 123, 129, 130, 154, 165,
+        166, 178, 185, 186, 190, 194, 195, 198, 202, 203, 207, 208, 212, 214, 215, 217, 221, 224, 229, 232, 255,
+        256, 257, 267, 269, 272, 274, 275, 307, 308, 315, 316, 317, 322, 323, 332, 350, 369, 396, 397, 398, 399,
+        400, 401, 402, 403, 404, 405, 407, 415, 417, 418, 419, 424, 443, 444, 445, 449, 450, 453, 454, 456, 457,
+        459, 460, 461, 464, 465, 473, 521, 592, 593, 668, 678, 876, 902, 916,
+    ]
+    /// The static PNG set matches, except Eevee has a female PNG and Basculegion does not.
+    static let femaleStaticSpriteIDs: Set<Int> = femaleAnimatedSpriteIDs.subtracting([902]).union([133])
+
+    static func hasFemaleSprite(speciesID: Int, animated: Bool) -> Bool {
+        (animated ? femaleAnimatedSpriteIDs : femaleStaticSpriteIDs).contains(speciesID)
+    }
 }
 
 /// PokéAPI evolution-chain 을 파싱한 트리. 분기(evolves_to 다수)를 children 으로.
@@ -379,10 +394,24 @@ struct EvoNode: Codable, Sendable {
     let children: [EvoNode]
     /// 부모에서 이 노드로 진화하는 방법들(PokéAPI `evolution_details`). 비면 방법 미상 — 기존처럼 XP로 진화한다.
     var methods: [EvoMethod] = []
+    /// Set when every PokéAPI evolution method into this species names the same gender
+    /// (Froslass ♀, Gallade ♂). Nil when any gender may take the step.
+    var requiredGender: PokemonGender? = nil
 
     /// 진화의 돌(use-item)로 이 노드로 진화하나.
     func evolves(withItem item: String) -> Bool {
         methods.contains { $0.trigger == "use-item" && $0.item == item }
+    }
+
+    /// The evolutions an individual of this gender can take. An unknown gender filters nothing.
+    func children(for gender: PokemonGender?) -> [EvoNode] {
+        guard let gender else { return children }
+        return children.filter { $0.requiredGender == nil || $0.requiredGender == gender }
+    }
+
+    func finalIDs(for gender: PokemonGender?) -> [Int] {
+        let next = children(for: gender)
+        return next.isEmpty ? [speciesID] : next.flatMap { $0.finalIDs(for: gender) }
     }
 
     /// 최장 경로 길이(형태 수). 분기는 보통 같은 깊이라 대표값으로 사용.
@@ -401,7 +430,7 @@ struct EvoNode: Codable, Sendable {
     func keepingSupportedSpecies() -> EvoNode? {
         guard PokemonAssets.isSupported(speciesID: speciesID) else { return nil }
         return EvoNode(speciesID: speciesID, children: children.compactMap { $0.keepingSupportedSpecies() },
-                       methods: methods)
+                       methods: methods, requiredGender: requiredGender)
     }
 
     /// 같은 방법(레벨업 등)으로 갈리는 형제 갈래 중 지금 시간대에 맞는 쪽을 고른다(이브이 → 에이피/블래키).
@@ -463,9 +492,13 @@ struct EvoLine: Sendable {
     let rarity: Rarity
     /// speciesID → (langCode → name)
     let names: [Int: [String: String]]
+    /// The base species' PokéAPI `gender_rate`. An individual rolls its gender from it at hatch,
+    /// before its evolution is planned. Nil when unknown (no gender filtering).
+    let genderRate: Int?
     var totalForms: Int { tree.depth }
 
-    init(baseID: Int, tree: EvoNode, rarity: Rarity, names: [Int: [String: String]]) {
+    init(baseID: Int, tree: EvoNode, rarity: Rarity, names: [Int: [String: String]], genderRate: Int? = nil) {
+        self.genderRate = genderRate
         self.baseID = baseID
         self.tree = tree.keepingSupportedSpecies() ?? EvoNode(speciesID: baseID, children: [])
         self.rarity = rarity
@@ -886,6 +919,20 @@ struct CompanionState: Codable, Sendable {
               active.pathIDs.prefix(active.stageIndex + 1).contains(speciesID),
               PokemonForm.resolved(speciesID: speciesID, form: active.form) == form else { return false }
         return active.displaysShiny
+    }
+
+    /// Whether the newest individual of this species is female, for the fixed representative's sprite.
+    func newestIndividualIsFemale(_ speciesID: Int, form: PokemonForm? = nil) -> Bool {
+        let form = PokemonForm.resolved(speciesID: speciesID, form: form)
+        if let active,
+           active.pathIDs.prefix(active.stageIndex + 1).contains(speciesID),
+           PokemonForm.resolved(speciesID: speciesID, form: active.form) == form {
+            return active.profile?.gender == .female
+        }
+        let newest = dex
+            .filter { $0.chainOrder.contains(speciesID) && PokemonForm.resolved(speciesID: speciesID, form: $0.form) == form }
+            .max { ($0.caughtAt ?? .distantPast) < ($1.caughtAt ?? .distantPast) }
+        return newest?.profile?.gender == .female
     }
 
     /// Forget the prayers of the previous egg. Call on every path that starts a new egg (or consumes this one).

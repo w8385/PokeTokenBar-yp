@@ -199,6 +199,8 @@ final class CompanionStore {
         currentIsShiny || rarity == .legendary
     }
     var currentNature: PokemonNature? { state.active?.nature }
+    var currentGender: PokemonGender? { state.active?.profile?.gender }
+    var currentIsFemale: Bool { currentGender == .female }
     var growthMultiplier: Int? {
         state.active?.hasGrowthBoost == true ? PokemonBalance.repeatGrowthMultiplier : nil
     }
@@ -209,6 +211,7 @@ final class CompanionStore {
         let speciesID: Int?
         let isShiny: Bool
         var form: PokemonForm? = nil
+        var isFemale = false
     }
 
     var representativeSpeciesID: Int? { state.representativeSpeciesID }
@@ -221,10 +224,11 @@ final class CompanionStore {
         if let selected = state.representativeSpeciesID {
             next = RepresentativeSubject(speciesID: selected,
                 isShiny: state.ownsShinySpecies(selected, form: state.representativeForm),
-                form: PokemonForm.resolved(speciesID: selected, form: state.representativeForm))
+                form: PokemonForm.resolved(speciesID: selected, form: state.representativeForm),
+                isFemale: state.newestIndividualIsFemale(selected, form: state.representativeForm))
         } else {
             next = RepresentativeSubject(speciesID: currentSpeciesID, isShiny: currentIsShiny,
-                                         form: currentForm)
+                                         form: currentForm, isFemale: currentIsFemale)
         }
         if representativeSubject != next { representativeSubject = next }
     }
@@ -271,7 +275,7 @@ final class CompanionStore {
     }
     var isFinalStage: Bool {
         guard let a = state.active, let line = currentLine else { return false }
-        return line.tree.node(withID: a.currentID)?.children.isEmpty ?? true
+        return line.tree.node(withID: a.currentID)?.children(for: a.profile?.gender).isEmpty ?? true
     }
     var stageText: String {
         guard let a = state.active else { return "" }
@@ -305,12 +309,13 @@ final class CompanionStore {
         if let current = line.tree.node(withID: a.currentID) {
             var node = current
             var guaranteedPrefix: [EvoNode] = []
-            while node.children.count == 1, let child = node.children.first {
+            let gender = a.profile?.gender
+            while node.children(for: gender).count == 1, let child = node.children(for: gender).first {
                 guaranteedPrefix.append(child)
                 node = child
             }
 
-            if node.children.count > 1 {
+            if node.children(for: gender).count > 1 {
                 out += guaranteedPrefix.map { EvoLineItem(.species($0.speciesID), .future) }
                 out.append(EvoLineItem(.mystery, .future))
             } else {
@@ -443,6 +448,8 @@ final class CompanionStore {
         var hasNormal = false
         /// False only for species listed from the full index, which the user has not obtained.
         var isOwned = true
+        /// Set only where one individual is shown (the battle picker); species rows stay default.
+        var isFemale = false
 
         /// Species IDs remain Pokédex numbers; selection also includes the form.
         var collectionID: String {
@@ -1057,15 +1064,16 @@ final class CompanionStore {
                 if !isRevealingDitto { Task { await revealDitto() } }
                 break
             }
-            if node.children.isEmpty {
+            let gender = a.profile?.gender
+            if node.children(for: gender).isEmpty {
                 graduate(); break
             } else {
                 let nextIndex = a.stageIndex + 1
+                let options = node.children(for: gender)
                 let planned = a.plannedPathIDs.indices.contains(nextIndex)
-                    ? node.children.first(where: { $0.speciesID == a.plannedPathIDs[nextIndex] }) : nil
-                let picked = planned ?? pickPlannedChild(node, baseID: a.baseID)
-                let next = EvoNode.resolvingTimeOfDay(picked, among: node.children,
-                                                      at: DayPeriod.at(clock()))
+                    ? options.first(where: { $0.speciesID == a.plannedPathIDs[nextIndex] }) : nil
+                let picked = planned ?? pickPlannedChild(node, baseID: a.baseID, gender: gender)
+                let next = EvoNode.resolvingTimeOfDay(picked, among: options, at: DayPeriod.at(clock()))
                 if planned == nil || next.speciesID != picked.speciesID {
                     replanEvolution(from: node, to: next, base: a)
                     AppLog.write("evolve: replanned path for base \(a.baseID)")
@@ -1079,7 +1087,8 @@ final class CompanionStore {
 
     /// 실제로 간 갈래가 계획과 다르면 계획을 그 갈래 아래로 다시 세운다.
     private func replanEvolution(from node: EvoNode, to next: EvoNode, base a: MonState) {
-        let fallbackRoute = [node.speciesID] + makeEvolutionPlan(from: next, baseID: a.baseID)
+        let fallbackRoute = [node.speciesID]
+            + makeEvolutionPlan(from: next, baseID: a.baseID, gender: a.profile?.gender)
         let repaired = Self.repairedPlan(realizedPath: a.pathIDs, stageIndex: a.stageIndex,
                                          fallbackRoute: fallbackRoute)
         state.active!.plannedPathIDs = repaired
@@ -1108,19 +1117,20 @@ final class CompanionStore {
         notifyCompanionEvent(l.notifEvolveTitle, l.notifEvolveBody(from: oldName, to: newName))
     }
 
-    private func pickPlannedChild(_ node: EvoNode, baseID: Int) -> EvoNode {
-        let fresh = node.children.filter { ch in
-            ch.finalIDs.contains { !state.collectedFinals.contains("\(baseID):\($0)") }
+    private func pickPlannedChild(_ node: EvoNode, baseID: Int, gender: PokemonGender?) -> EvoNode {
+        let options = node.children(for: gender)
+        let fresh = options.filter { ch in
+            ch.finalIDs(for: gender).contains { !state.collectedFinals.contains("\(baseID):\($0)") }
         }
-        let pool = fresh.isEmpty ? node.children : fresh
+        let pool = fresh.isEmpty ? options : fresh
         return pool[Int(rng.next() % UInt64(pool.count))]
     }
 
-    private func makeEvolutionPlan(from root: EvoNode, baseID: Int) -> [Int] {
+    private func makeEvolutionPlan(from root: EvoNode, baseID: Int, gender: PokemonGender?) -> [Int] {
         var plan = [root.speciesID]
         var node = root
-        while !node.children.isEmpty {
-            let next = pickPlannedChild(node, baseID: baseID)
+        while !node.children(for: gender).isEmpty {
+            let next = pickPlannedChild(node, baseID: baseID, gender: gender)
             plan.append(next.speciesID)
             node = next
         }
@@ -1136,12 +1146,13 @@ final class CompanionStore {
     }
 
     /// 루트부터 실제로 이어지는 가장 긴 ID 경로와 마지막 유효 노드. 첫 ID가 루트와 다르면 루트로 복구한다.
-    private func longestValidPath(_ ids: [Int], from root: EvoNode) -> (path: [Int], lastNode: EvoNode) {
+    private func longestValidPath(_ ids: [Int], from root: EvoNode,
+                                  gender: PokemonGender?) -> (path: [Int], lastNode: EvoNode) {
         var path = [root.speciesID]
         var node = root
         guard ids.first == root.speciesID else { return (path, node) }
         for id in ids.dropFirst() {
-            guard let child = node.children.first(where: { $0.speciesID == id }) else { break }
+            guard let child = node.children(for: gender).first(where: { $0.speciesID == id }) else { break }
             path.append(id)
             node = child
         }
@@ -1151,16 +1162,18 @@ final class CompanionStore {
     /// 저장된 실제 경로와 계획을 현재 에셋 트리에 맞춘다. 완전한 계획만 재사용해 재시작 시 RNG를 소비하지 않는다.
     private func normalizedEvolutionState(_ saved: MonState, from root: EvoNode) -> MonState {
         var normalized = saved
-        let realized = longestValidPath(saved.pathIDs, from: root)
-        let candidate = longestValidPath(saved.plannedPathIDs, from: root)
+        let gender = saved.profile?.gender
+        // Evolutions already taken stay, whatever the gender rules say now.
+        let realized = longestValidPath(saved.pathIDs, from: root, gender: nil)
+        let candidate = longestValidPath(saved.plannedPathIDs, from: root, gender: gender)
         let canReusePlan = candidate.path == saved.plannedPathIDs
             && candidate.path.starts(with: realized.path)
-            && candidate.lastNode.children.isEmpty
+            && candidate.lastNode.children(for: gender).isEmpty
         let plan: [Int]
         if canReusePlan {
             plan = candidate.path
         } else {
-            let suffix = makeEvolutionPlan(from: realized.lastNode, baseID: saved.baseID)
+            let suffix = makeEvolutionPlan(from: realized.lastNode, baseID: saved.baseID, gender: gender)
             plan = realized.path + suffix.dropFirst()
         }
         normalized.pathIDs = realized.path
@@ -1339,7 +1352,7 @@ final class CompanionStore {
     private func stoneTarget(_ kind: ItemKind) -> EvoNode? {
         guard let item = kind.evolutionItemName, let a = state.active,
               let node = currentLine?.tree.node(withID: a.currentID) else { return nil }
-        return node.children.first { $0.evolves(withItem: item) }
+        return node.children(for: a.profile?.gender).first { $0.evolves(withItem: item) }
     }
 
     /// 돌 1개로 그 돌의 갈래로 바로 진화 — 현재 단계 XP는 그대로 이어진다. 안 맞는 돌이면 소모 없이 wrongStone.
@@ -1902,8 +1915,10 @@ final class CompanionStore {
            Self.dittoDisguiseHit(rarity: line.rarity, totalForms: line.totalForms, roll: rng.next()) {
             dittoDisguise = line.baseID
         }
-        let evolutionPlan = makeEvolutionPlan(from: line.tree, baseID: line.baseID)
+        // Gender is rolled before the plan: it decides which evolutions the individual can take.
         var profile = PokemonProfile.generate(seed: rng.next())
+        if let rate = line.genderRate { profile.assignGender(genderRate: rate) }
+        let evolutionPlan = makeEvolutionPlan(from: line.tree, baseID: line.baseID, gender: profile.gender)
         if let details = pokemonDetailsByID[line.baseID] { profile.enrich(with: details) }
         let hasGrowthBoost = state.hasCollectedFinal(forBaseID: line.baseID)
         let form = pendingForm ?? rollLineForm(baseID: line.baseID)
@@ -1957,7 +1972,7 @@ final class CompanionStore {
         // 메타몽으로 전환 — rarity/forms 는 로드한 라인에서, isShiny/nature/dittoDisguise 는 유지.
         let previousRarity = m.rarity
         m.baseID = dittoLine.baseID
-        let evolutionPlan = makeEvolutionPlan(from: dittoLine.tree, baseID: dittoLine.baseID)
+        let evolutionPlan = makeEvolutionPlan(from: dittoLine.tree, baseID: dittoLine.baseID, gender: nil)
         m.pathIDs = [dittoLine.baseID]
         m.plannedPathIDs = evolutionPlan
         m.stageIndex = 0
@@ -1999,7 +2014,9 @@ final class CompanionStore {
             // await 중 사용량·민트 등 활성 상태는 계속 바뀔 수 있다. 요청 당시 스냅샷을 다시 쓰지 말고
             // 같은 개체가 아직 활성인 경우에만 최신 상태를 정규화한다.
             guard activeGeneration == generation,
-                  let latest = state.active, latest.baseID == a.baseID, currentLine == nil else { return }
+                  var latest = state.active, latest.baseID == a.baseID, currentLine == nil else { return }
+            // Old saves rolled gender only once details arrived; settle it before the plan is checked.
+            if let rate = line.genderRate { latest.profile?.assignGender(genderRate: rate) }
             state.active = normalizedEvolutionState(latest, from: line.tree)
             state.reconcileRepresentativeSelection()   // 손상 경로 정규화로 사라진 단계가 대표로 남지 않게
             currentLine = line

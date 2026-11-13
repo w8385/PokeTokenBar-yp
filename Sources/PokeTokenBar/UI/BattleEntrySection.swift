@@ -49,7 +49,7 @@ struct BattleEntrySection: View {
         return VStack(alignment: .leading, spacing: 4) {
             row {
                 SpriteView(speciesID: speciesID, size: 64, animated: true, shiny: fighter.member.shiny,
-                           form: dexEntry?.form)
+                           form: dexEntry?.form, female: dexEntry?.profile?.gender == .female)
                     .frame(width: 64, height: 64)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(l.battleEntryLabel).font(.caption2).foregroundStyle(.secondary)

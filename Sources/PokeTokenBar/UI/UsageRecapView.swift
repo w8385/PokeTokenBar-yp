@@ -323,7 +323,8 @@ struct RecapCard: View {
                     HStack(spacing: 2) {
                         SpriteView(speciesID: graduate.entry.finalID, size: 18, animated: false,
                                    shiny: graduate.entry.isShiny,
-                                   form: graduate.entry.form)
+                                   form: graduate.entry.form,
+                                   female: graduate.entry.profile?.gender == .female)
                             // A badge on the sprite rather than after the name: four chips share
                             // the row, and a trailing sparkle cut "Charizard" to "Chariza…".
                             .overlay(alignment: .topTrailing) {

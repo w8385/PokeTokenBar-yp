@@ -354,7 +354,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let shiny = subject.isShiny
         let form = subject.form
         let back = companion.facesBack
-        let key = id.map { Self.menuSpriteKey(id: $0, shiny: shiny, floor: menuFrameFloor, form: form, back: back) }
+        let female = subject.isFemale
+        let key = id.map { Self.menuSpriteKey(id: $0, shiny: shiny, floor: menuFrameFloor, form: form, back: back,
+                                              female: female) }
         if key == menuSpriteKey, !menuFrames.isEmpty { return }   // 이미 이 개체로 애니메이션 중
         menuLoadTask?.cancel()
         menuLoadTask = nil
@@ -367,7 +369,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             return
         }
         // Seed from the PNG cache immediately; a missing PNG must not delay the first GIF request.
-        let cached = SpriteLoader.cachedImage(speciesID: id, shiny: shiny, form: form, back: back)
+        let cached = SpriteLoader.cachedImage(speciesID: id, shiny: shiny, form: form, back: back, female: female)
         setMenuFrames(cached.map { Self.bobFrames(from: $0) } ?? Self.eggFrames())
 
         // One owned task applies its static fallback before retrying GIFs. A late PNG response
@@ -376,10 +378,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             guard let self, gen == self.menuLoadGen else { return }
             defer { if gen == self.menuLoadGen { self.menuLoadTask = nil } }
             let raw = await SpriteLoader.recoveringAnimationFrames(
-                speciesID: id, shiny: shiny, form: form, back: back,
+                speciesID: id, shiny: shiny, form: form, back: back, female: female,
                 onUnavailable: {
                     guard cached == nil, !Task.isCancelled, gen == self.menuLoadGen else { return }
-                    let sprite = await SpriteLoader.image(speciesID: id, shiny: shiny, form: form, back: back)
+                    let sprite = await SpriteLoader.image(speciesID: id, shiny: shiny, form: form, back: back,
+                                                          female: female)
                     guard !Task.isCancelled, gen == self.menuLoadGen, let sprite else { return }
                     self.setMenuFrames(Self.bobFrames(from: sprite))
                 })
@@ -533,10 +536,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     /// 종·이로치만 담으면 설정을 바꿔도 다음 진화까지 옛 fps 로 계속 돈다(설계 시 확인된 함정).
     /// 순수·테스트용: `testIdentityKeysIncludeTheFrameFloor`.
     static func menuSpriteKey(id: Int, shiny: Bool, floor: TimeInterval, form: PokemonForm? = nil,
-                              back: Bool = false) -> String {
+                              back: Bool = false, female: Bool = false) -> String {
         let form = PokemonForm.resolved(speciesID: id, form: form)
         let key = "\(id)-\(shiny)-\(floor)-\(form?.rawValue ?? "")"
-        return back ? key + "-back" : key
+        return (back ? key + "-back" : key) + (female ? "-female" : "")
     }
 
     // MARK: 프레임 합성 (22px)
