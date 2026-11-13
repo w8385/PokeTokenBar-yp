@@ -788,9 +788,10 @@ struct CompanionHeader: View {
         let dexLinks = onOpenDexEntry == nil ? [:] : store.dexLinkTargets
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: 12) {
-                VStack(spacing: 6) {
-                    bigSprite
+                bigSprite.overlay(alignment: .bottom) {
+                    // Straddles the tile's bottom edge so the header keeps its height with or without friends.
                     FriendSlotsRow(store: store, crowd: crowd, spriteStore: spriteStore, cryPlayer: cryPlayer)
+                        .offset(y: FriendSlotsRow.slotSize / 2 + 2)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {

@@ -52,6 +52,7 @@ final class PetCrowd {
     }
 
     var friendCount: Int { max(0, order.count - 1) }
+    var isIdleLoopRunning: Bool { idleTask != nil }
 
     // MARK: Lifecycle
 

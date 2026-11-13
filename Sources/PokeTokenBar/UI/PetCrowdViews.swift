@@ -66,7 +66,7 @@ struct FriendSprite: View {
     }
 }
 
-/// Home: friend slots under the sprite, an add slot while a slot is free, and the picker behind it.
+/// Home: friend slots on the sprite tile's bottom edge, an add slot while a slot is free, and the picker behind it.
 @MainActor
 struct FriendSlotsRow: View {
     let store: CompanionStore
@@ -75,7 +75,7 @@ struct FriendSlotsRow: View {
     var cryPlayer: CryPlayer = .shared
     @State private var picking = false
 
-    static let slotSize: CGFloat = 36
+    static let slotSize: CGFloat = 28
 
     var body: some View {
         let l = store.l
