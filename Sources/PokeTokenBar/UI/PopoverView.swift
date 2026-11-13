@@ -219,7 +219,7 @@ struct PopoverView: View {
     /// screen allows; only then does it scroll.
     private var homeBody: some View {
         let cap = PopoverMetrics.homeMaxHeight(screenHeight: screenHeight, updateBanner: availableUpdate != nil)
-        return ScrollView { homeContent }
+        return ScrollView { homeContent.reservesScrollerLane() }
             .frame(minHeight: min(PopoverMetrics.tabHeight, cap), maxHeight: cap)
     }
 
@@ -235,7 +235,6 @@ struct PopoverView: View {
                 Divider()
             }
         }
-        .reservesScrollerLane()
     }
 
     // MARK: 헤더 — 오늘 합계 + provider/토큰타입 분해
