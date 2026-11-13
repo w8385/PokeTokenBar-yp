@@ -112,6 +112,50 @@ final class DexUnownedSearchTests: XCTestCase {
     func testIndexLoadsOnlyWhenAsked() {
         XCTAssertEqual(store().speciesIndexStatus, .idle)
     }
+
+    func testIncludeUnownedShowsUnownedSpeciesWithAnEmptyQuery() async {
+        let s = store()
+        await s.loadSpeciesIndexIfNeeded()
+        let shown = s.filteredDexSpecies(includeUnowned: true)
+        XCTAssertEqual(shown.map(\.id), [16, 25, 26, 132, 133, 134, 150, 172])
+        XCTAssertEqual(shown.filter { !$0.isOwned }.count, 6)
+        XCTAssertEqual(shown.filter(\.isOwned).map(\.id), [25, 26])
+    }
+
+    func testIncludeUnownedIsOffByDefault() async {
+        let s = store()
+        await s.loadSpeciesIndexIfNeeded()
+        XCTAssertEqual(s.filteredDexSpecies().map(\.id), [25, 26])
+        XCTAssertEqual(s.filteredDexSpecies(includeUnowned: false).map(\.id), [25, 26])
+    }
+
+    func testIncludeUnownedCombinesWithRarityRegionAndSort() async {
+        let s = store()
+        await s.loadSpeciesIndexIfNeeded()
+        XCTAssertEqual(s.filteredDexSpecies(rarity: .legendary, includeUnowned: true).map(\.id), [150])
+        XCTAssertEqual(s.filteredDexSpecies(rarity: .rare, includeUnowned: true).map(\.id), [25, 26, 132, 133, 134])
+        XCTAssertEqual(s.filteredDexSpecies(rarity: .common, includeUnowned: true).map(\.id), [16, 172])
+        XCTAssertEqual(s.filteredDexSpecies(region: .johto, includeUnowned: true).map(\.id), [172])
+        XCTAssertEqual(s.filteredDexSpecies(includeUnowned: true, sort: .numberDesc).map(\.id).first, 172)
+        XCTAssertEqual(s.filteredDexSpecies(shinyOnly: true, includeUnowned: true).map(\.id), [])
+    }
+
+    func testIncludeUnownedStaysOwnedOnlyBeforeIndexLoadsAndWhenOffline() async {
+        let s = store(provider: UnownedIndexProvider(entries: nil))
+        XCTAssertEqual(s.filteredDexSpecies(includeUnowned: true).map(\.id), [25, 26])
+        await s.loadSpeciesIndexIfNeeded()
+        XCTAssertEqual(s.speciesIndexStatus, .unavailable)
+        XCTAssertEqual(s.filteredDexSpecies(includeUnowned: true).map(\.id), [25, 26])
+    }
+
+    func testIncludeUnownedCoversEverySupportedSpeciesInTheFullIndex() async {
+        let all = (1...PokemonAssets.supportedSpeciesIDs.upperBound).map { entry($0, "n\($0)", "N\($0)") }
+        let s = store(provider: UnownedIndexProvider(entries: all))
+        await s.loadSpeciesIndexIfNeeded()
+        let shown = s.filteredDexSpecies(includeUnowned: true)
+        XCTAssertEqual(shown.count, PokemonAssets.supportedSpeciesIDs.count)
+        XCTAssertEqual(Set(shown.map(\.id)).count, shown.count)
+    }
 }
 
 final class SpeciesIndexTests: XCTestCase {

@@ -61,6 +61,10 @@ final class DexUnownedScreenshotTests: XCTestCase {
 
         try await capture(CollectionView(store: store, navigation: PopoverNavigation(), initialSearch: "13"),
                           to: directory.appendingPathComponent("dexsearch-results.png"))
+        try await capture(CollectionView(store: store, navigation: PopoverNavigation()),
+                          to: directory.appendingPathComponent("dexfilter-off.png"))
+        try await capture(CollectionView(store: store, navigation: PopoverNavigation(), initialIncludeUnowned: true),
+                          to: directory.appendingPathComponent("dexfilter-on.png"))
         let evolved = try XCTUnwrap(store.unownedDexSpecies.first { $0.id == 135 })
         try await capture(UnownedSpeciesDetailView(store: store, species: evolved, onOpen: { _ in }, onBack: {}),
                           to: directory.appendingPathComponent("dexsearch-detail-evolve.png"))
