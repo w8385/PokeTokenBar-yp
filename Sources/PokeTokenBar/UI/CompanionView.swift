@@ -1038,6 +1038,7 @@ struct RegionTally: View {
     let label: String
     let completion: DexCompletion
     var isSelected: Bool = false
+    var isRewarded: Bool = false
     private var accent: Color { completion.isComplete ? .green : .secondary }
     var body: some View {
         HStack(spacing: 3) {
@@ -1050,6 +1051,10 @@ struct RegionTally: View {
             Text("\(completion.owned)/\(completion.total)")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(completion.isComplete ? accent : .secondary)
+            if isRewarded {
+                Image(systemName: "gift.fill").font(.system(size: 8)).foregroundStyle(.orange)
+                    .accessibilityHidden(true)
+            }
             if isSelected {
                 Image(systemName: "checkmark").font(.system(size: 9, weight: .bold)).foregroundStyle(accent)
             }
@@ -1774,12 +1779,14 @@ struct DexGridView: View {
                     } label: {
                         RegionTally(label: store.l.regionName(completion.region),
                                     completion: completion,
-                                    isSelected: selectedRegion == completion.region)
+                                    isSelected: selectedRegion == completion.region,
+                                    isRewarded: store.isDexRegionRewarded(completion.region))
                     }
                     .buttonStyle(.plain)
                     .disabled(completion.owned == 0 && !searchesUnowned)
                     .help(store.l.dexRegionProgressLabel(completion.region,
-                                                         owned: completion.owned, total: completion.total))
+                                                         owned: completion.owned, total: completion.total)
+                          + (store.isDexRegionRewarded(completion.region) ? " · " + store.l.dexRegionRewardedHelp : ""))
                 }
             }
             .fixedSize(horizontal: true, vertical: false)

@@ -1762,6 +1762,22 @@ struct L {
           "Você capturou um shiny de cada Pokémon de \(region)!", "Du hast ein schillerndes Exemplar jedes Pokémon aus \(region)!", "Вы поймали шайни каждого покемона региона \(region)!")
     }
 
+    /// `items` is the pre-formatted reward list, e.g. "Rare Candy ×8, Shiny Charm".
+    func notifDexRegionRewardBody(_ region: String, items: String) -> String {
+        t("\(region) 지방의 모든 포켓몬을 모았어요! 보상: \(items)", "You've caught every Pokémon in \(region)! Reward: \(items)",
+          "\(region)地方のすべてのポケモンを集めました！ ごほうび: \(items)",
+          "¡Has capturado todos los Pokémon de \(region)! Premio: \(items)",
+          "Tu as capturé tous les Pokémon de \(region) ! Récompense : \(items)",
+          "Você capturou todos os Pokémon de \(region)! Prêmio: \(items)",
+          "Du hast alle Pokémon aus \(region) gefangen! Belohnung: \(items)",
+          "Вы поймали всех покемонов региона \(region)! Награда: \(items)")
+    }
+
+    var dexRegionRewardedHelp: String {
+        t("완성 보상을 받았어요", "Completion reward claimed", "コンプリートのごほうびを受け取り済み", "Premio de finalización recibido",
+          "Récompense de complétion reçue", "Prêmio de conclusão recebido", "Abschlussbelohnung erhalten", "Награда за завершение получена")
+    }
+
     var notifDexUnownCompleteTitle: String {
         t("🔤 안농 도감 완성!", "🔤 Unown collection complete!", "🔤 アンノーン図鑑コンプリート！", "🔤 ¡Colección Unown completada!",
           "🔤 Collection Zarbi terminée !", "🔤 Coleção Unown completa!", "🔤 Icognito-Sammlung komplett!", "🔤 Коллекция Анноун завершена!")

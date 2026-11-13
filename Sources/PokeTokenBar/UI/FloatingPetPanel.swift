@@ -805,9 +805,22 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         guard let pet = panel, pet.isVisible else { return }
         // Speech and hearts take priority over the hover/event callout.
         if showingBubble { hideHoverCallout(); return }
-        let text = currentHoverText()
         let appearance = NSApp.effectiveAppearance
-        let colors = Self.hoverCalloutColors(for: appearance)
+        let container = Self.hoverCalloutView(text: currentHoverText(), appearance: appearance)
+        let size = container.frame.size
+
+        let hp = hoverPanel ?? makeHoverPanel()
+        hoverPanel = hp
+        hp.appearance = appearance
+        hp.contentView = container
+        hp.setContentSize(size)
+        let petFrame = pet.frame
+        hp.setFrameOrigin(NSPoint(x: petFrame.midX - size.width / 2, y: petFrame.maxY + 6))
+        hp.orderFrontRegardless()
+    }
+
+    static func hoverCalloutView(text: String, appearance: NSAppearance) -> NSView {
+        let colors = hoverCalloutColors(for: appearance)
         let label = NSTextField(labelWithString: text)
         label.font = .systemFont(ofSize: 11)
         label.textColor = colors.text
@@ -827,15 +840,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         container.layer?.borderColor = colors.border.cgColor
         label.frame.origin = NSPoint(x: pad, y: pad)
         container.addSubview(label)
-
-        let hp = hoverPanel ?? makeHoverPanel()
-        hoverPanel = hp
-        hp.appearance = appearance
-        hp.contentView = container
-        hp.setContentSize(size)
-        let petFrame = pet.frame
-        hp.setFrameOrigin(NSPoint(x: petFrame.midX - size.width / 2, y: petFrame.maxY + 6))
-        hp.orderFrontRegardless()
+        return container
     }
 
     private func hideHoverCallout() {

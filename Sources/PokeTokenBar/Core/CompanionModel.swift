@@ -822,6 +822,9 @@ struct CompanionState: Codable, Sendable {
     var notifiedDexCompletions: Set<String> = []
     // 완성 추적 첫 실행 시드 완료 — 기능 출시 전 이미 완성한 세대에 알림 폭주를 막는다(candyFeatureSeeded 패턴).
     var dexCompletionsSeeded = false
+    // 지역 도감 완성 보상을 이미 받은 지역(PokedexRegion.rawValue). 지역당 1회. 보상은 알림과 별개로 영속한다 —
+    // 알림 시드는 업데이트 전 완성분을 "이미 알림"으로 처리하지만 보상은 그 지역도 한 번 받아야 한다.
+    var rewardedDexRegions: Set<String> = []
 
     init() {}
 
@@ -868,6 +871,7 @@ struct CompanionState: Codable, Sendable {
         candyFeatureSeeded = c.lenient(Bool.self, forKey: .candyFeatureSeeded, default: false)
         notifiedDexCompletions = c.lenient(Set<String>.self, forKey: .notifiedDexCompletions, default: [])
         dexCompletionsSeeded = c.lenient(Bool.self, forKey: .dexCompletionsSeeded, default: false)
+        rewardedDexRegions = c.lenient(Set<String>.self, forKey: .rewardedDexRegions, default: [])
     }
 
     /// 졸업 기록 또는 현재 개체가 실제로 도달한 단계에 이 종이 포함되는가.
