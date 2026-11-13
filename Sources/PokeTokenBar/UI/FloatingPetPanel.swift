@@ -1205,10 +1205,10 @@ struct FloatingPetView: View {
 
     private func mainSprite(size: CGFloat, subject: CompanionStore.RepresentativeSubject,
                             bubble: FloatingPetController.Bubble?) -> some View {
-        SpriteView(speciesID: subject.speciesID, size: size, animated: animated,
+        SpriteView(speciesID: subject.spriteSpeciesID, size: size, animated: animated,
                    shiny: subject.isShiny,
-                   minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: subject.form,
-                   back: companion.facesBack, female: subject.isFemale, reportsVisibleTop: true)
+                   minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: subject.spriteForm,
+                   back: companion.facesBack, female: subject.spriteIsFemale, reportsVisibleTop: true)
             .crowdMember(crowd, slot: 0, size: size)
             // One-shot wobble per prayer; keyframes run once per trigger change, never in a loop.
             .keyframeAnimator(initialValue: 0.0, trigger: burst.wobbleCount) { sprite, angle in

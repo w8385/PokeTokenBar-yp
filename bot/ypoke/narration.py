@@ -4,8 +4,8 @@ from collections.abc import Sequence
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    AbilityTrigger, Action, BattleResult, Change, Combatant, Event, ItemHeal, SendOut, StatusDamage, WeatherDamage,
-    WeatherEnd,
+    AbilityTrigger, Action, BattleResult, Change, Combatant, Event, ItemHeal, MegaEvolution, SendOut, StatusDamage,
+    WeatherDamage, WeatherEnd,
 )
 from ypoke.items import FOCUS_SASH, ITEM_NAMES, LIFE_ORB, known
 
@@ -85,7 +85,7 @@ def battle_lines(
 
 def _event_lines(events: list[Event], budget: int) -> list[str]:
     lines = [_event_line(event) for event in events]
-    essential = [isinstance(event, (SendOut, AbilityTrigger)) or _faints(event) for event in events]
+    essential = [isinstance(event, (SendOut, AbilityTrigger, MegaEvolution)) or _faints(event) for event in events]
     half = MAX_EVENT_LINES // 2
     while True:
         keep = [
@@ -142,6 +142,10 @@ def _event_line(event: Event) -> str:
         name = with_particle(event.pokemon, ("은", "는"))
         tail = f"{name} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
         return f"{prefix} {name} {STATUS_DAMAGE_TEXT[event.kind]} 데미지를 입었다! {tail}"
+    if isinstance(event, MegaEvolution):
+        name = with_particle(event.pokemon, ("은", "는"))
+        ability = f" (특성: {event.ability})" if event.ability else ""
+        return f"{prefix} {name} 메가스톤이 반응해 메가진화했다!{ability}"
     if isinstance(event, ItemHeal):
         name = with_particle(event.pokemon, ("은", "는"))
         return f"{prefix} {name} {ITEM_NAMES[event.item]} 덕분에 체력을 회복했다! (HP {event.hp}%)"

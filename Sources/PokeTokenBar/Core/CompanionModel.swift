@@ -399,11 +399,13 @@ enum ScoutTicket {
 enum ShopEntry: Hashable, Sendable {
     case item(ItemKind)
     case egg(Rarity?)
+    case megaStone(MegaStone)
 
     var category: ItemCategory {
         switch self {
         case .item(let kind): return kind.category
         case .egg: return .egg
+        case .megaStone: return .megaStone
         }
     }
 
@@ -411,6 +413,7 @@ enum ShopEntry: Hashable, Sendable {
         switch self {
         case .item(let kind): return kind.shopPrice ?? 0
         case .egg(let tier): return FreshEgg.price(guaranteeing: tier)
+        case .megaStone: return MegaStone.price
         }
     }
 }
@@ -1019,16 +1022,26 @@ struct CompanionState: Codable, Sendable {
         return ids
     }
 
+    /// 지금 가진 개체의 종 — 키우는 개체의 현재 종과 도감의 최종 종.
+    var ownedSpeciesIDs: Set<Int> {
+        var ids = Set(dex.filter { $0.releasedAt == nil }.map(\.finalID))
+        if let id = active?.currentID { ids.insert(id) }
+        return ids
+    }
+
     func heldItemSlug(of instanceID: String) -> String? {
-        heldItems[instanceID].flatMap(ItemKind.init(rawValue:))?.heldItemSlug
+        guard let key = heldItems[instanceID] else { return nil }
+        return ItemKind(rawValue: key)?.heldItemSlug ?? MegaStone.stone(inventoryKey: key)?.slug
     }
 
     /// 놓아준 개체·알 수 없는 도구에 달린 항목을 가방으로 돌려보낸다(도구가 사라지지 않게).
     mutating func returnOrphanedHeldItems() {
         guard !heldItems.isEmpty else { return }
         let owned = ownedInstanceIDs
-        for (instanceID, key) in heldItems where !owned.contains(instanceID) || ItemKind(rawValue: key) == nil {
-            if ItemKind(rawValue: key) != nil { inventory[key, default: 0] += 1 }
+        for (instanceID, key) in heldItems {
+            let known = ItemKind(rawValue: key) != nil || MegaStone.stone(inventoryKey: key) != nil
+            guard !owned.contains(instanceID) || !known else { continue }
+            if known { inventory[key, default: 0] += 1 }
             heldItems[instanceID] = nil
         }
     }

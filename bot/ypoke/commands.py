@@ -9,8 +9,9 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
 from urllib.parse import urlencode
 
-from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, simulate
+from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm, simulate
 from ypoke.dex import NATIONAL_TOTAL, REGIONS, sprite_url
+from ypoke.mega_stones import mega_form_id
 from ypoke.messages import DirectMessage
 from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
@@ -416,7 +417,16 @@ class CommandHandler:
             nature=member.get("nature"),
             ability=member.get("ability"),
             item=member.get("held_item"),
+            mega=self._mega(member),
         )
+
+    def _mega(self, member: dict) -> MegaForm | None:
+        form_id = mega_form_id(member.get("held_item"), member["pokemon_id"])
+        if form_id is None:
+            return None
+        data = self._pokeapi.mega_form(form_id)
+        return MegaForm(types=tuple(data["types"]), base=base_stats(data), ability=data["ability"],
+                        ability_id=data["ability_id"])
 
 
 def rental_levels(challenger: list[dict], opponent: list[dict]) -> tuple[list[dict], list[dict]]:

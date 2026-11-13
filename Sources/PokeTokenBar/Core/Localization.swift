@@ -2158,6 +2158,52 @@ struct L {
           "Выдайте его боевому покемону на вкладке «Бой»")
     }
 
+    // MARK: 메가스톤
+    func megaStoneName(_ stone: MegaStone) -> String { stone.name(in: lang) }
+    var megaStoneEffect: String {
+        t("배틀 탭에서 이 포켓몬에게 장착하면 배틀 시작 때 메가진화하고, 홈 화면에서도 메가 모습으로 보여요.",
+          "Equip it to this Pokémon in the Battle tab: it Mega Evolves when a battle starts and shows its Mega form on the home screen.",
+          "バトルタブでこのポケモンに持たせると、バトル開始時にメガシンカし、ホーム画面でもメガ姿で表示されます。",
+          "Equípalo a este Pokémon en la pestaña de Combate: se megaevoluciona al empezar el combate y muestra su forma Mega en la pantalla de inicio.",
+          "Équipe-la à ce Pokémon dans l'onglet Combat : il méga-évolue au début du combat et s'affiche en forme Méga sur l'écran d'accueil.",
+          "Equipe neste Pokémon na aba Batalha: ele Mega Evolui no início da batalha e aparece na forma Mega na tela inicial.",
+          "Rüste sie diesem Pokémon im Kampf-Tab aus: Es mega-entwickelt sich zu Kampfbeginn und zeigt auf dem Startbildschirm seine Mega-Form.",
+          "Выдайте её этому покемону на вкладке «Бой»: он мега-эволюционирует в начале боя и показывает мега-форму на главном экране.")
+    }
+    var megaStoneYours: String { t("내 포켓몬", "Yours", "手持ち", "Tuyo", "À toi", "Seu", "Deins", "Ваш") }
+    func megaStoneWrongHolder(_ stone: String, _ pokemon: String) -> String {
+        t("\(stone)은(는) 맞는 포켓몬에게만 쓸 수 있어요. \(pokemon)은(는) 그대로예요.",
+          "\(stone) only works on its own Pokémon, so \(pokemon) stays as is.",
+          "\(stone) は対応するポケモン専用です。\(pokemon) は変わりません。",
+          "\(stone) solo funciona con su propio Pokémon, así que \(pokemon) no cambia.",
+          "\(stone) ne marche que sur son Pokémon, donc \(pokemon) ne change pas.",
+          "\(stone) só funciona no seu próprio Pokémon, então \(pokemon) não muda.",
+          "\(stone) wirkt nur bei dem passenden Pokémon, \(pokemon) bleibt also, wie es ist.",
+          "\(stone) работает только на своём покемоне, поэтому \(pokemon) не меняется.")
+    }
+    func megaFormName(_ name: String, variant: String?) -> String {
+        let suffix = variant.map { " \($0)" } ?? ""
+        return t("메가\(name)\(suffix)", "Mega \(name)\(suffix)", "メガ\(name)\(suffix)", "Mega-\(name)\(suffix)",
+                 "Méga-\(name)\(suffix)", "Mega-\(name)\(suffix)", "Mega-\(name)\(suffix)", "Мега-\(name)\(suffix)")
+    }
+    var megaAbilityLabel: String { t("특성", "Ability", "とくせい", "Habilidad", "Talent", "Habilidade", "Fähigkeit", "Способность") }
+    var megaOncePerBattle: String {
+        t("한 배틀에 한 마리만 메가진화해요. 앞선 포켓몬이 먼저 해요.",
+          "Only one Pokémon per battle can Mega Evolve, and an earlier one goes first.",
+          "メガシンカできるのは1バトルに1匹だけ。先に出たポケモンが優先です。",
+          "Solo un Pokémon por combate puede megaevolucionar, y va primero el de delante.",
+          "Un seul Pokémon peut méga-évoluer par combat, et le premier en ligne passe devant.",
+          "Só um Pokémon por batalha pode Mega Evoluir, e o da frente vai primeiro.",
+          "Pro Kampf kann nur ein Pokémon Mega-Entwicklung nutzen, das vordere zuerst.",
+          "За бой мега-эволюционировать может только один покемон, сначала тот, что впереди.")
+    }
+    var megaFormLabel: String { t("메가진화", "Mega Evolution", "メガシンカ", "Megaevolución", "Méga-Évolution", "Mega Evolução", "Mega-Entwicklung", "Мега-эволюция") }
+    func megaStatLine(_ stats: [Int]) -> String {
+        let labels = [t("HP", "HP", "HP", "PS", "PV", "HP", "KP", "HP"), statName("attack"), statName("defense"),
+                      statName("special_attack"), statName("special_defense"), statName("speed")]
+        return zip(labels, stats).map { "\($0) \($1)" }.joined(separator: " · ")
+    }
+
     func heldItemEffect(_ kind: ItemKind) -> String {
         switch kind {
         case .leftovers:

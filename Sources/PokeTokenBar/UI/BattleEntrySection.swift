@@ -16,11 +16,12 @@ struct BattleEntrySection: View {
 
     var body: some View {
         let lineup = BattleEntry.lineup(state: companion.state, slots: entry.slots)
+        let megaLead = lineup.firstIndex { companion.megaStone(of: $0.id, speciesID: speciesID(of: $0)) != nil }
         if lineup.isEmpty {
             rentalRow
         } else {
             ForEach(Array(lineup.enumerated()), id: \.element.id) { index, fighter in
-                entryRow(fighter: fighter, index: index, count: lineup.count)
+                entryRow(fighter: fighter, index: index, count: lineup.count, megaLead: megaLead)
                 if lineup.count == 1 || expanded == fighter.id {
                     heldItemRow(fighter)
                     moveList(fighter)
@@ -66,19 +67,27 @@ struct BattleEntrySection: View {
         }
     }
 
-    private func entryRow(fighter: BattleCandidate, index: Int, count: Int) -> some View {
+    private func speciesID(of fighter: BattleCandidate) -> Int {
+        companion.dexEntry(for: fighter)?.finalID ?? fighter.member.pokemonID
+    }
+
+    private func entryRow(fighter: BattleCandidate, index: Int, count: Int, megaLead: Int?) -> some View {
         let dexEntry = companion.dexEntry(for: fighter)
-        let speciesID = dexEntry?.finalID ?? fighter.member.pokemonID
+        let speciesID = speciesID(of: fighter)
         let level = fighter.member.level
+        let mega = companion.megaStone(of: fighter.id, speciesID: speciesID)
+        let megaSprite = mega?.spriteID
+        let name = fighterName(fighter)
         return VStack(alignment: .leading, spacing: 4) {
             row {
-                SpriteView(speciesID: speciesID, size: 56, animated: true, shiny: fighter.member.shiny,
-                           form: dexEntry?.form, female: dexEntry?.profile?.gender == .female)
+                SpriteView(speciesID: megaSprite ?? speciesID, size: 56, animated: true, shiny: fighter.member.shiny,
+                           form: megaSprite == nil ? dexEntry?.form : nil,
+                           female: megaSprite == nil && dexEntry?.profile?.gender == .female)
                     .frame(width: 56, height: 56)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(count > 1 ? "\(index + 1) · \(l.battleEntryLabel)" : l.battleEntryLabel)
                         .font(.caption2).foregroundStyle(.secondary)
-                    Text("\(dexEntry.map(companion.dexEntryName) ?? companion.displayName)\(fighter.member.shiny ? " ✨" : "")")
+                    Text("\(mega.map { l.megaFormName(name, variant: $0.variantSuffix) } ?? name)\(fighter.member.shiny ? " ✨" : "")")
                         .font(.headline).lineLimit(1)
                     HStack(spacing: 6) {
                         Text("Lv\(level)").font(.callout).monospacedDigit()
@@ -90,7 +99,9 @@ struct BattleEntrySection: View {
                             Text(l.battleEntryRaising).font(.caption2).foregroundStyle(Color.accentColor)
                         }
                     }
-                    if let details = companion.pokemonDetailsByID[speciesID] {
+                    if let mega {
+                        TypeBadges(types: mega.types, language: companion.language)
+                    } else if let details = companion.pokemonDetailsByID[speciesID] {
                         TypeBadges(types: details.types, language: companion.language)
                     }
                 }
@@ -117,6 +128,20 @@ struct BattleEntrySection: View {
                     }
                 }
             }
+            if let mega {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(l.megaStatLine(mega.stats)).monospacedDigit()
+                    if let ability = mega.abilityName(in: companion.language) {
+                        Text("\(l.megaAbilityLabel): \(ability)")
+                    }
+                    if let megaLead, megaLead != index {
+                        Text(l.megaOncePerBattle).foregroundStyle(.orange)
+                    }
+                }
+                .font(.caption2).foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .task(id: speciesID) { await companion.loadPokemonDetails(speciesID: speciesID) }
     }
@@ -130,30 +155,45 @@ struct BattleEntrySection: View {
             .disabled(disabled)
     }
 
+    private func fighterName(_ fighter: BattleCandidate) -> String {
+        companion.dexEntry(for: fighter).map(companion.dexEntryName) ?? companion.displayName
+    }
+
     private func heldItemRow(_ fighter: BattleCandidate) -> some View {
         let held = companion.heldItem(of: fighter.id)
+        let heldStone = companion.heldMegaStone(of: fighter.id)
         let spare = companion.ownedItems(in: .heldItem)
+        let spareStones = companion.ownedMegaStones()
+        let speciesID = companion.dexEntry(for: fighter)?.finalID ?? fighter.member.pokemonID
         return VStack(alignment: .leading, spacing: 4) {
             row {
                 if let held {
                     ItemIconView(kind: held, size: 28)
+                } else if let heldStone {
+                    ItemIconView(stone: heldStone, size: 28)
                 } else {
                     Image(systemName: "bag").frame(width: 28, height: 28).foregroundStyle(.tertiary)
                 }
                 VStack(alignment: .leading, spacing: 1) {
                     Text(l.heldItemLabel).font(.caption2).foregroundStyle(.secondary)
-                    Text(held.map(l.itemName) ?? l.heldItemNone).font(.callout.weight(.semibold))
+                    Text(held.map(l.itemName) ?? heldStone.map(l.megaStoneName) ?? l.heldItemNone)
+                        .font(.callout.weight(.semibold))
                 }
                 Spacer(minLength: 4)
-                if held != nil {
+                if held != nil || heldStone != nil {
                     Button(l.heldItemRemove) { change { companion.unequip(from: fighter.id) } }
                         .controlSize(.small)
                 }
-                if !spare.isEmpty {
+                if !spare.isEmpty || !spareStones.isEmpty {
                     Menu(l.heldItemEquip) {
                         ForEach(spare, id: \.kind) { item in
                             Button("\(l.itemName(item.kind)) ×\(item.count)") {
                                 change { companion.equip(item.kind, to: fighter.id) }
+                            }
+                        }
+                        ForEach(spareStones, id: \.stone) { item in
+                            Button("\(l.megaStoneName(item.stone)) ×\(item.count)") {
+                                change { companion.equip(item.stone, to: fighter.id) }
                             }
                         }
                     }
@@ -164,7 +204,14 @@ struct BattleEntrySection: View {
                 Text(l.itemDescription(held)).font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 12).padding(.bottom, 6)
-            } else if spare.isEmpty {
+            } else if let heldStone {
+                let matches = heldStone.speciesID == speciesID
+                Text(matches ? l.megaStoneEffect
+                             : l.megaStoneWrongHolder(l.megaStoneName(heldStone), fighterName(fighter)))
+                    .font(.caption2).foregroundStyle(matches ? Color.secondary : Color.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 12).padding(.bottom, 6)
+            } else if spare.isEmpty && spareStones.isEmpty {
                 Text(l.heldItemNoneOwned).font(.caption2).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 12).padding(.bottom, 6)

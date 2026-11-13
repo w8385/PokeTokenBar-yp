@@ -31,6 +31,8 @@ struct ShopView: View {
                         ShopItemCard(store: store, kind: kind)
                     case .egg(let tier):
                         EggCard(store: store, nav: nav, tier: tier)
+                    case .megaStone(let stone):
+                        MegaStoneShopCard(store: store, stone: stone)
                     }
                 }
                 if category == nil || category == .evolution {
@@ -169,6 +171,67 @@ private struct ShopItemCard: View {
     private func buyNow() {
         confirming = false
         if store.buy(kind, count: selectedQuantity) { quantity = 1 }
+    }
+}
+
+/// 메가스톤 카드 — 포켓몬마다 한 개씩, 한 번에 하나만 산다.
+@MainActor
+private struct MegaStoneShopCard: View {
+    let store: CompanionStore
+    let stone: MegaStone
+    @State private var confirming = false
+
+    var body: some View {
+        let l = store.l
+        let price = store.price(of: .megaStone(stone))
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 10) {
+                ItemIconView(stone: stone, size: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(l.megaStoneName(stone)).font(.callout.weight(.semibold))
+                        if store.state.ownedSpeciesIDs.contains(stone.speciesID) {
+                            Badge(l.megaStoneYours, tint: .accent)
+                        }
+                        let owned = store.megaStoneCount(stone)
+                        if owned > 0 {
+                            Text(l.ownedCount(owned)).font(.caption2.weight(.bold))
+                                .foregroundStyle(.secondary).monospacedDigit()
+                        }
+                        Spacer(minLength: 4)
+                    }
+                    Text(l.megaStoneEffect)
+                        .font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            if confirming {
+                HStack(spacing: 8) {
+                    Text(l.buyConfirm(l.megaStoneName(stone)))
+                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                    Spacer()
+                    Button(l.buy) { confirming = false; store.buy(stone) }
+                        .buttonStyle(.borderedProminent).controlSize(.small)
+                    Button(l.cancel) { confirming = false }
+                        .buttonStyle(.borderless).controlSize(.small)
+                }
+            } else {
+                HStack {
+                    Text("\(l.shopPriceLabel) \(TokenFormatter.compact(price))")
+                        .font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
+                    Spacer()
+                    if store.canBuy(stone) {
+                        Button(l.buy) { confirming = true }
+                            .buttonStyle(.bordered).controlSize(.small)
+                    } else {
+                        Text(l.notEnoughTokens).font(.caption2).foregroundStyle(.tertiary)
+                    }
+                }
+            }
+        }
+        .padding(10)
+        .background(Color.secondary.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 

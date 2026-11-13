@@ -16,15 +16,25 @@ let rarityDisplayOrder: [Rarity] = [.legendary, .rare, .uncommon, .common]
 /// 아이템 아이콘 — 실제 스프라이트(런타임 로드+캐시) 우선, 로딩 전/미제공/실패 시 이모지 폴백.
 @MainActor
 struct ItemIconView: View {
-    let kind: ItemKind
+    let spriteName: String?
+    let fallbackEmoji: String
     var size: CGFloat = 30
     @State private var img: NSImage?
 
     init(kind: ItemKind, size: CGFloat = 30) {
-        self.kind = kind
+        self.init(spriteName: kind.spriteName, fallbackEmoji: kind.fallbackEmoji, size: size)
+    }
+
+    init(stone: MegaStone, size: CGFloat = 30) {
+        self.init(spriteName: stone.slug, fallbackEmoji: "💎", size: size)
+    }
+
+    private init(spriteName: String?, fallbackEmoji: String, size: CGFloat) {
+        self.spriteName = spriteName
+        self.fallbackEmoji = fallbackEmoji
         self.size = size
         // 캐시에 있으면 즉시(동기) 표시 — 재렌더 플래시 방지.
-        _img = State(initialValue: kind.spriteName.flatMap { SpriteLoader.cachedItemImage(name: $0) })
+        _img = State(initialValue: spriteName.flatMap { SpriteLoader.cachedItemImage(name: $0) })
     }
 
     var body: some View {
@@ -37,12 +47,12 @@ struct ItemIconView: View {
                     .frame(width: fit.width, height: fit.height)
                     .frame(width: size, height: size)
             } else {
-                Text(kind.fallbackEmoji).font(.system(size: size))
+                Text(fallbackEmoji).font(.system(size: size))
                     .frame(width: size, height: size)
             }
         }
-        .task(id: kind.spriteName ?? "") {
-            guard img == nil, let name = kind.spriteName else { return }
+        .task(id: spriteName ?? "") {
+            guard img == nil, let name = spriteName else { return }
             img = await SpriteLoader.itemImage(name: name)
         }
     }
@@ -735,9 +745,10 @@ struct CompanionHeader: View {
 
     /// Clicking it is a click-growth click, like clicking the floating pet.
     private var bigSprite: some View {
-        SpriteView(speciesID: store.currentSpeciesID, size: 76, bob: true, animated: true,
-                   shiny: store.currentIsShiny, spriteStore: spriteStore, form: store.currentForm,
-                   back: store.facesBack, female: store.currentIsFemale)
+        let mega = store.currentMegaSpriteID
+        return SpriteView(speciesID: mega ?? store.currentSpeciesID, size: 76, bob: true, animated: true,
+                   shiny: store.currentIsShiny, spriteStore: spriteStore, form: mega == nil ? store.currentForm : nil,
+                   back: store.facesBack, female: mega == nil && store.currentIsFemale)
             .crowdMember(crowd, slot: 0, size: 76)
             .frame(width: 76, height: 76)
             .background(Color.secondary.opacity(0.06))
