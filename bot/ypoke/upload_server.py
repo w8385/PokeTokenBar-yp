@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 import threading
 from datetime import UTC, datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -17,6 +18,7 @@ MAX_PARTY_SIZE = 6
 RECENT_BATTLE_LIMIT = 5
 COWORKER_LIMIT = 30
 COWORKER_WINDOW = timedelta(days=30)
+ABILITY_NAME = re.compile(r"[a-z][a-z-]{0,39}")
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
 MovesFor = Callable[[int, int], list[dict]]
@@ -216,6 +218,9 @@ def _validate_member(index: int, member: object) -> dict:
     nature = member.get("nature")
     if isinstance(nature, str) and 0 < len(nature.strip()) <= 20:
         normalized["nature"] = nature.strip().lower()
+    ability = member.get("ability")
+    if isinstance(ability, str) and ABILITY_NAME.fullmatch(ability.strip().lower()):
+        normalized["ability"] = ability.strip().lower()
     ivs = member.get("ivs", {})
     if not isinstance(ivs, dict):
         raise PartyError(f"{where}.ivs must be an object")

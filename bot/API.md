@@ -25,6 +25,7 @@ Replaces the caller's stored party.
       "name": "피카츄",
       "shiny": false,
       "nature": "adamant",
+      "ability": "static",
       "ivs": {"hp": 31, "attack": 20, "defense": 15,
               "special_attack": 31, "special_defense": 10, "speed": 28},
       "moves": [85, 87, 209, 98]
@@ -44,6 +45,7 @@ Replaces the caller's stored party.
 | `shiny` | bool | optional, default `false`. Shown as ✨ in the battle log |
 | `rental` | bool | optional, default `false`. A loaner: it fights at the opponent's level, capped at 50 (both keep their own when both are rentals) and is announced as "대여 포켓몬 …" |
 | `nature` | string | optional, lowercase English nature name from the app (`"adamant"`). Raises one non-HP stat 10% and lowers another 10%, main-series table. Missing, empty or unknown names are neutral and never rejected |
+| `ability` | string | optional, the individual's PokéAPI ability name, lowercase with dashes (`"huge-power"`, max 40 chars). Missing or malformed names are dropped, never rejected. Battles know 27 abilities (Blaze, Torrent, Overgrow, Swarm, Intimidate, Levitate, Huge Power, Pure Power, Thick Fat, Technician, Sturdy, Adaptability, Guts, Swift Swim, Chlorophyll, Sand Rush, Drizzle, Drought, Sand Stream, Snow Warning, Static, Flame Body, Poison Point, Immunity, Limber, Insomnia, Water Veil); any other name does nothing. A physical move counts as contact for Static, Flame Body and Poison Point (30%) |
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
 | `moves` | array | optional, up to 4 distinct PokéAPI move ids, each an attacking move from `GET /v1/moves` at that level. Missing or empty: the 4 most recently learned |
 

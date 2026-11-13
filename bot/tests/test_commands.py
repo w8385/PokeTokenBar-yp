@@ -256,6 +256,11 @@ def test_the_uploaded_nature_reaches_the_combatant_and_unknown_ones_are_kept_for
     assert (first.nature, second.nature) == ("adamant", None)
 
 
+def test_the_uploaded_ability_reaches_the_combatant_and_a_member_without_one_has_none(store, monkeypatch):
+    first, second = sides_of(store, monkeypatch, {**member(25, 30), "ability": "static"}, member(7, 30))
+    assert (first.ability, second.ability) == ("static", None)
+
+
 def test_a_rental_challenger_against_a_rental_keeps_both_levels(store):
     for user in ("UA", "UB"):
         store.issue_token(user)

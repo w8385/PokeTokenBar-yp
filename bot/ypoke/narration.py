@@ -1,6 +1,9 @@
 """In-game style battle narration built only from events the simulation produced."""
 
-from ypoke.battle import Action, BattleResult, Change, Combatant, Event, StatusDamage, WeatherDamage, WeatherEnd
+from ypoke.abilities import NAMES as ABILITY_NAMES
+from ypoke.battle import (
+    AbilityTrigger, Action, BattleResult, Change, Combatant, Event, StatusDamage, WeatherDamage, WeatherEnd,
+)
 
 MAX_EVENT_LINES = 24
 PRACTICE_NOTE = "(연습 대결 — 전적에 안 남아요)"
@@ -27,6 +30,14 @@ WEATHER_END = {
     "sandstorm": "모래바람이 가라앉았다!",
     "hail": "싸라기눈이 그쳤다!",
     "snow": "눈이 그쳤다!",
+}
+ABILITY_EFFECT = {
+    "levitate": "땅 타입 기술이 맞지 않는다!",
+    "sturdy": "간신히 버텼다!",
+    "immunity": "독에 걸리지 않는다!",
+    "limber": "마비되지 않는다!",
+    "insomnia": "잠들지 않는다!",
+    "water-veil": "화상을 입지 않는다!",
 }
 WEATHER_DAMAGE = {"sandstorm": "모래바람에 휩싸였다!", "hail": "싸라기눈에 맞았다!"}
 STATUS_TEXT = {
@@ -86,6 +97,9 @@ def _send_out_line(trainer: str, combatant: Combatant) -> str:
 def _event_line(event: Event) -> str:
     if isinstance(event, WeatherEnd):
         return f"{event.turn}턴 {WEATHER_END[event.weather]}"
+    if isinstance(event, AbilityTrigger):
+        effect = WEATHER_START[event.weather] if event.weather else _change_text(event.change)
+        return f"{SIDE_MARKERS[event.side]} {event.pokemon}의 {ABILITY_NAMES[event.ability]}! {effect}"
     prefix = f"{event.turn}턴 {SIDE_MARKERS[event.side]}"
     if isinstance(event, StatusDamage):
         name = with_particle(event.pokemon, ("은", "는"))
@@ -108,7 +122,7 @@ def _event_line(event: Event) -> str:
         parts.append("하지만 빗나갔다!")
         return " ".join(parts)
     if event.multiplier == 0:
-        parts.append(f"{event.defender}에게는 효과가 없는 것 같다…")
+        parts.append(_ability_text(event) if event.ability else f"{event.defender}에게는 효과가 없는 것 같다…")
         return " ".join(parts)
     if event.critical:
         parts.append("급소에 맞았다!")
@@ -118,6 +132,8 @@ def _event_line(event: Event) -> str:
         parts.append("효과가 별로인 듯하다…")
     if event.hits > 1:
         parts.append(f"{event.hits}번 맞았다!")
+    if event.ability:
+        parts.append(_ability_text(event))
     parts += [_change_text(change) for change in event.changes]
     if event.drained:
         parts.append(f"{event.defender}에게서 체력을 흡수했다!")
@@ -130,6 +146,10 @@ def _event_line(event: Event) -> str:
     else:
         parts.append(f"({event.defender} HP {event.defender_hp}%)")
     return " ".join(parts)
+
+
+def _ability_text(event: Action) -> str:
+    return f"{event.defender}의 {ABILITY_NAMES[event.ability]}! {ABILITY_EFFECT.get(event.ability, '')}".rstrip()
 
 
 def _recovered_text(pokemon: str, kind: str) -> str:

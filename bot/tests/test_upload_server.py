@@ -388,3 +388,13 @@ def test_a_database_from_before_species_were_kept_is_upgraded_in_place(tmp_path)
     newest, oldest = store.recent_battles("U1", 5)
     assert (newest.my_pokemon_id, newest.turns, newest.won) == (25, 4, True)
     assert (oldest.my_pokemon_id, oldest.turns, oldest.won) == (None, None, False)
+
+
+def test_ability_is_lowercased_and_unknown_names_are_kept_for_the_battle_to_ignore():
+    assert validate_party({"party": [{**PIKACHU, "ability": " Huge-Power "}]})[0]["ability"] == "huge-power"
+    assert validate_party({"party": [{**PIKACHU, "ability": "made-up"}]})[0]["ability"] == "made-up"
+
+
+@pytest.mark.parametrize("ability", [None, 5, "", "   ", "x" * 41, ["blaze"], "not an ability", "blaze;drop"])
+def test_a_bad_or_missing_ability_is_dropped_not_rejected(ability):
+    assert "ability" not in validate_party({"party": [{**PIKACHU, "ability": ability}]})[0]

@@ -4,7 +4,7 @@ Slack bot for one-on-one office battles between PokeTokenBar users' Pokémon.
 Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Pokémon to ([API.md](API.md)).
 
 - `/대결 @상대` runs one automatic one-on-one battle (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
-  level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages and five-turn weather) and posts a turn-by-turn
+  level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather and 27 common abilities) and posts a turn-by-turn
   log, written like the in-game battle text. The channel gets a context line ("who ran which command", since
   Slack shows nobody a typed slash command), a one-line result and a "다시 붙기" button; the turn log is the
   first reply in that message's thread. The bot posts it with `chat.postMessage`, so it must be a member of
