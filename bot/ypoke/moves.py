@@ -33,4 +33,5 @@ def _move(move: dict) -> Move:
         stat_changes=tuple((change["stat"], change["change"]) for change in move["stat_changes"]),
         stat_on_user=move["stat_target"] == "user",
         stat_chance=move["stat_chance"],
+        priority=move["priority"],
     )

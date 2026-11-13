@@ -9,7 +9,7 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
 from urllib.parse import urlencode
 
-from ypoke.battle import BaseStats, Combatant, simulate
+from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, simulate
 from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
 from ypoke.pokeapi import PokeAPIService, base_stats
@@ -356,18 +356,19 @@ class CommandHandler:
         ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
         return Combatant(
             name=member.get("name") or data["name_ko"],
-            level=member["level"],
+            level=min(member["level"], BATTLE_LEVEL),
             types=tuple(data["types"]),
             base=base_stats(data),
             ivs=BaseStats(**ivs),
             shiny=member["shiny"],
             moves=battle_moves(learnable, member.get("moves")),
             rental=member.get("rental", False),
+            nature=member.get("nature"),
         )
 
 
 def rental_levels(challenger: dict, opponent: dict) -> tuple[dict, dict]:
-    """A rental fights at the other side's level; two rentals keep their own."""
+    """A rental takes the other side's level (the battle cap applies after); two rentals keep their own."""
     if challenger.get("rental") and not opponent.get("rental"):
         return {**challenger, "level": opponent["level"]}, opponent
     if opponent.get("rental") and not challenger.get("rental"):

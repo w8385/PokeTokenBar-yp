@@ -69,6 +69,34 @@ final class PartyBuilderTests: XCTestCase {
         XCTAssertEqual(over.level, 100)
     }
 
+    func testMemberCarriesTheNatureAsItsLowercaseName() throws {
+        let member = PartyBuilder.member(speciesID: 25, form: nil, shiny: false, profile: profile(level: 30),
+                                         nature: .adamant)
+        XCTAssertEqual(member.nature, "adamant")
+
+        let data = try PartyPayload(appVersion: nil, party: [member]).encoded()
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual((json["party"] as? [[String: Any]])?.first?["nature"] as? String, "adamant")
+    }
+
+    func testMemberWithoutANatureLeavesTheFieldOut() throws {
+        let member = PartyBuilder.member(speciesID: 25, form: nil, shiny: false, profile: profile(level: 30))
+        XCTAssertNil(member.nature)
+
+        let data = try PartyPayload(appVersion: nil, party: [member]).encoded()
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertNil((json["party"] as? [[String: Any]])?.first?["nature"])
+    }
+
+    func testRaisedPokemonSendsItsNature() {
+        var state = CompanionState()
+        var active = MonState(baseID: 4, pathIDs: [4], stageIndex: 0, usedAtStage: 0,
+                              rarity: .common, totalForms: 1, profile: profile(level: 12))
+        active.nature = .timid
+        state.active = active
+        XCTAssertEqual(PartyBuilder.party(from: state).first?.nature, "timid")
+    }
+
     func testPayloadUsesTheBotFieldNames() throws {
         let ivs = PokemonIVs(hp: 31, attack: 20, defense: 15, specialAttack: 31, specialDefense: 10, speed: 28)
         let data = try PartyPayload(appVersion: "2.5.7",

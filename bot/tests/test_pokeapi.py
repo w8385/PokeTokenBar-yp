@@ -37,15 +37,15 @@ def test_learnset_falls_back_to_a_side_game_when_no_main_game_has_it():
 MOVES = {
     84: {"id": 84, "names": [{"language": {"name": "ko"}, "name": "전기쇼크"}], "name": "thunder-shock",
          "type": {"name": "electric"}, "power": 40, "damage_class": {"name": "special"}, "accuracy": 100, "pp": 30,
-         "meta": {"ailment": {"name": "paralysis"}, "ailment_chance": 10, "category": {"name": "damage-ailment"},
+         "priority": 0, "meta": {"ailment": {"name": "paralysis"}, "ailment_chance": 10, "category": {"name": "damage-ailment"},
                   "crit_rate": 0, "stat_chance": 0},
          "stat_changes": []},
     86: {"id": 86, "names": [{"language": {"name": "ko"}, "name": "전기자석파"}], "name": "thunder-wave",
-         "type": {"name": "electric"}, "power": None, "damage_class": {"name": "status"}, "accuracy": 90, "pp": 20},
+         "type": {"name": "electric"}, "power": None, "damage_class": {"name": "status"}, "accuracy": 90, "pp": 20, "priority": 0},
     360: {"id": 360, "names": [{"language": {"name": "en"}, "name": "Gyro Ball"}], "name": "gyro-ball",
-          "type": {"name": "steel"}, "power": None, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 5},
+          "type": {"name": "steel"}, "power": None, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 5, "priority": 0},
     85: {"id": 85, "names": [], "name": "thunderbolt",
-         "type": {"name": "electric"}, "power": 90, "damage_class": {"name": "special"}, "accuracy": 100, "pp": 15, "meta": None},
+         "type": {"name": "electric"}, "power": 90, "damage_class": {"name": "special"}, "accuracy": 100, "pp": 15, "priority": 0, "meta": None},
 }
 PIKACHU = {"moves": [
     learned(84, ("scarlet-violet", "level-up", 1)),
@@ -72,7 +72,7 @@ def test_attacking_moves_skip_status_and_powerless_moves_and_respect_the_level(s
     api, _ = service
     assert api.attacking_moves(25, 35) == [
         {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100,
-         "pp": 30, "crit_rate": 0, "ailment": "paralysis", "ailment_chance": 10, "stat_changes": [],
+         "pp": 30, "priority": 0, "crit_rate": 0, "ailment": "paralysis", "ailment_chance": 10, "stat_changes": [],
          "stat_target": "target", "stat_chance": 0, "level": 1},
     ]
     assert [move["name"] for move in api.attacking_moves(25, 36)] == ["전기쇼크", "thunderbolt"]
@@ -105,10 +105,10 @@ def test_learnsets_and_moves_are_cached(service):
     assert len(fetched) == count == 1 + len(MOVES)
 
 
-def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chance=0, crit_rate=0):
+def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chance=0, crit_rate=0, priority=0):
     return {
         "id": 1, "names": [{"language": {"name": "ko"}, "name": "기술"}], "name": "move", "type": {"name": "fire"},
-        "power": 80, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 15,
+        "power": 80, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 15, "priority": priority,
         "meta": {"ailment": {"name": ailment}, "ailment_chance": ailment_chance, "category": {"name": category},
                  "crit_rate": crit_rate, "stat_chance": stat_chance},
         "stat_changes": [{"stat": {"name": stat}, "change": change} for stat, change in stat_changes],
@@ -124,6 +124,8 @@ def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chanc
      {"stat_changes": [{"stat": "special_attack", "change": -2}], "stat_target": "user", "stat_chance": 100}),
     (body("damage-lower", stat_changes=[("accuracy", -1)], stat_chance=30), {"stat_changes": [], "stat_chance": 0}),
     (body("damage", crit_rate=1), {"crit_rate": 1, "pp": 15}),
+    (body("damage", priority=1), {"priority": 1}),
+    (body("damage"), {"priority": 0}),
 ])
 def test_move_keeps_only_the_simulated_secondary_effects(move, expected):
     data = move_from(move)

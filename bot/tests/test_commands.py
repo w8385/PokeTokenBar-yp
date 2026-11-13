@@ -34,15 +34,15 @@ WILD = {"name_ko": "야생몬", "types": ["normal"],
         "base": {"hp": 50, "attack": 50, "defense": 50, "special_attack": 50, "special_defense": 50, "speed": 50}}
 
 
-def move(move_id, name, move_type, power, level, damage_class="special", accuracy=100):
+def move(move_id, name, move_type, power, level, damage_class="special", accuracy=100, priority=0):
     return {"id": move_id, "name": name, "type": move_type, "power": power,
-            "damage_class": damage_class, "accuracy": accuracy, "pp": 15, "crit_rate": 0,
+            "damage_class": damage_class, "accuracy": accuracy, "pp": 15, "crit_rate": 0, "priority": priority,
             "ailment": None, "ailment_chance": 0, "stat_changes": [], "stat_target": "target", "stat_chance": 0,
             "level": level}
 
 
 MOVES = {
-    25: [move(84, "전기쇼크", "electric", 40, 1), move(98, "전광석화", "normal", 40, 1, "physical"),
+    25: [move(84, "전기쇼크", "electric", 40, 1), move(98, "전광석화", "normal", 40, 1, "physical", priority=1),
          move(209, "스파크", "electric", 65, 20, "physical"), move(231, "아이언테일", "steel", 100, 28, "physical", 75),
          move(85, "10만볼트", "electric", 90, 36), move(87, "번개", "electric", 110, 44, accuracy=70)],
     7: [move(33, "몸통박치기", "normal", 40, 1, "physical"), move(55, "물대포", "water", 40, 3)],
@@ -119,7 +119,7 @@ def test_battle_is_one_on_one_and_records(store):
     lines = reply.text.splitlines()
     assert lines[:3] == [
         "<@UB>에게 <@UA>이(가) 승부를 걸어왔다!",
-        "<@UA>은(는) 피카츄를 내보냈다! (Lv60)",
+        "<@UA>은(는) 피카츄를 내보냈다! (Lv50)",
         "<@UB>은(는) 꼬부기를 내보냈다! (Lv20)",
     ]
     assert lines[-2].endswith("꼬부기는 쓰러졌다!")
@@ -134,7 +134,7 @@ def test_an_older_multi_pokemon_upload_sends_only_its_first(store):
     upload(store, "UB", 25, 60)
     lines = handler(store).handle("UA", "<@UB>").text.splitlines()
     assert lines[1] == "<@UA>은(는) 꼬부기를 내보냈다! (Lv5)"
-    assert lines[2] == "<@UB>은(는) 피카츄를 내보냈다! (Lv60)"
+    assert lines[2] == "<@UB>은(는) 피카츄를 내보냈다! (Lv50)"
     assert lines[-1] == "<@UB>은(는) 승부에서 이겼다!"
     assert sum(line.endswith("쓰러졌다!") for line in lines) == 1
 
@@ -199,8 +199,48 @@ def test_a_rental_fights_at_the_opponents_level_and_counts(store):
     store.issue_token("UB")
     store.save_party("UB", [{**member(1, 5), "rental": True}])
     lines = handler(store).handle("UA", "<@UB>").text.splitlines()
-    assert lines[2] == "<@UB>은(는) 대여 포켓몬 야생몬을 내보냈다! (Lv60)"
+    assert lines[2] == "<@UB>은(는) 대여 포켓몬 야생몬을 내보냈다! (Lv50)"
     assert store.record("UA").wins + store.record("UA").losses == 1
+
+
+def test_a_rental_against_a_lead_above_fifty_fights_at_fifty(store):
+    upload(store, "UA", 25, 80)
+    store.issue_token("UB")
+    store.save_party("UB", [{**member(1, 5), "rental": True}])
+    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
+    assert lines[1:3] == ["<@UA>은(는) 피카츄를 내보냈다! (Lv50)", "<@UB>은(는) 대여 포켓몬 야생몬을 내보냈다! (Lv50)"]
+
+
+def test_a_rental_against_a_lead_below_fifty_keeps_that_level(store):
+    upload(store, "UA", 25, 30)
+    store.issue_token("UB")
+    store.save_party("UB", [{**member(1, 5), "rental": True}])
+    assert handler(store).handle("UA", "<@UB>").text.splitlines()[2].endswith("(Lv30)")
+
+
+def sides_of(store, monkeypatch, challenger, opponent):
+    captured = []
+    monkeypatch.setattr("ypoke.commands.simulate", lambda sides, seed: captured.append(sides) or simulate(sides, seed))
+    for user, party in (("UA", challenger), ("UB", opponent)):
+        store.issue_token(user)
+        store.save_party(user, [party])
+    handler(store).handle("UA", "<@UB>")
+    return captured[0]
+
+
+def test_a_fighter_above_fifty_fights_at_fifty_and_one_at_thirty_keeps_its_level(store, monkeypatch):
+    high, low = sides_of(store, monkeypatch, member(25, 67), member(7, 30))
+    assert (high.level, low.level) == (50, 30)
+
+
+def test_moves_come_from_the_real_level_not_the_battle_level(store, monkeypatch):
+    high, _ = sides_of(store, monkeypatch, {**member(25, 100), "moves": [87]}, member(7, 30))
+    assert [m.name for m in high.moves] == ["번개"]
+
+
+def test_the_uploaded_nature_reaches_the_combatant_and_unknown_ones_are_kept_for_neutral(store, monkeypatch):
+    first, second = sides_of(store, monkeypatch, {**member(25, 30), "nature": "adamant"}, member(7, 30))
+    assert (first.nature, second.nature) == ("adamant", None)
 
 
 def test_a_rental_challenger_against_a_rental_keeps_both_levels(store):

@@ -28,14 +28,16 @@ enum BattleEntry {
             owned.append(BattleCandidate(
                 id: id,
                 member: PartyBuilder.member(speciesID: active.currentID, form: active.form,
-                                            shiny: active.displaysShiny, profile: active.profile),
+                                            shiny: active.displaysShiny, profile: active.profile,
+                                            nature: active.nature),
                 dexEntry: nil))
         }
         for entry in state.dex where entry.releasedAt == nil {
             owned.append(BattleCandidate(
                 id: entry.id,
                 member: PartyBuilder.member(speciesID: entry.finalID, form: entry.form,
-                                            shiny: entry.isShiny, profile: entry.profile),
+                                            shiny: entry.isShiny, profile: entry.profile,
+                                            nature: entry.nature),
                 dexEntry: entry))
         }
         return owned.filter { PartyBuilder.isAcceptedPokemonID($0.member.pokemonID) }

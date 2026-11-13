@@ -162,10 +162,10 @@ def test_rematch_by_a_non_participant_is_refused_and_plays_nothing(store):
 def test_rematch_reruns_the_matchup_with_the_current_upload(store):
     ready_pair(store)
     bot = handler(store)
-    store.save_party("UB", [{"pokemon_id": 7, "level": 100, "shiny": False, "ivs": {}}])
+    store.save_party("UB", [{"pokemon_id": 7, "level": 40, "shiny": False, "ivs": {}}])
     reply = bot.rematch("UB", "UA:UB", Where("CCHAN", "1.1"))
     assert reply.in_channel and reply.echo == "<@UB> 님이 다시 붙기를 눌렀어요"
-    assert "Lv100" in reply.text
+    assert "꼬부기를 내보냈다! (Lv40)" in reply.text
     assert reply.rematch == "UA:UB"
     record = store.record("UB")
     assert record.wins + record.losses == 1
