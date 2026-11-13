@@ -1,13 +1,12 @@
 import SwiftUI
 
-/// Battle tab rows for picking up to 3 owned Pokémon, their order, and each one's moves.
+/// Battle tab rows for picking the one battle Pokémon and its moves.
 @MainActor
 struct BattleEntrySection: View {
     @Environment(CompanionStore.self) private var companion
     let entry: BattleEntryStore
     let uploader: PartyUploader
 
-    @State private var expandedID: String?
     @State private var learnable: [String: LearnableMoves] = [:]
     @State private var unavailable: Set<String> = []
 
@@ -15,9 +14,7 @@ struct BattleEntrySection: View {
 
     var body: some View {
         let candidates = BattleEntry.candidates(in: companion.state)
-        let chosen = entry.slots.compactMap { slot in
-            candidates.first { $0.id == slot.instanceID }.map { (slot, $0) }
-        }
+        let fighter = BattleEntry.fighter(state: companion.state, slot: entry.slot)
         row {
             VStack(alignment: .leading, spacing: 1) {
                 Text(l.battleEntryLabel)
@@ -25,74 +22,54 @@ struct BattleEntrySection: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
-            Menu(l.battleEntryAdd) {
-                ForEach(candidates.filter { !entry.contains($0.id) }) { candidate in
-                    Button(label(candidate)) { change { entry.add(candidate.id) } }
+            Menu(entry.slot == nil ? l.battleEntryAutoPick : fighter.map(label) ?? l.battleEntryAutoPick) {
+                Button(l.battleEntryAutoPick) { change { entry.choose(nil) } }
+                Divider()
+                ForEach(candidates) { candidate in
+                    Button(label(candidate)) { change { entry.choose(candidate.id) } }
                 }
             }
             .fixedSize()
-            .disabled(entry.isFull || candidates.allSatisfy { entry.contains($0.id) })
+            .disabled(candidates.isEmpty)
         }
-        ForEach(Array(chosen.enumerated()), id: \.element.1.id) { index, pair in
-            slotRow(index: index, slot: pair.0, candidate: pair.1, count: chosen.count)
-            if expandedID == pair.1.id {
-                moveList(slot: pair.0, member: pair.1.member, id: pair.1.id)
-            }
+        if let fighter {
+            moveList(fighter)
+        } else {
+            Text(l.battleEntryEgg)
+                .font(.caption2).foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12).padding(.bottom, 8)
         }
-    }
-
-    private func slotRow(index: Int, slot: BattleEntrySlot, candidate: BattleCandidate, count: Int) -> some View {
-        row {
-            Text("\(index + 1).").monospacedDigit().foregroundStyle(.secondary)
-            Text(label(candidate)).lineLimit(1)
-            if candidate.dexEntry == nil {
-                Text(l.battleEntryRaising).font(.caption2).foregroundStyle(.tertiary)
-            }
-            Spacer()
-            Button {
-                expandedID = expandedID == candidate.id ? nil : candidate.id
-            } label: {
-                HStack(spacing: 2) {
-                    Text(l.battleEntryMoves)
-                    Image(systemName: expandedID == candidate.id ? "chevron.up" : "chevron.down")
-                }
-            }
-            Button { change { entry.move(candidate.id, by: -1) } } label: { Image(systemName: "arrow.up") }
-                .disabled(index == 0)
-            Button { change { entry.move(candidate.id, by: 1) } } label: { Image(systemName: "arrow.down") }
-                .disabled(index == count - 1)
-            Button { change { entry.remove(candidate.id) } } label: { Image(systemName: "xmark") }
-        }
-        .buttonStyle(.borderless)
     }
 
     @ViewBuilder
-    private func moveList(slot: BattleEntrySlot, member: PartyMember, id: String) -> some View {
+    private func moveList(_ fighter: BattleCandidate) -> some View {
+        let member = fighter.member
         let key = "\(member.pokemonID)-\(member.level)"
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             if let moves = learnable[key] {
-                let custom = slot.pokemonID == member.pokemonID && !slot.moves.isEmpty
-                let selected = custom ? slot.moves : moves.default
-                Button(l.battleEntryAutoMoves) { change { entry.resetMoves(for: id) } }
-                    .buttonStyle(.borderless).font(.caption)
-                    .disabled(!custom)
+                let slot = entry.slot
+                let custom = slot?.instanceID == fighter.id && slot?.pokemonID == member.pokemonID
+                    && slot?.moves.isEmpty == false
+                let selected = custom ? slot?.moves ?? [] : moves.default
+                HStack {
+                    Text(l.battleEntryMoves).font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
+                    Spacer()
+                    Button(l.battleEntryAutoMoves) { change { entry.resetMoves() } }
+                        .buttonStyle(.borderless).font(.caption)
+                        .disabled(!custom)
+                }
                 ForEach(moves.moves.reversed()) { move in
                     let isOn = selected.contains(move.id)
                     Button {
                         change {
-                            entry.toggleMove(move.id, for: id, pokemonID: member.pokemonID, current: selected)
+                            entry.toggleMove(move.id, for: fighter.id, pokemonID: member.pokemonID, current: selected)
                         }
                     } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: isOn ? "checkmark.square.fill" : "square")
-                            Text(move.name)
-                            Text("\(move.type) · \(move.power)").foregroundStyle(.tertiary)
-                            Spacer()
-                            Text("Lv\(move.level)").foregroundStyle(.tertiary)
-                        }
-                        .contentShape(Rectangle())
+                        moveRow(move, isOn: isOn)
                     }
-                    .buttonStyle(.borderless).font(.caption)
+                    .buttonStyle(.borderless)
                     .disabled(!isOn && selected.count >= BattleEntry.maxMoves)
                 }
             } else if unavailable.contains(key) {
@@ -101,7 +78,7 @@ struct BattleEntrySection: View {
                 ProgressView().controlSize(.small)
             }
         }
-        .padding(.horizontal, 32).padding(.bottom, 8)
+        .padding(.horizontal, 12).padding(.bottom, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .task(id: key) {
             guard learnable[key] == nil else { return }
@@ -114,9 +91,53 @@ struct BattleEntrySection: View {
         }
     }
 
+    private func moveRow(_ move: LearnableMove, isOn: Bool) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Image(systemName: isOn ? "checkmark.square.fill" : "square")
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(move.name).font(.callout)
+                    TypeBadges(types: [move.type], language: companion.language)
+                    Spacer()
+                    Text("Lv\(move.level)").font(.caption2).foregroundStyle(.tertiary)
+                }
+                Text(stats(move)).font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+                if let effects = effects(move) {
+                    Text(effects).font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .contentShape(Rectangle())
+    }
+
+    private func stats(_ move: LearnableMove) -> String {
+        var parts = [move.damageClass == "physical" ? l.movePhysical : l.moveSpecial,
+                     "\(l.movePower) \(move.power)",
+                     "\(l.moveAccuracy) \(move.accuracy.map(String.init) ?? "—")"]
+        if let pp = move.pp { parts.append("PP \(pp)") }
+        return parts.joined(separator: " · ")
+    }
+
+    private func effects(_ move: LearnableMove) -> String? {
+        var parts: [String] = []
+        if let ailment = move.ailment, let chance = move.ailmentChance {
+            parts.append("\(ailment == "burn" ? l.moveBurn : l.moveParalysis) \(chance)%")
+        }
+        if let changes = move.statChanges, !changes.isEmpty, let chance = move.statChance {
+            let arrows = changes.map { change in
+                l.statName(change.stat) + String(repeating: change.change > 0 ? "↑" : "↓", count: abs(change.change))
+            }.joined(separator: " ")
+            let target = move.statTarget == "user" ? " (\(l.moveSelf))" : ""
+            parts.append("\(arrows)\(target) \(chance)%")
+        }
+        if (move.critRate ?? 0) > 0 { parts.append(l.moveHighCrit) }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
     private func label(_ candidate: BattleCandidate) -> String {
         let name = candidate.dexEntry.map(companion.dexEntryName) ?? companion.displayName
-        return "\(name) Lv\(candidate.member.level)\(candidate.member.shiny ? " ✨" : "")"
+        let raising = candidate.dexEntry == nil ? " · \(l.battleEntryRaising)" : ""
+        return "\(name) Lv\(candidate.member.level)\(candidate.member.shiny ? " ✨" : "")\(raising)"
     }
 
     private func change(_ edit: () -> Void) {

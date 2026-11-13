@@ -10,7 +10,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, CommandHandler, Reply, reply_thread_ts
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
-from ypoke.upload_server import MAX_ENTRY_SIZE, serve
+from ypoke.upload_server import serve
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -51,7 +51,7 @@ def _join(app: App, channel: str) -> None:
 
 
 def _warm_cache(pokeapi: PokeAPIService, party: list[dict]) -> None:
-    threading.Thread(target=_fetch_all, args=(pokeapi, party), daemon=True).start()
+    threading.Thread(target=_prefetch_lead, args=(pokeapi, party), daemon=True).start()
 
 
 def _slash_listener(handler: CommandHandler):
@@ -94,13 +94,13 @@ def _mention_listener(handler: CommandHandler):
     return listener
 
 
-def _fetch_all(pokeapi: PokeAPIService, party: list[dict]) -> None:
-    for member in party[:MAX_ENTRY_SIZE]:
-        try:
-            pokeapi.pokemon(member["pokemon_id"])
-            pokeapi.attacking_moves(member["pokemon_id"], member["level"])
-        except Exception:
-            logging.getLogger(__name__).warning("PokéAPI prefetch failed for %s", member["pokemon_id"])
+def _prefetch_lead(pokeapi: PokeAPIService, party: list[dict]) -> None:
+    lead = party[0]
+    try:
+        pokeapi.pokemon(lead["pokemon_id"])
+        pokeapi.attacking_moves(lead["pokemon_id"], lead["level"])
+    except Exception:
+        logging.getLogger(__name__).warning("PokéAPI prefetch failed for %s", lead["pokemon_id"])
 
 
 if __name__ == "__main__":

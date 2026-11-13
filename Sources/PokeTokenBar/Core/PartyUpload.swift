@@ -301,4 +301,17 @@ struct LearnableMove: Decodable, Equatable, Sendable, Identifiable {
     let damageClass: String
     let accuracy: Int?
     let level: Int
+    /// The fields below are nil from bots older than yp8.
+    var pp: Int? = nil
+    var critRate: Int? = nil
+    var ailment: String? = nil
+    var ailmentChance: Int? = nil
+    var statChanges: [StatChange]? = nil
+    var statTarget: String? = nil
+    var statChance: Int? = nil
+
+    struct StatChange: Decodable, Equatable, Sendable {
+        let stat: String
+        let change: Int
+    }
 }

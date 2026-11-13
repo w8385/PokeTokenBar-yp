@@ -756,27 +756,67 @@ struct L {
     var partyUploadSectionTitle: String { t("YPoke 대결", "YPoke battles", "YPoke対戦", "Combates YPoke", "Combats YPoke", "Batalhas YPoke", "YPoke-Kämpfe", "Бои YPoke") }
     var partyUploadTokenLabel: String { t("업로드 토큰", "Upload token", "アップロードトークン", "Token de subida", "Jeton d'envoi", "Token de envio", "Upload-Token", "Токен загрузки") }
     var partyUploadHint: String {
-        t("대결 엔트리를 몇 분마다, 바꾸면 바로 YPoke 대결 봇에 보내요.",
-          "Sends your battle entry to the YPoke battle bot every few minutes, and right away when you change it.",
-          "対戦エントリーを数分ごと、変更したらすぐにYPoke対戦ボットへ送ります。",
-          "Envía tu equipo de combate al bot YPoke cada pocos minutos y al instante cuando lo cambias.",
-          "Envoie ton équipe de combat au bot YPoke toutes les quelques minutes, et tout de suite quand tu la modifies.",
-          "Envia sua equipe de batalha ao bot YPoke a cada poucos minutos e na hora quando você a muda.",
-          "Sendet dein Kampfteam alle paar Minuten an den YPoke-Kampfbot und sofort, wenn du es änderst.",
-          "Каждые несколько минут и сразу после изменения отправляет вашу команду боту сражений YPoke.")
+        t("대결에 나갈 포켓몬을 몇 분마다, 바꾸면 바로 YPoke 대결 봇에 보내요.",
+          "Sends your battle Pokémon to the YPoke battle bot every few minutes, and right away when you change it.",
+          "対戦に出すポケモンを数分ごと、変更したらすぐにYPoke対戦ボットへ送ります。",
+          "Envía tu Pokémon de combate al bot YPoke cada pocos minutos y al instante cuando lo cambias.",
+          "Envoie ton Pokémon de combat au bot YPoke toutes les quelques minutes, et tout de suite quand tu le changes.",
+          "Envia seu Pokémon de batalha ao bot YPoke a cada poucos minutos e na hora quando você o muda.",
+          "Sendet dein Kampf-Pokémon alle paar Minuten an den YPoke-Kampfbot und sofort, wenn du es änderst.",
+          "Каждые несколько минут и сразу после изменения отправляет вашего боевого покемона боту YPoke.")
     }
-    var battleEntryLabel: String { t("대결 엔트리", "Battle entry", "対戦エントリー", "Equipo de combate", "Équipe de combat", "Equipe de batalha", "Kampfteam", "Команда для боя") }
+    var battleEntryLabel: String { t("대결에 나갈 포켓몬", "Battle Pokémon", "対戦に出すポケモン", "Pokémon de combate", "Pokémon de combat", "Pokémon de batalha", "Kampf-Pokémon", "Покемон для боя") }
     var battleEntryHint: String {
-        t("최대 3마리가 순서대로 나가요. 비워 두면 지금 키우는 포켓몬이 나가요.",
-          "Up to 3 Pokémon fight in this order. Leave it empty to send the Pokémon you're raising.",
-          "最大3匹がこの順番で戦います。空なら育成中のポケモンが出ます。",
-          "Hasta 3 Pokémon luchan en este orden. Déjalo vacío para enviar el Pokémon que crías.",
-          "Jusqu'à 3 Pokémon combattent dans cet ordre. Laisse vide pour envoyer le Pokémon que tu élèves.",
-          "Até 3 Pokémon lutam nesta ordem. Deixe vazio para enviar o Pokémon que você cria.",
-          "Bis zu 3 Pokémon kämpfen in dieser Reihenfolge. Leer lassen, um dein aktuelles Pokémon zu schicken.",
-          "До 3 покемонов сражаются в этом порядке. Оставьте пустым, чтобы отправить выращиваемого покемона.")
+        t("한 마리끼리 붙어요. 자동이면 지금 키우는 포켓몬이 나가요.",
+          "Battles are one on one. Auto sends the Pokémon you're raising.",
+          "1対1で戦います。自動なら育成中のポケモンが出ます。",
+          "Los combates son uno contra uno. Auto envía el Pokémon que crías.",
+          "Les combats sont en un contre un. Auto envoie le Pokémon que tu élèves.",
+          "As batalhas são um contra um. Auto envia o Pokémon que você cria.",
+          "Kämpfe sind eins gegen eins. Automatisch schickt dein aktuelles Pokémon.",
+          "Бои один на один. «Авто» отправляет выращиваемого покемона.")
     }
-    var battleEntryAdd: String { t("추가", "Add", "追加", "Añadir", "Ajouter", "Adicionar", "Hinzufügen", "Добавить") }
+    var battleEntryAutoPick: String {
+        t("자동 (키우는 포켓몬)", "Auto (the one you're raising)", "自動(育成中のポケモン)", "Auto (el que crías)",
+          "Auto (celui que tu élèves)", "Auto (o que você cria)", "Automatisch (aktuelles Pokémon)", "Авто (выращиваемый)")
+    }
+    var battleEntryEgg: String {
+        t("알이 부화하면 대결에 나갈 수 있어요. 그 전에는 봇에 아무것도 올라가지 않아요.",
+          "You can battle once your egg hatches. Until then nothing is sent to the bot.",
+          "タマゴがかえると対戦に出られます。それまではボットに何も送られません。",
+          "Podrás combatir cuando el huevo eclosione. Hasta entonces no se envía nada al bot.",
+          "Tu pourras combattre quand l'œuf éclora. D'ici là, rien n'est envoyé au bot.",
+          "Você poderá batalhar quando o ovo chocar. Até lá nada é enviado ao bot.",
+          "Sobald das Ei schlüpft, kannst du kämpfen. Bis dahin wird nichts an den Bot gesendet.",
+          "Сражаться можно, когда вылупится яйцо. До этого боту ничего не отправляется.")
+    }
+    var battleEntryNotSent: String {
+        t("아직 봇에 올라가지 않았어요. 사내망에서 앱을 켜 두면 1분 안에 올라가요.",
+          "Not on the bot yet. Keep the app open on the office network and it uploads within a minute.",
+          "まだボットに届いていません。社内ネットワークでアプリを開いておくと1分以内に送られます。",
+          "Aún no está en el bot. Con la app abierta en la red de la oficina se sube en menos de un minuto.",
+          "Pas encore sur le bot. Garde l'app ouverte sur le réseau du bureau et l'envoi se fait en moins d'une minute.",
+          "Ainda não está no bot. Com o app aberto na rede do escritório, ele envia em até um minuto.",
+          "Noch nicht beim Bot. Lass die App im Büronetz offen, dann wird sie innerhalb einer Minute hochgeladen.",
+          "Ещё не у бота. Держите приложение открытым в офисной сети — загрузка пройдёт за минуту.")
+    }
+    var movePhysical: String { t("물리", "Physical", "物理", "Físico", "Physique", "Físico", "Physisch", "Физ.") }
+    var moveSpecial: String { t("특수", "Special", "特殊", "Especial", "Spéciale", "Especial", "Speziell", "Спец.") }
+    var movePower: String { t("위력", "Power", "威力", "Potencia", "Puissance", "Poder", "Stärke", "Сила") }
+    var moveAccuracy: String { t("명중", "Acc", "命中", "Prec", "Préc", "Prec", "Genau", "Точн") }
+    var moveBurn: String { t("화상", "Burn", "やけど", "Quemadura", "Brûlure", "Queimadura", "Verbrennung", "Ожог") }
+    var moveParalysis: String { t("마비", "Paralysis", "まひ", "Parálisis", "Paralysie", "Paralisia", "Paralyse", "Паралич") }
+    var moveHighCrit: String { t("급소율↑", "High crit", "急所↑", "Crítico↑", "Critique↑", "Crítico↑", "Volltreffer↑", "Крит↑") }
+    var moveSelf: String { t("자신", "self", "自分", "propio", "soi", "próprio", "selbst", "себе") }
+    func statName(_ key: String) -> String {
+        switch key {
+        case "attack": t("공격", "Atk", "攻撃", "Atq", "Atq", "Atq", "Angr", "Атк")
+        case "defense": t("방어", "Def", "防御", "Def", "Déf", "Def", "Vert", "Защ")
+        case "special_attack": t("특공", "SpA", "特攻", "AtEsp", "AtqSp", "AtqEsp", "SpAng", "СпАтк")
+        case "special_defense": t("특방", "SpD", "特防", "DefEsp", "DéfSp", "DefEsp", "SpVer", "СпЗащ")
+        default: t("스피드", "Spe", "素早さ", "Vel", "Vit", "Vel", "Init", "Скор")
+        }
+    }
     var battleEntryRaising: String { t("육성 중", "Raising", "育成中", "Criando", "En élevage", "Criando", "Wird aufgezogen", "Растёт") }
     var battleEntryMoves: String { t("기술", "Moves", "わざ", "Movimientos", "Capacités", "Golpes", "Attacken", "Приёмы") }
     var battleEntryAutoMoves: String {

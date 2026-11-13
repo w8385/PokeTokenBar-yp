@@ -127,7 +127,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         Task { await companion.preparePokemonProfiles() }
         updater = UpdateChecker()
         partyUploader = PartyUploader { [weak companion, battleEntry] in
-            companion.map { BattleEntry.party(state: $0.state, slots: battleEntry.slots) } ?? []
+            companion.map { BattleEntry.party(state: $0.state, slot: battleEntry.slot) } ?? []
         }
         partyUploader.start()
         store.localizationLanguage = companion.language   // 알림 현지화용 미러 시드

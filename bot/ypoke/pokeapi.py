@@ -27,6 +27,9 @@ _STAT_KEYS = {
     "special-defense": "special_defense",
     "speed": "speed",
 }
+_BATTLE_STAT_KEYS = set(_STAT_KEYS) - {"hp"}
+_AILMENTS = {"burn", "paralysis"}
+_STAT_CATEGORIES = {"damage-lower": "target", "damage-raise": "user"}
 
 
 class PokeAPIService:
@@ -45,7 +48,7 @@ class PokeAPIService:
     def attacking_moves(self, pokemon_id: int, level: int) -> list[dict]:
         """Damaging level-up moves learned at or below `level`, oldest first. Raises on network errors.
 
-        Each move is `{"id", "name", "type", "power", "damage_class", "accuracy", "level"}`.
+        Each move is `move()` plus `"level"`.
         """
         learned = [entry for entry in self.learnset(pokemon_id) if entry["level"] <= level]
         with ThreadPoolExecutor(max_workers=MOVE_FETCH_WORKERS) as pool:
@@ -67,20 +70,12 @@ class PokeAPIService:
         return data
 
     def move(self, move_id: int) -> dict:
-        key = f"move/{move_id}"
+        """The move's battle data; `ailment` is only "burn" or "paralysis", other secondary effects are dropped."""
+        key = f"move-v2/{move_id}"
         cached = self._store.cached(key)
         if cached is not None:
             return cached
-        move = _get_json(f"{API_BASE}/move/{move_id}")
-        names = {entry["language"]["name"]: entry["name"] for entry in move["names"]}
-        data = {
-            "id": move["id"],
-            "name": names.get("ko") or names.get("en") or move["name"],
-            "type": move["type"]["name"],
-            "power": move["power"],
-            "damage_class": move["damage_class"]["name"],
-            "accuracy": move["accuracy"],
-        }
+        data = move_from(_get_json(f"{API_BASE}/move/{move_id}"))
         self._store.cache(key, data)
         return data
 
@@ -112,6 +107,34 @@ def learnset_from(pokemon: dict) -> list[dict]:
         return []
     levels = by_group[max(by_group)]
     return [{"move_id": move_id, "level": level} for move_id, level in sorted(levels.items(), key=lambda item: (item[1], item[0]))]
+
+
+def move_from(move: dict) -> dict:
+    """Normalize a `/move/{id}` body. Stat changes count only for damaging moves that lower the target or change the user."""
+    names = {entry["language"]["name"]: entry["name"] for entry in move["names"]}
+    meta = move.get("meta") or {}
+    ailment = (meta.get("ailment") or {}).get("name")
+    category = (meta.get("category") or {}).get("name")
+    stat_changes = [
+        {"stat": _STAT_KEYS[entry["stat"]["name"]], "change": entry["change"]}
+        for entry in move.get("stat_changes", [])
+        if category in _STAT_CATEGORIES and entry["stat"]["name"] in _BATTLE_STAT_KEYS
+    ]
+    return {
+        "id": move["id"],
+        "name": names.get("ko") or names.get("en") or move["name"],
+        "type": move["type"]["name"],
+        "power": move["power"],
+        "damage_class": move["damage_class"]["name"],
+        "accuracy": move["accuracy"],
+        "pp": move["pp"] or 1,
+        "crit_rate": meta.get("crit_rate") or 0,
+        "ailment": ailment if ailment in _AILMENTS else None,
+        "ailment_chance": (meta.get("ailment_chance") or 0) if ailment in _AILMENTS else 0,
+        "stat_changes": stat_changes,
+        "stat_target": _STAT_CATEGORIES.get(category, "target"),
+        "stat_chance": (meta.get("stat_chance") or 0) if stat_changes else 0,
+    }
 
 
 def base_stats(data: dict) -> BaseStats:

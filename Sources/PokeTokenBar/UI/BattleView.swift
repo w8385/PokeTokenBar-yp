@@ -73,6 +73,10 @@ struct BattleView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     if let sent = uploader.lastSuccessAt {
                         Text("\(l.partyUploadLastSent): \(sent, format: .dateTime.hour().minute())")
+                    } else if uploader.hasServer, !uploader.tokenRejected,
+                              !BattleEntry.party(state: store.state, slot: entry?.slot).isEmpty {
+                        Text(l.battleEntryNotSent).foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Text(l.partyUploadStorageNote)
                         .fixedSize(horizontal: false, vertical: true)

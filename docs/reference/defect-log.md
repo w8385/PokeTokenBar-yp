@@ -1432,3 +1432,18 @@ read_when:
   On the same CI image, English-only recognition corrected the period label but still read
   the unrelated chart caption `Daily` as `Dally`; do not teach OCR that misspelling or relax
   the original chart guard to make a period-row regression pass.
+
+## YPoke 대결 봇
+
+- **A battle the bot cannot run must say why, where the challenger and the opponent both see it.**
+  A colleague linked the app right after installing it, but no Pokémon ever reached the bot: a fresh
+  install starts with an egg and uploads nothing until it hatches, and off the office network nothing
+  arrives at all. `/대결 @colleague` then answered only with an ephemeral "아직 파티를 올리지 않았어요",
+  which read as "the battle does nothing", and the upload server logged no requests, so the bot log
+  could not tell the two apart. The test covered the message text, not who sees it or the egg path.
+  The upload server now logs each request's method, path and status (no query, token or address). The bot now tells linked-but-empty apart from never
+  linked (`Store.is_linked`), posts both in the channel with the next step, and the app's battle tab
+  says an egg sends nothing (`testAnEggWithNothingChosenSendsNothing`,
+  `test_linked_opponent_without_an_upload_gets_the_egg_and_network_hint`).
+- **A permanent PokéAPI cache key changes when the cached shape grows.** Moves gained PP and
+  secondary-effect fields; the old `move/{id}` rows lack them, so the key is now `move-v2/{id}`.

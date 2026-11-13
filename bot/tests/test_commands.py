@@ -13,7 +13,7 @@ from ypoke.commands import (
     RECORD_COMMAND,
     UMBRELLA_COMMAND,
     CommandHandler,
-    bot_entry,
+    bot_species,
     parse_mention,
     reply_thread_ts,
     week_start,
@@ -35,7 +35,9 @@ WILD = {"name_ko": "야생몬", "types": ["normal"],
 
 def move(move_id, name, move_type, power, level, damage_class="special", accuracy=100):
     return {"id": move_id, "name": name, "type": move_type, "power": power,
-            "damage_class": damage_class, "accuracy": accuracy, "level": level}
+            "damage_class": damage_class, "accuracy": accuracy, "pp": 15, "crit_rate": 0,
+            "ailment": None, "ailment_chance": 0, "stat_changes": [], "stat_target": "target", "stat_chance": 0,
+            "level": level}
 
 
 MOVES = {
@@ -121,21 +123,19 @@ def test_battle_is_one_on_one_and_records(store):
     ]
     assert lines[-2].endswith("꼬부기는 쓰러졌다!")
     assert lines[-1] == "<@UA>은(는) 승부에서 이겼다!"
-    assert len(lines) <= 7
     assert handler(store).handle("UA", "", RECORD_COMMAND).text == "<@UA> 전적: 1승 0패"
     assert handler(store).handle("UA", "<@UB>", RECORD_COMMAND).text == "<@UB> 전적: 0승 1패"
 
 
-def test_entry_fights_its_first_three_in_order(store):
+def test_an_older_multi_pokemon_upload_sends_only_its_first(store):
     upload(store, "UA", 7, 5)
     store.save_party("UA", [member(7, 5), member(25, 30), member(7, 10), member(25, 100)])
     upload(store, "UB", 25, 60)
     lines = handler(store).handle("UA", "<@UB>").text.splitlines()
-    assert lines[1] == "<@UA>은(는) 꼬부기(Lv5) → 피카츄(Lv30) → 꼬부기(Lv10) 순으로 내보낸다!"
+    assert lines[1] == "<@UA>은(는) 꼬부기를 내보냈다! (Lv5)"
     assert lines[2] == "<@UB>은(는) 피카츄를 내보냈다! (Lv60)"
     assert lines[-1] == "<@UB>은(는) 승부에서 이겼다!"
-    assert sum(line.endswith("쓰러졌다!") for line in lines) == 3
-    assert len(lines) <= 10
+    assert sum(line.endswith("쓰러졌다!") for line in lines) == 1
 
 
 def battle_moves_of(store, monkeypatch, chosen, level=60):
@@ -145,7 +145,7 @@ def battle_moves_of(store, monkeypatch, chosen, level=60):
     store.save_party("UA", [{**member(25, level), **({"moves": chosen} if chosen is not None else {})}])
     upload(store, "UB", 7, 20)
     handler(store).handle("UA", "<@UB>")
-    return [m.name for m in captured[0][0][0].moves]
+    return [m.name for m in captured[0][0].moves]
 
 
 def test_default_moves_are_the_four_most_recently_learned(store, monkeypatch):
@@ -169,12 +169,28 @@ def test_chosen_moves_narrate_by_name(store):
     assert "피카츄의 10만볼트!" in handler(store).handle("UA", "<@UB>").text
 
 
-def test_battle_needs_both_parties(store):
+def test_challenger_without_a_pokemon_is_told_privately(store):
     upload(store, "UA", 25, 60)
-    assert "아직 내 파티가 없어요" in handler(store).handle("UB", "<@UA>").text
-    reply = handler(store).handle("UA", "<@UC>")
-    assert reply.text == "<@UC>님은 아직 파티를 올리지 않았어요."
+    reply = handler(store).handle("UB", "<@UA>")
+    assert "아직 내 포켓몬이 YPoke에 없어요" in reply.text
     assert not reply.in_channel
+
+
+def test_unlinked_opponent_is_named_in_the_channel(store):
+    upload(store, "UA", 25, 60)
+    reply = handler(store).handle("UA", "<@UC>")
+    assert reply.text.startswith("<@UC>님은 아직 YPoke에 앱을 연결하지 않아서 대결할 수 없어요.")
+    assert reply.in_channel
+    assert store.record("UA") == Record(0, 0)
+
+
+def test_linked_opponent_without_an_upload_gets_the_egg_and_network_hint(store):
+    upload(store, "UA", 25, 60)
+    store.issue_token("UC")
+    reply = handler(store).handle("UA", "<@UC>")
+    assert reply.text.startswith("<@UC>님 앱이 아직 포켓몬을 올리지 않아서 대결할 수 없어요.")
+    assert "알이 부화해야" in reply.text
+    assert reply.in_channel
 
 
 def test_cannot_battle_yourself(store):
@@ -297,16 +313,16 @@ def test_bot_battle_is_practice_and_writes_nothing(store, monkeypatch, command, 
     lines = reply.text.splitlines()
     assert reply.in_channel
     assert lines[0] == "<@UBOT>에게 <@UA>이(가) 승부를 걸어왔다!"
-    assert lines[2] == "<@UBOT>은(는) 야생몬(Lv42) → 야생몬(Lv42) → 야생몬(Lv42) 순으로 내보낸다!"
+    assert lines[2] == "<@UBOT>은(는) 야생몬을 내보냈다! (Lv42)"
     assert lines[-1].endswith("승부에서 이겼다! (연습 대결 — 전적에 안 남아요)")
-    assert set(bot_entry(1234)) <= set(pokeapi.requested)
+    assert bot_species(1234) in pokeapi.requested
     assert store.record("UA") == Record(0, 0)
     assert store.records_since(datetime(2000, 1, 1, tzinfo=UTC)) == {}
 
 
 def test_bot_battle_needs_my_party(store):
     reply = handler(store).handle("UA", "<@UBOT>", BATTLE_COMMAND)
-    assert "아직 내 파티가 없어요" in reply.text
+    assert "아직 내 포켓몬이 YPoke에 없어요" in reply.text
     assert not reply.in_channel
 
 
@@ -370,17 +386,17 @@ def test_help_links_the_home_channel_when_configured(store):
     assert "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요." in HELP_TEXT
 
 
-def test_bot_entry_is_three_seeded_distinct_species_in_the_national_dex():
-    picks = [bot_entry(seed) for seed in range(200)]
-    assert picks == [bot_entry(seed) for seed in range(200)]
-    assert all(len(set(pick)) == 3 and all(1 <= species <= 1025 for species in pick) for pick in picks)
-    assert len({species for pick in picks for species in pick}) > 300
+def test_bot_species_is_seeded_and_spans_the_national_dex():
+    picks = [bot_species(seed) for seed in range(400)]
+    assert picks == [bot_species(seed) for seed in range(400)]
+    assert all(1 <= species <= 1025 for species in picks)
+    assert len(set(picks)) > 250
 
 
-def test_bot_battle_uses_the_challengers_entry_at_its_lead_level(store, monkeypatch):
+def test_bot_battle_uses_the_first_of_an_older_entry_at_its_level(store, monkeypatch):
     store.issue_token("UA")
     store.save_party("UA", [member(25, 42), member(7, 10)])
     monkeypatch.setattr("ypoke.commands.secrets.randbits", lambda bits: 99)
     lines = handler(store).handle("UA", "<@UBOT>", BATTLE_COMMAND).text.splitlines()
-    assert lines[1] == "<@UA>은(는) 피카츄(Lv42) → 꼬부기(Lv10) 순으로 내보낸다!"
-    assert "(Lv42) → " in lines[2] and "Lv10" not in lines[2]
+    assert lines[1] == "<@UA>은(는) 피카츄를 내보냈다! (Lv42)"
+    assert lines[2] == "<@UBOT>은(는) 야생몬을 내보냈다! (Lv42)"
