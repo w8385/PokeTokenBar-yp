@@ -304,4 +304,37 @@ final class PartyUploaderTests: XCTestCase {
 
         XCTAssertEqual(makeUploader(SendRecorder(), server: nil).serverURL, "http://10.0.0.5:8790")
     }
+
+    func testNoRouteMarksTheUploadFailedUntilTheNextSuccess() async {
+        let tokenStore = PartyTokenStore(fileURL: directory.appendingPathComponent("token"))
+        let offline = PartyUploader(tokenStore: tokenStore, defaults: defaults, appVersion: "test",
+                                    send: { _ in throw URLError(.cannotConnectToHost) },
+                                    partySource: { [PartyMember(pokemonID: 25, level: 5, shiny: false, ivs: nil)] })
+        offline.serverURL = "http://example.local:8790"
+        XCTAssertTrue(offline.saveToken("tok"))
+
+        await offline.tick()
+        XCTAssertTrue(offline.lastAttemptFailed)
+        XCTAssertNil(offline.lastSuccessAt)
+
+        let recorder = SendRecorder(status: 503)
+        let uploader = makeUploader(recorder)
+        await uploader.tick()
+        XCTAssertTrue(uploader.lastAttemptFailed)
+        recorder.status = 200
+        uploader.serverURL = uploader.serverURL
+        await uploader.tick()
+        XCTAssertFalse(uploader.lastAttemptFailed)
+    }
+
+    func testLastSuccessSurvivesARestartButNotATokenChange() async {
+        let uploader = makeUploader(SendRecorder())
+        XCTAssertTrue(uploader.saveToken("tok"))
+        let sent = Date(timeIntervalSince1970: 7_000)
+        await uploader.tick(now: sent)
+
+        XCTAssertEqual(makeUploader(SendRecorder()).lastSuccessAt, sent)
+        makeUploader(SendRecorder()).clearToken()
+        XCTAssertNil(makeUploader(SendRecorder()).lastSuccessAt)
+    }
 }

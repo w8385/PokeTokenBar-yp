@@ -13,7 +13,7 @@ from ypoke.battle import BaseStats, Combatant, simulate
 from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
 from ypoke.pokeapi import PokeAPIService, base_stats
-from ypoke.store import Record, Store
+from ypoke.store import PendingChallenge, Record, Store
 from ypoke.upload_server import IV_KEYS
 
 DEFAULT_IV = 15
@@ -24,6 +24,11 @@ _MENTION = re.compile(r"<@([UW][A-Z0-9]+)(?:\|[^>]*)?>")
 KST = timezone(timedelta(hours=9), "KST")
 MAX_SPECIES_ID = 1025
 RANKING_SIZE = 10
+PENDING_LIFETIME = timedelta(hours=24)
+PROMPT_INTERVAL = timedelta(hours=24)
+RESPONSE_URL_LIFETIME = timedelta(minutes=30)
+PENDING_HEADER = "기다리던 포켓몬이 올라와서 대결을 시작해요!"
+NETWORK_NOTE = "포켓몬은 앱이 회사 네트워크에서 한 번 켜져 있어야 올라가요. 올라오면 대결이 바로 열려요(24시간 안)."
 
 BATTLE_COMMAND = "/대결"
 LINK_COMMAND = "/포켓몬연결"
@@ -42,7 +47,7 @@ MENTION_WORDS = {
 HELP_TEXT = (
     "*YPoke 대결*\n"
     f"`{BATTLE_COMMAND} @상대` 서로 한 마리씩 내보내 한 판 붙어요. 앱 대결 탭에서 고른 포켓몬이, 안 골랐으면 지금 키우는 포켓몬이 나가요. "
-    "결과는 이 채널에 올라가요.\n"
+    "알만 있으면 대여 포켓몬이 상대 레벨로 나가요. 상대가 아직 준비 전이면 연결 안내를 보내고, 준비되면 결과가 이 채널에 올라가요.\n"
     f"`{BATTLE_COMMAND} @YPoke` 또는 `@YPoke 대결` 봇이 내보낸 포켓몬과 연습 대결을 해요. 전적에 안 남아요.\n"
     f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
     f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
@@ -54,11 +59,44 @@ HELP_TEXT = (
 
 
 @dataclass(frozen=True)
+class Where:
+    """Where a command was used. `response_url` is the slash command's, which Slack honours for 30 minutes."""
+
+    channel_id: str
+    thread_ts: str | None = None
+    response_url: str | None = None
+
+
+@dataclass(frozen=True)
+class DirectMessage:
+    user_id: str
+    text: str
+    blocks: list[dict] | None = None
+
+
+@dataclass(frozen=True)
 class Reply:
     text: str
     in_channel: bool = False
-    direct_message: str | None = None
-    direct_message_blocks: list[dict] | None = None
+    direct_messages: tuple[DirectMessage, ...] = ()
+
+
+@dataclass(frozen=True)
+class Delivery:
+    """A pending battle's result for the place it was asked for; `where.response_url` is None once stale."""
+
+    challenger_id: str
+    where: Where
+    text: str
+
+
+@dataclass(frozen=True)
+class _Match:
+    challenger_id: str
+    opponent_id: str
+    sides: tuple[Combatant, Combatant]
+    seed: int
+    practice: bool
 
 
 class CommandHandler:
@@ -78,16 +116,17 @@ class CommandHandler:
         self._bot_user_id = bot_user_id
         self._help = f"{HELP_TEXT}\n대결 채널: <#{home_channel}>" if home_channel else HELP_TEXT
 
-    def handle_mention(self, user_id: str, text: str) -> Reply:
+    def handle_mention(self, user_id: str, text: str, where: Where | None = None) -> Reply:
         """An `@YPoke …` message. Slack runs no slash commands in threads, so this covers every command."""
         command, rest = parse_mention(text, self._bot_user_id)
         if command is None:
             return Reply(self._help)
         if command == BATTLE_COMMAND and not _MENTION.search(rest):
-            return self._bot_battle(user_id)
-        return self.handle(user_id, rest, command)
+            return self._bot_battle(user_id, where)
+        return self.handle(user_id, rest, command, where)
 
-    def handle(self, user_id: str, text: str, command: str = BATTLE_COMMAND) -> Reply:
+    def handle(self, user_id: str, text: str, command: str = BATTLE_COMMAND, where: Where | None = None) -> Reply:
+        """`where` is needed to keep a challenge pending until both sides have uploaded."""
         mention = _MENTION.search(text)
         if command == LINK_COMMAND:
             return self._register(user_id)
@@ -97,17 +136,40 @@ class CommandHandler:
             return self._ranking()
         if command == BATTLE_COMMAND and mention:
             if mention.group(1) == self._bot_user_id:
-                return self._bot_battle(user_id)
-            return self._battle(user_id, mention.group(1))
+                return self._bot_battle(user_id, where)
+            return self._battle(user_id, mention.group(1), where)
         return Reply(self._help)
+
+    def run_pending(self, user_id: str) -> list[Delivery]:
+        """After `user_id` uploads: play every pending challenge of theirs whose sides are now both ready, once."""
+        now = self._now()
+        deliveries = []
+        for challenge in self._store.pending_for(user_id, since=now - PENDING_LIFETIME):
+            try:
+                match = self._prepare(challenge.challenger_id, challenge.opponent_id)
+            except OSError:
+                continue
+            if match is None or not self._store.claim_pending(challenge):
+                continue
+            fresh = now - challenge.created_at < RESPONSE_URL_LIFETIME
+            where = Where(challenge.channel_id, challenge.thread_ts, challenge.response_url if fresh else None)
+            text = f"{PENDING_HEADER}\n{self._play(match)}"
+            deliveries.append(Delivery(challenge.challenger_id, where, text))
+        return deliveries
 
     def _register(self, user_id: str) -> Reply:
         token = self._store.issue_token(user_id)
+        return Reply(
+            "DM으로 연결 링크를 보냈어요.",
+            direct_messages=(DirectMessage(user_id, "PokeTokenBar를 YPoke에 연결하세요.", self._link_blocks(token)),),
+        )
+
+    def _link_blocks(self, token: str) -> list[dict]:
         query = {"token": token}
         if self._public_url:
             query["server"] = self._public_url
         link = f"{REGISTER_LINK}?{urlencode(query)}"
-        blocks = [
+        return [
             {"type": "section", "text": {"type": "mrkdwn", "text": "버튼을 누르면 PokeTokenBar가 YPoke에 연결돼요."}},
             {"type": "actions", "elements": [{
                 "type": "button", "style": "primary", "url": link, "action_id": REGISTER_ACTION_ID,
@@ -122,11 +184,6 @@ class CommandHandler:
                 "text": f"앱이 없으면 <{DOWNLOAD_URL}|여기서 받아요>.",
             }]},
         ]
-        return Reply(
-            "DM으로 연결 링크를 보냈어요.",
-            direct_message="PokeTokenBar를 YPoke에 연결하세요.",
-            direct_message_blocks=blocks,
-        )
 
     def _record(self, user_id: str) -> Reply:
         record = self._store.record(user_id)
@@ -148,66 +205,100 @@ class CommandHandler:
             )
         return Reply("\n".join(lines), in_channel=True)
 
-    def _battle(self, challenger_id: str, opponent_id: str) -> Reply:
+    def _battle(self, challenger_id: str, opponent_id: str, where: Where | None) -> Reply:
         if challenger_id == opponent_id:
             return Reply("자기 자신과는 대결할 수 없어요.")
-        challenger_party = self._store.party(challenger_id)
-        if challenger_party is None:
-            return self._no_party_reply()
-        opponent_party = self._store.party(opponent_id)
-        if opponent_party is None:
-            return self._opponent_not_ready_reply(opponent_id)
-        try:
-            sides = self._combatants(challenger_party.party[0], opponent_party.party[0])
-        except OSError:
-            return Reply("포켓몬 정보를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.")
-        seed = secrets.randbits(31)
-        result = simulate(sides, seed)
-        winner_id = challenger_id if result.winner == 0 else opponent_id
-        self._store.record_battle(challenger_id, opponent_id, winner_id, seed)
-        lines = battle_lines((f"<@{challenger_id}>", f"<@{opponent_id}>"), sides, result)
-        return Reply("\n".join(lines), in_channel=True)
+        return self._start(challenger_id, opponent_id, where)
 
-    def _bot_battle(self, challenger_id: str) -> Reply:
+    def _bot_battle(self, challenger_id: str, where: Where | None) -> Reply:
         """Practice battle against a seeded random species at the challenger's level; nothing is stored."""
-        challenger_party = self._store.party(challenger_id)
-        if challenger_party is None:
-            return self._no_party_reply()
-        seed = secrets.randbits(31)
-        lead = challenger_party.party[0]
-        wild = {"pokemon_id": bot_species(seed), "level": lead["level"], "shiny": False, "ivs": {}}
+        return self._start(challenger_id, self._bot_user_id, where)
+
+    def _start(self, challenger_id: str, opponent_id: str, where: Where | None) -> Reply:
         try:
-            sides = self._combatants(lead, wild)
+            match = self._prepare(challenger_id, opponent_id)
         except OSError:
             return Reply("포켓몬 정보를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.")
-        result = simulate(sides, seed)
-        bot = f"<@{self._bot_user_id}>" if self._bot_user_id else "YPoke"
-        lines = battle_lines((f"<@{challenger_id}>", bot), sides, result, practice=True)
-        return Reply("\n".join(lines), in_channel=True)
+        if match is None:
+            return self._wait(challenger_id, opponent_id, where)
+        return Reply(self._play(match), in_channel=True)
 
-    def _no_party_reply(self) -> Reply:
-        return Reply(
-            "아직 내 포켓몬이 YPoke에 없어요. "
-            f"`{LINK_COMMAND}` 로 앱을 연결하면 사내망에서 몇 분 안에 올라와요. 알이 부화하기 전에는 올라가지 않아요. "
-            f"앱은 <{DOWNLOAD_URL}|여기서> 받아요."
-        )
-
-    def _opponent_not_ready_reply(self, opponent_id: str) -> Reply:
-        if not self._store.is_linked(opponent_id):
-            return Reply(
-                f"<@{opponent_id}>님은 아직 YPoke에 앱을 연결하지 않아서 대결할 수 없어요. "
-                f"`{LINK_COMMAND}` 로 연결해 주세요. 앱은 <{DOWNLOAD_URL}|여기서> 받아요.",
-                in_channel=True,
+    def _wait(self, challenger_id: str, opponent_id: str, where: Where | None) -> Reply:
+        """Keep the challenge until both sides have uploaded, and send the side(s) without one the link button."""
+        if where is not None:
+            self._store.save_pending(PendingChallenge(
+                challenger_id, opponent_id, where.channel_id, where.thread_ts, where.response_url, self._now(),
+            ))
+        not_ready = [user for user in (challenger_id, opponent_id)
+                     if user != self._bot_user_id and self._store.party(user) is None]
+        prompts = tuple(prompt for user in not_ready
+                        if (prompt := self._link_prompt(user, challenger_id, opponent_id)) is not None)
+        opponent = self._label(opponent_id)
+        if challenger_id in not_ready:
+            text = (
+                "아직 내 포켓몬이 YPoke에 없어요. DM의 연결 버튼을 누르고 회사 네트워크에서 앱을 한 번 켜 두면 "
+                f"{opponent}과(와)의 대결이 바로 열려요. 24시간이 지나면 취소돼요."
             )
+            if opponent_id in not_ready:
+                text += f" {opponent}님도 아직 준비 전이라 연결 안내를 보냈어요."
+            text += f" DM이 안 보이면 `{LINK_COMMAND}`를 써 주세요. 앱은 <{DOWNLOAD_URL}|여기서> 받아요."
+            return Reply(text, direct_messages=prompts)
         return Reply(
-            f"<@{opponent_id}>님 앱이 아직 포켓몬을 올리지 않아서 대결할 수 없어요. "
-            "알이 부화해야 올라가고, 사내망에서 앱이 켜져 있어야 해요. 앱 대결 탭에서 마지막 업로드를 확인해 주세요.",
+            f"{opponent}님은 아직 YPoke에 포켓몬이 없어서 연결 안내를 DM으로 보냈어요. "
+            "준비되면 이 대결 결과를 여기에 올릴게요. 24시간이 지나면 취소돼요.",
             in_channel=True,
+            direct_messages=prompts,
         )
+
+    def _link_prompt(self, user_id: str, challenger_id: str, opponent_id: str) -> DirectMessage | None:
+        """The /포켓몬연결 button for a challenge side with no upload, at most once per `PROMPT_INTERVAL`.
+
+        The new token is added beside any existing one, so an app that is linked but offline keeps working.
+        """
+        now = self._now()
+        if not self._store.mark_prompted(user_id, since=now - PROMPT_INTERVAL, at=now):
+            return None
+        token = self._store.issue_token(user_id, keep_existing=True)
+        if user_id == challenger_id:
+            intro = f"{self._label(opponent_id)}과(와)의 대결이 기다리고 있어요."
+        else:
+            intro = f"<@{challenger_id}>님이 YPoke 대결을 신청했어요."
+        blocks = [
+            {"type": "section", "text": {"type": "mrkdwn", "text": intro}},
+            *self._link_blocks(token),
+            {"type": "context", "elements": [{"type": "mrkdwn", "text": NETWORK_NOTE}]},
+        ]
+        return DirectMessage(user_id, intro, blocks)
+
+    def _prepare(self, challenger_id: str, opponent_id: str) -> _Match | None:
+        """Both sides' combatants, or None while a side has no upload. Raises OSError when PokéAPI is down."""
+        challenger = self._store.party(challenger_id)
+        if challenger is None:
+            return None
+        lead = challenger.party[0]
+        seed = secrets.randbits(31)
+        if opponent_id == self._bot_user_id:
+            wild = {"pokemon_id": bot_species(seed), "level": lead["level"], "shiny": False, "ivs": {}}
+            return _Match(challenger_id, opponent_id, self._combatants(lead, wild), seed, practice=True)
+        opponent = self._store.party(opponent_id)
+        if opponent is None:
+            return None
+        return _Match(challenger_id, opponent_id, self._combatants(lead, opponent.party[0]), seed, practice=False)
+
+    def _play(self, match: _Match) -> str:
+        result = simulate(match.sides, match.seed)
+        if not match.practice:
+            winner_id = match.challenger_id if result.winner == 0 else match.opponent_id
+            self._store.record_battle(match.challenger_id, match.opponent_id, winner_id, match.seed)
+        trainers = (f"<@{match.challenger_id}>", self._label(match.opponent_id))
+        return "\n".join(battle_lines(trainers, match.sides, result, practice=match.practice))
+
+    def _label(self, user_id: str | None) -> str:
+        return f"<@{user_id}>" if user_id else "YPoke"
 
     def _combatants(self, challenger: dict, opponent: dict) -> tuple[Combatant, Combatant]:
         with ThreadPoolExecutor(max_workers=2) as pool:
-            first, second = pool.map(self._combatant, (challenger, opponent))
+            first, second = pool.map(self._combatant, rental_levels(challenger, opponent))
         return first, second
 
     def _combatant(self, member: dict) -> Combatant:
@@ -222,7 +313,17 @@ class CommandHandler:
             ivs=BaseStats(**ivs),
             shiny=member["shiny"],
             moves=battle_moves(learnable, member.get("moves")),
+            rental=member.get("rental", False),
         )
+
+
+def rental_levels(challenger: dict, opponent: dict) -> tuple[dict, dict]:
+    """A rental fights at the other side's level; two rentals keep their own."""
+    if challenger.get("rental") and not opponent.get("rental"):
+        return {**challenger, "level": opponent["level"]}, opponent
+    if opponent.get("rental") and not challenger.get("rental"):
+        return challenger, {**opponent, "level": challenger["level"]}
+    return challenger, opponent
 
 
 def parse_mention(text: str, bot_user_id: str | None) -> tuple[str | None, str]:

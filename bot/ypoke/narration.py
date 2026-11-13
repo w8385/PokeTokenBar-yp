@@ -5,6 +5,7 @@ from ypoke.battle import Action, BattleResult, BurnDamage, Change, Combatant
 MAX_EVENT_LINES = 24
 PRACTICE_NOTE = "(연습 대결 — 전적에 안 남아요)"
 SKIPPED_LINE = "⋯"
+RENTAL_PREFIX = "대여 포켓몬 "
 STAT_NAMES = {
     "attack": "공격",
     "defense": "방어",
@@ -48,7 +49,8 @@ def with_particle(word: str, pair: tuple[str, str]) -> str:
 
 def _send_out_line(trainer: str, combatant: Combatant) -> str:
     details = f"Lv{combatant.level}{' ✨' if combatant.shiny else ''}"
-    return f"{trainer}은(는) {with_particle(combatant.name, ('을', '를'))} 내보냈다! ({details})"
+    name = f"{RENTAL_PREFIX}{combatant.name}" if combatant.rental else combatant.name
+    return f"{trainer}은(는) {with_particle(name, ('을', '를'))} 내보냈다! ({details})"
 
 
 def _event_line(event: Action | BurnDamage) -> str:

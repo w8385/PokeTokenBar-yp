@@ -7,7 +7,15 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   level-up moves with PP, critical-hit stages, burn, paralysis and stat stages) and posts a turn-by-turn
   log, written like the in-game battle text, in the channel it was called from. Each Pokémon uses its
   move with the highest expected damage every turn. Only win/loss is recorded. With no mention it shows
-  help. If the opponent has not linked the app or has no Pokémon uploaded yet, the bot says so in the channel.
+  help.
+- If a side has no Pokémon uploaded yet, the challenge waits (SQLite `pending_challenges`, one per pair,
+  24 hours). That side gets the "PokeTokenBar 연결" button by DM, at most once a day; the new token works
+  beside any older one. The channel hears about it only when the opponent is the one missing; a challenger
+  who is not ready is told privately. The first upload that makes both sides ready plays the battle once and
+  posts it where it was asked for (the slash command's response URL for 30 minutes, then the channel or
+  thread, then a DM to the challenger).
+- A `rental` Pokémon (the app's starter before the first hatch) fights at the opponent's level and is
+  announced as "대여 포켓몬 …". It counts in records like any other.
 - `/대결 @YPoke` or a channel message `@YPoke 대결` is a practice battle against a random species
   (#1–1025, picked from the battle seed) at your Pokémon's level. Nothing is recorded.
 - `/포켓몬연결` DMs the caller a "PokeTokenBar 연결" button. It opens

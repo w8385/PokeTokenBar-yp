@@ -17,6 +17,10 @@ struct BattleCandidate: Sendable, Identifiable {
 
 enum BattleEntry {
     static let maxMoves = 4
+    /// Bulbasaur, Charmander, Squirtle.
+    static let rentalSpeciesIDs = [1, 4, 7]
+    /// Placeholder only: the bot levels a rental to its opponent.
+    static let rentalLevel = 5
 
     static func candidates(in state: CompanionState) -> [BattleCandidate] {
         var owned: [BattleCandidate] = []
@@ -37,15 +41,20 @@ enum BattleEntry {
         return owned.filter { PartyBuilder.isAcceptedPokemonID($0.member.pokemonID) }
     }
 
-    /// The chosen Pokémon if still owned, else the one being raised; nil for an egg with nothing chosen.
+    /// The chosen Pokémon if still owned, else the one being raised, else (during an egg) the highest-level
+    /// kept catch; nil only when nothing is owned.
     static func fighter(state: CompanionState, slot: BattleEntrySlot?) -> BattleCandidate? {
         let owned = candidates(in: state)
-        return slot.flatMap { slot in owned.first { $0.id == slot.instanceID } } ?? owned.first { $0.dexEntry == nil }
+        return slot.flatMap { slot in owned.first { $0.id == slot.instanceID } }
+            ?? owned.first { $0.dexEntry == nil }
+            ?? owned.max { $0.member.level < $1.member.level }
     }
 
-    /// One Pokémon with its chosen moves, or empty for an egg.
-    static func party(state: CompanionState, slot: BattleEntrySlot?) -> [PartyMember] {
-        guard let fighter = fighter(state: state, slot: slot) else { return [] }
+    /// One Pokémon with its chosen moves, or the rental starter when nothing is owned yet.
+    static func party(state: CompanionState, slot: BattleEntrySlot?, rentalSpeciesID: Int) -> [PartyMember] {
+        guard let fighter = fighter(state: state, slot: slot) else {
+            return [PartyMember(pokemonID: rentalSpeciesID, level: rentalLevel, shiny: false, ivs: nil, rental: true)]
+        }
         var member = fighter.member
         if let slot, slot.instanceID == fighter.id, slot.pokemonID == member.pokemonID, !slot.moves.isEmpty {
             member.moves = slot.moves
@@ -60,9 +69,15 @@ enum BattleEntry {
 @Observable
 final class BattleEntryStore {
     static let defaultsKey = "battleEntrySlots"
+    static let rentalDefaultsKey = "battleRentalSpeciesID"
 
     private(set) var slot: BattleEntrySlot? {
         didSet { defaults.set(try? JSONEncoder().encode(slot.map { [$0] } ?? []), forKey: Self.defaultsKey) }
+    }
+
+    /// Picked at random on first launch and kept until the user switches it.
+    private(set) var rentalSpeciesID: Int {
+        didSet { defaults.set(rentalSpeciesID, forKey: Self.rentalDefaultsKey) }
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -71,6 +86,14 @@ final class BattleEntryStore {
         self.defaults = defaults
         slot = defaults.data(forKey: Self.defaultsKey)
             .flatMap { try? JSONDecoder().decode([BattleEntrySlot].self, from: $0) }?.first
+        let stored = defaults.integer(forKey: Self.rentalDefaultsKey)
+        rentalSpeciesID = BattleEntry.rentalSpeciesIDs.contains(stored) ? stored : BattleEntry.rentalSpeciesIDs.randomElement()!
+        defaults.set(rentalSpeciesID, forKey: Self.rentalDefaultsKey)
+    }
+
+    func chooseRental(_ speciesID: Int) {
+        guard BattleEntry.rentalSpeciesIDs.contains(speciesID) else { return }
+        rentalSpeciesID = speciesID
     }
 
     /// Nil goes back to the Pokémon being raised.

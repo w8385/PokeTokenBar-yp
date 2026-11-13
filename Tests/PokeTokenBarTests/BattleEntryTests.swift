@@ -25,6 +25,10 @@ final class BattleEntryTests: XCTestCase {
         return state
     }
 
+    private func party(_ state: CompanionState, slot: BattleEntrySlot?) -> [PartyMember] {
+        BattleEntry.party(state: state, slot: slot, rentalSpeciesID: 4)
+    }
+
     func testCandidatesAreTheRaisedPokemonAndKeptCatches() {
         let candidates = BattleEntry.candidates(in: state())
 
@@ -34,7 +38,7 @@ final class BattleEntryTests: XCTestCase {
     }
 
     func testPartyIsTheChosenPokemonWithItsMoves() {
-        let party = BattleEntry.party(state: state(),
+        let party = self.party(state(),
                                       slot: BattleEntrySlot(instanceID: "pikachu", pokemonID: 25, moves: [85, 98]))
 
         XCTAssertEqual(party.map(\.pokemonID), [25])
@@ -43,7 +47,7 @@ final class BattleEntryTests: XCTestCase {
     }
 
     func testMovesChosenBeforeEvolutionAreDropped() {
-        let party = BattleEntry.party(state: state(), slot: BattleEntrySlot(instanceID: "raised", pokemonID: 4, moves: [52]))
+        let party = self.party(state(), slot: BattleEntrySlot(instanceID: "raised", pokemonID: 4, moves: [52]))
 
         XCTAssertEqual(party.map(\.pokemonID), [5])
         XCTAssertNil(party[0].moves)
@@ -52,18 +56,41 @@ final class BattleEntryTests: XCTestCase {
     func testNoOwnedChoiceSendsThePokemonBeingRaisedWithoutTheStaleMoves() {
         let gone = BattleEntrySlot(instanceID: "gone", pokemonID: 12, moves: [16])
 
-        XCTAssertEqual(BattleEntry.party(state: state(), slot: nil).map(\.pokemonID), [5])
-        XCTAssertEqual(BattleEntry.party(state: state(), slot: gone).map(\.pokemonID), [5])
-        XCTAssertNil(BattleEntry.party(state: state(), slot: gone)[0].moves)
+        XCTAssertEqual(party(state(), slot: nil).map(\.pokemonID), [5])
+        XCTAssertEqual(party(state(), slot: gone).map(\.pokemonID), [5])
+        XCTAssertNil(party(state(), slot: gone)[0].moves)
     }
 
-    func testAnEggWithNothingChosenSendsNothing() {
+    func testAnEggWithCatchesAndNothingChosenSendsTheHighestLevelCatch() {
         var egg = state()
         egg.active = nil
 
-        XCTAssertTrue(BattleEntry.party(state: egg, slot: nil).isEmpty)
+        XCTAssertEqual(party(egg, slot: nil).map(\.pokemonID), [25])
+        XCTAssertNil(party(egg, slot: nil)[0].rental)
+        XCTAssertEqual(party(egg, slot: BattleEntrySlot(instanceID: "caterpie")).map(\.pokemonID), [10])
+    }
+
+    func testAnEggOnlySaveSendsTheRentalStarter() throws {
+        var egg = CompanionState()
+        egg.dex = [entry(12, id: "gone", released: true)]
+
         XCTAssertNil(BattleEntry.fighter(state: egg, slot: nil))
-        XCTAssertEqual(BattleEntry.party(state: egg, slot: BattleEntrySlot(instanceID: "pikachu")).map(\.pokemonID), [25])
+        XCTAssertEqual(party(egg, slot: nil),
+                       [PartyMember(pokemonID: 4, level: BattleEntry.rentalLevel, shiny: false, ivs: nil, rental: true)])
+        let json = try PartyPayload(appVersion: nil, party: party(egg, slot: nil)).encoded()
+        let sent = try XCTUnwrap((JSONSerialization.jsonObject(with: json) as? [String: Any])?["party"] as? [[String: Any]])
+        XCTAssertEqual(sent[0]["rental"] as? Bool, true)
+        XCTAssertNil(sent[0]["moves"])
+    }
+
+    func testTheRentalGoesAwayOnceAPokemonHatches() throws {
+        var hatched = CompanionState()
+        hatched.active = state().active
+
+        XCTAssertEqual(party(hatched, slot: nil).map(\.pokemonID), [5])
+        XCTAssertNil(party(hatched, slot: nil)[0].rental)
+        let json = try PartyPayload(appVersion: nil, party: party(hatched, slot: nil)).encoded()
+        XCTAssertFalse(String(decoding: json, as: UTF8.self).contains("rental"))
     }
 
     func testPayloadSendsMovesOnlyWhenChosen() throws {
@@ -101,6 +128,16 @@ final class BattleEntryStoreTests: XCTestCase {
 
         store.choose(nil)
         XCTAssertNil(BattleEntryStore(defaults: defaults).slot)
+    }
+
+    func testTheRentalIsPickedOnceAmongTheStartersAndCanBeSwitched() {
+        let store = BattleEntryStore(defaults: defaults)
+        XCTAssertTrue(BattleEntry.rentalSpeciesIDs.contains(store.rentalSpeciesID))
+        XCTAssertEqual(BattleEntryStore(defaults: defaults).rentalSpeciesID, store.rentalSpeciesID)
+
+        store.chooseRental(7)
+        store.chooseRental(25)
+        XCTAssertEqual(BattleEntryStore(defaults: defaults).rentalSpeciesID, 7)
     }
 
     func testAnOlderThreeSlotEntryLoadsItsFirstSlot() throws {

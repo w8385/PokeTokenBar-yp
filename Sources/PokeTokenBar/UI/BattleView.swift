@@ -37,19 +37,35 @@ struct BattleView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 6) {
                         Text(l.partyUploadTokenLabel)
-                        if uploader.tokenRejected {
+                        if !uploader.hasToken {
+                            Text(l.ypokeNotLinked).font(.caption2).foregroundStyle(.secondary)
+                        } else if uploader.tokenRejected {
                             Text(l.partyUploadTokenRejected).font(.caption2).foregroundStyle(.orange)
+                        } else if uploader.lastAttemptFailed {
+                            Text(l.ypokeUploadFailed).font(.caption2).foregroundStyle(.orange)
                         } else if uploader.lastSuccessAt != nil {
                             Text(l.partyUploadConnected).font(.caption2).foregroundStyle(.green)
-                        } else if uploader.hasToken {
+                        } else {
                             Text(l.partyUploadTokenSaved).font(.caption2).foregroundStyle(.green)
                         }
                     }
-                    Text(uploader.hasToken && uploader.hasServer ? l.partyUploadHint : l.partyUploadLinkHint)
-                        .font(.caption2).foregroundStyle(.tertiary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    if uploader.hasToken {
+                        Text(uploader.hasServer ? l.partyUploadHint : l.partyUploadLinkHint)
+                            .font(.caption2).foregroundStyle(.tertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
                 Spacer()
+            }
+            if !uploader.hasToken {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(Array(l.ypokeLinkSteps.enumerated()), id: \.offset) { index, step in
+                        Text("\(index + 1). \(step)").fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12).padding(.bottom, 8)
             }
             row {
                 SecureField(uploader.hasToken ? "••••••••" : l.partyUploadTokenLabel, text: $tokenInput)
@@ -71,10 +87,13 @@ struct BattleView: View {
                     .padding(.horizontal, 12).padding(.bottom, 6)
             } else if uploader.hasToken {
                 VStack(alignment: .leading, spacing: 2) {
+                    if uploader.lastAttemptFailed, !uploader.tokenRejected {
+                        Text(l.ypokeUploadFailedHint).foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                     if let sent = uploader.lastSuccessAt {
-                        Text("\(l.partyUploadLastSent): \(sent, format: .dateTime.hour().minute())")
-                    } else if uploader.hasServer, !uploader.tokenRejected,
-                              !BattleEntry.party(state: store.state, slot: entry?.slot).isEmpty {
+                        Text("\(l.partyUploadLastSent): \(sent, format: .dateTime.month().day().hour().minute())")
+                    } else if uploader.hasServer, !uploader.tokenRejected, !uploader.lastAttemptFailed {
                         Text(l.battleEntryNotSent).foregroundStyle(.orange)
                             .fixedSize(horizontal: false, vertical: true)
                     }

@@ -13,6 +13,7 @@ from ypoke.commands import (
     RECORD_COMMAND,
     UMBRELLA_COMMAND,
     CommandHandler,
+    Where,
     bot_species,
     parse_mention,
     reply_thread_ts,
@@ -87,22 +88,22 @@ def upload(store, user_id, pokemon_id, level):
 def test_register_dms_a_link_button_that_carries_the_token(store):
     reply = handler(store).handle("U1", "", LINK_COMMAND)
     assert not reply.in_channel
-    button = reply.direct_message_blocks[1]["elements"][0]
+    button = reply.direct_messages[0].blocks[1]["elements"][0]
     url = urlparse(button["url"])
     assert (url.scheme, url.netloc) == ("poketokenbar", "ypoke-register")
     token = parse_qs(url.query)["token"][0]
     assert store.user_for_token(token) == "U1"
     assert token not in reply.text
-    assert token not in reply.direct_message
-    assert f"`{token}`" in reply.direct_message_blocks[2]["elements"][0]["text"]
+    assert token not in reply.direct_messages[0].text
+    assert f"`{token}`" in reply.direct_messages[0].blocks[2]["elements"][0]["text"]
     assert "server" not in parse_qs(url.query)
 
 
 def test_register_link_carries_the_public_server_url(store):
     reply = handler(store, public_url="http://example.local:8790").handle("U1", "", LINK_COMMAND)
-    url = urlparse(reply.direct_message_blocks[1]["elements"][0]["url"])
+    url = urlparse(reply.direct_messages[0].blocks[1]["elements"][0]["url"])
     assert parse_qs(url.query)["server"] == ["http://example.local:8790"]
-    assert DOWNLOAD_URL in reply.direct_message_blocks[3]["elements"][0]["text"]
+    assert DOWNLOAD_URL in reply.direct_messages[0].blocks[3]["elements"][0]["text"]
 
 
 def test_battle_without_a_party_points_to_the_download(store):
@@ -176,21 +177,176 @@ def test_challenger_without_a_pokemon_is_told_privately(store):
     assert not reply.in_channel
 
 
-def test_unlinked_opponent_is_named_in_the_channel(store):
+CHANNEL = Where("CCHAN", "1.1", "https://hooks.example/respond")
+
+
+class Clock:
+    def __init__(self):
+        self.now = NOW
+
+    def __call__(self):
+        return self.now
+
+
+def pending(store):
+    """Every stored pending challenge; a far-past `since` keeps expired rows too."""
+    since = datetime(2000, 1, 1, tzinfo=UTC)
+    return list({challenge for user in ("UA", "UB") for challenge in store.pending_for(user, since)})
+
+
+def test_a_rental_fights_at_the_opponents_level_and_counts(store):
     upload(store, "UA", 25, 60)
-    reply = handler(store).handle("UA", "<@UC>")
-    assert reply.text.startswith("<@UC>님은 아직 YPoke에 앱을 연결하지 않아서 대결할 수 없어요.")
+    store.issue_token("UB")
+    store.save_party("UB", [{**member(1, 5), "rental": True}])
+    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
+    assert lines[2] == "<@UB>은(는) 대여 포켓몬 야생몬을 내보냈다! (Lv60)"
+    assert store.record("UA").wins + store.record("UA").losses == 1
+
+
+def test_a_rental_challenger_against_a_rental_keeps_both_levels(store):
+    for user in ("UA", "UB"):
+        store.issue_token(user)
+        store.save_party(user, [{**member(7, 5), "rental": True}])
+    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
+    assert lines[1:3] == ["<@UA>은(는) 대여 포켓몬 꼬부기를 내보냈다! (Lv5)",
+                          "<@UB>은(는) 대여 포켓몬 꼬부기를 내보냈다! (Lv5)"]
+
+
+def test_practice_with_a_rental_uses_the_same_level_on_both_sides(store):
+    store.issue_token("UA")
+    store.save_party("UA", [{**member(7, 5), "rental": True}])
+    lines = handler(store).handle("UA", "<@UBOT>").text.splitlines()
+    assert lines[1] == "<@UA>은(는) 대여 포켓몬 꼬부기를 내보냈다! (Lv5)"
+    assert lines[2].endswith("(Lv5)")
+
+
+def test_unlinked_opponent_gets_one_link_dm_and_the_challenge_waits(store):
+    upload(store, "UA", 25, 60)
+    reply = handler(store).handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL)
     assert reply.in_channel
+    assert reply.text.startswith("<@UB>님은 아직 YPoke에 포켓몬이 없어서 연결 안내를 DM으로 보냈어요.")
+    [dm] = reply.direct_messages
+    assert dm.user_id == "UB"
+    assert dm.blocks[0]["text"]["text"] == "<@UA>님이 YPoke 대결을 신청했어요."
+    token = parse_qs(urlparse(dm.blocks[2]["elements"][0]["url"]).query)["token"][0]
+    assert store.user_for_token(token) == "UB"
+    assert "회사 네트워크" in dm.blocks[-1]["elements"][0]["text"]
+    [challenge] = pending(store)
+    assert (challenge.challenger_id, challenge.opponent_id, challenge.channel_id, challenge.thread_ts) == (
+        "UA", "UB", "CCHAN", "1.1")
     assert store.record("UA") == Record(0, 0)
 
 
-def test_linked_opponent_without_an_upload_gets_the_egg_and_network_hint(store):
+def test_one_pending_row_per_pair_and_one_dm_per_day(store):
     upload(store, "UA", 25, 60)
-    store.issue_token("UC")
-    reply = handler(store).handle("UA", "<@UC>")
-    assert reply.text.startswith("<@UC>님 앱이 아직 포켓몬을 올리지 않아서 대결할 수 없어요.")
-    assert "알이 부화해야" in reply.text
-    assert reply.in_channel
+    upload(store, "UC", 7, 20)
+    clock = Clock()
+    bot = handler(store, now=clock)
+    assert len(bot.handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL).direct_messages) == 1
+    clock.now += timedelta(hours=1)
+    again = bot.handle("UA", "<@UB>", BATTLE_COMMAND, Where("COTHER"))
+    assert again.direct_messages == ()
+    assert again.in_channel
+    assert bot.handle("UC", "<@UB>", BATTLE_COMMAND, CHANNEL).direct_messages == ()
+    assert [(c.challenger_id, c.channel_id) for c in store.pending_for("UB", since=NOW)] == [
+        ("UA", "COTHER"), ("UC", "CCHAN")]
+    clock.now = NOW + timedelta(hours=24, minutes=1)
+    assert len(bot.handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL).direct_messages) == 1
+
+
+def test_linked_opponent_without_an_upload_keeps_their_old_token(store):
+    upload(store, "UA", 25, 60)
+    old = store.issue_token("UB")
+    [dm] = handler(store).handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL).direct_messages
+    assert dm.user_id == "UB"
+    assert store.user_for_token(old) == "UB"
+
+
+def test_the_first_upload_runs_the_pending_battle_once(store):
+    upload(store, "UA", 25, 60)
+    clock = Clock()
+    bot = handler(store, now=clock)
+    bot.handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL)
+    clock.now += timedelta(minutes=10)
+    upload(store, "UB", 7, 20)
+    [delivery] = bot.run_pending("UB")
+    assert delivery.challenger_id == "UA"
+    assert delivery.where == CHANNEL
+    lines = delivery.text.splitlines()
+    assert lines[0] == "기다리던 포켓몬이 올라와서 대결을 시작해요!"
+    assert lines[1] == "<@UB>에게 <@UA>이(가) 승부를 걸어왔다!"
+    assert store.record("UA") == Record(1, 0)
+    assert bot.run_pending("UB") == []
+    assert bot.run_pending("UA") == []
+    assert store.record("UA") == Record(1, 0)
+
+
+def test_a_late_upload_posts_in_the_channel_not_the_stale_response_url(store):
+    upload(store, "UA", 25, 60)
+    clock = Clock()
+    bot = handler(store, now=clock)
+    bot.handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL)
+    clock.now += timedelta(hours=2)
+    upload(store, "UB", 7, 20)
+    [delivery] = bot.run_pending("UB")
+    assert delivery.where == Where("CCHAN", "1.1", None)
+
+
+def test_a_pending_challenge_expires_after_a_day(store):
+    upload(store, "UA", 25, 60)
+    clock = Clock()
+    bot = handler(store, now=clock)
+    bot.handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL)
+    clock.now += timedelta(hours=24, seconds=1)
+    upload(store, "UB", 7, 20)
+    assert bot.run_pending("UB") == []
+    assert pending(store) == []
+    assert store.record("UA") == Record(0, 0)
+
+
+def test_the_pending_battle_waits_while_pokeapi_is_down(store):
+    upload(store, "UA", 25, 60)
+    handler(store).handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL)
+    upload(store, "UB", 7, 20)
+    assert handler(store, fail=True).run_pending("UB") == []
+    assert len(handler(store).run_pending("UB")) == 1
+
+
+def test_a_challenger_without_an_upload_is_told_privately_and_the_challenge_waits(store):
+    upload(store, "UB", 7, 20)
+    reply = handler(store).handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL)
+    assert not reply.in_channel
+    assert reply.text.startswith("아직 내 포켓몬이 YPoke에 없어요.")
+    assert "<@UB>과(와)의 대결" in reply.text
+    [dm] = reply.direct_messages
+    assert dm.user_id == "UA"
+    assert dm.blocks[0]["text"]["text"] == "<@UB>과(와)의 대결이 기다리고 있어요."
+    upload(store, "UA", 25, 60)
+    [delivery] = handler(store).run_pending("UA")
+    assert "승부를 걸어왔다" in delivery.text
+
+
+def test_when_neither_side_has_uploaded_both_get_a_dm_and_only_the_challenger_is_told(store):
+    reply = handler(store).handle("UA", "<@UB>", BATTLE_COMMAND, CHANNEL)
+    assert not reply.in_channel
+    assert "<@UB>님도 아직 준비 전이라" in reply.text
+    assert [dm.user_id for dm in reply.direct_messages] == ["UA", "UB"]
+    upload(store, "UA", 25, 60)
+    assert handler(store).run_pending("UA") == []
+    upload(store, "UB", 7, 20)
+    assert len(handler(store).run_pending("UB")) == 1
+
+
+def test_practice_without_an_upload_waits_and_runs_on_the_first_upload(store, monkeypatch):
+    reply = handler(store).handle("UA", "<@UBOT>", BATTLE_COMMAND, CHANNEL)
+    assert not reply.in_channel
+    [dm] = reply.direct_messages
+    assert dm.blocks[0]["text"]["text"] == "<@UBOT>과(와)의 대결이 기다리고 있어요."
+    upload(store, "UA", 25, 42)
+    monkeypatch.setattr("ypoke.commands.secrets.randbits", lambda bits: 1234)
+    [delivery] = handler(store).run_pending("UA")
+    assert delivery.text.endswith("(연습 대결 — 전적에 안 남아요)")
+    assert store.records_since(datetime(2000, 1, 1, tzinfo=UTC)) == {}
 
 
 def test_cannot_battle_yourself(store):
@@ -210,7 +366,7 @@ def test_pokeapi_outage_is_not_recorded(store):
 def test_battle_without_a_mention_shows_help(store, text):
     reply = handler(store).handle("UA", text, BATTLE_COMMAND)
     assert reply.text == HELP_TEXT
-    assert reply.direct_message is None
+    assert reply.direct_messages == ()
 
 
 @pytest.mark.parametrize("text", ["", "<@UB>", "등록"])
@@ -224,7 +380,7 @@ def test_umbrella_command_only_shows_help(store, text):
 
 def test_link_command_sends_the_link_dm(store):
     reply = handler(store).handle("UA", "<@UB>", LINK_COMMAND)
-    assert reply.direct_message_blocks[1]["elements"][0]["url"].startswith("poketokenbar://ypoke-register?")
+    assert reply.direct_messages[0].blocks[1]["elements"][0]["url"].startswith("poketokenbar://ypoke-register?")
     assert not reply.in_channel
 
 
@@ -368,7 +524,7 @@ def test_mention_record_ranking_and_link(store):
     assert bot.handle_mention("UA", "<@UBOT> 전적 <@UB>").text == "<@UB> 전적: 0승 1패"
     assert bot.handle_mention("UA", "<@UBOT> 랭킹").text.startswith("🏆 이번 주 랭킹")
     link = bot.handle_mention("UA", "<@UBOT> 연결")
-    assert link.direct_message_blocks is not None
+    assert link.direct_messages[0].blocks is not None
     assert not link.in_channel
 
 

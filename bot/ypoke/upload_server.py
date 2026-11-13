@@ -15,6 +15,7 @@ MAX_PARTY_SIZE = 6
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
 MovesFor = Callable[[int, int], list[dict]]
+OnUpload = Callable[[str, list[dict]], None]
 
 
 class PartyError(ValueError):
@@ -22,10 +23,11 @@ class PartyError(ValueError):
 
 
 def serve(
-    store: Store, host: str, port: int, on_upload: Callable[[list[dict]], None], moves_for: MovesFor
+    store: Store, host: str, port: int, on_upload: OnUpload, moves_for: MovesFor
 ) -> ThreadingHTTPServer:
     """Start the upload server on a daemon thread and return it.
 
+    `on_upload(user_id, party)` runs after each stored upload, before the reply.
     `moves_for(pokemon_id, level)` returns the attacking moves learnable at that level and raises OSError when offline.
     """
     handler = type("BoundUploadHandler", (_UploadHandler,), {
@@ -62,7 +64,7 @@ def check_moves(party: list[dict], moves_for: MovesFor) -> None:
 
 class _UploadHandler(BaseHTTPRequestHandler):
     store: Store
-    on_upload: Callable[[list[dict]], None]
+    on_upload: OnUpload
     moves_for: MovesFor
 
     def do_GET(self) -> None:
@@ -112,7 +114,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
             return
         self.store.save_party(user_id, party)
-        self.on_upload(party)
+        self.on_upload(user_id, party)
         self._reply(200, {"ok": True, "party_size": len(party)})
 
     def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
@@ -176,6 +178,11 @@ def _validate_member(index: int, member: object) -> dict:
     if not isinstance(shiny, bool):
         raise PartyError(f"{where}.shiny must be a boolean")
     normalized["shiny"] = shiny
+    rental = member.get("rental", False)
+    if not isinstance(rental, bool):
+        raise PartyError(f"{where}.rental must be a boolean")
+    if rental:
+        normalized["rental"] = True
     ivs = member.get("ivs", {})
     if not isinstance(ivs, dict):
         raise PartyError(f"{where}.ivs must be an object")
