@@ -802,6 +802,9 @@ struct CompanionState: Codable, Sendable {
     // 졸업분 + 현재 개체의 도달 단계이며, 그 범위에서 빠지면 reconcileRepresentativeSelection 이 nil 로 복구한다.
     var representativeSpeciesID: Int? = nil
     var representativeForm: PokemonForm? = nil
+    /// `DexEntry.id` of the graduated Pokémon shown beside the active one (display only, at most `maxFriends`).
+    var friendEntryIDs: [String] = []
+    static let maxFriends = 2
     // 도감
     var dex: [DexEntry] = []
     // 소유한 (base,final) 쌍 — 분기 다양성용
@@ -853,8 +856,10 @@ struct CompanionState: Codable, Sendable {
         representativeSpeciesID = c.lenientOptional(Int.self, forKey: .representativeSpeciesID)
         representativeForm = PokemonForm.resolved(speciesID: representativeSpeciesID ?? 0,
             form: PokemonForm.decoded(from: decoder, keys: "representativeForm", "representativeUnownForm"))
+        friendEntryIDs     = c.lenient([String].self, forKey: .friendEntryIDs, default: [])
         // 도감은 항목별 격리 — 손상 항목 하나가 도감 전체를 날리지 않게.
         dex                = c.lenient([Lossy<DexEntry>].self, forKey: .dex, default: []).compactMap(\.value)
+        reconcileFriends()
         collectedFinals    = c.lenient(Set<String>.self, forKey: .collectedFinals, default: [])
         language           = c.lenient(AppLanguage.self, forKey: .language, default: .systemDefault)
         inventory          = c.lenient([String: Int].self, forKey: .inventory, default: [:])
@@ -937,6 +942,19 @@ struct CompanionState: Codable, Sendable {
 
     /// Forget the prayers of the previous egg. Call on every path that starts a new egg (or consumes this one).
     mutating func resetEggPrayers() { eggPrayers = nil }
+
+    /// Graduated individuals that can stand beside the active Pokémon: released records are not friends.
+    var friendCandidates: [DexEntry] {
+        dex.filter { !$0.isReleased && !friendEntryIDs.contains($0.id) }
+    }
+
+    /// Friends are only graduated dex entries, once each, at most `maxFriends`. Call wherever the dex can change.
+    mutating func reconcileFriends() {
+        let valid = Set(dex.lazy.filter { !$0.isReleased }.map(\.id))
+        var seen = Set<String>()
+        friendEntryIDs = friendEntryIDs.filter { valid.contains($0) && seen.insert($0).inserted }
+            .prefix(Self.maxFriends).map { $0 }
+    }
 
     /// 대표 포켓몬은 사용자가 현재 보유한 종만 가리킨다. Fresh Egg·메타몽 리빌·손편집 세이브가
     /// 유령 종을 메뉴바와 플로팅 펫에 영구히 남기지 않게 한다.
