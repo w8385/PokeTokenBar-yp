@@ -874,6 +874,16 @@ struct L {
         default: t("스피드", "Spe", "素早さ", "Vel", "Vit", "Vel", "Init", "Скор")
         }
     }
+    var battleChange: String { t("바꾸기", "Change", "変更", "Cambiar", "Changer", "Trocar", "Ändern", "Сменить") }
+    var battleSendToBattle: String {
+        t("대결에 내보내기", "Send to battle", "対戦に出す", "Enviar al combate", "Envoyer au combat",
+          "Enviar para a batalha", "In den Kampf schicken", "Отправить в бой")
+    }
+    var battleFighting: String { t("대결 중", "In battle", "対戦中", "En combate", "En combat", "Em batalha", "Im Kampf", "В бою") }
+    func battleLevelCap(_ level: Int) -> String {
+        t("대결 Lv\(level)", "Battle Lv\(level)", "対戦 Lv\(level)", "Combate Lv\(level)", "Combat Lv\(level)",
+          "Batalha Lv\(level)", "Kampf Lv\(level)", "Бой Lv\(level)")
+    }
     var battleEntryRaising: String { t("육성 중", "Raising", "育成中", "Criando", "En élevage", "Criando", "Wird aufgezogen", "Растёт") }
     var battleEntryMoves: String { t("기술", "Moves", "わざ", "Movimientos", "Capacités", "Golpes", "Attacken", "Приёмы") }
     var battleEntryAutoMoves: String {

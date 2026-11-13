@@ -1197,55 +1197,8 @@ struct CollectionView: View {
 
     private var filterToolbar: some View {
         HStack(spacing: 6) {
-            HStack(spacing: 4) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                    .font(.system(size: 13))
-                TextField(store.l.dexSearchPlaceholder, text: $searchText)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 13))
-                if !searchText.isEmpty {
-                    Button {
-                        searchText = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                            .font(.system(size: 13))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(store.l.clearFilters)
-                }
-            }
-            .padding(.horizontal, 6)
-            .padding(.vertical, 4)
-            .background(Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .strokeBorder(Color.secondary.opacity(0.2), lineWidth: 0.5)
-            )
-
-            Button {
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    shinyOnly.toggle()
-                }
-            } label: {
-                Image(systemName: shinyOnly ? "sparkles" : "sparkle")
-                    .font(.system(size: 13, weight: shinyOnly ? .bold : .regular))
-                    .foregroundStyle(shinyOnly ? Color.yellow : Color.secondary)
-                    .frame(width: 16, height: 16)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 4)
-                    .background(shinyOnly ? Color.yellow.opacity(0.18) : Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .strokeBorder(shinyOnly ? Color.yellow.opacity(0.6) : Color.secondary.opacity(0.2), lineWidth: 0.5)
-                    )
-            }
-            .buttonStyle(.plain)
-            .help(store.l.filterShinyOnly)
-            .accessibilityLabel(store.l.filterShinyOnly)
+            DexSearchField(l: store.l, text: $searchText)
+            DexShinyToggle(l: store.l, isOn: $shinyOnly)
 
             if !navigation.showingCollectionLog {
                 Button {
@@ -1407,6 +1360,74 @@ struct CollectionView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 28)
+    }
+}
+
+/// The search box shared by the Pokédex, the Catch Log and the battle picker.
+@MainActor
+struct DexSearchField: View {
+    let l: L
+    @Binding var text: String
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+                .font(.system(size: 13))
+            TextField(l.dexSearchPlaceholder, text: $text)
+                .textFieldStyle(.plain)
+                .font(.system(size: 13))
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                        .font(.system(size: 13))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(l.clearFilters)
+            }
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 4)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .strokeBorder(Color.secondary.opacity(0.2), lineWidth: 0.5)
+        )
+    }
+}
+
+/// The shiny-only toggle shared by the Pokédex, the Catch Log and the battle picker.
+@MainActor
+struct DexShinyToggle: View {
+    let l: L
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isOn.toggle()
+            }
+        } label: {
+            Image(systemName: isOn ? "sparkles" : "sparkle")
+                .font(.system(size: 13, weight: isOn ? .bold : .regular))
+                .foregroundStyle(isOn ? Color.yellow : Color.secondary)
+                .frame(width: 16, height: 16)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
+                .background(isOn ? Color.yellow.opacity(0.18) : Color(nsColor: .controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(isOn ? Color.yellow.opacity(0.6) : Color.secondary.opacity(0.2), lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .help(l.filterShinyOnly)
+        .accessibilityLabel(l.filterShinyOnly)
     }
 }
 
@@ -1833,6 +1854,8 @@ struct PokemonDetailView: View {
     let species: CompanionStore.DexSpecies
     let onBack: () -> Void
     private let spriteStore: SpriteStore
+    @Environment(BattleEntryStore.self) private var battleEntry: BattleEntryStore?
+    @Environment(PartyUploader.self) private var uploader: PartyUploader?
     @State private var selectedInstanceID = ""
     @State private var selectedForm: PokemonForm?
     @State private var selectedShiny: Bool?
@@ -2006,14 +2029,37 @@ struct PokemonDetailView: View {
                 if displayedShiny { Text("✨ \(store.l.dexShinyLabel)").font(.callout) }
                 if let individual, store.isActiveDexEntry(individual) { Text(store.l.dexRaising).font(.callout).foregroundStyle(Color.accentColor) }
                 let isRepresentative = store.isRepresentative(species)
-                RepresentativeFooterButton(localization: store.l,
-                                           isRepresentative: isRepresentative) {
-                    _ = store.setRepresentativeSpeciesID(isRepresentative ? nil : species.id,
-                                                         form: species.form)
+                HStack(spacing: 6) {
+                    RepresentativeFooterButton(localization: store.l,
+                                               isRepresentative: isRepresentative) {
+                        _ = store.setRepresentativeSpeciesID(isRepresentative ? nil : species.id,
+                                                             form: species.form)
+                    }
+                    if let individual, let battleEntry, store.battleCandidate(for: individual) != nil {
+                        battleButton(for: individual, battleEntry)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    /// Sets the battle pick of the shown individual. The representative and the Pokémon being raised
+    /// stay as they are.
+    private func battleButton(for individual: DexEntry, _ battleEntry: BattleEntryStore) -> some View {
+        let fighting = battleEntry.isFighting(individual, in: store)
+        return Button {
+            if battleEntry.sendToBattle(individual, in: store) {
+                Task { await uploader?.tick() }
+            }
+        } label: {
+            Label(fighting ? store.l.battleFighting : store.l.battleSendToBattle,
+                  systemImage: fighting ? "checkmark" : "bolt.fill")
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.mini)
+        .fixedSize()
+        .disabled(fighting)
     }
 
     private var appearancePicker: some View {
@@ -2186,15 +2232,29 @@ private extension Array where Element == String {
 /// 도감 한 칸 — 도감 번호 + 스프라이트 + 종 이름. 종 정보만 담는다(성격·획득 횟수는 로그의 몫).
 /// 정적 스프라이트만 쓴다(animated 생략) — 한 페이지 16칸을 GIF 로 동시 재생하면 CPU 가 안 된다.
 @MainActor
-private struct DexSpeciesCell: View {
+struct DexSpeciesCell: View {
     let store: CompanionStore
     let species: CompanionStore.DexSpecies
     let isSelected: Bool
     let isRepresentative: Bool
     /// Collected forms, nil for species with a single appearance.
     let formCount: Int?
+    /// Set by the battle picker, where a cell is one individual: shows its level and drops the
+    /// Pokédex-only actions. `isSelected` then marks the current battle pick.
+    let level: Int?
     let onTap: () -> Void
     @State private var isHovered = false
+
+    init(store: CompanionStore, species: CompanionStore.DexSpecies, isSelected: Bool, isRepresentative: Bool,
+         formCount: Int?, level: Int? = nil, onTap: @escaping () -> Void) {
+        self.store = store
+        self.species = species
+        self.isSelected = isSelected
+        self.isRepresentative = isRepresentative
+        self.formCount = formCount
+        self.level = level
+        self.onTap = onTap
+    }
 
     private var formTotal: Int { PokemonForm.forms(speciesID: species.id).count }
 
@@ -2207,13 +2267,14 @@ private struct DexSpeciesCell: View {
                 // 이로치를 잡은 종은 이로치 스프라이트로 표시한다(상세 화면에서 일반/이로치 모습 전환 가능).
                 // 폼이 있는 종의 아이콘은 기본 폼 일반색으로 유지하고, 폼별 색은 상세 화면에서 보여준다.
                 SpriteView(speciesID: species.id, size: Self.thumb,
-                           shiny: formCount == nil && species.isShiny)
+                           shiny: formCount == nil && species.isShiny, form: species.form)
                     .frame(width: Self.thumb, height: Self.thumb)
                     .opacity(species.isOwned ? 1 : 0.4)
                     .saturation(species.isOwned ? 1 : 0.3)
                     // Keep the raising badge over the sprite to leave room for the name.
                     .overlay(alignment: .bottom) {
-                        if species.isRaising { raisingBadge.fixedSize() }
+                        if let level { levelBadge(level).fixedSize() }
+                        else if species.isRaising { raisingBadge.fixedSize() }
                         if !species.isOwned { unownedBadge.fixedSize() }
                     }
                 Text(formCount.map { "\(species.name) \($0)/\(formTotal)" } ?? species.name)
@@ -2263,7 +2324,7 @@ private struct DexSpeciesCell: View {
         .help(tooltip)
         .accessibilityLabel(tooltip)
         .contextMenu {
-            if !species.isOwned {
+            if !species.isOwned || level != nil {
                 EmptyView()
             } else if formCount != nil {
                 Button(store.l.chooseForm, action: onTap)
@@ -2287,6 +2348,12 @@ private struct DexSpeciesCell: View {
             // 기존 번호 캡슐에 결합해 이로치(우측 상단)·키우는 중(스프라이트 하단)·이름과
             // 새 자리를 다투지 않는다. 아이콘은 언어에 따라 폭이 달라지지 않고, 의미는 셀의
             // 현지화된 툴팁·접근성 라벨이 보완한다.
+            if level != nil, isSelected {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color.accentColor)
+                    .accessibilityHidden(true)
+            }
             if isRepresentative {
                 Image(systemName: "star.fill")
                     .font(.system(size: 8, weight: .bold))
@@ -2308,6 +2375,14 @@ private struct DexSpeciesCell: View {
             .background(.regularMaterial, in: Capsule())
     }
 
+    /// The real level; above the battle cap, the level the bot fights at follows it.
+    private func levelBadge(_ level: Int) -> some View {
+        let capped = BattleEntry.isLevelCapped(level)
+        return Badge(capped ? "Lv\(level)→\(BattleEntry.battleLevel)" : "Lv\(level)",
+                     tint: species.isRaising ? .accent : .secondary, style: .tinted, size: 10)
+            .background(.regularMaterial, in: Capsule())
+    }
+
     private var unownedBadge: some View {
         Badge(store.l.dexUnownedBadge, tint: .secondary, style: .tinted, size: 10)
             .background(.regularMaterial, in: Capsule())
@@ -2318,6 +2393,11 @@ private struct DexSpeciesCell: View {
     private var tooltip: String {
         var parts = ["#\(species.id) \(species.name)", store.l.rarityLabel(species.rarity)]
         if let formCount { parts.append(store.l.formsCollected(formCount, of: formTotal)) }
+        if let level {
+            parts.append("Lv\(level)")
+            if BattleEntry.isLevelCapped(level) { parts.append(store.l.battleLevelCap(BattleEntry.battleLevel)) }
+            if isSelected { parts.append(store.l.battleFighting) }
+        }
         if species.isShiny { parts.append(store.l.dexShinyLabel) }
         if !species.isOwned { parts.append(store.l.dexUnownedBadge) }
         if species.isRaising { parts.append(store.l.dexRaising) }

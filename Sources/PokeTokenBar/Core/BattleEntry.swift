@@ -17,6 +17,10 @@ struct BattleCandidate: Sendable, Identifiable {
 
 enum BattleEntry {
     static let maxMoves = 4
+    /// The bot fights every Pokémon at this level or below; the app's growth is not capped.
+    static let battleLevel = 50
+
+    static func isLevelCapped(_ level: Int) -> Bool { level > battleLevel }
     /// Bulbasaur, Charmander, Squirtle.
     static let rentalSpeciesIDs = [1, 4, 7]
     /// Placeholder only: the bot levels a rental to its opponent.
@@ -116,6 +120,20 @@ final class BattleEntryStore {
             return
         }
         slot = BattleEntrySlot(instanceID: instanceID, pokemonID: pokemonID, moves: moves)
+    }
+
+    /// The picker and the Pokédex button both go through here, so a pick never touches the
+    /// representative or the Pokémon being raised.
+    @discardableResult
+    func sendToBattle(_ entry: DexEntry, in store: CompanionStore) -> Bool {
+        guard let candidate = store.battleCandidate(for: entry) else { return false }
+        choose(candidate.id)
+        return true
+    }
+
+    func isFighting(_ entry: DexEntry, in store: CompanionStore) -> Bool {
+        guard let candidate = store.battleCandidate(for: entry) else { return false }
+        return BattleEntry.fighter(state: store.state, slot: slot)?.id == candidate.id
     }
 
     func resetMoves() {
