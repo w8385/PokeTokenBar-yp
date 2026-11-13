@@ -1,3 +1,5 @@
+import re
+import sqlite3
 from urllib.parse import parse_qs, urlparse
 
 from datetime import UTC, datetime, timedelta
@@ -112,41 +114,71 @@ def test_battle_without_a_party_points_to_the_download(store):
     assert DOWNLOAD_URL in handler(store).handle("UA", "<@UB>").text
 
 
+def lineups(reply):
+    return [column.splitlines()[1:] for column in reply.card.columns]
+
+
 def test_battle_is_one_on_one_and_records(store):
     upload(store, "UA", 25, 60)
     upload(store, "UB", 7, 20)
     reply = handler(store).handle("UA", "<@UB|bob>")
     assert reply.in_channel
-    lines = reply.text.splitlines()
-    assert lines[:3] == [
-        "<@UB>에게 <@UA>이(가) 승부를 걸어왔다!",
-        "<@UA>은(는) 피카츄를 내보냈다! (Lv50)",
-        "<@UB>은(는) 꼬부기를 내보냈다! (Lv20)",
-    ]
-    assert lines[-2].endswith("꼬부기는 쓰러졌다!")
-    assert lines[-1] == "<@UA>은(는) 승부에서 이겼다!"
+    assert reply.summary == "🏆 <@UA> 승 · 1:1 · 1턴"
+    assert reply.text == "1턴 🔵 피카츄 10만볼트 → 꼬부기 쓰러짐 굉장"
+    assert lineups(reply) == [["피카츄 100%"], ["꼬부기 Lv20 💥"]]
     assert handler(store).handle("UA", "", RECORD_COMMAND).text == "<@UA> 전적: 1승 0패"
     assert handler(store).handle("UA", "<@UB>", RECORD_COMMAND).text == "<@UB> 전적: 0승 1패"
 
 
-def test_a_four_member_upload_fights_with_its_first_three(store):
-    upload(store, "UA", 7, 5)
+def test_a_three_member_upload_still_fights_one_on_one_by_default(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50), member(7, 10), member(25, 50)])
+    store.issue_token("UB")
+    store.save_party("UB", [member(7, 20), member(25, 30), member(7, 5)])
+    reply = handler(store).handle("UA", "<@UB>")
+    assert [len(side) for side in lineups(reply)] == [1, 1]
+    assert reply.rematch == "UA:UB:1"
+    assert " · 1:1 · " in reply.summary
+    assert (store.record("UA").wins, store.record("UA").losses) in ((1, 0), (0, 1))
+
+
+@pytest.mark.parametrize("word", ["3", "3:3", "풀"])
+def test_a_trailing_three_word_asks_for_the_three_member_lineup(store, word):
+    store.issue_token("UA")
     store.save_party("UA", [member(7, 5), member(25, 30), member(7, 10), member(25, 100)])
     upload(store, "UB", 25, 60)
-    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
-    assert lines[1] == "<@UA>은(는) 꼬부기를 내보냈다! (Lv5)"
-    assert lines[2] == "<@UB>은(는) 피카츄를 내보냈다! (Lv50)"
-    assert lines[3] == "🔵 꼬부기 → 피카츄 → 꼬부기"
-    assert not any("Lv100" in line for line in lines)
+    reply = handler(store).handle("UA", f"<@UB> {word}")
+    assert [len(side) for side in lineups(reply)] == [3, 1]
+    assert lineups(reply)[0][0].startswith("꼬부기 Lv5")
+    assert not any("Lv100" in line for line in lineups(reply)[0])
+    assert " · 3:1 · " in reply.summary
+    assert reply.rematch == "UA:UB:3"
 
 
-def test_a_one_member_upload_still_battles_with_no_send_out_lines(store):
+def test_the_three_word_works_before_the_mention_and_in_a_mention_battle(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50)] * 3)
+    store.issue_token("UB")
+    store.save_party("UB", [member(7, 20)] * 3)
+    bot = handler(store)
+    assert [len(side) for side in lineups(bot.handle("UA", "3 <@UB>"))] == [3, 3]
+    assert [len(side) for side in lineups(bot.handle_mention("UA", "<@UBOT> 대결 <@UB> 3"))] == [3, 3]
+    assert [len(side) for side in lineups(bot.handle_mention("UA", "<@UBOT> 대결 <@UB>"))] == [1, 1]
+
+
+def test_a_number_inside_the_text_without_being_a_word_does_not_widen_the_lineup(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50)] * 3)
+    upload(store, "UB", 7, 20)
+    assert [len(side) for side in lineups(handler(store).handle("UA", "<@UB> 30"))] == [1, 1]
+
+
+def test_a_one_member_upload_battles_without_send_outs(store):
     upload(store, "UA", 7, 5)
     upload(store, "UB", 25, 60)
-    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
-    assert lines[-1] == "<@UB>은(는) 승부에서 이겼다!"
-    assert sum(line.endswith("쓰러졌다!") for line in lines) == 1
-    assert not any("가라," in line for line in lines)
+    reply = handler(store).handle("UA", "<@UB> 3")
+    assert "→ 🔵" not in reply.text and "→ 🔴" not in reply.text
+    assert reply.summary.startswith("🏆 <@UB> 승 · 1:1 · ")
 
 
 def test_three_against_one_ends_when_the_lone_pokemon_is_beaten(store):
@@ -154,10 +186,9 @@ def test_three_against_one_ends_when_the_lone_pokemon_is_beaten(store):
     store.save_party("UA", [member(25, 50), member(25, 50), member(25, 50)])
     store.issue_token("UB")
     store.save_party("UB", [member(7, 5)])
-    reply = handler(store).handle("UA", "<@UB>")
-    lines = reply.text.splitlines()
-    assert lines[-1] == "<@UA>은(는) 승부에서 이겼다!"
-    assert "피카츄 · 피카츄 · 피카츄 vs 꼬부기" in reply.summary
+    reply = handler(store).handle("UA", "<@UB> 3")
+    assert " · 3:1 · " in reply.summary
+    assert lineups(reply) == [["피카츄 100%", "피카츄 대기", "피카츄 대기"], ["꼬부기 Lv5 💥"]]
     assert store.record("UA") == Record(1, 0)
 
 
@@ -166,10 +197,9 @@ def test_one_against_three_lists_the_three_and_the_stronger_side_wins(store):
     store.save_party("UA", [member(7, 1)])
     store.issue_token("UB")
     store.save_party("UB", [member(25, 50), member(7, 50), member(25, 50)])
-    reply = handler(store).handle("UA", "<@UB>")
-    lines = reply.text.splitlines()
-    assert "🔴 피카츄 → 꼬부기 → 피카츄" in lines
-    assert lines[-1] == "<@UB>은(는) 승부에서 이겼다!"
+    reply = handler(store).handle("UA", "<@UB> 3")
+    assert " · 1:3 · " in reply.summary
+    assert lineups(reply) == [["꼬부기 Lv1 💥"], ["피카츄 100%", "꼬부기 대기", "피카츄 대기"]]
     assert store.record("UB") == Record(1, 0)
 
 
@@ -201,7 +231,7 @@ def test_chosen_moves_narrate_by_name(store):
     store.issue_token("UA")
     store.save_party("UA", [{**member(25, 60), "moves": [85]}])
     upload(store, "UB", 7, 20)
-    assert "피카츄의 10만볼트!" in handler(store).handle("UA", "<@UB>").text
+    assert "피카츄 10만볼트 →" in handler(store).handle("UA", "<@UB>").text
 
 
 def test_challenger_without_a_pokemon_is_told_privately(store):
@@ -237,15 +267,15 @@ def test_a_battle_stores_both_lead_species_and_the_turn_count(store):
     assert (mine.my_pokemon_id, mine.opponent_pokemon_id, mine.opponent_id) == (25, 7, "UB")
     assert (theirs.my_pokemon_id, theirs.opponent_pokemon_id, theirs.opponent_id) == (7, 25, "UA")
     assert mine.won != theirs.won
-    assert f"({mine.turns}턴)" in reply.summary
+    assert f" · {mine.turns}턴" in reply.summary
 
 
 def test_a_rental_fights_at_the_opponents_level_and_counts(store):
     upload(store, "UA", 25, 60)
     store.issue_token("UB")
     store.save_party("UB", [{**member(1, 5), "rental": True}])
-    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
-    assert lines[2] == "<@UB>은(는) 대여 포켓몬 야생몬을 내보냈다! (Lv50)"
+    reply = handler(store).handle("UA", "<@UB>")
+    assert lineups(reply)[1] == ["야생몬(대여) 💥"]
     assert store.record("UA").wins + store.record("UA").losses == 1
 
 
@@ -253,15 +283,16 @@ def test_a_rental_against_a_lead_above_fifty_fights_at_fifty(store):
     upload(store, "UA", 25, 80)
     store.issue_token("UB")
     store.save_party("UB", [{**member(1, 5), "rental": True}])
-    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
-    assert lines[1:3] == ["<@UA>은(는) 피카츄를 내보냈다! (Lv50)", "<@UB>은(는) 대여 포켓몬 야생몬을 내보냈다! (Lv50)"]
+    reply = handler(store).handle("UA", "<@UB>")
+    assert all("Lv" not in side[0] for side in lineups(reply))
+    assert [side[0].split()[0] for side in lineups(reply)] == ["피카츄", "야생몬(대여)"]
 
 
 def test_a_rental_against_a_lead_below_fifty_keeps_that_level(store):
     upload(store, "UA", 25, 30)
     store.issue_token("UB")
     store.save_party("UB", [{**member(1, 5), "rental": True}])
-    assert handler(store).handle("UA", "<@UB>").text.splitlines()[2].endswith("(Lv30)")
+    assert lineups(handler(store).handle("UA", "<@UB>"))[1][0].startswith("야생몬(대여) Lv30")
 
 
 def sides_of(store, monkeypatch, challenger, opponent):
@@ -298,17 +329,17 @@ def test_a_rental_challenger_against_a_rental_keeps_both_levels(store):
     for user in ("UA", "UB"):
         store.issue_token(user)
         store.save_party(user, [{**member(7, 5), "rental": True}])
-    lines = handler(store).handle("UA", "<@UB>").text.splitlines()
-    assert lines[1:3] == ["<@UA>은(는) 대여 포켓몬 꼬부기를 내보냈다! (Lv5)",
-                          "<@UB>은(는) 대여 포켓몬 꼬부기를 내보냈다! (Lv5)"]
+    first, second = lineups(handler(store).handle("UA", "<@UB>"))
+    assert first[0].startswith("꼬부기(대여) Lv5")
+    assert second[0].startswith("꼬부기(대여) Lv5")
 
 
 def test_practice_with_a_rental_uses_the_same_level_on_both_sides(store):
     store.issue_token("UA")
     store.save_party("UA", [{**member(7, 5), "rental": True}])
-    lines = handler(store).handle("UA", "<@UBOT>").text.splitlines()
-    assert lines[1] == "<@UA>은(는) 대여 포켓몬 꼬부기를 내보냈다! (Lv5)"
-    assert lines[2].endswith("(Lv5)")
+    first, second = lineups(handler(store).handle("UA", "<@UBOT>"))
+    assert first[0].startswith("꼬부기(대여) Lv5")
+    assert second[0].startswith("야생몬 Lv5")
 
 
 def test_unlinked_opponent_gets_one_link_dm_and_the_challenge_waits(store):
@@ -363,9 +394,8 @@ def test_the_first_upload_runs_the_pending_battle_once(store):
     [delivery] = bot.run_pending("UB")
     assert delivery.challenger_id == "UA"
     assert delivery.where == CHANNEL
-    lines = delivery.text.splitlines()
-    assert lines[0] == "기다리던 포켓몬이 올라와서 대결을 시작해요!"
-    assert lines[1] == "<@UB>에게 <@UA>이(가) 승부를 걸어왔다!"
+    assert delivery.reply.card.note == "기다리던 포켓몬이 올라와서 대결을 시작해요!"
+    assert delivery.reply.summary.startswith("🏆 <@UA> 승 · 1:1")
     assert store.record("UA") == Record(1, 0)
     assert bot.run_pending("UB") == []
     assert bot.run_pending("UA") == []
@@ -414,7 +444,37 @@ def test_a_challenger_without_an_upload_is_told_privately_and_the_challenge_wait
     assert dm.blocks[0]["text"]["text"] == "<@UB>과(와)의 대결이 기다리고 있어요."
     upload(store, "UA", 25, 60)
     [delivery] = handler(store).run_pending("UA")
-    assert "승부를 걸어왔다" in delivery.text
+    assert delivery.reply.summary.startswith("🏆 ")
+
+
+def test_a_waiting_three_member_challenge_keeps_its_size_and_a_default_one_stays_one_on_one(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50)] * 3)
+    bot = handler(store)
+    bot.handle("UA", "<@UB> 3", BATTLE_COMMAND, CHANNEL)
+    bot.handle("UA", "<@UC>", BATTLE_COMMAND, CHANNEL)
+    assert {(c.opponent_id, c.size) for c in pending(store)} == {("UB", 3), ("UC", 1)}
+    for user in ("UB", "UC"):
+        store.issue_token(user)
+        store.save_party(user, [member(7, 20)] * 3)
+    [full] = bot.run_pending("UB")
+    [single] = bot.run_pending("UC")
+    assert [len(side) for side in lineups(full.reply)] == [3, 3]
+    assert [len(side) for side in lineups(single.reply)] == [1, 1]
+    assert (full.reply.rematch, single.reply.rematch) == ("UA:UB:3", "UA:UC:1")
+
+
+def test_a_challenge_saved_before_the_size_column_existed_loads_as_one_on_one(tmp_path):
+    path = str(tmp_path / "old.sqlite3")
+    Store(path)
+    with sqlite3.connect(path) as connection:
+        connection.execute("ALTER TABLE pending_challenges DROP COLUMN size")
+        connection.execute(
+            "INSERT INTO pending_challenges (challenger_id, opponent_id, channel_id, thread_ts, response_url, "
+            "created_at) VALUES ('UA', 'UB', 'CCHAN', '1.1', NULL, ?)", (NOW.isoformat(),))
+    reopened = Store(path)
+    [challenge] = reopened.pending_for("UB", NOW - timedelta(hours=1))
+    assert challenge.size == 1
 
 
 def test_when_neither_side_has_uploaded_both_get_a_dm_and_only_the_challenger_is_told(store):
@@ -436,7 +496,7 @@ def test_practice_without_an_upload_waits_and_runs_on_the_first_upload(store, mo
     upload(store, "UA", 25, 42)
     monkeypatch.setattr("ypoke.commands.secrets.randbits", lambda bits: 1234)
     [delivery] = handler(store).run_pending("UA")
-    assert delivery.text.endswith("(연습 대결 — 전적에 안 남아요)")
+    assert delivery.reply.summary.endswith(" · 연습 대결")
     assert store.records_since(datetime(2000, 1, 1, tzinfo=UTC)) == {}
 
 
@@ -557,14 +617,26 @@ def test_bot_battle_is_practice_and_writes_nothing(store, monkeypatch, command, 
     pokeapi = FakePokeAPI()
     bot = handler(store, pokeapi=pokeapi)
     reply = bot.handle_mention("UA", text) if mention else bot.handle("UA", text, command)
-    lines = reply.text.splitlines()
     assert reply.in_channel
-    assert lines[0] == "<@UBOT>에게 <@UA>이(가) 승부를 걸어왔다!"
-    assert lines[2] == "<@UBOT>은(는) 야생몬을 내보냈다! (Lv42)"
-    assert lines[-1].endswith("승부에서 이겼다! (연습 대결 — 전적에 안 남아요)")
+    assert re.fullmatch(r"🏆 <@\w+> 승 · 1:1 · \d+턴 · 연습 대결", reply.summary)
+    assert lineups(reply)[1][0].startswith("야생몬 Lv42")
+    assert reply.card.columns[1].startswith("🔴 *<@UBOT>*")
     assert bot_entry(1234, 1)[0] in pokeapi.requested
     assert store.record("UA") == Record(0, 0)
     assert store.records_since(datetime(2000, 1, 1, tzinfo=UTC)) == {}
+
+
+def test_practice_is_one_on_one_by_default_even_with_three_picks(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 42), member(7, 10), member(25, 70)])
+    reply = handler(store).handle("UA", "<@UBOT>", BATTLE_COMMAND)
+    assert [len(side) for side in lineups(reply)] == [1, 1]
+    assert reply.rematch == "UA:UBOT:1"
+
+
+def test_the_help_lists_the_three_member_option():
+    assert "`/대결 @상대 3`" in HELP_TEXT
+    assert "1:1" in HELP_TEXT
 
 
 def test_bot_battle_needs_my_party(store):
@@ -597,14 +669,14 @@ def test_mention_battle_fights_the_other_person_not_the_bot(store):
     upload(store, "UA", 25, 60)
     upload(store, "UB", 7, 20)
     reply = handler(store).handle_mention("UA", "<@UBOT> 대결 <@UB>")
-    assert reply.text.splitlines()[0] == "<@UB>에게 <@UA>이(가) 승부를 걸어왔다!"
+    assert reply.card.columns[1].startswith("🔴 *<@UB>*")
     assert store.record("UA") == Record(1, 0)
 
 
 def test_mention_battle_with_only_the_bot_mentioned_twice_is_practice(store):
     upload(store, "UA", 25, 60)
     reply = handler(store).handle_mention("UA", "<@UBOT> 대결 <@UBOT>")
-    assert reply.text.endswith("(연습 대결 — 전적에 안 남아요)")
+    assert reply.summary.endswith(" · 연습 대결")
     assert store.record("UA") == Record(0, 0)
 
 
@@ -645,10 +717,9 @@ def test_bot_practice_brings_as_many_random_pokemon_as_the_challenger_at_each_le
     store.save_party("UA", [member(25, 42), member(7, 10), member(25, 70), member(7, 99)])
     monkeypatch.setattr("ypoke.commands.secrets.randbits", lambda bits: 99)
     pokeapi = FakePokeAPI()
-    reply = handler(store, pokeapi=pokeapi).handle("UA", "<@UBOT>", BATTLE_COMMAND)
-    lines = reply.text.splitlines()
-    assert lines[1] == "<@UA>은(는) 피카츄를 내보냈다! (Lv42)"
-    assert lines[2] == "<@UBOT>은(는) 야생몬을 내보냈다! (Lv42)"
-    assert lines[4] == "🔴 야생몬 → 야생몬 → 야생몬"
+    reply = handler(store, pokeapi=pokeapi).handle("UA", "<@UBOT> 3", BATTLE_COMMAND)
+    assert [len(side) for side in lineups(reply)] == [3, 3]
+    assert lineups(reply)[0][0].startswith("피카츄 Lv42")
+    assert [line.split()[0:2] for line in lineups(reply)[1]][0] == ["야생몬", "Lv42"]
     assert set(bot_entry(99, 3)) <= set(pokeapi.requested)
     assert store.record("UA") == Record(0, 0)

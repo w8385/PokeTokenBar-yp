@@ -243,9 +243,12 @@ Event = Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | Se
 
 @dataclass
 class BattleResult:
+    """`remaining` is each side's HP share per roster member at the end (None: never sent out)."""
+
     winner: int
     turns: int
     events: list[Event] = field(default_factory=list)
+    remaining: tuple[tuple[int | None, ...], tuple[int | None, ...]] = ((), ())
 
 
 def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[Combatant]], seed: int) -> BattleResult:
@@ -300,7 +303,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
             events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, entering))
     if loser is None:
         loser = 1 if teams[0].standing() >= teams[1].standing() else 0
-    return BattleResult(winner=1 - loser, turns=turn, events=events)
+    return BattleResult(winner=1 - loser, turns=turn, events=events, remaining=(teams[0].shares(), teams[1].shares()))
 
 
 def _roster(side: Combatant | Sequence[Combatant]) -> tuple[Combatant, ...]:
@@ -351,6 +354,9 @@ class _Team:
     def send_next(self) -> "_Fighter":
         self.entered.append(_Fighter.enter(self.roster[len(self.entered)]))
         return self.active
+
+    def shares(self) -> tuple[int | None, ...]:
+        return (*(fighter.hp_percent for fighter in self.entered), *(None,) * (len(self.roster) - len(self.entered)))
 
     def standing(self) -> tuple[int, float]:
         """Members not yet fainted, then the sum of their HP shares; an unentered member counts as full."""

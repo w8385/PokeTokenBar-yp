@@ -3,19 +3,21 @@
 Slack bot for office battles between PokeTokenBar users' Pokémon, up to three each.
 Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Pokémon to ([API.md](API.md)).
 
-- `/대결 @상대` runs one automatic battle. Each side sends out up to three Pokémon in the order the app uploaded;
-  when one faints the next comes in, and a side that runs out loses (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
-  level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather and 27 common abilities) and posts a turn-by-turn
-  log, written like the in-game battle text. The channel gets a context line ("who ran which command", since
-  Slack shows nobody a typed slash command), a one-line result and a "다시 붙기" button; the turn log is the
+- `/대결 @상대` runs one automatic 1:1 battle with each side's first uploaded Pokémon; `/대결 @상대 3` (also `3:3`
+  or `풀`) sends out up to three in the order the app uploaded instead. When one faints the next comes in, and a
+  side that runs out loses (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
+  level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather and 27 common abilities).
+  The channel gets a result card: a context line ("who ran which command", since Slack shows nobody a typed slash
+  command), the winner with the format (`1:1` or `3:3`) and turn count, both lineups side by side with each
+  Pokémon's fate, up to three highlight lines and a "다시 붙기" button. The compact log, one line per turn, is the
   first reply in that message's thread. The bot posts it with `chat.postMessage`, so it must be a member of
-  the channel; where it cannot (a DM, a private channel it is not in) everything goes in one message through
-  the response URL instead. Each Pokémon uses its
+  the channel; where it cannot (a DM, a private channel it is not in) the card and then the log go as two
+  messages through the response URL instead. Each Pokémon uses its
   move with the highest expected damage every turn. Only win/loss is recorded. With no mention it shows
   help.
 - Every in-channel slash reply starts with that context line; ephemeral ones do not. A mention reply stays in
-  the mention's thread (summary + button, then the log) and needs no echo line.
-- "다시 붙기" reruns the same matchup with the current uploads and posts in the same thread. Only the two who
+  the mention's thread (card, then the log) and needs no echo line.
+- "다시 붙기" reruns the same matchup and format (1:1 or 3:3) with the current uploads and posts in the same thread. Only the two who
   fought can press it (others get a private notice); a practice battle reruns as practice, and a side with no
   upload goes through the pending flow below.
 - When the challenger has no upload, the thread/channel also sees one line saying so; the how-to stays in the DM
@@ -30,9 +32,9 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   thread, then a DM to the challenger).
 - A `rental` Pokémon (the app's starter before the first hatch) fights at the opponent's level (capped at 50) and is
   announced as "대여 포켓몬 …". It counts in records like any other.
-- `/대결 @YPoke` or a channel message `@YPoke 대결` is a practice battle against a random team: as many
-  distinct species (#1–1025, picked from the battle seed) as you send out, each at the level of your Pokémon in
-  the same slot. Nothing is recorded.
+- `/대결 @YPoke [3]` or a channel message `@YPoke 대결 [3]` is a practice battle against a random team: as many
+  distinct species (#1–1025, picked from the battle seed) as you send out (one, or three with `3`), each at the
+  level of your Pokémon in the same slot. Nothing is recorded.
 - `/포켓몬연결` DMs the caller a "PokeTokenBar 연결" button. It opens
   `poketokenbar://ypoke-register?token=…&server=…`, which saves the upload token and server in the app.
   The token is also in the DM for pasting by hand. Running it again rotates the token.

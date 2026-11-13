@@ -1,11 +1,13 @@
 """Command echo, the summary + thread-log result shape, the rematch button and the Slack listeners."""
 
 import logging
+import re
 import sqlite3
+from dataclasses import replace
 from datetime import timedelta
 
 import pytest
-from test_commands import CHANNEL, NOW, Clock, handler, pending, upload
+from test_commands import CHANNEL, NOW, Clock, handler, lineups, member, pending, upload
 
 from ypoke.commands import (
     BATTLE_COMMAND,
@@ -13,12 +15,16 @@ from ypoke.commands import (
     RECORD_COMMAND,
     REMATCH_ACTION_ID,
     REMATCH_DENIED,
+    Delivery,
+    Reply,
     Where,
     command_echo,
+    fallback_text,
     result_blocks,
 )
+from ypoke.narration import Card
 from ypoke.store import Record, Store
-from ypoke.transport import mention_listener, rematch_listener, slash_listener
+from ypoke.transport import deliver, mention_listener, rematch_listener, slash_listener
 
 
 @pytest.fixture
@@ -92,30 +98,47 @@ def test_mention_replies_have_no_echo(store):
 def test_battle_summary_is_one_line_with_the_rematch_value(store):
     ready_pair(store)
     reply = handler(store).handle("UA", "<@UB>")
-    assert reply.summary.startswith("🏆 <@U")
-    assert " 승 — 피카츄 vs 꼬부기 (" in reply.summary
-    assert reply.summary.endswith("턴)")
-    assert "\n" not in reply.summary
-    assert reply.rematch == "UA:UB"
-    assert reply.text.startswith("<@UB>에게 <@UA>이(가) 승부를 걸어왔다!")
+    assert re.fullmatch(r"🏆 <@U[AB]> 승 · 1:1 · \d+턴", reply.summary)
+    assert reply.rematch == "UA:UB:1"
+    assert reply.card.columns[0].startswith("🔵 *<@UA>*") and reply.card.columns[1].startswith("🔴 *<@UB>*")
+    assert reply.text.startswith("1턴 ")
 
 
 def test_a_practice_summary_says_so(store):
     upload(store, "UA", 25, 60)
     reply = handler(store).handle("UA", "<@UBOT>")
     assert reply.summary.endswith(" · 연습 대결")
-    assert reply.rematch == "UA:UBOT"
+    assert reply.rematch == "UA:UBOT:1"
 
 
-def test_result_blocks_are_echo_summary_and_a_button(store):
+def test_result_blocks_are_echo_header_lineups_highlights_and_a_button(store):
     ready_pair(store)
     reply = handler(store).handle("UA", "<@UB>", echo=True)
-    context, section, actions = result_blocks(reply)
+    context, header, lineups, highlights, actions = result_blocks(reply)
     assert context["elements"][0]["text"] == reply.echo
-    assert section["text"]["text"] == reply.summary
+    assert header["text"]["text"] == f"*{reply.summary}*"
+    assert [field["text"] for field in lineups["fields"]] == list(reply.card.columns)
+    assert highlights["text"]["text"] == "\n".join(reply.card.highlights)
     button = actions["elements"][0]
-    assert (button["action_id"], button["value"], button["text"]["text"]) == (REMATCH_ACTION_ID, "UA:UB", "다시 붙기")
-    assert len(result_blocks(reply, with_log=True)) == 4
+    assert (button["action_id"], button["value"], button["text"]["text"]) == (
+        REMATCH_ACTION_ID, "UA:UB:1", "다시 붙기")
+
+
+def test_result_blocks_without_echo_note_or_highlights_are_header_lineups_and_a_button():
+    card = Card(("🔵 *<@UA>*\n피카츄 100%", "🔴 *<@UB>*\n꼬부기 💥"))
+    reply = Reply("1턴 …", summary="🏆 <@UA> 승 · 1:1 · 1턴", card=card, rematch="UA:UB:1")
+    assert [block["type"] for block in result_blocks(reply)] == ["section", "section", "actions"]
+    noted = replace(reply, card=replace(card, note="기다리던 포켓몬이 올라와서 대결을 시작해요!"))
+    context = result_blocks(noted)[0]
+    assert context["type"] == "context"
+    assert context["elements"][0]["text"] == "기다리던 포켓몬이 올라와서 대결을 시작해요!"
+
+
+def test_the_plain_text_fallback_stays_short(store):
+    ready_pair(store)
+    reply = handler(store).handle("UA", "<@UB>", echo=True)
+    assert fallback_text(reply) == f"{reply.echo}\n{reply.summary}"
+    assert "\n" not in reply.summary
 
 
 def test_a_pending_battle_keeps_the_original_command_echo(store):
@@ -125,8 +148,8 @@ def test_a_pending_battle_keeps_the_original_command_echo(store):
     upload(store, "UB", 7, 20)
     [delivery] = bot.run_pending("UB")
     assert delivery.reply.echo == "<@UA> 님이 `/대결` <@UB> 을(를) 썼어요"
-    assert delivery.reply.summary and delivery.reply.rematch == "UA:UB"
-    assert delivery.text.startswith("기다리던 포켓몬이 올라와서 대결을 시작해요!")
+    assert delivery.reply.summary and delivery.reply.rematch == "UA:UB:1"
+    assert delivery.reply.card.note == "기다리던 포켓몬이 올라와서 대결을 시작해요!"
 
 
 def test_a_pending_challenge_made_by_mention_has_no_echo(store):
@@ -163,17 +186,44 @@ def test_rematch_reruns_the_matchup_with_the_current_upload(store):
     ready_pair(store)
     bot = handler(store)
     store.save_party("UB", [{"pokemon_id": 7, "level": 40, "shiny": False, "ivs": {}}])
-    reply = bot.rematch("UB", "UA:UB", Where("CCHAN", "1.1"))
+    reply = bot.rematch("UB", "UA:UB:1", Where("CCHAN", "1.1"))
     assert reply.in_channel and reply.echo == "<@UB> 님이 다시 붙기를 눌렀어요"
-    assert "꼬부기를 내보냈다! (Lv40)" in reply.text
-    assert reply.rematch == "UA:UB"
+    assert lineups(reply)[1][0].startswith("꼬부기 Lv40")
+    assert reply.rematch == "UA:UB:1"
     record = store.record("UB")
     assert record.wins + record.losses == 1
 
 
+def test_rematch_keeps_the_three_member_format(store):
+    for user in ("UA", "UB"):
+        store.issue_token(user)
+        store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
+    reply = handler(store).rematch("UA", "UA:UB:3", Where("CCHAN", "1.1"))
+    assert [len(side) for side in lineups(reply)] == [3, 3]
+    assert " · 3:3 · " in reply.summary
+    assert reply.rematch == "UA:UB:3"
+
+
+def test_a_rematch_value_without_a_size_is_one_on_one(store):
+    for user in ("UA", "UB"):
+        store.issue_token(user)
+        store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
+    reply = handler(store).rematch("UA", "UA:UB", Where("CCHAN", "1.1"))
+    assert [len(side) for side in lineups(reply)] == [1, 1]
+    assert reply.rematch == "UA:UB:1"
+
+
+def test_a_rematch_waiting_on_an_upload_keeps_the_three_member_format(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50)] * 3)
+    handler(store).rematch("UA", "UA:UB:3", Where("CCHAN", "1.1"))
+    [challenge] = pending(store)
+    assert challenge.size == 3
+
+
 def test_rematch_of_a_practice_stays_a_practice(store):
     upload(store, "UA", 25, 60)
-    reply = handler(store).rematch("UA", "UA:UBOT", Where("CCHAN", "1.1"))
+    reply = handler(store).rematch("UA", "UA:UBOT:1", Where("CCHAN", "1.1"))
     assert reply.summary.endswith(" · 연습 대결")
     assert store.record("UA") == Record(0, 0)
 
@@ -196,27 +246,85 @@ def test_a_challenger_without_an_upload_gets_a_visible_line_beside_the_private_d
     assert reply.echo == "<@UA> 님이 `/대결` <@UB> 을(를) 썼어요"
 
 
-def test_slash_battle_posts_the_summary_and_threads_the_log_under_it(store):
+def test_slash_battle_posts_the_card_and_threads_the_log_under_it(store):
     ready_pair(store)
     client, respond = FakeClient(), FakeRespond()
     slash(handler(store), client, respond)
     root, log = client.posts
     assert root["channel"] == "CCHAN" and root["thread_ts"] is None
     assert root["blocks"][0]["elements"][0]["text"] == "<@UA> 님이 `/대결` <@UB> 을(를) 썼어요"
-    assert root["blocks"][1]["text"]["text"].startswith("🏆")
-    assert root["blocks"][2]["elements"][0]["action_id"] == REMATCH_ACTION_ID
+    assert root["blocks"][1]["text"]["text"].startswith("*🏆")
+    assert [field["text"][0] for field in root["blocks"][2]["fields"]] == ["🔵", "🔴"]
+    assert root["blocks"][-1]["elements"][0]["action_id"] == REMATCH_ACTION_ID
     assert log["thread_ts"] == "9.1"
-    assert log["text"].startswith("<@UB>에게 <@UA>이(가) 승부를 걸어왔다!")
+    assert log["text"].startswith("1턴 ")
     assert respond.calls == []
 
 
-def test_slash_battle_falls_back_to_one_inline_message_where_the_bot_cannot_post(store):
+def test_slash_battle_answers_with_the_card_then_the_log_where_the_bot_cannot_post(store):
     ready_pair(store)
     client, respond = FakeClient(fail_post=True), FakeRespond()
     slash(handler(store), client, respond)
-    [call] = respond.calls
-    assert call["response_type"] == "in_channel"
-    assert call["blocks"][-1]["text"]["text"].startswith("<@UB>에게 <@UA>이(가) 승부를 걸어왔다!")
+    card, log = respond.calls
+    assert card["response_type"] == log["response_type"] == "in_channel"
+    assert card["blocks"][-1]["elements"][0]["action_id"] == REMATCH_ACTION_ID
+    assert log["text"].startswith("1턴 ") and "blocks" not in log
+
+
+def test_the_slash_three_member_battle_posts_both_lineups_and_a_three_member_rematch_value(store):
+    for user in ("UA", "UB"):
+        store.issue_token(user)
+        store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
+    client, respond = FakeClient(), FakeRespond()
+    slash(handler(store), client, respond, text="<@UB|bob> 3")
+    root, _ = client.posts
+    assert all(len(field["text"].splitlines()) == 4 for field in root["blocks"][2]["fields"])
+    assert root["blocks"][-1]["elements"][0]["value"] == "UA:UB:3"
+
+
+class FakeWebhook:
+    sent = []
+
+    def __init__(self, url):
+        self.url = url
+
+    def send(self, **message):
+        FakeWebhook.sent.append(message)
+        return type("Response", (), {"status_code": 200})()
+
+
+def delivery_of(store, response_url="https://hooks.example/respond/SECRET"):
+    ready_pair(store)
+    reply = handler(store).handle("UA", "<@UB>", echo=True)
+    return Delivery("UA", Where("CCHAN", "1.1", response_url), reply)
+
+
+def test_a_pending_battle_goes_by_response_url_as_the_card_then_the_log(store, monkeypatch):
+    FakeWebhook.sent = []
+    monkeypatch.setattr("ypoke.transport.WebhookClient", FakeWebhook)
+    delivery = delivery_of(store)
+    deliver(FakeClient(fail_post=True), delivery)
+    card, log = FakeWebhook.sent
+    assert card["blocks"][-1]["elements"][0]["action_id"] == REMATCH_ACTION_ID
+    assert log["text"] == delivery.reply.text
+    assert card["response_type"] == log["response_type"] == "in_channel"
+
+
+def test_a_pending_battle_with_no_other_way_arrives_in_the_challengers_dm_as_card_and_log(store):
+    delivery = delivery_of(store, response_url=None)
+    client = FakeClient()
+    original = client.chat_postMessage
+
+    def only_dm(**kwargs):
+        if kwargs["channel"] == "CCHAN":
+            raise RuntimeError("not_in_channel")
+        return original(**kwargs)
+
+    client.chat_postMessage = only_dm
+    deliver(client, delivery)
+    note, card, log = client.posts
+    assert {post["channel"] for post in client.posts} == {"UA"}
+    assert "blocks" in card and log["thread_ts"] == "9.2"
 
 
 def test_slash_ranking_is_echoed_and_record_is_ephemeral_without_it(store):
@@ -274,10 +382,22 @@ def rematch_body(user="UA", message=None):
 def test_rematch_posts_the_new_result_in_the_same_thread(store):
     ready_pair(store)
     client, respond = FakeClient(), FakeRespond()
-    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB"}, respond, client)
+    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1"}, respond, client)
     root, log = client.posts
     assert root["thread_ts"] == log["thread_ts"] == "9.1"
     assert root["blocks"][0]["elements"][0]["text"] == "<@UA> 님이 다시 붙기를 눌렀어요"
+    assert respond.calls == []
+
+
+def test_a_rematch_where_the_bot_cannot_post_answers_the_card_then_the_log_without_replacing_the_original(store):
+    ready_pair(store)
+    client, respond = FakeClient(fail_post=True), FakeRespond()
+    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1"}, respond, client)
+    card, log = respond.calls
+    assert card["blocks"][-1]["elements"][0]["value"] == "UA:UB:1"
+    assert log["text"].startswith("1턴 ")
+    assert [call["replace_original"] for call in respond.calls] == [False, False]
+    assert [call["thread_ts"] for call in respond.calls] == ["9.1", "9.1"]
 
 
 def test_a_rematch_waiting_on_the_opponent_keeps_its_echo_line_in_the_thread(store):

@@ -129,9 +129,7 @@ def post_direct_messages(client: WebClient, messages) -> None:
 
 def post_result(client: WebClient, channel: str, thread_ts: str | None, reply: Reply) -> None:
     """The summary with its button, then the turn log as the first reply in that message's thread."""
-    root = client.chat_postMessage(
-        channel=channel, thread_ts=thread_ts, text=fallback_text(reply), blocks=result_blocks(reply)
-    )
+    root = client.chat_postMessage(channel=channel, thread_ts=thread_ts, **_result_message(reply))
     try:
         client.chat_postMessage(channel=channel, thread_ts=thread_ts or root["ts"], text=fit(reply.text, LOG_TEXT_LIMIT))
     except Exception:
@@ -140,7 +138,7 @@ def post_result(client: WebClient, channel: str, thread_ts: str | None, reply: R
 
 def deliver(client: WebClient, delivery: Delivery) -> None:
     """Post a pending battle where it was asked for: the channel (thread), the slash command's still-fresh
-    response URL with the log inline, then a DM to the challenger when the bot cannot post there."""
+    response URL with the log as a second message, then a DM to the challenger when the bot cannot post there."""
     where, reply = delivery.where, delivery.reply
     try:
         post_result(client, where.channel_id, where.thread_ts, reply)
@@ -149,19 +147,30 @@ def deliver(client: WebClient, delivery: Delivery) -> None:
         log.warning("could not post a pending battle in its channel")
     if where.response_url:
         try:
-            sent = WebhookClient(where.response_url).send(
-                text=fallback_text(reply), blocks=result_blocks(reply, with_log=True), response_type="in_channel"
-            )
+            sent = respond_result(WebhookClient(where.response_url).send, reply, response_type="in_channel")
             if sent.status_code == 200:
                 return
         except Exception:
             log.warning("could not post a pending battle by response url")
     try:
-        client.chat_postMessage(
-            channel=delivery.challenger_id, text=f"{DM_FALLBACK_NOTE}\n{fallback_text(reply)}\n{reply.text}"
-        )
+        client.chat_postMessage(channel=delivery.challenger_id, text=DM_FALLBACK_NOTE)
+        post_result(client, delivery.challenger_id, None, reply)
     except Exception:
         log.warning("could not deliver a pending battle")
+
+
+def respond_result(send: Callable, reply: Reply, **message) -> object:
+    """Where no thread is possible (a response URL): the card, then the turn log as a second message."""
+    sent = send(**_result_message(reply), **message)
+    try:
+        send(text=fit(reply.text, LOG_TEXT_LIMIT), **message)
+    except Exception:
+        log.warning("could not post the turn log")
+    return sent
+
+
+def _result_message(reply: Reply) -> dict:
+    return {"text": fallback_text(reply), "blocks": result_blocks(reply)}
 
 
 def publish_in_thread(
@@ -174,7 +183,8 @@ def publish_in_thread(
         try:
             post_result(client, channel, thread_ts, reply)
         except Exception:
-            _fallback(respond, text=fallback_text(reply), blocks=result_blocks(reply, with_log=True), **visible)
+            _fallback(respond, **visible, **_result_message(reply))
+            _fallback(respond, **visible, text=fit(reply.text, LOG_TEXT_LIMIT))
     elif reply.in_channel:
         text = "\n".join(filter(None, (reply.echo, reply.text)))
         _post_line(client, channel, thread_ts, text, respond, message_blocks(reply, True))
@@ -223,7 +233,7 @@ def _publish_slash(client: WebClient, respond: Callable, channel: str, reply: Re
             post_result(client, channel, None, reply)
         except Exception:
             log.info("bot cannot post in the channel; answering through the response url")
-            respond(text=fallback_text(reply), blocks=result_blocks(reply, with_log=True), response_type="in_channel")
+            respond_result(respond, reply, response_type="in_channel")
         return
     if reply.public:
         respond(text="\n".join(filter(None, (reply.echo, reply.public))), response_type="in_channel")
