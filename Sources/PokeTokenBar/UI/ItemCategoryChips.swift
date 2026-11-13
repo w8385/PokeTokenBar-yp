@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// "전체" + 항목이 있는 분류 칩 줄. 선택한 분류가 사라지면(예: 마지막 아이템을 씀) 전체로 돌아간다.
+@MainActor
 struct ItemCategoryChips: View {
     let categories: [ItemCategory]
     @Binding var selection: ItemCategory?
