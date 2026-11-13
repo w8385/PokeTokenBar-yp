@@ -555,7 +555,8 @@ final class SaveTransferTests: XCTestCase {
         // 도감과 함께 따라가야 한다(옮긴 기기에서 같은 완성분에 중복 알림을 울리지 않는다).
         // rewardedDexRegions = 진행 — 보상으로 받은 사탕이 inventory 와 함께 따라가므로 받은 지역도 같이 가야
         // 옮긴 기기에서 같은 지역 보상을 한 번 더 받지 않는다.
-        let progress: Set<String> = ["usedSinceInstall", "spentTokens", "eggUsage", "eggTier",
+        // appliedTradeIDs = 진행 — 적용한 교환 기록은 도감과 함께 가야 옮긴 기기에서 같은 교환이 다시 적용되지 않는다.
+        let progress: Set<String> = ["usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
                                      "collectedFinals", "inventory",
