@@ -132,7 +132,7 @@ final class LocalizationInterpolationTests: XCTestCase {
             // Constant-derived substitution: hardcode it and the candy blurb drifts
             // away from the real XP value.
             // 상수 파생 치환 — 하드코딩으로 드리프트하면 사탕 설명이 실제 XP 와 어긋난다.
-            expect(lang, "itemDescription(.rareCandy)", l.itemDescription(.rareCandy),
+            expect(lang, "itemAppNote(.rareCandy)", l.itemAppNote(.rareCandy),
                    TokenFormatter.compact(RareCandy.xp))
             // Rarity label spliced into copy: a translation that spells the tier out
             // instead of substituting it is caught here.
