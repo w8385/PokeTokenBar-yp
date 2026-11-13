@@ -11,6 +11,29 @@ private struct OfflineProvider: PokeProviding, PokemonDetailProviding {
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails { throw URLError(.notConnectedToInternet) }
 }
 
+@MainActor
+private final class RegionProbe {
+    var region: PokedexRegion?
+}
+
+/// The real Pokédex grid with its region binding owned here, so the test reads the model instead of
+/// inferring it from pixels. Animations are off: the offscreen CI window gets no display-link ticks,
+/// so a fade could stay half-done for seconds with the previous grid still on screen.
+@MainActor
+private struct RegionHarness: View {
+    let store: CompanionStore
+    let probe: RegionProbe
+    @State private var region: PokedexRegion?
+
+    var body: some View {
+        DexGridView(store: store, searchText: "", shinyOnly: false, includeUnowned: false,
+                    sortOption: .numberAsc, selectedRarity: .constant(nil), selectedRegion: $region,
+                    returnAnchor: nil, onSelectSpecies: { _ in }, onResetFilters: {})
+            .onChange(of: region) { _, new in probe.region = new }
+            .transaction { $0.disablesAnimations = true }
+    }
+}
+
 /// The detail page replaces the grid/log, so Back rebuilds them. These drive the real `CollectionView`
 /// through that round trip and read the result off the rendered pixels.
 @MainActor
@@ -39,7 +62,11 @@ final class DexBackNavigationTests: XCTestCase {
     }
 
     private func host(_ store: CompanionStore, _ navigation: PopoverNavigation) -> NSView {
-        let host = NSHostingView(rootView: CollectionView(store: store, navigation: navigation)
+        host(CollectionView(store: store, navigation: navigation))
+    }
+
+    private func host<V: View>(_ content: V) -> NSView {
+        let host = NSHostingView(rootView: content
             .frame(width: PopoverMetrics.contentWidth, height: 520)
             .background(Color.white)
             .environment(\.colorScheme, .light))
@@ -168,34 +195,46 @@ final class DexBackNavigationTests: XCTestCase {
 
     // MARK: Pokédex grid
 
-    /// Uses the same complete rendered state before and after each attempt. Checking the state
-    /// before retrying avoids toggling a selection back off when the first click has just settled.
-    private func pressRegionChip(_ label: String, showing: [String], hiding: [String] = [],
+    /// Presses the chip, then waits for the grid's region binding to reach `region`. The binding is the
+    /// model, so a press is repeated only while it has changed nothing: a late render cannot turn a
+    /// successful press into a second toggle.
+    private func pressRegionChip(_ label: String, expecting region: PokedexRegion?, probe: RegionProbe,
                                  in root: NSView, file: StaticString = #filePath,
-                                 line: UInt = #line) async throws -> Bool {
-        func reached(_ seen: [Word]) -> Bool {
-            showing.allSatisfy { text in seen.contains { $0.reads(text, exactly: true) } }
-                && hiding.allSatisfy { text in !seen.contains { $0.reads(text, exactly: true) } }
-        }
-        var seen = try words(in: root)
-        for attempt in 1...5 {
-            if reached(seen) { return true }
-            let chip = try XCTUnwrap(try seen.compactMap { try $0.focused(on: label) }
-                .max { $0.box.midY < $1.box.midY },
-                "No glyph bounds for \(label). Seen: \(seen.map(\.candidates))", file: file, line: line)
-            print("Region click \(attempt): candidates=\(chip.candidates) glyphBox=\(chip.box)")
+                                 line: UInt = #line) async throws {
+        let seen = try words(in: root)
+        let chip = try XCTUnwrap(try seen.compactMap { try $0.focused(on: label) }
+            .max { $0.box.midY < $1.box.midY },
+            "No glyph bounds for \(label). Seen: \(seen.map(\.candidates))", file: file, line: line)
+        for attempt in 1...3 {
+            print("Region press \(attempt): candidates=\(chip.candidates) glyphBox=\(chip.box)")
             try press(chip, in: root)
-            let deadline = ContinuousClock.now + .seconds(1)
+            let deadline = ContinuousClock.now + .seconds(5)
             repeat {
-                try await Task.sleep(for: .milliseconds(50))
-                seen = try words(in: root)
-                if reached(seen) { return true }
+                try await Task.sleep(for: .milliseconds(20))
+                if probe.region == region { return }
             } while ContinuousClock.now < deadline
         }
         try saveRegionRender(root, phase: "failed")
-        XCTFail("Pressing \(label) did not show \(showing) / hide \(hiding). Seen: \(seen.map(\.candidates))",
+        XCTFail("Pressing \(label) left the region at \(String(describing: probe.region)), wanted \(String(describing: region))",
                 file: file, line: line)
-        return false
+    }
+
+    /// The pixels follow the model once the grid is laid out again. Nothing is pressed here.
+    private func waitForGrid(showing: [String], hiding: [String] = [], in root: NSView,
+                             file: StaticString = #filePath, line: UInt = #line) async throws {
+        let deadline = ContinuousClock.now + .seconds(20)
+        var seen: [Word] = []
+        repeat {
+            root.needsLayout = true
+            seen = try words(in: root)
+            let reached = showing.allSatisfy { text in seen.contains { $0.reads(text, exactly: true) } }
+                && hiding.allSatisfy { text in !seen.contains { $0.reads(text, exactly: true) } }
+            if reached { return }
+            try await Task.sleep(for: .milliseconds(100))
+        } while ContinuousClock.now < deadline
+        try saveRegionRender(root, phase: "failed")
+        XCTFail("Grid did not show \(showing) / hide \(hiding). Seen: \(seen.map(\.candidates))",
+                file: file, line: line)
     }
 
     /// CI already uploads this directory. Keep exact pixels alongside the click/OCR diagnostics.
@@ -242,21 +281,18 @@ final class DexBackNavigationTests: XCTestCase {
         ]
         try JSONEncoder().encode(state).write(to: file)
         let store = CompanionStore(provider: OfflineProvider(), fileURL: file)
-        let navigation = PopoverNavigation()
-        navigation.tab = .collection
-        let root = host(store, navigation)
+        let probe = RegionProbe()
+        let root = host(RegionHarness(store: store, probe: probe))
         try await waitForText("Maple", exactly: true, in: root)
         try await waitForText("Willow", exactly: true, in: root)
         try saveRegionRender(root, phase: "before")
 
-        guard try await pressRegionChip("Johto", showing: ["Willow"], hiding: ["Maple"], in: root) else { return }
-        XCTAssertFalse(try isRendered("Maple", exactly: true, in: root))
-        try await waitForText("Willow", exactly: true, in: root)
+        try await pressRegionChip("Johto", expecting: .johto, probe: probe, in: root)
+        try await waitForGrid(showing: ["Willow"], hiding: ["Maple"], in: root)
         try saveRegionRender(root, phase: "johto")
 
-        guard try await pressRegionChip("Johto", showing: ["Maple", "Willow"], in: root) else { return }
-        try await waitForText("Maple", exactly: true, in: root)
-        try await waitForText("Willow", exactly: true, in: root)
+        try await pressRegionChip("Johto", expecting: nil, probe: probe, in: root)
+        try await waitForGrid(showing: ["Maple", "Willow"], in: root)
         try saveRegionRender(root, phase: "restored")
     }
 
