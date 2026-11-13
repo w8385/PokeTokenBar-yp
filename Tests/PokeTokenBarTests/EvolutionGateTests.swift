@@ -295,6 +295,94 @@ final class EvolutionGateStoreTests: XCTestCase {
         XCTAssertEqual(s.state.dex.last?.finalID, 217)
     }
 
+    private func battle(_ at: Date, win: Bool = true) -> BattleInfo.RecentBattle {
+        BattleInfo.RecentBattle(opponentName: "o", result: win ? "win" : "loss",
+                                at: ISO8601DateFormatter().string(from: at))
+    }
+
+    func testBattlesBeforeTheFirstReadAreNotCreditedAndLaterOnesCountOnce() async throws {
+        let clock = GateClock()
+        let s = try store(tree: node(83, [node(865)]), clock: clock, state: savedMon(base: 83, plan: [83, 865]))
+        await loadLine(s)
+        s.applyUsage(s.tokensToNext)
+        let old = (0..<5).map { battle(clock.now.addingTimeInterval(-Double(3600 + $0 * 60))) }
+        s.syncBattles(old)
+        XCTAssertEqual(s.state.active?.evolution.played, 0)
+        XCTAssertEqual(s.currentSpeciesID, 83)
+        let fresh = (1...3).map { battle(clock.now.addingTimeInterval(Double($0 * 60))) }
+        s.syncBattles(Array(fresh.prefix(2)) + old)
+        XCTAssertEqual(s.state.active?.evolution.won, 2)
+        XCTAssertEqual(s.currentSpeciesID, 83)
+        s.syncBattles(Array(fresh.prefix(2)))
+        XCTAssertEqual(s.state.active?.evolution.won, 2, "re-reading the same battles adds nothing")
+        s.syncBattles(fresh)
+        XCTAssertEqual(s.currentSpeciesID, 865)
+        XCTAssertEqual(s.state.active?.evolution.played, 0, "the next form starts clean")
+    }
+
+    func testLossesCountOnlyTowardLossGates() async throws {
+        let clock = GateClock()
+        let s = try store(tree: node(540, [node(867)]), clock: clock, state: savedMon(base: 540, plan: [540, 867]))
+        await loadLine(s)
+        s.syncBattles([])
+        s.applyUsage(s.tokensToNext)
+        s.syncBattles([battle(clock.now.addingTimeInterval(60))])
+        XCTAssertEqual(s.currentSpeciesID, 540, "867 asks for a loss")
+        s.syncBattles([battle(clock.now.addingTimeInterval(120), win: false)])
+        XCTAssertEqual(s.currentSpeciesID, 867)
+    }
+
+    func testBlazingBurnIsATokenRainAndSlowerBurnIsNot() async throws {
+        let s = try store(tree: node(705, [node(706)]))
+        await s.hatch(baseID: 705)
+        s.applyUsage(s.tokensToNext)
+        for tier in [BurnTier.idle, .normal, .fast] {
+            s.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0, burnTier: tier,
+                     limitWarning: false, hasUsageData: true)
+        }
+        XCTAssertEqual(s.currentSpeciesID, 705)
+        s.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0, burnTier: .blazing,
+                 limitWarning: false, hasUsageData: true)
+        XCTAssertEqual(s.currentSpeciesID, 706)
+    }
+
+    func testClicksCountAsPetsOncePerCooldown() async throws {
+        let clock = GateClock()
+        let s = try store(tree: node(446, [node(143)]), clock: clock)
+        await s.hatch(baseID: 446)
+        for _ in 0..<3 {
+            clock.now.addTimeInterval(11)
+            s.growByClick()
+        }
+        s.growByClick()
+        XCTAssertEqual(s.state.active?.evolution.pets, 3)
+    }
+
+    func testEvolvingNincadaAlsoRegistersAShedinjaThatIsNeverPlanned() async throws {
+        for seed in 1...6 as ClosedRange<UInt64> {
+            let s = try store(tree: node(290, [node(291), node(292)]), seed: seed)
+            await s.hatch(baseID: 290)
+            XCTAssertEqual(s.state.active?.plannedPathIDs, [290, 291], "seed \(seed)")
+            s.applyUsage(s.tokensToNext)
+            XCTAssertEqual(s.currentSpeciesID, 291)
+            let shedinja = try XCTUnwrap(s.state.dex.first { $0.finalID == 292 })
+            XCTAssertEqual(shedinja.chainOrder, [290, 292])
+            XCTAssertNotNil(shedinja.profile)
+            XCTAssertTrue(s.state.collectedFinals.contains("290:292"))
+        }
+    }
+
+    func testGesturesAreOfferedOnlyWhileTheWaitingStepAsksForThem() async throws {
+        let s = try store(tree: node(686, [node(687)]), state: savedMon(base: 686, plan: [686, 687]))
+        await loadLine(s)
+        XCTAssertEqual(s.evolutionGestures, [.flip])
+        s.recordFlip()
+        XCTAssertEqual(s.evolutionGestures, [])
+        let plain = try store(tree: node(1, [node(2)]))
+        await plain.hatch(baseID: 1)
+        XCTAssertEqual(plain.evolutionGestures, [])
+    }
+
     func testSpeciesWithoutARuleEvolveByGrowthAsBefore() async throws {
         let s = try store(tree: node(1, [node(2, [node(3)])]))
         await s.hatch(baseID: 1)

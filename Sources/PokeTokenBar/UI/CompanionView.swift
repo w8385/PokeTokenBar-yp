@@ -717,6 +717,7 @@ struct CompanionHeader: View {
     // 연출 상태 — 부화/진화 순간 흰 플래시 + 스프링 스케일(본가 진화 신 오마주)
     @State private var flashOpacity: Double = 0
     @State private var celebScale: CGFloat = 1
+    @State private var petTurn: Double = 0
     @State private var shinyBurst = false
     @State private var dittoBurst = false   // 메타몽 리빌 🎭 버스트
     @State private var seenSeq = -1     // 재생 완료한 celebrationSeq (팝오버 재오픈 시 1회 재생 보장)
@@ -754,6 +755,7 @@ struct CompanionHeader: View {
             .background(Color.secondary.opacity(0.06))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .rotationEffect(.degrees(eggImminent && eggWiggle ? 5 : (eggImminent ? -5 : 0)))
+            .rotationEffect(.degrees(petTurn))
             .scaleEffect(celebScale)
             .overlay(RoundedRectangle(cornerRadius: 12).fill(.white).opacity(flashOpacity))
             .overlay(alignment: .topTrailing) {
@@ -792,6 +794,23 @@ struct CompanionHeader: View {
             }
             .modifier(ClickGrowthSprite(accessibilityLabel: "\(store.displayName), \(store.l.petButton)",
                                         onClick: pet))
+            .contextMenu {
+                ForEach(store.evolutionGestures, id: \.self) { gesture in
+                    Button(gesture == .flip ? store.l.evolutionFlipAction : store.l.evolutionSpinAction) {
+                        perform(gesture)
+                    }
+                }
+            }
+    }
+
+    private func perform(_ gesture: CompanionStore.EvolutionGesture) {
+        let turn: Double = gesture == .flip ? 180 : 720
+        withAnimation(.easeInOut(duration: 0.9)) { petTurn = turn }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            petTurn = 0
+            if gesture == .flip { store.recordFlip() } else { store.recordSpin() }
+        }
     }
 
     var body: some View {

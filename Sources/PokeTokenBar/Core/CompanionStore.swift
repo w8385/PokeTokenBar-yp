@@ -1114,6 +1114,7 @@ final class CompanionStore {
            a.usedAtStage >= stageThreshold(for: a) {
             Task { await revealDitto() }
         }
+        if burnTier == .blazing { recordTokenRain() }
         // A gate that waits on the clock (day/night) opens without any new usage.
         if let a = state.active, currentLine != nil, a.dittoDisguise == nil || a.dittoRevealed,
            a.usedAtStage >= stageThreshold(for: a), clock() >= nextEvolutionGateCheck {
@@ -1202,6 +1203,9 @@ final class CompanionStore {
                                       speciesID: a.currentID, form: a.form)
         let newName = formDisplayName(line.localizedName(next.speciesID, state.language),
                                       speciesID: next.speciesID, form: a.form)
+        if let companion = EvolutionRules.companions[next.speciesID] {
+            registerCompanion(companion, evolvedFrom: a, in: line)
+        }
         justEvolvedTo = newName
         fireCelebration(.evolve)
         // 짧은 levelUp 창 — 진화 순간 "…(으)로 진화했어요" 문구 노출(hatch/graduate 와 동일 패턴).
@@ -1211,6 +1215,22 @@ final class CompanionStore {
     }
 
     // MARK: 특이 진화 조건
+
+    private func registerCompanion(_ species: Int, evolvedFrom a: MonState, in line: EvoLine) {
+        let id = UUID().uuidString
+        var profile = PokemonProfile.generate(
+            seed: PokemonProfileMigration.seed("companion:\(id):\(species)"),
+            growthTokens: PokemonBalance.graduationTotal(a.rarity), instanceID: id)
+        profile.applyGrowth(0, rarity: a.rarity)
+        if let details = pokemonDetailsByID[species] { profile.enrich(with: details) }
+        let chain = Array(a.pathIDs.prefix(a.stageIndex + 1)) + [species]
+        state.collectedFinals.insert("\(a.baseID):\(species)")
+        state.dex.append(DexEntry(id: id, baseID: a.baseID, finalID: species, chainOrder: chain, rarity: a.rarity,
+                                  caughtAt: clock(), nature: a.nature, profile: profile,
+                                  names: Dictionary(uniqueKeysWithValues: chain.compactMap { sid in
+                                      line.names[sid].map { (sid, $0) }
+                                  })))
+    }
 
     /// Everything the evolution rules read about `mon` right now.
     func evolutionContext(for mon: MonState, thresholdOverride: Int? = nil) -> EvolutionContext {
@@ -1323,6 +1343,38 @@ final class CompanionStore {
         guard state.active != nil else { return }
         state.active!.evolution.record(battle: key, result: result)
         reevaluateEvolution()
+    }
+
+    /// Reads the bot's recent-battle list. Only battles after the cursor count; the first read just sets it.
+    func syncBattles(_ battles: [BattleInfo.RecentBattle]) {
+        guard state.active != nil else { return }
+        guard let cursor = state.active!.evolution.battleCursor else {
+            state.active!.evolution.battleCursor = clock()
+            save()
+            return
+        }
+        var newest = cursor
+        for battle in battles.sorted(by: { ($0.date ?? .distantPast) < ($1.date ?? .distantPast) }) {
+            guard let date = battle.date, date > cursor else { continue }
+            newest = max(newest, date)
+            let key = "\(battle.at ?? "")|\(battle.opponentName ?? "")|\(battle.result)"
+            let result: EvolutionRequirement.Tally = battle.isWin ? .won : (battle.result == "loss" ? .lost : .played)
+            state.active!.evolution.record(battle: key, result: result)
+        }
+        state.active!.evolution.battleCursor = newest
+        reevaluateEvolution()
+    }
+
+    enum EvolutionGesture: Equatable { case flip, spin }
+
+    /// Gestures the waiting step still asks for; the Home sprite offers them in its context menu.
+    var evolutionGestures: [EvolutionGesture] {
+        guard let pending = pendingEvolutionGate(), let progress = state.active?.evolution else { return [] }
+        let requirements = pending.rule.paths.flatMap { $0 }
+        var gestures: [EvolutionGesture] = []
+        if requirements.contains(.flipped), !progress.flipped { gestures.append(.flip) }
+        if requirements.contains(.spun), !progress.spun { gestures.append(.spin) }
+        return gestures
     }
 
     /// Children growth reaches by itself. Item-only forms (an apple, an armor) are reached by using the item.
@@ -1969,6 +2021,7 @@ final class CompanionStore {
             save()
             if state.eggUsage >= eggHatchThreshold { Task { await hatchIfNeeded() } }
         } else {
+            recordPet()
             applyUsage(xp)
         }
         return .counted(xp)
@@ -2380,7 +2433,7 @@ final class CompanionStore {
                                 stageIndex: 0, usedAtStage: 0, rarity: line.rarity, totalForms: evolutionPlan.count,
                                 isShiny: isShiny, nature: nature, profile: profile, hasGrowthBoost: hasGrowthBoost,
                                 dittoDisguise: dittoDisguise, form: form, prayers: prayers, tradeGated: true)
-        state.active!.evolution = EvolutionProgress(spentBaseline: state.spentTokens)
+        state.active!.evolution = EvolutionProgress(spentBaseline: state.spentTokens, battleCursor: clock())
         AppLog.write("hatch: base=\(line.baseID) rarity=\(line.rarity) shiny=\(isShiny) forms=\(evolutionPlan.count) boost=\(hasGrowthBoost) ditto=\(dittoDisguise != nil)")
         let name = formDisplayName(line.localizedName(line.baseID, state.language),
                                    speciesID: line.baseID, form: form)

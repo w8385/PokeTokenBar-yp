@@ -168,6 +168,7 @@ final class PartyUploader {
     @ObservationIgnored private let dexSource: @MainActor () -> DexSummary?
     @ObservationIgnored private let trades: TradeSync?
     @ObservationIgnored private var tradesUnsupported = false
+    @ObservationIgnored var onBattleInfo: (@MainActor (BattleInfo) -> Void)?
     @ObservationIgnored private var lastAttemptAt: Date?
     @ObservationIgnored private var lastAttemptBody: Data?
     @ObservationIgnored private var loop: Task<Void, Never>?
@@ -273,7 +274,10 @@ final class PartyUploader {
             lastSuccessAt = now
             tokenRejected = false
             lastAttemptFailed = false
-            if let info = BattleInfo.decode(reply) { battleInfo = info }
+            if let info = BattleInfo.decode(reply) {
+                battleInfo = info
+                onBattleInfo?(info)
+            }
         case 401: tokenRejected = true; lastAttemptFailed = false
         default: lastAttemptFailed = true
         }

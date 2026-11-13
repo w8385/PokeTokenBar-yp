@@ -16,12 +16,16 @@ struct EvolutionProgress: Codable, Equatable, Sendable {
     var tower: String?
     /// Battles already counted, so a re-read of the recent-battle list adds nothing.
     var seenBattles: [String] = []
+    /// Newest battle time already read; only later battles count, so the battles that were there when this
+    /// feature arrived (or when the egg hatched) are not credited. Nil until the first read.
+    var battleCursor: Date?
 
     static let seenBattleLimit = 200
 
-    init(spentBaseline: Int = 0, seenBattles: [String] = []) {
+    init(spentBaseline: Int = 0, seenBattles: [String] = [], battleCursor: Date? = nil) {
         self.spentBaseline = spentBaseline
         self.seenBattles = seenBattles
+        self.battleCursor = battleCursor
     }
 
     init(from decoder: Decoder) throws {
@@ -37,11 +41,12 @@ struct EvolutionProgress: Codable, Equatable, Sendable {
         rained = c.lenient(Bool.self, forKey: .rained, default: false)
         tower = c.lenientOptional(String.self, forKey: .tower)
         seenBattles = c.lenient([String].self, forKey: .seenBattles, default: [])
+        battleCursor = c.lenientOptional(Date.self, forKey: .battleCursor)
     }
 
     /// The next form starts clean, but battles already counted stay counted.
     func nextForm(spentBaseline: Int) -> EvolutionProgress {
-        EvolutionProgress(spentBaseline: spentBaseline, seenBattles: seenBattles)
+        EvolutionProgress(spentBaseline: spentBaseline, seenBattles: seenBattles, battleCursor: battleCursor)
     }
 
     mutating func record(battle key: String, result: EvolutionRequirement.Tally) {

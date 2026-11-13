@@ -20,6 +20,16 @@ extension L {
           "если покемон держит его, он учитывается в условии эволюции. В бою не действует.")
     }
 
+    var evolutionFlipAction: String {
+        t("뒤집어 보기", "Turn it upside down", "さかさまにする", "Poner boca abajo", "Retourner",
+          "Virar de cabeça para baixo", "Auf den Kopf stellen", "Перевернуть")
+    }
+
+    var evolutionSpinAction: String {
+        t("빙글빙글 돌리기", "Spin it around", "くるくる回す", "Hacerlo girar", "Le faire tourner",
+          "Girar", "Drehen", "Покрутить")
+    }
+
     var evolutionHeldBagHint: String {
         t("도감 상세의 진화 카드에서 장착해요",
           "Equip it from the Evolution card in the dex detail",

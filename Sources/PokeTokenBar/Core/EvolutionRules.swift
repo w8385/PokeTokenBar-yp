@@ -119,6 +119,9 @@ enum EvolutionRules {
     /// Steps PokéAPI lists with no condition at all (Manaphy under Phione); they keep growing by XP.
     static let unconditional: Set<Int> = [490]
 
+    /// Evolving into the key also registers the value as a second individual (Nincada → Ninjask leaves a Shedinja).
+    static let companions: [Int: Int] = [291: 292]
+
     static let stones: Set<String> = [
         "fire-stone", "water-stone", "thunder-stone", "leaf-stone", "moon-stone", "sun-stone", "shiny-stone",
         "dusk-stone", "dawn-stone", "ice-stone",
