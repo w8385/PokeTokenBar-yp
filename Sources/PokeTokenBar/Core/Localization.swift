@@ -2121,7 +2121,7 @@ struct L {
         case .duskStone: return t("어둠의돌", "Dusk Stone", "やみのいし", "Piedra Noche", "Pierre Nuit", "Pedra do Anoitecer", "Finsterstein", "Тёмный камень")
         case .dawnStone: return t("각성의돌", "Dawn Stone", "めざめいし", "Piedra Alba", "Pierre Aube", "Pedra do Amanhecer", "Funkelstein", "Рассветный камень")
         case .iceStone: return t("얼음의돌", "Ice Stone", "こおりのいし", "Piedra Hielo", "Pierre Glace", "Pedra do Gelo", "Eisstein", "Ледяной камень")
-        case .linkingCord: return t("연결의끈", "Linking Cord", "つながりのヒモ", "Cordón Unión", "Cordon Lien", "Cordão Elo", "Verbindungsband", "Связующий шнур")
+        case .linkingCord: return t("연결의끈", "Linking Cord", "つながりのヒモ", "Cordón Unión", "Fil de Liaison", "Cordão Elo", "Verbindungsschnur", "Связующий шнур")
         case .leftovers: return t("먹다남은음식", "Leftovers", "たべのこし", "Restos", "Restes", "Sobras", "Überreste", "Остатки")
         case .choiceScarf: return t("구애스카프", "Choice Scarf", "こだわりスカーフ", "Pañuelo Elección", "Mouchoir Choix", "Lenço Escolha", "Wahlschal", "Шарф выбора")
         case .choiceBand: return t("구애머리띠", "Choice Band", "こだわりハチマキ", "Cinta Elección", "Bandeau Choix", "Faixa Escolha", "Wahlband", "Головная повязка выбора")
@@ -2440,15 +2440,7 @@ struct L {
                  "Ticket de recrutement : \(p)", "Bilhete de recrutamento: \(p)", "\(p)-Scouting-Ticket", "Билет разведки: \(p)")
     }
     func scoutDescription(_ pool: ScoutPool) -> String {
-        let p = scoutPoolName(pool)
-        return t("\(p) 포켓몬 10마리를 보고 알 하나를 직접 골라요.",
-                 "See 10 random \(p) Pokémon and pick the egg you want.",
-                 "\(p)のポケモン10匹から、ほしいタマゴを選べます。",
-                 "Mira 10 Pokémon al azar de \(p) y elige el huevo que quieras.",
-                 "Découvre 10 Pokémon au hasard de \(p) et choisis l'œuf que tu veux.",
-                 "Veja 10 Pokémon aleatórios de \(p) e escolha o ovo que quiser.",
-                 "Sieh dir 10 zufällige Pokémon aus \(p) an und such dir das Ei aus.",
-                 "Покажет 10 случайных покемонов (\(p)) — выберите яйцо, какое хотите.")
+        ItemLore.text(ItemLore.scoutTicketSlug, in: lang).replacingOccurrences(of: "{pool}", with: scoutPoolName(pool))
     }
     var scoutShopHint: String {
         t("지역마다 티켓이 있어요. 그 지역 포켓몬 10마리 중에서 알을 직접 골라요.",

@@ -8,6 +8,9 @@ enum ItemLore {
         return entry.texts[language.rawValue] ?? entry.texts["en"] ?? ""
     }
 
+    /// Scout tickets are counted by `scout.<pool>` inventory keys, so they share one table entry with a `{pool}` placeholder.
+    static let scoutTicketSlug = "app-scout-ticket"
+
     static func isAppOriginal(_ slug: String) -> Bool { ItemLoreTable.entries[slug]?.appOriginal ?? false }
 
     /// nil for app-original items and for languages PokéAPI has no item names for.
@@ -23,6 +26,7 @@ extension ItemKind {
         case .rareCandy: return "rare-candy"
         case .mint: return "app-mint"
         case .shinyCharm: return "shiny-charm"
+        case .linkingCord: return "linking-cord"
         default: return heldItemSlug ?? evolutionItemName ?? rawValue
         }
     }

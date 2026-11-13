@@ -108,27 +108,27 @@ extension L {
     // MARK: Linking Cord
 
     var linkingCordDescription: String {
-        t("졸업한 포켓몬에게 쓰면 교환한 것처럼 진화해요. 통신 교환으로만 진화하는 포켓몬에게 써요.",
-          "Use it on a graduated Pokémon to evolve it as if it had been traded. For Pokémon that only evolve by trade.",
-          "卒業したポケモンに使うと、交換したかのように進化します。通信交換でしか進化しないポケモン用です。",
-          "Úsalo con un Pokémon graduado para que evolucione como si lo hubieras intercambiado. Para Pokémon que solo evolucionan por intercambio.",
-          "À utiliser sur un Pokémon diplômé pour le faire évoluer comme s'il avait été échangé. Pour les Pokémon qui n'évoluent que par échange.",
-          "Use em um Pokémon formado para evoluí-lo como se tivesse sido trocado. Para Pokémon que só evoluem por troca.",
-          "Auf ein Pokémon im Ruhestand angewendet, entwickelt es sich, als wäre es getauscht worden. Für Pokémon, die sich nur durch Tausch entwickeln.",
-          "Применяется к выпустившемуся покемону: он эволюционирует, как после обмена. Для покемонов, эволюционирующих только обменом.")
+        t("졸업한 포켓몬에게 쓰면 교환한 것처럼 진화해요.",
+          "Use it on a graduated Pokémon to evolve it as if it had been traded.",
+          "卒業したポケモンに使うと、交換したかのように進化します。",
+          "Úsalo con un Pokémon graduado para que evolucione como si lo hubieras intercambiado.",
+          "À utiliser sur un Pokémon diplômé pour le faire évoluer comme s'il avait été échangé.",
+          "Use em um Pokémon formado para evoluí-lo como se tivesse sido trocado.",
+          "Auf ein Pokémon im Ruhestand angewendet, entwickelt es sich, als wäre es getauscht worden.",
+          "Применяется к выпустившемуся покемону: он эволюционирует, как после обмена.")
     }
     var linkingCordBagHint: String {
         t("도감에서 졸업한 포켓몬을 열어 사용해요", "Open a graduated Pokémon in the Pokédex to use it", "図鑑で卒業したポケモンを開いて使います", "Abre un Pokémon graduado en la Pokédex para usarlo", "Ouvre un Pokémon diplômé dans le Pokédex pour l'utiliser", "Abra um Pokémon formado na Pokédex para usar", "Öffne ein Pokémon im Ruhestand im Pokédex, um es zu benutzen", "Откройте выпустившегося покемона в Покедексе")
     }
-    var linkingCordUse: String { t("연결의끈 사용", "Use Linking Cord", "つながりのヒモを使う", "Usar Cordón Unión", "Utiliser le Cordon Lien", "Usar Cordão Elo", "Verbindungsband benutzen", "Использовать шнур") }
+    var linkingCordUse: String { t("연결의끈 사용", "Use Linking Cord", "つながりのヒモを使う", "Usar Cordón Unión", "Utiliser le Fil de Liaison", "Usar Cordão Elo", "Verbindungsschnur benutzen", "Использовать шнур") }
     func linkingCordWrongTarget(_ pokemon: String) -> String {
         t("\(pokemon)은(는) 교환으로 진화하지 않아요. 연결의끈은 그대로 남아 있어요.",
           "\(pokemon) doesn't evolve by trade. Your Linking Cord is kept.",
           "\(pokemon)は交換では進化しません。つながりのヒモはそのまま残ります。",
           "\(pokemon) no evoluciona por intercambio. Conservas el Cordón Unión.",
-          "\(pokemon) n'évolue pas par échange. Tu gardes le Cordon Lien.",
+          "\(pokemon) n'évolue pas par échange. Tu gardes le Fil de Liaison.",
           "\(pokemon) não evolui por troca. O Cordão Elo foi mantido.",
-          "\(pokemon) entwickelt sich nicht durch Tausch. Das Verbindungsband bleibt erhalten.",
+          "\(pokemon) entwickelt sich nicht durch Tausch. Die Verbindungsschnur bleibt erhalten.",
           "\(pokemon) не эволюционирует обменом. Шнур остался у вас.")
     }
     var linkingCordUnavailable: String {
@@ -136,9 +136,9 @@ extension L {
           "The evolution data could not be loaded right now. Your Linking Cord is kept.",
           "いま進化の情報を読み込めませんでした。つながりのヒモはそのまま残ります。",
           "No se pudieron cargar los datos de evolución. Conservas el Cordón Unión.",
-          "Les données d'évolution n'ont pas pu être chargées. Tu gardes le Cordon Lien.",
+          "Les données d'évolution n'ont pas pu être chargées. Tu gardes le Fil de Liaison.",
           "Não foi possível carregar os dados de evolução. O Cordão Elo foi mantido.",
-          "Die Entwicklungsdaten konnten nicht geladen werden. Das Verbindungsband bleibt erhalten.",
+          "Die Entwicklungsdaten konnten nicht geladen werden. Die Verbindungsschnur bleibt erhalten.",
           "Не удалось загрузить данные об эволюции. Шнур остался у вас.")
     }
 }

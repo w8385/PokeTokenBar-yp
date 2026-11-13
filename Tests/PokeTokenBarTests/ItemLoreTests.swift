@@ -15,6 +15,12 @@ final class ItemLoreTests: XCTestCase {
             for stone in MegaStone.all {
                 XCTAssertFalse(l.megaStoneDescription(stone).isEmpty, "\(stone.slug) \(lang)")
             }
+            for pool in ScoutPool.all {
+                let text = l.scoutDescription(pool)
+                XCTAssertFalse(text.isEmpty, "\(pool.key) \(lang)")
+                XCTAssertFalse(text.contains("{pool}"), "\(pool.key) \(lang)")
+                XCTAssertTrue(text.contains(l.scoutPoolName(pool)), "\(pool.key) \(lang)")
+            }
         }
     }
 
@@ -27,13 +33,15 @@ final class ItemLoreTests: XCTestCase {
     }
 
     func testAppOriginalItemsAreFlaggedAndOfficialOnesAreNot() {
-        XCTAssertTrue(ItemLore.isAppOriginal(ItemKind.mint.loreSlug))
-        for kind in ItemKind.allCases where kind != .mint {
-            XCTAssertFalse(ItemLore.isAppOriginal(kind.loreSlug), "\(kind)")
+        // The Linking Cord is in the games, but PokéAPI has no flavor text for it yet.
+        let flaggedKinds: Set<ItemKind> = [.mint, .linkingCord]
+        for kind in ItemKind.allCases {
+            XCTAssertEqual(ItemLore.isAppOriginal(kind.loreSlug), flaggedKinds.contains(kind), "\(kind)")
         }
+        XCTAssertTrue(ItemLore.isAppOriginal(ItemLore.scoutTicketSlug))
         XCTAssertFalse(ItemLore.isAppOriginal("venusaurite"), "a Gen 6 Mega Stone has official text")
         let flagged = ItemLoreTable.entries.filter(\.value.appOriginal).keys
-        let known = Set(MegaStone.all.map(\.slug)).union([ItemKind.mint.loreSlug])
+        let known = Set(MegaStone.all.map(\.slug)).union(flaggedKinds.map(\.loreSlug)).union([ItemLore.scoutTicketSlug])
         XCTAssertTrue(Set(flagged).isSubset(of: known), "an official item was flagged app-original")
     }
 

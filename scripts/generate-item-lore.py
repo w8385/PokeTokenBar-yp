@@ -31,6 +31,7 @@ ITEMS = [
     "fire-stone", "water-stone", "thunder-stone", "leaf-stone", "moon-stone",
     "sun-stone", "shiny-stone", "dusk-stone", "dawn-stone", "ice-stone",
     "leftovers", "choice-scarf", "choice-band", "focus-sash", "life-orb", "expert-belt", "charcoal",
+    "linking-cord",
 ]
 
 # Items that are not in the games: hand-written in the same in-game voice, all eight app languages.
@@ -45,6 +46,17 @@ APP_ORIGINAL = {
         "de": "Eine Minze mit frischem Duft. Sie ändert das Wesen eines Pokémon zufällig.",
         "ru": "Мята со свежим ароматом. Случайным образом меняет характер покемона.",
     },
+    # {pool} is replaced with the region name (or "National") when the text is looked up.
+    "app-scout-ticket": {
+        "ko": "{pool} 포켓몬 10마리를 보여 주는 스카우트 티켓. 마음에 드는 알 하나를 고를 수 있다.",
+        "en": "A ticket for scouting. It shows 10 random {pool} Pokémon, and you pick the Egg you want.",
+        "ja": "{pool}の　ポケモンを　10ぴき　みせてくれる　スカウトチケット。　ほしい　タマゴを　ひとつ　えらべる。",
+        "es": "Un boleto de exploración. Muestra 10 Pokémon al azar de {pool} y permite elegir el huevo que quieras.",
+        "fr": "Un ticket de recrutement. Il présente 10 Pokémon au hasard de {pool} et permet de choisir l'œuf voulu.",
+        "pt": "Um bilhete de recrutamento. Mostra 10 Pokémon aleatórios de {pool} e permite escolher o ovo que quiser.",
+        "de": "Ein Scouting-Ticket. Es zeigt 10 zufällige Pokémon aus {pool}, und man wählt das gewünschte Ei aus.",
+        "ru": "Билет разведки. Показывает 10 случайных покемонов ({pool}), и можно выбрать нужное яйцо.",
+    },
 }
 
 # Mega Stones in the games that PokéAPI has no text for yet: the official wording, minus the species name.
@@ -57,6 +69,21 @@ MEGA_FALLBACK = {
     "pt": "Uma das misteriosas Mega Pedras. Se o Pokémon correspondente a segurar, ele poderá Mega Evoluir em batalha.",
     "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
     "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
+}
+
+
+# Non-Mega items that exist in the games but have no flavor text in PokéAPI yet.
+NO_TEXT_YET = {
+    "linking-cord": {
+        "ko": "신비한 끈. 사용하면 통신 교환으로 진화하는 포켓몬이 그 자리에서 진화한다.",
+        "en": "A mysterious cord. Using it makes a Pokémon that evolves by trade evolve right away.",
+        "ja": "ふしぎな　ヒモ。　つかうと　つうしんこうかんで　しんかする　ポケモンが　その　ばで　しんかする。",
+        "es": "Un cordón misterioso. Al usarlo, un Pokémon que evoluciona por intercambio evoluciona al instante.",
+        "fr": "Un fil mystérieux. Utilisé, il fait évoluer aussitôt un Pokémon qui évolue par échange.",
+        "pt": "Um cordão misterioso. Ao usá-lo, um Pokémon que evolui por troca evolui na hora.",
+        "de": "Eine geheimnisvolle Schnur. Verwendet entwickelt sie ein Pokémon sofort, das sich durch Tausch entwickelt.",
+        "ru": "Таинственный шнур. Если его применить, покемон, эволюционирующий обменом, эволюционирует сразу.",
+    },
 }
 
 
@@ -84,7 +111,7 @@ def main():
     for slug in slugs:
         e = fetched[slug]
         if not e["text"]:
-            e["appOriginal"], e["text"] = True, MEGA_FALLBACK
+            e["appOriginal"], e["text"] = True, NO_TEXT_YET.get(slug, MEGA_FALLBACK)
             flagged.append(slug)
         append_entry(lines, slug, e["appOriginal"], e["name"], e["text"])
     for slug, texts in APP_ORIGINAL.items():
@@ -93,7 +120,7 @@ def main():
     OUT.write_text("\n".join(lines))
     print(f"wrote {OUT.relative_to(ROOT)} ({len(slugs) - len(flagged)} official, {len(flagged) + len(APP_ORIGINAL)} app-original)")
     if flagged:
-        print("no PokéAPI text yet, using MEGA_FALLBACK:", ", ".join(flagged), file=sys.stderr)
+        print("no PokéAPI text yet, using NO_TEXT_YET / MEGA_FALLBACK:", ", ".join(flagged), file=sys.stderr)
 
 
 def append_entry(lines, slug, app_original, names, texts):
@@ -108,7 +135,7 @@ def append_entry(lines, slug, app_original, names, texts):
 
 def fetch(slug, order):
     data = get(f"item/{slug}")
-    names = {n["language"]["name"].lower(): n["name"] for n in data["names"]}
+    names = {n["language"]["name"].lower(): n["name"].strip() for n in data["names"]}
     entry = {"appOriginal": False, "name": {}, "text": {}, "group": {}}
     for key, codes in LANGS.items():
         for code in codes:

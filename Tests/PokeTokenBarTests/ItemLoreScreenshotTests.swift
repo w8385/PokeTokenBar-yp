@@ -35,7 +35,7 @@ final class ItemLoreScreenshotTests: XCTestCase {
             state.active = MonState(baseID: 4, pathIDs: [4, 5], stageIndex: 0, usedAtStage: 0,
                                     rarity: .common, totalForms: 2,
                                     profile: PokemonProfile.generate(seed: 5, instanceID: "raised"))
-            state.inventory = ["rareCandy": 3, "fireStone": 1, "leftovers": 1, "shinyCharm": 1]
+            state.inventory = ["rareCandy": 3, "fireStone": 1, "leftovers": 1, "shinyCharm": 1, "linkingCord": 1, "scout.national": 1]
             let file = scratch.appendingPathComponent("state-\(language.rawValue).json")
             try JSONEncoder().encode(state).write(to: file)
             let store = CompanionStore(provider: LoreShotProvider(), fileURL: file)
