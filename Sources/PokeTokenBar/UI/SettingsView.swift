@@ -370,6 +370,8 @@ struct SettingsView: View {
                 Toggle(l.backViewLabel, isOn: $store.alwaysFacesBack)
                     .labelsHidden().toggleStyle(.switch).controlSize(.small)
             }
+            Divider()
+            toggleRow(l.cryLabel, $store.crySoundsEnabled, hint: l.cryHint)
             if store.floatingPetEnabled {
                 Divider()
                 groupRow {

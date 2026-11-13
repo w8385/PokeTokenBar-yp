@@ -504,7 +504,9 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     func petClicked() {
         if tracker.dismissBubble() { agentDidChange() }
         let growth = companion.growByClick()
-        clickRouter.handle(subjectIsEgg: companion.representativeSubject.speciesID == nil)
+        let subject = companion.representativeSubject
+        CryPlayer.shared.play(speciesID: subject.speciesID, form: subject.form)
+        clickRouter.handle(subjectIsEgg: subject.speciesID == nil)
         switch growth {
         case .counted: prayerBurst.spawn(glyph: PrayerBurst.heart)
         case .tooSoon: break

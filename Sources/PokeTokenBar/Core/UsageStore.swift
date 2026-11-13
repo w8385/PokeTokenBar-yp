@@ -183,6 +183,9 @@ final class UsageStore {
     var alwaysFacesBack: Bool {
         didSet { defaults.set(alwaysFacesBack, forKey: "alwaysFacesBack") }
     }
+    var crySoundsEnabled: Bool {
+        didSet { defaults.set(crySoundsEnabled, forKey: CryPlayer.enabledKey) }
+    }
     /// 플로팅 펫 스프라이트 한 변 크기(pt).
     var floatingPetSize: Double {
         didSet { defaults.set(floatingPetSize, forKey: "floatingPetSize") }
@@ -967,6 +970,7 @@ final class UsageStore {
         statusChecksEnabled = d.object(forKey: "statusChecksEnabled") as? Bool ?? true
         floatingPetEnabled = d.object(forKey: "floatingPetEnabled") as? Bool ?? false
         alwaysFacesBack = d.object(forKey: "alwaysFacesBack") as? Bool ?? false
+        crySoundsEnabled = d.object(forKey: CryPlayer.enabledKey) as? Bool ?? true
         floatingPetSize = d.object(forKey: "floatingPetSize") as? Double ?? 96
         floatingPetBubbleAlerts = d.object(forKey: "floatingPetBubbleAlerts") as? Bool ?? true
         floatingPetAgentActivity = d.object(forKey: "floatingPetAgentActivity") as? Bool ?? true
