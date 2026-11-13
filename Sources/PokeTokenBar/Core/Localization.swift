@@ -2108,9 +2108,9 @@ struct L {
     /// 아이템 표시명 — species 처럼 공식 현지명.
     func itemName(_ kind: ItemKind) -> String {
         switch kind {
-        case .rareCandy: return t("이상한 사탕", "Rare Candy", "ふしぎなアメ", "Caramelo Raro", "Super Bonbon", "Doce Raro", "Sonderbonbon", "Редкая конфета")
+        case .rareCandy: return t("이상한사탕", "Rare Candy", "ふしぎなアメ", "Caramelo Raro", "Super Bonbon", "Doce Raro", "Sonderbonbon", "Редкая конфета")
         case .mint:      return t("민트", "Mint", "ミント", "Menta", "Menthe", "Menta", "Minze", "Мята")
-        case .shinyCharm: return t("이로치 부적", "Shiny Charm", "ひかるおまもり", "Amuleto Iris", "Charme Chroma", "Amuleto Shiny", "Schillerpin", "Шайни-талисман")
+        case .shinyCharm: return t("빛나는부적", "Shiny Charm", "ひかるおまもり", "Amuleto Iris", "Charme Chroma", "Amuleto Shiny", "Schillerpin", "Шайни-талисман")
         case .fireStone: return t("불꽃의돌", "Fire Stone", "ほのおのいし", "Piedra Fuego", "Pierre Feu", "Pedra do Fogo", "Feuerstein", "Огненный камень")
         case .waterStone: return t("물의돌", "Water Stone", "みずのいし", "Piedra Agua", "Pierre Eau", "Pedra da Água", "Wasserstein", "Водный камень")
         case .thunderStone: return t("천둥의돌", "Thunder Stone", "かみなりのいし", "Piedra Trueno", "Pierre Foudre", "Pedra do Trovão", "Donnerstein", "Громовой камень")
@@ -2123,9 +2123,9 @@ struct L {
         case .iceStone: return t("얼음의돌", "Ice Stone", "こおりのいし", "Piedra Hielo", "Pierre Glace", "Pedra do Gelo", "Eisstein", "Ледяной камень")
         case .linkingCord: return t("연결의끈", "Linking Cord", "つながりのヒモ", "Cordón Unión", "Cordon Lien", "Cordão Elo", "Verbindungsband", "Связующий шнур")
         case .leftovers: return t("먹다남은음식", "Leftovers", "たべのこし", "Restos", "Restes", "Sobras", "Überreste", "Остатки")
-        case .choiceScarf: return t("구애스카프", "Choice Scarf", "こだわりスカーフ", "Pañuelo Elegido", "Mouchoir Choix", "Lenço Escolha", "Wahlschal", "Шарф выбора")
-        case .choiceBand: return t("구애머리띠", "Choice Band", "こだわりハチマキ", "Cinta Elegida", "Bandeau Choix", "Faixa Escolha", "Wahlband", "Головная повязка выбора")
-        case .focusSash: return t("기합의띠", "Focus Sash", "きあいのタスキ", "Banda Focus", "Ceinture Force", "Faixa Focus", "Fokusband", "Пояс фокуса")
+        case .choiceScarf: return t("구애스카프", "Choice Scarf", "こだわりスカーフ", "Pañuelo Elección", "Mouchoir Choix", "Lenço Escolha", "Wahlschal", "Шарф выбора")
+        case .choiceBand: return t("구애머리띠", "Choice Band", "こだわりハチマキ", "Cinta Elección", "Bandeau Choix", "Faixa Escolha", "Wahlband", "Головная повязка выбора")
+        case .focusSash: return t("기합의띠", "Focus Sash", "きあいのタスキ", "Banda Aguante", "Ceinture Force", "Faixa Focus", "Fokusgurt", "Пояс фокуса")
         case .lifeOrb: return t("생명의구슬", "Life Orb", "いのちのたま", "Vidasfera", "Orbe Vie", "Orbe Vital", "Leben-Orb", "Сфера жизни")
         case .expertBelt: return t("달인의띠", "Expert Belt", "たつじんのおび", "Cinta Experto", "Ceinture Pro", "Cinto Perito", "Expertengurt", "Пояс эксперта")
         case .charcoal: return t("목탄", "Charcoal", "もくたん", "Carbón", "Charbon", "Carvão", "Holzkohle", "Древесный уголь")
@@ -2262,50 +2262,61 @@ struct L {
           "\(pokemon) не эволюционирует с предметом «\(stone)». Предмет остался у вас.")
     }
 
-    func itemDescription(_ kind: ItemKind) -> String {
+    /// 아이템 설명 — 본가 공식 문구(없는 아이템은 같은 말투로 쓴 앱 고유 문구). 표는 `ItemLoreTable`, pt·ru 는 영어 폴백.
+    func itemDescription(_ kind: ItemKind) -> String { ItemLore.text(kind.loreSlug, in: lang) }
+    func megaStoneDescription(_ stone: MegaStone) -> String { ItemLore.text(stone.loreSlug, in: lang) }
+
+    private var appNoteLabel: String {
+        t("이 앱", "In this app", "このアプリ", "En esta app", "Dans l'app", "Neste app", "In dieser App", "В приложении")
+    }
+
+    /// 본가 문구 아래 한 줄 — 이 앱에서 실제로 하는 일. 앱 고유 아이템은 문구 자체가 앱 동작이라 비어 있다.
+    func itemAppNote(_ kind: ItemKind) -> String {
+        guard let line = itemAppNoteBody(kind) else { return "" }
+        return "\(appNoteLabel): \(line)"
+    }
+
+    func megaStoneAppNote(_ stone: MegaStone) -> String { "\(appNoteLabel): \(megaStoneEffect)" }
+
+    private func itemAppNoteBody(_ kind: ItemKind) -> String? {
         if kind.isEvolutionStone {
-            return t("쓰면 이 돌로 진화하는 포켓몬이 바로 진화해요. 진화 갈래가 여럿이면 이 돌의 갈래로 가요.",
-                     "Evolves a Pokémon that evolves with this stone right away. If it branches, it takes this stone's branch.",
-                     "この石で進化するポケモンがすぐに進化します。分岐があるときはこの石の進化先になります。",
-                     "Hace evolucionar al instante a un Pokémon que evoluciona con esta piedra. Si hay ramas, sigue la de esta piedra.",
-                     "Fait évoluer aussitôt un Pokémon qui évolue avec cette pierre. S'il y a plusieurs branches, il suit celle de la pierre.",
-                     "Evolui na hora um Pokémon que evolui com esta pedra. Se houver ramificações, segue a desta pedra.",
-                     "Entwickelt ein Pokémon, das sich mit diesem Stein entwickelt, sofort. Bei mehreren Zweigen folgt es dem Zweig dieses Steins.",
-                     "Мгновенно эволюционирует покемона, который эволюционирует с этим камнем. При ветвлении выбирается ветка этого камня.")
+            return t("현재 포켓몬이 맞으면 이 돌의 갈래로 바로 진화해요.",
+                     "if your current Pokémon fits, it evolves right away along this stone's branch.",
+                     "いまのポケモンが合えば、この石の進化先にすぐ進化します。",
+                     "si tu Pokémon actual encaja, evoluciona al instante por la rama de esta piedra.",
+                     "si ton Pokémon actuel est compatible, il évolue aussitôt selon la branche de cette pierre.",
+                     "se o seu Pokémon atual combinar, ele evolui na hora pela ramificação desta pedra.",
+                     "passt dein aktuelles Pokémon, entwickelt es sich sofort auf dem Zweig dieses Steins.",
+                     "если текущий покемон подходит, он сразу эволюционирует по ветке этого камня.")
         }
         switch kind {
         case .rareCandy:
             let xp = TokenFormatter.compact(RareCandy.xp)   // 상수에서 파생(하드코딩 드리프트 방지)
-            return t("현재 포켓몬의 경험치를 \(xp) 올려줘요.",
-                     "Raises your Pokémon's EXP by \(xp).",
-                     "ポケモンの経験値を\(xp)上げます。",
-                     "Aumenta la experiencia de tu Pokémon en \(xp).",
-                     "Augmente l'EXP de ton Pokémon de \(xp).",
-                     "Aumenta a experiência do seu Pokémon em \(xp).",
-                     "Gibt deinem aktuellen Pokémon \(xp) EP.",
-                     "Увеличивает опыт покемона на \(xp).")
+            return t("경험치 \(xp)를 올려요.",
+                     "adds \(xp) EXP to your current Pokémon.",
+                     "いまのポケモンの経験値を\(xp)増やします。",
+                     "suma \(xp) de EXP a tu Pokémon actual.",
+                     "ajoute \(xp) d'EXP à ton Pokémon actuel.",
+                     "adiciona \(xp) de EXP ao seu Pokémon atual.",
+                     "gibt deinem aktuellen Pokémon \(xp) EP.",
+                     "добавляет текущему покемону \(xp) опыта.")
         case .mint:
-            return t("현재 포켓몬의 성격을 랜덤으로 바꿔줘요.",
-                     "Randomly changes your Pokémon's nature.",
-                     "ポケモンのせいかくをランダムに変えます。",
-                     "Cambia aleatoriamente la naturaleza de tu Pokémon.",
-                     "Change aléatoirement la nature de ton Pokémon.",
-                     "Muda a natureza do seu Pokémon aleatoriamente.",
-                     "Ändert das Wesen deines aktuellen Pokémon zufällig.",
-                     "Случайно меняет характер покемона.")
+            return nil
         case .shinyCharm:
-            return t("보유하면 이로치 포켓몬이 태어날 확률이 올라가요.",
-                     "While owned, raises the chance of hatching a shiny.",
-                     "持っていると色違いが生まれる確率が上がります。",
-                     "Mientras lo tengas, aumenta la probabilidad de que nazca un Pokémon variocolor.",
-                     "Tant que tu le possèdes, augmente les chances qu'un Pokémon chromatique éclose.",
-                     "Enquanto estiver na sua bolsa, aumenta a chance de nascer um Pokémon shiny.",
-                     "Erhöht im Beutel die Chance, dass ein schillerndes Pokémon schlüpft.",
-                     "Пока он у вас, повышает шанс, что вылупится шайни.")
+            let base = PokemonOdds.shinyDenominator, boosted = ShinyCharm.shinyDenominator
+            return t("이로치 부화 확률이 1/\(base)에서 1/\(boosted)로 올라요.",
+                     "raises the shiny hatch odds from 1/\(base) to 1/\(boosted).",
+                     "色違いが生まれる確率が1/\(base)から1/\(boosted)に上がります。",
+                     "sube la probabilidad de eclosión variocolor de 1/\(base) a 1/\(boosted).",
+                     "la chance d'éclosion chromatique passe de 1/\(base) à 1/\(boosted).",
+                     "a chance de nascer shiny sobe de 1/\(base) para 1/\(boosted).",
+                     "die Chance auf ein schillerndes Pokémon steigt von 1/\(base) auf 1/\(boosted).",
+                     "шанс вылупления шайни растёт с 1/\(base) до 1/\(boosted).")
         case .linkingCord:
             return linkingCordDescription
         default:
-            return heldItemEffect(kind)   // 진화의 돌은 위에서 처리
+            let effect = heldItemEffect(kind)
+            return effect.isEmpty ? nil : effect
         }
     }
     /// 가방 사용 컨트롤의 효과 힌트 — 민트("성격 랜덤 변경", 사탕의 "+XP" 자리).

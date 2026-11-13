@@ -201,7 +201,7 @@ struct BattleEntrySection: View {
                 }
             }
             if let held {
-                Text(l.itemDescription(held)).font(.caption2).foregroundStyle(.secondary)
+                Text(l.heldItemEffect(held)).font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 12).padding(.bottom, 6)
             } else if let heldStone {

@@ -75,8 +75,11 @@ private struct MegaStoneCard: View {
                         Text("×\(count)").font(.caption.weight(.bold)).foregroundStyle(.secondary).monospacedDigit()
                         Spacer(minLength: 4)
                     }
-                    Text(l.megaStoneEffect)
+                    Text(l.megaStoneDescription(stone))
                         .font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(l.megaStoneAppNote(stone))
+                        .font(.caption2).foregroundStyle(.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -128,6 +131,11 @@ private struct ItemCard: View {
                     Text(l.itemDescription(kind))
                         .font(.caption).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+                    if !l.itemAppNote(kind).isEmpty {
+                        Text(l.itemAppNote(kind))
+                            .font(.caption2).foregroundStyle(.tertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
             if kind == .rareCandy, let preview = store.planRareCandyUse(count: selectedCandyCount) {

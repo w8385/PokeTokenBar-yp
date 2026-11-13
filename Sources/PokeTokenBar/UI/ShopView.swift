@@ -113,6 +113,11 @@ private struct ShopItemCard: View {
                     Text(l.itemDescription(kind))
                         .font(.caption).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+                    if !l.itemAppNote(kind).isEmpty {
+                        Text(l.itemAppNote(kind))
+                            .font(.caption2).foregroundStyle(.tertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
                 // 바깥 Spacer 없음 — 이름 줄의 Spacer 가 남는 폭을 전부 받아 Stepper 를 카드 오른쪽 끝에
                 // 붙인다(가방 ItemCard 와 같은 구조). 둘 다 두면 남는 폭을 나눠 가져 Stepper 가 가운데에 뜬다.
@@ -200,8 +205,11 @@ private struct MegaStoneShopCard: View {
                         }
                         Spacer(minLength: 4)
                     }
-                    Text(l.megaStoneEffect)
+                    Text(l.megaStoneDescription(stone))
                         .font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(l.megaStoneAppNote(stone))
+                        .font(.caption2).foregroundStyle(.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }

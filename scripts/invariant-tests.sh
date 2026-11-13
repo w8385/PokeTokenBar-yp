@@ -28,6 +28,7 @@ CLASSES=(
   UsageEnvironmentTests            # env keys registered, providers do not read them directly
   LiveCredentialCallGateTests      # networking limit providers are gated
   AppLogTests                      # logging call sites use the flushing writer
+  ItemLoreTests                    # every item has official text and name in every language
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).
