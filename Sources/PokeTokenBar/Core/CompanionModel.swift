@@ -190,6 +190,26 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case rareCandy
     case mint
     case shinyCharm
+    case fireStone, waterStone, thunderStone, leafStone, moonStone
+    case sunStone, shinyStone, duskStone, dawnStone, iceStone
+
+    /// PokéAPI 아이템 이름(`use-item` 진화의 `item`). nil = 진화의 돌 아님.
+    var evolutionItemName: String? {
+        switch self {
+        case .rareCandy, .mint, .shinyCharm: return nil
+        case .fireStone: return "fire-stone"
+        case .waterStone: return "water-stone"
+        case .thunderStone: return "thunder-stone"
+        case .leafStone: return "leaf-stone"
+        case .moonStone: return "moon-stone"
+        case .sunStone: return "sun-stone"
+        case .shinyStone: return "shiny-stone"
+        case .duskStone: return "dusk-stone"
+        case .dawnStone: return "dawn-stone"
+        case .iceStone: return "ice-stone"
+        }
+    }
+    var isEvolutionStone: Bool { evolutionItemName != nil }
 
     /// PokéAPI 아이템 스프라이트 파일명(.../sprites/items/{name}.png). nil = 스프라이트 없음(이모지 폴백만).
     var spriteName: String? {
@@ -197,6 +217,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return "rare-candy"
         case .mint: return nil   // PokéAPI 에 민트 스프라이트 없음(8세대 아이템) → 이모지 폴백
         case .shinyCharm: return "shiny-charm"
+        default: return evolutionItemName
         }
     }
     /// 스프라이트 로딩 전/미제공/실패 시 폴백 이모지.
@@ -205,6 +226,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return "🍬"
         case .mint: return "🌿"
         case .shinyCharm: return "✨"
+        default: return "💎"
         }
     }
     /// 상점 판매가(재화 = 사용한 토큰). nil = 상점 미판매.
@@ -213,15 +235,22 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return RareCandy.price
         case .mint: return Mint.price
         case .shinyCharm: return ShinyCharm.price
+        default: return EvolutionStone.price
         }
     }
     /// 보유형(패시브) 아이템 — 소비하지 않고 보유하는 동안 상시 효과. 1회 구매(재구매 불가), 가방엔 "적용 중" 표시.
     var isPassive: Bool {
         switch self {
-        case .rareCandy, .mint: return false
         case .shinyCharm: return true
+        default: return false
         }
     }
+}
+
+/// 진화의 돌 밸런스 상수 — 소모품. 쓰면 그 돌로 진화하는 갈래로 바로 진화한다(현재 단계 XP는 그대로 이어진다).
+enum EvolutionStone {
+    /// 단계에 남은 XP를 건너뛰는 값이라 사탕 2개 값(1B)으로 둔다. 돌 10종 모두 같은 값.
+    static let price = 1_000_000_000
 }
 
 /// 이상한 사탕 밸런스 상수.
@@ -348,6 +377,13 @@ enum PokemonAssets {
 struct EvoNode: Codable, Sendable {
     let speciesID: Int
     let children: [EvoNode]
+    /// 부모에서 이 노드로 진화하는 방법들(PokéAPI `evolution_details`). 비면 방법 미상 — 기존처럼 XP로 진화한다.
+    var methods: [EvoMethod] = []
+
+    /// 진화의 돌(use-item)로 이 노드로 진화하나.
+    func evolves(withItem item: String) -> Bool {
+        methods.contains { $0.trigger == "use-item" && $0.item == item }
+    }
 
     /// 최장 경로 길이(형태 수). 분기는 보통 같은 깊이라 대표값으로 사용.
     var depth: Int { 1 + (children.map(\.depth).max() ?? 0) }
@@ -364,7 +400,38 @@ struct EvoNode: Codable, Sendable {
     /// 지원 범위 안의 종만 남긴 진화 트리. 지원하지 않는 종부터 그 하위 체인도 제외한다.
     func keepingSupportedSpecies() -> EvoNode? {
         guard PokemonAssets.isSupported(speciesID: speciesID) else { return nil }
-        return EvoNode(speciesID: speciesID, children: children.compactMap { $0.keepingSupportedSpecies() })
+        return EvoNode(speciesID: speciesID, children: children.compactMap { $0.keepingSupportedSpecies() },
+                       methods: methods)
+    }
+
+    /// 같은 방법(레벨업 등)으로 갈리는 형제 갈래 중 지금 시간대에 맞는 쪽을 고른다(이브이 → 에이피/블래키).
+    /// 계획된 갈래에 시간대 조건이 없거나 이미 맞으면 그대로, 맞는 형제가 없어도 그대로.
+    static func resolvingTimeOfDay(_ planned: EvoNode, among siblings: [EvoNode], at period: DayPeriod) -> EvoNode {
+        let plannedTimes = planned.methods.filter { !($0.timeOfDay ?? "").isEmpty }
+        guard !plannedTimes.isEmpty, !plannedTimes.contains(where: { $0.timeOfDay == period.rawValue }) else {
+            return planned
+        }
+        let triggers = Set(plannedTimes.map(\.trigger))
+        return siblings.first { sibling in
+            sibling.speciesID != planned.speciesID
+                && sibling.methods.contains { $0.timeOfDay == period.rawValue && triggers.contains($0.trigger) }
+        } ?? planned
+    }
+}
+
+/// PokéAPI 진화 조건 중 갈래 선택에 쓰는 것만. 성별·교환·장소 등은 각 기능이 필요할 때 여기에 더한다.
+struct EvoMethod: Codable, Equatable, Sendable {
+    let trigger: String       // "level-up" · "use-item" · "trade" …
+    var item: String?         // use-item 의 아이템 이름("water-stone")
+    var timeOfDay: String?    // "day" · "night" (없으면 nil)
+}
+
+/// 진화 순간의 낮/밤 — 이 맥의 로컬 시계 기준(06:00–17:59 낮, 그 밖은 밤).
+enum DayPeriod: String, Sendable {
+    case day, night
+
+    static func at(_ date: Date, calendar: Calendar = .current) -> DayPeriod {
+        (6..<18).contains(calendar.component(.hour, from: date)) ? .day : .night
     }
 }
 

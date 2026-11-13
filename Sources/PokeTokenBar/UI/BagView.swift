@@ -49,6 +49,7 @@ private struct ItemCard: View {
     let count: Int
     @State private var confirming = false
     @State private var candyCount = 1
+    @State private var stoneRejected = false
 
     private var selectedCandyCount: Int { min(candyCount, max(1, store.maxRareCandyUseCount)) }
 
@@ -92,6 +93,10 @@ private struct ItemCard: View {
                 }
             }
             useControls(l)
+            if stoneRejected {
+                Text(l.stoneWrongHint(store.displayName, l.itemName(kind)))
+                    .font(.caption2).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
@@ -107,6 +112,7 @@ private struct ItemCard: View {
         case .rareCandy: return store.canUseRareCandy
         case .mint:      return store.canUseMint
         case .shinyCharm: return false   // 보유형 — 사용 개념 없음(상시 효과)
+        default:         return store.canUseStone(kind)
         }
     }
     /// 사용 컨트롤 효과 힌트 ("+XP" / "성격 랜덤 변경").
@@ -115,14 +121,18 @@ private struct ItemCard: View {
         case .rareCandy: return "+\(TokenFormatter.compact(selectedCandyCount * RareCandy.xp)) XP"
         case .mint:      return l.mintEffectHint
         case .shinyCharm: return l.shinyCharmEffectHint
+        default:         return l.stoneEffectHint
         }
     }
-    private func performUse() {
+    /// 사용했는데 효과가 없으면(맞지 않는 돌) false — 가방에 남아 안내를 보인다.
+    private func performUse() -> Bool {
         switch kind {
         case .rareCandy: _ = store.useRareCandy(count: selectedCandyCount)
         case .mint:      _ = store.useMint()
         case .shinyCharm: break   // 보유형 — 사용 동작 없음
+        default:         return store.useEvolutionStone(kind) != .wrongStone
         }
+        return true
     }
 
     @ViewBuilder
@@ -164,7 +174,8 @@ private struct ItemCard: View {
     /// 사용 → 항상 Home 탭으로 전환(진화/졸업 연출·"+XP"·성격 변경 토스트는 Home 의 CompanionHeader 에서 재생).
     private func useNow() {
         confirming = false
-        performUse()
+        stoneRejected = false
+        guard performUse() else { stoneRejected = true; return }
         nav.tab = .home
     }
 }

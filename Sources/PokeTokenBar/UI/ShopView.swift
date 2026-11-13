@@ -25,6 +25,12 @@ struct ShopView: View {
                         EggCard(store: store, nav: nav, tier: tier)
                     }
                 }
+                Text(l.shopEvolutionSection)
+                    .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    .padding(.top, 4)
+                ForEach(store.evolutionStoneItems, id: \.self) { kind in
+                    ShopItemCard(store: store, kind: kind)
+                }
             }
             .reservesScrollerLane()
         }
