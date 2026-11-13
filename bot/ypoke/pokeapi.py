@@ -2,6 +2,8 @@
 
 import json
 import threading
+import time
+import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
@@ -10,7 +12,8 @@ from ypoke.store import Store
 
 API_BASE = "https://pokeapi.co/api/v2"
 TIMEOUT_SECONDS = 10
-ATTEMPTS = 3
+ATTEMPTS = 2
+RETRY_BACKOFF_SECONDS = 1.0
 MOVE_FETCH_WORKERS = 6
 _REQUEST_SLOTS = threading.BoundedSemaphore(MOVE_FETCH_WORKERS)
 # Side games and remakes with their own learnsets; used only when a Pokémon appears in no main game.
@@ -47,6 +50,27 @@ class PokeAPIService:
         data = self._fetch(pokemon_id)
         self._store.cache_pokemon(pokemon_id, data)
         return data
+
+    def warm(self, members: list[dict]) -> int:
+        """Cache the species, learnset and moves every member needs, in parallel within the request slots.
+
+        Every member is tried; the first OSError is raised afterwards. Returns the number of distinct Pokémon.
+        """
+        needed = sorted({(member["pokemon_id"], member["level"]) for member in members})
+
+        def fetch(item: tuple[int, int]) -> OSError | None:
+            try:
+                self.pokemon(item[0])
+                self.attacking_moves(*item)
+            except OSError as error:
+                return error
+            return None
+
+        with ThreadPoolExecutor(max_workers=MOVE_FETCH_WORKERS) as pool:
+            errors = [error for error in pool.map(fetch, needed) if error is not None]
+        if errors:
+            raise errors[0]
+        return len({pokemon_id for pokemon_id, _ in needed})
 
     def attacking_moves(self, pokemon_id: int, level: int) -> list[dict]:
         """Damaging and weather-setting level-up moves learned at or below `level`, oldest first. Raises on network errors.
@@ -161,12 +185,22 @@ def _id_from_url(url: str) -> int:
 
 def _get_json(url: str) -> dict:
     request = urllib.request.Request(url, headers={"User-Agent": "ypoke-bot/1.0"})
-    for _ in range(ATTEMPTS - 1):
+    for attempt in range(1, ATTEMPTS + 1):
         try:
             return _read(request)
-        except TimeoutError:
-            pass
-    return _read(request)
+        except OSError as error:
+            if attempt == ATTEMPTS or not _is_transient(error):
+                raise
+            time.sleep(RETRY_BACKOFF_SECONDS * attempt)
+    raise AssertionError("unreachable")
+
+
+def _is_transient(error: OSError) -> bool:
+    if isinstance(error, urllib.error.HTTPError):
+        return error.code >= 500
+    if isinstance(error, urllib.error.URLError):
+        return isinstance(error.reason, TimeoutError)
+    return isinstance(error, TimeoutError)
 
 
 def _read(request: urllib.request.Request) -> dict:
