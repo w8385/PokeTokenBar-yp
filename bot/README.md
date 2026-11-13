@@ -1,9 +1,10 @@
 # YPoke bot
 
-Slack bot for one-on-one office battles between PokeTokenBar users' Pokémon.
+Slack bot for office battles between PokeTokenBar users' Pokémon, up to three each.
 Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Pokémon to ([API.md](API.md)).
 
-- `/대결 @상대` runs one automatic one-on-one battle (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
+- `/대결 @상대` runs one automatic battle. Each side sends out up to three Pokémon in the order the app uploaded;
+  when one faints the next comes in, and a side that runs out loses (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
   level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather and 27 common abilities) and posts a turn-by-turn
   log, written like the in-game battle text. The channel gets a context line ("who ran which command", since
   Slack shows nobody a typed slash command), a one-line result and a "다시 붙기" button; the turn log is the
@@ -29,8 +30,9 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   thread, then a DM to the challenger).
 - A `rental` Pokémon (the app's starter before the first hatch) fights at the opponent's level (capped at 50) and is
   announced as "대여 포켓몬 …". It counts in records like any other.
-- `/대결 @YPoke` or a channel message `@YPoke 대결` is a practice battle against a random species
-  (#1–1025, picked from the battle seed) at your Pokémon's battle level. Nothing is recorded.
+- `/대결 @YPoke` or a channel message `@YPoke 대결` is a practice battle against a random team: as many
+  distinct species (#1–1025, picked from the battle seed) as you send out, each at the level of your Pokémon in
+  the same slot. Nothing is recorded.
 - `/포켓몬연결` DMs the caller a "PokeTokenBar 연결" button. It opens
   `poketokenbar://ypoke-register?token=…&server=…`, which saves the upload token and server in the app.
   The token is also in the DM for pasting by hand. Running it again rotates the token.

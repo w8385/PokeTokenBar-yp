@@ -53,7 +53,7 @@ final class BattleInfoScreenshotTests: XCTestCase {
 
         let defaults = UserDefaults(suiteName: "battleinfo-shot-\(UUID())")!
         let battle = BattleEntryStore(defaults: defaults)
-        battle.choose("pikachu")
+        battle.add("pikachu")
         let reply = ReplyHolder(syntheticReply)
         let uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,

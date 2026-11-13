@@ -71,7 +71,7 @@ final class BattlePickerTests: XCTestCase {
         XCTAssertEqual(store.filteredBattleCandidates(rarity: .common, shinyOnly: true).map(\.id), [])
     }
 
-    func testSendingFromTheDexDetailSetsOnlyTheBattleSlot() throws {
+    func testSendingFromTheDexDetailFillsTheNextSlotAndTouchesNothingElse() throws {
         let store = store()
         _ = store.setRepresentativeSpeciesID(10)
         let raisedBefore = store.state.active?.profile?.instanceID
@@ -81,7 +81,7 @@ final class BattlePickerTests: XCTestCase {
         XCTAssertFalse(battle.isFighting(pikachu, in: store))
         XCTAssertTrue(battle.sendToBattle(pikachu, in: store))
 
-        XCTAssertEqual(battle.slot?.instanceID, "pikachu")
+        XCTAssertEqual(battle.slots.map(\.instanceID), ["raised", "pikachu"])
         XCTAssertTrue(battle.isFighting(pikachu, in: store))
         XCTAssertEqual(store.representativeSpeciesID, 10)
         XCTAssertEqual(store.state.active?.profile?.instanceID, raisedBefore)
@@ -95,7 +95,25 @@ final class BattlePickerTests: XCTestCase {
 
         XCTAssertTrue(battle.sendToBattle(raised, in: store))
 
-        XCTAssertEqual(battle.slot?.instanceID, "raised")
+        XCTAssertEqual(battle.slots.map(\.instanceID), ["raised"])
+    }
+
+    func testTheButtonKnowsWhenTheLineupIsFullAndNeverAddsTheSamePokemonTwice() throws {
+        let store = store()
+        let battle = entryStore()
+        let pikachu = try XCTUnwrap(store.dexEntries.first { $0.id == "pikachu" })
+        let caterpie = try XCTUnwrap(store.dexEntries.first { $0.id == "caterpie" })
+        battle.add("stale")
+        XCTAssertFalse(battle.isFull(in: store))
+
+        XCTAssertTrue(battle.sendToBattle(pikachu, in: store))
+        XCTAssertFalse(battle.isFull(in: store))
+        XCTAssertTrue(battle.sendToBattle(caterpie, in: store))
+
+        XCTAssertEqual(battle.slots.map(\.instanceID), ["raised", "pikachu", "caterpie"])
+        XCTAssertTrue(battle.isFull(in: store))
+        XCTAssertFalse(battle.sendToBattle(pikachu, in: store))
+        XCTAssertEqual(battle.slots.count, 3)
     }
 
     func testAReleasedIndividualCannotBeSent() throws {
@@ -104,17 +122,18 @@ final class BattlePickerTests: XCTestCase {
         let battle = entryStore()
 
         XCTAssertFalse(battle.sendToBattle(gone, in: store))
-        XCTAssertNil(battle.slot)
+        XCTAssertEqual(battle.slots, [])
     }
 
-    func testPickingFromTheDexDoesNotMoveTheBattleSlotOfAnotherPick() throws {
+    func testAPickDoesNotFollowTheRaisedPokemonOrTheRepresentative() throws {
         let store = store()
+        _ = store.setRepresentativeSpeciesID(25)
         let battle = entryStore()
-        battle.choose("caterpie")
+        battle.add("caterpie")
         let pikachu = try XCTUnwrap(store.dexEntries.first { $0.id == "pikachu" })
 
         XCTAssertFalse(battle.isFighting(pikachu, in: store))
-        XCTAssertEqual(battle.slot?.instanceID, "caterpie")
+        XCTAssertEqual(BattleEntry.lineup(state: store.state, slots: battle.slots).map(\.id), ["caterpie"])
     }
 
     func testBattleLevelCapAppliesOnlyAboveFifty() {

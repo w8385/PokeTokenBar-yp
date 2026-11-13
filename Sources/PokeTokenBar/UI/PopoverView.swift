@@ -54,11 +54,11 @@ final class PopoverNavigation {
     var tab: PopoverTab = .home {
         didSet {
             if tab != .collection { dexDetailCollectionID = nil }
-            if tab != .battle { showingBattlePicker = false }
+            if tab != .battle { battlePicker = nil }
         }
     }
     /// The Battle tab's fighter picker replaces the tab's content while open.
-    var showingBattlePicker = false
+    var battlePicker: BattlePickerTarget?
     /// 일반적인 컬렉션 재진입에는 마지막 세그먼트를 유지하되, 대표 포켓몬 선택 진입점은 도감으로 강제한다.
     var showingCollectionLog = false {
         didSet { if showingCollectionLog != oldValue { dexDetailCollectionID = nil } }
@@ -82,7 +82,7 @@ final class PopoverNavigation {
         showSettings = false
         expandAdvancedOnOpen = false
         showingRecap = false
-        showingBattlePicker = false
+        battlePicker = nil
         tab = .home
     }
 

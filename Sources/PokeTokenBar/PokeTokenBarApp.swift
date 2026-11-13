@@ -128,7 +128,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         updater = UpdateChecker()
         partyUploader = PartyUploader { [weak companion, battleEntry] in
             companion.map {
-                BattleEntry.party(state: $0.state, slot: battleEntry.slot, rentalSpeciesID: battleEntry.rentalSpeciesID)
+                BattleEntry.party(state: $0.state, slots: battleEntry.slots, rentalSpeciesID: battleEntry.rentalSpeciesID)
             } ?? []
         } dexSource: { [weak companion] in
             companion.map { DexSummary($0) }

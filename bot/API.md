@@ -1,8 +1,8 @@
 # YPoke party upload API
 
 The app posts the user's battle Pokémon to the YPoke bot. The bot keeps only the latest
-upload per user and sends out its first Pokémon in one-on-one `/대결` battles. Battles
-never change the party.
+upload per user and sends out its first three Pokémon, in order, in `/대결` battles. When
+one faints the next comes in; there is no switching. Battles never change the party.
 
 - Base URL: the bot's `YPOKE_PUBLIC_URL`, for example `http://<bot-host>:8790`
 - Auth: `Authorization: Bearer <token>`. Users get the token from `/포켓몬연결`:
@@ -38,7 +38,7 @@ Replaces the caller's stored party.
 | Field | Type | Rules |
 |---|---|---|
 | `app_version` | string | optional, max 32 chars |
-| `party` | array | The battle Pokémon: the one chosen in the app's battle tab, or the Pokémon being raised. Up to 6 are accepted for older clients; battles use the first |
+| `party` | array | The battle Pokémon in battle order: up to 3 chosen in the app's battle tab, or the Pokémon being raised. Up to 6 are accepted for older clients; battles use the first 3. An upload of one is a one-member side |
 | `pokemon_id` | int | PokéAPI `/pokemon/{id}` id: `1..1025`, or `10001..10999` for alternate forms |
 | `level` | int | `1..100`. Battles use `min(level, 50)`; moves stay what the Pokémon knows at its real level |
 | `name` | string | optional display name, max 40 chars. Default: Korean species name from PokéAPI |
