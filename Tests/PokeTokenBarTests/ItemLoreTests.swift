@@ -31,6 +31,7 @@ final class ItemLoreTests: XCTestCase {
         for kind in ItemKind.allCases where kind != .mint {
             XCTAssertFalse(ItemLore.isAppOriginal(kind.loreSlug), "\(kind)")
         }
+        XCTAssertFalse(ItemLore.isAppOriginal("venusaurite"), "a Gen 6 Mega Stone has official text")
         let flagged = ItemLoreTable.entries.filter(\.value.appOriginal).keys
         let known = Set(MegaStone.all.map(\.slug)).union([ItemKind.mint.loreSlug])
         XCTAssertTrue(Set(flagged).isSubset(of: known), "an official item was flagged app-original")

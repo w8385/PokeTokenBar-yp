@@ -2281,37 +2281,37 @@ struct L {
     private func itemAppNoteBody(_ kind: ItemKind) -> String? {
         if kind.isEvolutionStone {
             return t("현재 포켓몬이 맞으면 이 돌의 갈래로 바로 진화해요.",
-                     "if your current Pokémon fits, it evolves right away along this stone's branch.",
+                     "If your current Pokémon fits, it evolves right away along this stone's branch.",
                      "いまのポケモンが合えば、この石の進化先にすぐ進化します。",
-                     "si tu Pokémon actual encaja, evoluciona al instante por la rama de esta piedra.",
-                     "si ton Pokémon actuel est compatible, il évolue aussitôt selon la branche de cette pierre.",
-                     "se o seu Pokémon atual combinar, ele evolui na hora pela ramificação desta pedra.",
-                     "passt dein aktuelles Pokémon, entwickelt es sich sofort auf dem Zweig dieses Steins.",
-                     "если текущий покемон подходит, он сразу эволюционирует по ветке этого камня.")
+                     "Si tu Pokémon actual encaja, evoluciona al instante por la rama de esta piedra.",
+                     "Si ton Pokémon actuel est compatible, il évolue aussitôt selon la branche de cette pierre.",
+                     "Se o seu Pokémon atual combinar, ele evolui na hora pela ramificação desta pedra.",
+                     "Passt dein aktuelles Pokémon, entwickelt es sich sofort auf dem Zweig dieses Steins.",
+                     "Если текущий покемон подходит, он сразу эволюционирует по ветке этого камня.")
         }
         switch kind {
         case .rareCandy:
             let xp = TokenFormatter.compact(RareCandy.xp)   // 상수에서 파생(하드코딩 드리프트 방지)
-            return t("경험치 \(xp)를 올려요.",
-                     "adds \(xp) EXP to your current Pokémon.",
+            return t("경험치를 \(xp) 올려요.",
+                     "Adds \(xp) EXP to your current Pokémon.",
                      "いまのポケモンの経験値を\(xp)増やします。",
-                     "suma \(xp) de EXP a tu Pokémon actual.",
-                     "ajoute \(xp) d'EXP à ton Pokémon actuel.",
-                     "adiciona \(xp) de EXP ao seu Pokémon atual.",
-                     "gibt deinem aktuellen Pokémon \(xp) EP.",
-                     "добавляет текущему покемону \(xp) опыта.")
+                     "Suma \(xp) de EXP a tu Pokémon actual.",
+                     "Ajoute \(xp) d'EXP à ton Pokémon actuel.",
+                     "Adiciona \(xp) de EXP ao seu Pokémon atual.",
+                     "Gibt deinem aktuellen Pokémon \(xp) EP.",
+                     "Добавляет текущему покемону \(xp) опыта.")
         case .mint:
             return nil
         case .shinyCharm:
             let base = PokemonOdds.shinyDenominator, boosted = ShinyCharm.shinyDenominator
             return t("이로치 부화 확률이 1/\(base)에서 1/\(boosted)로 올라요.",
-                     "raises the shiny hatch odds from 1/\(base) to 1/\(boosted).",
+                     "Raises the shiny hatch odds from 1/\(base) to 1/\(boosted).",
                      "色違いが生まれる確率が1/\(base)から1/\(boosted)に上がります。",
-                     "sube la probabilidad de eclosión variocolor de 1/\(base) a 1/\(boosted).",
-                     "la chance d'éclosion chromatique passe de 1/\(base) à 1/\(boosted).",
-                     "a chance de nascer shiny sobe de 1/\(base) para 1/\(boosted).",
-                     "die Chance auf ein schillerndes Pokémon steigt von 1/\(base) auf 1/\(boosted).",
-                     "шанс вылупления шайни растёт с 1/\(base) до 1/\(boosted).")
+                     "Sube la probabilidad de eclosión variocolor de 1/\(base) a 1/\(boosted).",
+                     "La chance d'éclosion chromatique passe de 1/\(base) à 1/\(boosted).",
+                     "A chance de nascer shiny sobe de 1/\(base) para 1/\(boosted).",
+                     "Die Chance auf ein schillerndes Pokémon steigt von 1/\(base) auf 1/\(boosted).",
+                     "Шанс вылупления шайни растёт с 1/\(base) до 1/\(boosted).")
         case .linkingCord:
             return linkingCordDescription
         default:

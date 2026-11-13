@@ -14,7 +14,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "에너지가 가득한 사탕. 먹이면 포켓몬 1마리의 레벨이 1만큼 올라간다.",
                 "en": "A candy that is packed with energy. When consumed, it will instantly raise the level of a single Pokémon by one.",
-                "ja": "エネルギーの　つまった　アメ。あたえると　ポケモン　１ひきのレベルが　１だけ　あがる。",
+                "ja": "エネルギーの　つまった　アメ。　あたえると　ポケモン　１ひきの　レベルが　１だけ　あがる。",
                 "es": "Caramelo energético que sube a un Pokémon de nivel.",
                 "fr": "Un bonbon plein d’énergie. Il permet à un Pokémon de monter d’un niveau.",
                 "de": "Ein energiereiches Bonbon, das den Level eines Pokémon dauerhaft um 1 erhöht.",
@@ -24,7 +24,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "지니고 있으면 빛나는 포켓몬과 만나기 쉬워진다고 전해지는 이상하고 매우 반짝이는 부적.",
                 "en": "A shiny charm said to increase the chance of finding a Shiny Pokémon in the wild.",
-                "ja": "もっていると　ひかる　ポケモンとであいやすくなる　といわれるふしぎで　ひかりかがやく　おまもり。",
+                "ja": "もっていると　ひかる　ポケモンと　であいやすくなる　といわれる　ふしぎで　ひかりかがやく　おまもり。",
                 "es": "Misterioso amuleto brillante que aumenta la probabilidad de encontrar Pokémon variocolor.",
                 "fr": "Un mystérieux charme scintillant qui facilite la rencontre avec les Pokémon chromatiques.",
                 "de": "Ein mysteriöser, schillernder Glücksbringer, der die Wahrscheinlichkeit erhöht, Schillernde Pokémon zu finden.",
@@ -34,7 +34,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 주황색을 띠고 있다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. The stone has a fiery orange heart.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。だいだいいろを　している。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　だいだいいろを　している。",
                 "es": "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Es amarilla con una marca naranja.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est jaune et orange.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er schimmert in den Farben Orange und Gelb.",
@@ -44,7 +44,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 투명한 푸른색을 띠고 있다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It is the blue of a pool of clear water.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。すんだ　みずいろを　している。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　すんだ　みずいろを　している。",
                 "es": "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Es de color azul.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est de couleur bleue.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er ist hellblau.",
@@ -54,7 +54,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 천둥번개 무늬가 있다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It has a distinct thunderbolt pattern.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。いなずまの　もようが　ある。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　いなずまの　もようが　ある。",
                 "es": "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Tiene grabado un rayo.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Un éclair est dessiné dessus.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er hat ein Blitzmuster.",
@@ -64,7 +64,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 잎사귀 무늬가 있다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It has an unmistakable leaf pattern.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。はっぱの　もようが　ある。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　はっぱの　もようが　ある。",
                 "es": "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Tiene grabada una hoja.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Une feuille est dessinée dessus.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er hat ein Blattmuster.",
@@ -74,7 +74,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 밤하늘처럼 까맣다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It is as black as the night sky.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。よぞらのように　くろい。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　よぞらのように　くろい。",
                 "es": "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Es oscura como la noche.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est sombre comme la nuit.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er ist schwarz wie die Nacht.",
@@ -84,7 +84,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 태양처럼 빨갛다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It burns as red as the evening sun.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。たいようのように　あかい。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　たいようのように　あかい。",
                 "es": "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Es roja como el núcleo del sol.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est rouge comme le soleil couchant.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er ist rot wie die Abendsonne.",
@@ -94,7 +94,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 빛처럼 눈부시다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It shines with a dazzling light.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。ひかりのように　まぶしい。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　ひかりのように　まぶしい。",
                 "es": "Una piedra peculiar que hace evolucionar a algunos Pokémon. Tiene un brillo espectacular.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle brille d’une lumière aveuglante.",
                 "de": "Dieser besondere, hell leuchtende Stein hilft manchen Pokémon bei ihrer Entwicklung.",
@@ -104,7 +104,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 칠흑처럼 어둡다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It holds shadows as dark as can be.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。やみのように　くらい。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　やみのように　くらい。",
                 "es": "Una piedra peculiar que hace evolucionar a algunos Pokémon. Es oscura como la noche.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est sombre comme une nuit sans lune.",
                 "de": "Dieser besondere, düstere Stein hilft manchen Pokémon bei ihrer Entwicklung.",
@@ -114,7 +114,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 눈동자처럼 아름답다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It sparkles like a glittering eye.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。ひとみのように　まばゆい。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　ひとみのように　まばゆい。",
                 "es": "Una piedra peculiar que hace evolucionar a algunos Pokémon. Brilla como un lucero.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle brille comme un œil.",
                 "de": "Dieser besondere, glitzernde Stein hilft manchen Pokémon bei ihrer Entwicklung.",
@@ -124,7 +124,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 눈송이 무늬가 있다.",
                 "en": "A peculiar stone that can make certain species of Pokémon evolve. It has an unmistakable snowflake pattern.",
-                "ja": "ある　とくていの　ポケモンをしんかさせる　ふしぎな　いし。ゆきの　もようが　ある。",
+                "ja": "ある　とくていの　ポケモンを　しんかさせる　ふしぎな　いし。　ゆきの　もようが　ある。",
                 "es": "Una piedra peculiar que hace evolucionar a algunos Pokémon. Presenta motivos que recuerdan a los cristales de hielo.",
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Un flocon de neige semble dessiné dessus.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er hat ein Schneeflockenmuster.",
@@ -134,7 +134,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "지니게 하면 포켓몬의 HP가 배틀을 하는 동안 조금씩 회복된다.",
                 "en": "An item to be held by a Pokémon. The holder’s HP is slowly but steadily restored throughout every battle.",
-                "ja": "もたせると　ポケモンの　ＨＰがせんとうの　あいだ　すこしずつかいふくする。",
+                "ja": "もたせると　ポケモンの　ＨＰが　せんとうの　あいだ　すこしずつ　かいふくする。",
                 "es": "Este objeto restaura gradualmente durante el combate los PS del Pokémon que lo lleva.",
                 "fr": "Objet à tenir. Permet de restaurer graduellement les PV du porteur durant le combat.",
                 "de": "Ein Item, das einem Pokémon zum Tragen gegeben werden kann. Es füllt im Kampf stetig KP auf.",
@@ -144,7 +144,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "기술을 구애받는 스카프. 지니게 하면 스피드는 올라가지만 같은 기술밖에 쓸 수 없다.",
                 "en": "An item to be held by a Pokémon. This curious scarf boosts Speed but only allows the use of one move.",
-                "ja": "ちょっと　こだわった　スカーフ。もたせると　すばやさは　あがるがおなじ　わざしか　だせなくなる。",
+                "ja": "ちょっと　こだわった　スカーフ。　もたせると　すばやさは　あがるが　おなじ　わざしか　だせなくなる。",
                 "es": "Debe llevarlo un Pokémon. Potencia la Velocidad, pero solo permite usar un movimiento.",
                 "fr": "Objet à tenir. Augmente la Vitesse, mais ne permet d’utiliser qu’une seule capacité.",
                 "de": "Ein Item zum Tragen. Der Schal erhöht den Initiative-Wert, aber nur eine Attacke ist einsetzbar.",
@@ -154,7 +154,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "기술을 구애받는 머리띠. 지니게 하면 공격은 올라가지만 똑같은 기술밖에 쓰지 못한다.",
                 "en": "An item to be held by a Pokémon. This curious headband boosts Attack but only allows the use of one move.",
-                "ja": "ちょっと　こだわった　ハチマキ。もたせると　こうげきは　あがるがおなじ　わざしか　だせなくなる。",
+                "ja": "ちょっと　こだわった　ハチマキ。　もたせると　こうげきは　あがるが　おなじ　わざしか　だせなくなる。",
                 "es": "Aumenta la potencia de los ataques físicos del Pokémon que la lleva, pero solo le permite usar un movimiento.",
                 "fr": "Objet à tenir. Ce bandeau augmente l’Attaque, mais ne permet d’utiliser qu’une seule capacité.",
                 "de": "Ein Item, das von einem Pokémon getragen werden kann. Es stärkt den Angriffs-Wert, aber nur eine Attacke ist einsetzbar.",
@@ -164,7 +164,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "지니게 하면 HP가 꽉 찼을 때 기절할 듯한 기술을 당해도 HP 1로 한 번은 버틴다.",
                 "en": "An item to be held by a Pokémon. If the holder has full HP, it will endure a potential KO attack with 1 HP. The item then disappears.",
-                "ja": "もたせると　ＨＰが　まんたんのときひんしになりそうな　わざを　うけてもＨＰ１で　いちどだけ　たえる。",
+                "ja": "もたせると　ＨＰが　まんたんのとき　ひんしになりそうな　わざを　うけても　ＨＰ１で　いちどだけ　たえる。",
                 "es": "Si el Pokémon que la lleva tiene los PS al máximo, puede resistir un golpe que lo dejaría K. O. y se queda con 1 PS.",
                 "fr": "Objet à tenir. S’il a encore tous ses PV, le porteur pourra éviter d’être mis K.O. en un coup. Il ne conservera alors qu’un seul PV.",
                 "de": "Ein Item zum Tragen. Bei vollen KP bleibt der Träger nach einer K.O.-Attacke einmalig mit 1 KP im Kampf.",
@@ -174,7 +174,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "지니게 하면 공격할 때마다 HP가 조금씩 줄지만 기술의 위력이 올라간다.",
                 "en": "An item to be held by a Pokémon. It boosts the power of moves but at the cost of some HP on each hit.",
-                "ja": "もたせると　こうげきする　たびにＨＰが　すこし　へってしまうがわざの　いりょくが　あがる。",
+                "ja": "もたせると　こうげきする　たびに　ＨＰが　すこし　へってしまうが　わざの　いりょくが　あがる。",
                 "es": "Potencia los movimientos, pero consume PS con cada ataque. Debe llevarla un Pokémon.",
                 "fr": "Objet à tenir. Augmente la puissance des capacités, mais dépense des PV à chaque coup.",
                 "de": "Ein Item zum Tragen. Verstärkt Attacken, aber jede Attacke kostet den Träger KP.",
@@ -184,7 +184,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "오래 사용한 까만 띠. 지니게 하면 효과가 뛰어날 때 기술의 위력이 조금 올라간다.",
                 "en": "An item to be held by a Pokémon. It’s a well-worn belt that slightly boosts the power of supereffective moves.",
-                "ja": "つかいこまれた　くろい　おび。もたせると　こうかばつぐんの　ときわざの　いりょくが　すこし　あがる。",
+                "ja": "つかいこまれた　くろい　おび。　もたせると　こうかばつぐんの　とき　わざの　いりょくが　すこし　あがる。",
                 "es": "Potencia ligeramente los movimientos supereficaces. Debe llevarla un Pokémon.",
                 "fr": "Objet à tenir. Une ceinture usée qui augmente légèrement la puissance des capacités super efficaces.",
                 "de": "Ein Item zum Tragen. Dieser alte Gürtel verstärkt sehr effektive Attacken.",
@@ -194,7 +194,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "물건을 태우는 연료. 지니게 하면 불꽃타입 기술의 위력이 올라간다.",
                 "en": "An item to be held by a Pokémon. It’s a combustible fuel that boosts the power of Fire-type moves.",
-                "ja": "ものを　もやす　ねんりょう。もたせると　ほのおタイプのわざの　いりょくが　あがる。",
+                "ja": "ものを　もやす　ねんりょう。　もたせると　ほのおタイプの　わざの　いりょくが　あがる。",
                 "es": "Actúa como combustible y potencia los movimientos de tipo Fuego. Debe llevarlo un Pokémon.",
                 "fr": "Objet à tenir. Un combustible qui augmente la puissance des capacités de type Feu.",
                 "de": "Ein Item zum Tragen. Ein Brennstoff, der Attacken vom Typ Feuer verstärkt.",
@@ -204,7 +204,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "이상해꽃에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Venusaur hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "フシギバナに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "フシギバナに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Venusaur en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Florizarre, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Bisaflor getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -214,7 +214,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "리자몽에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Charizard hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "リザードンに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "リザードンに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Charizard en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Dracaufeu, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Glurak getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -224,7 +224,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "리자몽에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Charizard hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "リザードンに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "リザードンに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Charizard en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Dracaufeu, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Glurak getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -234,7 +234,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "거북왕에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Blastoise hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "カメックスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "カメックスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Blastoise en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Tortank, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Turtok getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -244,7 +244,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "독침붕에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Beedrill hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "スピアーに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "スピアーに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Beedrill en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Dardargnan, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Bibor getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -254,7 +254,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "피죤투에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Pidgeot hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ピジョットに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ピジョットに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Pidgeot en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Roucarnage, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Tauboss getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -300,7 +300,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "후딘에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Alakazam hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "フーディンに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "フーディンに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Alakazam en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Alakazam, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Simsala getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -322,7 +322,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "야도란에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Slowbro hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ヤドランに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ヤドランに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Slowbro en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Flagadoss, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Lahmus getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -332,7 +332,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "팬텀에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Gengar hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ゲンガーに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ゲンガーに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Gengar en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Ectoplasma, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Gengar getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -342,7 +342,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "캥카에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Kangaskhan hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ガルーラに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ガルーラに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Kangaskhan en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Kangourex, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Kangama getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -364,7 +364,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "쁘사이저에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Pinsir hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "カイロスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "カイロスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Pinsir en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Scarabrute, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Pinsir getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -374,7 +374,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "갸라도스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Gyarados hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ギャラドスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ギャラドスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Gyarados en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Léviator, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Garados getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -384,7 +384,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "프테라에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Aerodactyl hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "プテラに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "プテラに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Aerodactyl en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Ptéra, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Aerodactyl getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -406,7 +406,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "뮤츠에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Mewtwo hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ミュウツーに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ミュウツーに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Mewtwo en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par Mewtwo, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Mewtu getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -416,7 +416,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "뮤츠에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Mewtwo hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ミュウツーに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ミュウツーに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Mewtwo en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par Mewtwo, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Mewtu getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -450,7 +450,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "전룡에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Ampharos hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "デンリュウに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "デンリュウに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Ampharos en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Pharamp, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Ampharos getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -460,7 +460,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "강철톤에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Steelix hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ハガネールに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ハガネールに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Steelix en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Steelix, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Stahlos getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -470,7 +470,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "핫삼에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Scizor hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ハッサムに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ハッサムに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Scizor en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Cizayox, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Scherox getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -480,7 +480,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "헤라크로스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Heracross hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ヘラクロスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ヘラクロスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Heracross en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Scarhino, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Skaraborn getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -502,7 +502,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "헬가에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Houndoom hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ヘルガーに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ヘルガーに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Houndoom en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Démolosse, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Hundemon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -512,7 +512,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "마기라스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Tyranitar hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "バンギラスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "バンギラスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Tyranitar en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Tyranocif, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Despotar getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -522,7 +522,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "나무킹에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Sceptile hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ジュカインに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ジュカインに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Sceptile en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Jungko, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Gewaldro getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -532,7 +532,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "번치코에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Blaziken hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "バシャーモに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "バシャーモに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Blaziken en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Braségali, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Lohgock getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -542,7 +542,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "대짱이에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Swampert hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ラグラージに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ラグラージに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Swampert en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Laggron, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Sumpex getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -552,7 +552,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "가디안에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Gardevoir hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "サーナイトに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "サーナイトに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Gardevoir en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Gardevoir, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Guardevoir getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -562,7 +562,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "깜까미에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Sableye hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ヤミラミに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ヤミラミに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Sableye en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Ténéfix, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Zobiris getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -572,7 +572,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "입치트에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Mawile hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "クチートに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "クチートに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Mawile en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Mysdibule, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Flunkifer getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -582,7 +582,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "보스로라에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Aggron hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ボスゴドラに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ボスゴドラに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Aggron en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Galeking, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Stolloss getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -592,7 +592,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "요가램에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Medicham hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "チャーレムに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "チャーレムに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Medicham en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Charmina, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Meditalis getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -602,7 +602,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "썬더볼트에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Manectric hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ライボルトに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ライボルトに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Manectric en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Élecsprint, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Voltenso getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -612,7 +612,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "샤크니아에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Sharpedo hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "サメハダーに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "サメハダーに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Sharpedo en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Sharpedo, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Tohaido getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -622,7 +622,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "폭타에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Camerupt hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "バクーダに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "バクーダに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Camerupt en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Camérupt, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Camerupt getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -632,7 +632,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "파비코리에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Altaria hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "チルタリスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "チルタリスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Altaria en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Altaria, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Altaria getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -642,7 +642,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "다크펫에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Banette hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ジュペッタに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ジュペッタに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Banette en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Branette, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Banette getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -664,7 +664,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "앱솔에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Absol hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "アブソルに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "アブソルに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Absol en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Absol, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Absol getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -686,7 +686,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "얼음귀신에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Glalie hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "オニゴーリに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "オニゴーリに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Glalie en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Oniglali, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Firnontor getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -696,7 +696,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "보만다에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Salamence hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ボーマンダに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ボーマンダに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Salamence en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Drattak, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Brutalanda getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -706,7 +706,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "메타그로스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Metagross hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "メタグロスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "メタグロスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Metagross en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Métalosse, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Metagross getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -716,7 +716,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "라티아스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Latias hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ラティアスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ラティアスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Latias en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par Latias, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Latias getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -726,7 +726,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "라티오스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Latios hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ラティオスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ラティオスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Latios en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par Latios, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Latios getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -748,7 +748,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "이어롭에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Lopunny hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ミミロップに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ミミロップに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Lopunny en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Lockpin, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Schlapor getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -758,7 +758,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "한카리아스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Garchomp hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ガブリアスに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ガブリアスに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Garchomp en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Carchacrok, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Knakrack getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -780,7 +780,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "루카리오에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Lucario hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ルカリオに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ルカリオに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Lucario en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Lucario, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Lucario getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -802,7 +802,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "눈설왕에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Abomasnow hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ユキノオーに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ユキノオーに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Abomasnow en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Blizzaroi, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Rexblisar getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -812,7 +812,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "엘레이드에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Gallade hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "エルレイドに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "エルレイドに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Gallade en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Gallame, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Galagladi getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -882,7 +882,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "다부니에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Audino hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "タブンネに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "タブンネに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Audino en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Nanméouïe, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Ohrdoch getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
@@ -1084,7 +1084,7 @@ enum ItemLoreTable {
             texts: [
                 "ko": "디안시에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
                 "en": "One of a variety of mysterious Mega Stones. Have Diancie hold it, and this stone will enable it to Mega Evolve during battle.",
-                "ja": "ディアンシーに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+                "ja": "ディアンシーに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
                 "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar a Diancie en combate.",
                 "fr": "Une variété de Méga-Gemme. Tenue par un Diancie, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Diancie getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",

@@ -38,7 +38,7 @@ APP_ORIGINAL = {
     "app-mint": {
         "ko": "상쾌한 향이 나는 민트. 먹이면 포켓몬의 성격이 무작위로 바뀐다.",
         "en": "A mint with a refreshing scent. It changes a Pokémon's nature to a random one.",
-        "ja": "さわやかな　かおりの　ミント。あたえると　ポケモンの　せいかくが　ランダムに　かわる。",
+        "ja": "さわやかな　かおりの　ミント。　あたえるとポケモンの　せいかくが　ランダムに　かわる。",
         "es": "Una menta de aroma fresco. Cambia la naturaleza de un Pokémon por otra al azar.",
         "fr": "Une menthe au parfum frais. Elle change la nature d'un Pokémon au hasard.",
         "pt": "Uma menta de aroma refrescante. Muda a natureza de um Pokémon para outra aleatória.",
@@ -51,7 +51,7 @@ APP_ORIGINAL = {
 MEGA_FALLBACK = {
     "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
     "en": "One of a variety of mysterious Mega Stones. Have the matching Pokémon hold it, and this stone will enable it to Mega Evolve during battle.",
-    "ja": "たいおうする　ポケモンに　もたせておくとたたかいのとき　メガシンカが　できるふしぎな　メガストーンの　いっしゅ。",
+    "ja": "たいおうする　ポケモンに　もたせておくと　たたかいのとき　メガシンカが　できる　ふしぎな　メガストーンの　いっしゅ。",
     "es": "Una de las misteriosas Megapiedras. Permite megaevolucionar en combate al Pokémon que corresponde si la lleva equipada.",
     "fr": "Une variété de Méga-Gemme. Tenue par le Pokémon concerné, elle lui permet de méga-évoluer durant un combat.",
     "pt": "Uma das misteriosas Mega Pedras. Se o Pokémon correspondente a segurar, ele poderá Mega Evoluir em batalha.",
@@ -139,7 +139,7 @@ def swift(s):
 
 def clean(text, lang):
     text = text.replace("­", "").replace("\f", "\n")
-    text = re.sub(r"[ \t]*\n[ \t]*", "" if lang == "ja" else " ", text.strip())
+    text = re.sub(r"[ \t]*\n[ \t]*", "　" if lang == "ja" else " ", text.strip())
     return re.sub(r" {2,}", " ", text)
 
 
