@@ -44,6 +44,8 @@ final class ShopCategoryScreenshotTests: XCTestCase {
                           to: directory.appendingPathComponent("shop-all.png"))
         try await capture(ShopView(store: store, nav: nav, initialCategory: ItemCategory.egg).environment(store),
                           to: directory.appendingPathComponent("shop-eggs.png"))
+        try await capture(ShopView(store: store, nav: nav, initialCategory: ItemCategory.evolution).environment(store),
+                          to: directory.appendingPathComponent("shop-evolution.png"))
     }
 
     private func capture<V: View>(_ view: V, to file: URL) async throws {
