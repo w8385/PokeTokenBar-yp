@@ -183,6 +183,9 @@ def _validate_member(index: int, member: object) -> dict:
         raise PartyError(f"{where}.rental must be a boolean")
     if rental:
         normalized["rental"] = True
+    nature = member.get("nature")
+    if isinstance(nature, str) and 0 < len(nature.strip()) <= 20:
+        normalized["nature"] = nature.strip().lower()
     ivs = member.get("ivs", {})
     if not isinstance(ivs, dict):
         raise PartyError(f"{where}.ivs must be an object")

@@ -71,7 +71,7 @@ class PokeAPIService:
 
     def move(self, move_id: int) -> dict:
         """The move's battle data; `ailment` is only "burn" or "paralysis", other secondary effects are dropped."""
-        key = f"move-v2/{move_id}"
+        key = f"move-v3/{move_id}"
         cached = self._store.cached(key)
         if cached is not None:
             return cached
@@ -127,6 +127,7 @@ def move_from(move: dict) -> dict:
         "power": move["power"],
         "damage_class": move["damage_class"]["name"],
         "accuracy": move["accuracy"],
+        "priority": move["priority"],
         "pp": move["pp"] or 1,
         "crit_rate": meta.get("crit_rate") or 0,
         "ailment": ailment if ailment in _AILMENTS else None,

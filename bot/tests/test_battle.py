@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from ypoke.battle import (
-    STRUGGLE, TURN_LIMIT, Action, BaseStats, BurnDamage, Change, Combatant, Move, _Fighter, _stats_for, simulate,
+    NATURE_MODIFIERS, STRUGGLE, TURN_LIMIT, Action, BaseStats, BurnDamage, Change, Combatant, Move, _Fighter, _stats_for, simulate,
 )
 from ypoke.type_chart import effectiveness
 
@@ -156,3 +156,61 @@ def test_a_stalemate_ends_at_the_turn_limit():
     lick = Move("핥기", "ghost", 30, physical=True, accuracy=100, pp=999)
     result = simulate((mon("노말", ["normal"], moves=[replace(TACKLE, pp=999)]), mon("유령", ["ghost"], moves=[lick])), 0)
     assert (result.turns, result.winner) == (TURN_LIMIT, 0)
+
+
+QUICK_ATTACK = Move("전광석화", "normal", 40, physical=True, accuracy=100, priority=1)
+
+
+def test_a_priority_move_goes_before_a_faster_foe():
+    slow = mon("느림", ["normal"], moves=[QUICK_ATTACK], speed=20)
+    fast = mon("빠름", ["normal"], moves=[TACKLE], speed=130)
+    for seed in range(20):
+        assert actions(simulate((slow, fast), seed))[0].attacker == "느림"
+        assert actions(simulate((fast, slow), seed))[0].attacker == "느림"
+
+
+def test_equal_priority_falls_back_to_speed():
+    slow = mon("A", ["normal"], moves=[QUICK_ATTACK], speed=20)
+    fast = mon("B", ["normal"], moves=[QUICK_ATTACK], speed=130)
+    assert first_action(slow, fast).attacker == "B"
+
+
+def test_the_higher_priority_goes_first_even_when_both_use_priority_moves():
+    high = replace(QUICK_ATTACK, priority=2)
+    assert first_action(mon("A", ["normal"], moves=[high], speed=10), mon("B", ["normal"], moves=[QUICK_ATTACK], speed=150)).attacker == "A"
+
+
+def test_a_speed_tie_goes_both_ways_across_seeds():
+    firsts = {first_action(mon("A", ["normal"]), mon("B", ["normal"]), seed=seed).attacker for seed in range(40)}
+    assert firsts == {"A", "B"}
+
+
+def stats_of(**changes):
+    return _Fighter.enter(replace(mon("X", ["normal"]), **changes)).stats
+
+
+def test_adamant_raises_attack_and_lowers_special_attack_by_ten_percent():
+    neutral, adamant = stats_of(), stats_of(nature="adamant")
+    assert adamant["attack"] == neutral["attack"] * 110 // 100 > neutral["attack"]
+    assert adamant["special_attack"] == neutral["special_attack"] * 90 // 100 < neutral["special_attack"]
+    for key in ("defense", "special_defense", "speed"):
+        assert adamant[key] == neutral[key]
+
+
+def test_a_nature_never_changes_hp():
+    assert _Fighter.enter(replace(mon("X", ["normal"]), nature="adamant")).max_hp == _Fighter.enter(mon("X", ["normal"])).max_hp
+
+
+def test_missing_unknown_and_neutral_natures_change_nothing():
+    neutral = stats_of()
+    for nature in (None, "nonsense", "", "hardy", "docile", "serious", "bashful", "quirky"):
+        assert stats_of(nature=nature) == neutral
+
+
+def test_natures_match_the_main_series_table():
+    assert NATURE_MODIFIERS["adamant"] == ("attack", "special_attack")
+    assert NATURE_MODIFIERS["timid"] == ("speed", "attack")
+    assert NATURE_MODIFIERS["bold"] == ("defense", "attack")
+    assert NATURE_MODIFIERS["modest"] == ("special_attack", "attack")
+    assert NATURE_MODIFIERS["careful"] == ("special_defense", "special_attack")
+    assert len(NATURE_MODIFIERS) == 20

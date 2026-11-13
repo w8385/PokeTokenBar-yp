@@ -205,3 +205,22 @@ def test_learnable_moves_needs_auth_and_valid_query(server, moves_for):
 def test_validate_rejects_bad_move_lists(moves):
     with pytest.raises(PartyError, match="moves must be a list of up to 4 distinct move ids"):
         validate_party({"party": [{**PIKACHU, "moves": moves}]})
+
+
+def test_a_party_is_accepted_with_and_without_nature(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    assert call(f"{base}/v1/party", "POST", token, {"party": [{**PIKACHU, "nature": "adamant"}]})[0] == 200
+    assert call(f"{base}/v1/party", token=token)[1]["party"][0]["nature"] == "adamant"
+    assert call(f"{base}/v1/party", "POST", token, {"party": [PIKACHU]})[0] == 200
+    assert "nature" not in call(f"{base}/v1/party", token=token)[1]["party"][0]
+
+
+@pytest.mark.parametrize("nature", [None, 5, "", "   ", "x" * 21, ["adamant"]])
+def test_a_bad_nature_is_dropped_not_rejected(nature):
+    assert "nature" not in validate_party({"party": [{**PIKACHU, "nature": nature}]})[0]
+
+
+def test_nature_is_lowercased_and_unknown_names_are_kept_for_the_battle_to_ignore():
+    assert validate_party({"party": [{**PIKACHU, "nature": " Adamant "}]})[0]["nature"] == "adamant"
+    assert validate_party({"party": [{**PIKACHU, "nature": "madeup"}]})[0]["nature"] == "madeup"

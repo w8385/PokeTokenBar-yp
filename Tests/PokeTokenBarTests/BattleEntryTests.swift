@@ -37,6 +37,16 @@ final class BattleEntryTests: XCTestCase {
         XCTAssertNil(candidates[0].dexEntry)
     }
 
+    func testCandidatesCarryTheirNature() {
+        var state = state()
+        state.active?.nature = .adamant
+        state.dex[1].nature = .timid
+
+        let candidates = BattleEntry.candidates(in: state)
+
+        XCTAssertEqual(candidates.map(\.member.nature), ["adamant", nil, "timid"])
+    }
+
     func testPartyIsTheChosenPokemonWithItsMoves() {
         let party = self.party(state(),
                                       slot: BattleEntrySlot(instanceID: "pikachu", pokemonID: 25, moves: [85, 98]))

@@ -24,6 +24,7 @@ Replaces the caller's stored party.
       "level": 42,
       "name": "피카츄",
       "shiny": false,
+      "nature": "adamant",
       "ivs": {"hp": 31, "attack": 20, "defense": 15,
               "special_attack": 31, "special_defense": 10, "speed": 28},
       "moves": [85, 87, 209, 98]
@@ -38,10 +39,11 @@ Replaces the caller's stored party.
 | `app_version` | string | optional, max 32 chars |
 | `party` | array | The battle Pokémon: the one chosen in the app's battle tab, or the Pokémon being raised. Up to 6 are accepted for older clients; battles use the first |
 | `pokemon_id` | int | PokéAPI `/pokemon/{id}` id: `1..1025`, or `10001..10999` for alternate forms |
-| `level` | int | `1..100` |
+| `level` | int | `1..100`. Battles use `min(level, 50)`; moves stay what the Pokémon knows at its real level |
 | `name` | string | optional display name, max 40 chars. Default: Korean species name from PokéAPI |
 | `shiny` | bool | optional, default `false`. Shown as ✨ in the battle log |
-| `rental` | bool | optional, default `false`. A loaner: it fights at the opponent's level (both keep their own when both are rentals) and is announced as "대여 포켓몬 …" |
+| `rental` | bool | optional, default `false`. A loaner: it fights at the opponent's level, capped at 50 (both keep their own when both are rentals) and is announced as "대여 포켓몬 …" |
+| `nature` | string | optional, lowercase English nature name from the app (`"adamant"`). Raises one non-HP stat 10% and lowers another 10%, main-series table. Missing, empty or unknown names are neutral and never rejected |
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
 | `moves` | array | optional, up to 4 distinct PokéAPI move ids, each an attacking move from `GET /v1/moves` at that level. Missing or empty: the 4 most recently learned |
 
@@ -80,7 +82,7 @@ main game it is in, without status moves or moves with no fixed power. Auth as a
   "moves": [
     {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40,
      "damage_class": "special", "accuracy": 100, "pp": 30, "crit_rate": 0,
-     "ailment": "paralysis", "ailment_chance": 10,
+     "ailment": "paralysis", "ailment_chance": 10, "priority": 0,
      "stat_changes": [], "stat_target": "target", "stat_chance": 0, "level": 1}
   ],
   "default": [84]
@@ -95,9 +97,10 @@ never miss.
 | `pp` | Uses before the move runs out. With every move out of PP the Pokémon uses 발버둥 (typeless, 50 power, loses 1/4 of its max HP) |
 | `crit_rate` | Critical-hit stage: 0 → 1/24, 1 → 1/8, 2 → 1/2, 3+ → always |
 | `ailment`, `ailment_chance` | `"burn"` or `"paralysis"` (or `null`) and its percent chance. Burn: 1/16 max HP each turn and half physical damage; fire types are immune. Paralysis: half speed and a 1 in 4 chance to lose the turn; electric types are immune |
+| `priority` | Higher priority acts first (Quick Attack is `1`); equal priority falls back to speed, and a full tie is a coin flip |
 | `stat_changes`, `stat_target`, `stat_chance` | Stage changes (`attack`, `defense`, `special_attack`, `special_defense`, `speed`, −6..+6) on the `"target"` or the `"user"`, with a percent chance |
 
-Other secondary effects (poison, flinch, recoil, drain, priority) are not simulated. `400` for a missing or out-of-range query, `503 pokeapi_unavailable` when PokéAPI is down.
+Other secondary effects (poison, flinch, recoil, drain) are not simulated. `400` for a missing or out-of-range query, `503 pokeapi_unavailable` when PokéAPI is down.
 
 ## `GET /v1/health`
 

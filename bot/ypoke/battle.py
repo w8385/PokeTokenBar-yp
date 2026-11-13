@@ -1,5 +1,6 @@
-"""Automatic one-on-one battle: base stats, level, IVs, type effectiveness and level-up moves with PP,
-critical-hit stages, burn, paralysis and stat stages. No items, abilities, priority or switching."""
+"""Automatic one-on-one battle: base stats, level (capped at 50), IVs, natures, type effectiveness and
+level-up moves with PP, priority, critical-hit stages, burn, paralysis and stat stages. No items,
+abilities or switching."""
 
 import random
 from dataclasses import dataclass, field
@@ -14,8 +15,18 @@ FULL_PARALYSIS_CHANCE = 0.25
 STRUGGLE_RECOIL_FRACTION = 4
 MAX_STAGE = 6
 TURN_LIMIT = 300
+BATTLE_LEVEL = 50
 BATTLE_STATS = ("attack", "defense", "special_attack", "special_defense", "speed")
 AILMENT_IMMUNE_TYPE = {"burn": "fire", "paralysis": "electric"}
+_NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
+_NATURE_NAMES = (
+    "hardy lonely brave adamant naughty bold docile relaxed impish lax timid hasty serious jolly naive "
+    "modest mild quiet bashful rash calm gentle sassy careful quirky"
+).split()
+NATURE_MODIFIERS = {
+    name: (_NATURE_ORDER[index // 5], _NATURE_ORDER[index % 5]) for index, name in enumerate(_NATURE_NAMES)
+    if index // 5 != index % 5
+}
 
 
 @dataclass(frozen=True)
@@ -42,6 +53,7 @@ class Move:
     stat_changes: tuple[tuple[str, int], ...] = ()
     stat_on_user: bool = False
     stat_chance: int = 0
+    priority: int = 0
 
 
 STRUGGLE = Move("발버둥", None, 50, physical=True)
@@ -57,6 +69,7 @@ class Combatant:
     shiny: bool = False
     moves: tuple[Move, ...] = ()
     rental: bool = False
+    nature: str | None = None
 
     @property
     def label(self) -> str:
@@ -111,7 +124,8 @@ class BattleResult:
 def simulate(sides: tuple[Combatant, Combatant], seed: int) -> BattleResult:
     """Fight until one Pokémon faints or `TURN_LIMIT` turns pass; then the higher HP share wins.
 
-    Each turn a Pokémon uses its move with the highest expected damage that still has PP, or Struggle.
+    Each turn a Pokémon picks its move with the highest expected damage that still has PP, or Struggle.
+    The higher move priority acts first, then the faster Pokémon; a full tie is a coin flip from the seed.
     """
     rng = random.Random(seed)
     fighters = (_Fighter.enter(sides[0]), _Fighter.enter(sides[1]))
@@ -120,8 +134,9 @@ def simulate(sides: tuple[Combatant, Combatant], seed: int) -> BattleResult:
     loser: int | None = None
     while loser is None and turn < TURN_LIMIT:
         turn += 1
-        for side in _turn_order(fighters, rng):
-            action = _act(turn, side, fighters, rng)
+        choices = (_best_move(fighters[0], fighters[1]), _best_move(fighters[1], fighters[0]))
+        for side in _turn_order(fighters, choices, rng):
+            action = _act(turn, side, fighters, choices[side], rng)
             events.append(action)
             if action.knockout:
                 loser = 1 - side
@@ -156,6 +171,10 @@ class _Fighter:
         base, ivs, level = combatant.base, combatant.ivs, combatant.level
         max_hp = 1 if base.hp == 1 else (2 * base.hp + ivs.hp) * level // 100 + level + 10
         stats = {key: _other_stat(getattr(base, key), getattr(ivs, key), level) for key in BATTLE_STATS}
+        if combatant.nature in NATURE_MODIFIERS:
+            up, down = NATURE_MODIFIERS[combatant.nature]
+            stats[up] = stats[up] * 110 // 100
+            stats[down] = stats[down] * 90 // 100
         return cls(combatant, max_hp, max_hp, stats, [move.pp for move in combatant.moves])
 
     @property
@@ -170,19 +189,22 @@ class _Fighter:
         return value
 
 
-def _turn_order(fighters: tuple[_Fighter, _Fighter], rng: random.Random) -> tuple[int, int]:
-    speeds = (fighters[0].stat("speed"), fighters[1].stat("speed"))
-    if speeds[0] != speeds[1]:
-        return (0, 1) if speeds[0] > speeds[1] else (1, 0)
+def _turn_order(fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
+                rng: random.Random) -> tuple[int, int]:
+    keys = [
+        (0 if choice is None else fighter.combatant.moves[choice].priority, fighter.stat("speed"))
+        for fighter, choice in zip(fighters, choices)
+    ]
+    if keys[0] != keys[1]:
+        return (0, 1) if keys[0] > keys[1] else (1, 0)
     return (0, 1) if rng.random() < 0.5 else (1, 0)
 
 
-def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], rng: random.Random) -> Action:
+def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, rng: random.Random) -> Action:
     attacker, defender = fighters[side], fighters[1 - side]
     names = (attacker.combatant.name, defender.combatant.name)
     if attacker.status == "paralysis" and rng.random() < FULL_PARALYSIS_CHANCE:
         return Action(turn, side, *names, move="", defender_hp=defender.hp_percent)
-    index = _best_move(attacker, defender)
     move = STRUGGLE if index is None else attacker.combatant.moves[index]
     if index is not None:
         attacker.pp[index] -= 1

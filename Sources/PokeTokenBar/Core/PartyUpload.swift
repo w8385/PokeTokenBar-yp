@@ -11,6 +11,8 @@ struct PartyMember: Encodable, Equatable, Sendable {
     var moves: [Int]? = nil
     /// True only for the loaner sent before the first hatch; the bot then sets its level. Nil is left out of the JSON.
     var rental: Bool? = nil
+    /// Lowercase `PokemonNature` name; nil is left out of the JSON and the bot treats it as neutral.
+    var nature: String? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
@@ -30,17 +32,19 @@ enum PartyBuilder {
     static func party(from state: CompanionState) -> [PartyMember] {
         guard let active = state.active else { return [] }
         let raised = member(speciesID: active.currentID, form: active.form,
-                            shiny: active.displaysShiny, profile: active.profile)
+                            shiny: active.displaysShiny, profile: active.profile, nature: active.nature)
         return isAcceptedPokemonID(raised.pokemonID) ? [raised] : []
     }
 
-    static func member(speciesID: Int, form: PokemonForm?, shiny: Bool, profile: PokemonProfile?) -> PartyMember {
+    static func member(speciesID: Int, form: PokemonForm?, shiny: Bool, profile: PokemonProfile?,
+                       nature: PokemonNature? = nil) -> PartyMember {
         let resolved = PokemonForm.resolved(speciesID: speciesID, form: form)
         let variety = PokemonForm.entries(speciesID: speciesID).first { $0.form == resolved }?.pokemonID
         return PartyMember(pokemonID: variety ?? speciesID,
                            level: min(100, max(1, profile?.level ?? 1)),
                            shiny: shiny,
-                           ivs: profile?.ivs)
+                           ivs: profile?.ivs,
+                           nature: nature?.rawValue)
     }
 
     static func isAcceptedPokemonID(_ id: Int) -> Bool {
