@@ -276,7 +276,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
             _best_move(fighters[0], fighters[1], weather.kind), _best_move(fighters[1], fighters[0], weather.kind),
         )
         for side in _turn_order(fighters, choices, rng, weather.kind):
-            if fighters[side].hp == 0:
+            if fighters[side].hp == 0 or fighters[1 - side].hp == 0:
                 continue
             events.append(_act(turn, side, fighters, choices[side], weather, rng))
             loser = _exhausted(teams, (1 - side, side))

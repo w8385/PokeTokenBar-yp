@@ -1,7 +1,8 @@
 from dataclasses import replace
 
 from test_battle import EMBER, FLAMETHROWER, SURF, TACKLE, actions, mon
-from ypoke.battle import Action, SendOut, StatusDamage, _Fighter, _Weather, _weather_upkeep, simulate
+from ypoke import items
+from ypoke.battle import Action, Move, SendOut, StatusDamage, _Fighter, _Weather, _weather_upkeep, simulate
 
 
 def test_a_one_member_roster_plays_the_same_battle_as_the_bare_combatant():
@@ -82,3 +83,44 @@ def sturdy(name):
 
 def send_outs(result):
     return [event for event in result.events if isinstance(event, SendOut)]
+
+
+RECKLESS = Move("무모한박치기", "normal", 90, physical=True, accuracy=100, drain=-100)
+
+
+def glass(name, move=RECKLESS):
+    return mon(name, ["normal"], moves=[move], hp=1, attack=200, speed=200)
+
+
+def tank(name):
+    return mon(name, ["normal"], level=90, moves=[TACKLE], hp=250, defense=250, speed=10)
+
+
+def test_a_user_that_faints_from_recoil_is_not_hit_again_by_the_slower_foe():
+    for seed in range(10):
+        result = simulate((glass("A"), tank("D")), seed)
+        assert [(action.attacker, action.attacker_fainted) for action in actions(result)] == [("A", True)]
+        assert result.winner == 1
+
+
+def test_the_successor_of_a_recoil_faint_takes_no_hit_that_turn_and_comes_in_at_turn_end():
+    for seed in range(10):
+        result = simulate(((glass("A"), tank("B")), (tank("D"),)), seed)
+        first_turn = [action for action in actions(result) if action.turn == 1]
+        assert [(action.attacker, action.defender) for action in first_turn] == [("A", "D")]
+        assert [(event.turn, event.pokemon) for event in send_outs(result)][:1] == [(1, "B")]
+
+
+def test_a_life_orb_user_that_faints_from_its_own_hit_is_not_hit_again():
+    orb = replace(glass("A", TACKLE), item=items.LIFE_ORB)
+    result = simulate(((orb, tank("B")), (tank("D"),)), seed=1)
+    first_turn = [action for action in actions(result) if action.turn == 1]
+    assert [(action.attacker, action.attacker_fainted) for action in first_turn] == [("A", True)]
+
+
+
+def test_a_recoil_that_faints_both_users_sends_out_both_successors_and_the_battle_goes_on():
+    result = simulate(((glass("A"), tank("B")), (mon("D", ["normal"], level=1, hp=1, moves=[TACKLE], speed=1), tank("E"))), seed=0)
+    first_turn = [action for action in actions(result) if action.turn == 1]
+    assert [(action.attacker, action.knockout, action.attacker_fainted) for action in first_turn] == [("A", True, True)]
+    assert [(event.side, event.pokemon) for event in send_outs(result) if event.turn == 1] == [(0, "B"), (1, "E")]
