@@ -104,6 +104,8 @@ final class LocalizationInterpolationTests: XCTestCase {
             expect(lang, "dexTotal", l.dexTotal(4242), "4242")
             expect(lang, "dexSpeciesTotal", l.dexSpeciesTotal(4242), "4242")
             expect(lang, "dexPageLabel", l.dexPageLabel(4242, 1717), "4242", "1717")
+            expect(lang, "dexHowHatch", l.dexHowHatch(a), a)
+            expect(lang, "dexHowEvolve", l.dexHowEvolve(from: a), a)
 
             // System notifications / 시스템 알림
             expect(lang, "notifHatchBody", l.notifHatchBody(a), a)

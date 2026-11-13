@@ -1093,7 +1093,7 @@ struct CollectionView: View {
     let navigation: PopoverNavigation
     @State private var selectedRarity: Rarity?
     @State private var selectedRegion: PokedexRegion?
-    @State private var searchText = ""
+    @State private var searchText: String
     @State private var shinyOnly = false
     @State private var dexSort: CompanionStore.DexSortOption = .numberAsc
     @State private var logSort: CompanionStore.CatchLogSortOption = .recentFirst
@@ -1108,6 +1108,12 @@ struct CollectionView: View {
     /// 도감·로그 공통 높이 — 상점·가방과 같은 520. 세그먼트를 전환할 때도, 탭을 넘나들 때도
     /// 팝오버가 리사이즈되지 않는다.
     private static let contentHeight: CGFloat = 520
+
+    init(store: CompanionStore, navigation: PopoverNavigation, initialSearch: String = "") {
+        self.store = store
+        self.navigation = navigation
+        _searchText = State(initialValue: initialSearch)
+    }
 
     private var visibleEntries: [DexEntry] {
         store.filteredDexEntries(
@@ -1144,6 +1150,15 @@ struct CollectionView: View {
             }
                 .id(species.collectionID)
                 .frame(height: Self.contentHeight)
+        } else if let id = nav.dexDetailCollectionID,
+                  let species = store.unownedDexSpecies.first(where: { $0.collectionID == id }) {
+            UnownedSpeciesDetailView(store: store, species: species,
+                                     onOpen: { nav.dexDetailCollectionID = $0 }) {
+                dexReturnAnchor = id
+                nav.dexDetailCollectionID = nil
+            }
+            .id(species.collectionID)
+            .frame(height: Self.contentHeight)
         } else {
             VStack(alignment: .leading, spacing: 6) {
                 Picker("", selection: $nav.showingCollectionLog) {
@@ -1561,6 +1576,7 @@ private struct DexGridView: View {
 
         VStack(alignment: .leading, spacing: 6) {
             header(all)
+            indexNotice
             if visible.isEmpty {
                 emptySearchResults
             } else {
@@ -1578,6 +1594,25 @@ private struct DexGridView: View {
         .onChange(of: selectedRarity) { page = 0; selectedID = nil }
         .onChange(of: selectedRegion) { page = 0; selectedID = nil }
         .task { await store.backfillMissingDexNames() }
+        .task(id: searchText.isEmpty) {
+            if !searchText.isEmpty { await store.loadSpeciesIndexIfNeeded() }
+        }
+    }
+
+    /// Unowned species show up only while searching and once the index is loaded.
+    private var searchesUnowned: Bool { !searchText.isEmpty && store.speciesIndexStatus == .ready }
+
+    @ViewBuilder private var indexNotice: some View {
+        if !searchText.isEmpty {
+            switch store.speciesIndexStatus {
+            case .idle, .loading:
+                Text(store.l.dexIndexLoading).font(.caption2).foregroundStyle(.secondary)
+            case .unavailable:
+                Text(store.l.dexIndexOffline).font(.caption2).foregroundStyle(.secondary)
+            case .ready:
+                EmptyView()
+            }
+        }
     }
 
     private var emptySearchResults: some View {
@@ -1625,7 +1660,7 @@ private struct DexGridView: View {
                                         color: rarityColor(r), isSelected: selectedRarity == r)
                         }
                         .buttonStyle(.plain)
-                        .disabled(count == 0)
+                        .disabled(count == 0 && !searchesUnowned)
                         .help(store.l.dexFilterHint)
                     }
                 }
@@ -1652,7 +1687,7 @@ private struct DexGridView: View {
                                     isSelected: selectedRegion == completion.region)
                     }
                     .buttonStyle(.plain)
-                    .disabled(completion.owned == 0)
+                    .disabled(completion.owned == 0 && !searchesUnowned)
                     .help(store.l.dexRegionProgressLabel(completion.region,
                                                          owned: completion.owned, total: completion.total))
                 }
@@ -1689,7 +1724,7 @@ private struct DexGridView: View {
 
     private func grid(_ slice: [CompanionStore.DexSpecies]) -> some View {
         let formCounts = Dictionary(uniqueKeysWithValues: slice.lazy
-            .filter { PokemonForm.hasForms(speciesID: $0.id) }
+            .filter { $0.isOwned && PokemonForm.hasForms(speciesID: $0.id) }
             .map { ($0.id, store.state.collectedForms(speciesID: $0.id).count) })
         return VStack(spacing: Self.spacing) {
             ForEach(0..<Self.rows, id: \.self) { row in
@@ -1724,7 +1759,7 @@ private struct DexGridView: View {
                 // 칸은 번호·스프라이트·이름만 보여주므로 희귀도가 선택으로 얻는 정보다.
                 Text("#\(sel.id) \(sel.name) · \(store.l.rarityLabel(sel.rarity))")
                     .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
-                if !PokemonForm.hasForms(speciesID: sel.id) {
+                if sel.isOwned, !PokemonForm.hasForms(speciesID: sel.id) {
                     let isRepresentative = store.isRepresentative(sel)
                     RepresentativeFooterButton(localization: store.l,
                                                isRepresentative: isRepresentative) {
@@ -2142,9 +2177,12 @@ private struct DexSpeciesCell: View {
                 SpriteView(speciesID: species.id, size: Self.thumb,
                            shiny: formCount == nil && species.isShiny)
                     .frame(width: Self.thumb, height: Self.thumb)
+                    .opacity(species.isOwned ? 1 : 0.4)
+                    .saturation(species.isOwned ? 1 : 0.3)
                     // Keep the raising badge over the sprite to leave room for the name.
                     .overlay(alignment: .bottom) {
                         if species.isRaising { raisingBadge.fixedSize() }
+                        if !species.isOwned { unownedBadge.fixedSize() }
                     }
                 Text(formCount.map { "\(species.name) \($0)/\(formTotal)" } ?? species.name)
                     .font(.system(size: 12))
@@ -2193,7 +2231,9 @@ private struct DexSpeciesCell: View {
         .help(tooltip)
         .accessibilityLabel(tooltip)
         .contextMenu {
-            if formCount != nil {
+            if !species.isOwned {
+                EmptyView()
+            } else if formCount != nil {
                 Button(store.l.chooseForm, action: onTap)
             } else {
                 Button {
@@ -2236,12 +2276,18 @@ private struct DexSpeciesCell: View {
             .background(.regularMaterial, in: Capsule())
     }
 
+    private var unownedBadge: some View {
+        Badge(store.l.dexUnownedBadge, tint: .secondary, style: .tinted, size: 10)
+            .background(.regularMaterial, in: Capsule())
+    }
+
     /// 툴팁과 접근성 라벨이 같은 문장을 쓴다 — 칸이 글자로 못 보여주는 희귀도를 담는다.
     /// ✨ 는 이모지라 스크린리더가 일관되게 읽지 못하므로 명사로 함께 넣는다.
     private var tooltip: String {
         var parts = ["#\(species.id) \(species.name)", store.l.rarityLabel(species.rarity)]
         if let formCount { parts.append(store.l.formsCollected(formCount, of: formTotal)) }
         if species.isShiny { parts.append(store.l.dexShinyLabel) }
+        if !species.isOwned { parts.append(store.l.dexUnownedBadge) }
         if species.isRaising { parts.append(store.l.dexRaising) }
         if isRepresentative { parts.append(store.l.representativeBadge) }
         return parts.joined(separator: " · ")

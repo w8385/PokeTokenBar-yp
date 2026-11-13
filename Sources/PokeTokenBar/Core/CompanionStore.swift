@@ -47,10 +47,13 @@ final class CompanionStore {
     private let provider: any PokeProviding
     private var dexNameRequests: [Int: Task<EvoLine, Error>] = [:]
     private let detailProvider: (any PokemonDetailProviding)?
+    private let speciesIndexProvider: (any SpeciesIndexProviding)?
     private let clock: () -> Date
     private let fileURL: URL
     private var rng: any RandomNumberGenerator
     private let dittoDisguiseRollingEnabled: Bool
+    private(set) var speciesIndex: SpeciesIndex?
+    private(set) var speciesIndexStatus = SpeciesIndexStatus.idle
     private(set) var pokemonDetailsByID: [Int: PokemonDetails] = [:]
     private(set) var loadingPokemonDetailIDs: Set<Int> = []
     private(set) var failedPokemonDetailIDs: Set<Int> = []
@@ -74,6 +77,7 @@ final class CompanionStore {
 
     init(provider: any PokeProviding = PokeAPIClient.shared,
          detailProvider: (any PokemonDetailProviding)? = nil,
+         speciesIndexProvider: (any SpeciesIndexProviding)? = nil,
          clock: @escaping () -> Date = Date.init,
          fileURL: URL? = nil,
          rng: any RandomNumberGenerator = SystemRandomNumberGenerator(),
@@ -81,6 +85,7 @@ final class CompanionStore {
          defaults: UserDefaults = .standard) {
         self.provider = provider
         self.detailProvider = detailProvider ?? (provider as? any PokemonDetailProviding)
+        self.speciesIndexProvider = speciesIndexProvider ?? (provider as? any SpeciesIndexProviding)
         self.clock = clock
         self.fileURL = fileURL ?? Self.defaultURL()
         self.rng = rng
@@ -436,6 +441,8 @@ final class CompanionStore {
         var form: PokemonForm? = nil
         var names: [String: String]? = nil
         var hasNormal = false
+        /// False only for species listed from the full index, which the user has not obtained.
+        var isOwned = true
 
         /// Species IDs remain Pokédex numbers; selection also includes the form.
         var collectionID: String {
@@ -650,7 +657,9 @@ final class CompanionStore {
         region: PokedexRegion? = nil,
         sort: DexSortOption = .numberAsc
     ) -> [DexSpecies] {
+        let matcher = DexSearchMatcher(query)
         var result = dexSpecies
+        if matcher != nil { result += unownedDexSpecies }
         if let rarity {
             result = result.filter { $0.rarity == rarity }
         }
@@ -660,10 +669,40 @@ final class CompanionStore {
         if shinyOnly {
             result = result.filter { $0.isShiny }
         }
-        if let matcher = DexSearchMatcher(query) {
+        if let matcher {
             result = result.filter { matcher.matches($0) }
         }
         return sortDexSpecies(result, by: sort)
+    }
+
+    enum SpeciesIndexStatus: Equatable, Sendable { case idle, loading, ready, unavailable }
+
+    /// Fetched on the first search, so people who never search never hit the network.
+    func loadSpeciesIndexIfNeeded() async {
+        guard speciesIndexStatus == .idle || speciesIndexStatus == .unavailable,
+              let speciesIndexProvider else { return }
+        speciesIndexStatus = .loading
+        do {
+            speciesIndex = try await speciesIndexProvider.speciesIndex()
+            speciesIndexStatus = .ready
+        } catch {
+            speciesIndexStatus = .unavailable
+            AppLog.write("species index unavailable: \(error)")
+        }
+    }
+
+    /// Supported species with no entry in the dex, as grid cells. Empty until the index is loaded.
+    var unownedDexSpecies: [DexSpecies] {
+        guard let speciesIndex else { return [] }
+        let owned = Set(dexSpecies.map(\.id))
+        return speciesIndex.all.compactMap { entry in
+            guard !owned.contains(entry.id), PokemonAssets.isSupported(speciesID: entry.id),
+                  let rarity = speciesIndex.rarity(of: entry.id) else { return nil }
+            return DexSpecies(id: entry.id,
+                              name: state.language.resolveName(entry.names) ?? "#\(entry.id)",
+                              rarity: rarity, isShiny: false, isRaising: false,
+                              names: entry.names, isOwned: false)
+        }
     }
 
     /// Sorts DexSpecies by the given option.
