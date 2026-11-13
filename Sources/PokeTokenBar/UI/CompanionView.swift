@@ -1092,6 +1092,7 @@ struct CollectionView: View {
     @State private var selectedRegion: PokedexRegion?
     @State private var searchText: String
     @State private var shinyOnly = false
+    @State private var includeUnowned = false
     @State private var dexSort: CompanionStore.DexSortOption = .numberAsc
     @State private var logSort: CompanionStore.CatchLogSortOption = .recentFirst
     /// The species whose detail page was just closed. The detail page replaces the grid, so Back
@@ -1106,10 +1107,12 @@ struct CollectionView: View {
     /// 팝오버가 리사이즈되지 않는다.
     private static let contentHeight: CGFloat = 520
 
-    init(store: CompanionStore, navigation: PopoverNavigation, initialSearch: String = "") {
+    init(store: CompanionStore, navigation: PopoverNavigation, initialSearch: String = "",
+         initialIncludeUnowned: Bool = false) {
         self.store = store
         self.navigation = navigation
         _searchText = State(initialValue: initialSearch)
+        _includeUnowned = State(initialValue: initialIncludeUnowned)
     }
 
     private var visibleEntries: [DexEntry] {
@@ -1128,6 +1131,7 @@ struct CollectionView: View {
     private func resetFilters() {
         searchText = ""
         shinyOnly = false
+        includeUnowned = false
         selectedRarity = nil
         selectedRegion = nil
         dexSort = .numberAsc
@@ -1174,6 +1178,7 @@ struct CollectionView: View {
                         store: store,
                         searchText: searchText,
                         shinyOnly: shinyOnly,
+                        includeUnowned: includeUnowned,
                         sortOption: dexSort,
                         selectedRarity: $selectedRarity,
                         selectedRegion: $selectedRegion,
@@ -1241,6 +1246,31 @@ struct CollectionView: View {
             .buttonStyle(.plain)
             .help(store.l.filterShinyOnly)
             .accessibilityLabel(store.l.filterShinyOnly)
+
+            if !navigation.showingCollectionLog {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        includeUnowned.toggle()
+                    }
+                } label: {
+                    Image(systemName: includeUnowned ? "circle.dashed.inset.filled" : "circle.dashed")
+                        .font(.system(size: 13, weight: includeUnowned ? .bold : .regular))
+                        .foregroundStyle(includeUnowned ? Color.accentColor : Color.secondary)
+                        .frame(width: 16, height: 16)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(includeUnowned ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .strokeBorder(includeUnowned ? Color.accentColor.opacity(0.5) : Color.secondary.opacity(0.2), lineWidth: 0.5)
+                        )
+                }
+                .buttonStyle(.plain)
+                .help(store.l.filterIncludeUnowned)
+                .accessibilityLabel(store.l.filterIncludeUnowned)
+                .accessibilityAddTraits(includeUnowned ? .isSelected : [])
+            }
 
             Menu {
                 if navigation.showingCollectionLog {
@@ -1518,6 +1548,7 @@ private struct DexGridView: View {
     let store: CompanionStore
     let searchText: String
     let shinyOnly: Bool
+    let includeUnowned: Bool
     let sortOption: CompanionStore.DexSortOption
     @Binding var selectedRarity: Rarity?
     @Binding var selectedRegion: PokedexRegion?
@@ -1539,7 +1570,7 @@ private struct DexGridView: View {
 
     /// `returnAnchor` = the species whose detail page was just closed. The grid opens on its page,
     /// set here rather than in `onAppear`, which would flash page 1 for a frame first.
-    init(store: CompanionStore, searchText: String, shinyOnly: Bool,
+    init(store: CompanionStore, searchText: String, shinyOnly: Bool, includeUnowned: Bool,
          sortOption: CompanionStore.DexSortOption, selectedRarity: Binding<Rarity?>,
          selectedRegion: Binding<PokedexRegion?>,
          returnAnchor: String?,
@@ -1548,6 +1579,7 @@ private struct DexGridView: View {
         self.store = store
         self.searchText = searchText
         self.shinyOnly = shinyOnly
+        self.includeUnowned = includeUnowned
         self.sortOption = sortOption
         _selectedRarity = selectedRarity
         _selectedRegion = selectedRegion
@@ -1563,6 +1595,7 @@ private struct DexGridView: View {
             rarity: selectedRarity,
             shinyOnly: shinyOnly,
             region: selectedRegion,
+            includeUnowned: includeUnowned,
             sort: sortOption
         )
         let pageCount = max(1, (visible.count + Self.pageSize - 1) / Self.pageSize)
@@ -1587,20 +1620,22 @@ private struct DexGridView: View {
         }
         .onChange(of: searchText) { page = 0; selectedID = nil }
         .onChange(of: shinyOnly) { page = 0; selectedID = nil }
+        .onChange(of: includeUnowned) { page = 0; selectedID = nil }
         .onChange(of: sortOption) { page = 0; selectedID = nil }
         .onChange(of: selectedRarity) { page = 0; selectedID = nil }
         .onChange(of: selectedRegion) { page = 0; selectedID = nil }
         .task { await store.backfillMissingDexNames() }
-        .task(id: searchText.isEmpty) {
-            if !searchText.isEmpty { await store.loadSpeciesIndexIfNeeded() }
+        .task(id: wantsUnowned) {
+            if wantsUnowned { await store.loadSpeciesIndexIfNeeded() }
         }
     }
 
-    /// Unowned species show up only while searching and once the index is loaded.
-    private var searchesUnowned: Bool { !searchText.isEmpty && store.speciesIndexStatus == .ready }
+    /// Unowned species show up while searching or with the filter on, once the index is loaded.
+    private var wantsUnowned: Bool { !searchText.isEmpty || includeUnowned }
+    private var searchesUnowned: Bool { wantsUnowned && store.speciesIndexStatus == .ready }
 
     @ViewBuilder private var indexNotice: some View {
-        if !searchText.isEmpty {
+        if wantsUnowned {
             switch store.speciesIndexStatus {
             case .idle, .loading:
                 Text(store.l.dexIndexLoading).font(.caption2).foregroundStyle(.secondary)

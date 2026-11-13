@@ -655,11 +655,12 @@ final class CompanionStore {
         rarity: Rarity? = nil,
         shinyOnly: Bool = false,
         region: PokedexRegion? = nil,
+        includeUnowned: Bool = false,
         sort: DexSortOption = .numberAsc
     ) -> [DexSpecies] {
         let matcher = DexSearchMatcher(query)
         var result = dexSpecies
-        if matcher != nil { result += unownedDexSpecies }
+        if matcher != nil || includeUnowned { result += unownedDexSpecies }
         if let rarity {
             result = result.filter { $0.rarity == rarity }
         }
