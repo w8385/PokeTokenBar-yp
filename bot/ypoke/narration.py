@@ -1,6 +1,6 @@
 """In-game style battle narration built only from events the simulation produced."""
 
-from ypoke.battle import Action, BattleResult, BurnDamage, Change, Combatant
+from ypoke.battle import Action, BattleResult, BurnDamage, Change, Combatant, Event, WeatherDamage, WeatherEnd
 
 MAX_EVENT_LINES = 24
 PRACTICE_NOTE = "(연습 대결 — 전적에 안 남아요)"
@@ -14,6 +14,21 @@ STAT_NAMES = {
     "speed": "스피드",
 }
 SIDE_MARKERS = ("🔵", "🔴")
+WEATHER_START = {
+    "sun": "햇살이 강해졌다!",
+    "rain": "비가 내리기 시작했다!",
+    "sandstorm": "모래바람이 불기 시작했다!",
+    "hail": "싸라기눈이 내리기 시작했다!",
+    "snow": "눈이 내리기 시작했다!",
+}
+WEATHER_END = {
+    "sun": "햇살이 원래대로 돌아왔다!",
+    "rain": "비가 그쳤다!",
+    "sandstorm": "모래바람이 가라앉았다!",
+    "hail": "싸라기눈이 그쳤다!",
+    "snow": "눈이 그쳤다!",
+}
+WEATHER_DAMAGE = {"sandstorm": "모래바람에 휩싸였다!", "hail": "싸라기눈에 맞았다!"}
 
 
 def battle_lines(
@@ -53,14 +68,21 @@ def _send_out_line(trainer: str, combatant: Combatant) -> str:
     return f"{trainer}은(는) {with_particle(name, ('을', '를'))} 내보냈다! ({details})"
 
 
-def _event_line(event: Action | BurnDamage) -> str:
+def _event_line(event: Event) -> str:
+    if isinstance(event, WeatherEnd):
+        return f"{event.turn}턴 {WEATHER_END[event.weather]}"
     prefix = f"{event.turn}턴 {SIDE_MARKERS[event.side]}"
-    if isinstance(event, BurnDamage):
+    if isinstance(event, (BurnDamage, WeatherDamage)):
         tail = f"{with_particle(event.pokemon, ('은', '는'))} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
-        return f"{prefix} {with_particle(event.pokemon, ('은', '는'))} 화상 데미지를 입었다! {tail}"
+        cause = "화상 데미지를 입었다!" if isinstance(event, BurnDamage) else WEATHER_DAMAGE[event.weather]
+        return f"{prefix} {with_particle(event.pokemon, ('은', '는'))} {cause} {tail}"
     if not event.move:
         return f"{prefix} {with_particle(event.attacker, ('은', '는'))} 몸이 저려서 움직일 수 없다!"
     parts = [f"{prefix} {event.attacker}의 {event.move}!"]
+    if event.weather:
+        return " ".join([*parts, WEATHER_START[event.weather]])
+    if event.failed:
+        return " ".join([*parts, "하지만 실패했다!"])
     if event.missed:
         parts.append("하지만 빗나갔다!")
         return " ".join(parts)

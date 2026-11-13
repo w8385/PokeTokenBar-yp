@@ -30,6 +30,8 @@ _STAT_KEYS = {
 _BATTLE_STAT_KEYS = set(_STAT_KEYS) - {"hp"}
 _AILMENTS = {"burn", "paralysis"}
 _STAT_CATEGORIES = {"damage-lower": "target", "damage-raise": "user"}
+WEATHER_MOVES = {241: "sun", 240: "rain", 201: "sandstorm", 258: "hail", 883: "snow"}
+_ALWAYS_HITS_IN = {87: ["rain"], 542: ["rain"], 59: ["hail", "snow"]}
 
 
 class PokeAPIService:
@@ -46,7 +48,7 @@ class PokeAPIService:
         return data
 
     def attacking_moves(self, pokemon_id: int, level: int) -> list[dict]:
-        """Damaging level-up moves learned at or below `level`, oldest first. Raises on network errors.
+        """Damaging and weather-setting level-up moves learned at or below `level`, oldest first. Raises on network errors.
 
         Each move is `move()` plus `"level"`.
         """
@@ -56,7 +58,7 @@ class PokeAPIService:
         return [
             {**move, "level": entry["level"]}
             for entry, move in zip(learned, moves)
-            if move["power"] and move["damage_class"] != "status"
+            if move["weather"] or (move["power"] and move["damage_class"] != "status")
         ]
 
     def learnset(self, pokemon_id: int) -> list[dict]:
@@ -71,7 +73,7 @@ class PokeAPIService:
 
     def move(self, move_id: int) -> dict:
         """The move's battle data; `ailment` is only "burn" or "paralysis", other secondary effects are dropped."""
-        key = f"move-v3/{move_id}"
+        key = f"move-v4/{move_id}"
         cached = self._store.cached(key)
         if cached is not None:
             return cached
@@ -124,7 +126,7 @@ def move_from(move: dict) -> dict:
         "id": move["id"],
         "name": names.get("ko") or names.get("en") or move["name"],
         "type": move["type"]["name"],
-        "power": move["power"],
+        "power": move["power"] or 0,
         "damage_class": move["damage_class"]["name"],
         "accuracy": move["accuracy"],
         "priority": move["priority"],
@@ -135,6 +137,8 @@ def move_from(move: dict) -> dict:
         "stat_changes": stat_changes,
         "stat_target": _STAT_CATEGORIES.get(category, "target"),
         "stat_chance": (meta.get("stat_chance") or 0) if stat_changes else 0,
+        "weather": WEATHER_MOVES.get(move["id"]),
+        "always_hits_in": _ALWAYS_HITS_IN.get(move["id"], []),
     }
 
 

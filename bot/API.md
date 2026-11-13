@@ -73,8 +73,9 @@ Returns the stored party with the same shape, plus `"uploaded_at"` (ISO 8601 UTC
 
 ## `GET /v1/moves?pokemon_id=25&level=42`
 
-The attacking moves a Pokémon knows by that level, oldest first: level-up moves from the newest
-main game it is in, without status moves or moves with no fixed power. Auth as above.
+The moves a Pokémon can bring by that level, oldest first: level-up moves from the newest
+main game it is in. Attacking moves only, plus the weather moves (Sunny Day, Rain Dance, Sandstorm,
+Hail, Snowscape), which come with `"power": 0` and `"damage_class": "status"`. Auth as above.
 
 ```json
 {
@@ -83,13 +84,14 @@ main game it is in, without status moves or moves with no fixed power. Auth as a
     {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40,
      "damage_class": "special", "accuracy": 100, "pp": 30, "crit_rate": 0,
      "ailment": "paralysis", "ailment_chance": 10, "priority": 0,
-     "stat_changes": [], "stat_target": "target", "stat_chance": 0, "level": 1}
+     "stat_changes": [], "stat_target": "target", "stat_chance": 0,
+     "weather": null, "always_hits_in": [], "level": 1}
   ],
   "default": [84]
 }
 ```
 
-`default` is what the bot uses when the upload sends no `moves`. `accuracy` is `null` for moves that
+`default` is what the bot uses when the upload sends no `moves`: the latest attacking moves, never a weather move. `accuracy` is `null` for moves that
 never miss.
 
 | Field | Meaning in the battle |
@@ -99,6 +101,9 @@ never miss.
 | `ailment`, `ailment_chance` | `"burn"` or `"paralysis"` (or `null`) and its percent chance. Burn: 1/16 max HP each turn and half physical damage; fire types are immune. Paralysis: half speed and a 1 in 4 chance to lose the turn; electric types are immune |
 | `priority` | Higher priority acts first (Quick Attack is `1`); equal priority falls back to speed, and a full tie is a coin flip |
 | `stat_changes`, `stat_target`, `stat_chance` | Stage changes (`attack`, `defense`, `special_attack`, `special_defense`, `speed`, −6..+6) on the `"target"` or the `"user"`, with a percent chance |
+
+| `weather` | `"sun"`, `"rain"`, `"sandstorm"`, `"hail"` or `"snow"` for a move that sets weather for 5 turns, else `null`. The Pokémon uses it only when it swings the exchange in its favor and that weather is not already up. Sun/rain: Fire and Water damage ×1.5 / ×0.5 (rain the other way round). Sandstorm: 1/16 max HP each turn to everything but Rock, Ground and Steel, and Rock Special Defense ×1.5. Hail: the same chip, Ice is immune. Snow: Ice Defense ×1.5 |
+| `always_hits_in` | Weathers in which the move never misses (Thunder and Hurricane in `"rain"`, Blizzard in `"hail"`, `"snow"`) |
 
 Other secondary effects (poison, flinch, recoil, drain) are not simulated. `400` for a missing or out-of-range query, `503 pokeapi_unavailable` when PokéAPI is down.
 

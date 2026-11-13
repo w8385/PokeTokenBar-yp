@@ -9,10 +9,10 @@ from ypoke.upload_server import PartyError, serve, validate_party
 
 PIKACHU = {"pokemon_id": 25, "level": 42, "name": "피카츄", "shiny": True, "ivs": {"hp": 31}}
 LEARNABLE = [
-    {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100, "level": 1},
-    {"id": 209, "name": "스파크", "type": "electric", "power": 65, "damage_class": "physical", "accuracy": 100, "level": 20},
-    {"id": 85, "name": "10만볼트", "type": "electric", "power": 90, "damage_class": "special", "accuracy": 100, "level": 36},
-    {"id": 87, "name": "번개", "type": "electric", "power": 110, "damage_class": "special", "accuracy": 70, "level": 44},
+    {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100, "weather": None, "level": 1},
+    {"id": 209, "name": "스파크", "type": "electric", "power": 65, "damage_class": "physical", "accuracy": 100, "weather": None, "level": 20},
+    {"id": 85, "name": "10만볼트", "type": "electric", "power": 90, "damage_class": "special", "accuracy": 100, "weather": None, "level": 36},
+    {"id": 87, "name": "번개", "type": "electric", "power": 110, "damage_class": "special", "accuracy": 70, "weather": None, "level": 44},
 ]
 
 

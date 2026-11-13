@@ -15,8 +15,8 @@ def battle_moves(learnable: list[dict], chosen_ids: list[int] | None) -> tuple[M
 
 
 def default_move_ids(learnable: list[dict]) -> list[int]:
-    """The most recently learned moves; `learnable` is oldest first, as `PokeAPIService.attacking_moves` returns it."""
-    return [move["id"] for move in learnable[-MAX_MOVES:]]
+    """The most recently learned attacking moves; weather moves are never a default. `learnable` is oldest first."""
+    return [move["id"] for move in [move for move in learnable if not move["weather"]][-MAX_MOVES:]]
 
 
 def _move(move: dict) -> Move:
@@ -34,4 +34,6 @@ def _move(move: dict) -> Move:
         stat_on_user=move["stat_target"] == "user",
         stat_chance=move["stat_chance"],
         priority=move["priority"],
+        weather=move["weather"],
+        always_hits_in=tuple(move["always_hits_in"]),
     )
