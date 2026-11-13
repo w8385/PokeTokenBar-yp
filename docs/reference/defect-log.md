@@ -1482,3 +1482,14 @@ read_when:
   `test_linked_opponent_without_an_upload_gets_the_egg_and_network_hint`).
 - **A permanent PokéAPI cache key changes when the cached shape grows.** Moves gained PP and
   secondary-effect fields; the old `move/{id}` rows lack them, so the key is now `move-v2/{id}`.
+- **A Pokémon that faints on its own move must end the turn for its side, not just for the loop's first check.**
+  In 3v3 a first mover that fainted from recoil (Double-Edge, Life Orb, Struggle, confusion) was still the
+  target of the slower foe's move in the same turn, so the log showed its knockout twice. `simulate` fixes the
+  two actives per turn and only skipped an action when the *actor* had fainted, never when the *target* had.
+  In 1v1 `_exhausted` ended the battle right after the faint, so every 1v1 test passed, and the existing recoil
+  test (`test_recoil_can_knock_out_the_user`) called `_act` directly and never saw the second mover. Class
+  sweep of `battle.py`: confusion self-hit shares the same loop guard; poison, weather chip and Leftovers
+  already skip `hp == 0` and run before the replacement comes in; successors take no action before the next
+  turn. A move that faints both sides keeps the old rule: the hit side is checked first, so a 1v1 double KO
+  is a win for the attacker. Tests in `test_roster_battle.py` hit the exact trigger (3v3 with a recoil or
+  Life Orb KO on the first mover).
