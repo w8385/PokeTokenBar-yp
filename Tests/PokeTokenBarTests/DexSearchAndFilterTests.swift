@@ -91,7 +91,7 @@ final class DexSearchAndFilterTests: XCTestCase {
         }
     }
 
-    /// An egg has no species, so the Home header sprite gets no link target.
+    /// An egg has no species, so it gets no dex link target.
     func testEggHasNoDexLinkTarget() {
         let store = makeStore(dex: createTestStore().state.dex)
         XCTAssertTrue(store.isEgg)

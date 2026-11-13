@@ -659,6 +659,33 @@ extension DexEntryLink {
     }
 }
 
+/// Lifts on hover and squeezes while pressed.
+@MainActor
+struct ClickGrowthSprite: ViewModifier {
+    let accessibilityLabel: String
+    let onClick: () -> Void
+    @State private var isHovered = false
+
+    func body(content: Content) -> some View {
+        Button(action: onClick) {
+            content.contentShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(Press())
+        .scaleEffect(isHovered ? 1.05 : 1)
+        .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isHovered)
+        .onHover { isHovered = $0 }
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private struct Press: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .scaleEffect(configuration.isPressed ? 0.9 : 1)
+                .animation(.spring(response: 0.2, dampingFraction: 0.5), value: configuration.isPressed)
+        }
+    }
+}
+
 /// 팝오버 상단 — 현재 포켓몬 + 진화 진행 + 부화/진화 연출.
 @MainActor
 struct CompanionHeader: View {
@@ -693,60 +720,61 @@ struct CompanionHeader: View {
     /// 부화 임박(90%+) — 알이 흔들리고 문구가 바뀐다.
     private var eggImminent: Bool { store.isEgg && store.eggProgress >= 0.9 }
 
+    /// Clicking it is a click-growth click, like clicking the floating pet.
+    private var bigSprite: some View {
+        SpriteView(speciesID: store.currentSpeciesID, size: 76, bob: true, animated: true,
+                   shiny: store.currentIsShiny, spriteStore: spriteStore, form: store.currentForm,
+                   back: store.facesBack)
+            .frame(width: 76, height: 76)
+            .background(Color.secondary.opacity(0.06))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .rotationEffect(.degrees(eggImminent && eggWiggle ? 5 : (eggImminent ? -5 : 0)))
+            .scaleEffect(celebScale)
+            .overlay(RoundedRectangle(cornerRadius: 12).fill(.white).opacity(flashOpacity))
+            .overlay(alignment: .topTrailing) {
+                if shinyBurst {
+                    Text("✨").font(.system(size: 22))
+                        .transition(.scale.combined(with: .opacity))
+                        .offset(x: 6, y: -6)
+                }
+            }
+            .overlay(alignment: .top) {
+                if dittoBurst {
+                    Text("🎭").font(.system(size: 26))
+                        .transition(.scale.combined(with: .opacity))
+                        .offset(y: -12)
+                }
+            }
+            .overlay(alignment: .top) {
+                if candyXPShown {
+                    Text("+\(TokenFormatter.compact(candyXPAmount)) XP")
+                        .font(.caption.weight(.bold)).foregroundStyle(.orange)
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .background(.regularMaterial, in: Capsule())
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .offset(y: -16)
+                }
+            }
+            .overlay {
+                if mintSparkle {
+                    ZStack {
+                        Text("✨").font(.system(size: 22)).offset(x: -11, y: -9)
+                        Text("✨").font(.system(size: 15)).offset(x: 13, y: 5)
+                        Text("✨").font(.system(size: 12)).offset(x: 1, y: 13)
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .modifier(ClickGrowthSprite(accessibilityLabel: "\(store.displayName), \(store.l.petButton)",
+                                        onClick: pet))
+    }
+
     var body: some View {
-        // Computed once per render and shared by the big sprite and the evolution line.
+        // Computed once per render and shared by the evolution line.
         let dexLinks = onOpenDexEntry == nil ? [:] : store.dexLinkTargets
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: 12) {
-                SpriteView(speciesID: store.currentSpeciesID, size: 76, bob: true, animated: true,
-                           shiny: store.currentIsShiny, spriteStore: spriteStore, form: store.currentForm,
-                           back: store.facesBack)
-                    .frame(width: 76, height: 76)
-                    .background(Color.secondary.opacity(0.06))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .rotationEffect(.degrees(eggImminent && eggWiggle ? 5 : (eggImminent ? -5 : 0)))
-                    .scaleEffect(celebScale)
-                    .overlay(RoundedRectangle(cornerRadius: 12).fill(.white).opacity(flashOpacity))
-                    .overlay(alignment: .topTrailing) {
-                        if shinyBurst {
-                            Text("✨").font(.system(size: 22))
-                                .transition(.scale.combined(with: .opacity))
-                                .offset(x: 6, y: -6)
-                        }
-                    }
-                    .overlay(alignment: .top) {
-                        if dittoBurst {
-                            Text("🎭").font(.system(size: 26))
-                                .transition(.scale.combined(with: .opacity))
-                                .offset(y: -12)
-                        }
-                    }
-                    .overlay(alignment: .top) {
-                        if candyXPShown {
-                            Text("+\(TokenFormatter.compact(candyXPAmount)) XP")
-                                .font(.caption.weight(.bold)).foregroundStyle(.orange)
-                                .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(.regularMaterial, in: Capsule())
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
-                                .offset(y: -16)
-                        }
-                    }
-                    .overlay {
-                        if mintSparkle {
-                            ZStack {
-                                Text("✨").font(.system(size: 22)).offset(x: -11, y: -9)
-                                Text("✨").font(.system(size: 15)).offset(x: 13, y: 5)
-                                Text("✨").font(.system(size: 12)).offset(x: 1, y: 13)
-                            }
-                            .transition(.scale.combined(with: .opacity))
-                        }
-                    }
-                    // Outermost, so the celebration overlays and animations above stay intact.
-                    // An egg has no species (nil) and therefore no link.
-                    .modifier(DexEntryLink(
-                        target: store.currentSpeciesID.flatMap { dexLinks[$0] },
-                        hint: store.l.dexOpenEntryHint, accessibilityName: store.displayName,
-                        cornerRadius: 12, open: onOpenDexEntry))
+                bigSprite
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(store.displayName).font(.callout.weight(.semibold))
@@ -813,13 +841,6 @@ struct CompanionHeader: View {
                         }
                     }
                     Text(statusLine).font(.caption2).foregroundStyle(.secondary)
-                    HStack(spacing: 6) {
-                        Button("\(store.l.petButton) \(PrayerBurst.heart)") { pet() }
-                            .buttonStyle(.bordered).controlSize(.small)
-                        if store.clickCapReachedToday {
-                            Text(store.l.clickGrowthCapped).font(.caption2).foregroundStyle(.secondary)
-                        }
-                    }
                 }
                 Spacer()
             }

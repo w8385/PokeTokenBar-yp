@@ -147,7 +147,6 @@ enum SaveTransfer {
         s.spentTokens = clampToken(s.spentTokens)
         s.eggUsage = clampToken(s.eggUsage)
         s.clickGrowth = clampToken(s.clickGrowth)
-        s.clicksToday = min(max(0, s.clicksToday), ClickGrowth.dailyCap)
         s.claimedTodayTokensByProvider = s.claimedTodayTokensByProvider?.reduce(into: [:]) { result, entry in
             result[entry.key] = clampToken(entry.value)
         }
@@ -217,9 +216,6 @@ enum SaveTransfer {
                                      hasUsageData: Bool) -> CompanionState {
         var state = imported
         state.language = current.language
-        // Today's click count is this device's ledger; importing must not reset the daily cap.
-        state.clickDay = current.clickDay
-        state.clicksToday = current.clicksToday
         state.candyGrantTier = mergedGrantTier(imported.candyGrantTier, current.candyGrantTier)
         state.candyWindowEpoch = mergedWindowEpochs(
             imported.candyWindowEpoch, imported.candyGrantTier,
