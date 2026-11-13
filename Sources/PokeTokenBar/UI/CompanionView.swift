@@ -866,7 +866,7 @@ struct CompanionHeader: View {
             if store.hasActive, !store.lineNodes.isEmpty {
                 // 폭을 안 주면 분기 라인(이브이)이 넘쳐 팝오버 콘텐츠 전체가 좌우로 잘린다.
                 EvoLineView(nodes: store.lineNodes, mysteryLabel: store.l.unknownNextEvolution,
-                            language: store.language, shiny: store.currentIsShiny, female: store.currentIsFemale,
+                            language: store.language, thumb: 30, shiny: store.currentIsShiny, female: store.currentIsFemale,
                             maxWidth: PopoverMetrics.scrollContentWidth, form: store.currentForm,
                             dexLinks: dexLinks, onOpenDexEntry: onOpenDexEntry, spriteStore: spriteStore)
             }

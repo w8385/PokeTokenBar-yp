@@ -624,7 +624,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func buildPopoverContent() {
         popover.contentViewController = NSHostingController(
-            rootView: PopoverView()
+            rootView: PopoverView(screenHeight: statusItem.button?.window?.screen?.visibleFrame.height
+                                    ?? PopoverMetrics.visibleScreenHeight())
                 .environment(store).environment(companion).environment(updater).environment(navigation)
                 .environment(partyUploader).environment(battleEntry))
     }
