@@ -200,6 +200,9 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case blackAugurite, scrollOfDarkness, scrollOfWaters
     /// Evolution items a Pokémon holds while it evolves. The battle bot never sees them.
     case ovalStone, razorClaw, razorFang, strawberrySweet
+    /// Items a Pokémon holds when it evolves by trade. They travel with it and are used up by the evolution.
+    case metalCoat, kingsRock, dragonScale, upGrade, dubiousDisc, electirizer, magmarizer, protector
+    case reaperCloth, deepSeaTooth, deepSeaScale, sachet, whippedDream, prismScale
 
     /// 봇에 보내는 지닌 도구 슬러그(PokéAPI 아이템 이름, `bot/API.md` `held_item`). nil = 지닌 도구 아님.
     var heldItemSlug: String? {
@@ -223,10 +226,36 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .razorClaw: return "razor-claw"
         case .razorFang: return "razor-fang"
         case .strawberrySweet: return "strawberry-sweet"
+        case .metalCoat: return "metal-coat"
+        case .kingsRock: return "kings-rock"
+        case .dragonScale: return "dragon-scale"
+        case .upGrade: return "up-grade"
+        case .dubiousDisc: return "dubious-disc"
+        case .electirizer: return "electirizer"
+        case .magmarizer: return "magmarizer"
+        case .protector: return "protector"
+        case .reaperCloth: return "reaper-cloth"
+        case .deepSeaTooth: return "deep-sea-tooth"
+        case .deepSeaScale: return "deep-sea-scale"
+        case .sachet: return "sachet"
+        case .whippedDream: return "whipped-dream"
+        case .prismScale: return "prism-scale"
         default: return nil
         }
     }
     var isEvolutionHeld: Bool { evolutionHeldSlug != nil }
+
+    /// The key a trade carries for this item; nil unless it is a trade-evolution item.
+    var tradeItemKey: String? { isTradeEvolutionItem ? rawValue : nil }
+
+    /// Held while a trade evolves the Pokémon; the item goes with it to the new trainer.
+    var isTradeEvolutionItem: Bool {
+        switch self {
+        case .metalCoat, .kingsRock, .dragonScale, .upGrade, .dubiousDisc, .electirizer, .magmarizer, .protector,
+             .reaperCloth, .deepSeaTooth, .deepSeaScale, .sachet, .whippedDream, .prismScale: return true
+        default: return false
+        }
+    }
     /// Anything a Pokémon can carry: the battle items and the evolution items.
     var isEquippable: Bool { isHeldItem || isEvolutionHeld }
 
@@ -236,6 +265,8 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy, .mint, .shinyCharm, .linkingCord: return nil
         case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return nil
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return nil
+        case .metalCoat, .kingsRock, .dragonScale, .upGrade, .dubiousDisc, .electirizer, .magmarizer, .protector,
+             .reaperCloth, .deepSeaTooth, .deepSeaScale, .sachet, .whippedDream, .prismScale: return nil
         case .tartApple: return "tart-apple"
         case .sweetApple: return "sweet-apple"
         case .syrupyApple: return "syrupy-apple"
@@ -287,6 +318,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .linkingCord: return "🔗"
         case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return "🎒"
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return "🎒"
+        case _ where isTradeEvolutionItem: return "🎒"
         default: return "💎"
         }
     }
@@ -545,17 +577,37 @@ struct EvoNode: Codable, Sendable {
     }
 
     /// A plain trade evolution: PokéAPI lists only trades with no held item and no required partner species.
-    /// Those are reachable by trade only; trades needing an item or partner keep evolving by growth.
     var viaTrade: Bool { !methods.isEmpty && methods.allSatisfy(\.isPlainTrade) }
 
-    /// The tree growth follows: a plain-trade evolution and everything past it are left out.
-    func prunedTradeOnly() -> EvoNode {
-        EvoNode(speciesID: speciesID, children: children.filter { !$0.viaTrade }.map { $0.prunedTradeOnly() },
+    /// Every way into this species is a trade: plain, with a held item, or for a partner species.
+    var viaAnyTrade: Bool { !methods.isEmpty && methods.allSatisfy { $0.trigger == "trade" } }
+
+    /// The tree growth follows: a trade-only evolution and everything past it are left out, except the species
+    /// in `keeping` (an individual that already took the step or planned it keeps it).
+    func prunedTradeOnly(keeping: Set<Int> = []) -> EvoNode {
+        EvoNode(speciesID: speciesID,
+                children: children.filter { !$0.viaAnyTrade || keeping.contains($0.speciesID) }
+                    .map { $0.prunedTradeOnly(keeping: keeping) },
                 methods: methods, requiredGender: requiredGender)
     }
 
-    /// The evolution this species gets when traded, if any.
-    var tradeEvolution: EvoNode? { children.first(where: \.viaTrade) }
+    /// The evolution a trade gives this species, if any. `heldItem` is what it holds, `partners` the species it
+    /// is traded for (or, with a Linking Cord, the species the player has as friends).
+    func tradeEvolution(heldItem: ItemKind? = nil, partners: Set<Int> = []) -> EvoNode? {
+        children.first { child in
+            switch EvolutionRules.rule(for: child.speciesID)?.trade {
+            case .plain: return true
+            case .holding(let kind): return heldItem == kind
+            case .partner(let id): return partners.contains(id)
+            case nil: return child.viaTrade
+            }
+        }
+    }
+
+    /// Whether a trade (or the Linking Cord) could ever evolve this species.
+    var evolvesByTrade: Bool {
+        children.contains { EvolutionRules.rule(for: $0.speciesID)?.trade != nil || $0.viaTrade }
+    }
 
     /// 최장 경로 길이(형태 수). 분기는 보통 같은 깊이라 대표값으로 사용.
     var depth: Int { 1 + (children.map(\.depth).max() ?? 0) }
@@ -653,8 +705,9 @@ struct EvoLine: Sendable {
     }
 
     /// The line a trade-gated individual follows: its trade evolutions are reached only by a trade.
-    func prunedTradeOnly() -> EvoLine {
-        EvoLine(baseID: baseID, tree: tree.prunedTradeOnly(), rarity: rarity, names: names, genderRate: genderRate)
+    func prunedTradeOnly(keeping: Set<Int> = []) -> EvoLine {
+        EvoLine(baseID: baseID, tree: tree.prunedTradeOnly(keeping: keeping), rarity: rarity, names: names,
+                genderRate: genderRate)
     }
 
     func localizedName(_ id: Int, _ lang: AppLanguage) -> String {
@@ -862,6 +915,10 @@ struct DexEntry: Codable, Sendable, Identifiable {
     var tradedTo: String?
     /// Set on arrival by trade; cleared once the trade evolution has been resolved (or found not to exist).
     var tradeEvolutionPending: Bool?
+    /// `ItemKind.rawValue` of the trade-evolution item it held when it was sent. Travels in the trade pool entry.
+    var tradeHeldItem: String?
+    /// The species the sender received for it. Kept until the trade evolution has been resolved.
+    var tradePartnerID: Int?
     /// 졸업이 아니라 놓아준 기록인가 — 포획 로그가 뱃지를 가르는 판정.
     var isReleased: Bool { releasedAt != nil }
 
@@ -911,6 +968,8 @@ struct DexEntry: Codable, Sendable, Identifiable {
         originalTrainer = try? c.decodeIfPresent(String.self, forKey: .originalTrainer)
         tradedTo = try? c.decodeIfPresent(String.self, forKey: .tradedTo)
         tradeEvolutionPending = try? c.decodeIfPresent(Bool.self, forKey: .tradeEvolutionPending)
+        tradeHeldItem = try? c.decodeIfPresent(String.self, forKey: .tradeHeldItem)
+        tradePartnerID = try? c.decodeIfPresent(Int.self, forKey: .tradePartnerID)
         form = PokemonForm.resolved(baseID: baseID, form: PokemonForm.decoded(from: decoder, keys: "form", "unownForm"))
     }
 }

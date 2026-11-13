@@ -7,7 +7,7 @@ Every evolution step that is not a plain level or a stone has an app-native cond
 reachable: steps that depend on something outside the app (rain, battles) also open once the growth bar
 has filled to 200%, and no step needs an item that cannot be bought or earned.
 
-**Special steps found: 184. Mapped: 154. Pending: 30.**
+**Special steps found: 109. Mapped: 109.**
 
 Steps the games list with no condition at all keep growing by XP: Manaphy (#490).
 
@@ -16,10 +16,10 @@ Steps the games list with no condition at all keep growing by XP: Manaphy (#490)
 | Pikachu (#25) | Level up with high friendship | Pet it 40 times | Mapped |
 | Clefairy (#35) | Level up with high friendship | Pet it 30 times | Mapped |
 | Jigglypuff (#39) | Level up with high friendship | Pet it 30 times | Mapped |
-| Alakazam (#65) | trade | Trade evolutions arrive with the trade commit | Pending |
-| Machamp (#68) | trade | Trade evolutions arrive with the trade commit | Pending |
-| Golem (#76) | trade; trade | Trade evolutions arrive with the trade commit | Pending |
-| Gengar (#94) | trade | Trade evolutions arrive with the trade commit | Pending |
+| Alakazam (#65) | Trade it | Trade it, or use a Linking Cord | Mapped |
+| Machamp (#68) | Trade it | Trade it, or use a Linking Cord | Mapped |
+| Golem (#76) | Trade it | Trade it, or use a Linking Cord | Mapped |
+| Gengar (#94) | Trade it | Trade it, or use a Linking Cord | Mapped |
 | Hitmonlee (#106) | Level up from Lv.20 with Attack above Defense | Settled by Attack and Defense at Lv.20 (IVs and nature) | Mapped |
 | Hitmonchan (#107) | Level up from Lv.20 with Defense above Attack | Settled by Attack and Defense at Lv.20 (IVs and nature) | Mapped |
 | Chansey (#113) | Level up while holding Oval Stone; Level up during the day | Hold Oval Stone + During the day | Mapped |
@@ -29,53 +29,53 @@ Steps the games list with no condition at all keep growing by XP: Manaphy (#490)
 | Togetic (#176) | Level up with high friendship | Pet it 30 times | Mapped |
 | Marill (#183) | Level up with high friendship | Pet it 30 times | Mapped |
 | Sudowoodo (#185) | Level up while knowing Mimic | Know Mimic | Mapped |
-| Politoed (#186) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
+| Politoed (#186) | Trade it while it holds King’s Rock | Equip King’s Rock, then trade it or use a Linking Cord | Mapped |
 | Espeon (#196) | Level up with high friendship; Level up during the day | Pet it 30 times + During the day | Mapped |
 | Umbreon (#197) | Level up with high friendship; Level up at night | Pet it 30 times + At night | Mapped |
-| Slowking (#199) | Use Galarica Wreath | Use Galarica Wreath | Pending |
-| Steelix (#208) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
-| Scizor (#212) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
+| Slowking (#199) | Use Galarica Wreath; Trade it while it holds King’s Rock | Use Galarica Wreath **or** Equip King’s Rock, then trade it or use a Linking Cord | Mapped |
+| Steelix (#208) | Trade it while it holds Metal Coat | Equip Metal Coat, then trade it or use a Linking Cord | Mapped |
+| Scizor (#212) | Trade it while it holds Metal Coat | Equip Metal Coat, then trade it or use a Linking Cord | Mapped |
 | Mantine (#226) | Level up with Remoraid in the party | Have Remoraid as a friend | Mapped |
-| Kingdra (#230) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
-| Porygon2 (#233) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
+| Kingdra (#230) | Trade it while it holds Dragon Scale | Equip Dragon Scale, then trade it or use a Linking Cord | Mapped |
+| Porygon2 (#233) | Trade it while it holds Upgrade | Equip Upgrade, then trade it or use a Linking Cord | Mapped |
 | Hitmontop (#237) | Level up from Lv.20 with Attack equal to Defense | Settled by Attack and Defense at Lv.20 (IVs and nature) | Mapped |
 | Blissey (#242) | Level up with high friendship | Pet it 30 times | Mapped |
 | Silcoon (#266) | Random (set per individual) | Settled per individual (half take each form) | Mapped |
 | Cascoon (#268) | Random (set per individual) | Settled per individual (half take each form) | Mapped |
 | Shedinja (#292) | With a free party slot and a spare Poké Ball, a second Pokémon appears | Appears alongside the other evolution, when the earlier form evolves | Mapped |
 | Roselia (#315) | Level up with high friendship; Level up during the day | Pet it 30 times + During the day | Mapped |
-| Milotic (#350) | Level up with high Beauty | Pet it 60 times | Pending |
+| Milotic (#350) | Level up with high Beauty; Trade it while it holds Prism Scale | Pet it 60 times **or** Equip Prism Scale, then trade it or use a Linking Cord | Mapped |
 | Chimecho (#358) | Level up with high friendship; Level up at night | Pet it 40 times + At night | Mapped |
-| Huntail (#367) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
-| Gorebyss (#368) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
+| Huntail (#367) | Trade it while it holds Deep Sea Tooth | Equip Deep Sea Tooth, then trade it or use a Linking Cord | Mapped |
+| Gorebyss (#368) | Trade it while it holds Deep Sea Scale | Equip Deep Sea Scale, then trade it or use a Linking Cord | Mapped |
 | Ambipom (#424) | Level up while knowing Double Hit | Know Double Hit | Mapped |
 | Lopunny (#428) | Level up with high friendship | Pet it 30 times | Mapped |
 | Lucario (#448) | Level up with high friendship; Level up during the day | Pet it 30 times + During the day | Mapped |
 | Weavile (#461) | Level up while holding Razor Claw; Level up at night | Hold Razor Claw + At night | Mapped |
 | Lickilicky (#463) | Level up while knowing Rollout | Know Rollout | Mapped |
-| Rhyperior (#464) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
+| Rhyperior (#464) | Trade it while it holds Protector | Equip Protector, then trade it or use a Linking Cord | Mapped |
 | Tangrowth (#465) | Level up while knowing Ancient Power | Know Ancient Power | Mapped |
-| Electivire (#466) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
-| Magmortar (#467) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
+| Electivire (#466) | Trade it while it holds Electirizer | Equip Electirizer, then trade it or use a Linking Cord | Mapped |
+| Magmortar (#467) | Trade it while it holds Magmarizer | Equip Magmarizer, then trade it or use a Linking Cord | Mapped |
 | Yanmega (#469) | Level up while knowing Ancient Power | Know Ancient Power | Mapped |
 | Gliscor (#472) | Level up while holding Razor Fang; Level up at night | Hold Razor Fang + At night | Mapped |
 | Mamoswine (#473) | Level up while knowing Ancient Power | Know Ancient Power | Mapped |
-| Porygon Z (#474) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
-| Dusknoir (#477) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
-| Gigalith (#526) | trade | Trade evolutions arrive with the trade commit | Pending |
+| Porygon Z (#474) | Trade it while it holds Dubious Disc | Equip Dubious Disc, then trade it or use a Linking Cord | Mapped |
+| Dusknoir (#477) | Trade it while it holds Reaper Cloth | Equip Reaper Cloth, then trade it or use a Linking Cord | Mapped |
+| Gigalith (#526) | Trade it | Trade it, or use a Linking Cord | Mapped |
 | Swoobat (#528) | Level up with high friendship | Pet it 30 times | Mapped |
-| Conkeldurr (#534) | trade | Trade evolutions arrive with the trade commit | Pending |
+| Conkeldurr (#534) | Trade it | Trade it, or use a Linking Cord | Mapped |
 | Leavanny (#542) | Level up with high friendship | Pet it 40 times | Mapped |
-| Escavalier (#589) | trade+trade_species | Trade evolutions arrive with the trade commit | Pending |
-| Accelgor (#617) | trade+trade_species | Trade evolutions arrive with the trade commit | Pending |
+| Escavalier (#589) | Trade it for #616 | Trade it for #616, or use a Linking Cord with #616 as a friend | Mapped |
+| Accelgor (#617) | Trade it for #588 | Trade it for #588, or use a Linking Cord with #588 as a friend | Mapped |
 | Pangoro (#675) | Level up with a Dark-type Pokémon in the party | Have a Dark-type friend | Mapped |
-| Aromatisse (#683) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
-| Slurpuff (#685) | trade+held_item | Trade evolutions arrive with the trade commit | Pending |
+| Aromatisse (#683) | Trade it while it holds Sachet | Equip Sachet, then trade it or use a Linking Cord | Mapped |
+| Slurpuff (#685) | Trade it while it holds Whipped Dream | Equip Whipped Dream, then trade it or use a Linking Cord | Mapped |
 | Malamar (#687) | Level up while holding the console upside down | Turn the Home sprite upside down (right-click it) | Mapped |
 | Sylveon (#700) | Level up knowing a Fairy-type move; Level up with high friendship | Pet it 30 times + Know a Fairy-type move | Mapped |
 | Goodra (#706) | Level up while it is raining | Reach the top token burn rate **or** Fill the growth bar to 200% | Mapped |
-| Trevenant (#709) | trade | Trade evolutions arrive with the trade commit | Pending |
-| Gourgeist (#711) | trade; trade; trade; trade | Trade evolutions arrive with the trade commit | Pending |
+| Trevenant (#709) | Trade it | Trade it, or use a Linking Cord | Mapped |
+| Gourgeist (#711) | Trade it | Trade it, or use a Linking Cord | Mapped |
 | Tsareena (#763) | Level up while knowing Stomp | Know Stomp | Mapped |
 | Silvally (#773) | Level up with high friendship | Pet it 30 times | Mapped |
 | Naganadel (#804) | Level up while knowing Dragon Pulse | Know Dragon Pulse | Mapped |

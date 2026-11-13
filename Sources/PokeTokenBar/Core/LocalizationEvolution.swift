@@ -20,6 +20,17 @@ extension L {
           "если покемон держит его, он учитывается в условии эволюции. В бою не действует.")
     }
 
+    var evolutionTradeItemNote: String {
+        t("지니게 한 채 교환하면 함께 넘어가고, 진화에 쓰여요. 연결의끈으로도 같아요.",
+          "held while it is traded, it goes along and is used up by the evolution. A Linking Cord works the same way.",
+          "持たせたまま交換すると一緒に渡り、進化で使われます。つながりのヒモでも同じです。",
+          "si lo lleva al intercambiarlo, viaja con él y se gasta en la evolución. El Cordón Unión funciona igual.",
+          "tenu pendant un échange, il part avec le Pokémon et sert à l'évolution. Le Fil de Liaison fait de même.",
+          "se estiver com o Pokémon na troca, vai junto e é gasto na evolução. O Cordão Elo funciona igual.",
+          "beim Tausch getragen, geht es mit und wird bei der Entwicklung verbraucht. Die Verbindungsschnur wirkt genauso.",
+          "если покемон держит его при обмене, он уходит вместе с ним и расходуется при эволюции. Шнур работает так же.")
+    }
+
     var evolutionFlipAction: String {
         t("뒤집어 보기", "Turn it upside down", "さかさまにする", "Poner boca abajo", "Retourner",
           "Virar de cabeça para baixo", "Auf den Kopf stellen", "Перевернуть")

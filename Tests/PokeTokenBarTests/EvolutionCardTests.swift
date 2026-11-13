@@ -78,6 +78,37 @@ final class EvolutionCardTests: XCTestCase {
         XCTAssertNil(info.context, "not on that step, so no progress to show")
     }
 
+    func testGraduatedOnixShowsTheSteelixStepWithAnEquipRowThatFollowsItsHeldItem() async throws {
+        var state = CompanionState()
+        var profile = PokemonProfile.generate(seed: 3, instanceID: "o")
+        profile.level = 40
+        let onix = DexEntry(id: "o", baseID: 95, finalID: 95, chainOrder: [95], rarity: .common,
+                            caughtAt: Date(timeIntervalSince1970: 5), isShiny: false, nature: .adamant,
+                            profile: profile, names: nil, originalTrainer: nil)
+        state.dex = [onix]
+        state.inventory[ItemKind.metalCoat.rawValue] = 1
+        let s = try store(tree: node(95), state: state)
+
+        let card = try XCTUnwrap(s.evolutionCards(for: 95, individual: onix).first)
+        XCTAssertEqual(card.rule.species, 208)
+        XCTAssertTrue(card.isNextStep)
+        XCTAssertEqual(card.individualID, "o")
+        XCTAssertEqual(card.rule.trade, .holding(.metalCoat))
+        XCTAssertTrue(s.equip(.metalCoat, to: "o"))
+        XCTAssertEqual(s.heldItem(of: "o"), .metalCoat)
+
+        XCTAssertTrue(s.evolutionCards(for: 95).isEmpty, "no individual, no trade step")
+        let steelix = try XCTUnwrap(s.evolutionCards(for: 208).first)
+        XCTAssertFalse(steelix.isNextStep)
+        XCTAssertNil(steelix.individualID)
+    }
+
+    func testEveryTradeStepIsReachableFromItsParentsPage() {
+        for rule in EvolutionRules.all where rule.trade != nil {
+            XCTAssertNotNil(rule.from, "\(rule.species)")
+        }
+    }
+
     func testSpeciesWithoutASpecialStepShowsNoCard() async throws {
         let s = try inkay()
         await loadLine(s)

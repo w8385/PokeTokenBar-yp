@@ -39,20 +39,15 @@ final class EvolutionMappingDocTests: XCTestCase {
         let l = L(.en)
         func name(_ id: Int) -> String { names[id] ?? "#\(id)" }
 
-        var mapped = 0, pending = 0, found = 0
+        var mapped = 0, found = 0
         var rows: [String] = []
         for (step, _) in steps where !step.signatures.isEmpty {
             let rule = EvolutionRules.rule(for: step.species)
-            let covered = step.signatures.filter { rule?.covers.contains($0) == true }
-            let deferred = step.signatures.filter { signature in
-                rule?.covers.contains(signature) != true
-                    && EvolutionRules.deferredSignaturePrefixes.contains { signature.hasPrefix($0) }
-            }
-            found += step.signatures.count
-            mapped += covered.count
-            pending += deferred.count
+            let signatures = Set(step.signatures)
+            found += signatures.count
+            mapped += signatures.filter { rule?.covers.contains($0) == true }.count
             guard let rule else {
-                rows.append("| \(name(step.species)) (#\(step.species)) | \(step.signatures.joined(separator: "; ")) | Trade evolutions arrive with the trade commit | Pending |")
+                rows.append("| \(name(step.species)) (#\(step.species)) | \(signatures.sorted().joined(separator: "; ")) | - | Unmapped |")
                 continue
             }
             let original = rule.original.map { l.evolutionOriginalText($0, speciesName: name) }.joined(separator: "; ")
@@ -61,7 +56,11 @@ final class EvolutionMappingDocTests: XCTestCase {
             if !rule.paths.isEmpty {
                 app.append(rule.paths.map { l.evolutionPathText($0, speciesName: name) }.joined(separator: " **or** "))
             }
-            let status = rule.formNotShown ? "Mapped (form not drawn in the dex)" : (deferred.isEmpty ? "Mapped" : "Pending")
+            if let trade = rule.trade {
+                let text = l.evolutionTradeText(trade, speciesName: name)
+                app = [(app + [text]).joined(separator: " **or** ")]
+            }
+            let status = rule.formNotShown ? "Mapped (form not drawn in the dex)" : "Mapped"
             rows.append("| \(name(step.species)) (#\(step.species)) | \(original) | \(app.joined(separator: ". ")) | \(status) |")
         }
         let unconditional = EvolutionRules.unconditional.sorted().map { "\(name($0)) (#\($0))" }.joined(separator: ", ")
@@ -76,7 +75,7 @@ final class EvolutionMappingDocTests: XCTestCase {
         reachable: steps that depend on something outside the app (rain, battles) also open once the growth bar
         has filled to 200%, and no step needs an item that cannot be bought or earned.
 
-        **Special steps found: \(found). Mapped: \(mapped). Pending: \(pending).**
+        **Special steps found: \(found). Mapped: \(mapped).**
 
         Steps the games list with no condition at all keep growing by XP: \(unconditional).
 

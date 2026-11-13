@@ -1992,7 +1992,9 @@ struct PokemonDetailView: View {
                     identityHeader
                     SpeciesFlavorCard(speciesID: species.id, form: displayedSpecies.form,
                                       language: store.language, provider: flavorProvider)
-                    ForEach(store.evolutionCards(for: species.id)) { EvolutionCardView(store: store, card: $0) }
+                    ForEach(store.evolutionCards(for: species.id, individual: individual)) {
+                        EvolutionCardView(store: store, card: $0)
+                    }
                     if individuals.count > 1 { individualPicker }
                     if individuals.isEmpty {
                         Text(store.l.dexAppearancePreview).font(.callout).foregroundStyle(.secondary)
@@ -2190,6 +2192,7 @@ struct PokemonDetailView: View {
         switch await store.useLinkingCord(on: individual.id) {
         case .evolved: onBack()   // This page lists the old species; the popover banner shows the result.
         case .wrongTarget: cordMessage = store.l.linkingCordWrongTarget(displayedSpecies.name)
+        case .notReady: cordMessage = store.l.linkingCordNotReady(displayedSpecies.name)
         case .unavailable: cordMessage = store.l.linkingCordUnavailable
         }
     }

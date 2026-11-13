@@ -30,6 +30,7 @@ CLASSES=(
   AppLogTests                      # logging call sites use the flushing writer
   ItemLoreTests                    # every item has official text and name in every language
   EvolutionRulesTests              # every special evolution step in the fixture has an app rule
+  EvolutionMappingDocTests         # docs/reference/evolution-mapping.md matches the rule table
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).

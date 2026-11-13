@@ -2516,7 +2516,8 @@ final class CompanionStore {
         isHatching = true
         defer { isHatching = false }
         if let fullLine = try? await provider.line(baseSpeciesID: a.baseID) {
-            let line = a.tradeGated == true ? fullLine.prunedTradeOnly() : fullLine
+            let line = a.tradeGated == true
+                ? fullLine.prunedTradeOnly(keeping: Set(a.pathIDs + a.plannedPathIDs)) : fullLine
             // await 중 사용량·민트 등 활성 상태는 계속 바뀔 수 있다. 요청 당시 스냅샷을 다시 쓰지 말고
             // 같은 개체가 아직 활성인 경우에만 최신 상태를 정규화한다.
             guard activeGeneration == generation,
@@ -2922,9 +2923,10 @@ final class CompanionStore {
 
     func dismissTradeArrival() { tradeArrival = nil }
 
-    enum TradeEvolutionResult: Equatable { case evolved, noEvolution, unavailable }
-    /// `wrongTarget` leaves the cord in the bag.
-    enum CordUseResult: Equatable { case evolved, wrongTarget, unavailable }
+    enum TradeEvolutionResult: Equatable { case evolved, noEvolution, notReady, unavailable }
+    /// `wrongTarget` and `notReady` (it evolves by trade, but the item or friend it needs is missing) leave the
+    /// cord in the bag.
+    enum CordUseResult: Equatable { case evolved, wrongTarget, notReady, unavailable }
 
     private static let appliedTradeLimit = 200
 
@@ -2956,10 +2958,15 @@ final class CompanionStore {
             }
             let now = clock()
             let sender = Self.cleanedTrainerName(delivery.fromName)
-            guard let arrived = Self.receivedEntry(delivery.receive.entry, from: sender, now: now) else { continue }
+            let given = state.dex.first { $0.id == delivery.giveID && $0.releasedAt == nil }
+            guard let arrived = Self.receivedEntry(delivery.receive.entry, from: sender, partner: given?.finalID,
+                                                   now: now) else { continue }
             if let index = state.dex.firstIndex(where: { $0.id == delivery.giveID && $0.releasedAt == nil }) {
                 state.dex[index].releasedAt = now
                 state.dex[index].tradedTo = sender
+                if heldItem(of: delivery.giveID)?.isTradeEvolutionItem == true {
+                    state.heldItems[delivery.giveID] = nil
+                }
             }
             state.dex.append(arrived)
             state.appliedTradeIDs.append(delivery.tradeID)
@@ -2982,7 +2989,9 @@ final class CompanionStore {
     }
 
     /// A received individual is a new one here: fresh id, no names, evolution pending until the line is known.
-    nonisolated static func receivedEntry(_ wire: DexEntry, from sender: String, now: Date) -> DexEntry? {
+    /// `partner` is the species this side gave for it; the wire's own value is never trusted.
+    nonisolated static func receivedEntry(_ wire: DexEntry, from sender: String, partner: Int? = nil,
+                                          now: Date) -> DexEntry? {
         guard var profile = wire.profile,
               PokemonAssets.isSupported(speciesID: wire.baseID), PokemonAssets.isSupported(speciesID: wire.finalID)
         else { return nil }
@@ -2999,6 +3008,8 @@ final class CompanionStore {
         entry.caughtAt = now
         entry.originalTrainer = sender
         entry.tradeEvolutionPending = true
+        entry.tradeHeldItem = wire.tradeHeldItem.flatMap { ItemKind(rawValue: $0)?.tradeItemKey }
+        entry.tradePartnerID = partner
         if entry.chainOrder.last != entry.finalID {
             entry.chainOrder = entry.baseID == entry.finalID ? [entry.baseID] : [entry.baseID, entry.finalID]
         }
@@ -3019,7 +3030,7 @@ final class CompanionStore {
         defer { isResolvingTradeEvolutions = false }
         let pending = state.dex.filter { $0.tradeEvolutionPending == true && $0.releasedAt == nil }.map(\.id)
         for id in pending {
-            _ = await evolveByTrade(entryID: id, consuming: nil)
+            _ = await evolveByTrade(entryID: id, withCord: false)
         }
     }
 
@@ -3029,27 +3040,44 @@ final class CompanionStore {
         guard itemCount(.linkingCord) > 0,
               state.dex.contains(where: { $0.id == entryID && $0.releasedAt == nil && $0.profile != nil })
         else { return .unavailable }
-        switch await evolveByTrade(entryID: entryID, consuming: .linkingCord) {
+        switch await evolveByTrade(entryID: entryID, withCord: true) {
         case .evolved: return .evolved
         case .noEvolution: return .wrongTarget
+        case .notReady: return .notReady
         case .unavailable: return .unavailable
         }
     }
 
-    private func evolveByTrade(entryID: String, consuming item: ItemKind?) async -> TradeEvolutionResult {
+    /// With the cord, the item it holds and the species the player has as friends count; on arrival, the item
+    /// it was sent with and the species this side gave for it.
+    private func evolveByTrade(entryID: String, withCord: Bool) async -> TradeEvolutionResult {
         func owned(_ entry: DexEntry) -> Bool { entry.id == entryID && entry.releasedAt == nil }
         guard let baseID = state.dex.first(where: owned)?.baseID else { return .noEvolution }
         guard let line = try? await dexNameLine(baseID: baseID) else { return .unavailable }
         // The store may have changed while the line loaded; read the entry again.
         guard let index = state.dex.firstIndex(where: owned) else { return .noEvolution }
         var entry = state.dex[index]
-        let next = line.tree.node(withID: entry.finalID)?.tradeEvolution
+        let node = line.tree.node(withID: entry.finalID)
+        let held = withCord ? heldItem(of: entryID) : entry.tradeHeldItem.flatMap(ItemKind.init(rawValue:))
+        let partners: Set<Int> = withCord
+            ? Set(state.friendEntryIDs.compactMap { id in state.dex.first { $0.id == id }?.finalID })
+            : Set(entry.tradePartnerID.map { [$0] } ?? [])
+        let next = node?.tradeEvolution(heldItem: held, partners: partners)
+        if withCord, next == nil, node?.evolvesByTrade == true { return .notReady }
         let fromID = entry.finalID
         if let next {
             if !entry.chainOrder.contains(next.speciesID) { entry.chainOrder.append(next.speciesID) }
             entry.finalID = next.speciesID
         }
+        var usedItem = false
+        if let next, case .holding? = EvolutionRules.rule(for: next.speciesID)?.trade { usedItem = true }
+        if let unusedArrival = entry.tradeHeldItem.flatMap(ItemKind.init(rawValue:)), !usedItem {
+            state.inventory[unusedArrival.rawValue, default: 0] += 1
+        }
+        if withCord, usedItem { state.heldItems[entryID] = nil }
         entry.tradeEvolutionPending = nil
+        entry.tradeHeldItem = nil
+        entry.tradePartnerID = nil
         var names = entry.names ?? [:]
         for id in entry.chainOrder {
             if let incoming = line.names[id], !incoming.isEmpty {
@@ -3064,7 +3092,7 @@ final class CompanionStore {
             save()
             return .noEvolution
         }
-        if let item { state.inventory[item.rawValue] = max(0, itemCount(item) - 1) }
+        if withCord { state.inventory[ItemKind.linkingCord.rawValue] = max(0, itemCount(.linkingCord) - 1) }
         state.reconcileRepresentativeSelection()
         announceTradeEvolution(of: entry, from: fromID, to: next.speciesID, line: line)
         save()

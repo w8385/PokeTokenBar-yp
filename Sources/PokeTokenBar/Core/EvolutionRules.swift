@@ -30,6 +30,19 @@ enum EvolutionOriginal: Equatable, Sendable {
     case nature
     case shed
     case useItem(String)
+    case trade
+    case tradeHolding(String)
+    case tradeForSpecies(Int)
+}
+
+/// How a trade step is met in this app: the receiver's copy evolves when the trade completes, or the Linking Cord
+/// does it for a Pokémon the player already has.
+enum EvolutionTrade: Equatable, Sendable {
+    case plain
+    /// The item is held while it is traded, so it goes along with the Pokémon, and a Linking Cord needs it equipped.
+    case holding(ItemKind)
+    /// Traded for this species, or (with a Linking Cord) while the player has it as a friend.
+    case partner(Int)
 }
 
 /// A condition the app can check. All requirements of one path must hold; any one path opens the step.
@@ -104,6 +117,10 @@ struct EvolutionRule: Sendable {
     let paths: [[EvolutionRequirement]]
     var selector: EvolutionSelector?
     var formNotShown = false
+    /// Set when a trade also reaches the step. Trade-only steps have no `paths`: growth never gets there.
+    var trade: EvolutionTrade?
+    /// The species a trade step grows from, so the card can show it on that species' own page.
+    var from: Int?
 
     /// Reached only by using an item: left out of the plan while a sibling can be reached by growth.
     var isItemOnly: Bool {

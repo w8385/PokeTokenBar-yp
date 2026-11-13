@@ -36,10 +36,6 @@ private func traits(seed: UInt64 = 0, attackIV: Int, defenseIV: Int, nature: Pok
 }
 
 final class EvolutionRulesTests: XCTestCase {
-    private func isDeferred(_ signature: String) -> Bool {
-        EvolutionRules.deferredSignaturePrefixes.contains { signature.hasPrefix($0) }
-    }
-
     func testEverySpecialStepInTheFixtureHasAnAppRule() throws {
         let steps = try loadSteps()
         XCTAssertGreaterThan(steps.count, 400)
@@ -47,11 +43,37 @@ final class EvolutionRulesTests: XCTestCase {
         for step in steps {
             guard let needed = step.gatedSignatures, !step.details.isEmpty else { continue }
             let covered = EvolutionRules.rule(for: step.species)?.covers ?? []
-            for signature in needed where !isDeferred(signature) && !covered.contains(signature) {
+            for signature in needed where !covered.contains(signature) {
                 unmapped.append("\(step.species) \(step.name): \(signature)")
             }
         }
         XCTAssertEqual(unmapped, [], "special evolution steps without an app condition")
+    }
+
+    func testEveryTradeStepKnowsItsParentAndItsHeldItemOrPartner() throws {
+        let steps = Dictionary(uniqueKeysWithValues: try loadSteps().map { ($0.species, $0) })
+        let raw = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().appendingPathComponent("Fixtures/evolution-steps.json")))
+        let parents = Dictionary(uniqueKeysWithValues: (raw as? [[String: Any]] ?? []).compactMap { entry in
+            (entry["species"] as? Int).flatMap { id in (entry["parent"] as? Int).map { (id, $0) } }
+        })
+        for rule in EvolutionRules.all {
+            guard let trade = rule.trade else { continue }
+            let step = try XCTUnwrap(steps[rule.species])
+            XCTAssertEqual(rule.from, parents[rule.species], "\(rule.species) \(step.name)")
+            let tradeDetails = step.details.filter { $0["trigger"] as? String == "trade" }
+            XCTAssertFalse(tradeDetails.isEmpty, "\(rule.species) lists no trade")
+            switch trade {
+            case .plain:
+                XCTAssertTrue(tradeDetails.contains { $0["held_item"] == nil && $0["trade_species"] == nil })
+            case .holding(let kind):
+                XCTAssertTrue(tradeDetails.contains { $0["held_item"] as? String == kind.evolutionHeldSlug },
+                              "\(rule.species) \(kind)")
+            case .partner(let id):
+                XCTAssertTrue(tradeDetails.contains { ($0["trade_species"] as? String) != nil },
+                              "\(rule.species) \(id)")
+            }
+        }
     }
 
     func testStepsWithoutAnyConditionAreListedOnPurpose() throws {
@@ -66,7 +88,7 @@ final class EvolutionRulesTests: XCTestCase {
             let present = step.gatedSignatures ?? []
             XCTAssertNotNil(step.gatedSignatures, "\(rule.species) also grows by a plain level or stone")
             XCTAssertEqual(rule.covers.subtracting(present), [], "\(rule.species) covers a signature the step lacks")
-            XCTAssertEqual(present.filter { !isDeferred($0) }.subtracting(rule.covers), [], "\(rule.species)")
+            XCTAssertEqual(present.subtracting(rule.covers), [], "\(rule.species)")
         }
     }
 
@@ -87,7 +109,7 @@ final class EvolutionRulesTests: XCTestCase {
     func testEveryRuleHasSomethingToCheckOrChoose() {
         for rule in EvolutionRules.all {
             let gate = !rule.paths.isEmpty
-            XCTAssertTrue(gate || rule.selector != nil || rule.formNotShown, "\(rule.species) does nothing")
+            XCTAssertTrue(gate || rule.selector != nil || rule.formNotShown || rule.trade != nil, "\(rule.species) does nothing")
             XCTAssertFalse(rule.original.isEmpty, "\(rule.species) names no original condition")
             XCTAssertTrue(rule.paths.allSatisfy { !$0.isEmpty }, "\(rule.species) has an empty path")
         }

@@ -264,6 +264,50 @@ extension L {
             let item = evolutionSlugName(slug)
             return t("\(item)을(를) 사용", "Use \(item)", "\(item)を使う", "Usar \(item)", "Utiliser \(item)",
                      "Usar \(item)", "\(item) verwenden", "Применить \(item)")
+        case .trade:
+            return t("교환", "Trade it", "交換する", "Intercambiarlo", "L'échanger", "Trocá-lo", "Tauschen", "Обменять")
+        case .tradeHolding(let slug):
+            let item = evolutionSlugName(slug)
+            return t("\(item)을(를) 지니게 하고 교환", "Trade it while it holds \(item)", "\(item)を持たせて交換する",
+                     "Intercambiarlo mientras lleva \(item)", "L'échanger en lui faisant tenir \(item)",
+                     "Trocá-lo enquanto segura \(item)", "Mit \(item) als Item tauschen",
+                     "Обменять, пока он держит \(item)")
+        case .tradeForSpecies(let id):
+            let name = speciesName(id)
+            return t("\(name)와(과) 교환", "Trade it for \(name)", "\(name)と交換する", "Intercambiarlo por \(name)",
+                     "L'échanger contre \(name)", "Trocá-lo por \(name)", "Gegen \(name) tauschen",
+                     "Обменять на \(name)")
+        }
+    }
+
+    /// The app's way into a trade step: the trade itself, or the Linking Cord for a Pokémon already owned.
+    func evolutionTradeText(_ trade: EvolutionTrade, speciesName: (Int) -> String) -> String {
+        switch trade {
+        case .plain:
+            return t("교환하거나 연결의끈 사용", "Trade it, or use a Linking Cord",
+                     "交換するか、つながりのヒモを使う", "Intercambiarlo o usar un Cordón Unión",
+                     "L'échanger ou utiliser un Fil de Liaison", "Trocá-lo ou usar um Cordão Elo",
+                     "Tauschen oder eine Verbindungsschnur benutzen", "Обменять или использовать шнур")
+        case .holding(let kind):
+            let item = evolutionItemName(kind)
+            return t("\(item)을(를) 장착한 뒤 교환하거나 연결의끈 사용",
+                     "Equip \(item), then trade it or use a Linking Cord",
+                     "\(item)を持たせて、交換するかつながりのヒモを使う",
+                     "Equipar \(item) y luego intercambiarlo o usar un Cordón Unión",
+                     "Lui faire tenir \(item), puis l'échanger ou utiliser un Fil de Liaison",
+                     "Equipar \(item) e depois trocá-lo ou usar um Cordão Elo",
+                     "\(item) ausrüsten, dann tauschen oder eine Verbindungsschnur benutzen",
+                     "Дать \(item), затем обменять или использовать шнур")
+        case .partner(let id):
+            let name = speciesName(id)
+            return t("\(name)와(과) 교환하거나, \(name)을(를) 친구로 두고 연결의끈 사용",
+                     "Trade it for \(name), or use a Linking Cord with \(name) as a friend",
+                     "\(name)と交換するか、\(name)をともだちにしてつながりのヒモを使う",
+                     "Intercambiarlo por \(name), o usar un Cordón Unión con \(name) como amigo",
+                     "L'échanger contre \(name), ou utiliser un Fil de Liaison avec \(name) comme ami",
+                     "Trocá-lo por \(name), ou usar um Cordão Elo com \(name) como amigo",
+                     "Gegen \(name) tauschen, oder eine Verbindungsschnur mit \(name) als Freund benutzen",
+                     "Обменять на \(name) или использовать шнур, когда \(name) в друзьях")
         }
     }
 

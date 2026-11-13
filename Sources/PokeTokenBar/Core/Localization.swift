@@ -2316,6 +2316,7 @@ struct L {
         case .linkingCord:
             return linkingCordDescription
         default:
+            if kind.isTradeEvolutionItem { return evolutionTradeItemNote }
             if kind.isEvolutionHeld { return evolutionHeldNote }
             let effect = heldItemEffect(kind)
             return effect.isEmpty ? nil : effect

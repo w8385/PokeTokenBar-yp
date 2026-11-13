@@ -36,6 +36,8 @@ ITEMS = [
     "malicious-armor", "galarica-cuff", "galarica-wreath", "unremarkable-teacup", "masterpiece-teacup",
     "metal-alloy", "peat-block", "black-augurite", "scroll-of-darkness", "scroll-of-waters",
     "oval-stone", "razor-claw", "razor-fang", "strawberry-sweet",
+    "metal-coat", "kings-rock", "dragon-scale", "up-grade", "dubious-disc", "electirizer", "magmarizer",
+    "protector", "reaper-cloth", "deep-sea-tooth", "deep-sea-scale", "sachet", "whipped-dream", "prism-scale",
 ]
 
 # Items that are not in the games: hand-written in the same in-game voice, all eight app languages.
@@ -305,8 +307,13 @@ def clean(text, lang):
 
 def get(path):
     req = urllib.request.Request(f"{API}/{path}", headers={"User-Agent": "item-lore-generator"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return json.load(r)
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return json.load(r)
+        except TimeoutError:
+            if attempt == 3:
+                raise
 
 
 if __name__ == "__main__":

@@ -1,17 +1,28 @@
 import Foundation
 
 extension EvolutionRules {
-    /// Trade steps wait for the trade commit; `EvolutionRulesTests` accepts these prefixes until then.
-    static let deferredSignaturePrefixes = ["trade"]
-
-    static let table: [EvolutionRule] = friendship + gestures + moves + items + battles + others
+    static let table: [EvolutionRule] = friendship + gestures + moves + items + battles + trades + others
 
     private static func make(
         _ species: Int, _ covers: [String], _ original: [EvolutionOriginal],
-        _ paths: [[EvolutionRequirement]] = [], selector: EvolutionSelector? = nil, formNotShown: Bool = false
+        _ paths: [[EvolutionRequirement]] = [], selector: EvolutionSelector? = nil, formNotShown: Bool = false,
+        trade: EvolutionTrade? = nil, from: Int? = nil
     ) -> EvolutionRule {
         EvolutionRule(species: species, covers: Set(covers), original: original, paths: paths,
-                      selector: selector, formNotShown: formNotShown)
+                      selector: selector, formNotShown: formNotShown, trade: trade, from: from)
+    }
+
+    private static func traded(_ species: Int, from: Int) -> EvolutionRule {
+        make(species, ["trade"], [.trade], trade: .plain, from: from)
+    }
+
+    private static func tradedHolding(_ species: Int, from: Int, _ item: ItemKind) -> EvolutionRule {
+        make(species, ["trade+held_item"], [.tradeHolding(item.evolutionHeldSlug ?? "")], trade: .holding(item),
+             from: from)
+    }
+
+    private static func tradedFor(_ species: Int, from: Int, partner: Int) -> EvolutionRule {
+        make(species, ["trade+trade_species"], [.tradeForSpecies(partner)], trade: .partner(partner), from: from)
     }
 
     private static let happy = "level-up+min_happiness"
@@ -46,7 +57,8 @@ extension EvolutionRules {
         pets(428), pets(528), pets(542, happiness: 220), pets(773),
         petsAt(196, .day), petsAt(197, .night), petsAt(315, .day), petsAt(358, .night, happiness: 220),
         petsAt(448, .day), petsAt(873, .night),
-        make(350, ["level-up+min_beauty"], [.beauty(170)], [[.pets(60)]]),
+        make(350, ["level-up+min_beauty", "trade+held_item"], [.beauty(170), .tradeHolding("prism-scale")],
+             [[.pets(60)]], trade: .holding(.prismScale), from: 349),
         make(700, ["level-up+known_move_type+min_affection", "level-up+known_move_type+min_happiness"],
              [.knownMoveType("fairy"), .happiness(160)], [[.pets(30), .knownFairyMove(fallbackLevel: 15)]]),
         make(923, ["level-up+min_steps"], [.steps(1000)], [[.pets(50)]]),
@@ -79,7 +91,10 @@ extension EvolutionRules {
         uses(841, .tartApple, "tart-apple"), uses(842, .sweetApple, "sweet-apple"),
         uses(1011, .syrupyApple, "syrupy-apple"), uses(900, .blackAugurite, "black-augurite"),
         uses(936, .auspiciousArmor, "auspicious-armor"), uses(937, .maliciousArmor, "malicious-armor"),
-        uses(1018, .metalAlloy, "metal-alloy"), uses(199, .galaricaWreath, "galarica-wreath"),
+        uses(1018, .metalAlloy, "metal-alloy"),
+        make(199, ["use-item:galarica-wreath", "trade+held_item"],
+             [.useItem("galarica-wreath"), .tradeHolding("kings-rock")], [[.bag(.galaricaWreath)]],
+             trade: .holding(.kingsRock), from: 79),
         make(855, ["use-item:cracked-pot", "use-item:chipped-pot"], [.useItem("cracked-pot"), .useItem("chipped-pot")],
              [[.bag(.crackedPot)], [.bag(.chippedPot)]]),
         make(1013, ["use-item:unremarkable-teacup", "use-item:masterpiece-teacup"],
@@ -107,6 +122,19 @@ extension EvolutionRules {
                    "use-move+min_move_count+used_move"],
              [.knownMove("barb-barrage"), .moveUses("barb-barrage", 20)],
              [[.knownMove("barb-barrage", fallbackLevel: 25)], [.battles(.played, 20)], stretch]),
+    ]
+
+    private static let trades: [EvolutionRule] = [
+        traded(65, from: 64), traded(68, from: 67), traded(76, from: 75), traded(94, from: 93),
+        traded(526, from: 525), traded(534, from: 533), traded(709, from: 708), traded(711, from: 710),
+        tradedHolding(186, from: 61, .kingsRock), tradedHolding(208, from: 95, .metalCoat),
+        tradedHolding(212, from: 123, .metalCoat), tradedHolding(230, from: 117, .dragonScale),
+        tradedHolding(233, from: 137, .upGrade), tradedHolding(367, from: 366, .deepSeaTooth),
+        tradedHolding(368, from: 366, .deepSeaScale), tradedHolding(464, from: 112, .protector),
+        tradedHolding(466, from: 125, .electirizer), tradedHolding(467, from: 126, .magmarizer),
+        tradedHolding(474, from: 233, .dubiousDisc), tradedHolding(477, from: 356, .reaperCloth),
+        tradedHolding(683, from: 682, .sachet), tradedHolding(685, from: 684, .whippedDream),
+        tradedFor(589, from: 588, partner: 616), tradedFor(617, from: 616, partner: 588),
     ]
 
     private static let others: [EvolutionRule] = [

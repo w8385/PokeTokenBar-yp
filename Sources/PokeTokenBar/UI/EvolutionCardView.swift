@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// "In the games … / In this app …" for one special evolution step, with progress when the raised Pokémon is on it.
+@MainActor
 struct EvolutionCardView: View {
     let store: CompanionStore
     let card: CompanionStore.EvolutionCard
@@ -28,6 +29,10 @@ struct EvolutionCardView: View {
                         requirementRow(requirement)
                     }
                 }
+                if let trade = card.rule.trade {
+                    if !card.rule.paths.isEmpty { Text(l.evolutionOr).foregroundStyle(.secondary) }
+                    tradeRows(trade)
+                }
             }
         }
         .padding(10)
@@ -40,6 +45,27 @@ struct EvolutionCardView: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             content().font(.callout).fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    @ViewBuilder
+    private func tradeRows(_ trade: EvolutionTrade) -> some View {
+        Text(l.evolutionTradeText(trade, speciesName: speciesLabel))
+        if case .holding(let kind) = trade, let id = card.individualID {
+            let held = store.heldItem(of: id) == kind
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Image(systemName: held ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(held ? Color.green : Color.secondary)
+                Text(l.evolutionItemName(kind))
+                Spacer(minLength: 4)
+                if held {
+                    Button(l.heldItemRemove) { _ = store.unequip(from: id) }
+                        .buttonStyle(.borderless).controlSize(.small)
+                } else if store.itemCount(kind) > 0 {
+                    Button(l.heldItemEquip) { _ = store.equip(kind, to: id) }
+                        .buttonStyle(.borderless).controlSize(.small)
+                }
+            }
         }
     }
 
