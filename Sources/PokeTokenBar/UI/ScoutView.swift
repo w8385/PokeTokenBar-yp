@@ -64,6 +64,7 @@ struct ShopScoutSection: View {
     }
 }
 
+@MainActor
 struct ScoutTicketIcon: View {
     let size: CGFloat
     var body: some View {
