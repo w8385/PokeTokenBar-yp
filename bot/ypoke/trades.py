@@ -19,6 +19,7 @@ from ypoke.store import Store
 TRADE_LIFETIME = timedelta(hours=24)
 HISTORY_WINDOW = timedelta(days=3)
 MAX_POOL = 100
+HELD_ITEM_KEY = "tradeHeldItem"
 MAX_ENTRY_BYTES = 4096
 MAX_OPEN_OFFERS = 3
 PICK_ACTION_ID = "trade_pick"
@@ -234,7 +235,13 @@ class TradeService:
             return TradeReply(f"{_label(trade.give)}은(는) 지금 교환할 수 없어요. 앱에서 대결·육성에 쓰고 있지 않은지 확인해 주세요.", ok=False)
         if self._pool_entry(trade.target_id, trade.back_id) is None:
             return TradeReply(f"상대의 {_label(trade.back)}은(는) 지금 교환할 수 없어요. 상대가 앱에서 바꾸면 다시 눌러 주세요.", ok=False)
-        done = self._update(trade.id, "UPDATE trades SET status = 'completed' WHERE id = ? AND status = 'countered'", (trade.id,))
+        give = _with_current_item(trade.give, self._pool_entry(trade.proposer_id, trade.give_id))
+        back = _with_current_item(trade.back, self._pool_entry(trade.target_id, trade.back_id))
+        done = self._update(
+            trade.id,
+            "UPDATE trades SET status = 'completed', give_json = ?, back_json = ? WHERE id = ? AND status = 'countered'",
+            (json.dumps(give, ensure_ascii=False), json.dumps(back, ensure_ascii=False), trade.id),
+        )
         if not done:
             return TradeReply(_status_text(self._get(trade.id).status), ok=False, final=True)
         text = f"교환이 끝났어요! {_label(trade.give)} ↔ {_label(trade.back)}. 앱을 켜 두면 곧 도착해요."
@@ -287,7 +294,9 @@ class TradeService:
         mine = user_id == trade.proposer_id
         received, given_id = (trade.back, trade.give_id) if mine else (trade.give, trade.back_id)
         sender = trade.target_id if mine else trade.proposer_id
-        return {"trade_id": trade.id, "give_id": given_id, "from_name": self._name(sender), "receive": received}
+        gave = trade.give if mine else trade.back
+        return {"trade_id": trade.id, "give_id": given_id, "from_name": self._name(sender), "receive": received,
+                "give_held_item": gave["entry"].get(HELD_ITEM_KEY)}
 
     def _summary(self, trade: Trade, user_id: str) -> dict:
         mine = user_id == trade.proposer_id
@@ -301,6 +310,11 @@ class TradeService:
             "want": _brief(trade.back if mine else trade.give),
             "expires_at": _stamp(trade.created_at + TRADE_LIFETIME),
         }
+
+    def locked_ids(self, user_id: str) -> list[str]:
+        """The user's individuals in open trades; the app keeps their held item in place until the trade ends."""
+        self._expire()
+        return sorted(self._locked_ids(user_id))
 
     def _locked_ids(self, user_id: str, except_trade: str | None = None) -> set[str]:
         """The user's individuals tied up in open trades: what they offered, and what they picked back."""
@@ -407,6 +421,17 @@ def _normalize_entry(item: object) -> dict | None:
         "name": name.strip()[:40] if isinstance(name, str) and name.strip() else f"#{pokemon_id}",
         "entry": detail,
     }
+
+
+def _with_current_item(snapshot: dict, current: dict | None) -> dict:
+    """The offered entry carrying the trade item the owner holds now, so an item taken off after the offer is not also delivered."""
+    entry = dict(snapshot["entry"])
+    item = current["entry"].get(HELD_ITEM_KEY) if current else None
+    if item is None:
+        entry.pop(HELD_ITEM_KEY, None)
+    else:
+        entry[HELD_ITEM_KEY] = item
+    return {**snapshot, "entry": entry}
 
 
 def _status_text(status: str) -> str:

@@ -165,6 +165,7 @@ struct BattleEntrySection: View {
         let spare = companion.ownedItems(in: .heldItem)
         let spareStones = companion.ownedMegaStones()
         let speciesID = companion.dexEntry(for: fighter)?.finalID ?? fighter.member.pokemonID
+        let locked = companion.isTradeLocked(fighter.id)
         return VStack(alignment: .leading, spacing: 4) {
             row {
                 if let held {
@@ -180,11 +181,14 @@ struct BattleEntrySection: View {
                         .font(.callout.weight(.semibold))
                 }
                 Spacer(minLength: 4)
-                if held != nil || heldStone != nil {
+                if locked {
+                    Image(systemName: "lock.fill").foregroundStyle(.secondary).help(l.tradeLockedItemText)
+                }
+                if !locked, held != nil || heldStone != nil {
                     Button(l.heldItemRemove) { change { companion.unequip(from: fighter.id) } }
                         .controlSize(.small)
                 }
-                if !spare.isEmpty || !spareStones.isEmpty {
+                if !locked, !spare.isEmpty || !spareStones.isEmpty {
                     Menu(l.heldItemEquip) {
                         ForEach(spare, id: \.kind) { item in
                             Button("\(l.itemName(item.kind)) ×\(item.count)") {
@@ -200,7 +204,11 @@ struct BattleEntrySection: View {
                     .controlSize(.small).fixedSize()
                 }
             }
-            if let held {
+            if locked {
+                Text(l.tradeLockedItemText).font(.caption2).foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 12).padding(.bottom, 6)
+            } else if let held {
                 Text(l.heldItemEffect(held)).font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 12).padding(.bottom, 6)

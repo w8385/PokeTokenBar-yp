@@ -1493,3 +1493,20 @@ read_when:
   turn. A move that faints both sides keeps the old rule: the hit side is checked first, so a 1v1 double KO
   is a win for the attacker. Tests in `test_roster_battle.py` hit the exact trigger (3v3 with a recoil or
   Life Orb KO on the first mover).
+- **State that travels with an offered Pokémon must be settled at completion, not read from the listing.**
+  A Pokémon offered in a trade carries its held trade item to the receiver, but the bot stored the entry as it was
+  when the offer (`give`) or the pick (`back`) was made, and `_complete` only checked that the id was still in the
+  owner's pool. The sender could take the item off in between: the bag got it back and the receiver still got the
+  snapshot's copy. Putting a different item on lost it instead (`applyTrades` cleared any trade item the sender held).
+  The existing trade tests only ever changed the pool by removing an individual, never an item on one that stayed,
+  and the app tests applied hand-built deliveries that never disagreed with the sender's state. Now the item slot of
+  an individual in an open trade is locked in the store (`equip`, `unequip`, Linking Cord), the bot rewrites the item
+  in both entries from each owner's latest pool at completion, and each delivery says which item left (`give_held_item`)
+  so the sender removes exactly that one (off the Pokémon, else out of the bag). The lock set comes from the bot
+  (`locked_ids`), plus the offer the app just sent. Class sweep of what can change on a listed Pokémon before
+  completion: nature changes only on the raised one, which is never in the pool; a dex entry cannot be released or
+  made the raised one by the user; evolution by Linking Cord used up the item, so it is locked too; a battle pick or
+  raised Pokémon leaves the pool and `_complete` refuses (retry, no duplicate); a traded-away friend is removed by
+  `save()`'s friend reconcile. Residual: an offer the other player picks in Slack reaches this app at its next sync
+  (up to a minute), and a pool upload lags a few minutes, so an unequip in that gap is settled by `give_held_item`
+  on delivery rather than prevented. Tests: `TradeItemLockTests`, `test_trades.py` (item taken off, put on, swapped).

@@ -143,8 +143,8 @@ def test_both_sides_must_accept_and_the_trade_is_delivered_to_each(trades):
 
     (to_alice,) = trades.deliveries(ALICE)
     (to_bob,) = trades.deliveries(BOB)
-    assert to_alice == {"trade_id": trade_id, "give_id": "alice-haunter", "from_name": "밥", "receive": PIKACHU}
-    assert to_bob == {"trade_id": trade_id, "give_id": "bob-pikachu", "from_name": "앨리스", "receive": HAUNTER}
+    assert to_alice == {"trade_id": trade_id, "give_id": "alice-haunter", "from_name": "밥", "receive": PIKACHU, "give_held_item": None}
+    assert to_bob == {"trade_id": trade_id, "give_id": "bob-pikachu", "from_name": "앨리스", "receive": HAUNTER, "give_held_item": None}
 
 
 def test_a_delivery_repeats_until_that_side_acknowledges_it(trades):
@@ -281,3 +281,78 @@ def test_pool_normalization_drops_bad_entries_and_caps_the_size():
     assert pool[1]["name"] == "#25" and pool[1]["shiny"] is False
     assert normalize_pool("nope") is None
     assert len(normalize_pool([individual(f"x{index}", 1, "a") for index in range(MAX_POOL + 20)])) == MAX_POOL
+
+
+def holding(base, item):
+    entry = {**base["entry"], "tradeHeldItem": item} if item else dict(base["entry"])
+    return {**base, "entry": entry}
+
+
+def offer_and_accept_as_target(trades, give, back=PIKACHU):
+    trade_id = trades.propose(ALICE, BOB, give["id"]).trade_id
+    assert trades.pick(BOB, trade_id, back["id"]).ok
+    assert trades.accept(BOB, trade_id).final
+    return trade_id
+
+
+def test_an_item_taken_off_after_the_offer_is_not_delivered_with_the_pokemon(trades):
+    trades.save_pool(ALICE, [holding(HAUNTER, "metalCoat"), EEVEE])
+    trade_id = offer_and_accept_as_target(trades, HAUNTER)
+    trades.save_pool(ALICE, [holding(HAUNTER, None), EEVEE])
+
+    assert trades.accept(ALICE, trade_id).final
+
+    (to_bob,) = trades.deliveries(BOB)
+    (to_alice,) = trades.deliveries(ALICE)
+    assert "tradeHeldItem" not in to_bob["receive"]["entry"]
+    assert to_alice["give_held_item"] is None
+
+
+def test_an_item_put_on_after_the_offer_is_delivered_and_reported_as_given(trades):
+    trade_id = offer_and_accept_as_target(trades, HAUNTER)
+    trades.save_pool(ALICE, [holding(HAUNTER, "kingsRock"), EEVEE])
+
+    assert trades.accept(ALICE, trade_id).final
+
+    (to_bob,) = trades.deliveries(BOB)
+    (to_alice,) = trades.deliveries(ALICE)
+    assert to_bob["receive"]["entry"]["tradeHeldItem"] == "kingsRock"
+    assert to_alice["give_held_item"] == "kingsRock"
+
+
+def test_the_picked_back_pokemon_is_settled_the_same_way(trades):
+    trades.save_pool(BOB, [holding(PIKACHU, "dragonScale"), SQUIRTLE])
+    trade_id = offer_and_accept_as_target(trades, HAUNTER)
+    trades.save_pool(BOB, [holding(PIKACHU, None), SQUIRTLE])
+
+    assert trades.accept(ALICE, trade_id).final
+
+    (to_alice,) = trades.deliveries(ALICE)
+    (to_bob,) = trades.deliveries(BOB)
+    assert "tradeHeldItem" not in to_alice["receive"]["entry"]
+    assert to_bob["give_held_item"] is None
+
+
+def test_an_unchanged_item_travels_once_and_is_reported_to_the_sender(trades):
+    trades.save_pool(ALICE, [holding(HAUNTER, "metalCoat"), EEVEE])
+    trade_id = offer_and_accept_as_target(trades, HAUNTER)
+
+    assert trades.accept(ALICE, trade_id).final
+
+    assert trades.deliveries(BOB)[0]["receive"]["entry"]["tradeHeldItem"] == "metalCoat"
+    assert trades.deliveries(ALICE)[0]["give_held_item"] == "metalCoat"
+
+
+def test_locked_ids_are_what_the_user_offered_or_picked_back_until_the_trade_ends(trades, clock):
+    trade_id = trades.propose(ALICE, BOB, HAUNTER["id"]).trade_id
+    assert trades.locked_ids(ALICE) == [HAUNTER["id"]]
+    assert trades.locked_ids(BOB) == []
+    trades.pick(BOB, trade_id, PIKACHU["id"])
+    assert trades.locked_ids(BOB) == [PIKACHU["id"]]
+
+    trades.decline(BOB, trade_id)
+    assert trades.locked_ids(ALICE) == trades.locked_ids(BOB) == []
+
+    trades.propose(ALICE, BOB, EEVEE["id"])
+    clock.advance(hours=25)
+    assert trades.locked_ids(ALICE) == []
