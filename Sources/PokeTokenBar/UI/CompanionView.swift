@@ -2095,22 +2095,23 @@ struct PokemonDetailView: View {
         }
     }
 
-    /// Sets the battle pick of the shown individual. The representative and the Pokémon being raised
-    /// stay as they are.
+    /// Fills the first free battle slot with the shown individual. The representative and the Pokémon
+    /// being raised stay as they are.
     private func battleButton(for individual: DexEntry, _ battleEntry: BattleEntryStore) -> some View {
         let fighting = battleEntry.isFighting(individual, in: store)
+        let full = !fighting && battleEntry.isFull(in: store)
         return Button {
             if battleEntry.sendToBattle(individual, in: store) {
                 Task { await uploader?.tick() }
             }
         } label: {
-            Label(fighting ? store.l.battleFighting : store.l.battleSendToBattle,
-                  systemImage: fighting ? "checkmark" : "bolt.fill")
+            Label(fighting ? store.l.battleFighting : full ? store.l.battleSlotsFull : store.l.battleSendToBattle,
+                  systemImage: fighting ? "checkmark" : full ? "person.3.fill" : "bolt.fill")
         }
         .buttonStyle(.bordered)
         .controlSize(.mini)
         .fixedSize()
-        .disabled(fighting)
+        .disabled(fighting || full)
     }
 
     private var appearancePicker: some View {

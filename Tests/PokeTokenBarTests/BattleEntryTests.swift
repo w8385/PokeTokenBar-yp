@@ -26,8 +26,14 @@ final class BattleEntryTests: XCTestCase {
     }
 
     private func party(_ state: CompanionState, slot: BattleEntrySlot?) -> [PartyMember] {
-        BattleEntry.party(state: state, slot: slot, rentalSpeciesID: 4)
+        party(state, slots: slot.map { [$0] } ?? [])
     }
+
+    private func party(_ state: CompanionState, slots: [BattleEntrySlot]) -> [PartyMember] {
+        BattleEntry.party(state: state, slots: slots, rentalSpeciesID: 4)
+    }
+
+    private func ids(_ names: String...) -> [BattleEntrySlot] { names.map { BattleEntrySlot(instanceID: $0) } }
 
     func testCandidatesAreTheRaisedPokemonAndKeptCatches() {
         let candidates = BattleEntry.candidates(in: state())
@@ -71,6 +77,47 @@ final class BattleEntryTests: XCTestCase {
         XCTAssertNil(party(state(), slot: gone)[0].moves)
     }
 
+    func testThreePicksFightInSlotOrderEachWithItsOwnMoves() {
+        let slots = [BattleEntrySlot(instanceID: "pikachu", pokemonID: 25, moves: [85]),
+                     BattleEntrySlot(instanceID: "raised"), BattleEntrySlot(instanceID: "caterpie")]
+
+        let party = self.party(state(), slots: slots)
+
+        XCTAssertEqual(party.map(\.pokemonID), [25, 5, 10])
+        XCTAssertEqual(party.map(\.level), [60, 42, 30])
+        XCTAssertEqual(party[0].moves, [85])
+        XCTAssertNil(party[1].moves)
+        XCTAssertNil(party[2].moves)
+    }
+
+    func testAnEntryNeverCarriesMoreThanThreeOrTheSamePokemonTwice() {
+        var state = state()
+        state.dex.append(entry(16, id: "pidgey"))
+
+        let party = self.party(state, slots: ids("caterpie", "caterpie", "pikachu", "raised", "pidgey"))
+
+        XCTAssertEqual(party.map(\.pokemonID), [10, 25, 5])
+    }
+
+    func testReleasedPicksAreSkippedAndTheRestKeepTheirOrder() {
+        let party = self.party(state(), slots: ids("gone", "pikachu", "missing", "caterpie"))
+
+        XCTAssertEqual(party.map(\.pokemonID), [25, 10])
+    }
+
+    func testAnEggCannotBePickedSoOnlyKeptCatchesFight() {
+        var egg = state()
+        egg.active = nil
+
+        XCTAssertEqual(BattleEntry.candidates(in: egg).map(\.id), ["caterpie", "pikachu"])
+        XCTAssertEqual(party(egg, slots: ids("raised", "caterpie")).map(\.pokemonID), [10])
+        XCTAssertEqual(party(egg, slots: ids("raised")).map(\.pokemonID), [25])
+    }
+
+    func testPicksNeedNotIncludeThePokemonBeingRaised() {
+        XCTAssertEqual(party(state(), slots: ids("caterpie", "pikachu")).map(\.pokemonID), [10, 25])
+    }
+
     func testAnEggWithCatchesAndNothingChosenSendsTheHighestLevelCatch() {
         var egg = state()
         egg.active = nil
@@ -84,7 +131,7 @@ final class BattleEntryTests: XCTestCase {
         var egg = CompanionState()
         egg.dex = [entry(12, id: "gone", released: true)]
 
-        XCTAssertNil(BattleEntry.fighter(state: egg, slot: nil))
+        XCTAssertNil(BattleEntry.autoFighter(state: egg))
         XCTAssertEqual(party(egg, slot: nil),
                        [PartyMember(pokemonID: 4, level: BattleEntry.rentalLevel, shiny: false, ivs: nil, rental: true)])
         let json = try PartyPayload(appVersion: nil, party: party(egg, slot: nil)).encoded()
@@ -129,15 +176,81 @@ final class BattleEntryStoreTests: XCTestCase {
         defaults.removePersistentDomain(forName: suite)
     }
 
-    func testChoosingKeepsOnePokemonAndPersists() {
-        let store = BattleEntryStore(defaults: defaults)
-        store.choose("a")
-        store.choose("b")
-        XCTAssertEqual(store.slot, BattleEntrySlot(instanceID: "b"))
-        XCTAssertEqual(BattleEntryStore(defaults: defaults).slot, store.slot)
+    private func ids(_ store: BattleEntryStore) -> [String] { store.slots.map(\.instanceID) }
 
-        store.choose(nil)
-        XCTAssertNil(BattleEntryStore(defaults: defaults).slot)
+    func testAddingFillsTheFirstFreeSlotUpToThreeAndPersists() {
+        let store = BattleEntryStore(defaults: defaults)
+
+        XCTAssertTrue(store.add("a"))
+        XCTAssertTrue(store.add("b"))
+        XCTAssertFalse(store.add("b"))
+        XCTAssertTrue(store.add("c"))
+        XCTAssertFalse(store.add("d"))
+
+        XCTAssertEqual(ids(store), ["a", "b", "c"])
+        XCTAssertEqual(ids(BattleEntryStore(defaults: defaults)), ["a", "b", "c"])
+    }
+
+    func testAddingToAnEmptyEntryKeepsTheAutoFighterInSlotOne() {
+        let store = BattleEntryStore(defaults: defaults)
+
+        store.add("pikachu", pinning: "raised")
+
+        XCTAssertEqual(ids(store), ["raised", "pikachu"])
+    }
+
+    func testReplacingKeepsTheSlotAndDropsItsMovesButNotForADuplicate() {
+        let store = BattleEntryStore(defaults: defaults)
+        store.add("a")
+        store.toggleMove(1, for: "a", pokemonID: 25, current: [])
+        store.add("b")
+
+        store.replace("a", with: "b")
+        XCTAssertEqual(ids(store), ["a", "b"])
+
+        store.replace("a", with: "c")
+        XCTAssertEqual(store.slots, [BattleEntrySlot(instanceID: "c"), BattleEntrySlot(instanceID: "b")])
+    }
+
+    func testReplacingTheAutoFighterPicksOnlyThatOne() {
+        let store = BattleEntryStore(defaults: defaults)
+
+        store.replace("raised", with: "pikachu")
+
+        XCTAssertEqual(ids(store), ["pikachu"])
+    }
+
+    func testRemovingAndReorderingKeepEachSlotsMoves() {
+        let store = BattleEntryStore(defaults: defaults)
+        store.add("a")
+        store.add("b")
+        store.add("c")
+        store.toggleMove(9, for: "c", pokemonID: 25, current: [])
+
+        store.move("c", by: -1)
+        XCTAssertEqual(ids(store), ["a", "c", "b"])
+        store.move("a", by: -1)
+        store.move("b", by: 1)
+        XCTAssertEqual(ids(store), ["a", "c", "b"])
+        XCTAssertEqual(store.slot(for: "c")?.moves, [9])
+
+        store.remove("a")
+        XCTAssertEqual(ids(store), ["c", "b"])
+        store.remove("c")
+        store.remove("b")
+        XCTAssertEqual(store.slots, [])
+    }
+
+    func testPruneForgetsPicksThatAreNoLongerOwned() {
+        let store = BattleEntryStore(defaults: defaults)
+        store.add("a")
+        store.add("gone")
+        store.add("c")
+
+        store.prune(owned: ["a", "c"])
+
+        XCTAssertEqual(ids(store), ["a", "c"])
+        XCTAssertTrue(store.add("d"))
     }
 
     func testTheRentalIsPickedOnceAmongTheStartersAndCanBeSwitched() {
@@ -150,32 +263,46 @@ final class BattleEntryStoreTests: XCTestCase {
         XCTAssertEqual(BattleEntryStore(defaults: defaults).rentalSpeciesID, 7)
     }
 
-    func testAnOlderThreeSlotEntryLoadsItsFirstSlot() throws {
+    func testAnOlderOneOrThreeSlotEntryLoadsAsIs() throws {
         let saved = [BattleEntrySlot(instanceID: "a", pokemonID: 25, moves: [85]),
                      BattleEntrySlot(instanceID: "b"), BattleEntrySlot(instanceID: "c")]
         defaults.set(try JSONEncoder().encode(saved), forKey: BattleEntryStore.defaultsKey)
+        XCTAssertEqual(BattleEntryStore(defaults: defaults).slots, saved)
 
-        XCTAssertEqual(BattleEntryStore(defaults: defaults).slot, saved[0])
+        defaults.set(try JSONEncoder().encode([saved[0]]), forKey: BattleEntryStore.defaultsKey)
+        XCTAssertEqual(BattleEntryStore(defaults: defaults).slots, [saved[0]])
     }
 
-    func testChoosingTheSamePokemonKeepsItsMoves() {
-        let store = BattleEntryStore(defaults: defaults)
-        store.toggleMove(1, for: "a", pokemonID: 25, current: [1, 2])
-        store.choose("a")
-        XCTAssertEqual(store.slot, BattleEntrySlot(instanceID: "a", pokemonID: 25, moves: [2]))
+    func testALoadedEntryDropsDuplicatesAndKeepsAtMostThree() throws {
+        let saved = ["a", "a", "b", "c", "d"].map { BattleEntrySlot(instanceID: $0) }
+        defaults.set(try JSONEncoder().encode(saved), forKey: BattleEntryStore.defaultsKey)
+
+        XCTAssertEqual(ids(BattleEntryStore(defaults: defaults)), ["a", "b", "c"])
     }
 
     func testTogglingStartsFromTheShownMovesAndStopsAtFour() {
         let store = BattleEntryStore(defaults: defaults)
 
         store.toggleMove(1, for: "a", pokemonID: 25, current: [1, 2, 3, 4])
-        XCTAssertEqual(store.slot?.moves, [2, 3, 4])
-        store.toggleMove(5, for: "a", pokemonID: 25, current: store.slot?.moves ?? [])
-        store.toggleMove(6, for: "a", pokemonID: 25, current: store.slot?.moves ?? [])
-        XCTAssertEqual(store.slot, BattleEntrySlot(instanceID: "a", pokemonID: 25, moves: [2, 3, 4, 5]))
+        XCTAssertEqual(store.slot(for: "a")?.moves, [2, 3, 4])
+        store.toggleMove(5, for: "a", pokemonID: 25, current: store.slot(for: "a")?.moves ?? [])
+        store.toggleMove(6, for: "a", pokemonID: 25, current: store.slot(for: "a")?.moves ?? [])
+        XCTAssertEqual(store.slots, [BattleEntrySlot(instanceID: "a", pokemonID: 25, moves: [2, 3, 4, 5])])
 
-        store.resetMoves()
-        XCTAssertEqual(store.slot, BattleEntrySlot(instanceID: "a"))
+        store.resetMoves(for: "a")
+        XCTAssertEqual(store.slots, [BattleEntrySlot(instanceID: "a")])
+    }
+
+    func testEachSlotKeepsItsOwnMoves() {
+        let store = BattleEntryStore(defaults: defaults)
+        store.add("a")
+        store.add("b")
+
+        store.toggleMove(1, for: "b", pokemonID: 25, current: [])
+        store.toggleMove(2, for: "a", pokemonID: 4, current: [3])
+
+        XCTAssertEqual(store.slot(for: "a")?.moves, [3, 2])
+        XCTAssertEqual(store.slot(for: "b")?.moves, [1])
     }
 }
 

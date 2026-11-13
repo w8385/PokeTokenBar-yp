@@ -15,7 +15,7 @@ from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
 from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.store import PendingChallenge, Record, Store
-from ypoke.upload_server import IV_KEYS
+from ypoke.upload_server import IV_KEYS, MAX_ENTRY_SIZE
 
 DEFAULT_IV = 15
 REGISTER_LINK = "poketokenbar://ypoke-register"
@@ -56,9 +56,10 @@ MENTION_WORDS = {
 
 HELP_TEXT = (
     "*YPoke 대결*\n"
-    f"`{BATTLE_COMMAND} @상대` 서로 한 마리씩 내보내 한 판 붙어요. 앱 대결 탭에서 고른 포켓몬이, 안 골랐으면 지금 키우는 포켓몬이 나가요. "
+    f"`{BATTLE_COMMAND} @상대` 서로 최대 3마리를 정한 순서대로 내보내 한 판 붙어요. 앱 대결 탭에서 고른 포켓몬이, 안 골랐으면 지금 키우는 포켓몬이 나가요. "
+    "한 마리가 쓰러지면 다음 포켓몬이 나오고, 교체는 없어요. "
     "알만 있으면 대여 포켓몬이 상대 레벨로 나가요. 상대가 아직 준비 전이면 연결 안내를 보내고, 준비되면 결과가 이 채널에 올라가요.\n"
-    f"`{BATTLE_COMMAND} @YPoke` 또는 `@YPoke 대결` 봇이 내보낸 포켓몬과 연습 대결을 해요. 전적에 안 남아요.\n"
+    f"`{BATTLE_COMMAND} @YPoke` 또는 `@YPoke 대결` 봇이 내 마리 수만큼 무작위 포켓몬을 내보내 연습 대결을 해요. 전적에 안 남아요.\n"
     f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
     f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
@@ -121,7 +122,7 @@ class Delivery:
 class _Match:
     challenger_id: str
     opponent_id: str
-    sides: tuple[Combatant, Combatant]
+    sides: tuple[tuple[Combatant, ...], tuple[Combatant, ...]]
     seed: int
     practice: bool
     pokemon: tuple[int, int]
@@ -361,17 +362,19 @@ class CommandHandler:
         challenger = self._store.party(challenger_id)
         if challenger is None:
             return None
-        lead = challenger.party[0]
+        entry = challenger.party[:MAX_ENTRY_SIZE]
         seed = secrets.randbits(31)
         if opponent_id == self._bot_user_id:
-            wild = {"pokemon_id": bot_species(seed), "level": lead["level"], "shiny": False, "ivs": {}}
-            return _Match(challenger_id, opponent_id, self._combatants(lead, wild), seed, practice=True,
-                          pokemon=(lead["pokemon_id"], wild["pokemon_id"]))
+            wild = [{"pokemon_id": species, "level": member["level"], "shiny": False, "ivs": {}}
+                    for species, member in zip(bot_entry(seed, len(entry)), entry)]
+            return _Match(challenger_id, opponent_id, self._combatants(entry, wild), seed, practice=True,
+                          pokemon=(entry[0]["pokemon_id"], wild[0]["pokemon_id"]))
         opponent = self._store.party(opponent_id)
         if opponent is None:
             return None
-        return _Match(challenger_id, opponent_id, self._combatants(lead, opponent.party[0]), seed, practice=False,
-                      pokemon=(lead["pokemon_id"], opponent.party[0]["pokemon_id"]))
+        rival = opponent.party[:MAX_ENTRY_SIZE]
+        return _Match(challenger_id, opponent_id, self._combatants(entry, rival), seed, practice=False,
+                      pokemon=(entry[0]["pokemon_id"], rival[0]["pokemon_id"]))
 
     def _result(self, match: _Match) -> Reply:
         result = simulate(match.sides, match.seed)
@@ -381,7 +384,8 @@ class CommandHandler:
                 match.challenger_id, match.opponent_id, winner_id, match.seed, pokemon=match.pokemon, turns=result.turns
             )
         trainers = (f"<@{match.challenger_id}>", self._label(match.opponent_id))
-        summary = f"🏆 {trainers[result.winner]} 승 — {match.sides[0].name} vs {match.sides[1].name} ({result.turns}턴)"
+        names = [" · ".join(combatant.name for combatant in side) for side in match.sides]
+        summary = f"🏆 {trainers[result.winner]} 승 — {names[0]} vs {names[1]} ({result.turns}턴)"
         if match.practice:
             summary += " · 연습 대결"
         return Reply(
@@ -394,10 +398,13 @@ class CommandHandler:
     def _label(self, user_id: str | None) -> str:
         return f"<@{user_id}>" if user_id else "YPoke"
 
-    def _combatants(self, challenger: dict, opponent: dict) -> tuple[Combatant, Combatant]:
-        with ThreadPoolExecutor(max_workers=2) as pool:
-            first, second = pool.map(self._combatant, rental_levels(challenger, opponent))
-        return first, second
+    def _combatants(
+        self, challenger: list[dict], opponent: list[dict]
+    ) -> tuple[tuple[Combatant, ...], tuple[Combatant, ...]]:
+        first, second = rental_levels(challenger, opponent)
+        with ThreadPoolExecutor(max_workers=len(first) + len(second)) as pool:
+            combatants = tuple(pool.map(self._combatant, [*first, *second]))
+        return combatants[:len(first)], combatants[len(first):]
 
     def _combatant(self, member: dict) -> Combatant:
         data = self._pokeapi.pokemon(member["pokemon_id"])
@@ -417,12 +424,12 @@ class CommandHandler:
         )
 
 
-def rental_levels(challenger: dict, opponent: dict) -> tuple[dict, dict]:
-    """A rental takes the other side's level (the battle cap applies after); two rentals keep their own."""
-    if challenger.get("rental") and not opponent.get("rental"):
-        return {**challenger, "level": opponent["level"]}, opponent
-    if opponent.get("rental") and not challenger.get("rental"):
-        return challenger, {**opponent, "level": challenger["level"]}
+def rental_levels(challenger: list[dict], opponent: list[dict]) -> tuple[list[dict], list[dict]]:
+    """A rental takes the other side's lead level (the battle cap applies after); two rentals keep their own."""
+    if challenger[0].get("rental") and not opponent[0].get("rental"):
+        return [{**member, "level": opponent[0]["level"]} for member in challenger], opponent
+    if opponent[0].get("rental") and not challenger[0].get("rental"):
+        return challenger, [{**member, "level": challenger[0]["level"]} for member in opponent]
     return challenger, opponent
 
 
@@ -438,8 +445,8 @@ def reply_thread_ts(event: dict) -> str:
     return event.get("thread_ts") or event["ts"]
 
 
-def bot_species(seed: int) -> int:
-    return random.Random(seed).randint(1, MAX_SPECIES_ID)
+def bot_entry(seed: int, count: int) -> list[int]:
+    return random.Random(seed).sample(range(1, MAX_SPECIES_ID + 1), count)
 
 
 def week_start(now: datetime) -> datetime:

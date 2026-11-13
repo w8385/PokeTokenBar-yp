@@ -13,7 +13,7 @@ from ypoke.names import DisplayNames
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
 from ypoke.transport import deliver, mention_listener, rematch_listener, slash_listener
-from ypoke.upload_server import serve
+from ypoke.upload_server import MAX_ENTRY_SIZE, serve
 
 
 def main() -> None:
@@ -68,7 +68,7 @@ def _after_upload(
 def _run_after_upload(
     pokeapi: PokeAPIService, handler: CommandHandler, client: WebClient, user_id: str, party: list[dict]
 ) -> None:
-    _prefetch_lead(pokeapi, party)
+    _prefetch_entry(pokeapi, party)
     try:
         deliveries = handler.run_pending(user_id)
     except Exception:
@@ -78,13 +78,13 @@ def _run_after_upload(
         deliver(client, delivery)
 
 
-def _prefetch_lead(pokeapi: PokeAPIService, party: list[dict]) -> None:
-    lead = party[0]
-    try:
-        pokeapi.pokemon(lead["pokemon_id"])
-        pokeapi.attacking_moves(lead["pokemon_id"], lead["level"])
-    except Exception:
-        logging.getLogger(__name__).warning("PokéAPI prefetch failed for %s", lead["pokemon_id"])
+def _prefetch_entry(pokeapi: PokeAPIService, party: list[dict]) -> None:
+    for member in party[:MAX_ENTRY_SIZE]:
+        try:
+            pokeapi.pokemon(member["pokemon_id"])
+            pokeapi.attacking_moves(member["pokemon_id"], member["level"])
+        except Exception:
+            logging.getLogger(__name__).warning("PokéAPI prefetch failed for %s", member["pokemon_id"])
 
 
 if __name__ == "__main__":

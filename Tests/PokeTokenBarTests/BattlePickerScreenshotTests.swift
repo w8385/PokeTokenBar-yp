@@ -79,7 +79,9 @@ final class BattlePickerScreenshotTests: XCTestCase {
 
         let defaults = UserDefaults(suiteName: "battlepicker-shot-\(UUID())")!
         let battle = BattleEntryStore(defaults: defaults)
-        battle.choose("pikachu")
+        battle.add("pikachu")
+        battle.add("gengar")
+        battle.add("snorlax")
         let uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,
             appVersion: "shot", send: { _ in 200 },
@@ -93,15 +95,16 @@ final class BattlePickerScreenshotTests: XCTestCase {
                 .environment(uploader).environment(battle).environment(store)
         }
         try await capture(battleTab(), to: directory.appendingPathComponent("battle-tab-after.png"))
-        nav.showingBattlePicker = true
+        nav.battlePicker = .slot("pikachu")
         try await capture(battleTab(), to: directory.appendingPathComponent("battle-picker.png"))
         try await capture(battleTab("리자"), to: directory.appendingPathComponent("battle-picker-search.png"))
 
+        battle.remove("snorlax")
         let charizard = try XCTUnwrap(store.dexSpecies.first { $0.id == 6 })
         try await capture(PokemonDetailView(store: store, species: charizard, onBack: {})
             .environment(uploader).environment(battle).environment(store),
                           to: directory.appendingPathComponent("dex-detail-send.png"))
-        battle.choose("charizard")
+        battle.add("charizard")
         try await capture(PokemonDetailView(store: store, species: charizard, onBack: {})
             .environment(uploader).environment(battle).environment(store),
                           to: directory.appendingPathComponent("dex-detail-fighting.png"))

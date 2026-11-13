@@ -1,9 +1,11 @@
-"""Automatic one-on-one battle: base stats, level (capped at 50), IVs, natures, type effectiveness and
-level-up moves with PP, priority, critical-hit stages, multi-hit, drain and recoil, the major statuses
-(burn, paralysis, poison, toxic, sleep, freeze), confusion, stat stages, five-turn weather and about twenty
-abilities (`ypoke.abilities`). No items or switching."""
+"""Automatic battle between rosters of up to three Pokémon, fought one at a time in order: base stats, level
+(capped at 50), IVs, natures, type effectiveness and level-up moves with PP, priority, critical-hit stages,
+multi-hit, drain and recoil, the major statuses (burn, paralysis, poison, toxic, sleep, freeze), confusion, stat
+stages, five-turn weather and about twenty abilities (`ypoke.abilities`). The next member comes in when one
+faints; no other switching. No items."""
 
 import random
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from ypoke import abilities
@@ -193,7 +195,16 @@ class WeatherEnd:
     weather: str
 
 
-Event = Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd
+@dataclass(frozen=True)
+class SendOut:
+    """The next member of `side` replaces a fainted one at the end of `turn`."""
+
+    turn: int
+    side: int
+    pokemon: str
+
+
+Event = Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut
 
 
 @dataclass
@@ -203,54 +214,95 @@ class BattleResult:
     events: list[Event] = field(default_factory=list)
 
 
-def simulate(sides: tuple[Combatant, Combatant], seed: int) -> BattleResult:
-    """Fight until one Pokémon faints or `TURN_LIMIT` turns pass; then the higher HP share wins.
+def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[Combatant]], seed: int) -> BattleResult:
+    """Fight until one side has no Pokémon left or `TURN_LIMIT` turns pass.
 
-    Each turn a Pokémon picks its move with the highest expected damage that still has PP, or Struggle.
+    At the limit the side with more Pokémon left wins, then the one with the higher HP share.
+    Each turn the active Pokémon picks its move with the highest expected damage that still has PP, or Struggle.
     The higher move priority acts first, then the faster Pokémon; a full tie is a coin flip from the seed.
     A weather move is picked when it swings the exchange by `WEATHER_SWING_MIN`; the weather lasts `WEATHER_TURNS` turns.
+    A fainted Pokémon is replaced after the end-of-turn effects, so its successor takes no chip damage that turn.
     """
     rng = random.Random(seed)
-    fighters = (_Fighter.enter(sides[0]), _Fighter.enter(sides[1]))
+    teams = (_Team(_roster(sides[0])), _Team(_roster(sides[1])))
     events: list[Event] = []
     weather = _Weather()
-    events.extend(_enter_battle(fighters, weather, rng))
+    events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng))
     turn = 0
     loser: int | None = None
     while loser is None and turn < TURN_LIMIT:
         turn += 1
+        fighters = (teams[0].active, teams[1].active)
         choices = (
             _best_move(fighters[0], fighters[1], weather.kind), _best_move(fighters[1], fighters[0], weather.kind),
         )
         for side in _turn_order(fighters, choices, rng, weather.kind):
-            action = _act(turn, side, fighters, choices[side], weather, rng)
-            events.append(action)
-            if action.knockout:
-                loser = 1 - side
-            elif action.attacker_fainted:
-                loser = side
+            if fighters[side].hp == 0:
+                continue
+            events.append(_act(turn, side, fighters, choices[side], weather, rng))
+            loser = _exhausted(teams, (1 - side, side))
             if loser is not None:
                 break
         for side in (0, 1):
             fighter = fighters[side]
-            if loser is None and fighter.status in ("burn", "poison", "toxic"):
+            if loser is None and fighter.hp > 0 and fighter.status in ("burn", "poison", "toxic"):
                 fighter.hp = max(0, fighter.hp - fighter.residual_damage())
                 events.append(
                     StatusDamage(turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0, fighter.status)
                 )
-                if fighter.hp == 0:
-                    loser = side
+                loser = _exhausted(teams, (side,))
         if loser is None:
-            loser = _weather_upkeep(turn, fighters, weather, events)
+            _weather_upkeep(turn, fighters, weather, events)
+            loser = _exhausted(teams, (0, 1))
+        entering = tuple(side for side in (0, 1) if loser is None and teams[side].active.hp == 0)
+        for side in entering:
+            events.append(SendOut(turn, side, teams[side].send_next().combatant.name))
+        if entering:
+            events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, entering))
     if loser is None:
-        loser = 1 if fighters[0].hp / fighters[0].max_hp >= fighters[1].hp / fighters[1].max_hp else 0
+        loser = 1 if teams[0].standing() >= teams[1].standing() else 0
     return BattleResult(winner=1 - loser, turns=turn, events=events)
+
+
+def _roster(side: Combatant | Sequence[Combatant]) -> tuple[Combatant, ...]:
+    return (side,) if isinstance(side, Combatant) else tuple(side)
+
+
+def _exhausted(teams: tuple["_Team", "_Team"], order: tuple[int, ...]) -> int | None:
+    """The first side in `order` whose active Pokémon fainted with nobody left to send out."""
+    return next((side for side in order if teams[side].active.hp == 0 and not teams[side].has_next), None)
 
 
 @dataclass
 class _Weather:
     kind: str | None = None
     turns_left: int = 0
+
+
+class _Team:
+    """A roster fought in order: `active` is the member in the field, entered fresh when its turn comes."""
+
+    def __init__(self, roster: tuple[Combatant, ...]):
+        self.roster = roster
+        self.entered = [_Fighter.enter(roster[0])]
+
+    @property
+    def active(self) -> "_Fighter":
+        return self.entered[-1]
+
+    @property
+    def has_next(self) -> bool:
+        return len(self.entered) < len(self.roster)
+
+    def send_next(self) -> "_Fighter":
+        self.entered.append(_Fighter.enter(self.roster[len(self.entered)]))
+        return self.active
+
+    def standing(self) -> tuple[int, float]:
+        """Members not yet fainted, then the sum of their HP shares; an unentered member counts as full."""
+        unentered = len(self.roster) - len(self.entered)
+        alive = [fighter for fighter in self.entered if fighter.hp > 0]
+        return unentered + len(alive), unentered + sum(fighter.hp / fighter.max_hp for fighter in alive)
 
 
 @dataclass
@@ -299,11 +351,12 @@ class _Fighter:
         return value * abilities.stat_multiplier(self.ability, key, weather, self.status is not None)
 
 
-def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: random.Random) -> list[AbilityTrigger]:
-    """Entry abilities fire faster Pokémon first, so the slower weather setter's weather stays."""
-    order = (0, 1)
+def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: random.Random,
+                  entering: tuple[int, ...] = (0, 1)) -> list[AbilityTrigger]:
+    """Entry abilities of the `entering` sides fire faster Pokémon first, so the slower weather setter's weather stays."""
+    order = entering
     speeds = [fighter.stat("speed") for fighter in fighters]
-    if all(abilities.entry_trigger(fighter.ability) for fighter in fighters):
+    if len(entering) == 2 and all(abilities.entry_trigger(fighter.ability) for fighter in fighters):
         order = (0, 1) if speeds[0] > speeds[1] or (speeds[0] == speeds[1] and rng.random() < 0.5) else (1, 0)
     triggers: list[AbilityTrigger] = []
     for side in order:
@@ -332,22 +385,23 @@ def _turn_order(fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, 
 
 def _weather_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], weather: _Weather,
                     events: list[Event]) -> int | None:
-    """Chip damage, then the countdown. Returns the side that fainted, if any."""
+    """Chip damage to both sides, then the countdown. Returns the first side that fainted, if any."""
     if weather.kind is None:
         return None
+    fainted = None
     for side, fighter in enumerate(fighters):
-        if _chipped_by(fighter, weather.kind):
+        if fighter.hp > 0 and _chipped_by(fighter, weather.kind):
             fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // WEATHER_CHIP_FRACTION))
             events.append(WeatherDamage(
                 turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0, weather.kind,
             ))
-            if fighter.hp == 0:
-                return side
+            if fighter.hp == 0 and fainted is None:
+                fainted = side
     weather.turns_left -= 1
     if weather.turns_left == 0:
         events.append(WeatherEnd(turn, weather.kind))
         weather.kind = None
-    return None
+    return fainted
 
 
 def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:

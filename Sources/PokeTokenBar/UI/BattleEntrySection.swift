@@ -1,24 +1,45 @@
 import SwiftUI
 
-/// Battle tab rows for picking the one battle Pokémon and its moves.
+/// Battle tab rows for picking up to three battle Pokémon, their order and their moves.
 @MainActor
 struct BattleEntrySection: View {
     @Environment(CompanionStore.self) private var companion
     let entry: BattleEntryStore
     let uploader: PartyUploader
-    let openPicker: () -> Void
+    let openPicker: (BattlePickerTarget) -> Void
 
     @State private var learnable: [String: LearnableMoves] = [:]
     @State private var unavailable: Set<String> = []
+    @State private var expanded: String?
 
     private var l: L { companion.l }
 
     var body: some View {
-        if let fighter = BattleEntry.fighter(state: companion.state, slot: entry.slot) {
-            entryRow(fighter: fighter)
-            moveList(fighter)
-        } else {
+        let lineup = BattleEntry.lineup(state: companion.state, slots: entry.slots)
+        if lineup.isEmpty {
             rentalRow
+        } else {
+            ForEach(Array(lineup.enumerated()), id: \.element.id) { index, fighter in
+                entryRow(fighter: fighter, index: index, count: lineup.count)
+                if lineup.count == 1 || expanded == fighter.id { moveList(fighter) }
+            }
+            if lineup.count < BattleEntry.maxSlots {
+                Button { openPicker(.add) } label: {
+                    Label(l.battleAddMember, systemImage: "plus.circle")
+                }
+                .buttonStyle(.borderless)
+                .padding(.horizontal, 12).padding(.vertical, 4)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                if entry.slots.isEmpty {
+                    Text(l.battleEntryAutoPick).foregroundStyle(Color.accentColor)
+                }
+                Text(l.battleEntryHint).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .font(.caption2)
+            .padding(.horizontal, 12).padding(.bottom, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -42,17 +63,18 @@ struct BattleEntrySection: View {
         }
     }
 
-    private func entryRow(fighter: BattleCandidate) -> some View {
+    private func entryRow(fighter: BattleCandidate, index: Int, count: Int) -> some View {
         let dexEntry = companion.dexEntry(for: fighter)
         let speciesID = dexEntry?.finalID ?? fighter.member.pokemonID
         let level = fighter.member.level
         return VStack(alignment: .leading, spacing: 4) {
             row {
-                SpriteView(speciesID: speciesID, size: 64, animated: true, shiny: fighter.member.shiny,
+                SpriteView(speciesID: speciesID, size: 56, animated: true, shiny: fighter.member.shiny,
                            form: dexEntry?.form, female: dexEntry?.profile?.gender == .female)
-                    .frame(width: 64, height: 64)
+                    .frame(width: 56, height: 56)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(l.battleEntryLabel).font(.caption2).foregroundStyle(.secondary)
+                    Text(count > 1 ? "\(index + 1) · \(l.battleEntryLabel)" : l.battleEntryLabel)
+                        .font(.caption2).foregroundStyle(.secondary)
                     Text("\(dexEntry.map(companion.dexEntryName) ?? companion.displayName)\(fighter.member.shiny ? " ✨" : "")")
                         .font(.headline).lineLimit(1)
                     HStack(spacing: 6) {
@@ -70,21 +92,39 @@ struct BattleEntrySection: View {
                     }
                 }
                 Spacer(minLength: 4)
-                Button(l.battleChange, action: openPicker)
-                    .controlSize(.small)
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                if entry.slot == nil {
-                    Text(l.battleEntryAutoPick).foregroundStyle(Color.accentColor)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Button(l.battleChange) { openPicker(.slot(fighter.id)) }
+                        .controlSize(.small)
+                    if count > 1 {
+                        HStack(spacing: 2) {
+                            iconButton("chevron.up", l.battleMoveEarlier, disabled: index == 0) {
+                                change { entry.move(fighter.id, by: -1) }
+                            }
+                            iconButton("chevron.down", l.battleMoveLater, disabled: index == count - 1) {
+                                change { entry.move(fighter.id, by: 1) }
+                            }
+                            iconButton("xmark", l.battleRemoveMember, disabled: false) {
+                                change { entry.remove(fighter.id) }
+                            }
+                        }
+                        Button(l.battleEntryMoves) {
+                            expanded = expanded == fighter.id ? nil : fighter.id
+                        }
+                        .buttonStyle(.borderless).font(.caption)
+                    }
                 }
-                Text(l.battleEntryHint).foregroundStyle(.tertiary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
-            .font(.caption2)
-            .padding(.horizontal, 12).padding(.bottom, 6)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .task(id: speciesID) { await companion.loadPokemonDetails(speciesID: speciesID) }
+    }
+
+    private func iconButton(_ symbol: String, _ label: String, disabled: Bool,
+                            action: @escaping () -> Void) -> some View {
+        Button(action: action) { Image(systemName: symbol).frame(width: 18, height: 18) }
+            .buttonStyle(.borderless)
+            .help(label)
+            .accessibilityLabel(label)
+            .disabled(disabled)
     }
 
     @ViewBuilder
@@ -93,14 +133,13 @@ struct BattleEntrySection: View {
         let key = "\(member.pokemonID)-\(member.level)"
         VStack(alignment: .leading, spacing: 6) {
             if let moves = learnable[key] {
-                let slot = entry.slot
-                let custom = slot?.instanceID == fighter.id && slot?.pokemonID == member.pokemonID
-                    && slot?.moves.isEmpty == false
+                let slot = entry.slot(for: fighter.id)
+                let custom = slot?.pokemonID == member.pokemonID && slot?.moves.isEmpty == false
                 let selected = custom ? slot?.moves ?? [] : moves.default
                 HStack {
                     Text(l.battleEntryMoves).font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
                     Spacer()
-                    Button(l.battleEntryAutoMoves) { change { entry.resetMoves() } }
+                    Button(l.battleEntryAutoMoves) { change { entry.resetMoves(for: fighter.id) } }
                         .buttonStyle(.borderless).font(.caption)
                         .disabled(!custom)
                 }
@@ -183,6 +222,7 @@ struct BattleEntrySection: View {
     }
 
     private func change(_ edit: () -> Void) {
+        entry.prune(owned: Set(BattleEntry.candidates(in: companion.state).map(\.id)))
         edit()
         Task { await uploader.tick() }
     }
