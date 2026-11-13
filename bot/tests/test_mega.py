@@ -110,10 +110,10 @@ def test_without_a_stone_the_battle_is_unchanged():
 def test_narration_announces_the_mega_evolution():
     holder, plain = mon("리자몽", MEGA), mon("상대")
     result = simulate((holder, plain), seed=3)
-    assert battle_log(result)[0].startswith("1턴 🔵 리자몽 메가진화 [단단한발톱] · ")
+    assert battle_log(result)[0].splitlines()[1] == "🔵 리자몽 메가진화 [단단한발톱]"
     assert battle_card(("<@UA>", "<@UB>"), ((holder,), (plain,)), result).columns[0].splitlines()[1].startswith("리자몽(메가)")
     no_ability = replace(MEGA, ability=None)
-    assert battle_log(simulate((replace(holder, mega=no_ability), plain), seed=3))[0].startswith("1턴 🔵 리자몽 메가진화 · ")
+    assert battle_log(simulate((replace(holder, mega=no_ability), plain), seed=3))[0].splitlines()[1] == "🔵 리자몽 메가진화"
 
 
 @pytest.fixture

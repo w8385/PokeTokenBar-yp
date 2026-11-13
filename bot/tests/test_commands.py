@@ -115,7 +115,12 @@ def test_battle_without_a_party_points_to_the_download(store):
 
 
 def lineups(reply):
-    return [column.splitlines()[1:] for column in reply.card.columns]
+    """Each column's member lines without the HP bar cells."""
+    return [[re.sub(r" [▰▱]{10}", "", line) for line in column.splitlines()[1:]] for column in reply.card.columns]
+
+
+def log_text(reply):
+    return "\n".join(reply.card.log)
 
 
 def test_battle_is_one_on_one_and_records(store):
@@ -124,7 +129,8 @@ def test_battle_is_one_on_one_and_records(store):
     reply = handler(store).handle("UA", "<@UB|bob>")
     assert reply.in_channel
     assert reply.summary == "🏆 <@UA> 승 · 1:1 · 1턴"
-    assert reply.text == "1턴 🔵 피카츄 10만볼트 → 꼬부기 쓰러짐 굉장"
+    assert re.fullmatch(r"\*1턴\*\n🔵 피카츄 › 10만볼트 → 꼬부기 💥( 급소)? 효과 굉장", "\n".join(reply.card.log))
+    assert reply.text == reply.summary
     assert lineups(reply) == [["피카츄 100%"], ["꼬부기 Lv20 💥"]]
     assert handler(store).handle("UA", "", RECORD_COMMAND).text == "<@UA> 전적: 1승 0패"
     assert handler(store).handle("UA", "<@UB>", RECORD_COMMAND).text == "<@UB> 전적: 0승 1패"
@@ -177,7 +183,7 @@ def test_a_one_member_upload_battles_without_send_outs(store):
     upload(store, "UA", 7, 5)
     upload(store, "UB", 25, 60)
     reply = handler(store).handle("UA", "<@UB> 3")
-    assert "→ 🔵" not in reply.text and "→ 🔴" not in reply.text
+    assert "등장" not in log_text(reply)
     assert reply.summary.startswith("🏆 <@UB> 승 · 1:1 · ")
 
 
@@ -231,7 +237,7 @@ def test_chosen_moves_narrate_by_name(store):
     store.issue_token("UA")
     store.save_party("UA", [{**member(25, 60), "moves": [85]}])
     upload(store, "UB", 7, 20)
-    assert "피카츄 10만볼트 →" in handler(store).handle("UA", "<@UB>").text
+    assert "피카츄 › 10만볼트 →" in log_text(handler(store).handle("UA", "<@UB>"))
 
 
 def test_challenger_without_a_pokemon_is_told_privately(store):

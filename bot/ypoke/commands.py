@@ -14,7 +14,7 @@ from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_ur
 from ypoke.mega_stones import mega_form_id
 from ypoke.messages import DirectMessage
 from ypoke.moves import battle_moves
-from ypoke.narration import Card, battle_card, battle_header, battle_log
+from ypoke.narration import PRACTICE_NOTE, Card, battle_card, battle_header
 from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.store import PendingChallenge, Record, Store
 from ypoke.upload_server import IV_KEYS, MAX_ENTRY_SIZE
@@ -27,6 +27,7 @@ REMATCH_ACTION_ID = "rematch"
 REMATCH_LABEL = "다시 붙기"
 REMATCH_DENIED = "대결한 두 사람만 누를 수 있어요."
 SECTION_TEXT_LIMIT = 3000
+FIELD_TEXT_LIMIT = 2000
 ECHO_ARG_LIMIT = 200
 _REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)(?::([13]))?")
 FULL_ENTRY_WORDS = frozenset({"3", "3:3", "풀"})
@@ -87,8 +88,8 @@ class Where:
 class Reply:
     """`echo` names who ran which slash command; it heads the visible messages (`in_channel` or `public`).
 
-    A battle result has `summary` (the header line), `card` (lineups and highlights) and `rematch` (the button
-    value), and `text` is its compact turn log.
+    A battle result is one message: `summary` (the header line, also its `text`), `card` (header, lineups and
+    turn log) and `rematch` (the button value).
     `public` is a line the channel sees beside a private `text`. `image_url` is shown beside `text`.
     `fields` (Slack's 2-column grid) follow `lead`, the part of `text` above them, in the blocks; `text` stays the fallback.
     """
@@ -389,11 +390,12 @@ class CommandHandler:
                 match.challenger_id, match.opponent_id, winner_id, match.seed, pokemon=match.pokemon, turns=result.turns
             )
         trainers = (f"<@{match.challenger_id}>", self._label(match.opponent_id))
+        summary = battle_header(trainers, match.sides, result, match.practice)
         return Reply(
-            "\n".join(battle_log(result)),
+            summary,
             in_channel=True,
-            summary=battle_header(trainers, match.sides, result, match.practice),
-            card=battle_card(trainers, match.sides, result),
+            summary=summary,
+            card=battle_card(trainers, match.sides, result, match.practice),
             rematch=f"{match.challenger_id}:{match.opponent_id}:{match.size}",
         )
 
@@ -425,6 +427,7 @@ class CommandHandler:
             ability=member.get("ability"),
             item=member.get("held_item"),
             mega=self._mega(member),
+            pokemon_id=member["pokemon_id"],
         )
 
     def _mega(self, member: dict) -> MegaForm | None:
@@ -502,20 +505,30 @@ def fallback_text(reply: Reply) -> str:
 
 
 def result_blocks(reply: Reply) -> list[dict]:
-    """The result card: echo and note, the header, both lineups side by side, the highlights and the rematch button."""
+    """The whole battle message: echo and tags, the header with the winner's sprite, both lineups side by side,
+    the rematch button, then the turn log as grey context blocks."""
     card = reply.card
     blocks: list[dict] = []
-    context = [line for line in (reply.echo, card.note) if line]
+    context = [line for line in (reply.echo, card.note, PRACTICE_NOTE if card.practice else None) if line]
     if context:
         blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": line} for line in context]})
-    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": f"*{reply.summary}*"}})
-    blocks.append({"type": "section", "fields": [{"type": "mrkdwn", "text": column} for column in card.columns]})
-    if card.highlights:
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "\n".join(card.highlights)}})
+    header = {"type": "section", "text": {"type": "mrkdwn", "text": fit(
+        "\n".join([f"*{card.title}*", card.detail, *card.highlights]), SECTION_TEXT_LIMIT)}}
+    if card.sprite:
+        header["accessory"] = {"type": "image", "image_url": card.sprite[0], "alt_text": card.sprite[1]}
+    blocks.append(header)
+    blocks.append({"type": "section", "fields": [
+        {"type": "mrkdwn", "text": fit(column, FIELD_TEXT_LIMIT)} for column in card.columns]})
     blocks.append({"type": "actions", "elements": [{
         "type": "button", "action_id": REMATCH_ACTION_ID, "value": reply.rematch,
         "text": {"type": "plain_text", "text": REMATCH_LABEL},
     }]})
+    if card.log:
+        blocks.append({"type": "divider"})
+    blocks += [
+        {"type": "context", "elements": [{"type": "mrkdwn", "text": fit(entry, SECTION_TEXT_LIMIT)}]}
+        for entry in card.log
+    ]
     return blocks
 
 

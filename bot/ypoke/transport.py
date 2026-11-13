@@ -13,7 +13,6 @@ from ypoke.commands import (
     Reply,
     Where,
     fallback_text,
-    fit,
     message_blocks,
     parse_mention,
     reply_thread_ts,
@@ -23,7 +22,6 @@ from ypoke.trades import TradeService
 
 DM_FALLBACK_NOTE = "(대결을 신청한 곳에 올릴 수 없어서 DM으로 보내요)"
 ERROR_TEXT = "대결 봇에서 오류가 났어요. 잠시 뒤 다시 해 주세요."
-LOG_TEXT_LIMIT = 3900
 LOG_ARGS_LIMIT = 200
 
 log = logging.getLogger(__name__)
@@ -128,17 +126,13 @@ def post_direct_messages(client: WebClient, messages) -> None:
 
 
 def post_result(client: WebClient, channel: str, thread_ts: str | None, reply: Reply) -> None:
-    """The summary with its button, then the turn log as the first reply in that message's thread."""
-    root = client.chat_postMessage(channel=channel, thread_ts=thread_ts, **_result_message(reply))
-    try:
-        client.chat_postMessage(channel=channel, thread_ts=thread_ts or root["ts"], text=fit(reply.text, LOG_TEXT_LIMIT))
-    except Exception:
-        log.warning("could not post the turn log")
+    """The battle as one message of blocks: the card with its button and the turn log below it."""
+    client.chat_postMessage(channel=channel, thread_ts=thread_ts, **_result_message(reply))
 
 
 def deliver(client: WebClient, delivery: Delivery) -> None:
     """Post a pending battle where it was asked for: the channel (thread), the slash command's still-fresh
-    response URL with the log as a second message, then a DM to the challenger when the bot cannot post there."""
+    response URL, then a DM to the challenger when the bot cannot post there."""
     where, reply = delivery.where, delivery.reply
     try:
         post_result(client, where.channel_id, where.thread_ts, reply)
@@ -160,13 +154,8 @@ def deliver(client: WebClient, delivery: Delivery) -> None:
 
 
 def respond_result(send: Callable, reply: Reply, **message) -> object:
-    """Where no thread is possible (a response URL): the card, then the turn log as a second message."""
-    sent = send(**_result_message(reply), **message)
-    try:
-        send(text=fit(reply.text, LOG_TEXT_LIMIT), **message)
-    except Exception:
-        log.warning("could not post the turn log")
-    return sent
+    """Where no thread is possible (a response URL): the same one message."""
+    return send(**_result_message(reply), **message)
 
 
 def _result_message(reply: Reply) -> dict:
@@ -184,7 +173,6 @@ def publish_in_thread(
             post_result(client, channel, thread_ts, reply)
         except Exception:
             _fallback(respond, **visible, **_result_message(reply))
-            _fallback(respond, **visible, text=fit(reply.text, LOG_TEXT_LIMIT))
     elif reply.in_channel:
         text = "\n".join(filter(None, (reply.echo, reply.text)))
         _post_line(client, channel, thread_ts, text, respond, message_blocks(reply, True))

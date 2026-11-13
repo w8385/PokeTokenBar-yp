@@ -135,11 +135,11 @@ def test_narration_names_the_item_and_its_triggers():
     sides = ((strong,), (weak,))
     result = simulate((strong, weak), seed=5)
     assert battle_card(("<@UA>", "<@UB>"), sides, result).columns[1].splitlines()[1].startswith("띠 Lv5 @기합의띠")
-    assert battle_log(result)[0] == "1턴 🔵 강함 몸통박치기 → 띠 4% @기합의띠 · 🔴 띠 몸통박치기 → 강함 99%"
+    assert battle_log(result)[0].splitlines()[1:] == ["🔵 강함 › 몸통박치기 → 띠 4% @기합의띠", "🔴 띠 › 몸통박치기 → 강함 99%"]
     heal = ItemHeal(2, 1, "먹보", items.LEFTOVERS, 80)
     life_orb = Action(1, 0, "구슬", "상대", "몸통박치기", attacker_item=items.LIFE_ORB, attacker_hp=90, defender_hp=50)
     lines = battle_log(replace(result, events=[life_orb, heal], winner=0))
-    assert lines == ["1턴 🔵 구슬 몸통박치기 → 상대 50% @생명의구슬", "2턴 🔴 먹보 @먹다남은음식 80%"]
+    assert lines == ("*1턴*\n🔵 구슬 › 몸통박치기 → 상대 50% @생명의구슬", "*2턴*\n🔴 먹보 @먹다남은음식 80%")
 
 
 def test_upload_keeps_a_normalized_held_item_and_ignores_junk():
