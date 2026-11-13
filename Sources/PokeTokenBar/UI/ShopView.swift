@@ -39,7 +39,7 @@ struct ShopView: View {
                             .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                             .padding(.top, 4)
                     }
-                    ForEach(store.evolutionStoneItems, id: \.self) { kind in
+                    ForEach(store.shopEvolutionItems, id: \.self) { kind in
                         ShopItemCard(store: store, kind: kind)
                     }
                 }

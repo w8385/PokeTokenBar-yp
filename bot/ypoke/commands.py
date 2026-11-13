@@ -11,6 +11,7 @@ from urllib.parse import urlencode
 
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, simulate
 from ypoke.dex import NATIONAL_TOTAL, REGIONS, sprite_url
+from ypoke.messages import DirectMessage
 from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
 from ypoke.pokeapi import PokeAPIService, base_stats
@@ -66,7 +67,7 @@ HELP_TEXT = (
     f"`{DEX_COMMAND} [@누구]` 도감 수·이로치 수·지역별 진행·대표 포켓몬을 보여줘요. 앱을 켜 둬야 도감이 올라가요.\n"
     "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`도 돼요. "
     f"`{UMBRELLA_COMMAND} 도감`처럼 `{UMBRELLA_COMMAND}` 뒤에 붙여도 돼요.\n"
-    "전적만 남고 포켓몬은 오가지 않아요.\n"
+    "대결로는 포켓몬이 오가지 않아요. 졸업한 포켓몬은 앱 대결 탭의 교환 제안으로 맞바꿔요. 상대가 DM에서 고르고 수락하면 끝나요.\n"
     f"앱 받기: <{DOWNLOAD_URL}|PokeTokenBar>"
 )
 
@@ -78,13 +79,6 @@ class Where:
     channel_id: str
     thread_ts: str | None = None
     response_url: str | None = None
-
-
-@dataclass(frozen=True)
-class DirectMessage:
-    user_id: str
-    text: str
-    blocks: list[dict] | None = None
 
 
 @dataclass(frozen=True)

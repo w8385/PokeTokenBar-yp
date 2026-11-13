@@ -54,11 +54,24 @@ final class PopoverNavigation {
     var tab: PopoverTab = .home {
         didSet {
             if tab != .collection { dexDetailCollectionID = nil }
-            if tab != .battle { battlePicker = nil }
+            if tab != .battle {
+                battlePicker = nil
+                showingTradeOffer = false
+            }
         }
     }
     /// The Battle tab's fighter picker replaces the tab's content while open.
     var battlePicker: BattlePickerTarget?
+    /// The Battle tab's trade offer screen; `tradeGiveID` preselects the individual a Pokédex page sent over.
+    var showingTradeOffer = false
+    var tradeGiveID: String?
+
+    func openTradeOffer(giving individualID: String?) {
+        tradeGiveID = individualID
+        battlePicker = nil
+        showingTradeOffer = true
+        tab = .battle
+    }
     /// 일반적인 컬렉션 재진입에는 마지막 세그먼트를 유지하되, 대표 포켓몬 선택 진입점은 도감으로 강제한다.
     var showingCollectionLog = false {
         didSet { if showingCollectionLog != oldValue { dexDetailCollectionID = nil } }
@@ -83,6 +96,7 @@ final class PopoverNavigation {
         expandAdvancedOnOpen = false
         showingRecap = false
         battlePicker = nil
+        showingTradeOffer = false
         tab = .home
     }
 
@@ -189,6 +203,7 @@ struct PopoverView: View {
         @Bindable var nav = nav
         return VStack(alignment: .leading, spacing: 12) {
             updateBanner
+            TradeArrivalBanner(store: companion)
             Picker("", selection: $nav.tab) {
                 Text(l.home).tag(PopoverTab.home)
                 Text(l.shop).tag(PopoverTab.shop)

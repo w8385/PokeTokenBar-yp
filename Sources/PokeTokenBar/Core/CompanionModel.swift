@@ -192,11 +192,12 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case shinyCharm
     case fireStone, waterStone, thunderStone, leafStone, moonStone
     case sunStone, shinyStone, duskStone, dawnStone, iceStone
+    case linkingCord
 
     /// PokéAPI 아이템 이름(`use-item` 진화의 `item`). nil = 진화의 돌 아님.
     var evolutionItemName: String? {
         switch self {
-        case .rareCandy, .mint, .shinyCharm: return nil
+        case .rareCandy, .mint, .shinyCharm, .linkingCord: return nil
         case .fireStone: return "fire-stone"
         case .waterStone: return "water-stone"
         case .thunderStone: return "thunder-stone"
@@ -210,6 +211,8 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         }
     }
     var isEvolutionStone: Bool { evolutionItemName != nil }
+    /// Evolves a graduated individual as if it had been traded (dex detail), instead of the active companion.
+    var isLinkingCord: Bool { self == .linkingCord }
 
     /// PokéAPI 아이템 스프라이트 파일명(.../sprites/items/{name}.png). nil = 스프라이트 없음(이모지 폴백만).
     var spriteName: String? {
@@ -217,6 +220,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return "rare-candy"
         case .mint: return nil   // PokéAPI 에 민트 스프라이트 없음(8세대 아이템) → 이모지 폴백
         case .shinyCharm: return "shiny-charm"
+        case .linkingCord: return "linking-cord"
         default: return evolutionItemName
         }
     }
@@ -226,6 +230,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return "🍬"
         case .mint: return "🌿"
         case .shinyCharm: return "✨"
+        case .linkingCord: return "🔗"
         default: return "💎"
         }
     }
@@ -435,6 +440,19 @@ struct EvoNode: Codable, Sendable {
         return next.isEmpty ? [speciesID] : next.flatMap { $0.finalIDs(for: gender) }
     }
 
+    /// A plain trade evolution: PokéAPI lists only trades with no held item and no required partner species.
+    /// Those are reachable by trade only; trades needing an item or partner keep evolving by growth.
+    var viaTrade: Bool { !methods.isEmpty && methods.allSatisfy(\.isPlainTrade) }
+
+    /// The tree growth follows: a plain-trade evolution and everything past it are left out.
+    func prunedTradeOnly() -> EvoNode {
+        EvoNode(speciesID: speciesID, children: children.filter { !$0.viaTrade }.map { $0.prunedTradeOnly() },
+                methods: methods, requiredGender: requiredGender)
+    }
+
+    /// The evolution this species gets when traded, if any.
+    var tradeEvolution: EvoNode? { children.first(where: \.viaTrade) }
+
     /// 최장 경로 길이(형태 수). 분기는 보통 같은 깊이라 대표값으로 사용.
     var depth: Int { 1 + (children.map(\.depth).max() ?? 0) }
     func node(withID id: Int) -> EvoNode? {
@@ -474,6 +492,10 @@ struct EvoMethod: Codable, Equatable, Sendable {
     let trigger: String       // "level-up" · "use-item" · "trade" …
     var item: String?         // use-item 의 아이템 이름("water-stone")
     var timeOfDay: String?    // "day" · "night" (없으면 nil)
+    var heldItem: String?     // 교환 진화가 요구하는 지닌 도구
+    var tradeSpecies: String? // 교환 진화가 요구하는 상대 종
+
+    var isPlainTrade: Bool { trigger == "trade" && heldItem == nil && tradeSpecies == nil }
 }
 
 /// 진화 순간의 낮/밤 — 이 맥의 로컬 시계 기준(06:00–17:59 낮, 그 밖은 밤).
@@ -524,6 +546,11 @@ struct EvoLine: Sendable {
         self.tree = tree.keepingSupportedSpecies() ?? EvoNode(speciesID: baseID, children: [])
         self.rarity = rarity
         self.names = names
+    }
+
+    /// The line a trade-gated individual follows: its trade evolutions are reached only by a trade.
+    func prunedTradeOnly() -> EvoLine {
+        EvoLine(baseID: baseID, tree: tree.prunedTradeOnly(), rarity: rarity, names: names, genderRate: genderRate)
     }
 
     func localizedName(_ id: Int, _ lang: AppLanguage) -> String {
@@ -611,6 +638,9 @@ struct MonState: Codable, Sendable {
     /// 개체 고유 전투 프로필. 구버전 저장은 nil이며 `CompanionStore`가 한 번만 마이그레이션한다.
     var profile: PokemonProfile?
     var hasGrowthBoost = false
+    /// True for a line started after trade evolutions became trade-only: it graduates at the pre-trade form.
+    /// Nil for every earlier save, which keeps growing to the final form.
+    var tradeGated: Bool?
     // 메타몽 위장 — nil=일반. 값=정체 메타몽, 이 종으로 위장 중(위장 구간엔 baseID 와 동일, 리빌 후에도 원 위장체 보존).
     var dittoDisguise: Int?
     var dittoRevealed = false       // 위장 → 리빌(정체 공개) 전환 여부
@@ -632,7 +662,8 @@ struct MonState: Codable, Sendable {
          rarity: Rarity, totalForms: Int, isShiny: Bool = false, nature: PokemonNature? = nil,
          profile: PokemonProfile? = nil, hasGrowthBoost: Bool = false,
          dittoDisguise: Int? = nil, dittoRevealed: Bool = false, form: PokemonForm? = nil,
-         prayers: PrayerRecord? = nil) {
+         prayers: PrayerRecord? = nil, tradeGated: Bool? = nil) {
+        self.tradeGated = tradeGated
         self.baseID = baseID
         self.pathIDs = pathIDs
         if let plannedPathIDs, !plannedPathIDs.isEmpty {
@@ -678,6 +709,7 @@ struct MonState: Codable, Sendable {
         // 손상된 신규 프로필 하나 때문에 기존 성장 상태 전체를 잃지 않는다. nil이면 스토어가 재마이그레이션한다.
         profile = (try? c.decodeIfPresent(PokemonProfile.self, forKey: .profile)) ?? nil
         hasGrowthBoost = try c.decodeIfPresent(Bool.self, forKey: .hasGrowthBoost) ?? false
+        tradeGated = try? c.decodeIfPresent(Bool.self, forKey: .tradeGated)
         dittoDisguise = try c.decodeIfPresent(Int.self, forKey: .dittoDisguise)
         dittoRevealed = try c.decodeIfPresent(Bool.self, forKey: .dittoRevealed) ?? false
         prayers = (try? c.decodeIfPresent(PrayerRecord.self, forKey: .prayers)) ?? nil
@@ -717,6 +749,12 @@ struct DexEntry: Codable, Sendable, Identifiable {
     /// **보유 종**을 접는다. 놓아준 개체를 여기 넣지 않으면 그 종이 도감에서 사라진다 —
     /// 수집 화면이 "쌓이기만 한다"는 약속을 깨는 유일한 경로였다.
     var releasedAt: Date?
+    /// Display name of the trainer who sent this individual; nil for one hatched here.
+    var originalTrainer: String?
+    /// Display name of who this individual was traded to. A traded-away entry stays as a released record.
+    var tradedTo: String?
+    /// Set on arrival by trade; cleared once the trade evolution has been resolved (or found not to exist).
+    var tradeEvolutionPending: Bool?
     /// 졸업이 아니라 놓아준 기록인가 — 포획 로그가 뱃지를 가르는 판정.
     var isReleased: Bool { releasedAt != nil }
 
@@ -724,7 +762,8 @@ struct DexEntry: Codable, Sendable, Identifiable {
          baseID: Int, finalID: Int, chainOrder: [Int], rarity: Rarity,
          caughtAt: Date?, isShiny: Bool = false, nature: PokemonNature? = nil,
          profile: PokemonProfile? = nil, names: [Int: [String: String]]? = nil, releasedAt: Date? = nil,
-         form: PokemonForm? = nil, prayers: PrayerRecord? = nil) {
+         form: PokemonForm? = nil, prayers: PrayerRecord? = nil, originalTrainer: String? = nil) {
+        self.originalTrainer = originalTrainer
         self.id = id
         self.baseID = baseID
         self.finalID = finalID
@@ -762,6 +801,9 @@ struct DexEntry: Codable, Sendable, Identifiable {
         namesVersion = try? c.decodeIfPresent(Int.self, forKey: .namesVersion)
         // 이 필드 이전에 저장된 항목은 전부 졸업분이다 — nil 이 곧 "졸업"이라 마이그레이션이 필요 없다.
         releasedAt = try c.decodeIfPresent(Date.self, forKey: .releasedAt)
+        originalTrainer = try? c.decodeIfPresent(String.self, forKey: .originalTrainer)
+        tradedTo = try? c.decodeIfPresent(String.self, forKey: .tradedTo)
+        tradeEvolutionPending = try? c.decodeIfPresent(Bool.self, forKey: .tradeEvolutionPending)
         form = PokemonForm.resolved(baseID: baseID, form: PokemonForm.decoded(from: decoder, keys: "form", "unownForm"))
     }
 }
@@ -846,6 +888,8 @@ struct CompanionState: Codable, Sendable {
     // 지역 도감 완성 보상을 이미 받은 지역(PokedexRegion.rawValue). 지역당 1회. 보상은 알림과 별개로 영속한다 —
     // 알림 시드는 업데이트 전 완성분을 "이미 알림"으로 처리하지만 보상은 그 지역도 한 번 받아야 한다.
     var rewardedDexRegions: Set<String> = []
+    /// Ids of trades already applied here, newest last (capped); a trade the bot sends again is skipped.
+    var appliedTradeIDs: [String] = []
 
     init() {}
 
@@ -893,6 +937,7 @@ struct CompanionState: Codable, Sendable {
         notifiedDexCompletions = c.lenient(Set<String>.self, forKey: .notifiedDexCompletions, default: [])
         dexCompletionsSeeded = c.lenient(Bool.self, forKey: .dexCompletionsSeeded, default: false)
         rewardedDexRegions = c.lenient(Set<String>.self, forKey: .rewardedDexRegions, default: [])
+        appliedTradeIDs    = c.lenient([String].self, forKey: .appliedTradeIDs, default: [])
     }
 
     /// 졸업 기록 또는 현재 개체가 실제로 도달한 단계에 이 종이 포함되는가.

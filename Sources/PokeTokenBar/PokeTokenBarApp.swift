@@ -126,13 +126,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         companion = CompanionStore()
         Task { await companion.preparePokemonProfiles() }
         updater = UpdateChecker()
-        partyUploader = PartyUploader { [weak companion, battleEntry] in
+        let trades = TradeSync(
+            pool: { [weak companion, battleEntry] in
+                companion.map { store in
+                    store.tradePool(fightingIDs: TradePool.fightingIDs(state: store.state, slots: battleEntry.slots))
+                } ?? []
+            },
+            apply: { [weak companion] deliveries in companion?.applyTrades(deliveries) ?? [] })
+        partyUploader = PartyUploader(partySource: { [weak companion, battleEntry] in
             companion.map {
                 BattleEntry.party(state: $0.state, slots: battleEntry.slots, rentalSpeciesID: battleEntry.rentalSpeciesID)
             } ?? []
-        } dexSource: { [weak companion] in
+        }, dexSource: { [weak companion] in
             companion.map { DexSummary($0) }
-        }
+        }, trades: trades)
+        Task { await companion.resolveTradeEvolutions() }
         partyUploader.start()
         store.localizationLanguage = companion.language   // 알림 현지화용 미러 시드
         store.onRefresh = { [weak self] in self?.onStoreRefreshed() }   // 한도 로드 후 companion·사탕 지급

@@ -1901,6 +1901,8 @@ struct PokemonDetailView: View {
     private let flavorProvider: SpeciesFlavorProviding
     @Environment(BattleEntryStore.self) private var battleEntry: BattleEntryStore?
     @Environment(PartyUploader.self) private var uploader: PartyUploader?
+    @Environment(PopoverNavigation.self) private var navigation: PopoverNavigation?
+    @State private var cordMessage: String?
     @State private var selectedInstanceID = ""
     @State private var selectedForm: PokemonForm?
     @State private var selectedShiny: Bool?
@@ -2090,6 +2092,7 @@ struct PokemonDetailView: View {
                         battleButton(for: individual, battleEntry)
                     }
                 }
+                if let individual { tradeControls(for: individual) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -2112,6 +2115,52 @@ struct PokemonDetailView: View {
         .controlSize(.mini)
         .fixedSize()
         .disabled(fighting || full)
+    }
+
+    /// The trade offer and Linking Cord buttons of an owned individual, with the reason when it can't go.
+    @ViewBuilder
+    private func tradeControls(for individual: DexEntry) -> some View {
+        let fightingIDs = battleEntry.map { TradePool.fightingIDs(state: store.state, slots: $0.slots) } ?? []
+        let refusal = store.tradeRefusal(for: individual, fightingIDs: fightingIDs)
+        let owned = individual.releasedAt == nil && individual.profile != nil && !store.isActiveDexEntry(individual)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                if let navigation, let uploader, uploader.hasToken, uploader.hasServer, refusal != .unavailable {
+                    Button {
+                        navigation.openTradeOffer(giving: individual.id)
+                    } label: {
+                        Label(store.l.tradeOfferButton, systemImage: "arrow.left.arrow.right")
+                    }
+                    .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                    .disabled(refusal != nil)
+                }
+                if owned, store.itemCount(.linkingCord) > 0 {
+                    Button {
+                        Task { await useLinkingCord(on: individual) }
+                    } label: {
+                        Label(store.l.linkingCordUse, systemImage: "link")
+                    }
+                    .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                }
+            }
+            if let refusal, refusal == .raising || refusal == .fighting, uploader?.hasToken == true {
+                Text(store.l.tradeRefusalText(refusal)).font(.caption2).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let cordMessage {
+                Text(cordMessage).font(.caption2).foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func useLinkingCord(on individual: DexEntry) async {
+        cordMessage = nil
+        switch await store.useLinkingCord(on: individual.id) {
+        case .evolved: onBack()   // This page lists the old species; the popover banner shows the result.
+        case .wrongTarget: cordMessage = store.l.linkingCordWrongTarget(displayedSpecies.name)
+        case .unavailable: cordMessage = store.l.linkingCordUnavailable
+        }
     }
 
     private var appearancePicker: some View {
@@ -2150,6 +2199,12 @@ struct PokemonDetailView: View {
                 valuePair(store.l.level, "\(profile.level)")
                 valuePair(store.l.gender, store.l.genderLabel(profile.gender))
                 valuePair(store.l.nature, entry.nature?.name(store.language) ?? "—")
+            }
+            if let trainer = entry.originalTrainer {
+                Text(store.l.originalTrainerLine(trainer)).font(.caption).foregroundStyle(.secondary)
+            }
+            if let partner = entry.tradedTo {
+                Text(store.l.tradedAwayLine(partner)).font(.caption).foregroundStyle(.secondary)
             }
             if let prayers = entry.prayers, prayers.count > 0 {
                 VStack(alignment: .leading, spacing: 2) {

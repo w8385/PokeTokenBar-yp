@@ -271,7 +271,8 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
         (details ?? []).compactMap { detail in
             guard let trigger = detail.trigger?.name else { return nil }
             let time = detail.time_of_day.flatMap { $0.isEmpty ? nil : $0 }
-            return EvoMethod(trigger: trigger, item: detail.item?.name, timeOfDay: time)
+            return EvoMethod(trigger: trigger, item: detail.item?.name, timeOfDay: time,
+                             heldItem: detail.held_item?.name, tradeSpecies: detail.trade_species?.name)
         }
     }
 
@@ -323,6 +324,8 @@ struct EvolutionDetailDTO: Decodable, Sendable {
     let item: NamedRef?
     let time_of_day: String?
     let gender: Int?
+    let held_item: NamedRef?
+    let trade_species: NamedRef?
 }
 
 struct PokemonDTO: Decodable, Sendable {

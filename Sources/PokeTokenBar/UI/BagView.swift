@@ -146,6 +146,8 @@ private struct ItemCard: View {
                 Text(l.shinyCharmEffectHint).font(.caption2.weight(.semibold)).foregroundStyle(.green)
                 Spacer()
             }
+        } else if kind.isLinkingCord {
+            Text(l.linkingCordBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if canUse {
             if confirming {
                 HStack(spacing: 8) {

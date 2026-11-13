@@ -12,7 +12,15 @@ from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID,
 from ypoke.names import DisplayNames
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
-from ypoke.transport import deliver, mention_listener, rematch_listener, slash_listener
+from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, TradeService
+from ypoke.transport import (
+    deliver,
+    mention_listener,
+    post_direct_messages,
+    rematch_listener,
+    slash_listener,
+    trade_listener,
+)
 from ypoke.upload_server import MAX_ENTRY_SIZE, serve
 
 
@@ -33,6 +41,7 @@ def main() -> None:
     )
     names = DisplayNames(app.client)
     names.warm(store.linked_user_ids())
+    trades = TradeService(store, name_for=names, bot_user_id=handler.bot_user_id)
     serve(
         store,
         os.environ.get("YPOKE_HTTP_HOST", "0.0.0.0"),
@@ -40,12 +49,17 @@ def main() -> None:
         lambda user_id, party: _after_upload(pokeapi, handler, app.client, user_id, party),
         pokeapi.attacking_moves,
         names,
+        trades,
+        lambda messages: post_direct_messages(app.client, messages),
     )
     for name in COMMAND_NAMES:
         app.command(name)(slash_listener(handler))
     # Slack still sends an interaction for a URL button and shows a warning unless it is acked.
     app.action(REGISTER_ACTION_ID)(lambda ack: ack())
     app.action(REMATCH_ACTION_ID)(rematch_listener(handler))
+    app.action(PICK_ACTION_ID)(trade_listener(trades, "pick"))
+    app.action(ACCEPT_ACTION_ID)(trade_listener(trades, "accept"))
+    app.action(DECLINE_ACTION_ID)(trade_listener(trades, "decline"))
     app.event("app_mention")(mention_listener(handler))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 
