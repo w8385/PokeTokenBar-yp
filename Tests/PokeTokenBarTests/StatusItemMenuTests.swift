@@ -38,12 +38,33 @@ final class StatusItemMenuTests: XCTestCase {
             nil,
             .init(title: l.refreshNow, keyEquivalent: "r", action: .refresh),
             .init(title: l.dexTitle, keyEquivalent: "d", action: .openDex),
+            .init(title: l.battle, keyEquivalent: "b", action: .openBattle),
             .init(title: "Settings…", keyEquivalent: ",", action: .openSettings),
             .init(title: l.floatingPetHideLabel, keyEquivalent: "", action: .toggleFloatingPet),
             .init(title: l.backViewLabel, keyEquivalent: "", action: .toggleBackView),
             nil,
             .init(title: l.quit, keyEquivalent: "q", action: .quit),
         ])
+    }
+
+    func testBattleRowIsLocalizedInEveryLanguage() throws {
+        for language in AppLanguage.allCases {
+            let l = L(language)
+            let entries = StatusItemMenu.entries(l: l, todayTokens: 0, todayCost: nil, floatingPetEnabled: false)
+            let row = try XCTUnwrap(entries.compactMap { $0 }.first { $0.action == .openBattle })
+            XCTAssertEqual(row.title, l.battle)
+            XCTAssertFalse(row.title.isEmpty)
+        }
+    }
+
+    func testOpenBattleLandsOnTheBattleTab() {
+        let nav = PopoverNavigation()
+        nav.showSettings = true
+        nav.showingRecap = true
+        nav.openBattle()
+        XCTAssertEqual(nav.tab, .battle)
+        XCTAssertFalse(nav.showSettings)
+        XCTAssertFalse(nav.showingRecap)
     }
 
     func testFloatingPetRowOffersShowWhenHidden() {

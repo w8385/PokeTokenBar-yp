@@ -649,6 +649,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         switch StatusItemMenu.action(of: item) {
         case .refresh: Task { await store.refresh() }
         case .openDex: showPopover { $0.openRepresentativeDex() }
+        case .openBattle: showPopover { $0.openBattle() }
         case .openSettings: showPopover { $0.showSettings = true }
         case .toggleFloatingPet: store.floatingPetEnabled.toggle()
         case .toggleBackView: store.alwaysFacesBack.toggle()
