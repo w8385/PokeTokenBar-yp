@@ -32,6 +32,10 @@ ITEMS = [
     "sun-stone", "shiny-stone", "dusk-stone", "dawn-stone", "ice-stone",
     "leftovers", "choice-scarf", "choice-band", "focus-sash", "life-orb", "expert-belt", "charcoal",
     "linking-cord",
+    "tart-apple", "sweet-apple", "syrupy-apple", "cracked-pot", "chipped-pot", "auspicious-armor",
+    "malicious-armor", "galarica-cuff", "galarica-wreath", "unremarkable-teacup", "masterpiece-teacup",
+    "metal-alloy", "peat-block", "black-augurite", "scroll-of-darkness", "scroll-of-waters",
+    "oval-stone", "razor-claw", "razor-fang", "strawberry-sweet",
 ]
 
 # Items that are not in the games: hand-written in the same in-game voice, all eight app languages.
@@ -96,6 +100,111 @@ NO_TEXT_YET = {
     },
 }
 
+# Evolution items PokéAPI has names for but no flavor text yet: hand-written in the in-game voice, all eight
+# languages, with the official name from PokéAPI. They are not flagged appOriginal because the item is real.
+ITEM_FALLBACK = {
+    "syrupy-apple": {
+        "ko": "시럽이 가득 배어든 사과. 어떤 포켓몬에게 주면 진화한다.",
+        "en": "A very syrupy apple. A certain Pokémon evolves when it is given this apple.",
+        "ja": "シロップが　たっぷり　しみこんだ　リンゴ。あるポケモンに　あたえると　しんかする。",
+        "es": "Una manzana empapada de sirope. Cierto Pokémon evoluciona si se le da esta manzana.",
+        "fr": "Une pomme gorgée de sirop. Un certain Pokémon évolue si on la lui donne.",
+        "pt": "Uma maçã encharcada de xarope. Certo Pokémon evolui ao receber esta maçã.",
+        "de": "Ein Apfel, der vor Sirup trieft. Ein bestimmtes Pokémon entwickelt sich, wenn es ihn bekommt.",
+        "ru": "Яблоко, пропитанное сиропом. Некоторый покемон эволюционирует, если ему его дать.",
+    },
+    "auspicious-armor": {
+        "ko": "상서로운 기운이 감도는 갑옷. 어떤 포켓몬에게 주면 진화한다.",
+        "en": "Armor brimming with an auspicious aura. A certain Pokémon evolves when it is given this armor.",
+        "ja": "めでたい　オーラが　ただよう　よろい。あるポケモンに　あたえると　しんかする。",
+        "es": "Una armadura que rebosa un aura de buen augurio. Cierto Pokémon evoluciona si se le da esta armadura.",
+        "fr": "Une armure qui déborde d'une aura de bon augure. Un certain Pokémon évolue si on la lui donne.",
+        "pt": "Uma armadura repleta de uma aura auspiciosa. Certo Pokémon evolui ao receber esta armadura.",
+        "de": "Eine Rüstung voller glückverheißender Aura. Ein bestimmtes Pokémon entwickelt sich, wenn es sie bekommt.",
+        "ru": "Доспехи, наполненные благоприятной аурой. Некоторый покемон эволюционирует, если ему их дать.",
+    },
+    "malicious-armor": {
+        "ko": "악의가 감도는 갑옷. 어떤 포켓몬에게 주면 진화한다.",
+        "en": "Armor brimming with a malicious aura. A certain Pokémon evolves when it is given this armor.",
+        "ja": "あくいが　ただよう　よろい。あるポケモンに　あたえると　しんかする。",
+        "es": "Una armadura que rebosa un aura maliciosa. Cierto Pokémon evoluciona si se le da esta armadura.",
+        "fr": "Une armure qui déborde d'une aura malveillante. Un certain Pokémon évolue si on la lui donne.",
+        "pt": "Uma armadura repleta de uma aura maliciosa. Certo Pokémon evolui ao receber esta armadura.",
+        "de": "Eine Rüstung voller böser Aura. Ein bestimmtes Pokémon entwickelt sich, wenn es sie bekommt.",
+        "ru": "Доспехи, наполненные злой аурой. Некоторый покемон эволюционирует, если ему их дать.",
+    },
+    "unremarkable-teacup": {
+        "ko": "별다를 것 없는 평범한 찻잔. 어떤 포켓몬이 깃들면 진화한다.",
+        "en": "An unremarkable, ordinary-looking teacup. A certain Pokémon evolves when it takes up residence in it.",
+        "ja": "とくに　かわったところの　ない　ふつうの　ちゃわん。あるポケモンが　やどると　しんかする。",
+        "es": "Una taza de té corriente y sin nada especial. Cierto Pokémon evoluciona si se instala en ella.",
+        "fr": "Une tasse à thé ordinaire, sans rien de remarquable. Un certain Pokémon évolue s'il s'y installe.",
+        "pt": "Uma xícara de chá comum, sem nada de especial. Certo Pokémon evolui ao se instalar nela.",
+        "de": "Eine gewöhnliche, unscheinbare Teetasse. Ein bestimmtes Pokémon entwickelt sich, wenn es sich darin einnistet.",
+        "ru": "Обычная, ничем не примечательная чайная чашка. Некоторый покемон эволюционирует, если поселится в ней.",
+    },
+    "masterpiece-teacup": {
+        "ko": "정교하게 만들어진 걸작 찻잔. 어떤 포켓몬이 깃들면 진화한다.",
+        "en": "A masterpiece of a teacup, exquisitely made. A certain Pokémon evolves when it takes up residence in it.",
+        "ja": "せいこうに　つくられた　けっさくの　ちゃわん。あるポケモンが　やどると　しんかする。",
+        "es": "Una taza de té que es una obra maestra, de factura exquisita. Cierto Pokémon evoluciona si se instala en ella.",
+        "fr": "Une tasse à thé qui est un chef-d'œuvre, d'une facture exquise. Un certain Pokémon évolue s'il s'y installe.",
+        "pt": "Uma xícara de chá que é uma obra-prima, feita com requinte. Certo Pokémon evolui ao se instalar nela.",
+        "de": "Eine meisterhaft gefertigte Teetasse. Ein bestimmtes Pokémon entwickelt sich, wenn es sich darin einnistet.",
+        "ru": "Чайная чашка-шедевр, изысканной работы. Некоторый покемон эволюционирует, если поселится в ней.",
+    },
+    "metal-alloy": {
+        "ko": "신기한 금속 합금. 어떤 포켓몬이 이 합금에 닿으면 진화한다.",
+        "en": "A peculiar metal alloy. A certain Pokémon evolves when it is exposed to this alloy.",
+        "ja": "ふしぎな　きんぞくの　ごうきん。あるポケモンが　ふれると　しんかする。",
+        "es": "Una extraña aleación de metales. Cierto Pokémon evoluciona si se expone a esta aleación.",
+        "fr": "Un étrange alliage métallique. Un certain Pokémon évolue s'il y est exposé.",
+        "pt": "Uma estranha liga metálica. Certo Pokémon evolui ao ser exposto a esta liga.",
+        "de": "Eine seltsame Metalllegierung. Ein bestimmtes Pokémon entwickelt sich, wenn es ihr ausgesetzt wird.",
+        "ru": "Необычный металлический сплав. Некоторый покемон эволюционирует, если подвергнется его воздействию.",
+    },
+    "peat-block": {
+        "ko": "신비한 에너지가 가득한 이탄 덩어리. 어떤 포켓몬이 이 덩어리에 닿으면 진화한다.",
+        "en": "A block of peat brimming with mysterious energy. A certain Pokémon evolves when it is exposed to this block.",
+        "ja": "ふしぎな　エネルギーに　みちた　でいたんの　かたまり。あるポケモンが　ふれると　しんかする。",
+        "es": "Un bloque de turba lleno de energía misteriosa. Cierto Pokémon evoluciona si se expone a este bloque.",
+        "fr": "Un bloc de tourbe plein d'énergie mystérieuse. Un certain Pokémon évolue s'il y est exposé.",
+        "pt": "Um bloco de turfa repleto de energia misteriosa. Certo Pokémon evolui ao ser exposto a este bloco.",
+        "de": "Ein Torfblock voll geheimnisvoller Energie. Ein bestimmtes Pokémon entwickelt sich, wenn es ihm ausgesetzt wird.",
+        "ru": "Брикет торфа, полный таинственной энергии. Некоторый покемон эволюционирует, если подвергнется его воздействию.",
+    },
+    "black-augurite": {
+        "ko": "검게 빛나는 신기한 광물. 어떤 포켓몬이 이 광물에 닿으면 진화한다.",
+        "en": "A peculiar black mineral that gleams. A certain Pokémon evolves when it is exposed to this mineral.",
+        "ja": "くろく　かがやく　ふしぎな　こうぶつ。あるポケモンが　ふれると　しんかする。",
+        "es": "Un extraño mineral negro y brillante. Cierto Pokémon evoluciona si se expone a este mineral.",
+        "fr": "Un étrange minéral noir et brillant. Un certain Pokémon évolue s'il y est exposé.",
+        "pt": "Um estranho mineral preto e reluzente. Certo Pokémon evolui ao ser exposto a este mineral.",
+        "de": "Ein seltsames, schwarz glänzendes Mineral. Ein bestimmtes Pokémon entwickelt sich, wenn es ihm ausgesetzt wird.",
+        "ru": "Необычный блестящий чёрный минерал. Некоторый покемон эволюционирует, если подвергнется его воздействию.",
+    },
+    "scroll-of-darkness": {
+        "ko": "악의 탑의 가르침이 적힌 두루마리. 어떤 포켓몬이 읽으면 진화한다.",
+        "en": "A scroll that records the teachings of the Tower of Darkness. A certain Pokémon evolves when it studies it.",
+        "ja": "あくのとうの　おしえが　かかれた　まきもの。あるポケモンが　よむと　しんかする。",
+        "es": "Un pergamino con las enseñanzas de la Torre Oscura. Cierto Pokémon evoluciona si lo estudia.",
+        "fr": "Un parchemin consignant les enseignements de la Tour Obscure. Un certain Pokémon évolue s'il l'étudie.",
+        "pt": "Um pergaminho com os ensinamentos da Torre da Escuridão. Certo Pokémon evolui ao estudá-lo.",
+        "de": "Eine Schriftrolle mit den Lehren des Turms der Finsternis. Ein bestimmtes Pokémon entwickelt sich, wenn es sie studiert.",
+        "ru": "Свиток с учением Башни Тьмы. Некоторый покемон эволюционирует, если изучит его.",
+    },
+    "scroll-of-waters": {
+        "ko": "물의 탑의 가르침이 적힌 두루마리. 어떤 포켓몬이 읽으면 진화한다.",
+        "en": "A scroll that records the teachings of the Tower of Waters. A certain Pokémon evolves when it studies it.",
+        "ja": "みずのとうの　おしえが　かかれた　まきもの。あるポケモンが　よむと　しんかする。",
+        "es": "Un pergamino con las enseñanzas de la Torre Agua. Cierto Pokémon evoluciona si lo estudia.",
+        "fr": "Un parchemin consignant les enseignements de la Tour d'Eau. Un certain Pokémon évolue s'il l'étudie.",
+        "pt": "Um pergaminho com os ensinamentos da Torre da Água. Certo Pokémon evolui ao estudá-lo.",
+        "de": "Eine Schriftrolle mit den Lehren des Wasserturms. Ein bestimmtes Pokémon entwickelt sich, wenn es sie studiert.",
+        "ru": "Свиток с учением Башни Воды. Некоторый покемон эволюционирует, если изучит его.",
+    },
+}
+
 
 def main():
     groups = get("version-group?limit=200")["results"]
@@ -137,6 +246,8 @@ def main():
 
 
 def fill_missing(slug):
+    if slug in ITEM_FALLBACK:
+        return ITEM_FALLBACK[slug], list(ITEM_FALLBACK[slug])
     if slug in OFFICIAL_MANUAL:
         official = OFFICIAL_MANUAL[slug]["texts"]
         texts = {**NO_TEXT_YET[slug], **official}

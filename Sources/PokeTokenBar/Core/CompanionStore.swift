@@ -1324,7 +1324,7 @@ final class CompanionStore {
     /// 가방에 없거나 지닌 도구가 아니거나 가진 개체가 아니면 false.
     @discardableResult
     func equip(_ kind: ItemKind, to instanceID: String) -> Bool {
-        kind.isHeldItem && equip(inventoryKey: kind.rawValue, to: instanceID)
+        kind.isEquippable && equip(inventoryKey: kind.rawValue, to: instanceID)
     }
 
     @discardableResult
@@ -1563,7 +1563,7 @@ final class CompanionStore {
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
         ItemKind.allCases
-            .filter { $0.shopPrice != nil && !$0.isEvolutionStone && !$0.isLinkingCord }
+            .filter { $0.shopPrice != nil && !$0.isEvolutionStone && !$0.isEvolutionHeld && !$0.isLinkingCord }
             .sorted { a, b in
                 // 구매 완료한 보유형(이로치 부적 등)은 맨 아래로 — 재구매 불가라 위에 있을 이유가 없다.
                 let aDone = a.isPassive && itemCount(a) > 0
@@ -1576,8 +1576,10 @@ final class CompanionStore {
     /// 상점 "진화" 구역의 돌 — 별도 구역이라 `shopEntries` 의 가격순 목록에는 넣지 않는다.
     var evolutionStoneItems: [ItemKind] { ItemKind.allCases.filter(\.isEvolutionStone) }
 
-    /// The shop's evolution section: the stones, then the Linking Cord.
-    var shopEvolutionItems: [ItemKind] { evolutionStoneItems + [.linkingCord] }
+    /// The shop's evolution section: what is used up, the Linking Cord, then what is held.
+    var shopEvolutionItems: [ItemKind] {
+        evolutionStoneItems + [.linkingCord] + ItemKind.allCases.filter(\.isEvolutionHeld)
+    }
 
     /// 상점 표시 순서 — 판매 아이템 + 알 3종을 하나의 가격 오름차순 목록으로 병합.
     /// 정렬 규칙은 purchasableItems 와 동일: 구매 완료한 보유형은 맨 아래, 나머지는 가격 저렴한 순.

@@ -31,7 +31,7 @@ extension ItemKind {
         case .mint: return "app-mint"
         case .shinyCharm: return "shiny-charm"
         case .linkingCord: return "linking-cord"
-        default: return heldItemSlug ?? evolutionItemName ?? rawValue
+        default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName ?? rawValue
         }
     }
 }

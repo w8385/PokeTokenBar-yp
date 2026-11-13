@@ -194,6 +194,12 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case sunStone, shinyStone, duskStone, dawnStone, iceStone
     case linkingCord
     case leftovers, choiceScarf, choiceBand, focusSash, lifeOrb, expertBelt, charcoal
+    /// Evolution items the games use up like a stone.
+    case tartApple, sweetApple, syrupyApple, crackedPot, chippedPot, auspiciousArmor, maliciousArmor
+    case galaricaCuff, galaricaWreath, unremarkableTeacup, masterpieceTeacup, metalAlloy, peatBlock
+    case blackAugurite, scrollOfDarkness, scrollOfWaters
+    /// Evolution items a Pokémon holds while it evolves. The battle bot never sees them.
+    case ovalStone, razorClaw, razorFang, strawberrySweet
 
     /// 봇에 보내는 지닌 도구 슬러그(PokéAPI 아이템 이름, `bot/API.md` `held_item`). nil = 지닌 도구 아님.
     var heldItemSlug: String? {
@@ -210,11 +216,42 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     }
     var isHeldItem: Bool { heldItemSlug != nil }
 
+    /// PokéAPI name of an evolution item that is held, not used up. Never sent to the bot.
+    var evolutionHeldSlug: String? {
+        switch self {
+        case .ovalStone: return "oval-stone"
+        case .razorClaw: return "razor-claw"
+        case .razorFang: return "razor-fang"
+        case .strawberrySweet: return "strawberry-sweet"
+        default: return nil
+        }
+    }
+    var isEvolutionHeld: Bool { evolutionHeldSlug != nil }
+    /// Anything a Pokémon can carry: the battle items and the evolution items.
+    var isEquippable: Bool { isHeldItem || isEvolutionHeld }
+
     /// PokéAPI 아이템 이름(`use-item` 진화의 `item`). nil = 진화의 돌 아님.
     var evolutionItemName: String? {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .linkingCord: return nil
         case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return nil
+        case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return nil
+        case .tartApple: return "tart-apple"
+        case .sweetApple: return "sweet-apple"
+        case .syrupyApple: return "syrupy-apple"
+        case .crackedPot: return "cracked-pot"
+        case .chippedPot: return "chipped-pot"
+        case .auspiciousArmor: return "auspicious-armor"
+        case .maliciousArmor: return "malicious-armor"
+        case .galaricaCuff: return "galarica-cuff"
+        case .galaricaWreath: return "galarica-wreath"
+        case .unremarkableTeacup: return "unremarkable-teacup"
+        case .masterpieceTeacup: return "masterpiece-teacup"
+        case .metalAlloy: return "metal-alloy"
+        case .peatBlock: return "peat-block"
+        case .blackAugurite: return "black-augurite"
+        case .scrollOfDarkness: return "scroll-of-darkness"
+        case .scrollOfWaters: return "scroll-of-waters"
         case .fireStone: return "fire-stone"
         case .waterStone: return "water-stone"
         case .thunderStone: return "thunder-stone"
@@ -238,7 +275,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .mint: return nil   // PokéAPI 에 민트 스프라이트 없음(8세대 아이템) → 이모지 폴백
         case .shinyCharm: return "shiny-charm"
         case .linkingCord: return "linking-cord"
-        default: return heldItemSlug ?? evolutionItemName
+        default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName
         }
     }
     /// 스프라이트 로딩 전/미제공/실패 시 폴백 이모지.
@@ -249,6 +286,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .shinyCharm: return "✨"
         case .linkingCord: return "🔗"
         case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return "🎒"
+        case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return "🎒"
         default: return "💎"
         }
     }

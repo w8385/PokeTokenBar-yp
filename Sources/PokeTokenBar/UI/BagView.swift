@@ -206,6 +206,8 @@ private struct ItemCard: View {
             Text(l.linkingCordBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if kind.isHeldItem {
             Text(l.heldItemBagHint).font(.caption2).foregroundStyle(.tertiary)
+        } else if kind.isEvolutionHeld {
+            Text(l.evolutionHeldBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if canUse {
             if confirming {
                 HStack(spacing: 8) {
