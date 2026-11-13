@@ -1992,6 +1992,7 @@ struct PokemonDetailView: View {
                     identityHeader
                     SpeciesFlavorCard(speciesID: species.id, form: displayedSpecies.form,
                                       language: store.language, provider: flavorProvider)
+                    ForEach(store.evolutionCards(for: species.id)) { EvolutionCardView(store: store, card: $0) }
                     if individuals.count > 1 { individualPicker }
                     if individuals.isEmpty {
                         Text(store.l.dexAppearancePreview).font(.callout).foregroundStyle(.secondary)

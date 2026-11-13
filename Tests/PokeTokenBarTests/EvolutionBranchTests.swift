@@ -151,7 +151,7 @@ final class EvolutionBranchTests: XCTestCase {
     func testStonesAreSoldInTheirOwnSectionAndCostOneBillion() throws {
         let s = try store(tree: eevee, tokens: 3_000_000_000)
         XCTAssertEqual(s.evolutionStoneItems.filter { $0.evolutionItemName?.hasSuffix("-stone") == true }.count, 10)
-        XCTAssertEqual(s.shopEvolutionItems.count, s.evolutionStoneItems.count + 4)
+        XCTAssertEqual(s.shopEvolutionItems.count, s.evolutionStoneItems.count + 5)
         XCTAssertFalse(s.purchasableItems.contains(.waterStone))
         XCTAssertEqual(s.price(of: .waterStone), 1_000_000_000)
         XCTAssertTrue(s.buy(.waterStone, count: 2))
