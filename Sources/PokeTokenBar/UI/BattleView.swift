@@ -33,6 +33,13 @@ struct BattleView: View {
                 },
                 onBack: { navigation.showingBattlePicker = false })
             .frame(height: 520)
+        } else if navigation.showingTradeOffer, let entry, let uploader {
+            TradeOfferView(
+                store: store, uploader: uploader,
+                fighterID: BattleEntry.fighter(state: store.state, slot: entry.slot)?.id,
+                initialGive: navigation.tradeGiveID,
+                onBack: { navigation.showingTradeOffer = false })
+            .frame(height: 520)
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
@@ -42,6 +49,15 @@ struct BattleView: View {
                             section(nil) {
                                 BattleEntrySection(entry: entry, uploader: uploader) {
                                     navigation.showingBattlePicker = true
+                                }
+                            }
+                            section(l.tradeSectionTitle) {
+                                row {
+                                    Text(l.tradeSectionHint).font(.caption).foregroundStyle(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    Spacer(minLength: 4)
+                                    Button(l.tradeOfferButton) { navigation.openTradeOffer(giving: nil) }
+                                        .controlSize(.small)
                                 }
                             }
                         }

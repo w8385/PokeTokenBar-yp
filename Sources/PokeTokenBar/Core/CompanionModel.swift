@@ -192,11 +192,12 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case shinyCharm
     case fireStone, waterStone, thunderStone, leafStone, moonStone
     case sunStone, shinyStone, duskStone, dawnStone, iceStone
+    case linkingCord
 
     /// PokéAPI 아이템 이름(`use-item` 진화의 `item`). nil = 진화의 돌 아님.
     var evolutionItemName: String? {
         switch self {
-        case .rareCandy, .mint, .shinyCharm: return nil
+        case .rareCandy, .mint, .shinyCharm, .linkingCord: return nil
         case .fireStone: return "fire-stone"
         case .waterStone: return "water-stone"
         case .thunderStone: return "thunder-stone"
@@ -210,6 +211,8 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         }
     }
     var isEvolutionStone: Bool { evolutionItemName != nil }
+    /// Evolves a graduated individual as if it had been traded (dex detail), instead of the active companion.
+    var isLinkingCord: Bool { self == .linkingCord }
 
     /// PokéAPI 아이템 스프라이트 파일명(.../sprites/items/{name}.png). nil = 스프라이트 없음(이모지 폴백만).
     var spriteName: String? {
@@ -217,6 +220,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return "rare-candy"
         case .mint: return nil   // PokéAPI 에 민트 스프라이트 없음(8세대 아이템) → 이모지 폴백
         case .shinyCharm: return "shiny-charm"
+        case .linkingCord: return "linking-cord"
         default: return evolutionItemName
         }
     }
@@ -226,6 +230,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return "🍬"
         case .mint: return "🌿"
         case .shinyCharm: return "✨"
+        case .linkingCord: return "🔗"
         default: return "💎"
         }
     }

@@ -44,6 +44,7 @@ PokeTokenBar turns the AI coding tokens you're already burning — Claude Code, 
 4. 🎓 **Graduate & collect.** Final form + threshold permanently archives it in your **Pokédex** — rarer takes longer (≈3 days common → ≈24 days legendary at heavy use) — and a fresh egg arrives.
 5. 🍬 **Max out, get a candy.** Fill a 5-hour or weekly usage limit and you earn **Rare Candy** — spend it from the **Bag** to grow your current Pokémon.
 6. 🛒 **Spend at the Shop.** Every token you've used is spendable currency — buy **Rare Candy**, a **Mint** that re-rolls your Pokémon's nature, a **Shiny Charm** that permanently raises your shiny odds, or an egg to send off your current companion and start over. Eggs come in three grades: a plain **Pokémon Egg**, an **Uncommon Egg** guaranteed to hatch Uncommon or better, and a **Rare Egg** guaranteed to hatch Rare or better.
+7. 🔁 **Trade with coworkers.** Swap graduated Pokémon with a linked coworker from the Battle tab (the other side accepts in Slack). Pokémon that evolve by trade, like Haunter or Kadabra, now stop there until they're traded — or until you use a **Linking Cord** from the Shop on one in your Pokédex.
 
 ## Tour
 
