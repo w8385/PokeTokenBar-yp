@@ -139,6 +139,7 @@ final class PartyUploader {
     @ObservationIgnored private var lastAttemptAt: Date?
     @ObservationIgnored private var lastAttemptBody: Data?
     @ObservationIgnored private var loop: Task<Void, Never>?
+    @ObservationIgnored private(set) var isSending = false
 
     init(tokenStore: PartyTokenStore = PartyTokenStore(),
          defaults: UserDefaults = .standard,
@@ -203,6 +204,8 @@ final class PartyUploader {
         else { return }
         lastAttemptAt = now
         lastAttemptBody = body
+        isSending = true
+        defer { isSending = false }
         guard let status = try? await send(request) else { return }
         switch status {
         case 200: lastSuccessAt = now; tokenRejected = false

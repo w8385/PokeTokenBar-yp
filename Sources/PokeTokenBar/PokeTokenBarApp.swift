@@ -137,7 +137,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             onOpenPopover: { [weak self] in self?.openPopover() },
             onHide: { [weak self] in self?.store.floatingPetEnabled = false }
         )   // 데스크톱 플로팅 펫(옵트인)
-        Task { await updater.check() }                    // 기동 시 1회 업데이트 확인
+        Task { @MainActor [self] in
+            while !Task.isCancelled {
+                await updater.check()
+                await updater.autoInstall { [self] in !popover.isShown && !partyUploader.isSending }
+                try? await Task.sleep(for: .seconds(1800))
+            }
+        }
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {

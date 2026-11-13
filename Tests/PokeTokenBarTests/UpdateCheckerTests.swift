@@ -34,25 +34,10 @@ final class UpdateCheckerTests: XCTestCase {
     }
     func testReleasesComeFromTheFork() {
         XCTAssertEqual(UpdateChecker.releaseRepo, "w8385/PokeTokenBar-yp")
-        XCTAssertNil(UpdateChecker.brewCask, "the upstream cask would replace the fork build")
     }
     func testDifferentComponentCounts() {
         XCTAssertTrue(UpdateChecker.isNewer("2.0.1", than: "2.0"))   // 2.0.1 > 2.0.0
         XCTAssertFalse(UpdateChecker.isNewer("2.0", than: "2.0.0"))  // 동일
-    }
-
-    // MARK: - Detached upgrade script wait loop (#175)
-
-    func testDetachedUpgradeScriptWaitsOnPidNotProcessName() {
-        let script = UpdateChecker.detachedUpgradeScript
-        XCTAssertFalse(
-            script.contains("pgrep -x"),
-            "pgrep -x matches any instance by name and always times out when a duplicate runs"
-        )
-        XCTAssertTrue(
-            script.contains("kill -0 \"$3\""),
-            "the wait loop must wait on the specific terminating PID via $3"
-        )
     }
 
     // MARK: - Cooldown stamps only after a successful, validated check
@@ -254,32 +239,125 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(checker.settingsNotice, .offer("2.5.4"))
     }
 
-    func testDetachedUpgradeScriptUsesPositionalParameters() {
-        let script = UpdateChecker.detachedUpgradeScript
-        XCTAssertTrue(script.contains("\"$1\" update"), "must execute brew via $1 positional arg")
-        XCTAssertTrue(script.contains("\"$1\" upgrade"), "must execute brew upgrade via $1 positional arg")
-        XCTAssertTrue(script.contains("open \"$2\""), "must open bundlePath via $2 positional arg")
+    // MARK: - Automatic install
+
+    @MainActor
+    private final class InstallLog {
+        var versions: [String] = []
+        var succeeds = true
     }
 
-    func testDetachedUpgradeReopensAppEvenWhenLegacyJobCanBeSubmitted() throws {
-        let bundlePath = "/fake directory/PokeTokenBar.app"
-        let process = Process()
-        let output = Pipe()
-        process.executableURL = URL(fileURLWithPath: "/bin/sh")
-        process.arguments = [
-            "-c",
-            """
-            launchctl() { return 0; }
-            open() { printf '%s' "$1"; }
-            \(UpdateChecker.detachedUpgradeScript)
-            """,
-            "sh", "/usr/bin/true", bundlePath, String(Int32.max)
-        ]
-        process.standardOutput = output
-        try process.run()
-        let reopenedPath = String(decoding: output.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
-        process.waitUntilExit()
+    @MainActor
+    private func autoChecker(_ log: InstallLog, defaults: UserDefaults? = nil) -> UpdateChecker {
+        UpdateChecker(currentVersion: "2.5.7-yp7", defaults: defaults ?? isolatedDefaults(),
+                      install: { release, readyToQuit in
+                          log.versions.append(release.version)
+                          return log.succeeds && readyToQuit()
+                      })
+    }
 
-        XCTAssertEqual(reopenedPath, bundlePath)
+    @MainActor
+    func testPopoverOpenedDuringTheDownloadDefersTheInstallToTheNextTick() async {
+        let log = InstallLog()
+        let checker = autoChecker(log)
+        checker.consider(latest: "v2.5.7-yp8", url: Self.releaseURL)
+        var calls = 0
+        await checker.autoInstall { calls += 1; return calls == 1 }
+        XCTAssertFalse(checker.isUpdating)
+        await checker.autoInstall { true }
+        XCTAssertEqual(log.versions, ["2.5.7-yp8", "2.5.7-yp8"])
+        XCTAssertTrue(checker.isUpdating)
+    }
+
+    @MainActor
+    func testAVersionIsAutoInstalledOnceEvenAcrossRelaunches() async {
+        let defaults = isolatedDefaults()
+        let first = autoChecker(InstallLog(), defaults: defaults)
+        first.consider(latest: "v2.5.7-yp8", url: Self.releaseURL)
+        await first.autoInstall { true }
+
+        let log = InstallLog()
+        let relaunched = autoChecker(log, defaults: defaults)
+        relaunched.consider(latest: "v2.5.7-yp8", url: Self.releaseURL)
+        await relaunched.autoInstall { true }
+        XCTAssertEqual(log.versions, [])
+        XCTAssertEqual(relaunched.available?.version, "2.5.7-yp8", "the banner still offers it")
+
+        relaunched.consider(latest: "v2.5.7-yp9", url: Self.releaseURL)
+        await relaunched.autoInstall { true }
+        XCTAssertEqual(log.versions, ["2.5.7-yp9"])
+    }
+
+    @MainActor
+    func testAutoInstallRunsForANewReleaseWhenAllowed() async {
+        let log = InstallLog()
+        let checker = autoChecker(log)
+        checker.consider(latest: "v2.5.7-yp8", url: Self.releaseURL, assets: ["a.zip": "https://x"])
+        await checker.autoInstall { true }
+        XCTAssertEqual(log.versions, ["2.5.7-yp8"])
+        XCTAssertTrue(checker.isUpdating)
+    }
+
+    @MainActor
+    func testAutoInstallWaitsWhileThePopoverIsOpenOrAnUploadRuns() async {
+        let log = InstallLog()
+        let checker = autoChecker(log)
+        checker.consider(latest: "v2.5.7-yp8", url: Self.releaseURL)
+        await checker.autoInstall { false }
+        XCTAssertEqual(log.versions, [])
+        await checker.autoInstall { true }
+        XCTAssertEqual(log.versions, ["2.5.7-yp8"])
+    }
+
+    @MainActor
+    func testAutoInstallOffOrSkippedLeavesTheReleaseAlone() async {
+        let log = InstallLog()
+        let defaults = isolatedDefaults()
+        let checker = autoChecker(log, defaults: defaults)
+        checker.autoUpdateEnabled = false
+        checker.consider(latest: "v2.5.7-yp8", url: Self.releaseURL)
+        await checker.autoInstall { true }
+
+        checker.autoUpdateEnabled = true
+        checker.skipCurrent()
+        await checker.autoInstall { true }
+        XCTAssertEqual(log.versions, [])
+        XCTAssertEqual(checker.skipped?.version, "2.5.7-yp8")
+    }
+
+    @MainActor
+    func testFailedAutoInstallKeepsTheBannerAndIsNotRetriedUntilANewerRelease() async {
+        let log = InstallLog()
+        log.succeeds = false
+        let checker = autoChecker(log)
+        checker.consider(latest: "v2.5.7-yp8", url: Self.releaseURL)
+        await checker.autoInstall { true }
+        await checker.autoInstall { true }
+        XCTAssertEqual(log.versions, ["2.5.7-yp8"])
+        XCTAssertFalse(checker.isUpdating)
+        XCTAssertEqual(checker.available?.version, "2.5.7-yp8")
+
+        checker.consider(latest: "v2.5.7-yp9", url: Self.releaseURL)
+        await checker.autoInstall { true }
+        XCTAssertEqual(log.versions, ["2.5.7-yp8", "2.5.7-yp9"])
+    }
+
+    @MainActor
+    func testAutoUpdateIsOnByDefaultAndTheChoicePersists() {
+        let defaults = isolatedDefaults()
+        let checker = autoChecker(InstallLog(), defaults: defaults)
+        XCTAssertTrue(checker.autoUpdateEnabled)
+        checker.autoUpdateEnabled = false
+        XCTAssertFalse(autoChecker(InstallLog(), defaults: defaults).autoUpdateEnabled)
+    }
+
+    @MainActor
+    func testCheckCarriesTheReleaseAssets() async {
+        let assets = [SelfUpdater.assetName: "https://github.com/w8385/PokeTokenBar-yp/releases/download/v2.5.7-yp8/x.zip"]
+        let checker = UpdateChecker(currentVersion: "2.5.7-yp7", defaults: isolatedDefaults(), fetchLatest: {
+            UpdateChecker.LatestRelease(tag: "v2.5.7-yp8", url: Self.releaseURL, assets: assets)
+        })
+        await checker.check()
+        XCTAssertEqual(checker.available?.assets, assets)
     }
 }

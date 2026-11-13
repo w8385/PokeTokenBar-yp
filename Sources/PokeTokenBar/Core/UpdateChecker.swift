@@ -1,12 +1,17 @@
 import AppKit
 import Observation
 
-/// GitHub 릴리스 최신 버전을 확인해 새 버전이 있으면 팝오버에 알린다.
-/// 실제 설치는 brew 사용자면 `brew upgrade`, 그 외엔 릴리스 페이지 열기(저위험·인프라 0).
+/// Checks the fork's latest GitHub release and installs it in place (`SelfUpdater`).
+/// If the install can't run or a check fails, the update button opens the release page instead.
 @MainActor
 @Observable
 final class UpdateChecker {
-    struct Available: Equatable { let version: String; let url: String }
+    struct Available: Equatable {
+        let version: String
+        let url: String
+        /// Asset name → download URL.
+        var assets: [String: String] = [:]
+    }
 
     /// What Settings should say after a check. A skipped release is not "up to date".
     enum SettingsNotice: Equatable {
@@ -19,37 +24,50 @@ final class UpdateChecker {
     struct LatestRelease: Equatable, Sendable {
         let tag: String
         let url: String
+        var assets: [String: String] = [:]
     }
+
+    /// Downloads, checks and swaps in a release, asking `readyToQuit` once it is staged. False when it
+    /// did not quit, so the caller can fall back.
+    typealias Install = @MainActor (Available, _ readyToQuit: @MainActor () -> Bool) async -> Bool
 
     private(set) var available: Available?
     /// Newer release the user chose to skip. Hidden from the banner, still shown in Settings.
     private(set) var skipped: Available?
     private(set) var isUpdating = false
+    var autoUpdateEnabled: Bool {
+        didSet { defaults.set(autoUpdateEnabled, forKey: Self.autoUpdateKey) }
+    }
 
     let currentVersion: String
     private let clock: () -> Date
     private let defaults: UserDefaults
     /// Injected so tests can fail or succeed without hitting the network.
     private let fetchLatest: () async -> LatestRelease?
+    private let install: Install
     private var lastChecked: Date?
     /// Overlapping popover opens must not stack concurrent GitHub calls once the early
     /// cooldown stamp is gone (a failed check no longer blocks the next attempt).
     private var checkInFlight = false
+    /// An automatic install that failed is not retried for the same version; the banner stays.
+    private var failedAutoVersion: String?
 
     static let skippedVersionKey = "skippedUpdateVersion"
+    static let autoUpdateKey = "autoUpdateEnabled"
+    static let autoAttemptKey = "autoUpdateAttemptedVersion"
     /// Releases come from the fork. Upstream releases would drop the YPoke features.
     nonisolated static let releaseRepo = "w8385/PokeTokenBar-yp"
-    /// nil: the upstream cask would replace the fork, so updates always open the release page.
-    nonisolated static let brewCask: String? = nil
 
     init(currentVersion: String? = nil, clock: @escaping () -> Date = Date.init, defaults: UserDefaults = .standard,
-         fetchLatest: (() async -> LatestRelease?)? = nil) {
+         fetchLatest: (() async -> LatestRelease?)? = nil, install: Install? = nil) {
         self.currentVersion = currentVersion
             ?? (Bundle.main.object(forInfoDictionaryKey: "PTBForkVersion") as? String)
             ?? (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? "0"
         self.clock = clock
         self.defaults = defaults
+        self.autoUpdateEnabled = defaults.object(forKey: Self.autoUpdateKey) as? Bool ?? true
         self.fetchLatest = fetchLatest ?? { await Self.liveLatestRelease(repo: Self.releaseRepo) }
+        self.install = install ?? Self.liveInstall
     }
 
     var settingsNotice: SettingsNotice {
@@ -74,7 +92,7 @@ final class UpdateChecker {
               Self.isTrustedReleaseURL(release.url),
               let version = Self.normalizedReleaseVersion(release.tag) else { return }
         lastChecked = clock()
-        consider(latest: version, url: release.url)
+        consider(latest: version, url: release.url, assets: release.assets)
     }
 
     /// NSWorkspace.open 으로 가는 릴리스 URL — https + github.com 만 허용(스킴 하이재킹 방지).
@@ -118,11 +136,17 @@ final class UpdateChecker {
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let tag = json["tag_name"] as? String,
               let html = json["html_url"] as? String else { return nil }
-        return LatestRelease(tag: tag, url: html)
+        var assets: [String: String] = [:]
+        for asset in json["assets"] as? [[String: Any]] ?? [] {
+            if let name = asset["name"] as? String, let link = asset["browser_download_url"] as? String {
+                assets[name] = link
+            }
+        }
+        return LatestRelease(tag: tag, url: html, assets: assets)
     }
 
     /// Apply one fetched release. `latest` may be a tag (`v2.5.4`) or a bare version.
-    func consider(latest tag: String, url: String) {
+    func consider(latest tag: String, url: String, assets: [String: String] = [:]) {
         let latest = tag.hasPrefix("v") ? String(tag.dropFirst()) : tag
         let skippedVersion = defaults.string(forKey: Self.skippedVersionKey)
         guard Self.isNewer(latest, than: currentVersion) else {
@@ -130,7 +154,7 @@ final class UpdateChecker {
             skipped = nil
             return
         }
-        let release = Available(version: latest, url: url)
+        let release = Available(version: latest, url: url, assets: assets)
         if latest == skippedVersion {
             available = nil
             skipped = release
@@ -157,23 +181,54 @@ final class UpdateChecker {
         }
     }
 
-    /// 업데이트 적용: brew cask 설치본이면 `brew upgrade` 후 재시작, 아니면 릴리스 페이지.
+    /// The update button: install in place, or open the release page when that is not possible.
     func applyUpdate() {
         guard let update = updateTarget, !isUpdating else { return }
         isUpdating = true
         Task { @MainActor in
-            // brew cask 설치본이면 분리(detached) 스크립트가 앱 종료 후 tap 갱신→업그레이드→재오픈.
-            // 그 외(brew 미설치/비-cask 설치)면 릴리스 페이지를 연다.
-            let brew = await Task.detached { Self.brewCaskPath() }.value
-            if let brew {
-                Self.launchDetachedUpgrade(brew: brew)
-                NSApp.terminate(nil)
-            } else {
-                isUpdating = false
-                AppLog.write("update: brew cask 아님/brew 미설치 → 릴리스 페이지 열기")
-                if let u = URL(string: update.url) { NSWorkspace.shared.open(u) }
+            if await install(update, { true }) { return }
+            isUpdating = false
+            if Self.isTrustedReleaseURL(update.url), let page = URL(string: update.url) {
+                NSWorkspace.shared.open(page)
             }
         }
+    }
+
+    /// Installs the bannered release without asking. A skipped version is left alone, and each
+    /// version gets one automatic attempt, kept across relaunches so a swap that keeps failing
+    /// can't turn into a quit-and-reopen loop.
+    func autoInstall(canInstall: @escaping @MainActor () -> Bool) async {
+        guard autoUpdateEnabled, canInstall(), !isUpdating, let update = available,
+              update.version != failedAutoVersion,
+              defaults.string(forKey: Self.autoAttemptKey) != update.version else { return }
+        isUpdating = true
+        var deferred = false
+        let quitting = await install(update) {
+            guard canInstall() else { deferred = true; return false }
+            self.defaults.set(update.version, forKey: Self.autoAttemptKey)
+            return true
+        }
+        if quitting { return }
+        isUpdating = false
+        if !deferred { failedAutoVersion = update.version }
+    }
+
+    private static func liveInstall(_ release: Available, readyToQuit: @MainActor () -> Bool) async -> Bool {
+        guard AppEnv.isBundledApp, let bundleID = Bundle.main.bundleIdentifier else { return false }
+        let workDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PokeTokenBar-update-\(UUID().uuidString)")
+        do {
+            let app = try await SelfUpdater.stage(assets: release.assets, version: release.version,
+                                                  bundleID: bundleID, workDir: workDir)
+            if readyToQuit(), SelfUpdater.launchReplace(staged: app, workDir: workDir) {
+                NSApp.terminate(nil)
+                return true
+            }
+        } catch {
+            AppLog.write("update: self-install of \(release.version) failed: \(error)")
+        }
+        try? FileManager.default.removeItem(at: workDir)
+        return false
     }
 
     // MARK: 버전 비교
@@ -195,61 +250,5 @@ final class UpdateChecker {
         let halves = version.components(separatedBy: "-yp")
         let numbers = halves[0].split(separator: ".").map { Int($0) ?? 0 }
         return (numbers, halves.count > 1 ? Int(halves[1]) ?? 0 : 0)
-    }
-
-    // MARK: brew 적용 (nonisolated — 블로킹 Process 는 detached 에서)
-
-    /// poke-token-bar 가 brew cask 로 설치돼 있으면 brew 경로 반환, 아니면 nil(→ 릴리스 페이지 폴백).
-    private nonisolated static func brewCaskPath() -> String? {
-        guard let cask = brewCask, let brew = BinaryLocator.resolve("brew", staticPaths: [
-            "/opt/homebrew/bin/brew", "/usr/local/bin/brew",
-        ]) else { return nil }
-        return run(brew, ["list", "--cask", cask], timeout: 20) ? brew : nil
-    }
-
-    private nonisolated static func run(_ binary: String, _ args: [String], timeout: TimeInterval) -> Bool {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: binary)
-        process.arguments = args
-        process.standardInput = FileHandle.nullDevice
-        process.standardOutput = FileHandle.nullDevice
-        process.standardError = FileHandle.nullDevice
-        do { try process.run() } catch { return false }
-        let deadline = Date().addingTimeInterval(timeout)
-        while process.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.1) }
-        if process.isRunning { process.terminate(); return false }
-        return process.terminationStatus == 0
-    }
-
-    /// 앱이 완전히 종료된 뒤 tap 갱신 + cask 업그레이드 + 재오픈을 수행하는 분리(detached) 스크립트 본문.
-    /// - `brew update` 선행: auto-update 빈도 제한(기본 24h)으로 stale 한 로컬 tap 때문에 `brew upgrade`
-    ///   가 no-op(exit 0) 되어 "업데이트 안 됨 + 앱만 종료"가 나던 문제를 막는다.
-    /// - 앱 종료를 기다림(`kill -0 $3`): 실행 중 번들 교체 레이스 + 재오픈 LaunchServices(-600) 레이스 회피.
-    ///   `pgrep -x` 대신 특정 PID를 감시하여 중복 인스턴스가 실행 중일 때도 20s 타임아웃 없이 즉시 진행 (#175).
-    /// - brew 를 백그라운드+워치독(≤300s)으로 감싸 hang 시에도 reopen 이 반드시 실행되게 함
-    ///   (앱이 종료된 채 영영 안 돌아오는 것 방지). 종료 직후 재오픈 실패 대비 `open` 재시도.
-    /// 인자는 positional($1=brew, $2=bundlePath, $3=pid)로 전달 — 셸 인젝션 차단.
-    nonisolated static let detachedUpgradeScript = """
-    for i in $(seq 1 40); do kill -0 "$3" 2>/dev/null || break; sleep 0.5; done
-    export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
-    ( "$1" update; "$1" upgrade --cask poke-token-bar ) &
-    brew_pid=$!
-    for i in $(seq 1 300); do kill -0 "$brew_pid" 2>/dev/null || break; sleep 1; done
-    kill "$brew_pid" 2>/dev/null
-    for i in $(seq 1 15); do
-      open "$2" 2>/dev/null && break
-      sleep 1
-    done
-    """
-
-    nonisolated static func launchDetachedUpgrade(
-        brew: String,
-        pid: pid_t = ProcessInfo.processInfo.processIdentifier,
-        bundlePath: String = Bundle.main.bundlePath
-    ) {
-        let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/bin/sh")
-        task.arguments = ["-c", detachedUpgradeScript, "sh", brew, bundlePath, String(pid)]
-        try? task.run()
     }
 }

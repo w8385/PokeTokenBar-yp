@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 VERSION="2.5.7"
-FORK_VERSION="$VERSION-yp6"
+FORK_VERSION="${PTB_FORK_VERSION:-$VERSION-yp7}"
 APP_NAME="PokeTokenBar"
 BUILD_DIR="build"
 APP="$BUILD_DIR/$APP_NAME.app"
@@ -107,6 +107,8 @@ else
     echo "   반복 Keychain 허용 프롬프트를 줄이려면 ./scripts/create-signing-cert.sh 실행 후 다시 빌드하세요."
     codesign --force -s - "$APP"
 fi
+
+[[ "${PTB_SKIP_INSTALL:-0}" == "1" ]] && { echo "완료: $APP"; exit 0; }
 
 echo "==> 기존 인스턴스 종료 + /Applications 설치"
 pkill -x "$APP_NAME" 2>/dev/null || true
