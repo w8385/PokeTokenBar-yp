@@ -786,14 +786,29 @@ struct L {
     }
     var battleEntryLabel: String { t("대결에 나갈 포켓몬", "Battle Pokémon", "対戦に出すポケモン", "Pokémon de combate", "Pokémon de combat", "Pokémon de batalha", "Kampf-Pokémon", "Покемон для боя") }
     var battleEntryHint: String {
-        t("한 마리끼리 붙어요. 자동이면 지금 키우는 포켓몬이 나가요.",
-          "Battles are one on one. Auto sends the Pokémon you're raising.",
-          "1対1で戦います。自動なら育成中のポケモンが出ます。",
-          "Los combates son uno contra uno. Auto envía el Pokémon que crías.",
-          "Les combats sont en un contre un. Auto envoie le Pokémon que tu élèves.",
-          "As batalhas são um contra um. Auto envia o Pokémon que você cria.",
-          "Kämpfe sind eins gegen eins. Automatisch schickt dein aktuelles Pokémon.",
-          "Бои один на один. «Авто» отправляет выращиваемого покемона.")
+        t("최대 3마리가 순서대로 나가요. 쓰러지면 다음 포켓몬이 나오고, 중간에 바꿀 수는 없어요. 자동이면 지금 키우는 포켓몬이 나가요.",
+          "Up to 3 Pokémon fight in this order. When one faints the next comes in, and you can't switch mid-battle. Auto sends the Pokémon you're raising.",
+          "最大3匹が順番に出ます。倒れると次のポケモンが出て、途中で交代はできません。自動なら育成中のポケモンが出ます。",
+          "Pelean hasta 3 Pokémon en este orden. Si uno cae, entra el siguiente; no se puede cambiar a mitad del combate. Auto envía el Pokémon que crías.",
+          "Jusqu'à 3 Pokémon combattent dans cet ordre. Quand l'un est K.O., le suivant entre, sans changement possible. Auto envoie le Pokémon que tu élèves.",
+          "Até 3 Pokémon lutam nesta ordem. Quando um cai, entra o próximo, sem trocas no meio da batalha. Auto envia o Pokémon que você cria.",
+          "Bis zu 3 Pokémon kämpfen in dieser Reihenfolge. Fällt eines aus, kommt das nächste, ein Wechsel ist nicht möglich. Automatisch schickt dein aktuelles Pokémon.",
+          "В бою участвуют до 3 покемонов по порядку. Когда один падает, выходит следующий; менять во время боя нельзя. «Авто» отправляет выращиваемого покемона.")
+    }
+    var battleAddMember: String {
+        t("포켓몬 추가", "Add a Pokémon", "ポケモンを追加", "Añadir un Pokémon", "Ajouter un Pokémon",
+          "Adicionar um Pokémon", "Pokémon hinzufügen", "Добавить покемона")
+    }
+    var battleRemoveMember: String { t("빼기", "Remove", "外す", "Quitar", "Retirer", "Remover", "Entfernen", "Убрать") }
+    var battleMoveEarlier: String {
+        t("앞으로", "Move earlier", "前へ", "Adelantar", "Avancer", "Mover para frente", "Nach vorn", "Выше")
+    }
+    var battleMoveLater: String {
+        t("뒤로", "Move later", "後ろへ", "Retrasar", "Reculer", "Mover para trás", "Nach hinten", "Ниже")
+    }
+    var battleSlotsFull: String {
+        t("3마리 가득", "Lineup full", "3匹で満員", "Equipo completo", "Équipe complète", "Equipe completa",
+          "Aufstellung voll", "Состав полон")
     }
     var battleEntryAutoPick: String {
         t("자동 (키우는 포켓몬)", "Auto (the one you're raising)", "自動(育成中のポケモン)", "Auto (el que crías)",
@@ -1762,6 +1777,22 @@ struct L {
           "Você capturou um shiny de cada Pokémon de \(region)!", "Du hast ein schillerndes Exemplar jedes Pokémon aus \(region)!", "Вы поймали шайни каждого покемона региона \(region)!")
     }
 
+    /// `items` is the pre-formatted reward list, e.g. "Rare Candy ×8, Shiny Charm".
+    func notifDexRegionRewardBody(_ region: String, items: String) -> String {
+        t("\(region) 지방의 모든 포켓몬을 모았어요! 보상: \(items)", "You've caught every Pokémon in \(region)! Reward: \(items)",
+          "\(region)地方のすべてのポケモンを集めました！ ごほうび: \(items)",
+          "¡Has capturado todos los Pokémon de \(region)! Premio: \(items)",
+          "Tu as capturé tous les Pokémon de \(region) ! Récompense : \(items)",
+          "Você capturou todos os Pokémon de \(region)! Prêmio: \(items)",
+          "Du hast alle Pokémon aus \(region) gefangen! Belohnung: \(items)",
+          "Вы поймали всех покемонов региона \(region)! Награда: \(items)")
+    }
+
+    var dexRegionRewardedHelp: String {
+        t("완성 보상을 받았어요", "Completion reward claimed", "コンプリートのごほうびを受け取り済み", "Premio de finalización recibido",
+          "Récompense de complétion reçue", "Prêmio de conclusão recebido", "Abschlussbelohnung erhalten", "Награда за завершение получена")
+    }
+
     var notifDexUnownCompleteTitle: String {
         t("🔤 안농 도감 완성!", "🔤 Unown collection complete!", "🔤 アンノーン図鑑コンプリート！", "🔤 ¡Colección Unown completada!",
           "🔤 Collection Zarbi terminée !", "🔤 Coleção Unown completa!", "🔤 Icognito-Sammlung komplett!", "🔤 Коллекция Анноун завершена!")
@@ -2090,6 +2121,7 @@ struct L {
         case .duskStone: return t("어둠의돌", "Dusk Stone", "やみのいし", "Piedra Noche", "Pierre Nuit", "Pedra do Anoitecer", "Finsterstein", "Тёмный камень")
         case .dawnStone: return t("각성의돌", "Dawn Stone", "めざめいし", "Piedra Alba", "Pierre Aube", "Pedra do Amanhecer", "Funkelstein", "Рассветный камень")
         case .iceStone: return t("얼음의돌", "Ice Stone", "こおりのいし", "Piedra Hielo", "Pierre Glace", "Pedra do Gelo", "Eisstein", "Ледяной камень")
+        case .linkingCord: return t("연결의끈", "Linking Cord", "つながりのヒモ", "Cordón Unión", "Cordon Lien", "Cordão Elo", "Verbindungsband", "Связующий шнур")
         }
     }
 
@@ -2149,12 +2181,27 @@ struct L {
                      "Enquanto estiver na sua bolsa, aumenta a chance de nascer um Pokémon shiny.",
                      "Erhöht im Beutel die Chance, dass ein schillerndes Pokémon schlüpft.",
                      "Пока он у вас, повышает шанс, что вылупится шайни.")
+        case .linkingCord:
+            return linkingCordDescription
         default:
             return ""   // 진화의 돌은 위에서 처리
         }
     }
     /// 가방 사용 컨트롤의 효과 힌트 — 민트("성격 랜덤 변경", 사탕의 "+XP" 자리).
     var mintEffectHint: String { t("성격 랜덤 변경", "Random nature", "せいかくランダム変更", "Naturaleza aleatoria", "Nature aléatoire", "Natureza aleatória", "Zufälliges Wesen", "Случайный характер") }
+
+    // MARK: 상점·가방 분류 탭
+    var categoryAll: String { t("전체", "All", "すべて", "Todo", "Tout", "Tudo", "Alle", "Все") }
+    func categoryName(_ category: ItemCategory) -> String {
+        switch category {
+        case .growth:   return t("육성", "Growth", "育成", "Crianza", "Élevage", "Criação", "Aufzucht", "Рост")
+        case .egg:      return t("알", "Eggs", "タマゴ", "Huevos", "Œufs", "Ovos", "Eier", "Яйца")
+        case .scout:    return t("스카우트", "Scouting", "スカウト", "Exploración", "Recrutement", "Recrutamento", "Anwerbung", "Разведка")
+        case .evolution: return t("진화", "Evolution", "進化", "Evolución", "Évolution", "Evolução", "Entwicklung", "Эволюция")
+        case .heldItem: return t("지닌 도구", "Held items", "もちもの", "Objetos", "Objets tenus", "Itens seguráveis", "Items", "Предметы")
+        case .megaStone: return t("메가스톤", "Mega Stones", "メガストーン", "Megapiedras", "Méga-Gemmes", "Mega Pedras", "Mega-Steine", "Мега-камни")
+        }
+    }
 
     // MARK: 상점 (재화 = 사용한 토큰)
     var shop: String { t("상점", "Shop", "ショップ", "Tienda", "Boutique", "Loja", "Laden", "Магазин") }

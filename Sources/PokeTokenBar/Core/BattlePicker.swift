@@ -37,6 +37,7 @@ extension CompanionStore {
         return DexSpecies(id: entry.finalID, name: dexEntryName(entry), rarity: entry.rarity,
                           isShiny: entry.isShiny, isRaising: candidate.dexEntry == nil,
                           form: PokemonForm.resolved(speciesID: entry.finalID, form: entry.form),
-                          names: entry.names?[entry.finalID], hasNormal: !entry.isShiny)
+                          names: entry.names?[entry.finalID], hasNormal: !entry.isShiny,
+                          isFemale: entry.profile?.gender == .female)
     }
 }

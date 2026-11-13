@@ -1,10 +1,11 @@
 # YPoke bot
 
-Slack bot for one-on-one office battles between PokeTokenBar users' Pokémon.
+Slack bot for office battles between PokeTokenBar users' Pokémon, up to three each.
 Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Pokémon to ([API.md](API.md)).
 
-- `/대결 @상대` runs one automatic one-on-one battle (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
-  level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages and five-turn weather) and posts a turn-by-turn
+- `/대결 @상대` runs one automatic battle. Each side sends out up to three Pokémon in the order the app uploaded;
+  when one faints the next comes in, and a side that runs out loses (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
+  level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather and 27 common abilities) and posts a turn-by-turn
   log, written like the in-game battle text. The channel gets a context line ("who ran which command", since
   Slack shows nobody a typed slash command), a one-line result and a "다시 붙기" button; the turn log is the
   first reply in that message's thread. The bot posts it with `chat.postMessage`, so it must be a member of
@@ -29,19 +30,26 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   thread, then a DM to the challenger).
 - A `rental` Pokémon (the app's starter before the first hatch) fights at the opponent's level (capped at 50) and is
   announced as "대여 포켓몬 …". It counts in records like any other.
-- `/대결 @YPoke` or a channel message `@YPoke 대결` is a practice battle against a random species
-  (#1–1025, picked from the battle seed) at your Pokémon's battle level. Nothing is recorded.
+- `/대결 @YPoke` or a channel message `@YPoke 대결` is a practice battle against a random team: as many
+  distinct species (#1–1025, picked from the battle seed) as you send out, each at the level of your Pokémon in
+  the same slot. Nothing is recorded.
 - `/포켓몬연결` DMs the caller a "PokeTokenBar 연결" button. It opens
   `poketokenbar://ypoke-register?token=…&server=…`, which saves the upload token and server in the app.
   The token is also in the DM for pasting by hand. Running it again rotates the token.
+- Trades: the app's Battle tab offers one graduated Pokémon to a linked coworker. The bot DMs them a picker of
+  their own Pokémon with Accept/Decline; after they accept, the offerer confirms in a DM. Each app picks its side
+  up on its next sync, once. Offers expire after 24 hours. Wire format: [API.md](API.md#trades).
 - `/전적 [@누구]` shows win/loss.
 - `/랭킹` posts this week's top 10 (since Monday 00:00 KST) by wins, then win rate, then fewer battles.
-- `/ypoke` shows help.
+- `/도감 [@누구]` shows the target's (default: your own) dex summary the app uploaded: owned species, shiny count,
+  progress per region and the representative Pokémon with its sprite. Private for a slash command. An unlinked
+  target, or one whose app has not sent a dex yet, gets one short line.
+- `/ypoke` shows help. `/ypoke 도감 @누구` (or any command word after `/ypoke`) runs that command.
 - The upload response carries the app's "최근 대결" and "동료" lists ([API.md](API.md)). Display names come from Slack
   `users.info` (scope `users:read`, cached an hour); without the scope the names are `null` and the app shows a generic label.
 - Slack runs no slash commands in threads, so mentions cover them all and answer in the thread:
   `@YPoke 대결 @상대`, `@YPoke 대결` (practice), `@YPoke 전적 [@누구]`, `@YPoke 랭킹`,
-  `@YPoke 연결` (link by DM). `@YPoke` alone shows help. A top-level mention starts a thread.
+  `@YPoke 도감 [@누구]`, `@YPoke 연결` (link by DM). `@YPoke` alone shows help. A top-level mention starts a thread.
 
 ## Run locally
 

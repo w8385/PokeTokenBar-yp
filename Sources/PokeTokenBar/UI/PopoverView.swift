@@ -16,6 +16,24 @@ enum PopoverMetrics {
     /// 세로 스크롤 영역 안의 자식이 쓸 수 있는 폭. 스크롤 안에서 폭을 고정하는 자식(진화 라인 등)은
     /// `contentWidth` 대신 이 값을 써야 한다 — 제안 폭보다 넓은 자식 하나가 열 전체를 다시 넓혀 레인이 사라진다.
     static let scrollContentWidth: CGFloat = contentWidth - scrollerInset
+
+    /// Height of the fixed-size tabs (Shop, Bag, Collection, Battle) and Home's floor.
+    static let tabHeight: CGFloat = 520
+    /// Visible screen height left unused: the popover arrow, shadow and some air under it.
+    static let screenMargin: CGFloat = 40
+    /// Padding, tab picker, footer and the spacing around them.
+    static let chromeHeight: CGFloat = 100
+    static let updateBannerHeight: CGFloat = 80
+
+    static func visibleScreenHeight() -> CGFloat {
+        (NSScreen.main ?? NSScreen.screens.first)?.visibleFrame.height ?? 800
+    }
+
+    /// The tallest Home body that still leaves the whole popover on screen. On a small display this
+    /// is below `tabHeight`: Home gives up the height of the other tabs before it runs off screen.
+    static func homeMaxHeight(screenHeight: CGFloat, updateBanner: Bool) -> CGFloat {
+        screenHeight - screenMargin - chromeHeight - (updateBanner ? updateBannerHeight : 0)
+    }
 }
 
 extension View {
@@ -36,11 +54,24 @@ final class PopoverNavigation {
     var tab: PopoverTab = .home {
         didSet {
             if tab != .collection { dexDetailCollectionID = nil }
-            if tab != .battle { showingBattlePicker = false }
+            if tab != .battle {
+                battlePicker = nil
+                showingTradeOffer = false
+            }
         }
     }
     /// The Battle tab's fighter picker replaces the tab's content while open.
-    var showingBattlePicker = false
+    var battlePicker: BattlePickerTarget?
+    /// The Battle tab's trade offer screen; `tradeGiveID` preselects the individual a Pokédex page sent over.
+    var showingTradeOffer = false
+    var tradeGiveID: String?
+
+    func openTradeOffer(giving individualID: String?) {
+        tradeGiveID = individualID
+        battlePicker = nil
+        showingTradeOffer = true
+        tab = .battle
+    }
     /// 일반적인 컬렉션 재진입에는 마지막 세그먼트를 유지하되, 대표 포켓몬 선택 진입점은 도감으로 강제한다.
     var showingCollectionLog = false {
         didSet { if showingCollectionLog != oldValue { dexDetailCollectionID = nil } }
@@ -64,7 +95,8 @@ final class PopoverNavigation {
         showSettings = false
         expandAdvancedOnOpen = false
         showingRecap = false
-        showingBattlePicker = false
+        battlePicker = nil
+        showingTradeOffer = false
         tab = .home
     }
 
@@ -104,6 +136,9 @@ struct PopoverView: View {
     @Environment(UpdateChecker.self) private var updater
     @Environment(PopoverNavigation.self) private var nav
 
+    /// Visible height of the screen the popover opens on; Home never grows past what fits in it.
+    var screenHeight: CGFloat = PopoverMetrics.visibleScreenHeight()
+
     private var l: L { companion.l }
     @State private var showingClaudeKeychainHelp = false
 
@@ -134,9 +169,13 @@ struct PopoverView: View {
         .environment(\.locale, companion.language.displayLocale)
     }
 
+    private var availableUpdate: UpdateChecker.Available? {
+        store.updateNotificationsEnabled ? updater.available : nil
+    }
+
     @ViewBuilder
     private var updateBanner: some View {
-        if let update = updater.available, store.updateNotificationsEnabled {
+        if let update = availableUpdate {
             VStack(alignment: .leading, spacing: 6) {
                 Text(l.updateAvailable(update.version, current: updater.currentVersion))
                     .font(.caption)
@@ -164,6 +203,7 @@ struct PopoverView: View {
         @Bindable var nav = nav
         return VStack(alignment: .leading, spacing: 12) {
             updateBanner
+            TradeArrivalBanner(store: companion)
             Picker("", selection: $nav.tab) {
                 Text(l.home).tag(PopoverTab.home)
                 Text(l.shop).tag(PopoverTab.shop)
@@ -183,35 +223,48 @@ struct PopoverView: View {
             } else if nav.tab == .battle {
                 BattleView(store: companion, navigation: nav)
             } else {
-                // 고정 높이 — 상점/가방/컬렉션과 동일(팝오버가 화면을 넘어가는 것을 방지).
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 12) {
-                        CompanionHeader(store: companion) { nav.openDexEntry(collectionID: $0) }
-                        Divider()
-                        header
-                        Divider()
-                        providerStatusBanner   // 인시던트 있을 때만 — 한도 가용 여부와 무관(API 다운=한도 nil 케이스에도)
-                        if selectedProviderHasLimits {
-                            limitsSection
-                            Divider()
-                        }
-                    }
-                    .reservesScrollerLane()
-                }
-                .frame(height: 520)
+                homeBody
             }
             footer
         }
         .padding(PopoverMetrics.padding)
     }
 
+    /// Home is as tall as its content, never shorter than the other tabs and never taller than the
+    /// screen allows; only then does it scroll.
+    private var homeBody: some View {
+        let cap = PopoverMetrics.homeMaxHeight(screenHeight: screenHeight, updateBanner: availableUpdate != nil)
+        return ScrollView { homeContent.reservesScrollerLane() }
+            .frame(minHeight: min(PopoverMetrics.tabHeight, cap), maxHeight: cap)
+    }
+
+    private var homeContent: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            CompanionHeader(store: companion) { nav.openDexEntry(collectionID: $0) }
+            Divider()
+            header
+            Divider()
+            providerStatusBanner   // 인시던트 있을 때만 — 한도 가용 여부와 무관(API 다운=한도 nil 케이스에도)
+            if selectedProviderHasLimits {
+                limitsSection
+                Divider()
+            }
+        }
+    }
+
     // MARK: 헤더 — 오늘 합계 + provider/토큰타입 분해
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(l.todayTokens)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack(spacing: 14) {
+                Text(l.todayTokens)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+                StreakBadge(streak: store.currentStreak, l: l)
+                recapButton
+            }
             HStack(alignment: .firstTextBaseline) {
                 Text(TokenFormatter.compact(store.todayTotalTokens))
                     .font(.system(size: 28, weight: .bold))
@@ -230,23 +283,8 @@ struct PopoverView: View {
                 }
             }
 
-            // Keep period totals and saved-history navigation visible on quiet days too.
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 14) {
-                    periodTotals.fixedSize(horizontal: true, vertical: false)
-                    Spacer(minLength: 0)
-                    StreakBadge(streak: store.currentStreak, l: l)
-                    recapButton
-                }
-                VStack(alignment: .trailing, spacing: 6) {
-                    periodTotals.frame(maxWidth: .infinity, alignment: .leading)
-                    HStack(spacing: 14) {
-                        StreakBadge(streak: store.currentStreak, l: l)
-                        recapButton
-                    }
-                }
-            }
-            .padding(.top, 2)
+            // Keep period totals visible on quiet days too.
+            periodTotals.frame(maxWidth: .infinity, alignment: .leading)
 
             ActivityPanel(visualization: store.activityVisualization,
                           series: store.dailyTrendTotals,
@@ -349,14 +387,22 @@ struct PopoverView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            VStack(alignment: .leading, spacing: 3) {
+            ViewThatFits(in: .horizontal) {
                 HStack(spacing: 10) {
                     tokenTypeLabel(l.tokenInput, today.inputTokens)
                     tokenTypeLabel(l.tokenOutput, today.outputTokens)
-                }
-                HStack(spacing: 10) {
                     tokenTypeLabel(l.tokenCacheWrite, today.cacheCreationTokens)
                     tokenTypeLabel(l.tokenCacheRead, today.cacheReadTokens)
+                }
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 10) {
+                        tokenTypeLabel(l.tokenInput, today.inputTokens)
+                        tokenTypeLabel(l.tokenOutput, today.outputTokens)
+                    }
+                    HStack(spacing: 10) {
+                        tokenTypeLabel(l.tokenCacheWrite, today.cacheCreationTokens)
+                        tokenTypeLabel(l.tokenCacheRead, today.cacheReadTokens)
+                    }
                 }
             }
             if let models = today.models, models.count > 1 {
@@ -444,7 +490,7 @@ struct PopoverView: View {
 
     @ViewBuilder
     private var limitsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
                 Text(l.limitsOfficial)
                     .font(.caption)
@@ -516,7 +562,7 @@ struct PopoverView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 if let usage = status.planUsage, let used = usage.usedPercent {
                     cursorLimitRow(name: l.cursorMonthlyIncluded, utilization: used, reset: status.billingCycleEndDate)
                     if let remaining = usage.remainingDollars {
@@ -551,7 +597,7 @@ struct PopoverView: View {
             if store.openCodeGoLimitsStale {
                 staleBadge(updatedAt: store.openCodeGoLimitsUpdatedAt)
             }
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 openCodeGoLimitRow(name: l.fiveHourSession, window: status.rolling,
                                    span: LimitWindowSpan.fiveHour, notStartedHint: l.fiveHourNotStarted)
                 openCodeGoLimitRow(name: l.weekly, window: status.weekly, span: LimitWindowSpan.sevenDay)
@@ -972,17 +1018,17 @@ struct PopoverView: View {
             staleBadge(updatedAt: account.updatedAt)
         }
         // 플랜(계정 속성) — Codex codexMetaRow 와 동일 스타일. 구독 정보 있을 때만 노출.
-        if let plan = limits.planDisplay {
-            Text(l.plan(plan))
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-        }
         // 계정 라벨 — 두 계정이 한 Keychain 항목을 번갈아 쓰는 기기에서 이 한도가
         // 어느 계정 것인지 알려준다 (없으면 라벨 없이 종전과 동일).
-        if let accountLabel = limits.accountDisplay {
-            Text(l.limitsAccount(accountLabel))
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+        if limits.planDisplay != nil || limits.accountDisplay != nil {
+            HStack(spacing: 8) {
+                if let plan = limits.planDisplay { Text(l.plan(plan)) }
+                if let accountLabel = limits.accountDisplay {
+                    Text(l.limitsAccount(accountLabel)).lineLimit(1).truncationMode(.middle)
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.tertiary)
         }
         // This account's share of the local usage (the header keeps the machine-wide totals).
         if showsUsage, let usage = store.claudeAccountUsage[account.id], !usage.isEmpty {
@@ -993,7 +1039,7 @@ struct PopoverView: View {
             }
         }
         // 세션 만료 시 표시값은 만료 전 기준 → 흐리게 처리해 "현재 값 아님"을 시각적으로 전달
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             limitRow(name: l.fiveHourSession, window: limits.fiveHour,
                      span: LimitWindowSpan.fiveHour, notStartedHint: l.fiveHourNotStarted)
             // The forecast follows the tracked account (it combines that account's utilization with local usage).

@@ -25,16 +25,24 @@ actor SpriteStore {
     /// 기본 폼은 구캐시 키 그대로 유지. 다른 폼은 폼·이로치·애니메이션을 모두 구분한다.
     /// `back` sprites (the companion turned away) get their own `-back` segment; front keys are unchanged.
     static func cacheKey(speciesID: Int, animated: Bool, shiny: Bool, form: PokemonForm? = nil,
-                         back: Bool = false) -> String {
+                         back: Bool = false, female: Bool = false) -> String {
         let name = PokemonForm.assetName(speciesID: speciesID, form: form)
-        return "\(name)-\(back ? "back-" : "")\(shiny ? "sh" : "")\(animated ? "a" : "s")"
+        let sex = usesFemaleSprite(speciesID: speciesID, animated: animated, female: female) ? "f-" : ""
+        return "\(name)-\(back ? "back-" : "")\(sex)\(shiny ? "sh" : "")\(animated ? "a" : "s")"
+    }
+
+    /// A female individual only has its own sprite where the sprite set ships one; everywhere else
+    /// (and for species with forms) it shares the default sprite file.
+    static func usesFemaleSprite(speciesID: Int, animated: Bool, female: Bool) -> Bool {
+        female && !PokemonForm.hasForms(speciesID: speciesID)
+            && PokemonAssets.hasFemaleSprite(speciesID: speciesID, animated: animated)
     }
 
     /// PokeAPI names form GIFs `201-b`/`492-sky`; static PNGs of separate varieties use the variety
     /// id (`10006.png`). Cache files keep the `<id>-<form>` name either way.
     /// Back sprites sit in a `back/` folder in front of `shiny/`, for both GIFs and PNGs.
     static func spriteURL(speciesID: Int, animated: Bool, shiny: Bool, form: PokemonForm? = nil,
-                          back: Bool = false) -> URL {
+                          back: Bool = false, female: Bool = false) -> URL {
         let name = animated ? PokemonForm.assetName(speciesID: speciesID, form: form)
                             : PokemonForm.staticAssetName(speciesID: speciesID, form: form)
         let path: String
@@ -47,23 +55,26 @@ actor SpriteStore {
         }
         let facing = back ? "back/" : ""
         let color = shiny ? "shiny/" : ""
+        let sex = usesFemaleSprite(speciesID: speciesID, animated: animated, female: female) ? "female/" : ""
         let ext = animated ? "gif" : "png"
-        return URL(string: "\(base)/\(path)\(facing)\(color)\(name).\(ext)")!
+        return URL(string: "\(base)/\(path)\(facing)\(color)\(sex)\(name).\(ext)")!
     }
 
     func data(speciesID: Int, animated: Bool, shiny: Bool = false, form: PokemonForm? = nil,
-              back: Bool = false) async -> Data? {
+              back: Bool = false, female: Bool = false) async -> Data? {
         if animated, !PokemonAssets.hasAnimatedSprite(speciesID: speciesID) { return nil }
-        let key = Self.cacheKey(speciesID: speciesID, animated: animated, shiny: shiny, form: form, back: back)
+        let key = Self.cacheKey(speciesID: speciesID, animated: animated, shiny: shiny, form: form,
+                                back: back, female: female)
         if let d = mem[key] { touch(key); return d }
         let ext = animated ? "gif" : "png"
         let file = directory.appendingPathComponent("\(key).\(ext)")
         if let d = try? Data(contentsOf: file) { remember(key, d); return d }
         if confirmedMissing.contains(key) { return nil }
-        let url = Self.spriteURL(speciesID: speciesID, animated: animated, shiny: shiny, form: form, back: back)
+        let url = Self.spriteURL(speciesID: speciesID, animated: animated, shiny: shiny, form: form,
+                                 back: back, female: female)
         guard let (d, resp) = try? await URLSession.shared.data(from: url) else { return nil }
         let status = (resp as? HTTPURLResponse)?.statusCode
-        if back, status == 404 { confirmedMissing.insert(key) }
+        if back || female, status == 404 { confirmedMissing.insert(key) }
         guard status == 200, !d.isEmpty else { return nil }
         try? d.write(to: file, options: .atomic)   // torn write 방지 — 크래시/강제종료 시 손상 캐시가 남지 않게
         remember(key, d)
@@ -71,9 +82,10 @@ actor SpriteStore {
     }
 
     /// True once the server answered 404 for this sprite in this session.
-    func isConfirmedMissing(speciesID: Int, animated: Bool, shiny: Bool, form: PokemonForm?, back: Bool) -> Bool {
+    func isConfirmedMissing(speciesID: Int, animated: Bool, shiny: Bool, form: PokemonForm?, back: Bool,
+                            female: Bool = false) -> Bool {
         confirmedMissing.contains(Self.cacheKey(speciesID: speciesID, animated: animated, shiny: shiny,
-                                                form: form, back: back))
+                                                form: form, back: back, female: female))
     }
 
     /// 아이템 스프라이트(정적 PNG, 이름 기반). 포켓몬과 같은 메모리/디스크 캐시 사용(키 "item-<name>",
@@ -141,9 +153,10 @@ enum SpriteLoader {
     /// back 캐시 미스는 앞모습으로 폴백 — 뒷모습이 없어도 화면이 비지 않게.
     static func cachedImage(speciesID: Int, animated: Bool = false, shiny: Bool = false,
                             directory: URL = cacheDir, form: PokemonForm? = nil,
-                            back: Bool = false) -> NSImage? {
+                            back: Bool = false, female: Bool = false) -> NSImage? {
         let ext = animated ? "gif" : "png"
-        let key = SpriteStore.cacheKey(speciesID: speciesID, animated: animated, shiny: shiny, form: form, back: back)
+        let key = SpriteStore.cacheKey(speciesID: speciesID, animated: animated, shiny: shiny, form: form,
+                                       back: back, female: female)
         let f = directory.appendingPathComponent("\(key).\(ext)")
         let imageKey = f.path as NSString
         if let img = imageCache.object(forKey: imageKey) { return img }
@@ -153,12 +166,17 @@ enum SpriteLoader {
         }
         // 폴백은 일반색 키에만 저장한다 — 나중에 받은 이로치 이미지를 가리지 않게.
         if shiny, let plain = cachedImage(speciesID: speciesID, animated: animated, shiny: false,
-                                          directory: directory, form: form, back: back) {
+                                          directory: directory, form: form, back: back, female: female) {
             return plain
         }
-        guard back else { return nil }
+        if back, let front = cachedImage(speciesID: speciesID, animated: animated, shiny: shiny,
+                                         directory: directory, form: form, back: false, female: female) {
+            return front
+        }
+        // A female sprite that is not cached yet shows the default one meanwhile.
+        guard SpriteStore.usesFemaleSprite(speciesID: speciesID, animated: animated, female: female) else { return nil }
         return cachedImage(speciesID: speciesID, animated: animated, shiny: shiny,
-                           directory: directory, form: form, back: false)
+                           directory: directory, form: form, back: back, female: false)
     }
 
     private final class AnimationFrames {
@@ -175,8 +193,9 @@ enum SpriteLoader {
     /// First render and playback share the exact GIF pixels, including its canvas and delays.
     /// A missing back GIF returns [] — callers keep the front fallback until it loads.
     static func cachedFrames(speciesID: Int, shiny: Bool, directory: URL = cacheDir, form: PokemonForm? = nil,
-                             back: Bool = false) -> [(image: NSImage, delay: TimeInterval)] {
-        let key = SpriteStore.cacheKey(speciesID: speciesID, animated: true, shiny: shiny, form: form, back: back)
+                             back: Bool = false, female: Bool = false) -> [(image: NSImage, delay: TimeInterval)] {
+        let key = SpriteStore.cacheKey(speciesID: speciesID, animated: true, shiny: shiny, form: form,
+                                       back: back, female: female)
         let file = directory.appendingPathComponent("\(key).gif")
         if let cached = animationCache.object(forKey: file.path as NSString) { return cached.frames }
         guard let data = try? Data(contentsOf: file) else { return [] }
@@ -190,31 +209,45 @@ enum SpriteLoader {
     }
 
     /// With `back`, the back GIF is tried first (shiny, then plain) and the front GIF is the fallback.
+    /// A female individual tries its female GIFs first; the default ones are the fallback.
     static func animationFrames(speciesID: Int, shiny: Bool, store: SpriteStore = .shared,
-                                form: PokemonForm? = nil, back: Bool = false) async
+                                form: PokemonForm? = nil, back: Bool = false, female: Bool = false) async
         -> [(image: NSImage, delay: TimeInterval)] {
-        var backFailedTransiently = false
-        for facing in back ? [true, false] : [false] {
-            // A transient back failure returns [] so the caller's retry loop tries the back GIF again,
-            // rather than settling on the front GIF. Only a 404 (no such back sprite) falls through.
-            if !facing, backFailedTransiently { return [] }
-            for variant in shiny ? [true, false] : [false] {
-                guard !Task.isCancelled else { return [] }
-                let cached = cachedFrames(speciesID: speciesID, shiny: variant,
-                                          directory: store.directory, form: form, back: facing)
-                if !cached.isEmpty { return cached }
-                guard let data = await store.data(speciesID: speciesID, animated: true,
-                                                 shiny: variant, form: form, back: facing) else {
-                    if facing, !(await store.isConfirmedMissing(speciesID: speciesID, animated: true,
-                                                                shiny: variant, form: form, back: true)) {
-                        backFailedTransiently = true
+        let wantsFemale = SpriteStore.usesFemaleSprite(speciesID: speciesID, animated: true, female: female)
+        var femaleFailedTransiently = false
+        for sex in wantsFemale ? [true, false] : [false] {
+            // Like a back failure, a transient female failure returns [] so the retry loop asks again
+            // instead of settling on the default sprite. Only a 404 falls through.
+            if !sex, femaleFailedTransiently { return [] }
+            var backFailedTransiently = false
+            for facing in back ? [true, false] : [false] {
+                // A transient back failure returns [] so the caller's retry loop tries the back GIF again,
+                // rather than settling on the front GIF. Only a 404 (no such back sprite) falls through.
+                if !facing, backFailedTransiently { return [] }
+                for variant in shiny ? [true, false] : [false] {
+                    guard !Task.isCancelled else { return [] }
+                    let cached = cachedFrames(speciesID: speciesID, shiny: variant,
+                                              directory: store.directory, form: form, back: facing, female: sex)
+                    if !cached.isEmpty { return cached }
+                    guard let data = await store.data(speciesID: speciesID, animated: true,
+                                                     shiny: variant, form: form, back: facing, female: sex) else {
+                        if facing, !(await store.isConfirmedMissing(speciesID: speciesID, animated: true,
+                                                                    shiny: variant, form: form, back: true,
+                                                                    female: sex)) {
+                            backFailedTransiently = true
+                        }
+                        if sex, !(await store.isConfirmedMissing(speciesID: speciesID, animated: true,
+                                                                 shiny: variant, form: form, back: facing,
+                                                                 female: true)) {
+                            femaleFailedTransiently = true
+                        }
+                        continue
                     }
-                    continue
+                    let key = SpriteStore.cacheKey(speciesID: speciesID, animated: true,
+                                                    shiny: variant, form: form, back: facing, female: sex)
+                    let frames = rememberFrames(data, file: store.directory.appendingPathComponent("\(key).gif"))
+                    if !frames.isEmpty { return frames }
                 }
-                let key = SpriteStore.cacheKey(speciesID: speciesID, animated: true,
-                                                shiny: variant, form: form, back: facing)
-                let frames = rememberFrames(data, file: store.directory.appendingPathComponent("\(key).gif"))
-                if !frames.isEmpty { return frames }
             }
         }
         return []
@@ -224,7 +257,7 @@ enum SpriteLoader {
     /// The caller owns this await: cancelling its view/load task also cancels requests and backoff.
     static func recoveringAnimationFrames(
         speciesID: Int, shiny: Bool, store: SpriteStore = .shared, form: PokemonForm? = nil,
-        back: Bool = false,
+        back: Bool = false, female: Bool = false,
         waitBeforeRetry: (Duration) async throws -> Void = { try await Task.sleep(for: $0) },
         onUnavailable: () async -> Void
     ) async -> [(image: NSImage, delay: TimeInterval)] {
@@ -238,7 +271,7 @@ enum SpriteLoader {
         var showedFallback = false
         while !Task.isCancelled {
             let frames = await animationFrames(speciesID: speciesID, shiny: shiny, store: store,
-                                               form: form, back: back)
+                                               form: form, back: back, female: female)
             guard !Task.isCancelled else { return [] }
             if frames.count > 1 { return frames }
             if !showedFallback {
@@ -272,27 +305,36 @@ enum SpriteLoader {
     /// shiny=true 는 색이 다른 스프라이트 — 미제공 종이면 일반으로 폴백.
     /// back=true 는 뒷모습을 먼저 시도하고, 없으면 앞모습으로 폴백한다.
     static func image(speciesID: Int, animated: Bool = false, shiny: Bool = false,
-                      store: SpriteStore = .shared, form: PokemonForm? = nil, back: Bool = false) async -> NSImage? {
+                      store: SpriteStore = .shared, form: PokemonForm? = nil, back: Bool = false,
+                      female: Bool = false) async -> NSImage? {
         for moving in animated ? [true, false] : [false] {
-            let key = SpriteStore.cacheKey(speciesID: speciesID, animated: moving, shiny: shiny, form: form, back: back)
+            let key = SpriteStore.cacheKey(speciesID: speciesID, animated: moving, shiny: shiny, form: form,
+                                           back: back, female: female)
             let ext = moving ? "gif" : "png"
             let imageKey = store.directory.appendingPathComponent("\(key).\(ext)").path as NSString
             if let img = imageCache.object(forKey: imageKey) { return img }
             guard let d = await store.data(speciesID: speciesID, animated: moving,
-                                          shiny: shiny, form: form, back: back) else { continue }
+                                          shiny: shiny, form: form, back: back, female: female) else { continue }
             // await 중 같은 종의 다른 행이 로드를 끝냈으면 그 객체를 재사용한다.
             if let img = imageCache.object(forKey: imageKey) { return img }
             guard let img = NSImage(data: d) else { continue }
             imageCache.setObject(img, forKey: imageKey)
             return img
         }
-        // shiny 미제공 → 일반 폴백, 그다음 back 미제공 → 앞모습 폴백
+        // shiny 미제공 → 일반 폴백, 그다음 back 미제공 → 앞모습 폴백, 마지막으로 여성 미제공 → 기본 스프라이트
         if shiny, let plain = await image(speciesID: speciesID, animated: animated, shiny: false,
-                                          store: store, form: form, back: back) {
+                                          store: store, form: form, back: back, female: female) {
             return plain
         }
-        guard back else { return nil }
-        return await image(speciesID: speciesID, animated: animated, shiny: shiny, store: store, form: form)
+        if back, let front = await image(speciesID: speciesID, animated: animated, shiny: shiny, store: store,
+                                         form: form, female: female) {
+            return front
+        }
+        guard SpriteStore.usesFemaleSprite(speciesID: speciesID, animated: animated, female: female) else {
+            return nil
+        }
+        return await image(speciesID: speciesID, animated: animated, shiny: shiny, store: store,
+                           form: form, back: back)
     }
 
     /// 아이템 스프라이트 — 메모리·디스크 캐시 동기 조회(없으면 nil). 아이콘 즉시 표시용.

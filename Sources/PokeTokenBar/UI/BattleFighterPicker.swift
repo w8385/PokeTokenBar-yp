@@ -7,6 +7,10 @@ struct BattleFighterPicker: View {
     let store: CompanionStore
     /// `BattleCandidate.id` of the Pokémon now in this slot.
     let current: String?
+    /// Candidates already in other slots; they are not offered again.
+    let excluding: Set<String>
+    /// Whether "follow the Pokémon being raised" is offered; only a lone pick can do that.
+    let allowsAuto: Bool
     /// A candidate id, or nil for "follow the Pokémon being raised".
     let onPick: (String?) -> Void
     let onBack: () -> Void
@@ -17,10 +21,12 @@ struct BattleFighterPicker: View {
 
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 4)
 
-    init(store: CompanionStore, current: String?, initialQuery: String = "",
-         onPick: @escaping (String?) -> Void, onBack: @escaping () -> Void) {
+    init(store: CompanionStore, current: String?, excluding: Set<String> = [], allowsAuto: Bool = true,
+         initialQuery: String = "", onPick: @escaping (String?) -> Void, onBack: @escaping () -> Void) {
         self.store = store
         self.current = current
+        self.excluding = excluding
+        self.allowsAuto = allowsAuto
         self.onPick = onPick
         self.onBack = onBack
         _query = State(initialValue: initialQuery)
@@ -28,8 +34,9 @@ struct BattleFighterPicker: View {
 
     var body: some View {
         let l = store.l
-        let all = BattleEntry.candidates(in: store.state)
+        let all = BattleEntry.candidates(in: store.state).filter { !excluding.contains($0.id) }
         let visible = store.filteredBattleCandidates(query: query, rarity: rarity, shinyOnly: shinyOnly)
+            .filter { !excluding.contains($0.id) }
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Button(action: onBack) { Label(l.back, systemImage: "chevron.left") }
@@ -42,10 +49,12 @@ struct BattleFighterPicker: View {
                 DexShinyToggle(l: l, isOn: $shinyOnly)
             }
             rarityChips(all)
-            Button { onPick(nil) } label: {
-                Label(l.battleEntryAutoPick, systemImage: "arrow.triangle.2.circlepath").font(.caption)
+            if allowsAuto {
+                Button { onPick(nil) } label: {
+                    Label(l.battleEntryAutoPick, systemImage: "arrow.triangle.2.circlepath").font(.caption)
+                }
+                .buttonStyle(.borderless)
             }
-            .buttonStyle(.borderless)
             if visible.isEmpty {
                 emptyResults
             } else {

@@ -61,6 +61,31 @@ enum PokemonGender: String, Codable, Sendable, CaseIterable {
     case male
     case female
     case genderless
+
+    /// `genderRate` is PokéAPI's female eighths: 0 always male, 8 always female, -1 genderless.
+    /// The roll depends only on the individual's seed, so it never changes between launches.
+    static func roll(seed: UInt64, genderRate: Int) -> PokemonGender {
+        if genderRate < 0 { return .genderless }
+        var random = ProfileRNG(seed: seed ^ PokemonProfile.enrichSeedMask)
+        return Int(random.next() % 8) < genderRate ? .female : .male
+    }
+
+    var symbol: String? {
+        switch self {
+        case .male: return "♂"
+        case .female: return "♀"
+        case .genderless: return nil
+        }
+    }
+
+    /// PokéAPI `evolution_details[].gender`: 1 female, 2 male.
+    init?(pokeAPIEvolutionGender value: Int) {
+        switch value {
+        case 1: self = .female
+        case 2: self = .male
+        default: return nil
+        }
+    }
 }
 
 struct PokemonIVs: Codable, Sendable, Equatable {
@@ -142,15 +167,18 @@ struct PokemonProfile: Codable, Sendable, Equatable {
         advanceGrowth(to: rebasedGrowth, rarity: rarity)
     }
 
+    fileprivate static let enrichSeedMask: UInt64 = 0xA11B_1E5D_9EED
+
+    /// Fills a missing gender only; a rolled gender is never rerolled.
+    mutating func assignGender(genderRate: Int) {
+        guard gender == nil else { return }
+        gender = .roll(seed: seed, genderRate: genderRate)
+    }
+
     mutating func enrich(with details: PokemonDetails) {
-        var random = ProfileRNG(seed: seed ^ 0xA11B_1E5D_9EED)
-        if gender == nil {
-            if details.genderRate < 0 {
-                gender = .genderless
-            } else {
-                gender = Int(random.next() % 8) < details.genderRate ? .female : .male
-            }
-        }
+        var random = ProfileRNG(seed: seed ^ Self.enrichSeedMask)
+        if details.genderRate >= 0 { _ = random.next() }   // gender's draw; the ability rolls below stay in place
+        assignGender(genderRate: details.genderRate)
 
         let normal = details.abilities.filter { !$0.isHidden }.sorted { $0.slot < $1.slot }
         let hidden = details.abilities.filter(\.isHidden).sorted { $0.slot < $1.slot }

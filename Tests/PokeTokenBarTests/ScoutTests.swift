@@ -296,6 +296,14 @@ final class ScoutTests: XCTestCase {
         XCTAssertNil(s.state.active?.dittoDisguise)
     }
 
+    func testScoutCategoryIsAlwaysInTheShopAndInTheBagOnlyWithTickets() {
+        let none = store(tickets: [:])
+        XCTAssertTrue(none.shopCategories.contains(.scout))
+        XCTAssertFalse(none.bagCategories.contains(.scout))
+        let some = store(tickets: ["scout.kanto": 1])
+        XCTAssertEqual(some.bagCategories, [.scout])
+    }
+
     // MARK: 기존 알 구매는 그대로
 
     func testRegularEggPurchaseIsNotMarkedAsScouted() {

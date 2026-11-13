@@ -1408,6 +1408,22 @@ read_when:
   interaction must still fail if the production region selection is disconnected, even after
   all retry attempts. No production UI behavior or CI gate is changed for this harness repair.
 
+- **A test must wait on the model, and a retry or a CI step that only passes by luck is not a fix.**
+  `testRegionChipFiltersMountedCollectionAndTogglesBack` clicked the chip and then re-read the grid
+  by OCR every second, clicking again when the grid had not changed. The chip is a toggle, so a
+  grid that lagged behind a click that had worked was clicked back off, and the test failed on the
+  fifth attempt with the chip checked and the old grid still on screen. It ran green alone (20/20
+  on CI) and failed 3 of 12 when run with its classes (`UI_TESTS_DEX`), so every earlier look at it
+  in isolation said "fine". A one-retry CI step (#27) hid the rate and its own edit broke `ci.yml`
+  (a lost space made the workflow invalid, so no job ran and the PR merged on GitGuardian alone).
+  The test now mounts `DexGridView` with a binding it owns and presses once, then waits for that
+  binding (the model) before it looks at pixels; a press is repeated only while the binding has not
+  moved. Animations are off in the harness, and the pixel wait has no click in it. The same loop on
+  CI: old test 3/12 in both quiet and CPU-stressed runs, new test 12/12 in both. `workflow-lint.yml`
+  runs actionlint as its own workflow, because a lint job inside an invalid `ci.yml` never starts.
+  `scripts/invariant-tests.sh` runs the repo-wide scanners (every View `@MainActor`, no Hangul in UI
+  sources, every language) that a focused `--filter` skips. When a UI test is flaky, loop the whole
+  CI shard (`UI_TESTS_DEX`) under load; do not loop the one test.
 - **Use unambiguous fixture words for exact OCR navigation assertions.**
   `DexBackNavigationTests.testBackFromDetailReturnsTheLogToWhereItWas` failed in CI run
   `39184274574`: after Back, Vision read the artificial oldest-catch label `Mon1` as

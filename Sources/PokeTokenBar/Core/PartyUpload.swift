@@ -13,17 +13,25 @@ struct PartyMember: Encodable, Equatable, Sendable {
     var rental: Bool? = nil
     /// Lowercase `PokemonNature` name; nil is left out of the JSON and the bot treats it as neutral.
     var nature: String? = nil
+    /// PokéAPI ability name of the individual (`"huge-power"`); nil is left out of the JSON and the bot gives it none.
+    var ability: String? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
     let appVersion: String?
     let party: [PartyMember]
+    var dex: DexSummary? = nil
 
-    func encoded() throws -> Data {
+    /// `tradePool` is added after the snake-case pass, which would rename the keys inside its entries.
+    func encoded(tradePool: [TradePoolEntry]? = nil) throws -> Data {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.outputFormatting = .sortedKeys
-        return try encoder.encode(self)
+        let base = try encoder.encode(self)
+        guard let tradePool else { return base }
+        var object = try JSONSerialization.jsonObject(with: base) as? [String: Any] ?? [:]
+        object["trade_pool"] = try JSONSerialization.jsonObject(with: TradePool.encode(tradePool))
+        return try JSONSerialization.data(withJSONObject: object, options: .sortedKeys)
     }
 }
 
@@ -44,7 +52,8 @@ enum PartyBuilder {
                            level: min(100, max(1, profile?.level ?? 1)),
                            shiny: shiny,
                            ivs: profile?.ivs,
-                           nature: nature?.rawValue)
+                           nature: nature?.rawValue,
+                           ability: profile?.abilityName)
     }
 
     static func isAcceptedPokemonID(_ id: Int) -> Bool {
@@ -153,6 +162,9 @@ final class PartyUploader {
     @ObservationIgnored private let fetch: Fetch
     @ObservationIgnored private let appVersion: String?
     @ObservationIgnored private let partySource: @MainActor () -> [PartyMember]
+    @ObservationIgnored private let dexSource: @MainActor () -> DexSummary?
+    @ObservationIgnored private let trades: TradeSync?
+    @ObservationIgnored private var tradesUnsupported = false
     @ObservationIgnored private var lastAttemptAt: Date?
     @ObservationIgnored private var lastAttemptBody: Data?
     @ObservationIgnored private var loop: Task<Void, Never>?
@@ -163,13 +175,17 @@ final class PartyUploader {
          appVersion: String? = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
          exchange: @escaping Exchange = PartyUploader.urlSessionExchange,
          fetch: @escaping Fetch = PartyUploader.urlSessionFetch,
-         partySource: @escaping @MainActor () -> [PartyMember]) {
+         partySource: @escaping @MainActor () -> [PartyMember],
+         dexSource: @escaping @MainActor () -> DexSummary? = { nil },
+         trades: TradeSync? = nil) {
+        self.trades = trades
         self.tokenStore = tokenStore
         self.defaults = defaults
         self.appVersion = appVersion
         self.exchange = exchange
         self.fetch = fetch
         self.partySource = partySource
+        self.dexSource = dexSource
         hasToken = tokenStore.load() != nil
         serverURL = defaults.string(forKey: Self.serverURLDefaultsKey) ?? ""
         lastSuccessAt = hasToken ? defaults.object(forKey: Self.lastSuccessDefaultsKey) as? Date : nil
@@ -229,9 +245,15 @@ final class PartyUploader {
 
     func tick(now: Date = Date()) async {
         guard let token = tokenStore.load() else { return }
+        await uploadParty(token: token, now: now)
+        await syncTrades(token: token)
+    }
+
+    private func uploadParty(token: String, now: Date) async {
         let party = partySource()
         guard !party.isEmpty,
-              let body = try? PartyPayload(appVersion: appVersion, party: party).encoded(),
+              let body = try? PartyPayload(appVersion: appVersion, party: party, dex: dexSource())
+                  .encoded(tradePool: trades?.pool()),
               Self.shouldSend(body: body, lastBody: lastAttemptBody, lastAttemptAt: lastAttemptAt, now: now),
               let request = Self.request(serverURL: serverURL, token: token, body: body)
         else { return }
@@ -263,9 +285,60 @@ final class PartyUploader {
         return try? LearnableMoves.decode(data)
     }
 
+    /// Applies the trades the bot completed and acknowledges them. A bot without trades answers 404 and
+    /// is left alone until the token or server changes.
+    private func syncTrades(token: String) async {
+        guard let trades, !tokenRejected, !tradesUnsupported,
+              let request = Self.tradesRequest(serverURL: serverURL, token: token),
+              let (data, status) = try? await fetch(request)
+        else { return }
+        if status == 404 { tradesUnsupported = true }
+        guard status == 200 else { return }
+        let deliveries = TradeSyncReply.decode(data).deliveries
+        guard !deliveries.isEmpty else { return }
+        let settled = trades.apply(deliveries)
+        guard !settled.isEmpty,
+              let ack = Self.ackRequest(serverURL: serverURL, token: token, tradeIDs: settled) else { return }
+        _ = try? await fetch(ack)   // A lost acknowledgement only makes the bot send it again; the store skips it.
+    }
+
+    /// Nil when the bot cannot be reached or is too old to trade.
+    func coworkers() async -> [TradeCoworker]? {
+        guard let token = tokenStore.load(),
+              let request = Self.coworkersRequest(serverURL: serverURL, token: token),
+              let (data, status) = try? await fetch(request), status == 200
+        else { return nil }
+        struct Reply: Decodable { let coworkers: [TradeCoworker] }
+        return (try? JSONDecoder().decode(Reply.self, from: data))?.coworkers
+    }
+
+    enum TradeProposal: Equatable, Sendable {
+        case sent
+        /// The bot said no; the text is its short reason.
+        case refused(String)
+        case failed
+    }
+
+    /// Uploads the current pool first, so the offer is checked against what the app holds now.
+    func proposeTrade(to coworkerID: String, give individualID: String) async -> TradeProposal {
+        guard let token = tokenStore.load() else { return .failed }
+        resetThrottle()
+        await uploadParty(token: token, now: Date())
+        guard let request = Self.proposeRequest(serverURL: serverURL, token: token, to: coworkerID, give: individualID),
+              let (data, status) = try? await fetch(request)
+        else { return .failed }
+        if status == 200 { return .sent }
+        struct Refusal: Decodable { let message: String? }
+        if status == 400, let message = (try? JSONDecoder().decode(Refusal.self, from: data))?.message, !message.isEmpty {
+            return .refused(message)
+        }
+        return .failed
+    }
+
     private func resetThrottle() {
         lastAttemptAt = nil
         lastAttemptBody = nil
+        tradesUnsupported = false
     }
 
     nonisolated static func shouldSend(body: Data, lastBody: Data?, lastAttemptAt: Date?, now: Date) -> Bool {
@@ -288,6 +361,40 @@ final class PartyUploader {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.httpBody = body
+        return request
+    }
+
+    nonisolated static func tradesRequest(serverURL: String, token: String) -> URLRequest? {
+        get(serverURL: serverURL, token: token, path: "v1/trades")
+    }
+
+    nonisolated static func coworkersRequest(serverURL: String, token: String) -> URLRequest? {
+        get(serverURL: serverURL, token: token, path: "v1/coworkers")
+    }
+
+    nonisolated static func ackRequest(serverURL: String, token: String, tradeIDs: [String]) -> URLRequest? {
+        post(serverURL: serverURL, token: token, path: "v1/trades/ack", body: ["trade_ids": tradeIDs])
+    }
+
+    nonisolated static func proposeRequest(serverURL: String, token: String, to: String, give: String) -> URLRequest? {
+        post(serverURL: serverURL, token: token, path: "v1/trades", body: ["to": to, "give": give])
+    }
+
+    private nonisolated static func get(serverURL: String, token: String, path: String) -> URLRequest? {
+        guard let base = baseURL(serverURL) else { return nil }
+        var request = URLRequest(url: base.appending(path: path), timeoutInterval: 5)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return request
+    }
+
+    private nonisolated static func post(serverURL: String, token: String, path: String,
+                                         body: [String: Any]) -> URLRequest? {
+        guard let base = baseURL(serverURL), let data = try? JSONSerialization.data(withJSONObject: body) else { return nil }
+        var request = URLRequest(url: base.appending(path: path), timeoutInterval: 10)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = data
         return request
     }
 

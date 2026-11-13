@@ -60,13 +60,15 @@ struct SpriteSubject: Equatable {
     var loadedForm: PokemonForm? = nil
     /// True when `image` was requested as the back sprite (it may still be the front one if no back exists).
     var loadedBack = false
+    /// True when `image` was requested as the female sprite (it may still be the default one if none exists).
+    var loadedFemale = false
 
     /// Keep the cached pixels and their identity together, including when a pending load is cancelled.
     func startingLoad(cachedImage: NSImage?, for id: Int, shiny: Bool, form: PokemonForm?,
-                      back: Bool = false) -> SpriteSubject {
+                      back: Bool = false, female: Bool = false) -> SpriteSubject {
         SpriteSubject(image: cachedImage, loadedID: cachedImage == nil ? nil : id,
                       loadedShiny: shiny, loadedForm: PokemonForm.resolved(speciesID: id, form: form),
-                      loadedBack: back)
+                      loadedBack: back, loadedFemale: female)
     }
 
     /// 주체가 알로 바뀌었다(졸업·새 알). 이전 **개체**의 이미지는 다른 주체의 픽셀이라 버린다.
@@ -83,10 +85,11 @@ struct SpriteSubject: Equatable {
     /// "이미 로드됨"으로 판단해 🥚 글리프가 고정된다.
     /// (nil 로 돌려주는 이유: 같은 값을 되쓰면 @State 무효화가 한 번 더 돌아 항상 떠 있는 펫에 불필요한 재렌더가 생긴다.)
     func applyingLoad(_ image: NSImage?, for id: Int, cancelled: Bool,
-                      shiny: Bool = false, form: PokemonForm? = nil, back: Bool = false) -> SpriteSubject? {
+                      shiny: Bool = false, form: PokemonForm? = nil, back: Bool = false,
+                      female: Bool = false) -> SpriteSubject? {
         cancelled ? nil : SpriteSubject(image: image, loadedID: id, loadedShiny: shiny,
                                         loadedForm: PokemonForm.resolved(speciesID: id, form: form),
-                                        loadedBack: back)
+                                        loadedBack: back, loadedFemale: female)
     }
 
     /// 로드된 알 스프라이트를 반영한 결과(같은 이유로 취소면 nil). 알은 종이 없으므로 loadedID 는 그대로.
@@ -117,6 +120,8 @@ struct SpriteView: View {
     var form: PokemonForm? = nil
     /// Show the back sprite (the companion turned away); missing back sprites fall back to the front one.
     var back: Bool = false
+    /// A female individual uses the female sprite where the species has one; otherwise the default.
+    var female: Bool = false
     /// Emit `SpriteVisibleTopKey` so an overlay can sit on the visible sprite instead of its box.
     var reportsVisibleTop = false
     private let spriteStore: SpriteStore
@@ -127,12 +132,13 @@ struct SpriteView: View {
 
     init(speciesID: Int?, size: CGFloat = 84, bob: Bool = false, animated: Bool = false,
          shiny: Bool = false, minFrameDelay: TimeInterval = 0, spriteStore: SpriteStore = .shared,
-         form: PokemonForm? = nil, back: Bool = false,
+         form: PokemonForm? = nil, back: Bool = false, female: Bool = false,
          reportsVisibleTop: Bool = false) {
         self.reportsVisibleTop = reportsVisibleTop
         self.speciesID = speciesID
         self.spriteStore = spriteStore
         self.back = back
+        self.female = female
         self.size = size
         self.bob = bob
         self.animated = animated
@@ -143,16 +149,17 @@ struct SpriteView: View {
         // speciesID==nil(알 상태)이면 알 스프라이트를 시드(없으면 body 가 🥚 폴백).
         let resolvedForm = speciesID.flatMap { PokemonForm.resolved(speciesID: $0, form: form) }
         let cached = speciesID.map { SpriteLoader.cachedImage(speciesID: $0, shiny: shiny, directory: spriteStore.directory,
-                                                            form: resolvedForm, back: back) } ?? SpriteLoader.cachedEggImage()
+                                                            form: resolvedForm, back: back,
+                                                            female: female) } ?? SpriteLoader.cachedEggImage()
         let cachedFrames = animated ? speciesID.map {
             SpriteLoader.cachedFrames(speciesID: $0, shiny: shiny, directory: spriteStore.directory,
-                                      form: resolvedForm, back: back)
+                                      form: resolvedForm, back: back, female: female)
         } ?? [] : []
         _frames = State(initialValue: GIFDecoder.capFrameRate(cachedFrames, floor: minFrameDelay))
         _subject = State(initialValue: SpriteSubject(image: cached,
                                                     loadedID: (speciesID != nil && cached != nil) ? speciesID : nil,
                                                     loadedShiny: shiny, loadedForm: resolvedForm,
-                                                    loadedBack: back))
+                                                    loadedBack: back, loadedFemale: female))
     }
 
     private var resolvedForm: PokemonForm? {
@@ -163,10 +170,10 @@ struct SpriteView: View {
     /// 프레임은 하한에 맞춰 솎아낸 결과물이라, 빠지면 fps 설정 변경이 종 교체까지 안 먹는다
     /// (`AppDelegate.menuSpriteKey` 와 같은 이유). 순수·테스트용.
     static func frameTaskID(speciesID: Int?, shiny: Bool, floor: TimeInterval, animated: Bool = true,
-                            form: PokemonForm? = nil, back: Bool = false) -> String {
+                            form: PokemonForm? = nil, back: Bool = false, female: Bool = false) -> String {
         let resolved = speciesID.flatMap { PokemonForm.resolved(speciesID: $0, form: form) }
         let id = "\(speciesID.map(String.init) ?? "nil")-\(shiny)-\(floor)-\(animated)-\(resolved?.rawValue ?? "")"
-        return back ? id + "-back" : id
+        return (back ? id + "-back" : id) + (female ? "-female" : "")
     }
 
     /// 디코드된 GIF 프레임 중 실제로 재생할 것 — 취소됐거나 2프레임 미만이면 빈 배열(정적 폴백).
@@ -185,9 +192,9 @@ struct SpriteView: View {
     }
     private func loadStaticImage(for id: Int) async {
         let loaded = await SpriteLoader.image(speciesID: id, animated: false, shiny: shiny, store: spriteStore,
-                                              form: resolvedForm, back: back)
+                                              form: resolvedForm, back: back, female: female)
         if let next = subject.applyingLoad(loaded, for: id, cancelled: Task.isCancelled,
-                                           shiny: shiny, form: resolvedForm, back: back) {
+                                           shiny: shiny, form: resolvedForm, back: back, female: female) {
             apply(next)
         }
     }
@@ -197,8 +204,9 @@ struct SpriteView: View {
     /// .task 가 다시 돌아도 "이미 그 종을 로드했다"로 판정해 색이 안 바뀌는 회귀를 낳았다.
     static func needsReload(loadedID: Int?, loadedShiny: Bool, id: Int, shiny: Bool,
                             loadedForm: PokemonForm? = nil, form: PokemonForm? = nil,
-                            loadedBack: Bool = false, back: Bool = false) -> Bool {
-        loadedID != id || loadedShiny != shiny || loadedBack != back
+                            loadedBack: Bool = false, back: Bool = false,
+                            loadedFemale: Bool = false, female: Bool = false) -> Bool {
+        loadedID != id || loadedShiny != shiny || loadedBack != back || loadedFemale != female
             || PokemonForm.resolved(speciesID: id, form: loadedForm)
                 != PokemonForm.resolved(speciesID: id, form: form)
     }
@@ -244,11 +252,11 @@ struct SpriteView: View {
         // GIF 재생 중엔 bob 정지(프레임 자체가 움직임) — 폴백/정적일 때만 상하 움직임
         .offset(y: bob && frames.isEmpty && up ? -3 : 0)
         .task(id: Self.frameTaskID(speciesID: speciesID, shiny: shiny, floor: minFrameDelay,
-                                  animated: animated, form: resolvedForm, back: back)) {
+                                  animated: animated, form: resolvedForm, back: back, female: female)) {
             // animated 프레임은 id/shiny 변경 시 항상 초기화(이전 개체 프레임 잔상 방지)
             frames = animated ? GIFDecoder.capFrameRate(
                 speciesID.map { SpriteLoader.cachedFrames(speciesID: $0, shiny: shiny, directory: spriteStore.directory,
-                                                          form: resolvedForm, back: back) } ?? [],
+                                                          form: resolvedForm, back: back, female: female) } ?? [],
                 floor: minFrameDelay) : []
             frameIndex = 0
             guard let id = speciesID else {
@@ -265,16 +273,18 @@ struct SpriteView: View {
             // Drop the previous form before any await; cached pixels and metadata change atomically.
             let reloadNeeded = Self.needsReload(loadedID: subject.loadedID, loadedShiny: subject.loadedShiny,
                                                 id: id, shiny: shiny, loadedForm: subject.loadedForm,
-                                                form: resolvedForm, loadedBack: subject.loadedBack, back: back)
+                                                form: resolvedForm, loadedBack: subject.loadedBack, back: back,
+                                                loadedFemale: subject.loadedFemale, female: female)
             if reloadNeeded {
                 let cached = SpriteLoader.cachedImage(speciesID: id, shiny: shiny, directory: spriteStore.directory,
-                                                       form: resolvedForm, back: back)
-                apply(subject.startingLoad(cachedImage: cached, for: id, shiny: shiny, form: resolvedForm, back: back))
+                                                       form: resolvedForm, back: back, female: female)
+                apply(subject.startingLoad(cachedImage: cached, for: id, shiny: shiny, form: resolvedForm,
+                                           back: back, female: female))
             }
             // Request animation before a missing static PNG can hold playback behind a network fetch.
             if animated && frames.isEmpty {
                 let decoded = await SpriteLoader.recoveringAnimationFrames(
-                    speciesID: id, shiny: shiny, store: spriteStore, form: resolvedForm, back: back,
+                    speciesID: id, shiny: shiny, store: spriteStore, form: resolvedForm, back: back, female: female,
                     onUnavailable: { await loadStaticImage(for: id) })
                 guard !Task.isCancelled else { return }
                 frames = GIFDecoder.capFrameRate(Self.framesToApply(decoded, cancelled: false), floor: minFrameDelay)
@@ -318,6 +328,7 @@ struct EvoLineView: View {
     var language: AppLanguage = .systemDefault
     var thumb: CGFloat = 40
     var shiny: Bool = false     // 개체가 shiny 면 라인 전체를 shiny 스프라이트로
+    var female: Bool = false    // 암컷 개체면 라인의 암컷 스프라이트가 있는 종은 그것으로
     var names: [Int: String]? = nil   // 제공되면 각 스프라이트 밑에 작은 이름 라벨(도감 단계별 이름)
     /// 한 줄이 쓸 수 있는 가로 폭. 기본 .infinity = 제한 없음(스크롤 없이 나열).
     var maxWidth: CGFloat = .infinity
@@ -512,7 +523,8 @@ struct EvoLineView: View {
                     Group {
                         switch node.content {
                         case .species(let id):
-                            SpriteView(speciesID: id, size: thumb, shiny: shiny, spriteStore: spriteStore, form: form)
+                            SpriteView(speciesID: id, size: thumb, shiny: shiny, spriteStore: spriteStore, form: form,
+                                       female: female)
                         case .mystery:
                             Text("?")
                                 .font(.system(size: thumb * 0.55, weight: .bold, design: .rounded))
@@ -706,6 +718,9 @@ struct CompanionHeader: View {
     // 민트 사용 시 "반짝" 스파클 (성격 변경 피드백 — 텍스트 없이 짧은 이펙트)
     @State private var seenMintSeq = -1
     @State private var mintSparkle = false
+    /// Friends beside the sprite react to clicks and to hatch / evolution; one timer, only while Home is mounted.
+    @State private var crowd = PetCrowd()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Hover tooltip for the growth bars: "X / Y · Z%". Used is clamped to total (egg usage can
     /// overshoot while a hatch retry is pending) and the percent floors, so 100% means done.
@@ -722,7 +737,8 @@ struct CompanionHeader: View {
     private var bigSprite: some View {
         SpriteView(speciesID: store.currentSpeciesID, size: 76, bob: true, animated: true,
                    shiny: store.currentIsShiny, spriteStore: spriteStore, form: store.currentForm,
-                   back: store.facesBack)
+                   back: store.facesBack, female: store.currentIsFemale)
+            .crowdMember(crowd, slot: 0, size: 76)
             .frame(width: 76, height: 76)
             .background(Color.secondary.opacity(0.06))
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -772,7 +788,11 @@ struct CompanionHeader: View {
         let dexLinks = onOpenDexEntry == nil ? [:] : store.dexLinkTargets
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: 12) {
-                bigSprite
+                bigSprite.overlay(alignment: .bottom) {
+                    // Straddles the tile's bottom edge so the header keeps its height with or without friends.
+                    FriendSlotsRow(store: store, crowd: crowd, spriteStore: spriteStore, cryPlayer: cryPlayer)
+                        .offset(y: FriendSlotsRow.slotSize / 2 + 2)
+                }
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(store.displayName).font(.callout.weight(.semibold))
@@ -793,7 +813,8 @@ struct CompanionHeader: View {
                         // 단계 + 성격(부화 시 확정된 개체 아이덴티티)
                         let nature = store.currentNature.map { " · \($0.name(store.language))" } ?? ""
                         HStack(spacing: 5) {
-                            Text(store.stageText + nature).font(.caption2).foregroundStyle(.secondary)
+                            (Text(store.stageText + nature) + GenderGlyph.text(store.currentGender, leadingSpace: true))
+                                .font(.caption2).foregroundStyle(.secondary)
                             if let multiplier = store.growthMultiplier {
                                 Badge(store.l.growthBoost(multiplier), tint: .orange, style: .tinted)
                                     .fixedSize()
@@ -845,7 +866,7 @@ struct CompanionHeader: View {
             if store.hasActive, !store.lineNodes.isEmpty {
                 // 폭을 안 주면 분기 라인(이브이)이 넘쳐 팝오버 콘텐츠 전체가 좌우로 잘린다.
                 EvoLineView(nodes: store.lineNodes, mysteryLabel: store.l.unknownNextEvolution,
-                            language: store.language, shiny: store.currentIsShiny,
+                            language: store.language, thumb: 30, shiny: store.currentIsShiny, female: store.currentIsFemale,
                             maxWidth: PopoverMetrics.scrollContentWidth, form: store.currentForm,
                             dexLinks: dexLinks, onOpenDexEntry: onOpenDexEntry, spriteStore: spriteStore)
             }
@@ -864,7 +885,12 @@ struct CompanionHeader: View {
             showCandyXPIfNeeded()
             showMintIfNeeded()
             syncEggWiggle()
+            configureCrowd()
         }
+        .onDisappear { crowd.stop() }
+        .onChange(of: store.friendSubjects) { configureCrowd() }
+        .onChange(of: reduceMotion) { configureCrowd() }
+        .onChange(of: store.cheerSeq) { crowd.cheer() }
         .onChange(of: store.celebrationSeq) { playCelebrationIfNeeded() }
         .onChange(of: store.candyFeedbackSeq) { showCandyXPIfNeeded() }
         .onChange(of: store.mintFeedbackSeq) { showMintIfNeeded() }
@@ -912,8 +938,19 @@ struct CompanionHeader: View {
         flashXP(amount)
     }
 
+    private func configureCrowd() {
+        let order: [Int]
+        switch store.friendSubjects.count {
+        case 0: order = [0]
+        case 1: order = [1, 0]
+        default: order = [1, 0, 2]
+        }
+        crowd.configure(order: order, motionAllowed: !reduceMotion, active: true)
+    }
+
     /// A press always bounces the sprite; only a counted click shows "+XP".
     private func pet() {
+        crowd.clicked(slot: 0)
         celebScale = 0.9
         withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) { celebScale = 1 }
         cryPlayer.play(speciesID: store.currentSpeciesID, form: store.currentForm)
@@ -1001,6 +1038,7 @@ struct RegionTally: View {
     let label: String
     let completion: DexCompletion
     var isSelected: Bool = false
+    var isRewarded: Bool = false
     private var accent: Color { completion.isComplete ? .green : .secondary }
     var body: some View {
         HStack(spacing: 3) {
@@ -1013,6 +1051,10 @@ struct RegionTally: View {
             Text("\(completion.owned)/\(completion.total)")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(completion.isComplete ? accent : .secondary)
+            if isRewarded {
+                Image(systemName: "gift.fill").font(.system(size: 8)).foregroundStyle(.orange)
+                    .accessibilityHidden(true)
+            }
             if isSelected {
                 Image(systemName: "checkmark").font(.system(size: 9, weight: .bold)).foregroundStyle(accent)
             }
@@ -1565,7 +1607,7 @@ private struct ScrollWheelPager: NSViewRepresentable {
 
 /// 도감 — 보유 종만 도감 번호순으로, 한 페이지 16칸(4열×4행) 고정 격자.
 @MainActor
-private struct DexGridView: View {
+struct DexGridView: View {
     let store: CompanionStore
     let searchText: String
     let shinyOnly: Bool
@@ -1737,12 +1779,14 @@ private struct DexGridView: View {
                     } label: {
                         RegionTally(label: store.l.regionName(completion.region),
                                     completion: completion,
-                                    isSelected: selectedRegion == completion.region)
+                                    isSelected: selectedRegion == completion.region,
+                                    isRewarded: store.isDexRegionRewarded(completion.region))
                     }
                     .buttonStyle(.plain)
                     .disabled(completion.owned == 0 && !searchesUnowned)
                     .help(store.l.dexRegionProgressLabel(completion.region,
-                                                         owned: completion.owned, total: completion.total))
+                                                         owned: completion.owned, total: completion.total)
+                          + (store.isDexRegionRewarded(completion.region) ? " · " + store.l.dexRegionRewardedHelp : ""))
                 }
             }
             .fixedSize(horizontal: true, vertical: false)
@@ -1857,6 +1901,8 @@ struct PokemonDetailView: View {
     private let flavorProvider: SpeciesFlavorProviding
     @Environment(BattleEntryStore.self) private var battleEntry: BattleEntryStore?
     @Environment(PartyUploader.self) private var uploader: PartyUploader?
+    @Environment(PopoverNavigation.self) private var navigation: PopoverNavigation?
+    @State private var cordMessage: String?
     @State private var selectedInstanceID = ""
     @State private var selectedForm: PokemonForm?
     @State private var selectedShiny: Bool?
@@ -2013,11 +2059,13 @@ struct PokemonDetailView: View {
         let species = displayedSpecies
         return HStack(spacing: 14) {
             SpriteView(speciesID: species.id, size: 104, animated: true,
-                       shiny: displayedShiny, spriteStore: spriteStore, form: species.form)
+                       shiny: displayedShiny, spriteStore: spriteStore, form: species.form,
+                       female: individual?.profile?.gender == .female)
                 .frame(width: 104, height: 104)
             VStack(alignment: .leading, spacing: 5) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text(species.name).font(.title3.weight(.bold))
+                    (Text(species.name) + GenderGlyph.text(individual?.profile?.gender, leadingSpace: true))
+                        .font(.title3.weight(.bold))
                     Spacer(minLength: 8)
                     Text(store.l.rarityLabel(species.rarity))
                         .font(.callout.weight(.semibold)).foregroundStyle(.secondary)
@@ -2044,27 +2092,75 @@ struct PokemonDetailView: View {
                         battleButton(for: individual, battleEntry)
                     }
                 }
+                if let individual { tradeControls(for: individual) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    /// Sets the battle pick of the shown individual. The representative and the Pokémon being raised
-    /// stay as they are.
+    /// Fills the first free battle slot with the shown individual. The representative and the Pokémon
+    /// being raised stay as they are.
     private func battleButton(for individual: DexEntry, _ battleEntry: BattleEntryStore) -> some View {
         let fighting = battleEntry.isFighting(individual, in: store)
+        let full = !fighting && battleEntry.isFull(in: store)
         return Button {
             if battleEntry.sendToBattle(individual, in: store) {
                 Task { await uploader?.tick() }
             }
         } label: {
-            Label(fighting ? store.l.battleFighting : store.l.battleSendToBattle,
-                  systemImage: fighting ? "checkmark" : "bolt.fill")
+            Label(fighting ? store.l.battleFighting : full ? store.l.battleSlotsFull : store.l.battleSendToBattle,
+                  systemImage: fighting ? "checkmark" : full ? "person.3.fill" : "bolt.fill")
         }
         .buttonStyle(.bordered)
         .controlSize(.mini)
         .fixedSize()
-        .disabled(fighting)
+        .disabled(fighting || full)
+    }
+
+    /// The trade offer and Linking Cord buttons of an owned individual, with the reason when it can't go.
+    @ViewBuilder
+    private func tradeControls(for individual: DexEntry) -> some View {
+        let fightingIDs = battleEntry.map { TradePool.fightingIDs(state: store.state, slots: $0.slots) } ?? []
+        let refusal = store.tradeRefusal(for: individual, fightingIDs: fightingIDs)
+        let owned = individual.releasedAt == nil && individual.profile != nil && !store.isActiveDexEntry(individual)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                if let navigation, let uploader, uploader.hasToken, uploader.hasServer, refusal != .unavailable {
+                    Button {
+                        navigation.openTradeOffer(giving: individual.id)
+                    } label: {
+                        Label(store.l.tradeOfferButton, systemImage: "arrow.left.arrow.right")
+                    }
+                    .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                    .disabled(refusal != nil)
+                }
+                if owned, store.itemCount(.linkingCord) > 0 {
+                    Button {
+                        Task { await useLinkingCord(on: individual) }
+                    } label: {
+                        Label(store.l.linkingCordUse, systemImage: "link")
+                    }
+                    .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                }
+            }
+            if let refusal, refusal == .raising || refusal == .fighting, uploader?.hasToken == true {
+                Text(store.l.tradeRefusalText(refusal)).font(.caption2).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let cordMessage {
+                Text(cordMessage).font(.caption2).foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func useLinkingCord(on individual: DexEntry) async {
+        cordMessage = nil
+        switch await store.useLinkingCord(on: individual.id) {
+        case .evolved: onBack()   // This page lists the old species; the popover banner shows the result.
+        case .wrongTarget: cordMessage = store.l.linkingCordWrongTarget(displayedSpecies.name)
+        case .unavailable: cordMessage = store.l.linkingCordUnavailable
+        }
     }
 
     private var appearancePicker: some View {
@@ -2103,6 +2199,12 @@ struct PokemonDetailView: View {
                 valuePair(store.l.level, "\(profile.level)")
                 valuePair(store.l.gender, store.l.genderLabel(profile.gender))
                 valuePair(store.l.nature, entry.nature?.name(store.language) ?? "—")
+            }
+            if let trainer = entry.originalTrainer {
+                Text(store.l.originalTrainerLine(trainer)).font(.caption).foregroundStyle(.secondary)
+            }
+            if let partner = entry.tradedTo {
+                Text(store.l.tradedAwayLine(partner)).font(.caption).foregroundStyle(.secondary)
             }
             if let prayers = entry.prayers, prayers.count > 0 {
                 VStack(alignment: .leading, spacing: 2) {
@@ -2275,7 +2377,8 @@ struct DexSpeciesCell: View {
                 // 이로치를 잡은 종은 이로치 스프라이트로 표시한다(상세 화면에서 일반/이로치 모습 전환 가능).
                 // 폼이 있는 종의 아이콘은 기본 폼 일반색으로 유지하고, 폼별 색은 상세 화면에서 보여준다.
                 SpriteView(speciesID: species.id, size: Self.thumb,
-                           shiny: formCount == nil && species.isShiny, form: species.form)
+                           shiny: formCount == nil && species.isShiny, form: species.form,
+                           female: species.isFemale)
                     .frame(width: Self.thumb, height: Self.thumb)
                     .opacity(species.isOwned || isScoutPick ? 1 : 0.4)
                     .saturation(species.isOwned || isScoutPick ? 1 : 0.3)
@@ -2446,14 +2549,15 @@ private struct DexEntryRow: View {
                         .accessibilityLabel(store.l.dexShinyLabel)
                 }
                 Spacer()
-                if let nature = entry.nature {
-                    Text(nature.name(store.language))
+                if entry.nature != nil || entry.profile?.gender?.symbol != nil {
+                    (GenderGlyph.text(entry.profile?.gender)
+                        + Text(entry.nature.map { (entry.profile?.gender?.symbol == nil ? "" : " ") + $0.name(store.language) } ?? ""))
                         .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
             }
             EvoLineView(nodes: entry.chainOrder.map { EvoLineItem(.species($0), .done) },
                         mysteryLabel: store.l.unknownNextEvolution, language: store.language, thumb: 68,
-                        shiny: entry.isShiny, names: names,
+                        shiny: entry.isShiny, female: entry.profile?.gender == .female, names: names,
                         maxWidth: PopoverMetrics.scrollContentWidth - Self.cardPadding * 2, form: entry.form,
                         nameFontSize: 11, nameLineLimit: 2, nameMinimumScaleFactor: 1,
                         dexLinks: dexLinks, onOpenDexEntry: onOpenDexEntry)

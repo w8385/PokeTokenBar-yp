@@ -1,9 +1,12 @@
+from dataclasses import replace
+
 import pytest
 
 from ypoke.battle import (
-    Action, BaseStats, BattleResult, Change, Combatant, Move, StatusDamage, WeatherDamage, WeatherEnd, simulate,
+    AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, Move, SendOut, StatusDamage,
+    WeatherDamage, WeatherEnd, simulate,
 )
-from ypoke.narration import MAX_EVENT_LINES, PRACTICE_NOTE, SKIPPED_LINE, battle_lines, with_particle
+from ypoke.narration import MAX_EVENT_LINES, MAX_LOG_CHARS, PRACTICE_NOTE, SKIPPED_LINE, battle_lines, with_particle
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
 THUNDERBOLT = Move("10만볼트", "electric", 90, physical=False, accuracy=100, ailment="paralysis", ailment_chance=10)
@@ -148,3 +151,70 @@ def test_long_status_battles_still_collapse_the_middle_turns():
     assert len(lines) == 3 + MAX_EVENT_LINES + 1 + 1
     assert lines[3 + MAX_EVENT_LINES // 2] == SKIPPED_LINE
     assert lines[3].endswith("쿨쿨 잠들어 있다!") and lines[-2].startswith("19턴 ")
+
+
+def test_an_entry_ability_is_narrated_without_a_turn_number():
+    intimidate = AbilityTrigger(0, "피카츄", "intimidate", change=Change(1, "꼬부기", "attack", -1))
+    drizzle = AbilityTrigger(1, "꼬부기", "drizzle", weather="rain")
+    assert lines_for(intimidate, drizzle)[3:5] == [
+        "🔵 피카츄의 위협! 꼬부기의 공격이 떨어졌다!",
+        "🔴 꼬부기의 잔비! 비가 내리기 시작했다!",
+    ]
+
+
+def test_levitate_and_sturdy_are_narrated_inside_the_move_line():
+    dodged = act(1, 0, "지진", multiplier=0, ability="levitate", defender_hp=100)
+    held = act(2, 0, "지진", ability="sturdy", defender_hp=1)
+    assert lines_for(dodged)[3] == "1턴 🔵 피카츄의 지진! 꼬부기의 부유! 땅 타입 기술이 맞지 않는다!"
+    assert lines_for(held)[3] == "2턴 🔵 피카츄의 지진! 꼬부기의 옹골참! 간신히 버텼다! (꼬부기 HP 1%)"
+
+
+def test_a_battle_with_abilities_narrates_every_event():
+    sides = (replace(mon("피카츄", ["electric"], moves=[THUNDERBOLT]), ability="drizzle"),
+             replace(mon("꼬부기", ["water"], moves=[WATER_GUN]), ability="intimidate"))
+    lines = battle_lines(TRAINERS, sides, simulate(sides, 4))
+    assert set(lines[3:5]) == {"🔴 꼬부기의 위협! 피카츄의 공격이 떨어졌다!", "🔵 피카츄의 잔비! 비가 내리기 시작했다!"}
+
+
+def test_a_status_ability_is_narrated_inside_the_move_line():
+    shocked = act(1, 0, "몸통박치기", ability="static", changes=(Change(0, "피카츄", "paralysis"),), defender_hp=70)
+    blocked = act(2, 0, "10만볼트", ability="limber", defender_hp=70)
+    assert lines_for(shocked)[3] == (
+        "1턴 🔵 피카츄의 몸통박치기! 꼬부기의 정전기! 피카츄는 마비되어 기술이 나오기 어려워졌다! (꼬부기 HP 70%)"
+    )
+    assert lines_for(blocked)[3] == "2턴 🔵 피카츄의 10만볼트! 꼬부기의 유연! 마비되지 않는다! (꼬부기 HP 70%)"
+
+
+def test_a_send_out_line_names_the_incoming_pokemon():
+    lines = battle_lines(TRAINERS, ((mon("피카츄"), mon("이상해씨")), (mon("꼬부기"),)),
+                         BattleResult(1, 2, [SendOut(2, 0, "이상해씨")]))
+    assert lines[3:5] == ["🔵 피카츄 → 이상해씨", "2턴 🔵 가라, 이상해씨!"]
+
+
+def test_a_long_three_on_three_log_keeps_every_send_out_and_faint_and_the_win_line_within_the_limit():
+    events = long_events(40)
+    events.insert(10, SendOut(10, 0, "이상해씨"))
+    events.insert(20, Action(20, 1, "꼬부기", "이상해씨", "물대포", knockout=True, defender_hp=0))
+    events.insert(21, SendOut(20, 0, "리자몽"))
+    events.insert(30, StatusDamage(30, 1, "꼬부기", 0, True, "burn"))
+    events.insert(31, SendOut(30, 1, "거북왕"))
+    team = (mon("피카츄"), mon("이상해씨"), mon("리자몽")), (mon("꼬부기"), mon("거북왕"), mon("어니부기"))
+    lines = battle_lines(TRAINERS, team, BattleResult(0, 40, events))
+    assert len("\n".join(lines)) <= MAX_LOG_CHARS
+    assert lines[-1] == "<@UA>은(는) 승부에서 이겼다!"
+    assert {"10턴 🔵 가라, 이상해씨!", "20턴 🔵 가라, 리자몽!", "30턴 🔴 가라, 거북왕!"} <= set(lines)
+    assert any("이상해씨는 쓰러졌다!" in line for line in lines)
+    assert any("꼬부기는 쓰러졌다!" in line for line in lines)
+    assert SKIPPED_LINE in lines
+
+
+def test_long_lines_shrink_the_kept_ends_until_the_log_fits():
+    long_name = "아주아주긴이름의포켓몬" * 3
+    events = [Action(turn, 0, long_name, "꼬부기", "아주아주긴이름의기술" * 4, defender_hp=1) for turn in range(1, 80)]
+    lines = battle_lines(TRAINERS, (mon("피카츄"), mon("꼬부기")), BattleResult(0, 79, events))
+    assert len("\n".join(lines)) <= MAX_LOG_CHARS
+    assert lines[-1] == "<@UA>은(는) 승부에서 이겼다!"
+
+
+def long_events(turns):
+    return [Action(turn, turn % 2, "피카츄", "꼬부기", "10만볼트", defender_hp=50) for turn in range(1, turns + 1)]

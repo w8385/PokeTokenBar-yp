@@ -18,6 +18,10 @@ final class CompanionStore {
     var facesBack: Bool { state.active != nil && (alwaysFacesBack || displayState == .sulk) }
     private(set) var currentLine: EvoLine?
     private(set) var representativeSubject = RepresentativeSubject(speciesID: nil, isShiny: false)
+    /// Graduated Pokémon shown beside the active one. Display only: no growth, stats or save effect beyond the pick.
+    private(set) var friendSubjects: [FriendSubject] = []
+    /// Bumped when the active Pokémon hatches, evolves, graduates or reveals as Ditto; friends cheer on a change.
+    private(set) var cheerSeq = 0
     private(set) var isHatching = false
     private var isRevealingDitto = false   // 메타몽 리빌 비동기 중복 방지(isHatching 자매)
     private(set) var justEvolvedTo: String?     // 이름(연출/문구)
@@ -28,7 +32,7 @@ final class CompanionStore {
     enum Celebration: Equatable { case hatch(shiny: Bool), evolve, dittoReveal(shiny: Bool) }
     private(set) var celebration: Celebration?
     private(set) var celebrationSeq = 0
-    private func fireCelebration(_ c: Celebration) { celebration = c; celebrationSeq += 1 }
+    private func fireCelebration(_ c: Celebration) { celebration = c; celebrationSeq += 1; cheerSeq += 1 }
     /// 연출 재생 후 UI 가 호출(1회성 보장).
     func consumeCelebration() { celebration = nil }
 
@@ -107,7 +111,12 @@ final class CompanionStore {
         defaults.set(shopDifficulty, forKey: "shopDifficulty")
         migratePokemonProfilesIfNeeded()
         seedDexCompletionsIfNeeded()
+        // A region finished before the reward shipped is paid on the first launch that sees it.
+        if !DexProgress.unrewardedRegions(earned: earnedDexBadges, rewarded: state.rewardedDexRegions).isEmpty {
+            save()
+        }
         refreshRepresentativeSubject()
+        refreshFriendSubjects()
         refreshSnapshots()
         if state.active != nil { displayState = .idle }
     }
@@ -199,6 +208,8 @@ final class CompanionStore {
         currentIsShiny || rarity == .legendary
     }
     var currentNature: PokemonNature? { state.active?.nature }
+    var currentGender: PokemonGender? { state.active?.profile?.gender }
+    var currentIsFemale: Bool { currentGender == .female }
     var growthMultiplier: Int? {
         state.active?.hasGrowthBoost == true ? PokemonBalance.repeatGrowthMultiplier : nil
     }
@@ -209,6 +220,7 @@ final class CompanionStore {
         let speciesID: Int?
         let isShiny: Bool
         var form: PokemonForm? = nil
+        var isFemale = false
     }
 
     var representativeSpeciesID: Int? { state.representativeSpeciesID }
@@ -221,10 +233,11 @@ final class CompanionStore {
         if let selected = state.representativeSpeciesID {
             next = RepresentativeSubject(speciesID: selected,
                 isShiny: state.ownsShinySpecies(selected, form: state.representativeForm),
-                form: PokemonForm.resolved(speciesID: selected, form: state.representativeForm))
+                form: PokemonForm.resolved(speciesID: selected, form: state.representativeForm),
+                isFemale: state.newestIndividualIsFemale(selected, form: state.representativeForm))
         } else {
             next = RepresentativeSubject(speciesID: currentSpeciesID, isShiny: currentIsShiny,
-                                         form: currentForm)
+                                         form: currentForm, isFemale: currentIsFemale)
         }
         if representativeSubject != next { representativeSubject = next }
     }
@@ -238,6 +251,35 @@ final class CompanionStore {
         state.representativeForm = PokemonForm.resolved(speciesID: id ?? 0, form: form)
         save()
         return true
+    }
+
+    // MARK: 동행 포켓몬
+
+    var friendCandidates: [DexEntry] {
+        state.friendCandidates.sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
+    }
+
+    /// Only a graduated entry that is not a friend yet, while a slot is free. Returns false and keeps the picks otherwise.
+    @discardableResult
+    func addFriend(entryID: String) -> Bool {
+        guard state.friendEntryIDs.count < CompanionState.maxFriends,
+              state.friendCandidates.contains(where: { $0.id == entryID }) else { return false }
+        state.friendEntryIDs.append(entryID)
+        save()
+        return true
+    }
+
+    func removeFriend(entryID: String) {
+        guard state.friendEntryIDs.contains(entryID) else { return }
+        state.friendEntryIDs.removeAll { $0 == entryID }
+        save()
+    }
+
+    private func refreshFriendSubjects() {
+        let next = state.friendEntryIDs.compactMap { id in
+            state.dex.first { $0.id == id }.map(FriendSubject.init)
+        }
+        if friendSubjects != next { friendSubjects = next }
     }
 
     func isRepresentative(_ species: DexSpecies) -> Bool {
@@ -271,7 +313,7 @@ final class CompanionStore {
     }
     var isFinalStage: Bool {
         guard let a = state.active, let line = currentLine else { return false }
-        return line.tree.node(withID: a.currentID)?.children.isEmpty ?? true
+        return line.tree.node(withID: a.currentID)?.children(for: a.profile?.gender).isEmpty ?? true
     }
     var stageText: String {
         guard let a = state.active else { return "" }
@@ -305,12 +347,13 @@ final class CompanionStore {
         if let current = line.tree.node(withID: a.currentID) {
             var node = current
             var guaranteedPrefix: [EvoNode] = []
-            while node.children.count == 1, let child = node.children.first {
+            let gender = a.profile?.gender
+            while node.children(for: gender).count == 1, let child = node.children(for: gender).first {
                 guaranteedPrefix.append(child)
                 node = child
             }
 
-            if node.children.count > 1 {
+            if node.children(for: gender).count > 1 {
                 out += guaranteedPrefix.map { EvoLineItem(.species($0.speciesID), .future) }
                 out.append(EvoLineItem(.mystery, .future))
             } else {
@@ -443,6 +486,8 @@ final class CompanionStore {
         var hasNormal = false
         /// False only for species listed from the full index, which the user has not obtained.
         var isOwned = true
+        /// Set only where one individual is shown (the battle picker); species rows stay default.
+        var isFemale = false
 
         /// Species IDs remain Pokédex numbers; selection also includes the form.
         var collectionID: String {
@@ -524,13 +569,44 @@ final class CompanionStore {
     /// Guarded on seeding so pre-feature completions are announced by `seedDexCompletionsIfNeeded`, not here.
     func checkDexCompletions() {
         guard state.dexCompletionsSeeded else { return }
-        let newly = DexProgress.newlyEarnedBadges(earned: earnedDexBadges,
+        let earned = earnedDexBadges
+        let rewarded = grantRegionRewards(earned: earned)
+        let newly = DexProgress.newlyEarnedBadges(earned: earned,
                                                   alreadyNotified: state.notifiedDexCompletions)
         for badge in newly {
+            if case .region(let region) = badge, rewarded.contains(region) {
+                state.notifiedDexCompletions.insert(badge.notificationKey)
+                continue   // the reward notification already announced it
+            }
             let (title, body) = dexCompletionNotification(badge)
             notifyCompanionEvent(title, body)
             state.notifiedDexCompletions.insert(badge.notificationKey)
         }
+    }
+
+    func isDexRegionRewarded(_ region: PokedexRegion) -> Bool {
+        state.rewardedDexRegions.contains(region.rawValue)
+    }
+
+    /// Pay the one-time reward for every completed region not rewarded yet and announce each with the
+    /// completion notification plus the reward. The first region ever rewarded also brings the Shiny Charm
+    /// if it is not owned. Mutates state only; `save()` persists it in the same pass.
+    private func grantRegionRewards(earned: [DexBadge]) -> Set<PokedexRegion> {
+        let regions = DexProgress.unrewardedRegions(earned: earned, rewarded: state.rewardedDexRegions)
+        for region in regions {
+            let isFirst = state.rewardedDexRegions.isEmpty
+            state.rewardedDexRegions.insert(region.rawValue)
+            let count = DexRegionReward.candyCount
+            state.inventory[ItemKind.rareCandy.rawValue, default: 0] += count
+            var items = "\(l.itemName(.rareCandy)) ×\(count)"
+            if isFirst, itemCount(.shinyCharm) == 0 {
+                state.inventory[ItemKind.shinyCharm.rawValue] = 1
+                items += ", \(l.itemName(.shinyCharm))"
+            }
+            notifyCompanionEvent(l.notifDexRegionCompleteTitle(l.regionName(region)),
+                                 l.notifDexRegionRewardBody(l.regionName(region), items: items))
+        }
+        return Set(regions)
     }
 
     /// On first run after this feature ships, record already-earned badges as announced *without*
@@ -1057,15 +1133,16 @@ final class CompanionStore {
                 if !isRevealingDitto { Task { await revealDitto() } }
                 break
             }
-            if node.children.isEmpty {
+            let gender = a.profile?.gender
+            if node.children(for: gender).isEmpty {
                 graduate(); break
             } else {
                 let nextIndex = a.stageIndex + 1
+                let options = node.children(for: gender)
                 let planned = a.plannedPathIDs.indices.contains(nextIndex)
-                    ? node.children.first(where: { $0.speciesID == a.plannedPathIDs[nextIndex] }) : nil
-                let picked = planned ?? pickPlannedChild(node, baseID: a.baseID)
-                let next = EvoNode.resolvingTimeOfDay(picked, among: node.children,
-                                                      at: DayPeriod.at(clock()))
+                    ? options.first(where: { $0.speciesID == a.plannedPathIDs[nextIndex] }) : nil
+                let picked = planned ?? pickPlannedChild(node, baseID: a.baseID, gender: gender)
+                let next = EvoNode.resolvingTimeOfDay(picked, among: options, at: DayPeriod.at(clock()))
                 if planned == nil || next.speciesID != picked.speciesID {
                     replanEvolution(from: node, to: next, base: a)
                     AppLog.write("evolve: replanned path for base \(a.baseID)")
@@ -1079,7 +1156,8 @@ final class CompanionStore {
 
     /// 실제로 간 갈래가 계획과 다르면 계획을 그 갈래 아래로 다시 세운다.
     private func replanEvolution(from node: EvoNode, to next: EvoNode, base a: MonState) {
-        let fallbackRoute = [node.speciesID] + makeEvolutionPlan(from: next, baseID: a.baseID)
+        let fallbackRoute = [node.speciesID]
+            + makeEvolutionPlan(from: next, baseID: a.baseID, gender: a.profile?.gender)
         let repaired = Self.repairedPlan(realizedPath: a.pathIDs, stageIndex: a.stageIndex,
                                          fallbackRoute: fallbackRoute)
         state.active!.plannedPathIDs = repaired
@@ -1108,19 +1186,20 @@ final class CompanionStore {
         notifyCompanionEvent(l.notifEvolveTitle, l.notifEvolveBody(from: oldName, to: newName))
     }
 
-    private func pickPlannedChild(_ node: EvoNode, baseID: Int) -> EvoNode {
-        let fresh = node.children.filter { ch in
-            ch.finalIDs.contains { !state.collectedFinals.contains("\(baseID):\($0)") }
+    private func pickPlannedChild(_ node: EvoNode, baseID: Int, gender: PokemonGender?) -> EvoNode {
+        let options = node.children(for: gender)
+        let fresh = options.filter { ch in
+            ch.finalIDs(for: gender).contains { !state.collectedFinals.contains("\(baseID):\($0)") }
         }
-        let pool = fresh.isEmpty ? node.children : fresh
+        let pool = fresh.isEmpty ? options : fresh
         return pool[Int(rng.next() % UInt64(pool.count))]
     }
 
-    private func makeEvolutionPlan(from root: EvoNode, baseID: Int) -> [Int] {
+    private func makeEvolutionPlan(from root: EvoNode, baseID: Int, gender: PokemonGender?) -> [Int] {
         var plan = [root.speciesID]
         var node = root
-        while !node.children.isEmpty {
-            let next = pickPlannedChild(node, baseID: baseID)
+        while !node.children(for: gender).isEmpty {
+            let next = pickPlannedChild(node, baseID: baseID, gender: gender)
             plan.append(next.speciesID)
             node = next
         }
@@ -1136,12 +1215,13 @@ final class CompanionStore {
     }
 
     /// 루트부터 실제로 이어지는 가장 긴 ID 경로와 마지막 유효 노드. 첫 ID가 루트와 다르면 루트로 복구한다.
-    private func longestValidPath(_ ids: [Int], from root: EvoNode) -> (path: [Int], lastNode: EvoNode) {
+    private func longestValidPath(_ ids: [Int], from root: EvoNode,
+                                  gender: PokemonGender?) -> (path: [Int], lastNode: EvoNode) {
         var path = [root.speciesID]
         var node = root
         guard ids.first == root.speciesID else { return (path, node) }
         for id in ids.dropFirst() {
-            guard let child = node.children.first(where: { $0.speciesID == id }) else { break }
+            guard let child = node.children(for: gender).first(where: { $0.speciesID == id }) else { break }
             path.append(id)
             node = child
         }
@@ -1151,16 +1231,18 @@ final class CompanionStore {
     /// 저장된 실제 경로와 계획을 현재 에셋 트리에 맞춘다. 완전한 계획만 재사용해 재시작 시 RNG를 소비하지 않는다.
     private func normalizedEvolutionState(_ saved: MonState, from root: EvoNode) -> MonState {
         var normalized = saved
-        let realized = longestValidPath(saved.pathIDs, from: root)
-        let candidate = longestValidPath(saved.plannedPathIDs, from: root)
+        let gender = saved.profile?.gender
+        // Evolutions already taken stay, whatever the gender rules say now.
+        let realized = longestValidPath(saved.pathIDs, from: root, gender: nil)
+        let candidate = longestValidPath(saved.plannedPathIDs, from: root, gender: gender)
         let canReusePlan = candidate.path == saved.plannedPathIDs
             && candidate.path.starts(with: realized.path)
-            && candidate.lastNode.children.isEmpty
+            && candidate.lastNode.children(for: gender).isEmpty
         let plan: [Int]
         if canReusePlan {
             plan = candidate.path
         } else {
-            let suffix = makeEvolutionPlan(from: realized.lastNode, baseID: saved.baseID)
+            let suffix = makeEvolutionPlan(from: realized.lastNode, baseID: saved.baseID, gender: gender)
             plan = realized.path + suffix.dropFirst()
         }
         normalized.pathIDs = realized.path
@@ -1191,6 +1273,7 @@ final class CompanionStore {
         notifyCompanionEvent(l.notifGraduateTitle, l.notifGraduateBody(name))
         eventUntil = clock().addingTimeInterval(6)
         state.active = nil
+        cheerSeq += 1
         state.reconcileRepresentativeSelection()   // 졸업 체인이 dex 로 옮겨져 선택은 정상적으로 유지된다
         activeGeneration += 1
         currentLine = nil
@@ -1216,6 +1299,18 @@ final class CompanionStore {
             let c = itemCount(k)
             return c > 0 ? (k, c) : nil
         }
+    }
+
+    func ownedItems(in category: ItemCategory?) -> [(kind: ItemKind, count: Int)] {
+        guard let category else { return ownedItems }
+        return ownedItems.filter { $0.kind.category == category }
+    }
+
+    /// 가방에 아이템이 있는 분류 — 빈 분류는 탭에서 숨긴다.
+    var bagCategories: [ItemCategory] {
+        var present = Set(ownedItems.map { $0.kind.category })
+        if !ownedScoutTickets.isEmpty { present.insert(.scout) }
+        return ItemCategory.allCases.filter(present.contains)
     }
 
     /// 이상한 사탕 사용 가능 — 활성 포켓몬 + 라인 로딩 완료 + 재고>0.
@@ -1339,7 +1434,7 @@ final class CompanionStore {
     private func stoneTarget(_ kind: ItemKind) -> EvoNode? {
         guard let item = kind.evolutionItemName, let a = state.active,
               let node = currentLine?.tree.node(withID: a.currentID) else { return nil }
-        return node.children.first { $0.evolves(withItem: item) }
+        return node.children(for: a.profile?.gender).first { $0.evolves(withItem: item) }
     }
 
     /// 돌 1개로 그 돌의 갈래로 바로 진화 — 현재 단계 XP는 그대로 이어진다. 안 맞는 돌이면 소모 없이 wrongStone.
@@ -1364,7 +1459,7 @@ final class CompanionStore {
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
         ItemKind.allCases
-            .filter { $0.shopPrice != nil && !$0.isEvolutionStone }
+            .filter { $0.shopPrice != nil && !$0.isEvolutionStone && !$0.isLinkingCord }
             .sorted { a, b in
                 // 구매 완료한 보유형(이로치 부적 등)은 맨 아래로 — 재구매 불가라 위에 있을 이유가 없다.
                 let aDone = a.isPassive && itemCount(a) > 0
@@ -1376,6 +1471,9 @@ final class CompanionStore {
 
     /// 상점 "진화" 구역의 돌 — 별도 구역이라 `shopEntries` 의 가격순 목록에는 넣지 않는다.
     var evolutionStoneItems: [ItemKind] { ItemKind.allCases.filter(\.isEvolutionStone) }
+
+    /// The shop's evolution section: the stones, then the Linking Cord.
+    var shopEvolutionItems: [ItemKind] { evolutionStoneItems + [.linkingCord] }
 
     /// 상점 표시 순서 — 판매 아이템 + 알 3종을 하나의 가격 오름차순 목록으로 병합.
     /// 정렬 규칙은 purchasableItems 와 동일: 구매 완료한 보유형은 맨 아래, 나머지는 가격 저렴한 순.
@@ -1398,6 +1496,19 @@ final class CompanionStore {
             if aDone != bDone { return !aDone }
             return price(of: a) < price(of: b)
         }
+    }
+
+    /// 분류 탭 필터 — nil 은 전체. 순서는 shopEntries 그대로다(가격 오름차순 규칙 유지). 진화의 돌은
+    /// 별도 구역(`evolutionStoneItems`)이라 여기에 없다.
+    func shopEntries(in category: ItemCategory?) -> [ShopEntry] {
+        guard let category else { return shopEntries }
+        return shopEntries.filter { $0.category == category }
+    }
+
+    /// 상점에 항목이 있는 분류 — 빈 분류는 탭에서 숨긴다.
+    var shopCategories: [ItemCategory] {
+        let present = Set(shopEntries.map(\.category)).union(evolutionStoneItems.map(\.category)).union([.scout])
+        return ItemCategory.allCases.filter(present.contains)
     }
 
     /// 구매 완료한 보유형(이로치 부적 등)인지 — shopEntries 정렬에서 맨 아래로 보낼 판정.
@@ -1938,7 +2049,7 @@ final class CompanionStore {
     private func hatchCore(baseID: Int, generation: Int, form pendingForm: PokemonForm? = nil) async {
         let line: EvoLine
         do {
-            line = try await provider.line(baseSpeciesID: baseID)
+            line = try await provider.line(baseSpeciesID: baseID).prunedTradeOnly()
         } catch {
             markHatchRetryDelayedIfReady(generation: generation)
             AppLog.write("hatch: line fetch failed for base \(baseID) — egg kept, retry next tick")
@@ -1990,8 +2101,10 @@ final class CompanionStore {
            Self.dittoDisguiseHit(rarity: line.rarity, totalForms: line.totalForms, roll: rng.next()) {
             dittoDisguise = line.baseID
         }
-        let evolutionPlan = makeEvolutionPlan(from: line.tree, baseID: line.baseID)
+        // Gender is rolled before the plan: it decides which evolutions the individual can take.
         var profile = PokemonProfile.generate(seed: rng.next())
+        if let rate = line.genderRate { profile.assignGender(genderRate: rate) }
+        let evolutionPlan = makeEvolutionPlan(from: line.tree, baseID: line.baseID, gender: profile.gender)
         if let details = pokemonDetailsByID[line.baseID] { profile.enrich(with: details) }
         let hasGrowthBoost = state.hasCollectedFinal(forBaseID: line.baseID)
         let form = pendingForm ?? rollLineForm(baseID: line.baseID)
@@ -2001,7 +2114,7 @@ final class CompanionStore {
         state.active = MonState(baseID: line.baseID, pathIDs: [line.baseID], plannedPathIDs: evolutionPlan,
                                 stageIndex: 0, usedAtStage: 0, rarity: line.rarity, totalForms: evolutionPlan.count,
                                 isShiny: isShiny, nature: nature, profile: profile, hasGrowthBoost: hasGrowthBoost,
-                                dittoDisguise: dittoDisguise, form: form, prayers: prayers)
+                                dittoDisguise: dittoDisguise, form: form, prayers: prayers, tradeGated: true)
         AppLog.write("hatch: base=\(line.baseID) rarity=\(line.rarity) shiny=\(isShiny) forms=\(evolutionPlan.count) boost=\(hasGrowthBoost) ditto=\(dittoDisguise != nil)")
         let name = formDisplayName(line.localizedName(line.baseID, state.language),
                                    speciesID: line.baseID, form: form)
@@ -2045,7 +2158,7 @@ final class CompanionStore {
         // 메타몽으로 전환 — rarity/forms 는 로드한 라인에서, isShiny/nature/dittoDisguise 는 유지.
         let previousRarity = m.rarity
         m.baseID = dittoLine.baseID
-        let evolutionPlan = makeEvolutionPlan(from: dittoLine.tree, baseID: dittoLine.baseID)
+        let evolutionPlan = makeEvolutionPlan(from: dittoLine.tree, baseID: dittoLine.baseID, gender: nil)
         m.pathIDs = [dittoLine.baseID]
         m.plannedPathIDs = evolutionPlan
         m.stageIndex = 0
@@ -2083,11 +2196,14 @@ final class CompanionStore {
         let generation = activeGeneration
         isHatching = true
         defer { isHatching = false }
-        if let line = try? await provider.line(baseSpeciesID: a.baseID) {
+        if let fullLine = try? await provider.line(baseSpeciesID: a.baseID) {
+            let line = a.tradeGated == true ? fullLine.prunedTradeOnly() : fullLine
             // await 중 사용량·민트 등 활성 상태는 계속 바뀔 수 있다. 요청 당시 스냅샷을 다시 쓰지 말고
             // 같은 개체가 아직 활성인 경우에만 최신 상태를 정규화한다.
             guard activeGeneration == generation,
-                  let latest = state.active, latest.baseID == a.baseID, currentLine == nil else { return }
+                  var latest = state.active, latest.baseID == a.baseID, currentLine == nil else { return }
+            // Old saves rolled gender only once details arrived; settle it before the plan is checked.
+            if let rate = line.genderRate { latest.profile?.assignGender(genderRate: rate) }
             state.active = normalizedEvolutionState(latest, from: line.tree)
             state.reconcileRepresentativeSelection()   // 손상 경로 정규화로 사라진 단계가 대표로 남지 않게
             currentLine = line
@@ -2466,6 +2582,195 @@ final class CompanionStore {
                    completedGrowth + min(SaveTransfer.maxTokenValue, max(0, currentStageUsage)))
     }
 
+    // MARK: 교환
+
+    /// The newest trade arrival or Linking Cord evolution, shown once by the popover banner.
+    struct TradeArrival: Equatable, Identifiable {
+        let id: Int
+        let entryID: String
+        /// Nil for a Linking Cord evolution, which has no trade partner.
+        let fromName: String?
+        let receivedID: Int
+        /// The sender's wording until the evolution line is known.
+        var receivedName: String
+        var evolvedID: Int?
+        var evolvedName: String?
+        let isShiny: Bool
+    }
+    private(set) var tradeArrival: TradeArrival?
+    @ObservationIgnored private var tradeArrivalSeq = 0
+    @ObservationIgnored private var isResolvingTradeEvolutions = false
+
+    func dismissTradeArrival() { tradeArrival = nil }
+
+    enum TradeEvolutionResult: Equatable { case evolved, noEvolution, unavailable }
+    /// `wrongTarget` leaves the cord in the bag.
+    enum CordUseResult: Equatable { case evolved, wrongTarget, unavailable }
+
+    private static let appliedTradeLimit = 200
+
+    func tradePool(fightingIDs: Set<String>) -> [TradePoolEntry] {
+        TradePool.build(state: state, fightingIDs: fightingIDs, name: dexEntryName)
+    }
+
+    func tradeRefusal(for entry: DexEntry, fightingIDs: Set<String>) -> TradeRefusal? {
+        TradePool.refusal(for: entry, fightingIDs: fightingIDs, activeID: activeDexEntry?.id)
+    }
+
+    /// Newest first, the same order the bot's pool uses.
+    func tradableEntries(fightingIDs: Set<String>) -> [DexEntry] {
+        state.dex
+            .filter { tradeRefusal(for: $0, fightingIDs: fightingIDs) == nil }
+            .sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
+    }
+
+    /// Applies completed trades once each and returns the ids safe to acknowledge (applied now or earlier).
+    /// A delivery this build cannot show is left out, so the bot offers it again after an update.
+    @discardableResult
+    func applyTrades(_ deliveries: [TradeDelivery]) -> [String] {
+        var settled: [String] = []
+        var changed = false
+        for delivery in deliveries {
+            if state.appliedTradeIDs.contains(delivery.tradeID) {
+                settled.append(delivery.tradeID)
+                continue
+            }
+            let now = clock()
+            let sender = Self.cleanedTrainerName(delivery.fromName)
+            guard let arrived = Self.receivedEntry(delivery.receive.entry, from: sender, now: now) else { continue }
+            if let index = state.dex.firstIndex(where: { $0.id == delivery.giveID && $0.releasedAt == nil }) {
+                state.dex[index].releasedAt = now
+                state.dex[index].tradedTo = sender
+            }
+            state.dex.append(arrived)
+            state.appliedTradeIDs.append(delivery.tradeID)
+            if state.appliedTradeIDs.count > Self.appliedTradeLimit {
+                state.appliedTradeIDs.removeFirst(state.appliedTradeIDs.count - Self.appliedTradeLimit)
+            }
+            settled.append(delivery.tradeID)
+            changed = true
+            tradeArrivalSeq += 1
+            let name = delivery.receive.name
+            tradeArrival = TradeArrival(id: tradeArrivalSeq, entryID: arrived.id, fromName: sender,
+                                        receivedID: arrived.finalID, receivedName: name, isShiny: arrived.isShiny)
+            notifyCompanionEvent(l.notifTradeTitle, l.notifTradeBody(name, from: sender))
+        }
+        guard changed else { return settled }
+        state.reconcileRepresentativeSelection()
+        save()
+        Task { await resolveTradeEvolutions() }
+        return settled
+    }
+
+    /// A received individual is a new one here: fresh id, no names, evolution pending until the line is known.
+    nonisolated static func receivedEntry(_ wire: DexEntry, from sender: String, now: Date) -> DexEntry? {
+        guard var profile = wire.profile,
+              PokemonAssets.isSupported(speciesID: wire.baseID), PokemonAssets.isSupported(speciesID: wire.finalID)
+        else { return nil }
+        var entry = wire
+        let id = UUID().uuidString
+        profile.instanceID = id
+        profile.sanitize()
+        entry.id = id
+        entry.profile = profile
+        entry.names = nil
+        entry.namesVersion = nil
+        entry.releasedAt = nil
+        entry.tradedTo = nil
+        entry.caughtAt = now
+        entry.originalTrainer = sender
+        entry.tradeEvolutionPending = true
+        if entry.chainOrder.last != entry.finalID {
+            entry.chainOrder = entry.baseID == entry.finalID ? [entry.baseID] : [entry.baseID, entry.finalID]
+        }
+        return entry
+    }
+
+    nonisolated static func cleanedTrainerName(_ raw: String) -> String {
+        let name = raw.unicodeScalars.filter { !CharacterSet.controlCharacters.contains($0) }
+        let trimmed = String(String.UnicodeScalarView(name)).trimmingCharacters(in: .whitespacesAndNewlines)
+        return String(trimmed.prefix(40))
+    }
+
+    /// Evolves every received individual that has a trade evolution. Offline, the flag stays and the next
+    /// launch or sync tries again.
+    func resolveTradeEvolutions() async {
+        guard !isResolvingTradeEvolutions else { return }
+        isResolvingTradeEvolutions = true
+        defer { isResolvingTradeEvolutions = false }
+        let pending = state.dex.filter { $0.tradeEvolutionPending == true && $0.releasedAt == nil }.map(\.id)
+        for id in pending {
+            _ = await evolveByTrade(entryID: id, consuming: nil)
+        }
+    }
+
+    /// Spends a Linking Cord to evolve a graduated individual as if it had been traded.
+    @discardableResult
+    func useLinkingCord(on entryID: String) async -> CordUseResult {
+        guard itemCount(.linkingCord) > 0,
+              state.dex.contains(where: { $0.id == entryID && $0.releasedAt == nil && $0.profile != nil })
+        else { return .unavailable }
+        switch await evolveByTrade(entryID: entryID, consuming: .linkingCord) {
+        case .evolved: return .evolved
+        case .noEvolution: return .wrongTarget
+        case .unavailable: return .unavailable
+        }
+    }
+
+    private func evolveByTrade(entryID: String, consuming item: ItemKind?) async -> TradeEvolutionResult {
+        func owned(_ entry: DexEntry) -> Bool { entry.id == entryID && entry.releasedAt == nil }
+        guard let baseID = state.dex.first(where: owned)?.baseID else { return .noEvolution }
+        guard let line = try? await dexNameLine(baseID: baseID) else { return .unavailable }
+        // The store may have changed while the line loaded; read the entry again.
+        guard let index = state.dex.firstIndex(where: owned) else { return .noEvolution }
+        var entry = state.dex[index]
+        let next = line.tree.node(withID: entry.finalID)?.tradeEvolution
+        let fromID = entry.finalID
+        if let next {
+            if !entry.chainOrder.contains(next.speciesID) { entry.chainOrder.append(next.speciesID) }
+            entry.finalID = next.speciesID
+        }
+        entry.tradeEvolutionPending = nil
+        var names = entry.names ?? [:]
+        for id in entry.chainOrder {
+            if let incoming = line.names[id], !incoming.isEmpty {
+                names[id] = (names[id] ?? [:]).merging(incoming) { _, new in new }
+            }
+        }
+        entry.names = names.isEmpty ? nil : names
+        entry.namesVersion = entry.chainOrder.allSatisfy { line.names[$0]?.isEmpty == false }
+            ? DexEntry.currentNamesVersion : nil
+        state.dex[index] = entry
+        guard let next else {
+            save()
+            return .noEvolution
+        }
+        if let item { state.inventory[item.rawValue] = max(0, itemCount(item) - 1) }
+        state.reconcileRepresentativeSelection()
+        announceTradeEvolution(of: entry, from: fromID, to: next.speciesID, line: line)
+        save()
+        await loadPokemonDetails(speciesID: next.speciesID)
+        return .evolved
+    }
+
+    private func announceTradeEvolution(of entry: DexEntry, from fromID: Int, to toID: Int, line: EvoLine) {
+        func name(_ id: Int) -> String {
+            formDisplayName(line.localizedName(id, state.language), speciesID: id, form: entry.form)
+        }
+        if var arrival = tradeArrival, arrival.entryID == entry.id {
+            arrival.receivedName = name(fromID)
+            arrival.evolvedID = toID
+            arrival.evolvedName = name(toID)
+            tradeArrival = arrival
+        } else {
+            tradeArrivalSeq += 1
+            tradeArrival = TradeArrival(id: tradeArrivalSeq, entryID: entry.id, fromName: nil, receivedID: fromID,
+                                        receivedName: name(fromID), evolvedID: toID, evolvedName: name(toID),
+                                        isShiny: entry.isShiny)
+        }
+        notifyCompanionEvent(l.notifTradeEvolveTitle, l.notifTradeEvolveBody(name(fromID), name(toID)))
+    }
+
     // MARK: 영속
     private func load() {
         guard let data = try? Data(contentsOf: fileURL) else { return }   // 파일 없음 = 신규 설치
@@ -2496,7 +2801,9 @@ final class CompanionStore {
         state = SaveTransfer.sanitized(s)
     }
     private func save() {
+        state.reconcileFriends()
         refreshRepresentativeSubject()
+        refreshFriendSubjects()
         checkDexCompletions()   // 보유 성장분이 영속되는 매 지점에서 세대 완성 알림을 한 번만 띄운다
         guard let data = try? JSONEncoder().encode(state) else { return }
         try? data.write(to: fileURL, options: .atomic)   // 부분 쓰기 손상 방지(펫 상태)

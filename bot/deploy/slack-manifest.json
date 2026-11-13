@@ -38,6 +38,12 @@
         "should_escape": true
       },
       {
+        "command": "/도감",
+        "description": "도감 수·이로치·대표 포켓몬 보기",
+        "usage_hint": "[@누구]",
+        "should_escape": true
+      },
+      {
         "command": "/ypoke",
         "description": "YPoke 도움말",
         "should_escape": true

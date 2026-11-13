@@ -16,8 +16,10 @@ from ypoke.commands import (
     fit,
     parse_mention,
     reply_thread_ts,
+    image_blocks,
     result_blocks,
 )
+from ypoke.trades import TradeService
 
 DM_FALLBACK_NOTE = "(대결을 신청한 곳에 올릴 수 없어서 DM으로 보내요)"
 ERROR_TEXT = "대결 봇에서 오류가 났어요. 잠시 뒤 다시 해 주세요."
@@ -86,8 +88,39 @@ def rematch_listener(handler: CommandHandler):
     return listener
 
 
+def trade_listener(trades: TradeService, kind: str):
+    """A trade button or select: `kind` is `pick`, `accept` or `decline`. A refusal answers privately and keeps the buttons."""
+
+    def listener(ack, body, action, respond, client) -> None:
+        ack()
+        user_id = body["user"]["id"]
+        value = action.get("value") or (action.get("selected_option") or {}).get("value") or ""
+        trade_id, _, individual_id = value.partition("|")
+        log_command("button", user_id, f"trade_{kind}", trade_id)
+        try:
+            if kind == "pick":
+                reply = trades.pick(user_id, trade_id, individual_id)
+            else:
+                reply = (trades.accept if kind == "accept" else trades.decline)(user_id, trade_id)
+        except Exception:
+            log.exception("trade button failed")
+            respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            return
+        post_direct_messages(client, reply.direct_messages)
+        if reply.final:
+            respond(text=reply.text, replace_original=True)
+        else:
+            respond(text=reply.text, response_type="ephemeral", replace_original=False)
+
+    return listener
+
+
 def send_direct_messages(client: WebClient, reply: Reply) -> None:
-    for message in reply.direct_messages:
+    post_direct_messages(client, reply.direct_messages)
+
+
+def post_direct_messages(client: WebClient, messages) -> None:
+    for message in messages:
         try:
             client.chat_postMessage(channel=message.user_id, text=message.text, blocks=message.blocks)
         except Exception:
@@ -143,26 +176,32 @@ def publish_in_thread(
         except Exception:
             _fallback(respond, text=fallback_text(reply), blocks=result_blocks(reply, with_log=True), **visible)
     elif reply.in_channel:
-        _post_line(client, channel, thread_ts, "\n".join(filter(None, (reply.echo, reply.text))), respond)
+        text = "\n".join(filter(None, (reply.echo, reply.text)))
+        _post_line(client, channel, thread_ts, text, respond, image_blocks(text, reply.image_url))
     else:
-        _private(client, channel, user_id, thread_ts, reply.text, respond)
+        _private(client, channel, user_id, thread_ts, reply.text, respond, image_blocks(reply.text, reply.image_url))
     if reply.public:
         _post_line(client, channel, thread_ts, "\n".join(filter(None, (reply.echo, reply.public))), respond)
 
 
-def _post_line(client: WebClient, channel: str, thread_ts: str, text: str, respond: Callable | None) -> None:
+def _post_line(
+    client: WebClient, channel: str, thread_ts: str, text: str, respond: Callable | None, blocks: list[dict] | None = None
+) -> None:
     try:
-        client.chat_postMessage(channel=channel, thread_ts=thread_ts, text=text)
+        client.chat_postMessage(channel=channel, thread_ts=thread_ts, text=text, blocks=blocks)
     except Exception:
-        _fallback(respond, text=text, thread_ts=thread_ts, response_type="in_channel", replace_original=False)
+        _fallback(respond, text=text, blocks=blocks, thread_ts=thread_ts, response_type="in_channel", replace_original=False)
 
 
-def _private(client: WebClient, channel: str, user_id: str, thread_ts: str, text: str, respond: Callable | None) -> None:
+def _private(
+    client: WebClient, channel: str, user_id: str, thread_ts: str, text: str, respond: Callable | None,
+    blocks: list[dict] | None = None,
+) -> None:
     if respond is not None:
-        respond(text=text, response_type="ephemeral", replace_original=False)
+        respond(text=text, blocks=blocks, response_type="ephemeral", replace_original=False)
         return
     try:
-        client.chat_postEphemeral(channel=channel, user=user_id, text=text, thread_ts=thread_ts)
+        client.chat_postEphemeral(channel=channel, user=user_id, text=text, thread_ts=thread_ts, blocks=blocks)
     except Exception:
         log.warning("could not post an ephemeral reply")
 
@@ -190,4 +229,4 @@ def _publish_slash(client: WebClient, respond: Callable, channel: str, reply: Re
         respond(text="\n".join(filter(None, (reply.echo, reply.public))), response_type="in_channel")
     visible = reply.in_channel
     text = "\n".join(filter(None, (reply.echo, reply.text))) if visible else reply.text
-    respond(text=text, response_type="in_channel" if visible else "ephemeral")
+    respond(text=text, blocks=image_blocks(text, reply.image_url), response_type="in_channel" if visible else "ephemeral")

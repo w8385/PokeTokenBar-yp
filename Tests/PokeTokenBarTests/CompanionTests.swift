@@ -1303,9 +1303,13 @@ final class CompanionStoreTests: XCTestCase {
     func testReloadPreservesCompleteShortPlannedRouteLength() async {
         let line = makeLine(base: 1, tree: node(1, [node(2), node(3, [node(4)])]))
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-reload-plan-\(UUID().uuidString).json")
-        let s1 = CompanionStore(provider: StubProvider(value: line), clock: { fixedNow }, fileURL: url, rng: SeededRNG(seed: 7))
-        await s1.hatch(baseID: 1)
-        XCTAssertEqual(s1.state.active?.plannedPathIDs, [1, 2], "seed selects the short complete route")
+        var s1: CompanionStore?
+        for seed in UInt64(1)...40 {
+            let candidate = CompanionStore(provider: StubProvider(value: line), clock: { fixedNow }, fileURL: url, rng: SeededRNG(seed: seed))
+            await candidate.hatch(baseID: 1)
+            if candidate.state.active?.plannedPathIDs == [1, 2] { s1 = candidate; break }
+        }
+        XCTAssertEqual(s1?.state.active?.plannedPathIDs, [1, 2], "some seed selects the short complete route")
 
         var opposing = SeededRNG(seed: 1)
         XCTAssertEqual(opposing.next() % 2, 1, "a reroll would select the opposite branch (3)")

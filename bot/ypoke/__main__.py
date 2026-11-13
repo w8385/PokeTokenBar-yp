@@ -12,8 +12,16 @@ from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID,
 from ypoke.names import DisplayNames
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
-from ypoke.transport import deliver, mention_listener, rematch_listener, slash_listener
-from ypoke.upload_server import serve
+from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, TradeService
+from ypoke.transport import (
+    deliver,
+    mention_listener,
+    post_direct_messages,
+    rematch_listener,
+    slash_listener,
+    trade_listener,
+)
+from ypoke.upload_server import MAX_ENTRY_SIZE, serve
 
 
 def main() -> None:
@@ -33,6 +41,7 @@ def main() -> None:
     )
     names = DisplayNames(app.client)
     names.warm(store.linked_user_ids())
+    trades = TradeService(store, name_for=names, bot_user_id=handler.bot_user_id)
     serve(
         store,
         os.environ.get("YPOKE_HTTP_HOST", "0.0.0.0"),
@@ -40,12 +49,17 @@ def main() -> None:
         lambda user_id, party: _after_upload(pokeapi, handler, app.client, user_id, party),
         pokeapi.attacking_moves,
         names,
+        trades,
+        lambda messages: post_direct_messages(app.client, messages),
     )
     for name in COMMAND_NAMES:
         app.command(name)(slash_listener(handler))
     # Slack still sends an interaction for a URL button and shows a warning unless it is acked.
     app.action(REGISTER_ACTION_ID)(lambda ack: ack())
     app.action(REMATCH_ACTION_ID)(rematch_listener(handler))
+    app.action(PICK_ACTION_ID)(trade_listener(trades, "pick"))
+    app.action(ACCEPT_ACTION_ID)(trade_listener(trades, "accept"))
+    app.action(DECLINE_ACTION_ID)(trade_listener(trades, "decline"))
     app.event("app_mention")(mention_listener(handler))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 
@@ -68,7 +82,7 @@ def _after_upload(
 def _run_after_upload(
     pokeapi: PokeAPIService, handler: CommandHandler, client: WebClient, user_id: str, party: list[dict]
 ) -> None:
-    _prefetch_lead(pokeapi, party)
+    _prefetch_entry(pokeapi, party)
     try:
         deliveries = handler.run_pending(user_id)
     except Exception:
@@ -78,13 +92,13 @@ def _run_after_upload(
         deliver(client, delivery)
 
 
-def _prefetch_lead(pokeapi: PokeAPIService, party: list[dict]) -> None:
-    lead = party[0]
-    try:
-        pokeapi.pokemon(lead["pokemon_id"])
-        pokeapi.attacking_moves(lead["pokemon_id"], lead["level"])
-    except Exception:
-        logging.getLogger(__name__).warning("PokéAPI prefetch failed for %s", lead["pokemon_id"])
+def _prefetch_entry(pokeapi: PokeAPIService, party: list[dict]) -> None:
+    for member in party[:MAX_ENTRY_SIZE]:
+        try:
+            pokeapi.pokemon(member["pokemon_id"])
+            pokeapi.attacking_moves(member["pokemon_id"], member["level"])
+        except Exception:
+            logging.getLogger(__name__).warning("PokéAPI prefetch failed for %s", member["pokemon_id"])
 
 
 if __name__ == "__main__":

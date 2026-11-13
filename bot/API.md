@@ -1,8 +1,8 @@
 # YPoke party upload API
 
 The app posts the user's battle Pokémon to the YPoke bot. The bot keeps only the latest
-upload per user and sends out its first Pokémon in one-on-one `/대결` battles. Battles
-never change the party.
+upload per user and sends out its first three Pokémon, in order, in `/대결` battles. When
+one faints the next comes in; there is no switching. Battles never change the party.
 
 - Base URL: the bot's `YPOKE_PUBLIC_URL`, for example `http://<bot-host>:8790`
 - Auth: `Authorization: Bearer <token>`. Users get the token from `/포켓몬연결`:
@@ -25,6 +25,7 @@ Replaces the caller's stored party.
       "name": "피카츄",
       "shiny": false,
       "nature": "adamant",
+      "ability": "static",
       "ivs": {"hp": 31, "attack": 20, "defense": 15,
               "special_attack": 31, "special_defense": 10, "speed": 28},
       "moves": [85, 87, 209, 98]
@@ -37,15 +38,38 @@ Replaces the caller's stored party.
 | Field | Type | Rules |
 |---|---|---|
 | `app_version` | string | optional, max 32 chars |
-| `party` | array | The battle Pokémon: the one chosen in the app's battle tab, or the Pokémon being raised. Up to 6 are accepted for older clients; battles use the first |
+| `party` | array | The battle Pokémon in battle order: up to 3 chosen in the app's battle tab, or the Pokémon being raised. Up to 6 are accepted for older clients; battles use the first 3. An upload of one is a one-member side |
 | `pokemon_id` | int | PokéAPI `/pokemon/{id}` id: `1..1025`, or `10001..10999` for alternate forms |
 | `level` | int | `1..100`. Battles use `min(level, 50)`; moves stay what the Pokémon knows at its real level |
 | `name` | string | optional display name, max 40 chars. Default: Korean species name from PokéAPI |
 | `shiny` | bool | optional, default `false`. Shown as ✨ in the battle log |
 | `rental` | bool | optional, default `false`. A loaner: it fights at the opponent's level, capped at 50 (both keep their own when both are rentals) and is announced as "대여 포켓몬 …" |
 | `nature` | string | optional, lowercase English nature name from the app (`"adamant"`). Raises one non-HP stat 10% and lowers another 10%, main-series table. Missing, empty or unknown names are neutral and never rejected |
+| `ability` | string | optional, the individual's PokéAPI ability name, lowercase with dashes (`"huge-power"`, max 40 chars). Missing or malformed names are dropped, never rejected. Battles know 27 abilities (Blaze, Torrent, Overgrow, Swarm, Intimidate, Levitate, Huge Power, Pure Power, Thick Fat, Technician, Sturdy, Adaptability, Guts, Swift Swim, Chlorophyll, Sand Rush, Drizzle, Drought, Sand Stream, Snow Warning, Static, Flame Body, Poison Point, Immunity, Limber, Insomnia, Water Veil); any other name does nothing. A physical move counts as contact for Static, Flame Body and Poison Point (30%) |
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
 | `moves` | array | optional, up to 4 distinct PokéAPI move ids, each an attacking move from `GET /v1/moves` at that level. Missing or empty: the 4 most recently learned |
+| `trade_pool` | array | optional, a top-level key beside `party`. The Pokémon the player may trade, see [Trades](#trades). Left out by older apps; a pool that fails validation is ignored and never fails the upload |
+
+### `dex` (optional)
+
+A summary of the user's Pokédex for `/도감`. The bot keeps the latest one beside the party. An upload without
+`dex` (an older app) keeps the stored one. A malformed `dex` is ignored, never a `400`.
+
+```json
+"dex": {
+  "owned": 120,
+  "shiny": 3,
+  "regions": {"kanto": 151, "johto": 40},
+  "representative": {"pokemon_id": 25, "shiny": true}
+}
+```
+
+| Field | Type | Rules |
+|---|---|---|
+| `owned` | int | Species owned, `0..1025` |
+| `shiny` | int | Species owned as shiny, `0..1025` |
+| `regions` | object | Species owned per region. Keys `kanto johto hoenn sinnoh unova kalos alola galar paldea`; a value above the region's size, or an unknown key, is dropped |
+| `representative` | object | optional, the Pokémon the app shows (`pokemon_id` as in `party`, `shiny` bool). Missing while the user has only an egg |
 
 Unknown keys are ignored, so the app can send more fields later.
 At battle time, chosen moves the Pokémon can no longer use (it evolved, say) are dropped; if none
@@ -60,7 +84,7 @@ Responses:
 
 | Status | Body |
 |---|---|
-| `200` | `{"ok": true, "party_size": 1, "recent_battles": [...], "coworkers": [...]}`, see below |
+| `200` | `{"ok": true, "party_size": 1, "recent_battles": [...], "coworkers": [...]}`, see below; with trading on, also `"trades": {"deliveries": [...]}` (same list as `GET /v1/trades`). Older apps ignore the extra keys |
 | `400` | `{"ok": false, "error": "<reason>"}` — bad JSON or a rule above broken |
 | `401` | `{"ok": false, "error": "unauthorized"}` — missing or unknown token |
 | `413` | `{"ok": false, "error": "too_large"}` |
@@ -136,6 +160,44 @@ never miss.
 | `always_hits_in` | Weathers in which the move never misses (Thunder and Hurricane in `"rain"`, Blizzard in `"hail"`, `"snow"`) |
 
 Other secondary effects (flinch, trapping) are not simulated. `400` for a missing or out-of-range query, `503 pokeapi_unavailable` when PokéAPI is down.
+
+## Trades
+
+Two linked coworkers swap one graduated Pokémon each. The app offers, the bot DMs the other player,
+both accept in Slack, and each app picks its side up on its next sync. Nothing changes in the app until
+then. Offers expire after 24 hours.
+
+`trade_pool` (in `POST /v1/party`) lists what the player can offer: up to 100 entries, newest first.
+The app leaves out the Pokémon being raised, the battle pick, and eggs. The bot only trades what is in the
+latest pool, so an app that sends no pool can neither offer nor receive.
+
+```json
+{"id": "<individual id, max 64 chars, no |>", "pokemon_id": 93, "level": 100, "shiny": false,
+ "name": "고우스트", "entry": {"...": "the app's full record of the individual, at most 4 KB"}}
+```
+
+The bot never reads `entry`; it hands the other side's copy back unchanged, so the receiver gets species, form,
+shiny, nature, IVs, level and original trainer as sent. Entries that fail the rules above are dropped.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/coworkers` | `{"ok": true, "coworkers": [{"id", "name"}]}`: linked players with a pool, not the caller. `id` is an opaque handle for `POST /v1/trades`, never a Slack id |
+| `POST /v1/trades` | `{"to": "<coworker id>", "give": "<individual id>"}` → `{"ok": true, "trade_id"}`. `400 {"ok": false, "error", "message"}` for `self`, `unknown_user`, `unknown_individual`, `locked` (already in an open trade), `too_many` (3 open offers). `message` is a short Korean reason to show as is |
+| `GET /v1/trades` | `{"ok": true, "trades": {"deliveries": [...], "history": [...]}}` |
+| `POST /v1/trades/ack` | `{"trade_ids": ["..."]}` → `{"ok": true}` |
+
+A delivery is `{"trade_id", "give_id", "from_name", "receive": <pool entry>}`: remove `give_id` from your
+Pokémon, add `receive`. The bot repeats a delivery on every sync until the app acknowledges it, so the app
+applies each `trade_id` once and acknowledges ids it has already applied. Apply first, acknowledge after the
+save; a lost acknowledgement only means the delivery comes again.
+
+Flow: the proposer's offer reaches the target as a DM with a picker of their pool and Accept/Decline.
+After the target picks and accepts, the proposer gets a confirm DM; their accept completes the trade.
+Completion is refused if either Pokémon has left its owner's latest pool. Either side can decline.
+
+The app polls about every minute and re-sends the pool when it changes or every 5 minutes, so a finished
+trade shows up in the app within about a minute. One app per token: a second Mac may pick up the delivery
+first, and the first to acknowledge wins.
 
 ## `GET /v1/health`
 

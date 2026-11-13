@@ -28,6 +28,20 @@ CI runs these same commands on every pull request. The test gate runs
 coverage by default. Run both commands locally before submitting a PR.
 Use `swift test --filter <TestCase>` for focused checks during development.
 
+A focused filter does not run the repo-wide tests: the ones that read every Swift source (every
+SwiftUI `View` is `@MainActor`, no Hangul literals in UI code, every scroll view reserves the
+scroller lane, ...) or sweep every language. Adding a view, a string or a provider can fail one of
+them from a suite that looks unrelated. Run them together with your own filter before every push:
+
+```bash
+./scripts/invariant-tests.sh            # the repo-wide tests, one `swift test --filter` call
+swift test --filter <TestCase>          # the tests for what you changed
+```
+
+The script lists the classes and methods it runs. A test method named `...InEveryLanguage`,
+`...EveryLanguage` or `...AllLanguages` joins it automatically, and the script fails if a test file
+that reads `Sources/PokeTokenBar` has none of its classes listed, so add new source scanners there.
+
 ## Contribution workflow
 
 1. Create a feature branch off `main` (fork the repo if you don't have write

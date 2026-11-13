@@ -10,11 +10,13 @@ from datetime import UTC, datetime, timedelta, timezone
 from urllib.parse import urlencode
 
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, simulate
+from ypoke.dex import NATIONAL_TOTAL, REGIONS, sprite_url
+from ypoke.messages import DirectMessage
 from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
 from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.store import PendingChallenge, Record, Store
-from ypoke.upload_server import IV_KEYS
+from ypoke.upload_server import IV_KEYS, MAX_ENTRY_SIZE
 
 DEFAULT_IV = 15
 REGISTER_LINK = "poketokenbar://ypoke-register"
@@ -41,26 +43,31 @@ BATTLE_COMMAND = "/대결"
 LINK_COMMAND = "/포켓몬연결"
 RECORD_COMMAND = "/전적"
 RANKING_COMMAND = "/랭킹"
+DEX_COMMAND = "/도감"
 UMBRELLA_COMMAND = "/ypoke"
-COMMAND_NAMES = (BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, UMBRELLA_COMMAND)
+COMMAND_NAMES = (BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, DEX_COMMAND, UMBRELLA_COMMAND)
 MENTION_WORDS = {
     "대결": BATTLE_COMMAND,
     "battle": BATTLE_COMMAND,
     "전적": RECORD_COMMAND,
     "랭킹": RANKING_COMMAND,
     "연결": LINK_COMMAND,
+    "도감": DEX_COMMAND,
 }
 
 HELP_TEXT = (
     "*YPoke 대결*\n"
-    f"`{BATTLE_COMMAND} @상대` 서로 한 마리씩 내보내 한 판 붙어요. 앱 대결 탭에서 고른 포켓몬이, 안 골랐으면 지금 키우는 포켓몬이 나가요. "
+    f"`{BATTLE_COMMAND} @상대` 서로 최대 3마리를 정한 순서대로 내보내 한 판 붙어요. 앱 대결 탭에서 고른 포켓몬이, 안 골랐으면 지금 키우는 포켓몬이 나가요. "
+    "한 마리가 쓰러지면 다음 포켓몬이 나오고, 교체는 없어요. "
     "알만 있으면 대여 포켓몬이 상대 레벨로 나가요. 상대가 아직 준비 전이면 연결 안내를 보내고, 준비되면 결과가 이 채널에 올라가요.\n"
-    f"`{BATTLE_COMMAND} @YPoke` 또는 `@YPoke 대결` 봇이 내보낸 포켓몬과 연습 대결을 해요. 전적에 안 남아요.\n"
+    f"`{BATTLE_COMMAND} @YPoke` 또는 `@YPoke 대결` 봇이 내 마리 수만큼 무작위 포켓몬을 내보내 연습 대결을 해요. 전적에 안 남아요.\n"
     f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
     f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
-    "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 연결`도 돼요.\n"
-    "전적만 남고 포켓몬은 오가지 않아요.\n"
+    f"`{DEX_COMMAND} [@누구]` 도감 수·이로치 수·지역별 진행·대표 포켓몬을 보여줘요. 앱을 켜 둬야 도감이 올라가요.\n"
+    "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`도 돼요. "
+    f"`{UMBRELLA_COMMAND} 도감`처럼 `{UMBRELLA_COMMAND}` 뒤에 붙여도 돼요.\n"
+    "대결로는 포켓몬이 오가지 않아요. 졸업한 포켓몬은 앱 대결 탭의 교환 제안으로 맞바꿔요. 상대가 DM에서 고르고 수락하면 끝나요.\n"
     f"앱 받기: <{DOWNLOAD_URL}|PokeTokenBar>"
 )
 
@@ -75,18 +82,11 @@ class Where:
 
 
 @dataclass(frozen=True)
-class DirectMessage:
-    user_id: str
-    text: str
-    blocks: list[dict] | None = None
-
-
-@dataclass(frozen=True)
 class Reply:
     """`echo` names who ran which slash command; it heads the visible messages (`in_channel` or `public`).
 
     A battle result has `summary` (one line) and `rematch` (the button value), and `text` is its turn log.
-    `public` is a line the channel sees beside a private `text`.
+    `public` is a line the channel sees beside a private `text`. `image_url` is shown beside `text`.
     """
 
     text: str
@@ -96,6 +96,7 @@ class Reply:
     summary: str | None = None
     rematch: str | None = None
     public: str | None = None
+    image_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -115,7 +116,7 @@ class Delivery:
 class _Match:
     challenger_id: str
     opponent_id: str
-    sides: tuple[Combatant, Combatant]
+    sides: tuple[tuple[Combatant, ...], tuple[Combatant, ...]]
     seed: int
     practice: bool
     pokemon: tuple[int, int]
@@ -145,7 +146,8 @@ class CommandHandler:
             return Reply(self._help)
         if command == BATTLE_COMMAND and not _MENTION.search(rest):
             return self._start(user_id, self._bot_user_id, where)
-        return self.handle(user_id, rest, command, where)
+        reply = self.handle(user_id, rest, command, where)
+        return replace(reply, in_channel=True) if command == DEX_COMMAND else reply
 
     @property
     def bot_user_id(self) -> str | None:
@@ -188,11 +190,15 @@ class CommandHandler:
         return deliveries
 
     def _dispatch(self, user_id: str, text: str, command: str, where: Where | None, echo: str | None) -> Reply:
+        if command == UMBRELLA_COMMAND:
+            command, text = parse_mention(text, self._bot_user_id)
         mention = _MENTION.search(text)
         if command == LINK_COMMAND:
             return self._register(user_id)
         if command == RECORD_COMMAND:
             return self._record(mention.group(1) if mention else user_id)
+        if command == DEX_COMMAND:
+            return self._dex(user_id, mention.group(1) if mention else user_id)
         if command == RANKING_COMMAND:
             return self._ranking()
         if command == BATTLE_COMMAND and mention:
@@ -234,6 +240,39 @@ class CommandHandler:
     def _record(self, user_id: str) -> Reply:
         record = self._store.record(user_id)
         return Reply(f"<@{user_id}> 전적: {record.wins}승 {record.losses}패")
+
+    def _dex(self, user_id: str, target_id: str) -> Reply:
+        """The target's uploaded dex summary. In a thread the mention listener makes it visible; a slash reply is private."""
+        who = f"<@{target_id}>"
+        if target_id == self._bot_user_id:
+            return Reply("YPoke는 도감이 없어요.")
+        summary = self._store.dex(target_id)
+        if summary is None:
+            if not self._store.is_linked(target_id):
+                hint = f" `{LINK_COMMAND}`로 연결해 주세요." if target_id == user_id else ""
+                return Reply(f"{who}님은 아직 YPoke에 연결하지 않았어요.{hint}")
+            return Reply(f"{who}님의 도감은 아직 올라오지 않았어요. 앱을 최신 버전으로 켜 두면 올라와요.")
+        lines = [
+            f"📖 {who}님의 도감",
+            f"전체 *{summary['owned']}*/{NATIONAL_TOTAL} · ✨ 이로치 *{summary['shiny']}*",
+        ]
+        progress = [
+            f"{name} {summary['regions'][key]}/{total}" + (" ✅" if summary["regions"][key] == total else "")
+            for key, (name, total) in REGIONS.items() if key in summary["regions"]
+        ]
+        if progress:
+            lines.append(" · ".join(progress))
+        representative = summary.get("representative")
+        if representative is None:
+            return Reply("\n".join(lines))
+        lines.append(f"대표 포켓몬: {self._species_name(representative['pokemon_id'])}{' ✨' if representative['shiny'] else ''}")
+        return Reply("\n".join(lines), image_url=sprite_url(representative["pokemon_id"], representative["shiny"]))
+
+    def _species_name(self, pokemon_id: int) -> str:
+        try:
+            return self._pokeapi.pokemon(pokemon_id)["name_ko"]
+        except OSError:
+            return f"#{pokemon_id}"
 
     def _ranking(self) -> Reply:
         start = week_start(self._now())
@@ -317,17 +356,19 @@ class CommandHandler:
         challenger = self._store.party(challenger_id)
         if challenger is None:
             return None
-        lead = challenger.party[0]
+        entry = challenger.party[:MAX_ENTRY_SIZE]
         seed = secrets.randbits(31)
         if opponent_id == self._bot_user_id:
-            wild = {"pokemon_id": bot_species(seed), "level": lead["level"], "shiny": False, "ivs": {}}
-            return _Match(challenger_id, opponent_id, self._combatants(lead, wild), seed, practice=True,
-                          pokemon=(lead["pokemon_id"], wild["pokemon_id"]))
+            wild = [{"pokemon_id": species, "level": member["level"], "shiny": False, "ivs": {}}
+                    for species, member in zip(bot_entry(seed, len(entry)), entry)]
+            return _Match(challenger_id, opponent_id, self._combatants(entry, wild), seed, practice=True,
+                          pokemon=(entry[0]["pokemon_id"], wild[0]["pokemon_id"]))
         opponent = self._store.party(opponent_id)
         if opponent is None:
             return None
-        return _Match(challenger_id, opponent_id, self._combatants(lead, opponent.party[0]), seed, practice=False,
-                      pokemon=(lead["pokemon_id"], opponent.party[0]["pokemon_id"]))
+        rival = opponent.party[:MAX_ENTRY_SIZE]
+        return _Match(challenger_id, opponent_id, self._combatants(entry, rival), seed, practice=False,
+                      pokemon=(entry[0]["pokemon_id"], rival[0]["pokemon_id"]))
 
     def _result(self, match: _Match) -> Reply:
         result = simulate(match.sides, match.seed)
@@ -337,7 +378,8 @@ class CommandHandler:
                 match.challenger_id, match.opponent_id, winner_id, match.seed, pokemon=match.pokemon, turns=result.turns
             )
         trainers = (f"<@{match.challenger_id}>", self._label(match.opponent_id))
-        summary = f"🏆 {trainers[result.winner]} 승 — {match.sides[0].name} vs {match.sides[1].name} ({result.turns}턴)"
+        names = [" · ".join(combatant.name for combatant in side) for side in match.sides]
+        summary = f"🏆 {trainers[result.winner]} 승 — {names[0]} vs {names[1]} ({result.turns}턴)"
         if match.practice:
             summary += " · 연습 대결"
         return Reply(
@@ -350,10 +392,13 @@ class CommandHandler:
     def _label(self, user_id: str | None) -> str:
         return f"<@{user_id}>" if user_id else "YPoke"
 
-    def _combatants(self, challenger: dict, opponent: dict) -> tuple[Combatant, Combatant]:
-        with ThreadPoolExecutor(max_workers=2) as pool:
-            first, second = pool.map(self._combatant, rental_levels(challenger, opponent))
-        return first, second
+    def _combatants(
+        self, challenger: list[dict], opponent: list[dict]
+    ) -> tuple[tuple[Combatant, ...], tuple[Combatant, ...]]:
+        first, second = rental_levels(challenger, opponent)
+        with ThreadPoolExecutor(max_workers=len(first) + len(second)) as pool:
+            combatants = tuple(pool.map(self._combatant, [*first, *second]))
+        return combatants[:len(first)], combatants[len(first):]
 
     def _combatant(self, member: dict) -> Combatant:
         data = self._pokeapi.pokemon(member["pokemon_id"])
@@ -369,15 +414,16 @@ class CommandHandler:
             moves=battle_moves(learnable, member.get("moves")),
             rental=member.get("rental", False),
             nature=member.get("nature"),
+            ability=member.get("ability"),
         )
 
 
-def rental_levels(challenger: dict, opponent: dict) -> tuple[dict, dict]:
-    """A rental takes the other side's level (the battle cap applies after); two rentals keep their own."""
-    if challenger.get("rental") and not opponent.get("rental"):
-        return {**challenger, "level": opponent["level"]}, opponent
-    if opponent.get("rental") and not challenger.get("rental"):
-        return challenger, {**opponent, "level": challenger["level"]}
+def rental_levels(challenger: list[dict], opponent: list[dict]) -> tuple[list[dict], list[dict]]:
+    """A rental takes the other side's lead level (the battle cap applies after); two rentals keep their own."""
+    if challenger[0].get("rental") and not opponent[0].get("rental"):
+        return [{**member, "level": opponent[0]["level"]} for member in challenger], opponent
+    if opponent[0].get("rental") and not challenger[0].get("rental"):
+        return challenger, [{**member, "level": challenger[0]["level"]} for member in opponent]
     return challenger, opponent
 
 
@@ -393,8 +439,8 @@ def reply_thread_ts(event: dict) -> str:
     return event.get("thread_ts") or event["ts"]
 
 
-def bot_species(seed: int) -> int:
-    return random.Random(seed).randint(1, MAX_SPECIES_ID)
+def bot_entry(seed: int, count: int) -> list[int]:
+    return random.Random(seed).sample(range(1, MAX_SPECIES_ID + 1), count)
 
 
 def week_start(now: datetime) -> datetime:
@@ -444,6 +490,16 @@ def result_blocks(reply: Reply, with_log: bool = False) -> list[dict]:
     if with_log:
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": fit(reply.text, SECTION_TEXT_LIMIT)}})
     return blocks
+
+
+def image_blocks(text: str, image_url: str | None) -> list[dict] | None:
+    """`text` with a thumbnail beside it, or None when there is no image and the plain text is enough."""
+    if image_url is None:
+        return None
+    return [{
+        "type": "section", "text": {"type": "mrkdwn", "text": fit(text, SECTION_TEXT_LIMIT)},
+        "accessory": {"type": "image", "image_url": image_url, "alt_text": "대표 포켓몬"},
+    }]
 
 
 def fit(text: str, limit: int) -> str:

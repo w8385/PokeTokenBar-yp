@@ -120,4 +120,18 @@ enum DexProgress {
     static func newlyEarnedBadges(earned: [DexBadge], alreadyNotified: Set<String>) -> [DexBadge] {
         earned.filter { !alreadyNotified.contains($0.notificationKey) }
     }
+
+    /// Completed regions whose one-time reward has not been granted yet, in badge order.
+    static func unrewardedRegions(earned: [DexBadge], rewarded: Set<String>) -> [PokedexRegion] {
+        earned.compactMap { badge in
+            guard case .region(let region) = badge, !rewarded.contains(region.rawValue) else { return nil }
+            return region
+        }
+    }
+}
+
+/// One-time reward for completing a regional Pokédex.
+enum DexRegionReward {
+    /// Worth one guaranteed-rare egg at shop prices (4B tokens), paid in Rare Candies (500M each).
+    static var candyCount: Int { FreshEgg.price(guaranteeing: .rare) / RareCandy.price }
 }

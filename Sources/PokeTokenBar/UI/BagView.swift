@@ -5,6 +5,7 @@ import SwiftUI
 struct BagView: View {
     let store: CompanionStore
     let nav: PopoverNavigation
+    @State private var category: ItemCategory?
 
     /// The ticket whose scout screen is open; it replaces the list while set.
     @State private var scoutPool: ScoutPool?
@@ -21,12 +22,15 @@ struct BagView: View {
             // 고정 높이 — 컬렉션과 동일(팝오버 재오픈 시 fitting size 축소 방지).
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(store.ownedItems, id: \.kind) { item in
+                    ItemCategoryChips(categories: store.bagCategories, selection: $category, l: store.l)
+                    ForEach(store.ownedItems(in: category), id: \.kind) { item in
                         ItemCard(store: store, nav: nav, kind: item.kind, count: item.count)
                     }
-                    ForEach(store.ownedScoutTickets, id: \.pool) { ticket in
-                        ScoutTicketCard(store: store, pool: ticket.pool, count: ticket.count) {
-                            scoutPool = ticket.pool
+                    if category == nil || category == .scout {
+                        ForEach(store.ownedScoutTickets, id: \.pool) { ticket in
+                            ScoutTicketCard(store: store, pool: ticket.pool, count: ticket.count) {
+                                scoutPool = ticket.pool
+                            }
                         }
                     }
                 }
@@ -157,6 +161,8 @@ private struct ItemCard: View {
                 Text(l.shinyCharmEffectHint).font(.caption2.weight(.semibold)).foregroundStyle(.green)
                 Spacer()
             }
+        } else if kind.isLinkingCord {
+            Text(l.linkingCordBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if canUse {
             if confirming {
                 HStack(spacing: 8) {
