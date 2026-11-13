@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Hop, turn and bubble for one Pokémon of a `PetCrowd`. The hop is a one-shot keyframe per trigger change,
 /// never a loop; the crowd only changes its state while motion is allowed.
+@MainActor
 struct CrowdMember: ViewModifier {
     let crowd: PetCrowd
     let slot: Int
@@ -37,6 +38,7 @@ extension View {
 }
 
 /// A small emoji bubble drawn inside the sprite's box, so it never grows the floating panel.
+@MainActor
 struct CrowdBubble: View {
     let bubble: PetCrowd.Bubble
     let size: CGFloat
@@ -52,6 +54,7 @@ struct CrowdBubble: View {
 }
 
 /// The pet tile inside the Home header and the floating pet: one friend, shrunk to `size`.
+@MainActor
 struct FriendSprite: View {
     let friend: FriendSubject
     let size: CGFloat
@@ -160,6 +163,7 @@ struct FriendPicker: View {
                     }
                 }
                 .padding(2)
+                .reservesScrollerLane()
             }
             .frame(maxHeight: 210)
         }
