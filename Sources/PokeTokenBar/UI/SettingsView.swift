@@ -232,13 +232,13 @@ struct SettingsView: View {
                 // 메뉴바 스프라이트와 플로팅 펫 **둘 다**에 적용되므로 펫 섹션이 아니라 일반 섹션에 둔다.
                 VStack(alignment: .leading, spacing: 1) {
                     Text(l.animationQualityLabel)
-                    Text(l.animationQualityHint).font(.caption2).foregroundStyle(.tertiary)
+                    Text(l.animationQualityCaption(store.animationQuality)).font(.caption2).foregroundStyle(.tertiary)
                 }
                 Spacer()
                 Picker(l.animationQualityLabel, selection: $store.animationQuality) {
-                    Text(l.animationPowerSaver).tag(UsageStore.AnimationQuality.powerSaver)
-                    Text(l.animationBalanced).tag(UsageStore.AnimationQuality.balanced)
-                    Text(l.animationSmooth).tag(UsageStore.AnimationQuality.smooth)
+                    ForEach(UsageStore.AnimationQuality.allCases, id: \.self) { q in
+                        Text(l.animationQualityOption(q)).tag(q)
+                    }
                 }
                 .labelsHidden().pickerStyle(.menu).fixedSize()
             }

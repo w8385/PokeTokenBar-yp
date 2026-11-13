@@ -127,8 +127,7 @@ final class StoreTerminationTests: XCTestCase {
 /// 같은 규율(fps 하한 + 저전력 정적화)을 공유한다. 여기선 그 순수 판정만 고정한다.
 @MainActor
 final class FloatingPetEnergyTests: XCTestCase {
-    /// [회귀] 상시 표시 표면의 GIF 는 **어떤 프리셋에서도** fps 하한으로 캡 — 네이티브 fps 로 돌면
-    /// 프레임마다 재합성(CA 커밋→디스플레이 사이클 wakeup)이 늘어 메뉴바 회귀를 그대로 반복한다.
+    /// 모든 프리셋에서 캡은 재생 속도를 바꾸지 않는다(`native` 는 하한 0 = 프레임 그대로).
     func testEveryPresetCapsFramesWithoutChangingSpeed() {
         for q in UsageStore.AnimationQuality.allCases {
             let capped = GIFDecoder.capFrameRate(Self.uniformFrames(count: 20, delay: 0.1),
@@ -202,21 +201,54 @@ final class FloatingPetEnergyTests: XCTestCase {
                                  "최악의 경우 재생이 15% 이상 늘어지면 팝오버와 속도가 어긋나 보인다")
     }
 
-    /// [회귀] **어떤 프리셋도 캡을 해제하지 못한다.** 사용자에게 fps 선택권을 주면서 0(네이티브)이
-    /// 새는 게 가장 위험한 회귀 — 프리셋을 추가해도 이 가드가 자동으로 걸린다(개별 상수 단정과 달리).
-    func testNoAnimationQualityPresetDisablesTheCap() {
-        XCTAssertFalse(UsageStore.AnimationQuality.allCases.isEmpty)
-        for q in UsageStore.AnimationQuality.allCases {
-            XCTAssertGreaterThan(q.frameFloor, 0, "\(q.rawValue): 캡이 해제되면 idle wakeup 회귀")
+    /// [회귀] 캡 해제는 사용자가 `native` 를 직접 고른 경우뿐이다 — 캡 없는 프리셋이 하나 더 새거나
+    /// 저전력·메뉴바에서 0 이 새면 idle wakeup 회귀. 프리셋을 추가해도 전 케이스를 돌아 자동으로 걸린다.
+    func testOnlyExplicitNativeChoiceRemovesTheCap() {
+        let q = UsageStore.AnimationQuality.self
+        XCTAssertEqual(q.allCases.filter { $0.frameFloor == 0 }, [.native])
+        XCTAssertGreaterThan(q.powerSaver.frameFloor, 0, "기본값(powerSaver)은 캡이 있어야 한다")
+        for c in q.allCases {
+            XCTAssertGreaterThan(c.menuFrameFloor, 0, "\(c.rawValue): 메뉴바는 어느 프리셋에서도 캡")
+            XCTAssertGreaterThan(c.effectiveFrameFloor(lowPower: true), 0, "\(c.rawValue): 저전력은 캡 유지")
+            XCTAssertGreaterThan(c.effectiveMenuFrameFloor(lowPower: true), 0)
         }
     }
 
-    /// 프리셋 순서 계약 — powerSaver 가 가장 느리고(하한 큼) smooth 가 가장 부드럽다. 라벨과 실제
+    /// 원본: 플로팅 펫은 하한 0(스프라이트 원래 delay), 메뉴바는 10fps(0.1s) 이하로 못 빨라지고,
+    /// 저전력 모드는 둘 다 powerSaver 로 다시 캡한다.
+    func testNativeUncapsPetOnlyAndLowPowerCapsIt() {
+        let native = UsageStore.AnimationQuality.native
+        XCTAssertEqual(native.effectiveFrameFloor(lowPower: false), 0)
+        XCTAssertGreaterThanOrEqual(native.effectiveMenuFrameFloor(lowPower: false), 0.1)
+        XCTAssertEqual(native.effectiveFrameFloor(lowPower: true),
+                       UsageStore.AnimationQuality.powerSaver.frameFloor)
+        XCTAssertEqual(native.effectiveMenuFrameFloor(lowPower: true),
+                       UsageStore.AnimationQuality.powerSaver.frameFloor)
+        for q in UsageStore.AnimationQuality.allCases where q != .native {
+            XCTAssertEqual(q.menuFrameFloor, q.frameFloor, "\(q.rawValue): 원본 외 프리셋은 메뉴바도 같은 값")
+        }
+        let raw = Self.uniformFrames(count: 10, delay: 0.05)
+        XCTAssertEqual(GIFDecoder.capFrameRate(raw, floor: native.effectiveFrameFloor(lowPower: false)).count, 10)
+        XCTAssertEqual(GIFDecoder.capFrameRate(raw, floor: native.effectiveMenuFrameFloor(lowPower: false)).count, 5)
+    }
+
+    /// 펫 호출부가 날것 `frameFloor` 가 아니라 저전력을 반영한 `effectiveFrameFloor` 를 읽는다.
+    func testFloatingPetReadsTheEffectiveFloor() throws {
+        let src = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources/PokeTokenBar/UI/FloatingPetPanel.swift")
+        let text = try String(contentsOf: src, encoding: .utf8)
+        XCTAssertTrue(text.contains("animationQuality.effectiveFrameFloor("))
+        XCTAssertFalse(text.contains("animationQuality.frameFloor"))
+    }
+
+    /// 프리셋 순서 계약 — powerSaver 가 가장 느리고(하한 큼) native 가 가장 부드럽다. 라벨과 실제
     /// 동작이 어긋나면 사용자가 정반대를 고르게 된다.
     func testAnimationQualityPresetsAreOrdered() {
         let q = UsageStore.AnimationQuality.self
         XCTAssertGreaterThan(q.powerSaver.frameFloor, q.balanced.frameFloor)
         XCTAssertGreaterThan(q.balanced.frameFloor, q.smooth.frameFloor)
+        XCTAssertGreaterThan(q.smooth.frameFloor, q.native.frameFloor)
     }
 
     /// 저전력 모드의 유효 하한 — 파생값이라 "복귀"는 lowPower=false 계산 그 자체다.
@@ -272,15 +304,12 @@ final class FloatingPetEnergyTests: XCTestCase {
                           SpriteView.frameTaskID(speciesID: 42, shiny: true, floor: 0.2))
     }
 
-    /// 두 상시 표시 표면(메뉴바·펫)은 이제 **같은 설정값**을 읽는다(`animationQuality.frameFloor`)
-    /// — 한쪽만 캡이 풀리는 비대칭이 구조적으로 불가능해졌다. 남은 위험은 호출부가 0 을 직접
-    /// 넘기는 것뿐인데, 두 호출부 모두 SwiftUI/AppKit 뷰라 헤드리스로 잡을 수 없어 여기선
-    /// 프리셋 자체의 계약만 잠근다(`testNoAnimationQualityPresetDisablesTheCap`).
-    /// 일시적 표시(팝오버)는 의도적으로 floor 0 = 네이티브 fps 다.
+    /// 팝오버는 항상 floor 0 = 네이티브 fps 다. 플로팅 펫은 사용자가 `native` 를 고른 때만 같아진다
+    /// (`testOnlyExplicitNativeChoiceRemovesTheCap`).
     func testTransientSurfaceIsTheOnlyUncappedOne() {
         XCTAssertEqual(GIFDecoder.capFrameRate(Self.uniformFrames(count: 10, delay: 0.03),
                                                floor: 0).count, 10, "팝오버는 네이티브 유지")
-        XCTAssertTrue(UsageStore.AnimationQuality.allCases.allSatisfy { $0.frameFloor > 0 })
+        XCTAssertEqual(UsageStore.AnimationQuality.allCases.filter { $0.frameFloor == 0 }, [.native])
     }
 
     /// Bubble needs headroom + width beyond the square pet size — otherwise content is clipped.
