@@ -33,7 +33,14 @@ extension View {
 @Observable
 final class PopoverNavigation {
     var showSettings = false { didSet { if showSettings { dexDetailCollectionID = nil } } }
-    var tab: PopoverTab = .home { didSet { if tab != .collection { dexDetailCollectionID = nil } } }
+    var tab: PopoverTab = .home {
+        didSet {
+            if tab != .collection { dexDetailCollectionID = nil }
+            if tab != .battle { showingBattlePicker = false }
+        }
+    }
+    /// The Battle tab's fighter picker replaces the tab's content while open.
+    var showingBattlePicker = false
     /// 일반적인 컬렉션 재진입에는 마지막 세그먼트를 유지하되, 대표 포켓몬 선택 진입점은 도감으로 강제한다.
     var showingCollectionLog = false {
         didSet { if showingCollectionLog != oldValue { dexDetailCollectionID = nil } }
@@ -57,6 +64,7 @@ final class PopoverNavigation {
         showSettings = false
         expandAdvancedOnOpen = false
         showingRecap = false
+        showingBattlePicker = false
         tab = .home
     }
 
@@ -173,7 +181,7 @@ struct PopoverView: View {
             } else if nav.tab == .shop {
                 ShopView(store: companion, nav: nav)
             } else if nav.tab == .battle {
-                BattleView(store: companion)
+                BattleView(store: companion, navigation: nav)
             } else {
                 // 고정 높이 — 상점/가방/컬렉션과 동일(팝오버가 화면을 넘어가는 것을 방지).
                 ScrollView {

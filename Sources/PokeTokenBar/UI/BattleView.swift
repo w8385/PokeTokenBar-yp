@@ -4,30 +4,54 @@ import SwiftUI
 @MainActor
 struct BattleView: View {
     let store: CompanionStore
+    let navigation: PopoverNavigation
     @Environment(PartyUploader.self) private var uploader: PartyUploader?
     @Environment(BattleEntryStore.self) private var entry: BattleEntryStore?
 
     @State private var tokenInput = ""
     @State private var tokenInvalid = false
+    private let initialPickerQuery: String
 
     private var l: L { store.l }
 
+    init(store: CompanionStore, navigation: PopoverNavigation, initialPickerQuery: String = "") {
+        self.store = store
+        self.navigation = navigation
+        self.initialPickerQuery = initialPickerQuery
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                if let uploader {
-                    connectionSection(uploader)
-                    if uploader.hasToken, uploader.hasServer, let entry {
-                        section(nil) {
-                            BattleEntrySection(entry: entry, uploader: uploader)
+        if navigation.showingBattlePicker, let entry, let uploader {
+            BattleFighterPicker(
+                store: store,
+                current: BattleEntry.fighter(state: store.state, slot: entry.slot)?.id,
+                initialQuery: initialPickerQuery,
+                onPick: { id in
+                    entry.choose(id)
+                    navigation.showingBattlePicker = false
+                    Task { await uploader.tick() }
+                },
+                onBack: { navigation.showingBattlePicker = false })
+            .frame(height: 520)
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    if let uploader {
+                        connectionSection(uploader)
+                        if uploader.hasToken, uploader.hasServer, let entry {
+                            section(nil) {
+                                BattleEntrySection(entry: entry, uploader: uploader) {
+                                    navigation.showingBattlePicker = true
+                                }
+                            }
                         }
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .reservesScrollerLane()
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .reservesScrollerLane()
+            .frame(height: 520)
         }
-        .frame(height: 520)
     }
 
     private func connectionSection(_ uploader: PartyUploader) -> some View {

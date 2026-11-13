@@ -6,6 +6,7 @@ struct BattleEntrySection: View {
     @Environment(CompanionStore.self) private var companion
     let entry: BattleEntryStore
     let uploader: PartyUploader
+    let openPicker: () -> Void
 
     @State private var learnable: [String: LearnableMoves] = [:]
     @State private var unavailable: Set<String> = []
@@ -13,9 +14,8 @@ struct BattleEntrySection: View {
     private var l: L { companion.l }
 
     var body: some View {
-        let candidates = BattleEntry.candidates(in: companion.state)
         if let fighter = BattleEntry.fighter(state: companion.state, slot: entry.slot) {
-            entryRow(candidates, fighter: fighter)
+            entryRow(fighter: fighter)
             moveList(fighter)
         } else {
             rentalRow
@@ -42,23 +42,49 @@ struct BattleEntrySection: View {
         }
     }
 
-    private func entryRow(_ candidates: [BattleCandidate], fighter: BattleCandidate) -> some View {
-        row {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(l.battleEntryLabel)
-                Text(l.battleEntryHint).font(.caption2).foregroundStyle(.tertiary)
+    private func entryRow(fighter: BattleCandidate) -> some View {
+        let dexEntry = companion.dexEntry(for: fighter)
+        let speciesID = dexEntry?.finalID ?? fighter.member.pokemonID
+        let level = fighter.member.level
+        return VStack(alignment: .leading, spacing: 4) {
+            row {
+                SpriteView(speciesID: speciesID, size: 64, animated: true, shiny: fighter.member.shiny,
+                           form: dexEntry?.form)
+                    .frame(width: 64, height: 64)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(l.battleEntryLabel).font(.caption2).foregroundStyle(.secondary)
+                    Text("\(dexEntry.map(companion.dexEntryName) ?? companion.displayName)\(fighter.member.shiny ? " ✨" : "")")
+                        .font(.headline).lineLimit(1)
+                    HStack(spacing: 6) {
+                        Text("Lv\(level)").font(.callout).monospacedDigit()
+                        if BattleEntry.isLevelCapped(level) {
+                            Text(l.battleLevelCap(BattleEntry.battleLevel))
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        if fighter.dexEntry == nil {
+                            Text(l.battleEntryRaising).font(.caption2).foregroundStyle(Color.accentColor)
+                        }
+                    }
+                    if let details = companion.pokemonDetailsByID[speciesID] {
+                        TypeBadges(types: details.types, language: companion.language)
+                    }
+                }
+                Spacer(minLength: 4)
+                Button(l.battleChange, action: openPicker)
+                    .controlSize(.small)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                if entry.slot == nil {
+                    Text(l.battleEntryAutoPick).foregroundStyle(Color.accentColor)
+                }
+                Text(l.battleEntryHint).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Spacer()
-            Menu(entry.slot == nil ? l.battleEntryAutoPick : label(fighter)) {
-                Button(l.battleEntryAutoPick) { change { entry.choose(nil) } }
-                Divider()
-                ForEach(candidates) { candidate in
-                    Button(label(candidate)) { change { entry.choose(candidate.id) } }
-                }
-            }
-            .fixedSize()
+            .font(.caption2)
+            .padding(.horizontal, 12).padding(.bottom, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .task(id: speciesID) { await companion.loadPokemonDetails(speciesID: speciesID) }
     }
 
     @ViewBuilder
@@ -150,12 +176,6 @@ struct BattleEntrySection: View {
         }
         if (move.critRate ?? 0) > 0 { parts.append(l.moveHighCrit) }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
-    }
-
-    private func label(_ candidate: BattleCandidate) -> String {
-        let name = candidate.dexEntry.map(companion.dexEntryName) ?? companion.displayName
-        let raising = candidate.dexEntry == nil ? " · \(l.battleEntryRaising)" : ""
-        return "\(name) Lv\(candidate.member.level)\(candidate.member.shiny ? " ✨" : "")\(raising)"
     }
 
     private func change(_ edit: () -> Void) {
