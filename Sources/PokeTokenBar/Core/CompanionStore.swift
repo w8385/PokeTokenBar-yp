@@ -1301,6 +1301,17 @@ final class CompanionStore {
         }
     }
 
+    func ownedItems(in category: ItemCategory?) -> [(kind: ItemKind, count: Int)] {
+        guard let category else { return ownedItems }
+        return ownedItems.filter { $0.kind.category == category }
+    }
+
+    /// 가방에 아이템이 있는 분류 — 빈 분류는 탭에서 숨긴다.
+    var bagCategories: [ItemCategory] {
+        let present = Set(ownedItems.map { $0.kind.category })
+        return ItemCategory.allCases.filter(present.contains)
+    }
+
     /// 이상한 사탕 사용 가능 — 활성 포켓몬 + 라인 로딩 완료 + 재고>0.
     /// 라인 미로딩(재시작 직후·오프라인)이면 비활성 — 사탕이 진화 없이 적립만 되는 것 방지.
     var canUseRareCandy: Bool { maxRareCandyUseCount > 0 }
@@ -1481,6 +1492,19 @@ final class CompanionStore {
             if aDone != bDone { return !aDone }
             return price(of: a) < price(of: b)
         }
+    }
+
+    /// 분류 탭 필터 — nil 은 전체. 순서는 shopEntries 그대로다(가격 오름차순 규칙 유지). 진화의 돌은
+    /// 별도 구역(`evolutionStoneItems`)이라 여기에 없다.
+    func shopEntries(in category: ItemCategory?) -> [ShopEntry] {
+        guard let category else { return shopEntries }
+        return shopEntries.filter { $0.category == category }
+    }
+
+    /// 상점에 항목이 있는 분류 — 빈 분류는 탭에서 숨긴다.
+    var shopCategories: [ItemCategory] {
+        let present = Set(shopEntries.map(\.category)).union(evolutionStoneItems.map(\.category))
+        return ItemCategory.allCases.filter(present.contains)
     }
 
     /// 구매 완료한 보유형(이로치 부적 등)인지 — shopEntries 정렬에서 맨 아래로 보낼 판정.

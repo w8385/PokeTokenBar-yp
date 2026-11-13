@@ -2172,6 +2172,19 @@ struct L {
     /// 가방 사용 컨트롤의 효과 힌트 — 민트("성격 랜덤 변경", 사탕의 "+XP" 자리).
     var mintEffectHint: String { t("성격 랜덤 변경", "Random nature", "せいかくランダム変更", "Naturaleza aleatoria", "Nature aléatoire", "Natureza aleatória", "Zufälliges Wesen", "Случайный характер") }
 
+    // MARK: 상점·가방 분류 탭
+    var categoryAll: String { t("전체", "All", "すべて", "Todo", "Tout", "Tudo", "Alle", "Все") }
+    func categoryName(_ category: ItemCategory) -> String {
+        switch category {
+        case .growth:   return t("육성", "Growth", "育成", "Crianza", "Élevage", "Criação", "Aufzucht", "Рост")
+        case .egg:      return t("알", "Eggs", "タマゴ", "Huevos", "Œufs", "Ovos", "Eier", "Яйца")
+        case .scout:    return t("스카우트", "Scouting", "スカウト", "Exploración", "Recrutement", "Recrutamento", "Anwerbung", "Разведка")
+        case .evolution: return t("진화", "Evolution", "進化", "Evolución", "Évolution", "Evolução", "Entwicklung", "Эволюция")
+        case .heldItem: return t("지닌 도구", "Held items", "もちもの", "Objetos", "Objets tenus", "Itens seguráveis", "Items", "Предметы")
+        case .megaStone: return t("메가스톤", "Mega Stones", "メガストーン", "Megapiedras", "Méga-Gemmes", "Mega Pedras", "Mega-Steine", "Мега-камни")
+        }
+    }
+
     // MARK: 상점 (재화 = 사용한 토큰)
     var shop: String { t("상점", "Shop", "ショップ", "Tienda", "Boutique", "Loja", "Laden", "Магазин") }
     var spendableTokens: String { t("쓸 수 있는 토큰", "Spendable tokens", "使えるトークン", "Tokens disponibles", "Tokens disponibles", "Tokens disponíveis", "Verfügbare Tokens", "Доступно токенов") }
