@@ -13,6 +13,8 @@ struct PartyMember: Encodable, Equatable, Sendable {
     var rental: Bool? = nil
     /// Lowercase `PokemonNature` name; nil is left out of the JSON and the bot treats it as neutral.
     var nature: String? = nil
+    /// PokéAPI ability name of the individual (`"huge-power"`); nil is left out of the JSON and the bot gives it none.
+    var ability: String? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
@@ -45,7 +47,8 @@ enum PartyBuilder {
                            level: min(100, max(1, profile?.level ?? 1)),
                            shiny: shiny,
                            ivs: profile?.ivs,
-                           nature: nature?.rawValue)
+                           nature: nature?.rawValue,
+                           ability: profile?.abilityName)
     }
 
     static func isAcceptedPokemonID(_ id: Int) -> Bool {

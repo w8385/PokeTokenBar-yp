@@ -88,6 +88,26 @@ final class PartyBuilderTests: XCTestCase {
         XCTAssertNil((json["party"] as? [[String: Any]])?.first?["nature"])
     }
 
+    func testMemberCarriesTheRolledAbilityName() throws {
+        var rolled = profile(level: 30)
+        rolled.abilityName = "huge-power"
+        let member = PartyBuilder.member(speciesID: 25, form: nil, shiny: false, profile: rolled)
+        XCTAssertEqual(member.ability, "huge-power")
+
+        let data = try PartyPayload(appVersion: nil, party: [member]).encoded()
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual((json["party"] as? [[String: Any]])?.first?["ability"] as? String, "huge-power")
+    }
+
+    func testMemberWithoutARolledAbilityLeavesTheFieldOut() throws {
+        let member = PartyBuilder.member(speciesID: 25, form: nil, shiny: false, profile: profile(level: 30))
+        XCTAssertNil(member.ability)
+
+        let data = try PartyPayload(appVersion: nil, party: [member]).encoded()
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertNil((json["party"] as? [[String: Any]])?.first?["ability"])
+    }
+
     func testRaisedPokemonSendsItsNature() {
         var state = CompanionState()
         var active = MonState(baseID: 4, pathIDs: [4], stageIndex: 0, usedAtStage: 0,

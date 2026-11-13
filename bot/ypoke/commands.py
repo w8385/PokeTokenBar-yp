@@ -413,6 +413,7 @@ class CommandHandler:
             moves=battle_moves(learnable, member.get("moves")),
             rental=member.get("rental", False),
             nature=member.get("nature"),
+            ability=member.get("ability"),
         )
 
 

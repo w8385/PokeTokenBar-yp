@@ -1,7 +1,10 @@
+from dataclasses import replace
+
 import pytest
 
 from ypoke.battle import (
-    Action, BaseStats, BattleResult, Change, Combatant, Move, StatusDamage, WeatherDamage, WeatherEnd, simulate,
+    AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, Move, StatusDamage, WeatherDamage,
+    WeatherEnd, simulate,
 )
 from ypoke.narration import MAX_EVENT_LINES, PRACTICE_NOTE, SKIPPED_LINE, battle_lines, with_particle
 
@@ -148,3 +151,35 @@ def test_long_status_battles_still_collapse_the_middle_turns():
     assert len(lines) == 3 + MAX_EVENT_LINES + 1 + 1
     assert lines[3 + MAX_EVENT_LINES // 2] == SKIPPED_LINE
     assert lines[3].endswith("쿨쿨 잠들어 있다!") and lines[-2].startswith("19턴 ")
+
+
+def test_an_entry_ability_is_narrated_without_a_turn_number():
+    intimidate = AbilityTrigger(0, "피카츄", "intimidate", change=Change(1, "꼬부기", "attack", -1))
+    drizzle = AbilityTrigger(1, "꼬부기", "drizzle", weather="rain")
+    assert lines_for(intimidate, drizzle)[3:5] == [
+        "🔵 피카츄의 위협! 꼬부기의 공격이 떨어졌다!",
+        "🔴 꼬부기의 잔비! 비가 내리기 시작했다!",
+    ]
+
+
+def test_levitate_and_sturdy_are_narrated_inside_the_move_line():
+    dodged = act(1, 0, "지진", multiplier=0, ability="levitate", defender_hp=100)
+    held = act(2, 0, "지진", ability="sturdy", defender_hp=1)
+    assert lines_for(dodged)[3] == "1턴 🔵 피카츄의 지진! 꼬부기의 부유! 땅 타입 기술이 맞지 않는다!"
+    assert lines_for(held)[3] == "2턴 🔵 피카츄의 지진! 꼬부기의 옹골참! 간신히 버텼다! (꼬부기 HP 1%)"
+
+
+def test_a_battle_with_abilities_narrates_every_event():
+    sides = (replace(mon("피카츄", ["electric"], moves=[THUNDERBOLT]), ability="drizzle"),
+             replace(mon("꼬부기", ["water"], moves=[WATER_GUN]), ability="intimidate"))
+    lines = battle_lines(TRAINERS, sides, simulate(sides, 4))
+    assert set(lines[3:5]) == {"🔴 꼬부기의 위협! 피카츄의 공격이 떨어졌다!", "🔵 피카츄의 잔비! 비가 내리기 시작했다!"}
+
+
+def test_a_status_ability_is_narrated_inside_the_move_line():
+    shocked = act(1, 0, "몸통박치기", ability="static", changes=(Change(0, "피카츄", "paralysis"),), defender_hp=70)
+    blocked = act(2, 0, "10만볼트", ability="limber", defender_hp=70)
+    assert lines_for(shocked)[3] == (
+        "1턴 🔵 피카츄의 몸통박치기! 꼬부기의 정전기! 피카츄는 마비되어 기술이 나오기 어려워졌다! (꼬부기 HP 70%)"
+    )
+    assert lines_for(blocked)[3] == "2턴 🔵 피카츄의 10만볼트! 꼬부기의 유연! 마비되지 않는다! (꼬부기 HP 70%)"
