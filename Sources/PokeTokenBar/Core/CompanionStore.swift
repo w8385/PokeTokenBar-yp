@@ -1306,6 +1306,34 @@ final class CompanionStore {
         return ownedItems.filter { $0.kind.category == category }
     }
 
+    // MARK: 지닌 도구 (개체에 달았다 뗀다 — 다는 동안 가방에서 빠지고 떼면 돌아온다)
+
+    func heldItem(of instanceID: String) -> ItemKind? {
+        state.heldItems[instanceID].flatMap(ItemKind.init(rawValue:))
+    }
+
+    /// `kind` 를 `instanceID` 에 단다. 이미 다른 도구를 들고 있으면 그건 가방으로 돌아온다.
+    /// 가방에 없거나 지닌 도구가 아니거나 가진 개체가 아니면 false.
+    @discardableResult
+    func equip(_ kind: ItemKind, to instanceID: String) -> Bool {
+        guard kind.isHeldItem, itemCount(kind) > 0, state.ownedInstanceIDs.contains(instanceID) else { return false }
+        if state.heldItems[instanceID] == kind.rawValue { return true }
+        if let previous = state.heldItems[instanceID] { state.inventory[previous, default: 0] += 1 }
+        state.inventory[kind.rawValue] = itemCount(kind) - 1
+        state.heldItems[instanceID] = kind.rawValue
+        save()
+        return true
+    }
+
+    @discardableResult
+    func unequip(from instanceID: String) -> Bool {
+        guard let key = state.heldItems[instanceID] else { return false }
+        state.inventory[key, default: 0] += 1
+        state.heldItems[instanceID] = nil
+        save()
+        return true
+    }
+
     /// 가방에 아이템이 있는 분류 — 빈 분류는 탭에서 숨긴다.
     var bagCategories: [ItemCategory] {
         var present = Set(ownedItems.map { $0.kind.category })
@@ -2802,6 +2830,7 @@ final class CompanionStore {
     }
     private func save() {
         state.reconcileFriends()
+        state.returnOrphanedHeldItems()
         refreshRepresentativeSubject()
         refreshFriendSubjects()
         checkDexCompletions()   // 보유 성장분이 영속되는 매 지점에서 세대 완성 알림을 한 번만 띄운다

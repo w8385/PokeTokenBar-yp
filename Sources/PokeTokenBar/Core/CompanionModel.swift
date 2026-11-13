@@ -193,11 +193,28 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case fireStone, waterStone, thunderStone, leafStone, moonStone
     case sunStone, shinyStone, duskStone, dawnStone, iceStone
     case linkingCord
+    case leftovers, choiceScarf, choiceBand, focusSash, lifeOrb, expertBelt, charcoal
+
+    /// 봇에 보내는 지닌 도구 슬러그(PokéAPI 아이템 이름, `bot/API.md` `held_item`). nil = 지닌 도구 아님.
+    var heldItemSlug: String? {
+        switch self {
+        case .leftovers: return "leftovers"
+        case .choiceScarf: return "choice-scarf"
+        case .choiceBand: return "choice-band"
+        case .focusSash: return "focus-sash"
+        case .lifeOrb: return "life-orb"
+        case .expertBelt: return "expert-belt"
+        case .charcoal: return "charcoal"
+        default: return nil
+        }
+    }
+    var isHeldItem: Bool { heldItemSlug != nil }
 
     /// PokéAPI 아이템 이름(`use-item` 진화의 `item`). nil = 진화의 돌 아님.
     var evolutionItemName: String? {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .linkingCord: return nil
+        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return nil
         case .fireStone: return "fire-stone"
         case .waterStone: return "water-stone"
         case .thunderStone: return "thunder-stone"
@@ -221,7 +238,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .mint: return nil   // PokéAPI 에 민트 스프라이트 없음(8세대 아이템) → 이모지 폴백
         case .shinyCharm: return "shiny-charm"
         case .linkingCord: return "linking-cord"
-        default: return evolutionItemName
+        default: return heldItemSlug ?? evolutionItemName
         }
     }
     /// 스프라이트 로딩 전/미제공/실패 시 폴백 이모지.
@@ -231,6 +248,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .mint: return "🌿"
         case .shinyCharm: return "✨"
         case .linkingCord: return "🔗"
+        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return "🎒"
         default: return "💎"
         }
     }
@@ -240,6 +258,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return RareCandy.price
         case .mint: return Mint.price
         case .shinyCharm: return ShinyCharm.price
+        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return HeldItem.price
         default: return EvolutionStone.price
         }
     }
@@ -258,6 +277,12 @@ enum EvolutionStone {
     static let price = 1_000_000_000
 }
 
+/// 지닌 도구 상수 — 소모되지 않고 배틀 포켓몬에 달았다 뗄 수 있다.
+enum HeldItem {
+    /// 진화의 돌과 같은 값(1B). 7종 모두 동일.
+    static let price = 1_000_000_000
+}
+
 /// 상점·가방의 분류 탭. 빈 분류는 화면에서 숨긴다 — 아이템을 추가하는 쪽이 `ItemKind.category` 한 줄만 채운다.
 enum ItemCategory: String, CaseIterable, Sendable {
     case growth, egg, scout, evolution, heldItem, megaStone
@@ -267,6 +292,7 @@ extension ItemKind {
     var category: ItemCategory {
         switch self {
         case .rareCandy, .mint, .shinyCharm: return .growth
+        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return .heldItem
         default: return .evolution
         }
     }
@@ -916,6 +942,8 @@ struct CompanionState: Codable, Sendable {
     var scoutDraws: [String: [Int]] = [:]
     // 지금 품은 알이 스카우트로 고른 종인가 — 메타몽 위장 롤을 건너뛰어 고른 종이 그대로 부화하게 한다.
     var scoutedEgg = false
+    // 지닌 도구: 개체 instanceID → 인벤토리 키. 단 도구는 인벤토리에서 빠져 있다(뗄 때 돌아온다).
+    var heldItems: [String: String] = [:]
     // 사탕 지급 엣지 상태(창 key → 지급한 tier). ★영속 — notifiedTier(인메모리)와 달리 재시작 무한지급 방지.
     var candyGrantTier: [String: Int] = [:]
     // 창 key → 마지막으로 본 epoch(`resets_at`). util 이 계속 100%여도 epoch 교체로 재무장(#326).
@@ -974,6 +1002,7 @@ struct CompanionState: Codable, Sendable {
         inventory          = c.lenient([String: Int].self, forKey: .inventory, default: [:])
         scoutDraws         = c.lenient([String: [Int]].self, forKey: .scoutDraws, default: [:])
         scoutedEgg         = c.lenient(Bool.self, forKey: .scoutedEgg, default: false)
+        heldItems          = c.lenient([String: String].self, forKey: .heldItems, default: [:])
         candyGrantTier     = c.lenient([String: Int].self, forKey: .candyGrantTier, default: [:])
         candyWindowEpoch   = c.lenient([String: String].self, forKey: .candyWindowEpoch, default: [:])
         candyFeatureSeeded = c.lenient(Bool.self, forKey: .candyFeatureSeeded, default: false)
@@ -981,6 +1010,27 @@ struct CompanionState: Codable, Sendable {
         dexCompletionsSeeded = c.lenient(Bool.self, forKey: .dexCompletionsSeeded, default: false)
         rewardedDexRegions = c.lenient(Set<String>.self, forKey: .rewardedDexRegions, default: [])
         appliedTradeIDs    = c.lenient([String].self, forKey: .appliedTradeIDs, default: [])
+    }
+
+    /// 지금 가진(놓아주지 않은) 개체의 instanceID — 지닌 도구를 달 수 있는 대상.
+    var ownedInstanceIDs: Set<String> {
+        var ids = Set(dex.filter { $0.releasedAt == nil }.map(\.id))
+        if let id = active?.profile?.instanceID { ids.insert(id) }
+        return ids
+    }
+
+    func heldItemSlug(of instanceID: String) -> String? {
+        heldItems[instanceID].flatMap(ItemKind.init(rawValue:))?.heldItemSlug
+    }
+
+    /// 놓아준 개체·알 수 없는 도구에 달린 항목을 가방으로 돌려보낸다(도구가 사라지지 않게).
+    mutating func returnOrphanedHeldItems() {
+        guard !heldItems.isEmpty else { return }
+        let owned = ownedInstanceIDs
+        for (instanceID, key) in heldItems where !owned.contains(instanceID) || ItemKind(rawValue: key) == nil {
+            if ItemKind(rawValue: key) != nil { inventory[key, default: 0] += 1 }
+            heldItems[instanceID] = nil
+        }
     }
 
     /// 졸업 기록 또는 현재 개체가 실제로 도달한 단계에 이 종이 포함되는가.

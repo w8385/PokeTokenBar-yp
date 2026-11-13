@@ -21,7 +21,10 @@ struct BattleEntrySection: View {
         } else {
             ForEach(Array(lineup.enumerated()), id: \.element.id) { index, fighter in
                 entryRow(fighter: fighter, index: index, count: lineup.count)
-                if lineup.count == 1 || expanded == fighter.id { moveList(fighter) }
+                if lineup.count == 1 || expanded == fighter.id {
+                    heldItemRow(fighter)
+                    moveList(fighter)
+                }
             }
             if lineup.count < BattleEntry.maxSlots {
                 Button { openPicker(.add) } label: {
@@ -125,6 +128,48 @@ struct BattleEntrySection: View {
             .help(label)
             .accessibilityLabel(label)
             .disabled(disabled)
+    }
+
+    private func heldItemRow(_ fighter: BattleCandidate) -> some View {
+        let held = companion.heldItem(of: fighter.id)
+        let spare = companion.ownedItems(in: .heldItem)
+        return VStack(alignment: .leading, spacing: 4) {
+            row {
+                if let held {
+                    ItemIconView(kind: held, size: 28)
+                } else {
+                    Image(systemName: "bag").frame(width: 28, height: 28).foregroundStyle(.tertiary)
+                }
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(l.heldItemLabel).font(.caption2).foregroundStyle(.secondary)
+                    Text(held.map(l.itemName) ?? l.heldItemNone).font(.callout.weight(.semibold))
+                }
+                Spacer(minLength: 4)
+                if held != nil {
+                    Button(l.heldItemRemove) { change { companion.unequip(from: fighter.id) } }
+                        .controlSize(.small)
+                }
+                if !spare.isEmpty {
+                    Menu(l.heldItemEquip) {
+                        ForEach(spare, id: \.kind) { item in
+                            Button("\(l.itemName(item.kind)) ×\(item.count)") {
+                                change { companion.equip(item.kind, to: fighter.id) }
+                            }
+                        }
+                    }
+                    .controlSize(.small).fixedSize()
+                }
+            }
+            if let held {
+                Text(l.itemDescription(held)).font(.caption2).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 12).padding(.bottom, 6)
+            } else if spare.isEmpty {
+                Text(l.heldItemNoneOwned).font(.caption2).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 12).padding(.bottom, 6)
+            }
+        }
     }
 
     @ViewBuilder

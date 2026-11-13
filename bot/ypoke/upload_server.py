@@ -285,6 +285,9 @@ def _validate_member(index: int, member: object) -> dict:
     ability = member.get("ability")
     if isinstance(ability, str) and ABILITY_NAME.fullmatch(ability.strip().lower()):
         normalized["ability"] = ability.strip().lower()
+    held_item = member.get("held_item")
+    if isinstance(held_item, str) and 0 < len(held_item.strip()) <= 40:
+        normalized["held_item"] = held_item.strip().lower()
     ivs = member.get("ivs", {})
     if not isinstance(ivs, dict):
         raise PartyError(f"{where}.ivs must be an object")
