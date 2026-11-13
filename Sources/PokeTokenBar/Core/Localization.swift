@@ -2129,6 +2129,7 @@ struct L {
         case .lifeOrb: return t("생명의구슬", "Life Orb", "いのちのたま", "Vidasfera", "Orbe Vie", "Orbe Vital", "Leben-Orb", "Сфера жизни")
         case .expertBelt: return t("달인의띠", "Expert Belt", "たつじんのおび", "Cinta Experto", "Ceinture Pro", "Cinto Perito", "Expertengurt", "Пояс эксперта")
         case .charcoal: return t("목탄", "Charcoal", "もくたん", "Carbón", "Charbon", "Carvão", "Holzkohle", "Древесный уголь")
+        default: return evolutionItemName(kind)
         }
     }
 
@@ -2315,6 +2316,8 @@ struct L {
         case .linkingCord:
             return linkingCordDescription
         default:
+            if kind.isTradeEvolutionItem { return evolutionTradeItemNote }
+            if kind.isEvolutionHeld { return evolutionHeldNote }
             let effect = heldItemEffect(kind)
             return effect.isEmpty ? nil : effect
         }

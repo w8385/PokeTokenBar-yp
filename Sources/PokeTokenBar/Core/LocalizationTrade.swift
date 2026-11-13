@@ -131,6 +131,16 @@ extension L {
           "\(pokemon) entwickelt sich nicht durch Tausch. Die Verbindungsschnur bleibt erhalten.",
           "\(pokemon) не эволюционирует обменом. Шнур остался у вас.")
     }
+    func linkingCordNotReady(_ pokemon: String) -> String {
+        t("\(pokemon)은(는) 아직 진화할 수 없어요. 필요한 도구를 장착하거나 친구로 둔 뒤 다시 시도하세요. 연결의끈은 그대로 남아 있어요.",
+          "\(pokemon) can't evolve yet. Equip the item it needs or have its partner as a friend, then try again. Your Linking Cord is kept.",
+          "\(pokemon)はまだ進化できません。必要などうぐを持たせるか、相手をともだちにしてからもう一度。つながりのヒモはそのまま残ります。",
+          "\(pokemon) aún no puede evolucionar. Equípale el objeto que necesita o ten a su pareja como amigo e inténtalo de nuevo. Conservas el Cordón Unión.",
+          "\(pokemon) ne peut pas encore évoluer. Fais-lui tenir l'objet requis ou prends son partenaire comme ami, puis réessaie. Tu gardes le Fil de Liaison.",
+          "\(pokemon) ainda não pode evoluir. Equipe o item de que precisa ou tenha o parceiro como amigo e tente de novo. O Cordão Elo foi mantido.",
+          "\(pokemon) kann sich noch nicht entwickeln. Rüste das nötige Item aus oder nimm den Tauschpartner als Freund auf und versuche es erneut. Die Verbindungsschnur bleibt erhalten.",
+          "\(pokemon) пока не может эволюционировать. Дайте нужный предмет или добавьте его партнёра в друзья и повторите. Шнур остался у вас.")
+    }
     var linkingCordUnavailable: String {
         t("지금은 진화 정보를 불러오지 못했어요. 연결의끈은 그대로 남아 있어요.",
           "The evolution data could not be loaded right now. Your Linking Cord is kept.",

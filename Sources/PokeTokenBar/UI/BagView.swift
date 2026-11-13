@@ -103,6 +103,7 @@ private struct ItemCard: View {
     @State private var confirming = false
     @State private var candyCount = 1
     @State private var stoneRejected = false
+    @State private var stoneNotReady = false
 
     private var selectedCandyCount: Int { min(candyCount, max(1, store.maxRareCandyUseCount)) }
 
@@ -152,7 +153,8 @@ private struct ItemCard: View {
             }
             useControls(l)
             if stoneRejected {
-                Text(l.stoneWrongHint(store.displayName, l.itemName(kind)))
+                Text(stoneNotReady ? l.stoneNotReadyHint(store.displayName)
+                                   : l.stoneWrongHint(store.displayName, l.itemName(kind)))
                     .font(.caption2).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -188,7 +190,10 @@ private struct ItemCard: View {
         case .rareCandy: _ = store.useRareCandy(count: selectedCandyCount)
         case .mint:      _ = store.useMint()
         case .shinyCharm: break   // 보유형 — 사용 동작 없음
-        default:         return store.useEvolutionStone(kind) != .wrongStone
+        default:
+            let result = store.useEvolutionStone(kind)
+            stoneNotReady = result == .notReady
+            return result != .wrongStone && result != .notReady
         }
         return true
     }
@@ -206,6 +211,8 @@ private struct ItemCard: View {
             Text(l.linkingCordBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if kind.isHeldItem {
             Text(l.heldItemBagHint).font(.caption2).foregroundStyle(.tertiary)
+        } else if kind.isEvolutionHeld {
+            Text(l.evolutionHeldBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if canUse {
             if confirming {
                 HStack(spacing: 8) {

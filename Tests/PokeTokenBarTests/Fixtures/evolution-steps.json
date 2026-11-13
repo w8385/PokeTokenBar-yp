@@ -1,0 +1,8872 @@
+[
+ {
+  "species": 2,
+  "name": "ivysaur",
+  "parent": 1,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 3,
+  "name": "venusaur",
+  "parent": 2,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 5,
+  "name": "charmeleon",
+  "parent": 4,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 6,
+  "name": "charizard",
+  "parent": 5,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 8,
+  "name": "wartortle",
+  "parent": 7,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 9,
+  "name": "blastoise",
+  "parent": 8,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 11,
+  "name": "metapod",
+  "parent": 10,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 7
+   }
+  ]
+ },
+ {
+  "species": 12,
+  "name": "butterfree",
+  "parent": 11,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 10
+   }
+  ]
+ },
+ {
+  "species": 14,
+  "name": "kakuna",
+  "parent": 13,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 7
+   }
+  ]
+ },
+ {
+  "species": 15,
+  "name": "beedrill",
+  "parent": 14,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 10
+   }
+  ]
+ },
+ {
+  "species": 17,
+  "name": "pidgeotto",
+  "parent": 16,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 18,
+  "name": "pidgeot",
+  "parent": 17,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 20,
+  "name": "raticate",
+  "parent": 19,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20,
+    "time_of_day": "night",
+    "required_pokemon_form": "rattata-alola",
+    "evolved_pokemon_form": "raticate-alola"
+   }
+  ]
+ },
+ {
+  "species": 22,
+  "name": "fearow",
+  "parent": 21,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 24,
+  "name": "arbok",
+  "parent": 23,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   }
+  ]
+ },
+ {
+  "species": 25,
+  "name": "pikachu",
+  "parent": 172,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 220
+   }
+  ]
+ },
+ {
+  "species": 26,
+  "name": "raichu",
+  "parent": 25,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "thunder-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "pikachu"
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "item": "thunder-stone",
+    "trigger": "use-item",
+    "region": "alola",
+    "required_pokemon_form": "pikachu",
+    "evolved_pokemon_form": "raichu-alola"
+   }
+  ]
+ },
+ {
+  "species": 28,
+  "name": "sandslash",
+  "parent": 27,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "item": "ice-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "sandshrew-alola",
+    "evolved_pokemon_form": "sandslash-alola"
+   }
+  ]
+ },
+ {
+  "species": 30,
+  "name": "nidorina",
+  "parent": 29,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 31,
+  "name": "nidoqueen",
+  "parent": 30,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "moon-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 33,
+  "name": "nidorino",
+  "parent": 32,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 34,
+  "name": "nidoking",
+  "parent": 33,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "moon-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 35,
+  "name": "clefairy",
+  "parent": 173,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 36,
+  "name": "clefable",
+  "parent": 35,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "moon-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 38,
+  "name": "ninetales",
+  "parent": 37,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "fire-stone",
+    "trigger": "use-item"
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "item": "ice-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "vulpix-alola",
+    "evolved_pokemon_form": "ninetales-alola"
+   }
+  ]
+ },
+ {
+  "species": 39,
+  "name": "jigglypuff",
+  "parent": 174,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 40,
+  "name": "wigglytuff",
+  "parent": 39,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "moon-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 42,
+  "name": "golbat",
+  "parent": 41,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   }
+  ]
+ },
+ {
+  "species": 44,
+  "name": "gloom",
+  "parent": 43,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 21
+   }
+  ]
+ },
+ {
+  "species": 45,
+  "name": "vileplume",
+  "parent": 44,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "leaf-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 47,
+  "name": "parasect",
+  "parent": 46,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 49,
+  "name": "venomoth",
+  "parent": 48,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 31
+   }
+  ]
+ },
+ {
+  "species": 51,
+  "name": "dugtrio",
+  "parent": 50,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26,
+    "required_pokemon_form": "diglett-alola",
+    "evolved_pokemon_form": "dugtrio-alola"
+   }
+  ]
+ },
+ {
+  "species": 53,
+  "name": "persian",
+  "parent": 52,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160,
+    "required_pokemon_form": "meowth-alola",
+    "evolved_pokemon_form": "persian-alola"
+   }
+  ]
+ },
+ {
+  "species": 55,
+  "name": "golduck",
+  "parent": 54,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 33
+   }
+  ]
+ },
+ {
+  "species": 57,
+  "name": "primeape",
+  "parent": 56,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   }
+  ]
+ },
+ {
+  "species": 59,
+  "name": "arcanine",
+  "parent": 58,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "fire-stone",
+    "trigger": "use-item"
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "item": "fire-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "growlithe-hisui",
+    "evolved_pokemon_form": "arcanine-hisui"
+   }
+  ]
+ },
+ {
+  "species": 61,
+  "name": "poliwhirl",
+  "parent": 60,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 62,
+  "name": "poliwrath",
+  "parent": 61,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "water-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 64,
+  "name": "kadabra",
+  "parent": 63,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 65,
+  "name": "alakazam",
+  "parent": 64,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "trade"
+   }
+  ]
+ },
+ {
+  "species": 67,
+  "name": "machoke",
+  "parent": 66,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   }
+  ]
+ },
+ {
+  "species": 68,
+  "name": "machamp",
+  "parent": 67,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "trade"
+   }
+  ]
+ },
+ {
+  "species": 70,
+  "name": "weepinbell",
+  "parent": 69,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 21
+   }
+  ]
+ },
+ {
+  "species": 71,
+  "name": "victreebel",
+  "parent": 70,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "leaf-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 73,
+  "name": "tentacruel",
+  "parent": 72,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 75,
+  "name": "graveler",
+  "parent": 74,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25,
+    "required_pokemon_form": "geodude-alola",
+    "evolved_pokemon_form": "graveler-alola"
+   }
+  ]
+ },
+ {
+  "species": 76,
+  "name": "golem",
+  "parent": 75,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "trade"
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "trade",
+    "required_pokemon_form": "graveler-alola",
+    "evolved_pokemon_form": "golem-alola"
+   }
+  ]
+ },
+ {
+  "species": 78,
+  "name": "rapidash",
+  "parent": 77,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40,
+    "required_pokemon_form": "ponyta-galar",
+    "evolved_pokemon_form": "rapidash-galar"
+   }
+  ]
+ },
+ {
+  "species": 80,
+  "name": "slowbro",
+  "parent": 79,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   },
+   {
+    "version_group": "the-isle-of-armor",
+    "is_default": true,
+    "item": "galarica-cuff",
+    "trigger": "use-item",
+    "required_pokemon_form": "slowpoke-galar",
+    "evolved_pokemon_form": "slowbro-galar"
+   }
+  ]
+ },
+ {
+  "species": 82,
+  "name": "magneton",
+  "parent": 81,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 85,
+  "name": "dodrio",
+  "parent": 84,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 31
+   }
+  ]
+ },
+ {
+  "species": 87,
+  "name": "dewgong",
+  "parent": 86,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 89,
+  "name": "muk",
+  "parent": 88,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38,
+    "required_pokemon_form": "grimer-alola",
+    "evolved_pokemon_form": "muk-alola"
+   }
+  ]
+ },
+ {
+  "species": 91,
+  "name": "cloyster",
+  "parent": 90,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "water-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 93,
+  "name": "haunter",
+  "parent": 92,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 94,
+  "name": "gengar",
+  "parent": 93,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "trade"
+   }
+  ]
+ },
+ {
+  "species": 97,
+  "name": "hypno",
+  "parent": 96,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26
+   }
+  ]
+ },
+ {
+  "species": 99,
+  "name": "kingler",
+  "parent": 98,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   }
+  ]
+ },
+ {
+  "species": 101,
+  "name": "electrode",
+  "parent": 100,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "item": "leaf-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "voltorb-hisui",
+    "evolved_pokemon_form": "electrode-hisui"
+   }
+  ]
+ },
+ {
+  "species": 103,
+  "name": "exeggutor",
+  "parent": 102,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "leaf-stone",
+    "trigger": "use-item"
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "item": "leaf-stone",
+    "trigger": "use-item",
+    "region": "alola",
+    "evolved_pokemon_form": "exeggutor-alola"
+   }
+  ]
+ },
+ {
+  "species": 105,
+  "name": "marowak",
+  "parent": 104,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28,
+    "time_of_day": "night",
+    "region": "alola",
+    "evolved_pokemon_form": "marowak-alola"
+   }
+  ]
+ },
+ {
+  "species": 106,
+  "name": "hitmonlee",
+  "parent": 236,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20,
+    "relative_physical_stats": 1
+   }
+  ]
+ },
+ {
+  "species": 107,
+  "name": "hitmonchan",
+  "parent": 236,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20,
+    "relative_physical_stats": -1
+   }
+  ]
+ },
+ {
+  "species": 110,
+  "name": "weezing",
+  "parent": 109,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35,
+    "region": "galar",
+    "evolved_pokemon_form": "weezing-galar"
+   }
+  ]
+ },
+ {
+  "species": 112,
+  "name": "rhydon",
+  "parent": 111,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 42
+   }
+  ]
+ },
+ {
+  "species": 113,
+  "name": "chansey",
+  "parent": 440,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "held_item": "oval-stone",
+    "time_of_day": "day"
+   }
+  ]
+ },
+ {
+  "species": 117,
+  "name": "seadra",
+  "parent": 116,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 119,
+  "name": "seaking",
+  "parent": 118,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 33
+   }
+  ]
+ },
+ {
+  "species": 121,
+  "name": "starmie",
+  "parent": 120,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "water-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 122,
+  "name": "mr-mime",
+  "parent": 439,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "mimic"
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "mimic",
+    "region": "galar",
+    "evolved_pokemon_form": "mr-mime-galar"
+   }
+  ]
+ },
+ {
+  "species": 124,
+  "name": "jynx",
+  "parent": 238,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 125,
+  "name": "electabuzz",
+  "parent": 239,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 126,
+  "name": "magmar",
+  "parent": 240,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 130,
+  "name": "gyarados",
+  "parent": 129,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 134,
+  "name": "vaporeon",
+  "parent": 133,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "water-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "eevee"
+   }
+  ]
+ },
+ {
+  "species": 135,
+  "name": "jolteon",
+  "parent": 133,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "thunder-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "eevee"
+   }
+  ]
+ },
+ {
+  "species": 136,
+  "name": "flareon",
+  "parent": 133,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "item": "fire-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "eevee"
+   }
+  ]
+ },
+ {
+  "species": 139,
+  "name": "omastar",
+  "parent": 138,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 141,
+  "name": "kabutops",
+  "parent": 140,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 143,
+  "name": "snorlax",
+  "parent": 446,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 148,
+  "name": "dragonair",
+  "parent": 147,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 149,
+  "name": "dragonite",
+  "parent": 148,
+  "details": [
+   {
+    "version_group": "red-blue",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 55
+   }
+  ]
+ },
+ {
+  "species": 153,
+  "name": "bayleef",
+  "parent": 152,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 154,
+  "name": "meganium",
+  "parent": 153,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 156,
+  "name": "quilava",
+  "parent": 155,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 14
+   },
+   {
+    "version_group": "legends-arceus",
+    "trigger": "level-up",
+    "min_level": 17,
+    "region": "hisui"
+   }
+  ]
+ },
+ {
+  "species": 157,
+  "name": "typhlosion",
+  "parent": 156,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36,
+    "region": "hisui",
+    "evolved_pokemon_form": "typhlosion-hisui"
+   }
+  ]
+ },
+ {
+  "species": 159,
+  "name": "croconaw",
+  "parent": 158,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 160,
+  "name": "feraligatr",
+  "parent": 159,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 162,
+  "name": "furret",
+  "parent": 161,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 15
+   }
+  ]
+ },
+ {
+  "species": 164,
+  "name": "noctowl",
+  "parent": 163,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 166,
+  "name": "ledian",
+  "parent": 165,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 168,
+  "name": "ariados",
+  "parent": 167,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   }
+  ]
+ },
+ {
+  "species": 169,
+  "name": "crobat",
+  "parent": 42,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 171,
+  "name": "lanturn",
+  "parent": 170,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 27
+   }
+  ]
+ },
+ {
+  "species": 176,
+  "name": "togetic",
+  "parent": 175,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 178,
+  "name": "xatu",
+  "parent": 177,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 180,
+  "name": "flaaffy",
+  "parent": 179,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 15
+   }
+  ]
+ },
+ {
+  "species": 181,
+  "name": "ampharos",
+  "parent": 180,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 182,
+  "name": "bellossom",
+  "parent": 44,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "item": "sun-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 183,
+  "name": "marill",
+  "parent": 298,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 184,
+  "name": "azumarill",
+  "parent": 183,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 185,
+  "name": "sudowoodo",
+  "parent": 438,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "mimic"
+   }
+  ]
+ },
+ {
+  "species": 186,
+  "name": "politoed",
+  "parent": 61,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "kings-rock"
+   }
+  ]
+ },
+ {
+  "species": 188,
+  "name": "skiploom",
+  "parent": 187,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 189,
+  "name": "jumpluff",
+  "parent": 188,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 27
+   }
+  ]
+ },
+ {
+  "species": 192,
+  "name": "sunflora",
+  "parent": 191,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "item": "sun-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 195,
+  "name": "quagsire",
+  "parent": 194,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 196,
+  "name": "espeon",
+  "parent": 133,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160,
+    "time_of_day": "day",
+    "required_pokemon_form": "eevee"
+   }
+  ]
+ },
+ {
+  "species": 197,
+  "name": "umbreon",
+  "parent": 133,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160,
+    "time_of_day": "night",
+    "required_pokemon_form": "eevee"
+   }
+  ]
+ },
+ {
+  "species": 199,
+  "name": "slowking",
+  "parent": 79,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "kings-rock"
+   },
+   {
+    "version_group": "the-isle-of-armor",
+    "is_default": true,
+    "item": "galarica-wreath",
+    "trigger": "use-item",
+    "required_pokemon_form": "slowpoke-galar",
+    "evolved_pokemon_form": "slowking-galar"
+   }
+  ]
+ },
+ {
+  "species": 202,
+  "name": "wobbuffet",
+  "parent": 360,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 15
+   }
+  ]
+ },
+ {
+  "species": 205,
+  "name": "forretress",
+  "parent": 204,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 31
+   }
+  ]
+ },
+ {
+  "species": 208,
+  "name": "steelix",
+  "parent": 95,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "metal-coat"
+   }
+  ]
+ },
+ {
+  "species": 210,
+  "name": "granbull",
+  "parent": 209,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 23
+   }
+  ]
+ },
+ {
+  "species": 212,
+  "name": "scizor",
+  "parent": 123,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "metal-coat"
+   }
+  ]
+ },
+ {
+  "species": 217,
+  "name": "ursaring",
+  "parent": 216,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 219,
+  "name": "magcargo",
+  "parent": 218,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   }
+  ]
+ },
+ {
+  "species": 221,
+  "name": "piloswine",
+  "parent": 220,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 33
+   }
+  ]
+ },
+ {
+  "species": 224,
+  "name": "octillery",
+  "parent": 223,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 226,
+  "name": "mantine",
+  "parent": 458,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "party_species": "remoraid"
+   }
+  ]
+ },
+ {
+  "species": 229,
+  "name": "houndoom",
+  "parent": 228,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 230,
+  "name": "kingdra",
+  "parent": 117,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "dragon-scale"
+   }
+  ]
+ },
+ {
+  "species": 232,
+  "name": "donphan",
+  "parent": 231,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 233,
+  "name": "porygon2",
+  "parent": 137,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "up-grade"
+   }
+  ]
+ },
+ {
+  "species": 237,
+  "name": "hitmontop",
+  "parent": 236,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20,
+    "relative_physical_stats": 0
+   }
+  ]
+ },
+ {
+  "species": 242,
+  "name": "blissey",
+  "parent": 113,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 247,
+  "name": "pupitar",
+  "parent": 246,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 248,
+  "name": "tyranitar",
+  "parent": 247,
+  "details": [
+   {
+    "version_group": "gold-silver",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 55
+   }
+  ]
+ },
+ {
+  "species": 253,
+  "name": "grovyle",
+  "parent": 252,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 254,
+  "name": "sceptile",
+  "parent": 253,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 256,
+  "name": "combusken",
+  "parent": 255,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 257,
+  "name": "blaziken",
+  "parent": 256,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 259,
+  "name": "marshtomp",
+  "parent": 258,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 260,
+  "name": "swampert",
+  "parent": 259,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 262,
+  "name": "mightyena",
+  "parent": 261,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 264,
+  "name": "linoone",
+  "parent": 263,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20,
+    "required_pokemon_form": "zigzagoon-galar",
+    "evolved_pokemon_form": "linoone-galar"
+   }
+  ]
+ },
+ {
+  "species": 266,
+  "name": "silcoon",
+  "parent": 265,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "trigger": "level-up",
+    "min_level": 7,
+    "condition_expression": {
+     "expression": "PID 16 >> 10 % 4 <=",
+     "percentage_chance": 50,
+     "variables": [
+      {
+       "name": "personality-value",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/2/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 7,
+    "condition_expression": {
+     "expression": "EC 16 >> 10 % 4 <=",
+     "percentage_chance": 50,
+     "variables": [
+      {
+       "name": "encryption-constant",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/1/"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "species": 267,
+  "name": "beautifly",
+  "parent": 266,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 10
+   }
+  ]
+ },
+ {
+  "species": 268,
+  "name": "cascoon",
+  "parent": 265,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "trigger": "level-up",
+    "min_level": 7,
+    "condition_expression": {
+     "expression": "PID 16 >> 10 % 5 >=",
+     "percentage_chance": 50,
+     "variables": [
+      {
+       "name": "personality-value",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/2/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 7,
+    "condition_expression": {
+     "expression": "EC 16 >> 10 % 5 >=",
+     "percentage_chance": 50,
+     "variables": [
+      {
+       "name": "encryption-constant",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/1/"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "species": 269,
+  "name": "dustox",
+  "parent": 268,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 10
+   }
+  ]
+ },
+ {
+  "species": 271,
+  "name": "lombre",
+  "parent": 270,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 14
+   }
+  ]
+ },
+ {
+  "species": 272,
+  "name": "ludicolo",
+  "parent": 271,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "item": "water-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 274,
+  "name": "nuzleaf",
+  "parent": 273,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 14
+   }
+  ]
+ },
+ {
+  "species": 275,
+  "name": "shiftry",
+  "parent": 274,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "item": "leaf-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 277,
+  "name": "swellow",
+  "parent": 276,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   }
+  ]
+ },
+ {
+  "species": 279,
+  "name": "pelipper",
+  "parent": 278,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 281,
+  "name": "kirlia",
+  "parent": 280,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 282,
+  "name": "gardevoir",
+  "parent": 281,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 284,
+  "name": "masquerain",
+  "parent": 283,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   }
+  ]
+ },
+ {
+  "species": 286,
+  "name": "breloom",
+  "parent": 285,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 23
+   }
+  ]
+ },
+ {
+  "species": 288,
+  "name": "vigoroth",
+  "parent": 287,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 289,
+  "name": "slaking",
+  "parent": 288,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 291,
+  "name": "ninjask",
+  "parent": 290,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 292,
+  "name": "shedinja",
+  "parent": 290,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "shed"
+   }
+  ]
+ },
+ {
+  "species": 294,
+  "name": "loudred",
+  "parent": 293,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 295,
+  "name": "exploud",
+  "parent": 294,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 297,
+  "name": "hariyama",
+  "parent": 296,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 301,
+  "name": "delcatty",
+  "parent": 300,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "item": "moon-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 305,
+  "name": "lairon",
+  "parent": 304,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 306,
+  "name": "aggron",
+  "parent": 305,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 42
+   }
+  ]
+ },
+ {
+  "species": 308,
+  "name": "medicham",
+  "parent": 307,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   }
+  ]
+ },
+ {
+  "species": 310,
+  "name": "manectric",
+  "parent": 309,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26
+   }
+  ]
+ },
+ {
+  "species": 315,
+  "name": "roselia",
+  "parent": 406,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160,
+    "time_of_day": "day"
+   }
+  ]
+ },
+ {
+  "species": 317,
+  "name": "swalot",
+  "parent": 316,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26
+   }
+  ]
+ },
+ {
+  "species": 319,
+  "name": "sharpedo",
+  "parent": 318,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 321,
+  "name": "wailord",
+  "parent": 320,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 323,
+  "name": "camerupt",
+  "parent": 322,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 33
+   }
+  ]
+ },
+ {
+  "species": 326,
+  "name": "grumpig",
+  "parent": 325,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 329,
+  "name": "vibrava",
+  "parent": 328,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 330,
+  "name": "flygon",
+  "parent": 329,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 45
+   }
+  ]
+ },
+ {
+  "species": 332,
+  "name": "cacturne",
+  "parent": 331,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 334,
+  "name": "altaria",
+  "parent": 333,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 340,
+  "name": "whiscash",
+  "parent": 339,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 342,
+  "name": "crawdaunt",
+  "parent": 341,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 344,
+  "name": "claydol",
+  "parent": 343,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 346,
+  "name": "cradily",
+  "parent": 345,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 348,
+  "name": "armaldo",
+  "parent": 347,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 350,
+  "name": "milotic",
+  "parent": 349,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "trigger": "level-up",
+    "min_beauty": 170
+   },
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "prism-scale"
+   },
+   {
+    "version_group": "omega-ruby-alpha-sapphire",
+    "trigger": "level-up",
+    "min_beauty": 170
+   }
+  ]
+ },
+ {
+  "species": 354,
+  "name": "banette",
+  "parent": 353,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   }
+  ]
+ },
+ {
+  "species": 356,
+  "name": "dusclops",
+  "parent": 355,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   }
+  ]
+ },
+ {
+  "species": 358,
+  "name": "chimecho",
+  "parent": 433,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 220,
+    "time_of_day": "night"
+   }
+  ]
+ },
+ {
+  "species": 362,
+  "name": "glalie",
+  "parent": 361,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 42
+   }
+  ]
+ },
+ {
+  "species": 364,
+  "name": "sealeo",
+  "parent": 363,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 365,
+  "name": "walrein",
+  "parent": 364,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 44
+   }
+  ]
+ },
+ {
+  "species": 367,
+  "name": "huntail",
+  "parent": 366,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "deep-sea-tooth"
+   }
+  ]
+ },
+ {
+  "species": 368,
+  "name": "gorebyss",
+  "parent": 366,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "deep-sea-scale"
+   }
+  ]
+ },
+ {
+  "species": 372,
+  "name": "shelgon",
+  "parent": 371,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 373,
+  "name": "salamence",
+  "parent": 372,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 50
+   }
+  ]
+ },
+ {
+  "species": 375,
+  "name": "metang",
+  "parent": 374,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 376,
+  "name": "metagross",
+  "parent": 375,
+  "details": [
+   {
+    "version_group": "ruby-sapphire",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 45
+   }
+  ]
+ },
+ {
+  "species": 388,
+  "name": "grotle",
+  "parent": 387,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 389,
+  "name": "torterra",
+  "parent": 388,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 391,
+  "name": "monferno",
+  "parent": 390,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 14
+   }
+  ]
+ },
+ {
+  "species": 392,
+  "name": "infernape",
+  "parent": 391,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 394,
+  "name": "prinplup",
+  "parent": 393,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 395,
+  "name": "empoleon",
+  "parent": 394,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 397,
+  "name": "staravia",
+  "parent": 396,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 14
+   }
+  ]
+ },
+ {
+  "species": 398,
+  "name": "staraptor",
+  "parent": 397,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 400,
+  "name": "bibarel",
+  "parent": 399,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 15
+   }
+  ]
+ },
+ {
+  "species": 402,
+  "name": "kricketune",
+  "parent": 401,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 10
+   }
+  ]
+ },
+ {
+  "species": 404,
+  "name": "luxio",
+  "parent": 403,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 15
+   }
+  ]
+ },
+ {
+  "species": 405,
+  "name": "luxray",
+  "parent": 404,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 407,
+  "name": "roserade",
+  "parent": 315,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "item": "shiny-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 409,
+  "name": "rampardos",
+  "parent": 408,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 411,
+  "name": "bastiodon",
+  "parent": 410,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 413,
+  "name": "wormadam",
+  "parent": 412,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 1,
+    "min_level": 20,
+    "required_pokemon_form": "burmy-plant",
+    "evolved_pokemon_form": "wormadam-plant"
+   },
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 1,
+    "min_level": 20,
+    "required_pokemon_form": "burmy-sandy",
+    "evolved_pokemon_form": "wormadam-sandy"
+   },
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 1,
+    "min_level": 20,
+    "required_pokemon_form": "burmy-trash",
+    "evolved_pokemon_form": "wormadam-trash"
+   }
+  ]
+ },
+ {
+  "species": 414,
+  "name": "mothim",
+  "parent": 412,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 2,
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 416,
+  "name": "vespiquen",
+  "parent": 415,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 1,
+    "min_level": 21
+   }
+  ]
+ },
+ {
+  "species": 419,
+  "name": "floatzel",
+  "parent": 418,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26
+   }
+  ]
+ },
+ {
+  "species": 421,
+  "name": "cherrim",
+  "parent": 420,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 423,
+  "name": "gastrodon",
+  "parent": 422,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30,
+    "required_pokemon_form": "shellos-west",
+    "evolved_pokemon_form": "gastrodon-west"
+   },
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30,
+    "required_pokemon_form": "shellos-east",
+    "evolved_pokemon_form": "gastrodon-east"
+   }
+  ]
+ },
+ {
+  "species": 424,
+  "name": "ambipom",
+  "parent": 190,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "double-hit"
+   }
+  ]
+ },
+ {
+  "species": 426,
+  "name": "drifblim",
+  "parent": 425,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   }
+  ]
+ },
+ {
+  "species": 428,
+  "name": "lopunny",
+  "parent": 427,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 429,
+  "name": "mismagius",
+  "parent": 200,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "item": "dusk-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 430,
+  "name": "honchkrow",
+  "parent": 198,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "item": "dusk-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 432,
+  "name": "purugly",
+  "parent": 431,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   }
+  ]
+ },
+ {
+  "species": 435,
+  "name": "skuntank",
+  "parent": 434,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 437,
+  "name": "bronzong",
+  "parent": 436,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 33
+   }
+  ]
+ },
+ {
+  "species": 444,
+  "name": "gabite",
+  "parent": 443,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 445,
+  "name": "garchomp",
+  "parent": 444,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 48
+   }
+  ]
+ },
+ {
+  "species": 448,
+  "name": "lucario",
+  "parent": 447,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160,
+    "time_of_day": "day"
+   }
+  ]
+ },
+ {
+  "species": 450,
+  "name": "hippowdon",
+  "parent": 449,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 452,
+  "name": "drapion",
+  "parent": 451,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 454,
+  "name": "toxicroak",
+  "parent": 453,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   }
+  ]
+ },
+ {
+  "species": 457,
+  "name": "lumineon",
+  "parent": 456,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 31
+   }
+  ]
+ },
+ {
+  "species": 460,
+  "name": "abomasnow",
+  "parent": 459,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 461,
+  "name": "weavile",
+  "parent": 215,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "held_item": "razor-claw",
+    "time_of_day": "night"
+   }
+  ]
+ },
+ {
+  "species": 462,
+  "name": "magnezone",
+  "parent": 82,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "trigger": "level-up",
+    "location": "mt-coronet"
+   },
+   {
+    "version_group": "black-white",
+    "trigger": "level-up",
+    "location": "chargestone-cave"
+   },
+   {
+    "version_group": "x-y",
+    "trigger": "level-up",
+    "location": "kalos-route-13"
+   },
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "blush-mountain"
+   },
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "vast-poni-canyon"
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "thunder-stone",
+    "trigger": "use-item"
+   },
+   {
+    "version_group": "omega-ruby-alpha-sapphire",
+    "trigger": "level-up",
+    "location": "new-mauville"
+   }
+  ]
+ },
+ {
+  "species": 463,
+  "name": "lickilicky",
+  "parent": 108,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "rollout"
+   }
+  ]
+ },
+ {
+  "species": 464,
+  "name": "rhyperior",
+  "parent": 112,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "protector"
+   }
+  ]
+ },
+ {
+  "species": 465,
+  "name": "tangrowth",
+  "parent": 114,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "ancient-power"
+   }
+  ]
+ },
+ {
+  "species": 466,
+  "name": "electivire",
+  "parent": 125,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "electirizer"
+   }
+  ]
+ },
+ {
+  "species": 467,
+  "name": "magmortar",
+  "parent": 126,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "magmarizer"
+   }
+  ]
+ },
+ {
+  "species": 468,
+  "name": "togekiss",
+  "parent": 176,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "item": "shiny-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 469,
+  "name": "yanmega",
+  "parent": 193,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "ancient-power"
+   }
+  ]
+ },
+ {
+  "species": 470,
+  "name": "leafeon",
+  "parent": 133,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "trigger": "level-up",
+    "location": "eterna-forest",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "black-white",
+    "trigger": "level-up",
+    "location": "pinwheel-forest",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "x-y",
+    "trigger": "level-up",
+    "location": "kalos-route-20",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "leaf-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "omega-ruby-alpha-sapphire",
+    "trigger": "level-up",
+    "location": "petalburg-woods",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "lush-jungle",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   }
+  ]
+ },
+ {
+  "species": 471,
+  "name": "glaceon",
+  "parent": 133,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "trigger": "level-up",
+    "location": "sinnoh-route-217",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "black-white",
+    "trigger": "level-up",
+    "location": "twist-mountain",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "x-y",
+    "trigger": "level-up",
+    "location": "frost-cavern",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "ice-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "omega-ruby-alpha-sapphire",
+    "trigger": "level-up",
+    "location": "shoal-cave",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "mount-lanakila",
+    "near_special_rock": true,
+    "required_pokemon_form": "eevee"
+   }
+  ]
+ },
+ {
+  "species": 472,
+  "name": "gliscor",
+  "parent": 207,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "held_item": "razor-fang",
+    "time_of_day": "night"
+   }
+  ]
+ },
+ {
+  "species": 473,
+  "name": "mamoswine",
+  "parent": 221,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "ancient-power"
+   }
+  ]
+ },
+ {
+  "species": 474,
+  "name": "porygon-z",
+  "parent": 233,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "dubious-disc"
+   }
+  ]
+ },
+ {
+  "species": 475,
+  "name": "gallade",
+  "parent": 281,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "item": "dawn-stone",
+    "trigger": "use-item",
+    "gender": 2
+   }
+  ]
+ },
+ {
+  "species": 476,
+  "name": "probopass",
+  "parent": 299,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "trigger": "level-up",
+    "location": "mt-coronet"
+   },
+   {
+    "version_group": "black-white",
+    "trigger": "level-up",
+    "location": "chargestone-cave"
+   },
+   {
+    "version_group": "x-y",
+    "trigger": "level-up",
+    "location": "kalos-route-13"
+   },
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "blush-mountain"
+   },
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "vast-poni-canyon"
+   },
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "thunder-stone",
+    "trigger": "use-item"
+   },
+   {
+    "version_group": "omega-ruby-alpha-sapphire",
+    "trigger": "level-up",
+    "location": "new-mauville"
+   }
+  ]
+ },
+ {
+  "species": 477,
+  "name": "dusknoir",
+  "parent": 356,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "reaper-cloth"
+   }
+  ]
+ },
+ {
+  "species": 478,
+  "name": "froslass",
+  "parent": 361,
+  "details": [
+   {
+    "version_group": "diamond-pearl",
+    "is_default": true,
+    "item": "dawn-stone",
+    "trigger": "use-item",
+    "gender": 1
+   }
+  ]
+ },
+ {
+  "species": 490,
+  "name": "manaphy",
+  "parent": 489,
+  "details": []
+ },
+ {
+  "species": 496,
+  "name": "servine",
+  "parent": 495,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 17
+   }
+  ]
+ },
+ {
+  "species": 497,
+  "name": "serperior",
+  "parent": 496,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 499,
+  "name": "pignite",
+  "parent": 498,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 17
+   }
+  ]
+ },
+ {
+  "species": 500,
+  "name": "emboar",
+  "parent": 499,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 502,
+  "name": "dewott",
+  "parent": 501,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 17
+   }
+  ]
+ },
+ {
+  "species": 503,
+  "name": "samurott",
+  "parent": 502,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36,
+    "region": "hisui",
+    "evolved_pokemon_form": "samurott-hisui"
+   }
+  ]
+ },
+ {
+  "species": 505,
+  "name": "watchog",
+  "parent": 504,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 507,
+  "name": "herdier",
+  "parent": 506,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 508,
+  "name": "stoutland",
+  "parent": 507,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 510,
+  "name": "liepard",
+  "parent": 509,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 512,
+  "name": "simisage",
+  "parent": 511,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "leaf-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 514,
+  "name": "simisear",
+  "parent": 513,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "fire-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 516,
+  "name": "simipour",
+  "parent": 515,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "water-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 518,
+  "name": "musharna",
+  "parent": 517,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "moon-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 520,
+  "name": "tranquill",
+  "parent": 519,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 21
+   }
+  ]
+ },
+ {
+  "species": 521,
+  "name": "unfezant",
+  "parent": 520,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 523,
+  "name": "zebstrika",
+  "parent": 522,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 27
+   }
+  ]
+ },
+ {
+  "species": 525,
+  "name": "boldore",
+  "parent": 524,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 526,
+  "name": "gigalith",
+  "parent": 525,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "trade"
+   }
+  ]
+ },
+ {
+  "species": 528,
+  "name": "swoobat",
+  "parent": 527,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 530,
+  "name": "excadrill",
+  "parent": 529,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 31
+   }
+  ]
+ },
+ {
+  "species": 533,
+  "name": "gurdurr",
+  "parent": 532,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 534,
+  "name": "conkeldurr",
+  "parent": 533,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "trade"
+   }
+  ]
+ },
+ {
+  "species": 536,
+  "name": "palpitoad",
+  "parent": 535,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 537,
+  "name": "seismitoad",
+  "parent": 536,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 541,
+  "name": "swadloon",
+  "parent": 540,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 542,
+  "name": "leavanny",
+  "parent": 541,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 220
+   }
+  ]
+ },
+ {
+  "species": 544,
+  "name": "whirlipede",
+  "parent": 543,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   }
+  ]
+ },
+ {
+  "species": 545,
+  "name": "scolipede",
+  "parent": 544,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 547,
+  "name": "whimsicott",
+  "parent": 546,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "sun-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 549,
+  "name": "lilligant",
+  "parent": 548,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "sun-stone",
+    "trigger": "use-item"
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "item": "sun-stone",
+    "trigger": "use-item",
+    "region": "hisui",
+    "evolved_pokemon_form": "lilligant-hisui"
+   }
+  ]
+ },
+ {
+  "species": 552,
+  "name": "krokorok",
+  "parent": 551,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 29
+   }
+  ]
+ },
+ {
+  "species": 553,
+  "name": "krookodile",
+  "parent": 552,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 555,
+  "name": "darmanitan",
+  "parent": 554,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "ice-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "darumaka-galar",
+    "evolved_pokemon_form": "darmanitan-galar-standard"
+   }
+  ]
+ },
+ {
+  "species": 558,
+  "name": "crustle",
+  "parent": 557,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 560,
+  "name": "scrafty",
+  "parent": 559,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 39
+   }
+  ]
+ },
+ {
+  "species": 563,
+  "name": "cofagrigus",
+  "parent": 562,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 565,
+  "name": "carracosta",
+  "parent": 564,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   }
+  ]
+ },
+ {
+  "species": 567,
+  "name": "archeops",
+  "parent": 566,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   }
+  ]
+ },
+ {
+  "species": 569,
+  "name": "garbodor",
+  "parent": 568,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 571,
+  "name": "zoroark",
+  "parent": 570,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30,
+    "required_pokemon_form": "zorua-hisui",
+    "evolved_pokemon_form": "zoroark-hisui"
+   }
+  ]
+ },
+ {
+  "species": 573,
+  "name": "cinccino",
+  "parent": 572,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "shiny-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 575,
+  "name": "gothorita",
+  "parent": 574,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 576,
+  "name": "gothitelle",
+  "parent": 575,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 41
+   }
+  ]
+ },
+ {
+  "species": 578,
+  "name": "duosion",
+  "parent": 577,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 579,
+  "name": "reuniclus",
+  "parent": 578,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 41
+   }
+  ]
+ },
+ {
+  "species": 581,
+  "name": "swanna",
+  "parent": 580,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 583,
+  "name": "vanillish",
+  "parent": 582,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 584,
+  "name": "vanilluxe",
+  "parent": 583,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 47
+   }
+  ]
+ },
+ {
+  "species": 586,
+  "name": "sawsbuck",
+  "parent": 585,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34,
+    "required_pokemon_form": "deerling-spring",
+    "evolved_pokemon_form": "sawsbuck-spring"
+   },
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34,
+    "required_pokemon_form": "deerling-summer",
+    "evolved_pokemon_form": "sawsbuck-summer"
+   },
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34,
+    "required_pokemon_form": "deerling-autumn",
+    "evolved_pokemon_form": "sawsbuck-autumn"
+   },
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34,
+    "required_pokemon_form": "deerling-winter",
+    "evolved_pokemon_form": "sawsbuck-winter"
+   }
+  ]
+ },
+ {
+  "species": 589,
+  "name": "escavalier",
+  "parent": 588,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "trade",
+    "trade_species": "shelmet"
+   }
+  ]
+ },
+ {
+  "species": 591,
+  "name": "amoonguss",
+  "parent": 590,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 39
+   }
+  ]
+ },
+ {
+  "species": 593,
+  "name": "jellicent",
+  "parent": 592,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 596,
+  "name": "galvantula",
+  "parent": 595,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 598,
+  "name": "ferrothorn",
+  "parent": 597,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 600,
+  "name": "klang",
+  "parent": 599,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   }
+  ]
+ },
+ {
+  "species": 601,
+  "name": "klinklang",
+  "parent": 600,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 49
+   }
+  ]
+ },
+ {
+  "species": 603,
+  "name": "eelektrik",
+  "parent": 602,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 39
+   }
+  ]
+ },
+ {
+  "species": 604,
+  "name": "eelektross",
+  "parent": 603,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "thunder-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 606,
+  "name": "beheeyem",
+  "parent": 605,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 42
+   }
+  ]
+ },
+ {
+  "species": 608,
+  "name": "lampent",
+  "parent": 607,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 41
+   }
+  ]
+ },
+ {
+  "species": 609,
+  "name": "chandelure",
+  "parent": 608,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "item": "dusk-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 611,
+  "name": "fraxure",
+  "parent": 610,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   }
+  ]
+ },
+ {
+  "species": 612,
+  "name": "haxorus",
+  "parent": 611,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 48
+   }
+  ]
+ },
+ {
+  "species": 614,
+  "name": "beartic",
+  "parent": 613,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   }
+  ]
+ },
+ {
+  "species": 617,
+  "name": "accelgor",
+  "parent": 616,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "trade",
+    "trade_species": "karrablast"
+   }
+  ]
+ },
+ {
+  "species": 620,
+  "name": "mienshao",
+  "parent": 619,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 50
+   }
+  ]
+ },
+ {
+  "species": 623,
+  "name": "golurk",
+  "parent": 622,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 43
+   }
+  ]
+ },
+ {
+  "species": 625,
+  "name": "bisharp",
+  "parent": 624,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 52
+   }
+  ]
+ },
+ {
+  "species": 628,
+  "name": "braviary",
+  "parent": 627,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 54
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 54,
+    "region": "hisui",
+    "evolved_pokemon_form": "braviary-hisui"
+   }
+  ]
+ },
+ {
+  "species": 630,
+  "name": "mandibuzz",
+  "parent": 629,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 54
+   }
+  ]
+ },
+ {
+  "species": 634,
+  "name": "zweilous",
+  "parent": 633,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 50
+   }
+  ]
+ },
+ {
+  "species": 635,
+  "name": "hydreigon",
+  "parent": 634,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 64
+   }
+  ]
+ },
+ {
+  "species": 637,
+  "name": "volcarona",
+  "parent": 636,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 59
+   }
+  ]
+ },
+ {
+  "species": 651,
+  "name": "quilladin",
+  "parent": 650,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 652,
+  "name": "chesnaught",
+  "parent": 651,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 654,
+  "name": "braixen",
+  "parent": 653,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 655,
+  "name": "delphox",
+  "parent": 654,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 657,
+  "name": "frogadier",
+  "parent": 656,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 658,
+  "name": "greninja",
+  "parent": 657,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 660,
+  "name": "diggersby",
+  "parent": 659,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 662,
+  "name": "fletchinder",
+  "parent": 661,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 17
+   }
+  ]
+ },
+ {
+  "species": 663,
+  "name": "talonflame",
+  "parent": 662,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 665,
+  "name": "spewpa",
+  "parent": 664,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-icy-snow",
+    "evolved_pokemon_form": "spewpa-icy-snow"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-polar",
+    "evolved_pokemon_form": "spewpa-polar"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-tundra",
+    "evolved_pokemon_form": "spewpa-tundra"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-continental",
+    "evolved_pokemon_form": "spewpa-continental"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-garden",
+    "evolved_pokemon_form": "spewpa-garden"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-elegant",
+    "evolved_pokemon_form": "spewpa-elegant"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-meadow",
+    "evolved_pokemon_form": "spewpa-meadow"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-modern",
+    "evolved_pokemon_form": "spewpa-modern"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-marine",
+    "evolved_pokemon_form": "spewpa-marine"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-archipelago",
+    "evolved_pokemon_form": "spewpa-archipelago"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-high-plains",
+    "evolved_pokemon_form": "spewpa-high-plains"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-sandstorm",
+    "evolved_pokemon_form": "spewpa-sandstorm"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-river",
+    "evolved_pokemon_form": "spewpa-river"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-monsoon",
+    "evolved_pokemon_form": "spewpa-monsoon"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-savanna",
+    "evolved_pokemon_form": "spewpa-savanna"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-sun",
+    "evolved_pokemon_form": "spewpa-sun"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-ocean",
+    "evolved_pokemon_form": "spewpa-ocean"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-jungle",
+    "evolved_pokemon_form": "spewpa-jungle"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-fancy",
+    "evolved_pokemon_form": "spewpa-fancy"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 9,
+    "required_pokemon_form": "scatterbug-poke-ball",
+    "evolved_pokemon_form": "spewpa-poke-ball"
+   }
+  ]
+ },
+ {
+  "species": 666,
+  "name": "vivillon",
+  "parent": 665,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-icy-snow",
+    "evolved_pokemon_form": "vivillon-icy-snow"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-polar",
+    "evolved_pokemon_form": "vivillon-polar"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-tundra",
+    "evolved_pokemon_form": "vivillon-tundra"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-continental",
+    "evolved_pokemon_form": "vivillon-continental"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-garden",
+    "evolved_pokemon_form": "vivillon-garden"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-elegant",
+    "evolved_pokemon_form": "vivillon-elegant"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-meadow",
+    "evolved_pokemon_form": "vivillon-meadow"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-modern",
+    "evolved_pokemon_form": "vivillon-modern"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-marine",
+    "evolved_pokemon_form": "vivillon-marine"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-archipelago",
+    "evolved_pokemon_form": "vivillon-archipelago"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-high-plains",
+    "evolved_pokemon_form": "vivillon-high-plains"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-sandstorm",
+    "evolved_pokemon_form": "vivillon-sandstorm"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-river",
+    "evolved_pokemon_form": "vivillon-river"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-monsoon",
+    "evolved_pokemon_form": "vivillon-monsoon"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-savanna",
+    "evolved_pokemon_form": "vivillon-savanna"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-sun",
+    "evolved_pokemon_form": "vivillon-sun"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-ocean",
+    "evolved_pokemon_form": "vivillon-ocean"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-jungle",
+    "evolved_pokemon_form": "vivillon-jungle"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-fancy",
+    "evolved_pokemon_form": "vivillon-fancy"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 12,
+    "required_pokemon_form": "spewpa-poke-ball",
+    "evolved_pokemon_form": "vivillon-poke-ball"
+   }
+  ]
+ },
+ {
+  "species": 668,
+  "name": "pyroar",
+  "parent": 667,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 670,
+  "name": "floette",
+  "parent": 669,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 19,
+    "required_pokemon_form": "flabebe-red",
+    "evolved_pokemon_form": "floette-red"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 19,
+    "required_pokemon_form": "flabebe-yellow",
+    "evolved_pokemon_form": "floette-yellow"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 19,
+    "required_pokemon_form": "flabebe-orange",
+    "evolved_pokemon_form": "floette-orange"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 19,
+    "required_pokemon_form": "flabebe-blue",
+    "evolved_pokemon_form": "floette-blue"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 19,
+    "required_pokemon_form": "flabebe-white",
+    "evolved_pokemon_form": "floette-white"
+   }
+  ]
+ },
+ {
+  "species": 671,
+  "name": "florges",
+  "parent": 670,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "item": "shiny-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "floette-red",
+    "evolved_pokemon_form": "florges-red"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "item": "shiny-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "floette-yellow",
+    "evolved_pokemon_form": "florges-yellow"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "item": "shiny-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "floette-orange",
+    "evolved_pokemon_form": "florges-orange"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "item": "shiny-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "floette-blue",
+    "evolved_pokemon_form": "florges-blue"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "item": "shiny-stone",
+    "trigger": "use-item",
+    "required_pokemon_form": "floette-white",
+    "evolved_pokemon_form": "florges-white"
+   }
+  ]
+ },
+ {
+  "species": 673,
+  "name": "gogoat",
+  "parent": 672,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 675,
+  "name": "pangoro",
+  "parent": 674,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32,
+    "party_type": "dark"
+   }
+  ]
+ },
+ {
+  "species": 678,
+  "name": "meowstic",
+  "parent": 677,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 2,
+    "min_level": 25,
+    "evolved_pokemon_form": "meowstic-male"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 1,
+    "min_level": 25,
+    "evolved_pokemon_form": "meowstic-female"
+   }
+  ]
+ },
+ {
+  "species": 680,
+  "name": "doublade",
+  "parent": 679,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 681,
+  "name": "aegislash",
+  "parent": 680,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "item": "dusk-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 683,
+  "name": "aromatisse",
+  "parent": 682,
+  "details": [
+   {
+    "version_group": "black-white",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "sachet"
+   }
+  ]
+ },
+ {
+  "species": 685,
+  "name": "slurpuff",
+  "parent": 684,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "trade",
+    "held_item": "whipped-dream"
+   }
+  ]
+ },
+ {
+  "species": 687,
+  "name": "malamar",
+  "parent": 686,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30,
+    "turn_upside_down": true
+   }
+  ]
+ },
+ {
+  "species": 689,
+  "name": "barbaracle",
+  "parent": 688,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 39
+   }
+  ]
+ },
+ {
+  "species": 691,
+  "name": "dragalge",
+  "parent": 690,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 48
+   }
+  ]
+ },
+ {
+  "species": 693,
+  "name": "clawitzer",
+  "parent": 692,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   }
+  ]
+ },
+ {
+  "species": 695,
+  "name": "heliolisk",
+  "parent": 694,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "item": "sun-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 697,
+  "name": "tyrantrum",
+  "parent": 696,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 39,
+    "time_of_day": "day"
+   }
+  ]
+ },
+ {
+  "species": 699,
+  "name": "aurorus",
+  "parent": 698,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 39,
+    "time_of_day": "night"
+   }
+  ]
+ },
+ {
+  "species": 700,
+  "name": "sylveon",
+  "parent": 133,
+  "details": [
+   {
+    "version_group": "x-y",
+    "trigger": "level-up",
+    "known_move_type": "fairy",
+    "min_affection": 2,
+    "required_pokemon_form": "eevee"
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move_type": "fairy",
+    "min_happiness": 160,
+    "required_pokemon_form": "eevee"
+   }
+  ]
+ },
+ {
+  "species": 705,
+  "name": "sliggoo",
+  "parent": 704,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40,
+    "region": "hisui",
+    "evolved_pokemon_form": "sliggoo-hisui"
+   }
+  ]
+ },
+ {
+  "species": 706,
+  "name": "goodra",
+  "parent": 705,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 50,
+    "needs_overworld_rain": true
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 50,
+    "needs_overworld_rain": true,
+    "required_pokemon_form": "sliggoo-hisui",
+    "evolved_pokemon_form": "goodra-hisui"
+   }
+  ]
+ },
+ {
+  "species": 709,
+  "name": "trevenant",
+  "parent": 708,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "trade"
+   }
+  ]
+ },
+ {
+  "species": 711,
+  "name": "gourgeist",
+  "parent": 710,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "trade",
+    "required_pokemon_form": "pumpkaboo-average",
+    "evolved_pokemon_form": "gourgeist-average"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "trade",
+    "required_pokemon_form": "pumpkaboo-small",
+    "evolved_pokemon_form": "gourgeist-small"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "trade",
+    "required_pokemon_form": "pumpkaboo-large",
+    "evolved_pokemon_form": "gourgeist-large"
+   },
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "trade",
+    "required_pokemon_form": "pumpkaboo-super",
+    "evolved_pokemon_form": "gourgeist-super"
+   }
+  ]
+ },
+ {
+  "species": 713,
+  "name": "avalugg",
+  "parent": 712,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 37,
+    "region": "hisui",
+    "evolved_pokemon_form": "avalugg-hisui"
+   }
+  ]
+ },
+ {
+  "species": 715,
+  "name": "noivern",
+  "parent": 714,
+  "details": [
+   {
+    "version_group": "x-y",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 48
+   }
+  ]
+ },
+ {
+  "species": 723,
+  "name": "dartrix",
+  "parent": 722,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 17
+   }
+  ]
+ },
+ {
+  "species": 724,
+  "name": "decidueye",
+  "parent": 723,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36,
+    "region": "hisui",
+    "evolved_pokemon_form": "decidueye-hisui"
+   }
+  ]
+ },
+ {
+  "species": 726,
+  "name": "torracat",
+  "parent": 725,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 17
+   }
+  ]
+ },
+ {
+  "species": 727,
+  "name": "incineroar",
+  "parent": 726,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 729,
+  "name": "brionne",
+  "parent": 728,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 17
+   }
+  ]
+ },
+ {
+  "species": 730,
+  "name": "primarina",
+  "parent": 729,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 732,
+  "name": "trumbeak",
+  "parent": 731,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 14
+   }
+  ]
+ },
+ {
+  "species": 733,
+  "name": "toucannon",
+  "parent": 732,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   }
+  ]
+ },
+ {
+  "species": 735,
+  "name": "gumshoos",
+  "parent": 734,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20,
+    "time_of_day": "day"
+   }
+  ]
+ },
+ {
+  "species": 737,
+  "name": "charjabug",
+  "parent": 736,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 738,
+  "name": "vikavolt",
+  "parent": 737,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "vast-poni-canyon"
+   },
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "blush-mountain"
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "thunder-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 740,
+  "name": "crabominable",
+  "parent": 739,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "trigger": "level-up",
+    "location": "mount-lanakila"
+   },
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "ice-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 743,
+  "name": "ribombee",
+  "parent": 742,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 745,
+  "name": "lycanroc",
+  "parent": 744,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25,
+    "time_of_day": "day",
+    "required_pokemon_form": "rockruff",
+    "evolved_pokemon_form": "lycanroc-midday"
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25,
+    "time_of_day": "night",
+    "required_pokemon_form": "rockruff",
+    "evolved_pokemon_form": "lycanroc-midnight"
+   },
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25,
+    "time_of_day": "dusk",
+    "required_pokemon_form": "rockruff-own-tempo",
+    "evolved_pokemon_form": "lycanroc-dusk"
+   }
+  ]
+ },
+ {
+  "species": 748,
+  "name": "toxapex",
+  "parent": 747,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   }
+  ]
+ },
+ {
+  "species": 750,
+  "name": "mudsdale",
+  "parent": 749,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 752,
+  "name": "araquanid",
+  "parent": 751,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   }
+  ]
+ },
+ {
+  "species": 754,
+  "name": "lurantis",
+  "parent": 753,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34,
+    "time_of_day": "day"
+   }
+  ]
+ },
+ {
+  "species": 756,
+  "name": "shiinotic",
+  "parent": 755,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 758,
+  "name": "salazzle",
+  "parent": 757,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 1,
+    "min_level": 33
+   }
+  ]
+ },
+ {
+  "species": 760,
+  "name": "bewear",
+  "parent": 759,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 27
+   }
+  ]
+ },
+ {
+  "species": 762,
+  "name": "steenee",
+  "parent": 761,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 763,
+  "name": "tsareena",
+  "parent": 762,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "stomp"
+   }
+  ]
+ },
+ {
+  "species": 768,
+  "name": "golisopod",
+  "parent": 767,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 770,
+  "name": "palossand",
+  "parent": 769,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 42
+   }
+  ]
+ },
+ {
+  "species": 773,
+  "name": "silvally",
+  "parent": 772,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160
+   }
+  ]
+ },
+ {
+  "species": 783,
+  "name": "hakamo-o",
+  "parent": 782,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 784,
+  "name": "kommo-o",
+  "parent": 783,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 45
+   }
+  ]
+ },
+ {
+  "species": 790,
+  "name": "cosmoem",
+  "parent": 789,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 43
+   }
+  ]
+ },
+ {
+  "species": 791,
+  "name": "solgaleo",
+  "parent": 790,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 53
+   }
+  ]
+ },
+ {
+  "species": 792,
+  "name": "lunala",
+  "parent": 790,
+  "details": [
+   {
+    "version_group": "sun-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 53
+   }
+  ]
+ },
+ {
+  "species": 804,
+  "name": "naganadel",
+  "parent": 803,
+  "details": [
+   {
+    "version_group": "ultra-sun-ultra-moon",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "dragon-pulse"
+   }
+  ]
+ },
+ {
+  "species": 809,
+  "name": "melmetal",
+  "parent": 808,
+  "details": [
+   {
+    "version_group": "lets-go-pikachu-lets-go-eevee",
+    "is_default": true,
+    "trigger": "meltan-candies"
+   }
+  ]
+ },
+ {
+  "species": 811,
+  "name": "thwackey",
+  "parent": 810,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 812,
+  "name": "rillaboom",
+  "parent": 811,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 814,
+  "name": "raboot",
+  "parent": 813,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 815,
+  "name": "cinderace",
+  "parent": 814,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 817,
+  "name": "drizzile",
+  "parent": 816,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 818,
+  "name": "inteleon",
+  "parent": 817,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 820,
+  "name": "greedent",
+  "parent": 819,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 822,
+  "name": "corvisquire",
+  "parent": 821,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 823,
+  "name": "corviknight",
+  "parent": 822,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   }
+  ]
+ },
+ {
+  "species": 825,
+  "name": "dottler",
+  "parent": 824,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 10
+   }
+  ]
+ },
+ {
+  "species": 826,
+  "name": "orbeetle",
+  "parent": 825,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 828,
+  "name": "thievul",
+  "parent": 827,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 830,
+  "name": "eldegoss",
+  "parent": 829,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20
+   }
+  ]
+ },
+ {
+  "species": 832,
+  "name": "dubwool",
+  "parent": 831,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 834,
+  "name": "drednaw",
+  "parent": 833,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 22
+   }
+  ]
+ },
+ {
+  "species": 836,
+  "name": "boltund",
+  "parent": 835,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 838,
+  "name": "carkol",
+  "parent": 837,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 839,
+  "name": "coalossal",
+  "parent": 838,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 841,
+  "name": "flapple",
+  "parent": 840,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "tart-apple",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 842,
+  "name": "appletun",
+  "parent": 840,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "sweet-apple",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 844,
+  "name": "sandaconda",
+  "parent": 843,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 847,
+  "name": "barraskewda",
+  "parent": 846,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26
+   }
+  ]
+ },
+ {
+  "species": 849,
+  "name": "toxtricity",
+  "parent": 848,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30,
+    "evolved_pokemon_form": "toxtricity-amped",
+    "allowed_natures": [
+     {
+      "name": "hardy",
+      "url": "https://pokeapi.co/api/v2/nature/1/"
+     },
+     {
+      "name": "docile",
+      "url": "https://pokeapi.co/api/v2/nature/7/"
+     },
+     {
+      "name": "hasty",
+      "url": "https://pokeapi.co/api/v2/nature/10/"
+     },
+     {
+      "name": "adamant",
+      "url": "https://pokeapi.co/api/v2/nature/11/"
+     },
+     {
+      "name": "impish",
+      "url": "https://pokeapi.co/api/v2/nature/12/"
+     },
+     {
+      "name": "rash",
+      "url": "https://pokeapi.co/api/v2/nature/15/"
+     },
+     {
+      "name": "jolly",
+      "url": "https://pokeapi.co/api/v2/nature/16/"
+     },
+     {
+      "name": "naughty",
+      "url": "https://pokeapi.co/api/v2/nature/17/"
+     },
+     {
+      "name": "lax",
+      "url": "https://pokeapi.co/api/v2/nature/18/"
+     },
+     {
+      "name": "quirky",
+      "url": "https://pokeapi.co/api/v2/nature/19/"
+     },
+     {
+      "name": "naive",
+      "url": "https://pokeapi.co/api/v2/nature/20/"
+     },
+     {
+      "name": "brave",
+      "url": "https://pokeapi.co/api/v2/nature/21/"
+     },
+     {
+      "name": "sassy",
+      "url": "https://pokeapi.co/api/v2/nature/24/"
+     }
+    ]
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30,
+    "evolved_pokemon_form": "toxtricity-low-key",
+    "allowed_natures": [
+     {
+      "name": "bold",
+      "url": "https://pokeapi.co/api/v2/nature/2/"
+     },
+     {
+      "name": "modest",
+      "url": "https://pokeapi.co/api/v2/nature/3/"
+     },
+     {
+      "name": "calm",
+      "url": "https://pokeapi.co/api/v2/nature/4/"
+     },
+     {
+      "name": "timid",
+      "url": "https://pokeapi.co/api/v2/nature/5/"
+     },
+     {
+      "name": "lonely",
+      "url": "https://pokeapi.co/api/v2/nature/6/"
+     },
+     {
+      "name": "mild",
+      "url": "https://pokeapi.co/api/v2/nature/8/"
+     },
+     {
+      "name": "gentle",
+      "url": "https://pokeapi.co/api/v2/nature/9/"
+     },
+     {
+      "name": "bashful",
+      "url": "https://pokeapi.co/api/v2/nature/13/"
+     },
+     {
+      "name": "careful",
+      "url": "https://pokeapi.co/api/v2/nature/14/"
+     },
+     {
+      "name": "relaxed",
+      "url": "https://pokeapi.co/api/v2/nature/22/"
+     },
+     {
+      "name": "quiet",
+      "url": "https://pokeapi.co/api/v2/nature/23/"
+     },
+     {
+      "name": "serious",
+      "url": "https://pokeapi.co/api/v2/nature/25/"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "species": 851,
+  "name": "centiskorch",
+  "parent": 850,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   }
+  ]
+ },
+ {
+  "species": 853,
+  "name": "grapploct",
+  "parent": 852,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "taunt"
+   }
+  ]
+ },
+ {
+  "species": 855,
+  "name": "polteageist",
+  "parent": 854,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "cracked-pot",
+    "trigger": "use-item",
+    "required_pokemon_form": "sinistea-phony",
+    "evolved_pokemon_form": "polteageist-phony"
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "item": "chipped-pot",
+    "trigger": "use-item",
+    "required_pokemon_form": "sinistea-antique",
+    "evolved_pokemon_form": "polteageist-antique"
+   }
+  ]
+ },
+ {
+  "species": 857,
+  "name": "hattrem",
+  "parent": 856,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 858,
+  "name": "hatterene",
+  "parent": 857,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 42
+   }
+  ]
+ },
+ {
+  "species": 860,
+  "name": "morgrem",
+  "parent": 859,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 32
+   }
+  ]
+ },
+ {
+  "species": 861,
+  "name": "grimmsnarl",
+  "parent": 860,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 42
+   }
+  ]
+ },
+ {
+  "species": 862,
+  "name": "obstagoon",
+  "parent": 264,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35,
+    "time_of_day": "night",
+    "required_pokemon_form": "linoone-galar"
+   }
+  ]
+ },
+ {
+  "species": 863,
+  "name": "perrserker",
+  "parent": 52,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28,
+    "required_pokemon_form": "meowth-galar"
+   }
+  ]
+ },
+ {
+  "species": 864,
+  "name": "cursola",
+  "parent": 222,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38,
+    "required_pokemon_form": "corsola-galar"
+   }
+  ]
+ },
+ {
+  "species": 865,
+  "name": "sirfetchd",
+  "parent": 83,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "three-critical-hits",
+    "required_pokemon_form": "farfetchd-galar"
+   }
+  ]
+ },
+ {
+  "species": 866,
+  "name": "mr-rime",
+  "parent": 122,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 42,
+    "required_pokemon_form": "mr-mime-galar"
+   }
+  ]
+ },
+ {
+  "species": 867,
+  "name": "runerigus",
+  "parent": 562,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "take-damage",
+    "location": "dusty-bowl",
+    "required_pokemon_form": "yamask-galar",
+    "min_damage_taken": 49
+   }
+  ]
+ },
+ {
+  "species": 869,
+  "name": "alcremie",
+  "parent": 868,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-vanilla-cream-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-cream-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-matcha-cream-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-mint-cream-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-lemon-cream-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-salted-cream-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-swirl-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-caramel-swirl-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "strawberry-sweet",
+    "time_of_day": "dusk",
+    "evolved_pokemon_form": "alcremie-rainbow-swirl-strawberry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_SEC 10 >=",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-vanilla-cream-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-cream-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-matcha-cream-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-mint-cream-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-lemon-cream-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-salted-cream-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-swirl-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-caramel-swirl-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "berry-sweet",
+    "time_of_day": "dusk",
+    "evolved_pokemon_form": "alcremie-rainbow-swirl-berry-sweet",
+    "condition_expression": {
+     "expression": "SPIN_SEC 10 >=",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-vanilla-cream-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-cream-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-matcha-cream-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-mint-cream-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-lemon-cream-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-salted-cream-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-swirl-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-caramel-swirl-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "love-sweet",
+    "time_of_day": "dusk",
+    "evolved_pokemon_form": "alcremie-rainbow-swirl-love-sweet",
+    "condition_expression": {
+     "expression": "SPIN_SEC 10 >=",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-vanilla-cream-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-cream-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-matcha-cream-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-mint-cream-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-lemon-cream-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-salted-cream-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-swirl-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-caramel-swirl-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "star-sweet",
+    "time_of_day": "dusk",
+    "evolved_pokemon_form": "alcremie-rainbow-swirl-star-sweet",
+    "condition_expression": {
+     "expression": "SPIN_SEC 10 >=",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-vanilla-cream-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-cream-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-matcha-cream-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-mint-cream-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-lemon-cream-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-salted-cream-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-swirl-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-caramel-swirl-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "clover-sweet",
+    "time_of_day": "dusk",
+    "evolved_pokemon_form": "alcremie-rainbow-swirl-clover-sweet",
+    "condition_expression": {
+     "expression": "SPIN_SEC 10 >=",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-vanilla-cream-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-cream-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-matcha-cream-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-mint-cream-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-lemon-cream-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-salted-cream-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-swirl-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-caramel-swirl-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "flower-sweet",
+    "time_of_day": "dusk",
+    "evolved_pokemon_form": "alcremie-rainbow-swirl-flower-sweet",
+    "condition_expression": {
+     "expression": "SPIN_SEC 10 >=",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-vanilla-cream-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-cream-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-matcha-cream-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-mint-cream-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-lemon-cream-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "night",
+    "evolved_pokemon_form": "alcremie-salted-cream-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 < &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-ruby-swirl-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 1 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "day",
+    "evolved_pokemon_form": "alcremie-caramel-swirl-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_DIR 0 == SPIN_SEC 5 >= &&",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-direction",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/3/"
+      },
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "spin",
+    "held_item": "ribbon-sweet",
+    "time_of_day": "dusk",
+    "evolved_pokemon_form": "alcremie-rainbow-swirl-ribbon-sweet",
+    "condition_expression": {
+     "expression": "SPIN_SEC 10 >=",
+     "percentage_chance": null,
+     "variables": [
+      {
+       "name": "spin-duration",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/4/"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "species": 873,
+  "name": "frosmoth",
+  "parent": 872,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_happiness": 160,
+    "time_of_day": "night"
+   }
+  ]
+ },
+ {
+  "species": 879,
+  "name": "copperajah",
+  "parent": 878,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 34
+   }
+  ]
+ },
+ {
+  "species": 886,
+  "name": "drakloak",
+  "parent": 885,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 50
+   }
+  ]
+ },
+ {
+  "species": 887,
+  "name": "dragapult",
+  "parent": 886,
+  "details": [
+   {
+    "version_group": "sword-shield",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 60
+   }
+  ]
+ },
+ {
+  "species": 892,
+  "name": "urshifu",
+  "parent": 891,
+  "details": [
+   {
+    "version_group": "the-isle-of-armor",
+    "trigger": "tower-of-darkness",
+    "evolved_pokemon_form": "urshifu-single-strike"
+   },
+   {
+    "version_group": "the-isle-of-armor",
+    "trigger": "tower-of-waters",
+    "evolved_pokemon_form": "urshifu-rapid-strike"
+   },
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "scroll-of-darkness",
+    "trigger": "use-item",
+    "evolved_pokemon_form": "urshifu-single-strike"
+   },
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "scroll-of-waters",
+    "trigger": "use-item",
+    "evolved_pokemon_form": "urshifu-rapid-strike"
+   }
+  ]
+ },
+ {
+  "species": 899,
+  "name": "wyrdeer",
+  "parent": 234,
+  "details": [
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "agile-style-move",
+    "used_move": "psyshield-bash",
+    "min_move_count": 20
+   }
+  ]
+ },
+ {
+  "species": 900,
+  "name": "kleavor",
+  "parent": 123,
+  "details": [
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "item": "black-augurite",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 901,
+  "name": "ursaluna",
+  "parent": 217,
+  "details": [
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "item": "peat-block",
+    "trigger": "use-item",
+    "time_of_day": "full-moon"
+   }
+  ]
+ },
+ {
+  "species": 902,
+  "name": "basculegion",
+  "parent": 550,
+  "details": [
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "recoil-damage",
+    "gender": 2,
+    "required_pokemon_form": "basculin-white-striped",
+    "evolved_pokemon_form": "basculegion-male",
+    "min_damage_taken": 294
+   },
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "recoil-damage",
+    "gender": 1,
+    "required_pokemon_form": "basculin-white-striped",
+    "evolved_pokemon_form": "basculegion-female",
+    "min_damage_taken": 294
+   }
+  ]
+ },
+ {
+  "species": 903,
+  "name": "sneasler",
+  "parent": 215,
+  "details": [
+   {
+    "version_group": "legends-arceus",
+    "is_default": true,
+    "trigger": "level-up",
+    "held_item": "razor-claw",
+    "time_of_day": "day",
+    "required_pokemon_form": "sneasel-hisui"
+   }
+  ]
+ },
+ {
+  "species": 904,
+  "name": "overqwil",
+  "parent": 211,
+  "details": [
+   {
+    "version_group": "legends-arceus",
+    "trigger": "strong-style-move",
+    "required_pokemon_form": "qwilfish-hisui",
+    "used_move": "barb-barrage",
+    "min_move_count": 20
+   },
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "barb-barrage",
+    "required_pokemon_form": "qwilfish-hisui"
+   },
+   {
+    "version_group": "legends-za",
+    "trigger": "use-move",
+    "required_pokemon_form": "qwilfish-hisui",
+    "used_move": "barb-barrage",
+    "min_move_count": 20
+   }
+  ]
+ },
+ {
+  "species": 907,
+  "name": "floragato",
+  "parent": 906,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 908,
+  "name": "meowscarada",
+  "parent": 907,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 910,
+  "name": "crocalor",
+  "parent": 909,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 911,
+  "name": "skeledirge",
+  "parent": 910,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 913,
+  "name": "quaxwell",
+  "parent": 912,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 16
+   }
+  ]
+ },
+ {
+  "species": 914,
+  "name": "quaquaval",
+  "parent": 913,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 36
+   }
+  ]
+ },
+ {
+  "species": 916,
+  "name": "oinkologne",
+  "parent": 915,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 2,
+    "min_level": 18,
+    "evolved_pokemon_form": "oinkologne-male"
+   },
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "gender": 1,
+    "min_level": 18,
+    "evolved_pokemon_form": "oinkologne-female"
+   }
+  ]
+ },
+ {
+  "species": 918,
+  "name": "spidops",
+  "parent": 917,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 15
+   }
+  ]
+ },
+ {
+  "species": 920,
+  "name": "lokix",
+  "parent": 919,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 922,
+  "name": "pawmo",
+  "parent": 921,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 18
+   }
+  ]
+ },
+ {
+  "species": 923,
+  "name": "pawmot",
+  "parent": 922,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_steps": 1000
+   }
+  ]
+ },
+ {
+  "species": 925,
+  "name": "maushold",
+  "parent": 924,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "in-battle-level-up",
+    "min_level": 25,
+    "evolved_pokemon_form": "maushold-family-of-four",
+    "condition_expression": {
+     "expression": "EC 100 % 0 !=",
+     "percentage_chance": 99,
+     "variables": [
+      {
+       "name": "encryption-constant",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/1/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "in-battle-level-up",
+    "min_level": 25,
+    "evolved_pokemon_form": "maushold-family-of-three",
+    "condition_expression": {
+     "expression": "EC 100 % 0 ==",
+     "percentage_chance": 1,
+     "variables": [
+      {
+       "name": "encryption-constant",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/1/"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "species": 927,
+  "name": "dachsbun",
+  "parent": 926,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26
+   }
+  ]
+ },
+ {
+  "species": 929,
+  "name": "dolliv",
+  "parent": 928,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 930,
+  "name": "arboliva",
+  "parent": 929,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 933,
+  "name": "naclstack",
+  "parent": 932,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 934,
+  "name": "garganacl",
+  "parent": 933,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   }
+  ]
+ },
+ {
+  "species": 936,
+  "name": "armarouge",
+  "parent": 935,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "auspicious-armor",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 937,
+  "name": "ceruledge",
+  "parent": 935,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "malicious-armor",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 939,
+  "name": "bellibolt",
+  "parent": 938,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "thunder-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 941,
+  "name": "kilowattrel",
+  "parent": 940,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 25
+   }
+  ]
+ },
+ {
+  "species": 943,
+  "name": "mabosstiff",
+  "parent": 942,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 945,
+  "name": "grafaiai",
+  "parent": 944,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 28
+   }
+  ]
+ },
+ {
+  "species": 947,
+  "name": "brambleghast",
+  "parent": 946,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_steps": 1000
+   }
+  ]
+ },
+ {
+  "species": 949,
+  "name": "toedscruel",
+  "parent": 948,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30
+   }
+  ]
+ },
+ {
+  "species": 952,
+  "name": "scovillain",
+  "parent": 951,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "fire-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 954,
+  "name": "rabsca",
+  "parent": 953,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_steps": 1000
+   }
+  ]
+ },
+ {
+  "species": 956,
+  "name": "espathra",
+  "parent": 955,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 958,
+  "name": "tinkatuff",
+  "parent": 957,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 24
+   }
+  ]
+ },
+ {
+  "species": 959,
+  "name": "tinkaton",
+  "parent": 958,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38
+   }
+  ]
+ },
+ {
+  "species": 961,
+  "name": "wugtrio",
+  "parent": 960,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 26
+   }
+  ]
+ },
+ {
+  "species": 964,
+  "name": "palafin",
+  "parent": 963,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 38,
+    "needs_multiplayer": true
+   }
+  ]
+ },
+ {
+  "species": 966,
+  "name": "revavroom",
+  "parent": 965,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 40
+   }
+  ]
+ },
+ {
+  "species": 970,
+  "name": "glimmora",
+  "parent": 969,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 972,
+  "name": "houndstone",
+  "parent": 971,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 30,
+    "time_of_day": "night"
+   }
+  ]
+ },
+ {
+  "species": 975,
+  "name": "cetitan",
+  "parent": 974,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "item": "ice-stone",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 979,
+  "name": "annihilape",
+  "parent": 57,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "use-move",
+    "used_move": "rage-fist",
+    "min_move_count": 20
+   }
+  ]
+ },
+ {
+  "species": 980,
+  "name": "clodsire",
+  "parent": 194,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 20,
+    "required_pokemon_form": "wooper-paldea"
+   }
+  ]
+ },
+ {
+  "species": 981,
+  "name": "farigiraf",
+  "parent": 203,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "twin-beam"
+   }
+  ]
+ },
+ {
+  "species": 982,
+  "name": "dudunsparce",
+  "parent": 206,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "hyper-drill",
+    "evolved_pokemon_form": "dudunsparce-two-segment",
+    "condition_expression": {
+     "expression": "EC 100 % 0 !=",
+     "percentage_chance": 99,
+     "variables": [
+      {
+       "name": "encryption-constant",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/1/"
+      }
+     ]
+    }
+   },
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "hyper-drill",
+    "evolved_pokemon_form": "dudunsparce-three-segment",
+    "condition_expression": {
+     "expression": "EC 100 % 0 ==",
+     "percentage_chance": 1,
+     "variables": [
+      {
+       "name": "encryption-constant",
+       "url": "https://pokeapi.co/api/v2/evolution-variable/1/"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "species": 983,
+  "name": "kingambit",
+  "parent": 625,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "three-defeated-bisharp"
+   }
+  ]
+ },
+ {
+  "species": 997,
+  "name": "arctibax",
+  "parent": 996,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 35
+   }
+  ]
+ },
+ {
+  "species": 998,
+  "name": "baxcalibur",
+  "parent": 997,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "level-up",
+    "min_level": 54
+   }
+  ]
+ },
+ {
+  "species": 1000,
+  "name": "gholdengo",
+  "parent": 999,
+  "details": [
+   {
+    "version_group": "scarlet-violet",
+    "is_default": true,
+    "trigger": "gimmighoul-coins"
+   }
+  ]
+ },
+ {
+  "species": 1011,
+  "name": "dipplin",
+  "parent": 840,
+  "details": [
+   {
+    "version_group": "the-teal-mask",
+    "is_default": true,
+    "item": "syrupy-apple",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 1013,
+  "name": "sinistcha",
+  "parent": 1012,
+  "details": [
+   {
+    "version_group": "the-teal-mask",
+    "is_default": true,
+    "item": "unremarkable-teacup",
+    "trigger": "use-item",
+    "required_pokemon_form": "poltchageist-counterfeit",
+    "evolved_pokemon_form": "sinistcha-unremarkable"
+   },
+   {
+    "version_group": "the-teal-mask",
+    "is_default": true,
+    "item": "masterpiece-teacup",
+    "trigger": "use-item",
+    "required_pokemon_form": "poltchageist-artisan",
+    "evolved_pokemon_form": "sinistcha-masterpiece"
+   }
+  ]
+ },
+ {
+  "species": 1018,
+  "name": "archaludon",
+  "parent": 884,
+  "details": [
+   {
+    "version_group": "the-indigo-disk",
+    "is_default": true,
+    "item": "metal-alloy",
+    "trigger": "use-item"
+   }
+  ]
+ },
+ {
+  "species": 1019,
+  "name": "hydrapple",
+  "parent": 1011,
+  "details": [
+   {
+    "version_group": "the-indigo-disk",
+    "is_default": true,
+    "trigger": "level-up",
+    "known_move": "dragon-cheer"
+   }
+  ]
+ }
+]

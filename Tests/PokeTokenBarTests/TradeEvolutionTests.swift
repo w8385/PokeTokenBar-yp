@@ -16,6 +16,13 @@ private let onix = EvoNode(speciesID: 95, children: [
             methods: [EvoMethod(trigger: "trade", item: nil, heldItem: "metal-coat")]),
 ])
 
+private let karrablast = EvoNode(speciesID: 588, children: [
+    EvoNode(speciesID: 589, children: [], methods: [EvoMethod(trigger: "trade", item: nil, tradeSpecies: "shelmet")]),
+])
+private let shelmet = EvoNode(speciesID: 616, children: [
+    EvoNode(speciesID: 617, children: [], methods: [EvoMethod(trigger: "trade", item: nil, tradeSpecies: "karrablast")]),
+])
+
 private struct TreeProvider: PokeProviding {
     let trees: [Int: EvoNode]
     func line(baseSpeciesID: Int) async throws -> EvoLine {
@@ -39,7 +46,7 @@ final class TradeEvolutionTests: XCTestCase {
         super.tearDown()
     }
 
-    private let provider = TreeProvider(trees: [92: gastly, 25: pikachu, 95: onix])
+    private let provider = TreeProvider(trees: [92: gastly, 25: pikachu, 95: onix, 588: karrablast, 616: shelmet])
 
     private func makeStore(_ configure: (inout CompanionState) -> Void = { _ in }, file: URL? = nil) throws -> CompanionStore {
         var state = CompanionState()
@@ -140,10 +147,23 @@ final class TradeEvolutionTests: XCTestCase {
         XCTAssertEqual(store.state.dex.last?.finalID, 94)
     }
 
-    func testHeldItemTradeKeepsGrowthBehavior() async throws {
+    func testNewOnixLineStopsBeforeTheHeldItemTrade() async throws {
         let store = try makeStore()
         await store.hatch(baseID: 95)
-        XCTAssertEqual(store.state.active?.totalForms, 2)
+        XCTAssertEqual(store.state.active?.totalForms, 1)
+        XCTAssertEqual(store.state.active?.plannedPathIDs, [95])
+    }
+
+    func testTradeGatedCompanionThatPlannedThroughSteelixKeepsItsPlan() async throws {
+        let store = try makeStore { state in
+            state.active = MonState(baseID: 95, pathIDs: [95], plannedPathIDs: [95, 208], stageIndex: 0,
+                                    usedAtStage: 0, rarity: .common, totalForms: 2,
+                                    profile: PokemonProfile.generate(seed: 5, instanceID: "o"), tradeGated: true)
+        }
+        try await waitForLine(store)
+        XCTAssertEqual(store.currentLine?.totalForms, 2)
+        growToEnd(store)
+        XCTAssertEqual(store.state.dex.last?.finalID, 208)
     }
 
     func testTradedHaunterArrivesAsGengarWithItsProfile() async throws {
@@ -245,10 +265,12 @@ final class TradeEvolutionTests: XCTestCase {
             state.dex = [raichu, pikachuOnly, heldItem]
             state.inventory[ItemKind.linkingCord.rawValue] = 1
         }
-        for id in ["p", "q", "o"] {
+        for id in ["p", "q"] {
             let result = await store.useLinkingCord(on: id)
             XCTAssertEqual(result, .wrongTarget, id)
         }
+        let waiting = await store.useLinkingCord(on: "o")
+        XCTAssertEqual(waiting, .notReady)
         XCTAssertEqual(store.itemCount(.linkingCord), 1)
         XCTAssertEqual(store.state.dex.map(\.finalID), [26, 25, 95])
     }
@@ -262,11 +284,161 @@ final class TradeEvolutionTests: XCTestCase {
 
     func testCordIsSoldBesideTheStonesAtTheStonePrice() throws {
         let store = try makeStore { $0.usedSinceInstall = 3_000_000_000 }
-        XCTAssertEqual(store.shopEvolutionItems, store.evolutionStoneItems + [.linkingCord])
+        XCTAssertEqual(store.shopEvolutionItems,
+                       store.evolutionStoneItems + [.linkingCord] + ItemKind.allCases.filter(\.isEvolutionHeld))
         XCTAssertFalse(store.purchasableItems.contains(.linkingCord))
         XCTAssertEqual(store.price(of: .linkingCord), EvolutionStone.price)
         XCTAssertTrue(store.buy(.linkingCord, count: 1))
         XCTAssertEqual(store.itemCount(.linkingCord), 1)
+    }
+
+    // MARK: trades that need a held item or a partner species
+
+    private func equippedStore(base: Int, final: Int, chain: [Int], holding item: ItemKind?,
+                               cords: Int = 1) throws -> CompanionStore {
+        try makeStore { state in
+            state.dex = [entry(id: "o", base: base, final: final, chain: chain)]
+            state.inventory[ItemKind.linkingCord.rawValue] = cords
+            if let item { state.heldItems["o"] = item.rawValue }
+        }
+    }
+
+    func testCordWithTheRightItemEvolvesOnixAndUsesUpBoth() async throws {
+        let store = try equippedStore(base: 95, final: 95, chain: [95], holding: .metalCoat)
+        let result = await store.useLinkingCord(on: "o")
+        XCTAssertEqual(result, .evolved)
+        XCTAssertEqual(store.state.dex.first?.finalID, 208)
+        XCTAssertEqual(store.itemCount(.linkingCord), 0)
+        XCTAssertNil(store.heldItem(of: "o"))
+        XCTAssertEqual(store.itemCount(.metalCoat), 0)
+    }
+
+    func testCordWithoutTheItemWaitsAndKeepsEverything() async throws {
+        let bare = try equippedStore(base: 95, final: 95, chain: [95], holding: nil)
+        let bareResult = await bare.useLinkingCord(on: "o")
+        XCTAssertEqual(bareResult, .notReady)
+        XCTAssertEqual(bare.state.dex.first?.finalID, 95)
+        XCTAssertEqual(bare.itemCount(.linkingCord), 1)
+
+        let wrong = try equippedStore(base: 95, final: 95, chain: [95], holding: .dragonScale)
+        let wrongResult = await wrong.useLinkingCord(on: "o")
+        XCTAssertEqual(wrongResult, .notReady)
+        XCTAssertEqual(wrong.heldItem(of: "o"), .dragonScale)
+        XCTAssertEqual(wrong.itemCount(.linkingCord), 1)
+    }
+
+    func testCordNeedsTheFriendSpeciesForAPartnerTrade() async throws {
+        let withFriend = try makeStore { state in
+            state.dex = [entry(id: "k", base: 588, final: 588, chain: [588]),
+                         entry(id: "s", base: 616, final: 616, chain: [616])]
+            state.friendEntryIDs = ["s"]
+            state.inventory[ItemKind.linkingCord.rawValue] = 1
+        }
+        let evolved = await withFriend.useLinkingCord(on: "k")
+        XCTAssertEqual(evolved, .evolved)
+        XCTAssertEqual(withFriend.state.dex.first { $0.id == "k" }?.finalID, 589)
+        XCTAssertEqual(withFriend.state.dex.first { $0.id == "s" }?.finalID, 616)
+
+        let alone = try makeStore { state in
+            state.dex = [entry(id: "k", base: 588, final: 588, chain: [588]),
+                         entry(id: "s", base: 616, final: 616, chain: [616])]
+            state.inventory[ItemKind.linkingCord.rawValue] = 1
+        }
+        let waiting = await alone.useLinkingCord(on: "k")
+        XCTAssertEqual(waiting, .notReady)
+        XCTAssertEqual(alone.itemCount(.linkingCord), 1)
+    }
+
+    func testRealTradeForTheRightPartnerSpeciesEvolvesTheArrival() async throws {
+        let mine = entry(id: "mine", base: 616, final: 616, chain: [616], caught: 10)
+        let store = try makeStore { $0.dex = [mine] }
+        store.applyTrades([try delivery(tradeID: "t1", give: "mine",
+                                        receiving: entry(id: "k", base: 588, final: 588, chain: [588]))])
+        await store.resolveTradeEvolutions()
+        let arrived = try XCTUnwrap(store.state.dex.first { $0.releasedAt == nil })
+        XCTAssertEqual(arrived.finalID, 589)
+        XCTAssertNil(arrived.tradePartnerID)
+    }
+
+    func testRealTradeForTheWrongSpeciesLeavesTheArrivalAsItIs() async throws {
+        let mine = entry(id: "mine", base: 25, final: 26, chain: [25, 26], caught: 10)
+        let store = try makeStore { $0.dex = [mine] }
+        store.applyTrades([try delivery(tradeID: "t1", give: "mine",
+                                        receiving: entry(id: "k", base: 588, final: 588, chain: [588]))])
+        await store.resolveTradeEvolutions()
+        XCTAssertEqual(store.state.dex.first { $0.releasedAt == nil }?.finalID, 588)
+    }
+
+    func testArrivalCarryingTheRightItemEvolvesAndTheItemIsUsedUp() async throws {
+        var wire = entry(id: "o", base: 95, final: 95, chain: [95])
+        wire.tradeHeldItem = ItemKind.metalCoat.rawValue
+        let store = try makeStore()
+        store.applyTrades([try delivery(tradeID: "t1", give: "none", receiving: wire)])
+        await store.resolveTradeEvolutions()
+        let arrived = try XCTUnwrap(store.state.dex.first)
+        XCTAssertEqual(arrived.finalID, 208)
+        XCTAssertNil(arrived.tradeHeldItem)
+        XCTAssertEqual(store.itemCount(.metalCoat), 0)
+    }
+
+    func testArrivalCarryingAnUnusedItemCreditsItToTheBag() async throws {
+        var wire = entry(id: "o", base: 95, final: 95, chain: [95])
+        wire.tradeHeldItem = ItemKind.dragonScale.rawValue
+        let store = try makeStore()
+        store.applyTrades([try delivery(tradeID: "t1", give: "none", receiving: wire)])
+        await store.resolveTradeEvolutions()
+        XCTAssertEqual(store.state.dex.first?.finalID, 95)
+        XCTAssertNil(store.state.dex.first?.tradeHeldItem)
+        XCTAssertEqual(store.itemCount(.dragonScale), 1)
+    }
+
+    func testArrivalIgnoresAnItemThatIsNotATradeItem() async throws {
+        var wire = entry(id: "o", base: 95, final: 95, chain: [95])
+        wire.tradeHeldItem = ItemKind.rareCandy.rawValue
+        let received = try XCTUnwrap(CompanionStore.receivedEntry(wire, from: "Sam", now: Date()))
+        XCTAssertNil(received.tradeHeldItem)
+        wire.tradePartnerID = 616
+        XCTAssertNil(try XCTUnwrap(CompanionStore.receivedEntry(wire, from: "Sam", now: Date())).tradePartnerID)
+    }
+
+    func testTheSendersTradeItemLeavesWithThePokemonButOtherItemsReturn() async throws {
+        let coat = try makeStore { state in
+            state.dex = [entry(id: "mine", base: 95, final: 95, chain: [95], caught: 10)]
+            state.heldItems["mine"] = ItemKind.metalCoat.rawValue
+        }
+        coat.applyTrades([try delivery(tradeID: "t1", give: "mine",
+                                       receiving: entry(id: "x", base: 25, final: 26, chain: [25, 26]))])
+        XCTAssertNil(coat.heldItem(of: "mine"))
+        XCTAssertEqual(coat.itemCount(.metalCoat), 0)
+
+        let sash = try makeStore { state in
+            state.dex = [entry(id: "mine", base: 95, final: 95, chain: [95], caught: 10)]
+            state.heldItems["mine"] = ItemKind.leftovers.rawValue
+        }
+        sash.applyTrades([try delivery(tradeID: "t1", give: "mine",
+                                       receiving: entry(id: "x", base: 25, final: 26, chain: [25, 26]))])
+        XCTAssertEqual(sash.itemCount(.leftovers), 1)
+    }
+
+    func testPoolEntryCarriesTheHeldTradeItemAndNothingElse() throws {
+        var state = CompanionState()
+        state.dex = [entry(id: "coat", base: 95, final: 95, chain: [95]),
+                     entry(id: "sash", base: 95, final: 95, chain: [95])]
+        state.heldItems["coat"] = ItemKind.metalCoat.rawValue
+        state.heldItems["sash"] = ItemKind.leftovers.rawValue
+        let pool = TradePool.build(state: state, fightingIDs: [], name: { _ in "n" })
+        XCTAssertEqual(pool.first { $0.id == "coat" }?.entry.tradeHeldItem, ItemKind.metalCoat.rawValue)
+        XCTAssertNil(pool.first { $0.id == "sash" }?.entry.tradeHeldItem)
+    }
+
+    func testOldDexEntryWithoutTradeItemFieldsDecodes() throws {
+        let data = try JSONEncoder().encode(entry(id: "o", base: 95, final: 95, chain: [95]))
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        object.removeValue(forKey: "tradeHeldItem")
+        object.removeValue(forKey: "tradePartnerID")
+        let back = try JSONDecoder().decode(DexEntry.self, from: JSONSerialization.data(withJSONObject: object))
+        XCTAssertNil(back.tradeHeldItem)
+        XCTAssertNil(back.tradePartnerID)
     }
 
     func testRaisedBattlePickAndArrivingPokemonCannotBeOffered() async throws {

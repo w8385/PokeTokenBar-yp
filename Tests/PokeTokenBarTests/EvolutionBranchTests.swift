@@ -99,7 +99,7 @@ final class EvolutionBranchTests: XCTestCase {
         await s.hatch(baseID: 133)
         XCTAssertEqual(s.useEvolutionStone(.fireStone), .unavailable, "재고 없음")
         XCTAssertEqual(s.useEvolutionStone(.waterStone), .evolved)
-        let t = try store(tree: eevee, stones: [.waterStone: 1])
+        let t = try store(tree: EvoNode(speciesID: 133, children: [levelUp(2)]), stones: [.waterStone: 1])
         await t.hatch(baseID: 133)
         t.applyUsage(t.tokensToNext)
         XCTAssertEqual(t.useEvolutionStone(.waterStone), .wrongStone, "이미 진화한 뒤엔 맞는 갈래 없음")
@@ -113,6 +113,7 @@ final class EvolutionBranchTests: XCTestCase {
                 let clock = ClockBox()
                 let s = try store(tree: twoWay, clock: clock, seed: seed)
                 await s.hatch(baseID: 133)
+                for _ in 0..<30 { clock.now.addTimeInterval(11); s.recordPet() }
                 clock.set(hour: hour)
                 s.applyUsage(s.tokensToNext)
                 XCTAssertEqual(s.currentSpeciesID, species, "seed \(seed) hour \(hour)")
@@ -149,7 +150,9 @@ final class EvolutionBranchTests: XCTestCase {
 
     func testStonesAreSoldInTheirOwnSectionAndCostOneBillion() throws {
         let s = try store(tree: eevee, tokens: 3_000_000_000)
-        XCTAssertEqual(s.evolutionStoneItems.count, 10)
+        XCTAssertEqual(s.evolutionStoneItems.filter { $0.evolutionItemName?.hasSuffix("-stone") == true }.count, 10)
+        XCTAssertEqual(s.shopEvolutionItems.count,
+                       s.evolutionStoneItems.count + 1 + ItemKind.allCases.filter(\.isEvolutionHeld).count)
         XCTAssertFalse(s.purchasableItems.contains(.waterStone))
         XCTAssertEqual(s.price(of: .waterStone), 1_000_000_000)
         XCTAssertTrue(s.buy(.waterStone, count: 2))

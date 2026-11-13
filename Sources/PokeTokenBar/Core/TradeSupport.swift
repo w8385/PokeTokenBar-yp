@@ -94,7 +94,8 @@ enum TradePool {
         var bytes = 2
         let owned = state.dex.sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
         for entry in owned where refusal(for: entry, fightingIDs: fightingIDs, activeID: nil) == nil {
-            guard entries.count < maxEntries, let item = poolEntry(for: entry, name: name(entry)),
+            let held = state.heldItems[entry.id].flatMap(ItemKind.init(rawValue:))?.tradeItemKey
+            guard entries.count < maxEntries, let item = poolEntry(for: entry, name: name(entry), heldItem: held),
                   let size = try? encoder.encode(item).count, size <= maxEntryBytes,
                   bytes + size + 1 <= maxBytes else { continue }
             entries.append(item)
@@ -106,11 +107,13 @@ enum TradePool {
     static func encode(_ pool: [TradePoolEntry]) throws -> Data { try encoder.encode(pool) }
 
     /// The entry as it travels: no per-language name table (the receiver refetches it).
-    private static func poolEntry(for entry: DexEntry, name: String) -> TradePoolEntry? {
+    private static func poolEntry(for entry: DexEntry, name: String, heldItem: String?) -> TradePoolEntry? {
         var wire = entry
         wire.names = nil
         wire.namesVersion = nil
         wire.tradedTo = nil
+        wire.tradeHeldItem = heldItem
+        wire.tradePartnerID = nil
         guard let profile = wire.profile, isSendable(wire) else { return nil }
         let pokemonID = PartyBuilder.member(speciesID: wire.finalID, form: wire.form, shiny: wire.isShiny,
                                             profile: profile, nature: wire.nature).pokemonID

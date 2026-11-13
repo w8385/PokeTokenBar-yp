@@ -140,6 +140,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }, dexSource: { [weak companion] in
             companion.map { DexSummary($0) }
         }, trades: trades)
+        partyUploader.onBattleInfo = { [weak companion] in companion?.syncBattles($0.recentBattles) }
         Task { await companion.resolveTradeEvolutions() }
         partyUploader.start()
         store.localizationLanguage = companion.language   // 알림 현지화용 미러 시드
