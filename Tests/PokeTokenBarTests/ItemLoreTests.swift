@@ -45,6 +45,16 @@ final class ItemLoreTests: XCTestCase {
         XCTAssertTrue(Set(flagged).isSubset(of: known), "an official item was flagged app-original")
     }
 
+    func testLinkingCordEnglishIsOfficialAndOtherLanguagesAreAppOriginal() {
+        let slug = ItemKind.linkingCord.loreSlug
+        XCTAssertFalse(ItemLore.isAppOriginal(slug, in: .en))
+        XCTAssertEqual(ItemLore.text(slug, in: .en),
+                       "A string exuding a mysterious energy that makes you feel a strange sense of connection. It’s loved by certain Pokémon.")
+        for lang in AppLanguage.allCases where lang != .en {
+            XCTAssertTrue(ItemLore.isAppOriginal(slug, in: lang), "\(lang)")
+        }
+    }
+
     func testLanguagesPokeAPILacksFallBackToEnglish() {
         let slug = ItemKind.rareCandy.loreSlug
         XCTAssertFalse(ItemLore.text(slug, in: .en).isEmpty)

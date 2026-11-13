@@ -13,6 +13,10 @@ enum ItemLore {
 
     static func isAppOriginal(_ slug: String) -> Bool { ItemLoreTable.entries[slug]?.appOriginal ?? false }
 
+    static func isAppOriginal(_ slug: String, in language: AppLanguage) -> Bool {
+        ItemLoreTable.entries[slug]?.appOriginalLanguages.contains(language.rawValue) ?? false
+    }
+
     /// nil for app-original items and for languages PokéAPI has no item names for.
     static func officialName(_ slug: String, in language: AppLanguage) -> String? {
         ItemLoreTable.entries[slug]?.names[language.rawValue]

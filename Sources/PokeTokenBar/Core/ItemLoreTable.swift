@@ -2,14 +2,16 @@
 // Official text is the newest version group per language. pt and ru are absent and fall back to English.
 enum ItemLoreTable {
     struct Entry {
-        let appOriginal: Bool
+        /// Languages whose text is written for the app, not copied from the games.
+        let appOriginalLanguages: [String]
+        var appOriginal: Bool { !appOriginalLanguages.isEmpty }
         /// Official item names, keyed by AppLanguage.rawValue. Empty for app-original items.
         let names: [String: String]
         let texts: [String: String]
     }
 
     static let entries: [String: Entry] = [
-        "rare-candy": Entry(appOriginal: false,
+        "rare-candy": Entry(appOriginalLanguages: [],
             names: ["ko": "이상한사탕", "en": "Rare Candy", "ja": "ふしぎなアメ", "es": "Caramelo Raro", "fr": "Super Bonbon", "de": "Sonderbonbon"],
             texts: [
                 "ko": "에너지가 가득한 사탕. 먹이면 포켓몬 1마리의 레벨이 1만큼 올라간다.",
@@ -19,7 +21,7 @@ enum ItemLoreTable {
                 "fr": "Un bonbon plein d’énergie. Il permet à un Pokémon de monter d’un niveau.",
                 "de": "Ein energiereiches Bonbon, das den Level eines Pokémon dauerhaft um 1 erhöht.",
             ]),
-        "shiny-charm": Entry(appOriginal: false,
+        "shiny-charm": Entry(appOriginalLanguages: [],
             names: ["ko": "빛나는부적", "en": "Shiny Charm", "ja": "ひかるおまもり", "es": "Amuleto Iris", "fr": "Charme Chroma", "de": "Schillerpin"],
             texts: [
                 "ko": "지니고 있으면 빛나는 포켓몬과 만나기 쉬워진다고 전해지는 이상하고 매우 반짝이는 부적.",
@@ -29,7 +31,7 @@ enum ItemLoreTable {
                 "fr": "Un mystérieux charme scintillant qui facilite la rencontre avec les Pokémon chromatiques.",
                 "de": "Ein mysteriöser, schillernder Glücksbringer, der die Wahrscheinlichkeit erhöht, Schillernde Pokémon zu finden.",
             ]),
-        "fire-stone": Entry(appOriginal: false,
+        "fire-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "불꽃의돌", "en": "Fire Stone", "ja": "ほのおのいし", "es": "Piedra Fuego", "fr": "Pierre Feu", "de": "Feuerstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 주황색을 띠고 있다.",
@@ -39,7 +41,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est jaune et orange.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er schimmert in den Farben Orange und Gelb.",
             ]),
-        "water-stone": Entry(appOriginal: false,
+        "water-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "물의돌", "en": "Water Stone", "ja": "みずのいし", "es": "Piedra Agua", "fr": "Pierre Eau", "de": "Wasserstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 투명한 푸른색을 띠고 있다.",
@@ -49,7 +51,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est de couleur bleue.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er ist hellblau.",
             ]),
-        "thunder-stone": Entry(appOriginal: false,
+        "thunder-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "천둥의돌", "en": "Thunder Stone", "ja": "かみなりのいし", "es": "Piedra Trueno", "fr": "Pierre Foudre", "de": "Donnerstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 천둥번개 무늬가 있다.",
@@ -59,7 +61,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Un éclair est dessiné dessus.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er hat ein Blitzmuster.",
             ]),
-        "leaf-stone": Entry(appOriginal: false,
+        "leaf-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "리프의돌", "en": "Leaf Stone", "ja": "リーフのいし", "es": "Piedra Hoja", "fr": "Pierre Plante", "de": "Blattstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 잎사귀 무늬가 있다.",
@@ -69,7 +71,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Une feuille est dessinée dessus.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er hat ein Blattmuster.",
             ]),
-        "moon-stone": Entry(appOriginal: false,
+        "moon-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "달의돌", "en": "Moon Stone", "ja": "つきのいし", "es": "Piedra Lunar", "fr": "Pierre Lune", "de": "Mondstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 밤하늘처럼 까맣다.",
@@ -79,7 +81,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est sombre comme la nuit.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er ist schwarz wie die Nacht.",
             ]),
-        "sun-stone": Entry(appOriginal: false,
+        "sun-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "태양의돌", "en": "Sun Stone", "ja": "たいようのいし", "es": "Piedra Solar", "fr": "Pierre Soleil", "de": "Sonnenstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 태양처럼 빨갛다.",
@@ -89,7 +91,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est rouge comme le soleil couchant.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er ist rot wie die Abendsonne.",
             ]),
-        "shiny-stone": Entry(appOriginal: false,
+        "shiny-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "빛의돌", "en": "Shiny Stone", "ja": "ひかりのいし", "es": "Piedra Día", "fr": "Pierre Éclat", "de": "Leuchtstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 빛처럼 눈부시다.",
@@ -99,7 +101,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle brille d’une lumière aveuglante.",
                 "de": "Dieser besondere, hell leuchtende Stein hilft manchen Pokémon bei ihrer Entwicklung.",
             ]),
-        "dusk-stone": Entry(appOriginal: false,
+        "dusk-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "어둠의돌", "en": "Dusk Stone", "ja": "やみのいし", "es": "Piedra Noche", "fr": "Pierre Nuit", "de": "Finsterstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 칠흑처럼 어둡다.",
@@ -109,7 +111,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle est sombre comme une nuit sans lune.",
                 "de": "Dieser besondere, düstere Stein hilft manchen Pokémon bei ihrer Entwicklung.",
             ]),
-        "dawn-stone": Entry(appOriginal: false,
+        "dawn-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "각성의돌", "en": "Dawn Stone", "ja": "めざめいし", "es": "Piedra Alba", "fr": "Pierre Aube", "de": "Funkelstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 눈동자처럼 아름답다.",
@@ -119,7 +121,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Elle brille comme un œil.",
                 "de": "Dieser besondere, glitzernde Stein hilft manchen Pokémon bei ihrer Entwicklung.",
             ]),
-        "ice-stone": Entry(appOriginal: false,
+        "ice-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "얼음의돌", "en": "Ice Stone", "ja": "こおりのいし", "es": "Piedra Hielo", "fr": "Pierre Glace", "de": "Eisstein"],
             texts: [
                 "ko": "어느 특정 포켓몬을 진화시키는 이상한 돌. 눈송이 무늬가 있다.",
@@ -129,7 +131,7 @@ enum ItemLoreTable {
                 "fr": "Une pierre étrange qui fait évoluer certaines espèces de Pokémon. Un flocon de neige semble dessiné dessus.",
                 "de": "Dieser spezielle Stein löst bei bestimmten Pokémon die Entwicklung aus. Er hat ein Schneeflockenmuster.",
             ]),
-        "leftovers": Entry(appOriginal: false,
+        "leftovers": Entry(appOriginalLanguages: [],
             names: ["ko": "먹다남은음식", "en": "Leftovers", "ja": "たべのこし", "es": "Restos", "fr": "Restes", "de": "Überreste"],
             texts: [
                 "ko": "지니게 하면 포켓몬의 HP가 배틀을 하는 동안 조금씩 회복된다.",
@@ -139,7 +141,7 @@ enum ItemLoreTable {
                 "fr": "Objet à tenir. Permet de restaurer graduellement les PV du porteur durant le combat.",
                 "de": "Ein Item, das einem Pokémon zum Tragen gegeben werden kann. Es füllt im Kampf stetig KP auf.",
             ]),
-        "choice-scarf": Entry(appOriginal: false,
+        "choice-scarf": Entry(appOriginalLanguages: [],
             names: ["ko": "구애스카프", "en": "Choice Scarf", "ja": "こだわりスカーフ", "es": "Pañuelo Elección", "fr": "Mouchoir Choix", "de": "Wahlschal"],
             texts: [
                 "ko": "기술을 구애받는 스카프. 지니게 하면 스피드는 올라가지만 같은 기술밖에 쓸 수 없다.",
@@ -149,7 +151,7 @@ enum ItemLoreTable {
                 "fr": "Objet à tenir. Augmente la Vitesse, mais ne permet d’utiliser qu’une seule capacité.",
                 "de": "Ein Item zum Tragen. Der Schal erhöht den Initiative-Wert, aber nur eine Attacke ist einsetzbar.",
             ]),
-        "choice-band": Entry(appOriginal: false,
+        "choice-band": Entry(appOriginalLanguages: [],
             names: ["ko": "구애머리띠", "en": "Choice Band", "ja": "こだわりハチマキ", "es": "Cinta Elección", "fr": "Bandeau Choix", "de": "Wahlband"],
             texts: [
                 "ko": "기술을 구애받는 머리띠. 지니게 하면 공격은 올라가지만 똑같은 기술밖에 쓰지 못한다.",
@@ -159,7 +161,7 @@ enum ItemLoreTable {
                 "fr": "Objet à tenir. Ce bandeau augmente l’Attaque, mais ne permet d’utiliser qu’une seule capacité.",
                 "de": "Ein Item, das von einem Pokémon getragen werden kann. Es stärkt den Angriffs-Wert, aber nur eine Attacke ist einsetzbar.",
             ]),
-        "focus-sash": Entry(appOriginal: false,
+        "focus-sash": Entry(appOriginalLanguages: [],
             names: ["ko": "기합의띠", "en": "Focus Sash", "ja": "きあいのタスキ", "es": "Banda Aguante", "fr": "Ceinture Force", "de": "Fokusgurt"],
             texts: [
                 "ko": "지니게 하면 HP가 꽉 찼을 때 기절할 듯한 기술을 당해도 HP 1로 한 번은 버틴다.",
@@ -169,7 +171,7 @@ enum ItemLoreTable {
                 "fr": "Objet à tenir. S’il a encore tous ses PV, le porteur pourra éviter d’être mis K.O. en un coup. Il ne conservera alors qu’un seul PV.",
                 "de": "Ein Item zum Tragen. Bei vollen KP bleibt der Träger nach einer K.O.-Attacke einmalig mit 1 KP im Kampf.",
             ]),
-        "life-orb": Entry(appOriginal: false,
+        "life-orb": Entry(appOriginalLanguages: [],
             names: ["ko": "생명의구슬", "en": "Life Orb", "ja": "いのちのたま", "es": "Vidasfera", "fr": "Orbe Vie", "de": "Leben-Orb"],
             texts: [
                 "ko": "지니게 하면 공격할 때마다 HP가 조금씩 줄지만 기술의 위력이 올라간다.",
@@ -179,7 +181,7 @@ enum ItemLoreTable {
                 "fr": "Objet à tenir. Augmente la puissance des capacités, mais dépense des PV à chaque coup.",
                 "de": "Ein Item zum Tragen. Verstärkt Attacken, aber jede Attacke kostet den Träger KP.",
             ]),
-        "expert-belt": Entry(appOriginal: false,
+        "expert-belt": Entry(appOriginalLanguages: [],
             names: ["ko": "달인의띠", "en": "Expert Belt", "ja": "たつじんのおび", "es": "Cinta Experto", "fr": "Ceinture Pro", "de": "Expertengurt"],
             texts: [
                 "ko": "오래 사용한 까만 띠. 지니게 하면 효과가 뛰어날 때 기술의 위력이 조금 올라간다.",
@@ -189,7 +191,7 @@ enum ItemLoreTable {
                 "fr": "Objet à tenir. Une ceinture usée qui augmente légèrement la puissance des capacités super efficaces.",
                 "de": "Ein Item zum Tragen. Dieser alte Gürtel verstärkt sehr effektive Attacken.",
             ]),
-        "charcoal": Entry(appOriginal: false,
+        "charcoal": Entry(appOriginalLanguages: [],
             names: ["ko": "목탄", "en": "Charcoal", "ja": "もくたん", "es": "Carbón", "fr": "Charbon", "de": "Holzkohle"],
             texts: [
                 "ko": "물건을 태우는 연료. 지니게 하면 불꽃타입 기술의 위력이 올라간다.",
@@ -199,19 +201,19 @@ enum ItemLoreTable {
                 "fr": "Objet à tenir. Un combustible qui augmente la puissance des capacités de type Feu.",
                 "de": "Ein Item zum Tragen. Ein Brennstoff, der Attacken vom Typ Feuer verstärkt.",
             ]),
-        "linking-cord": Entry(appOriginal: true,
+        "linking-cord": Entry(appOriginalLanguages: ["ko", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "연결의끈", "en": "Linking Cord", "ja": "つながりのヒモ", "es": "Cordón Unión", "fr": "Fil de Liaison", "de": "Verbindungsschnur"],
             texts: [
                 "ko": "신비한 끈. 사용하면 통신 교환으로 진화하는 포켓몬이 그 자리에서 진화한다.",
-                "en": "A mysterious cord. Using it makes a Pokémon that evolves by trade evolve right away.",
                 "ja": "ふしぎな　ヒモ。　つかうと　つうしんこうかんで　しんかする　ポケモンが　その　ばで　しんかする。",
                 "es": "Un cordón misterioso. Al usarlo, un Pokémon que evoluciona por intercambio evoluciona al instante.",
                 "fr": "Un fil mystérieux. Utilisé, il fait évoluer aussitôt un Pokémon qui évolue par échange.",
                 "pt": "Um cordão misterioso. Ao usá-lo, um Pokémon que evolui por troca evolui na hora.",
                 "de": "Eine geheimnisvolle Schnur. Verwendet entwickelt sie ein Pokémon sofort, das sich durch Tausch entwickelt.",
                 "ru": "Таинственный шнур. Если его применить, покемон, эволюционирующий обменом, эволюционирует сразу.",
+                "en": "A string exuding a mysterious energy that makes you feel a strange sense of connection. It’s loved by certain Pokémon.",
             ]),
-        "venusaurite": Entry(appOriginal: false,
+        "venusaurite": Entry(appOriginalLanguages: [],
             names: ["ko": "이상해꽃나이트", "en": "Venusaurite", "ja": "フシギバナイト", "es": "Venusaurita", "fr": "Florizarrite", "de": "Bisaflornit"],
             texts: [
                 "ko": "이상해꽃에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -221,7 +223,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Florizarre, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Bisaflor getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "charizardite-x": Entry(appOriginal: false,
+        "charizardite-x": Entry(appOriginalLanguages: [],
             names: ["ko": "리자몽나이트X", "en": "Charizardite X", "ja": "リザードナイトＸ", "es": "Charizardita X", "fr": "Dracaufite X", "de": "Gluraknit X"],
             texts: [
                 "ko": "리자몽에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -231,7 +233,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Dracaufeu, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Glurak getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "charizardite-y": Entry(appOriginal: false,
+        "charizardite-y": Entry(appOriginalLanguages: [],
             names: ["ko": "리자몽나이트Y", "en": "Charizardite Y", "ja": "リザードナイトＹ", "es": "Charizardita Y", "fr": "Dracaufite Y", "de": "Gluraknit Y"],
             texts: [
                 "ko": "리자몽에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -241,7 +243,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Dracaufeu, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Glurak getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "blastoisinite": Entry(appOriginal: false,
+        "blastoisinite": Entry(appOriginalLanguages: [],
             names: ["ko": "거북왕나이트", "en": "Blastoisinite", "ja": "カメックスナイト", "es": "Blastoisita", "fr": "Tortankite", "de": "Turtoknit"],
             texts: [
                 "ko": "거북왕에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -251,7 +253,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Tortank, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Turtok getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "beedrillite": Entry(appOriginal: false,
+        "beedrillite": Entry(appOriginalLanguages: [],
             names: ["ko": "독침붕나이트", "en": "Beedrillite", "ja": "スピアナイト", "es": "Beedrillita", "fr": "Dardargnite", "de": "Bibornit"],
             texts: [
                 "ko": "독침붕에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -261,7 +263,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Dardargnan, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Bibor getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "pidgeotite": Entry(appOriginal: false,
+        "pidgeotite": Entry(appOriginalLanguages: [],
             names: ["ko": "피죤투나이트", "en": "Pidgeotite", "ja": "ピジョットナイト", "es": "Pidgeotita", "fr": "Roucarnagite", "de": "Taubossnit"],
             texts: [
                 "ko": "피죤투에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -271,7 +273,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Roucarnage, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Tauboss getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "raichunite-x": Entry(appOriginal: true,
+        "raichunite-x": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "라이츄나이트X", "en": "Raichunite X", "ja": "ライチュウナイトＸ", "es": "Raichunita X", "fr": "Raichuïte X", "de": "Raichunit X"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -283,7 +285,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "raichunite-y": Entry(appOriginal: true,
+        "raichunite-y": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "라이츄나이트Y", "en": "Raichunite Y", "ja": "ライチュウナイトＹ", "es": "Raichunita Y", "fr": "Raichuïte Y", "de": "Raichunit Y"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -295,7 +297,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "clefablite": Entry(appOriginal: true,
+        "clefablite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "픽시나이트", "en": "Clefablite", "ja": "ピクシナイト", "es": "Clefablita", "fr": "Mélodelfite", "de": "Pixinit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -307,7 +309,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "alakazite": Entry(appOriginal: false,
+        "alakazite": Entry(appOriginalLanguages: [],
             names: ["ko": "후디나이트", "en": "Alakazite", "ja": "フーディナイト", "es": "Alakazamita", "fr": "Alakazamite", "de": "Simsalanit"],
             texts: [
                 "ko": "후딘에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -317,7 +319,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Alakazam, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Simsala getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "victreebelite": Entry(appOriginal: true,
+        "victreebelite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "우츠보트나이트", "en": "Victreebelite", "ja": "ウツボットナイト", "es": "Victreebelita", "fr": "Empiflorite", "de": "Sarzenianit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -329,7 +331,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "slowbronite": Entry(appOriginal: false,
+        "slowbronite": Entry(appOriginalLanguages: [],
             names: ["ko": "야도란나이트", "en": "Slowbronite", "ja": "ヤドランナイト", "es": "Slowbronita", "fr": "Flagadossite", "de": "Lahmusnit"],
             texts: [
                 "ko": "야도란에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -339,7 +341,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Flagadoss, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Lahmus getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "gengarite": Entry(appOriginal: false,
+        "gengarite": Entry(appOriginalLanguages: [],
             names: ["ko": "팬텀나이트", "en": "Gengarite", "ja": "ゲンガナイト", "es": "Gengarita", "fr": "Ectoplasmite", "de": "Gengarnit"],
             texts: [
                 "ko": "팬텀에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -349,7 +351,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Ectoplasma, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Gengar getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "kangaskhanite": Entry(appOriginal: false,
+        "kangaskhanite": Entry(appOriginalLanguages: [],
             names: ["ko": "캥카나이트", "en": "Kangaskhanite", "ja": "ガルーラナイト", "es": "Kangaskhanita", "fr": "Kangourexite", "de": "Kangamanit"],
             texts: [
                 "ko": "캥카에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -359,7 +361,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Kangourex, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Kangama getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "starminite": Entry(appOriginal: true,
+        "starminite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "아쿠스타나이트", "en": "Starminite", "ja": "スターミナイト", "es": "Starmita", "fr": "Starossite", "de": "Starmienit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -371,7 +373,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "pinsirite": Entry(appOriginal: false,
+        "pinsirite": Entry(appOriginalLanguages: [],
             names: ["ko": "쁘사이저나이트", "en": "Pinsirite", "ja": "カイロスナイト", "es": "Pinsirita", "fr": "Scarabruite", "de": "Pinsirnit"],
             texts: [
                 "ko": "쁘사이저에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -381,7 +383,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Scarabrute, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Pinsir getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "gyaradosite": Entry(appOriginal: false,
+        "gyaradosite": Entry(appOriginalLanguages: [],
             names: ["ko": "갸라도스나이트", "en": "Gyaradosite", "ja": "ギャラドスナイト", "es": "Gyaradosita", "fr": "Léviatorite", "de": "Garadosnit"],
             texts: [
                 "ko": "갸라도스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -391,7 +393,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Léviator, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Garados getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "aerodactylite": Entry(appOriginal: false,
+        "aerodactylite": Entry(appOriginalLanguages: [],
             names: ["ko": "프테라나이트", "en": "Aerodactylite", "ja": "プテラナイト", "es": "Aerodactylita", "fr": "Ptéraïte", "de": "Aerodactylonit"],
             texts: [
                 "ko": "프테라에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -401,7 +403,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Ptéra, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Aerodactyl getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "dragoninite": Entry(appOriginal: true,
+        "dragoninite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "망나뇽나이트", "en": "Dragoninite", "ja": "カイリュナイト", "es": "Dragonitita", "fr": "Dracolossite", "de": "Dragoranit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -413,7 +415,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "mewtwonite-x": Entry(appOriginal: false,
+        "mewtwonite-x": Entry(appOriginalLanguages: [],
             names: ["ko": "뮤츠나이트X", "en": "Mewtwonite X", "ja": "ミュウツナイトＸ", "es": "Mewtwoita X", "fr": "Mewtwoïte X", "de": "Mewtunit X"],
             texts: [
                 "ko": "뮤츠에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -423,7 +425,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par Mewtwo, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Mewtu getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "mewtwonite-y": Entry(appOriginal: false,
+        "mewtwonite-y": Entry(appOriginalLanguages: [],
             names: ["ko": "뮤츠나이트Y", "en": "Mewtwonite Y", "ja": "ミュウツナイトＹ", "es": "Mewtwoita Y", "fr": "Mewtwoïte Y", "de": "Mewtunit Y"],
             texts: [
                 "ko": "뮤츠에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -433,7 +435,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par Mewtwo, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Mewtu getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "meganiumite": Entry(appOriginal: true,
+        "meganiumite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "메가니움나이트", "en": "Meganiumite", "ja": "メガニウムナイト", "es": "Meganiumita", "fr": "Méganiumite", "de": "Meganienit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -445,7 +447,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "feraligite": Entry(appOriginal: true,
+        "feraligite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "장크로다일나이트", "en": "Feraligite", "ja": "オーダイルナイト", "es": "Feraligatrita", "fr": "Aligatueurite", "de": "Impergatornit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -457,7 +459,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "ampharosite": Entry(appOriginal: false,
+        "ampharosite": Entry(appOriginalLanguages: [],
             names: ["ko": "전룡나이트", "en": "Ampharosite", "ja": "デンリュウナイト", "es": "Ampharosita", "fr": "Pharampite", "de": "Ampharosnit"],
             texts: [
                 "ko": "전룡에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -467,7 +469,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Pharamp, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Ampharos getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "steelixite": Entry(appOriginal: false,
+        "steelixite": Entry(appOriginalLanguages: [],
             names: ["ko": "강철톤나이트", "en": "Steelixite", "ja": "ハガネールナイト", "es": "Steelixita", "fr": "Steelixite", "de": "Stahlosnit"],
             texts: [
                 "ko": "강철톤에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -477,7 +479,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Steelix, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Stahlos getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "scizorite": Entry(appOriginal: false,
+        "scizorite": Entry(appOriginalLanguages: [],
             names: ["ko": "핫삼나이트", "en": "Scizorite", "ja": "ハッサムナイト", "es": "Scizorita", "fr": "Cizayoxite", "de": "Scheroxnit"],
             texts: [
                 "ko": "핫삼에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -487,7 +489,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Cizayox, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Scherox getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "heracronite": Entry(appOriginal: false,
+        "heracronite": Entry(appOriginalLanguages: [],
             names: ["ko": "헤라크로스나이트", "en": "Heracronite", "ja": "ヘラクロスナイト", "es": "Heracrossita", "fr": "Scarhinoïte", "de": "Skarabornit"],
             texts: [
                 "ko": "헤라크로스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -497,7 +499,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Scarhino, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Skaraborn getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "skarmorite": Entry(appOriginal: true,
+        "skarmorite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "무장조나이트", "en": "Skarmorite", "ja": "エアームドナイト", "es": "Skarmorita", "fr": "Airmurite", "de": "Panzaeronit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -509,7 +511,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "houndoominite": Entry(appOriginal: false,
+        "houndoominite": Entry(appOriginalLanguages: [],
             names: ["ko": "헬가나이트", "en": "Houndoominite", "ja": "ヘルガナイト", "es": "Houndoomita", "fr": "Démolossite", "de": "Hundemonit"],
             texts: [
                 "ko": "헬가에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -519,7 +521,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Démolosse, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Hundemon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "tyranitarite": Entry(appOriginal: false,
+        "tyranitarite": Entry(appOriginalLanguages: [],
             names: ["ko": "마기라스나이트", "en": "Tyranitarite", "ja": "バンギラスナイト", "es": "Tyranitarita", "fr": "Tyranocivite", "de": "Despotarnit"],
             texts: [
                 "ko": "마기라스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -529,7 +531,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Tyranocif, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Despotar getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "sceptilite": Entry(appOriginal: false,
+        "sceptilite": Entry(appOriginalLanguages: [],
             names: ["ko": "나무킹나이트", "en": "Sceptilite", "ja": "ジュカインナイト", "es": "Sceptilita", "fr": "Jungkite", "de": "Gewaldronit"],
             texts: [
                 "ko": "나무킹에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -539,7 +541,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Jungko, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Gewaldro getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "blazikenite": Entry(appOriginal: false,
+        "blazikenite": Entry(appOriginalLanguages: [],
             names: ["ko": "번치코나이트", "en": "Blazikenite", "ja": "バシャーモナイト", "es": "Blazikenita", "fr": "Braségalite", "de": "Lohgocknit"],
             texts: [
                 "ko": "번치코에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -549,7 +551,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Braségali, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Lohgock getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "swampertite": Entry(appOriginal: false,
+        "swampertite": Entry(appOriginalLanguages: [],
             names: ["ko": "대짱이나이트", "en": "Swampertite", "ja": "ラグラージナイト", "es": "Swampertita", "fr": "Laggronite", "de": "Sumpexnit"],
             texts: [
                 "ko": "대짱이에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -559,7 +561,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Laggron, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Sumpex getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "gardevoirite": Entry(appOriginal: false,
+        "gardevoirite": Entry(appOriginalLanguages: [],
             names: ["ko": "가디안나이트", "en": "Gardevoirite", "ja": "サーナイトナイト", "es": "Gardevoirita", "fr": "Gardevoirite", "de": "Guardevoirnit"],
             texts: [
                 "ko": "가디안에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -569,7 +571,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Gardevoir, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Guardevoir getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "sablenite": Entry(appOriginal: false,
+        "sablenite": Entry(appOriginalLanguages: [],
             names: ["ko": "깜까미나이트", "en": "Sablenite", "ja": "ヤミラミナイト", "es": "Sableynita", "fr": "Ténéfixite", "de": "Zobirisnit"],
             texts: [
                 "ko": "깜까미에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -579,7 +581,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Ténéfix, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Zobiris getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "mawilite": Entry(appOriginal: false,
+        "mawilite": Entry(appOriginalLanguages: [],
             names: ["ko": "입치트나이트", "en": "Mawilite", "ja": "クチートナイト", "es": "Mawilita", "fr": "Mysdibulite", "de": "Flunkifernit"],
             texts: [
                 "ko": "입치트에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -589,7 +591,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Mysdibule, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Flunkifer getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "aggronite": Entry(appOriginal: false,
+        "aggronite": Entry(appOriginalLanguages: [],
             names: ["ko": "보스로라나이트", "en": "Aggronite", "ja": "ボスゴドラナイト", "es": "Aggronita", "fr": "Galekingite", "de": "Stollossnit"],
             texts: [
                 "ko": "보스로라에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -599,7 +601,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Galeking, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Stolloss getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "medichamite": Entry(appOriginal: false,
+        "medichamite": Entry(appOriginalLanguages: [],
             names: ["ko": "요가램나이트", "en": "Medichamite", "ja": "チャーレムナイト", "es": "Medichamita", "fr": "Charminite", "de": "Meditalisnit"],
             texts: [
                 "ko": "요가램에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -609,7 +611,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Charmina, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Meditalis getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "manectite": Entry(appOriginal: false,
+        "manectite": Entry(appOriginalLanguages: [],
             names: ["ko": "썬더볼트나이트", "en": "Manectite", "ja": "ライボルトナイト", "es": "Manectricita", "fr": "Élecsprintite", "de": "Voltensonit"],
             texts: [
                 "ko": "썬더볼트에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -619,7 +621,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Élecsprint, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Voltenso getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "sharpedonite": Entry(appOriginal: false,
+        "sharpedonite": Entry(appOriginalLanguages: [],
             names: ["ko": "샤크니아나이트", "en": "Sharpedonite", "ja": "サメハダナイト", "es": "Sharpedonita", "fr": "Sharpedite", "de": "Tohaidonit"],
             texts: [
                 "ko": "샤크니아에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -629,7 +631,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Sharpedo, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Tohaido getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "cameruptite": Entry(appOriginal: false,
+        "cameruptite": Entry(appOriginalLanguages: [],
             names: ["ko": "폭타나이트", "en": "Cameruptite", "ja": "バクーダナイト", "es": "Cameruptita", "fr": "Caméruptite", "de": "Cameruptnit"],
             texts: [
                 "ko": "폭타에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -639,7 +641,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Camérupt, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Camerupt getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "altarianite": Entry(appOriginal: false,
+        "altarianite": Entry(appOriginalLanguages: [],
             names: ["ko": "파비코리나이트", "en": "Altarianite", "ja": "チルタリスナイト", "es": "Altarianita", "fr": "Altarite", "de": "Altarianit"],
             texts: [
                 "ko": "파비코리에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -649,7 +651,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Altaria, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Altaria getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "banettite": Entry(appOriginal: false,
+        "banettite": Entry(appOriginalLanguages: [],
             names: ["ko": "다크펫나이트", "en": "Banettite", "ja": "ジュペッタナイト", "es": "Banettita", "fr": "Branettite", "de": "Banetteonit"],
             texts: [
                 "ko": "다크펫에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -659,7 +661,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Branette, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Banette getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "chimechite": Entry(appOriginal: true,
+        "chimechite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "치렁나이트", "en": "Chimechite", "ja": "チリーンナイト", "es": "Chimechita", "fr": "Éokite", "de": "Palimpalimonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -671,7 +673,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "absolite": Entry(appOriginal: false,
+        "absolite": Entry(appOriginalLanguages: [],
             names: ["ko": "앱솔나이트", "en": "Absolite", "ja": "アブソルナイト", "es": "Absolita", "fr": "Absolite", "de": "Absolnit"],
             texts: [
                 "ko": "앱솔에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -681,7 +683,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Absol, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Absol getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "absolite-z": Entry(appOriginal: true,
+        "absolite-z": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "앱솔나이트Z", "en": "Absolite Z", "ja": "アブソルナイトZ", "es": "Absolita Z", "fr": "Absolite Z", "de": "Absolnit Z"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -693,7 +695,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "glalitite": Entry(appOriginal: false,
+        "glalitite": Entry(appOriginalLanguages: [],
             names: ["ko": "얼음귀신나이트", "en": "Glalitite", "ja": "オニゴーリナイト", "es": "Glalita", "fr": "Oniglalite", "de": "Firnontornit"],
             texts: [
                 "ko": "얼음귀신에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -703,7 +705,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Oniglali, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Firnontor getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "salamencite": Entry(appOriginal: false,
+        "salamencite": Entry(appOriginalLanguages: [],
             names: ["ko": "보만다나이트", "en": "Salamencite", "ja": "ボーマンダナイト", "es": "Salamencita", "fr": "Drattakite", "de": "Brutalandanit"],
             texts: [
                 "ko": "보만다에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -713,7 +715,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Drattak, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Brutalanda getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "metagrossite": Entry(appOriginal: false,
+        "metagrossite": Entry(appOriginalLanguages: [],
             names: ["ko": "메타그로스나이트", "en": "Metagrossite", "ja": "メタグロスナイト", "es": "Metagrossita", "fr": "Métalossite", "de": "Metagrossnit"],
             texts: [
                 "ko": "메타그로스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -723,7 +725,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Métalosse, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Metagross getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "latiasite": Entry(appOriginal: false,
+        "latiasite": Entry(appOriginalLanguages: [],
             names: ["ko": "라티아스나이트", "en": "Latiasite", "ja": "ラティアスナイト", "es": "Latiasita", "fr": "Latiasite", "de": "Latiasnit"],
             texts: [
                 "ko": "라티아스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -733,7 +735,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par Latias, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Latias getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "latiosite": Entry(appOriginal: false,
+        "latiosite": Entry(appOriginalLanguages: [],
             names: ["ko": "라티오스나이트", "en": "Latiosite", "ja": "ラティオスナイト", "es": "Latiosita", "fr": "Latiosite", "de": "Latiosnit"],
             texts: [
                 "ko": "라티오스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -743,7 +745,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par Latios, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Latios getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "staraptite": Entry(appOriginal: true,
+        "staraptite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "찌르호크나이트", "en": "Staraptite", "ja": "ムクホークナイト", "es": "Staraptorita", "fr": "Étouraptorite", "de": "Staraptornit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -755,7 +757,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "lopunnite": Entry(appOriginal: false,
+        "lopunnite": Entry(appOriginalLanguages: [],
             names: ["ko": "이어롭나이트", "en": "Lopunnite", "ja": "ミミロップナイト", "es": "Lopunnita", "fr": "Lockpinite", "de": "Schlapornit"],
             texts: [
                 "ko": "이어롭에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -765,7 +767,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Lockpin, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Schlapor getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "garchompite": Entry(appOriginal: false,
+        "garchompite": Entry(appOriginalLanguages: [],
             names: ["ko": "한카리아스나이트", "en": "Garchompite", "ja": "ガブリアスナイト", "es": "Garchompita", "fr": "Carchacrokite", "de": "Knakracknit"],
             texts: [
                 "ko": "한카리아스에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -775,7 +777,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Carchacrok, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Knakrack getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "garchompite-z": Entry(appOriginal: true,
+        "garchompite-z": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "한카리아스나이트Z", "en": "Garchompite Z", "ja": "ガブリアスナイトZ", "es": "Garchompita Z", "fr": "Carchacrokite Z", "de": "Knakracknit Z"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -787,7 +789,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "lucarionite": Entry(appOriginal: false,
+        "lucarionite": Entry(appOriginalLanguages: [],
             names: ["ko": "루카리오나이트", "en": "Lucarionite", "ja": "ルカリオナイト", "es": "Lucarita", "fr": "Lucarite", "de": "Lucarionit"],
             texts: [
                 "ko": "루카리오에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -797,7 +799,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Lucario, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Lucario getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "lucarionite-z": Entry(appOriginal: true,
+        "lucarionite-z": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "루카리오나이트Z", "en": "Lucarionite Z", "ja": "ルカリオナイトZ", "es": "Lucarita Z", "fr": "Lucarite Z", "de": "Lucarionit Z"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -809,7 +811,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "abomasite": Entry(appOriginal: false,
+        "abomasite": Entry(appOriginalLanguages: [],
             names: ["ko": "눈설왕나이트", "en": "Abomasite", "ja": "ユキノオナイト", "es": "Abomasnowita", "fr": "Blizzarite", "de": "Rexblisarnit"],
             texts: [
                 "ko": "눈설왕에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -819,7 +821,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Blizzaroi, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Rexblisar getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "galladite": Entry(appOriginal: false,
+        "galladite": Entry(appOriginalLanguages: [],
             names: ["ko": "엘레이드나이트", "en": "Galladite", "ja": "エルレイドナイト", "es": "Galladita", "fr": "Gallamite", "de": "Galagladinit"],
             texts: [
                 "ko": "엘레이드에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -829,7 +831,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Gallame, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Galagladi getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "froslassite": Entry(appOriginal: true,
+        "froslassite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "눈여아나이트", "en": "Froslassite", "ja": "ユキメノコナイト", "es": "Froslassita", "fr": "Momartikite", "de": "Frosdedjenit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -841,7 +843,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "heatranite": Entry(appOriginal: true,
+        "heatranite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "히드런나이트", "en": "Heatranite", "ja": "ヒードラナイト", "es": "Heatranita", "fr": "Heatranite", "de": "Heatranit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -853,7 +855,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "darkranite": Entry(appOriginal: true,
+        "darkranite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "다크라이나이트", "en": "Darkranite", "ja": "ダークライナイト", "es": "Darkrainita", "fr": "Darkraïte", "de": "Darkrainit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -865,7 +867,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "emboarite": Entry(appOriginal: true,
+        "emboarite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "염무왕나이트", "en": "Emboarite", "ja": "エンブオナイト", "es": "Emboarita", "fr": "Roitiflamite", "de": "Flambirexonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -877,7 +879,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "excadrite": Entry(appOriginal: true,
+        "excadrite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "몰드류나이트", "en": "Excadrite", "ja": "ドリュウズナイト", "es": "Excadrillita", "fr": "Minotaupite", "de": "Stalobornit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -889,7 +891,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "audinite": Entry(appOriginal: false,
+        "audinite": Entry(appOriginalLanguages: [],
             names: ["ko": "다부니나이트", "en": "Audinite", "ja": "タブンネナイト", "es": "Audinita", "fr": "Nanméouïte", "de": "Ohrdochnit"],
             texts: [
                 "ko": "다부니에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -899,7 +901,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Nanméouïe, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Ohrdoch getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "scolipite": Entry(appOriginal: true,
+        "scolipite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "펜드라나이트", "en": "Scolipite", "ja": "ペンドラナイト", "es": "Scolipedita", "fr": "Brutapodite", "de": "Cerapendranit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -911,7 +913,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "scraftinite": Entry(appOriginal: true,
+        "scraftinite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "곤율거니나이트", "en": "Scraftinite", "ja": "ズルズキナイト", "es": "Scraftita", "fr": "Baggaïdite", "de": "Irokexonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -923,7 +925,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "eelektrossite": Entry(appOriginal: true,
+        "eelektrossite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "저리더프나이트", "en": "Eelektrossite", "ja": "シビルドナイト", "es": "Eelektrossita", "fr": "Ohmassacrite", "de": "Zapplarangonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -935,7 +937,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "chandelurite": Entry(appOriginal: true,
+        "chandelurite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "샹델라나이트", "en": "Chandelurite", "ja": "シャンデラナイト", "es": "Chandelurita", "fr": "Lugulabrite", "de": "Skelabranit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -947,7 +949,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "golurkite": Entry(appOriginal: true,
+        "golurkite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "골루그나이트", "en": "Golurkite", "ja": "ゴルーグナイト", "es": "Golurkita", "fr": "Golemastokite", "de": "Golgantesnit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -959,7 +961,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "chesnaughtite": Entry(appOriginal: true,
+        "chesnaughtite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "브리가론나이트", "en": "Chesnaughtite", "ja": "ブリガロナイト", "es": "Chesnaughtita", "fr": "Blindépiquite", "de": "Brigaronit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -971,7 +973,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "delphoxite": Entry(appOriginal: true,
+        "delphoxite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "마폭시나이트", "en": "Delphoxite", "ja": "マフォクシナイト", "es": "Delphoxita", "fr": "Goupelinite", "de": "Fennexisnit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -983,7 +985,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "greninjite": Entry(appOriginal: true,
+        "greninjite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "개굴닌자나이트", "en": "Greninjite", "ja": "ゲッコウガナイト", "es": "Greninjanita", "fr": "Amphinolite", "de": "Quajutsunit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -995,7 +997,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "pyroarite": Entry(appOriginal: true,
+        "pyroarite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "화염레오나이트", "en": "Pyroarite", "ja": "カエンジシナイト", "es": "Pyroarita", "fr": "Néméliosite", "de": "Pyroleonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1007,7 +1009,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "floettite": Entry(appOriginal: true,
+        "floettite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "플라베베나이트", "en": "Floettite", "ja": "フラエッテナイト", "es": "Floettita", "fr": "Floettite", "de": "Floetteonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1019,7 +1021,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "meowsticite": Entry(appOriginal: true,
+        "meowsticite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "냐오닉스나이트", "en": "Meowsticite", "ja": "ニャオニクスナイト", "es": "Meowsticita", "fr": "Mistigrixite", "de": "Psiaugonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1031,7 +1033,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "malamarite": Entry(appOriginal: true,
+        "malamarite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "칼라마네로나이트", "en": "Malamarite", "ja": "カラマネナイト", "es": "Malamarita", "fr": "Sepiatrocite", "de": "Calamaneronit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1043,7 +1045,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "barbaracite": Entry(appOriginal: true,
+        "barbaracite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "거북손데스나이트", "en": "Barbaracite", "ja": "ガメノデスナイト", "es": "Barbaraclita", "fr": "Golgopathite", "de": "Thanathoranit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1055,7 +1057,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "dragalgite": Entry(appOriginal: true,
+        "dragalgite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "드래캄나이트", "en": "Dragalgite", "ja": "ドラミドナイト", "es": "Dragalgita", "fr": "Kravarekite", "de": "Tandraknit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1067,7 +1069,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "hawluchanite": Entry(appOriginal: true,
+        "hawluchanite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "루차불나이트", "en": "Hawluchanite", "ja": "ルチャブルナイト", "es": "Hawluchanita", "fr": "Brutalibrite", "de": "Resladeronit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1079,7 +1081,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "zygardite": Entry(appOriginal: true,
+        "zygardite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "지가르데나이트", "en": "Zygardite", "ja": "ジガルデナイト", "es": "Zygardita", "fr": "Zygardite", "de": "Zygardenit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1091,7 +1093,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "diancite": Entry(appOriginal: false,
+        "diancite": Entry(appOriginalLanguages: [],
             names: ["ko": "디안시나이트", "en": "Diancite", "ja": "ディアンシナイト", "es": "Diancita", "fr": "Diancite", "de": "Diancienit"],
             texts: [
                 "ko": "디안시에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1101,7 +1103,7 @@ enum ItemLoreTable {
                 "fr": "Une variété de Méga-Gemme. Tenue par un Diancie, elle lui permet de méga-évoluer durant un combat.",
                 "de": "Einer der mysteriösen Mega-Steine. Wird er von einem Diancie getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
             ]),
-        "crabominite": Entry(appOriginal: true,
+        "crabominite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "모단단게나이트", "en": "Crabominite", "ja": "ケケンカニナイト", "es": "Crabominablita", "fr": "Crabominablite", "de": "Krawellonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1113,7 +1115,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "golisopite": Entry(appOriginal: true,
+        "golisopite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "갑주무사나이트", "en": "Golisopite", "ja": "グソクムシャナイト", "es": "Golisopodita", "fr": "Sarmuraïte", "de": "Tectassnit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1125,7 +1127,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "drampanite": Entry(appOriginal: true,
+        "drampanite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "할비롱나이트", "en": "Drampanite", "ja": "ジジーロナイト", "es": "Drampanita", "fr": "Draïeulite", "de": "Sen-Longnit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1137,7 +1139,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "magearnite": Entry(appOriginal: true,
+        "magearnite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "마기아나이트", "en": "Magearnite", "ja": "マギアナイト", "es": "Magearnita", "fr": "Magearnite", "de": "Magearnanit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1149,7 +1151,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "zeraorite": Entry(appOriginal: true,
+        "zeraorite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "제라오라나이트", "en": "Zeraorite", "ja": "ゼラオラナイト", "es": "Zeraoranita", "fr": "Zeraorite", "de": "Zeraoranit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1161,7 +1163,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "falinksite": Entry(appOriginal: true,
+        "falinksite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "대여르나이트", "en": "Falinksite", "ja": "タイレーツナイト", "es": "Falinksita", "fr": "Hexadronite", "de": "Legiosnit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1173,7 +1175,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "scovillainite": Entry(appOriginal: true,
+        "scovillainite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "스코빌런나이트", "en": "Scovillainite", "ja": "スコヴィラナイト", "es": "Scovillainita", "fr": "Scovilainite", "de": "Halupenjonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1185,7 +1187,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "glimmoranite": Entry(appOriginal: true,
+        "glimmoranite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "킬라플로르나이트", "en": "Glimmoranite", "ja": "キラフロルナイト", "es": "Glimmoranita", "fr": "Floréclatite", "de": "Lumifloranit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1197,7 +1199,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "tatsugirinite": Entry(appOriginal: true,
+        "tatsugirinite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "싸리용나이트", "en": "Tatsugirinite", "ja": "シャリタツナイト", "es": "Tatsugirita", "fr": "Nigirigonite", "de": "Nigiraginit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1209,7 +1211,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "baxcalibrite": Entry(appOriginal: true,
+        "baxcalibrite": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: ["ko": "드닐레이브나이트", "en": "Baxcalibrite", "ja": "セグレイブナイト", "es": "Baxcaliburita", "fr": "Glaivodite", "de": "Espinodonit"],
             texts: [
                 "ko": "대응하는 포켓몬에게 지니게 하면 배틀할 때 메가진화할 수 있는 신비한 메가스톤의 일종.",
@@ -1221,7 +1223,7 @@ enum ItemLoreTable {
                 "de": "Einer der mysteriösen Mega-Steine. Wird er vom passenden Pokémon getragen, kann es im Kampf eine Mega-Entwicklung durchführen.",
                 "ru": "Один из загадочных мега-камней. Подходящий покемон, который держит его, может мега-эволюционировать в бою.",
             ]),
-        "app-mint": Entry(appOriginal: true,
+        "app-mint": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: [:],
             texts: [
                 "ko": "상쾌한 향이 나는 민트. 먹이면 포켓몬의 성격이 무작위로 바뀐다.",
@@ -1233,7 +1235,7 @@ enum ItemLoreTable {
                 "de": "Eine Minze mit frischem Duft. Sie ändert das Wesen eines Pokémon zufällig.",
                 "ru": "Мята со свежим ароматом. Случайным образом меняет характер покемона.",
             ]),
-        "app-scout-ticket": Entry(appOriginal: true,
+        "app-scout-ticket": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
             names: [:],
             texts: [
                 "ko": "{pool} 포켓몬 10마리를 보여 주는 스카우트 티켓. 마음에 드는 알 하나를 고를 수 있다.",

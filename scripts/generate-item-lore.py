@@ -72,11 +72,21 @@ MEGA_FALLBACK = {
 }
 
 
+# Official text PokéAPI lacks, copied from a source that quotes the in-game text. Only the listed
+# languages are official; the others come from NO_TEXT_YET and are flagged app-original.
+OFFICIAL_MANUAL = {
+    "linking-cord": {
+        "source": "https://pokemondb.net/item/linking-cord (Legends: Arceus and Scarlet/Violet, identical text)",
+        "texts": {
+            "en": "A string exuding a mysterious energy that makes you feel a strange sense of connection. It’s loved by certain Pokémon.",
+        },
+    },
+}
+
 # Non-Mega items that exist in the games but have no flavor text in PokéAPI yet.
 NO_TEXT_YET = {
     "linking-cord": {
         "ko": "신비한 끈. 사용하면 통신 교환으로 진화하는 포켓몬이 그 자리에서 진화한다.",
-        "en": "A mysterious cord. Using it makes a Pokémon that evolves by trade evolve right away.",
         "ja": "ふしぎな　ヒモ。　つかうと　つうしんこうかんで　しんかする　ポケモンが　その　ばで　しんかする。",
         "es": "Un cordón misterioso. Al usarlo, un Pokémon que evoluciona por intercambio evoluciona al instante.",
         "fr": "Un fil mystérieux. Utilisé, il fait évoluer aussitôt un Pokémon qui évolue par échange.",
@@ -99,7 +109,9 @@ def main():
         "// Official text is the newest version group per language. pt and ru are absent and fall back to English.",
         "enum ItemLoreTable {",
         "    struct Entry {",
-        "        let appOriginal: Bool",
+        "        /// Languages whose text is written for the app, not copied from the games.",
+        "        let appOriginalLanguages: [String]",
+        "        var appOriginal: Bool { !appOriginalLanguages.isEmpty }",
         "        /// Official item names, keyed by AppLanguage.rawValue. Empty for app-original items.",
         "        let names: [String: String]",
         "        let texts: [String: String]",
@@ -110,12 +122,13 @@ def main():
     flagged = []
     for slug in slugs:
         e = fetched[slug]
+        handwritten = []
         if not e["text"]:
-            e["appOriginal"], e["text"] = True, NO_TEXT_YET.get(slug, MEGA_FALLBACK)
+            e["text"], handwritten = fill_missing(slug)
             flagged.append(slug)
-        append_entry(lines, slug, e["appOriginal"], e["name"], e["text"])
+        append_entry(lines, slug, handwritten, e["name"], e["text"])
     for slug, texts in APP_ORIGINAL.items():
-        append_entry(lines, slug, True, {}, texts)
+        append_entry(lines, slug, list(texts), {}, texts)
     lines += ["    ]", "}", ""]
     OUT.write_text("\n".join(lines))
     print(f"wrote {OUT.relative_to(ROOT)} ({len(slugs) - len(flagged)} official, {len(flagged) + len(APP_ORIGINAL)} app-original)")
@@ -123,9 +136,18 @@ def main():
         print("no PokéAPI text yet, using NO_TEXT_YET / MEGA_FALLBACK:", ", ".join(flagged), file=sys.stderr)
 
 
-def append_entry(lines, slug, app_original, names, texts):
-    flag = "true" if app_original else "false"
-    lines.append(f"        {swift(slug)}: Entry(appOriginal: {flag},")
+def fill_missing(slug):
+    if slug in OFFICIAL_MANUAL:
+        official = OFFICIAL_MANUAL[slug]["texts"]
+        texts = {**NO_TEXT_YET[slug], **official}
+        return texts, [k for k in texts if k not in official]
+    texts = NO_TEXT_YET.get(slug, MEGA_FALLBACK)
+    return texts, list(texts)
+
+
+def append_entry(lines, slug, app_languages, names, texts):
+    listed = ", ".join(swift(k) for k in app_languages)
+    lines.append(f"        {swift(slug)}: Entry(appOriginalLanguages: [{listed}],")
     lines.append("            names: [" + (", ".join(f"{swift(k)}: {swift(v)}" for k, v in names.items()) or ":") + "],")
     lines.append("            texts: [")
     for key, text in texts.items():
