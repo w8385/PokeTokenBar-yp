@@ -415,6 +415,7 @@ class CommandHandler:
             rental=member.get("rental", False),
             nature=member.get("nature"),
             ability=member.get("ability"),
+            item=member.get("held_item"),
         )
 
 

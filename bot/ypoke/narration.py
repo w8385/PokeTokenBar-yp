@@ -4,9 +4,10 @@ from collections.abc import Sequence
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    AbilityTrigger, Action, BattleResult, Change, Combatant, Event, SendOut, StatusDamage, WeatherDamage,
+    AbilityTrigger, Action, BattleResult, Change, Combatant, Event, ItemHeal, SendOut, StatusDamage, WeatherDamage,
     WeatherEnd,
 )
+from ypoke.items import FOCUS_SASH, ITEM_NAMES, LIFE_ORB, known
 
 MAX_EVENT_LINES = 24
 MAX_LOG_CHARS = 2900
@@ -122,6 +123,8 @@ def with_particle(word: str, pair: tuple[str, str]) -> str:
 
 def _send_out_line(trainer: str, combatant: Combatant) -> str:
     details = f"Lv{combatant.level}{' ✨' if combatant.shiny else ''}"
+    if known(combatant.item):
+        details += f" · {ITEM_NAMES[combatant.item]}"
     name = f"{RENTAL_PREFIX}{combatant.name}" if combatant.rental else combatant.name
     return f"{trainer}은(는) {with_particle(name, ('을', '를'))} 내보냈다! ({details})"
 
@@ -139,6 +142,9 @@ def _event_line(event: Event) -> str:
         name = with_particle(event.pokemon, ("은", "는"))
         tail = f"{name} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
         return f"{prefix} {name} {STATUS_DAMAGE_TEXT[event.kind]} 데미지를 입었다! {tail}"
+    if isinstance(event, ItemHeal):
+        name = with_particle(event.pokemon, ("은", "는"))
+        return f"{prefix} {name} {ITEM_NAMES[event.item]} 덕분에 체력을 회복했다! (HP {event.hp}%)"
     if isinstance(event, WeatherDamage):
         name = with_particle(event.pokemon, ("은", "는"))
         tail = f"{name} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
@@ -173,6 +179,10 @@ def _event_line(event: Event) -> str:
         parts.append(f"{event.defender}에게서 체력을 흡수했다!")
     if event.recoil:
         parts.append(f"{with_particle(event.attacker, ('은', '는'))} 반동으로 데미지를 입었다!")
+    if event.attacker_item == LIFE_ORB:
+        parts.append(f"{with_particle(event.attacker, ('은', '는'))} {ITEM_NAMES[LIFE_ORB]}의 반동으로 데미지를 입었다!")
+    if event.defender_item == FOCUS_SASH:
+        parts.append(f"{with_particle(event.defender, ('은', '는'))} {ITEM_NAMES[FOCUS_SASH]} 덕분에 버텼다!")
     if event.knockout:
         parts.append(f"{with_particle(event.defender, ('은', '는'))} 쓰러졌다!")
     elif event.attacker_fainted:
