@@ -3,6 +3,7 @@
 import json
 import logging
 import threading
+from datetime import UTC, datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Callable
 from urllib.parse import parse_qs, urlsplit
@@ -12,10 +13,14 @@ from ypoke.store import Store
 
 MAX_BODY_BYTES = 64 * 1024
 MAX_PARTY_SIZE = 6
+RECENT_BATTLE_LIMIT = 5
+COWORKER_LIMIT = 30
+COWORKER_WINDOW = timedelta(days=30)
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
 MovesFor = Callable[[int, int], list[dict]]
 OnUpload = Callable[[str, list[dict]], None]
+NameFor = Callable[[str], str | None]
 
 
 class PartyError(ValueError):
@@ -23,15 +28,17 @@ class PartyError(ValueError):
 
 
 def serve(
-    store: Store, host: str, port: int, on_upload: OnUpload, moves_for: MovesFor
+    store: Store, host: str, port: int, on_upload: OnUpload, moves_for: MovesFor, name_for: NameFor = lambda user_id: None
 ) -> ThreadingHTTPServer:
     """Start the upload server on a daemon thread and return it.
 
     `on_upload(user_id, party)` runs after each stored upload, before the reply.
     `moves_for(pokemon_id, level)` returns the attacking moves learnable at that level and raises OSError when offline.
+    `name_for(user_id)` returns a Slack display name, or None when it cannot be found.
     """
     handler = type("BoundUploadHandler", (_UploadHandler,), {
         "store": store, "on_upload": staticmethod(on_upload), "moves_for": staticmethod(moves_for),
+        "name_for": staticmethod(name_for),
     })
     server = ThreadingHTTPServer((host, port), handler)
     threading.Thread(target=server.serve_forever, name="upload-server", daemon=True).start()
@@ -62,10 +69,31 @@ def check_moves(party: list[dict], moves_for: MovesFor) -> None:
                 raise PartyError(f"party[{index}].moves: {move_id} is not an attacking move learnable at level {member['level']}")
 
 
+def battle_overview(store: Store, user_id: str, name_for: NameFor) -> dict:
+    """The uploader's last battles and the other users' current lead Pokémon, with display names and no Slack ids."""
+    recent = [
+        {
+            "opponent_name": name_for(battle.opponent_id),
+            "my_pokemon_id": battle.my_pokemon_id,
+            "opponent_pokemon_id": battle.opponent_pokemon_id,
+            "result": "win" if battle.won else "loss",
+            "turns": battle.turns,
+            "at": battle.at,
+        }
+        for battle in store.recent_battles(user_id, RECENT_BATTLE_LIMIT)
+    ]
+    coworkers = [
+        {"name": name_for(lead.user_id), "pokemon_id": lead.pokemon_id, "level": lead.level, "shiny": lead.shiny}
+        for lead in store.leads_except(user_id, datetime.now(UTC) - COWORKER_WINDOW, COWORKER_LIMIT)
+    ]
+    return {"recent_battles": recent, "coworkers": coworkers}
+
+
 class _UploadHandler(BaseHTTPRequestHandler):
     store: Store
     on_upload: OnUpload
     moves_for: MovesFor
+    name_for: NameFor
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
@@ -115,7 +143,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
             return
         self.store.save_party(user_id, party)
         self.on_upload(user_id, party)
-        self._reply(200, {"ok": True, "party_size": len(party)})
+        self._reply(200, {"ok": True, "party_size": len(party), **battle_overview(self.store, user_id, self.name_for)})
 
     def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
         if urlsplit(self.path).path != "/v1/health":

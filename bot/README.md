@@ -37,6 +37,8 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
 - `/전적 [@누구]` shows win/loss.
 - `/랭킹` posts this week's top 10 (since Monday 00:00 KST) by wins, then win rate, then fewer battles.
 - `/ypoke` shows help.
+- The upload response carries the app's "최근 대결" and "동료" lists ([API.md](API.md)). Display names come from Slack
+  `users.info` (scope `users:read`, cached an hour); without the scope the names are `null` and the app shows a generic label.
 - Slack runs no slash commands in threads, so mentions cover them all and answer in the thread:
   `@YPoke 대결 @상대`, `@YPoke 대결` (practice), `@YPoke 전적 [@누구]`, `@YPoke 랭킹`,
   `@YPoke 연결` (link by DM). `@YPoke` alone shows help. A top-level mention starts a thread.

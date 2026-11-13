@@ -118,6 +118,7 @@ class _Match:
     sides: tuple[Combatant, Combatant]
     seed: int
     practice: bool
+    pokemon: tuple[int, int]
 
 
 class CommandHandler:
@@ -320,17 +321,21 @@ class CommandHandler:
         seed = secrets.randbits(31)
         if opponent_id == self._bot_user_id:
             wild = {"pokemon_id": bot_species(seed), "level": lead["level"], "shiny": False, "ivs": {}}
-            return _Match(challenger_id, opponent_id, self._combatants(lead, wild), seed, practice=True)
+            return _Match(challenger_id, opponent_id, self._combatants(lead, wild), seed, practice=True,
+                          pokemon=(lead["pokemon_id"], wild["pokemon_id"]))
         opponent = self._store.party(opponent_id)
         if opponent is None:
             return None
-        return _Match(challenger_id, opponent_id, self._combatants(lead, opponent.party[0]), seed, practice=False)
+        return _Match(challenger_id, opponent_id, self._combatants(lead, opponent.party[0]), seed, practice=False,
+                      pokemon=(lead["pokemon_id"], opponent.party[0]["pokemon_id"]))
 
     def _result(self, match: _Match) -> Reply:
         result = simulate(match.sides, match.seed)
         if not match.practice:
             winner_id = match.challenger_id if result.winner == 0 else match.opponent_id
-            self._store.record_battle(match.challenger_id, match.opponent_id, winner_id, match.seed)
+            self._store.record_battle(
+                match.challenger_id, match.opponent_id, winner_id, match.seed, pokemon=match.pokemon, turns=result.turns
+            )
         trainers = (f"<@{match.challenger_id}>", self._label(match.opponent_id))
         summary = f"🏆 {trainers[result.winner]} 승 — {match.sides[0].name} vs {match.sides[1].name} ({result.turns}턴)"
         if match.practice:

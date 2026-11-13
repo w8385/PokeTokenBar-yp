@@ -904,6 +904,28 @@ struct L {
         t("대결 Lv\(level)", "Battle Lv\(level)", "対戦 Lv\(level)", "Combate Lv\(level)", "Combat Lv\(level)",
           "Batalha Lv\(level)", "Kampf Lv\(level)", "Бой Lv\(level)")
     }
+    var battleRecentTitle: String { t("최근 대결", "Recent battles", "最近の対戦", "Combates recientes", "Combats récents", "Batalhas recentes", "Letzte Kämpfe", "Недавние бои") }
+    var battleRecentEmpty: String {
+        t("아직 대결이 없어요.", "No battles yet.", "まだ対戦がありません。", "Aún no hay combates.", "Aucun combat pour l'instant.",
+          "Ainda não há batalhas.", "Noch keine Kämpfe.", "Боёв пока нет.")
+    }
+    var battleCoworkersTitle: String { t("동료", "Coworkers", "同僚", "Compañeros", "Collègues", "Colegas", "Kollegen", "Коллеги") }
+    var battleCoworkersEmpty: String {
+        t("아직 동료가 없어요.", "No coworkers yet.", "まだ同僚がいません。", "Aún no hay compañeros.", "Aucun collègue pour l'instant.",
+          "Ainda não há colegas.", "Noch keine Kollegen.", "Коллег пока нет.")
+    }
+    var battleInfoPending: String {
+        t("봇에 올라가면 여기에 나와요.", "Shows up here once you are on the bot.", "ボットに届くとここに表示されます。",
+          "Aparecerá aquí cuando estés en el bot.", "Apparaît ici une fois sur le bot.", "Aparece aqui quando estiver no bot.",
+          "Erscheint hier, sobald du beim Bot bist.", "Появится здесь, когда вы будете у бота.")
+    }
+    var battleUnnamed: String { t("이름 모름", "Unknown", "名前不明", "Desconocido", "Inconnu", "Desconhecido", "Unbekannt", "Неизвестно") }
+    var battleWin: String { t("승", "Win", "勝ち", "Victoria", "Victoire", "Vitória", "Sieg", "Победа") }
+    var battleLoss: String { t("패", "Loss", "負け", "Derrota", "Défaite", "Derrota", "Niederlage", "Поражение") }
+    func battleTurns(_ turns: Int) -> String {
+        t("\(turns)턴", "\(turns) turns", "\(turns)ターン", "\(turns) turnos", "\(turns) tours", "\(turns) turnos",
+          "\(turns) Runden", "\(turns) ходов")
+    }
     var battleEntryRaising: String { t("육성 중", "Raising", "育成中", "Criando", "En élevage", "Criando", "Wird aufgezogen", "Растёт") }
     var battleEntryMoves: String { t("기술", "Moves", "わざ", "Movimientos", "Capacités", "Golpes", "Attacken", "Приёмы") }
     var battleEntryAutoMoves: String {

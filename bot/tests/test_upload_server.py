@@ -1,9 +1,13 @@
 import json
+import re
 import urllib.error
 import urllib.request
 
 import pytest
 
+from datetime import UTC, datetime, timedelta
+
+from ypoke.names import FAILURE_TTL, SUCCESS_TTL, DisplayNames
 from ypoke.store import Store
 from ypoke.upload_server import PartyError, serve, validate_party
 
@@ -14,6 +18,9 @@ LEARNABLE = [
     {"id": 85, "name": "10만볼트", "type": "electric", "power": 90, "damage_class": "special", "accuracy": 100, "weather": None, "level": 36},
     {"id": 87, "name": "번개", "type": "electric", "power": 110, "damage_class": "special", "accuracy": 70, "weather": None, "level": 44},
 ]
+
+
+NAMES = {"U2": "리자몽 트레이너", "U3": "민수"}
 
 
 class FakeMoves:
@@ -34,7 +41,9 @@ def moves_for():
 def server(tmp_path, moves_for):
     store = Store(str(tmp_path / "bot.sqlite3"))
     uploads = []
-    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: uploads.append((user_id, party)), moves_for)
+    http_server = serve(
+        store, "127.0.0.1", 0, lambda user_id, party: uploads.append((user_id, party)), moves_for, NAMES.get
+    )
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}", uploads
     http_server.shutdown()
 
@@ -61,7 +70,7 @@ def test_upload_then_read_back(server):
     store, base, uploads = server
     token = store.issue_token("U1")
     status, body = call(f"{base}/v1/party", "POST", token, {"app_version": "2.5.7", "party": [PIKACHU], "extra": 1})
-    assert (status, body) == (200, {"ok": True, "party_size": 1})
+    assert (status, body) == (200, {"ok": True, "party_size": 1, "recent_battles": [], "coworkers": []})
     assert uploads == [("U1", [PIKACHU])]
     status, body = call(f"{base}/v1/party", token=token)
     assert status == 200
@@ -151,7 +160,7 @@ def test_entry_with_chosen_moves_is_stored(server):
     store, base, _ = server
     token = store.issue_token("U1")
     entry = [{**PIKACHU, "moves": [85, 84]}, {"pokemon_id": 7, "level": 20, "moves": []}]
-    assert call(f"{base}/v1/party", "POST", token, {"party": entry}) == (200, {"ok": True, "party_size": 2})
+    assert call(f"{base}/v1/party", "POST", token, {"party": entry}) == (200, {"ok": True, "party_size": 2, "recent_battles": [], "coworkers": []})
     stored = store.party("U1").party
     assert stored[0]["moves"] == [85, 84]
     assert "moves" not in stored[1]
@@ -224,3 +233,148 @@ def test_a_bad_nature_is_dropped_not_rejected(nature):
 def test_nature_is_lowercased_and_unknown_names_are_kept_for_the_battle_to_ignore():
     assert validate_party({"party": [{**PIKACHU, "nature": " Adamant "}]})[0]["nature"] == "adamant"
     assert validate_party({"party": [{**PIKACHU, "nature": "madeup"}]})[0]["nature"] == "madeup"
+
+
+def upload_overview(base, token, lead):
+    status, body = call(f"{base}/v1/party", "POST", token, {"party": [lead]})
+    assert status == 200
+    return body
+
+
+def test_response_lists_the_last_five_battles_newest_first_from_the_uploaders_side(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    start = datetime.now(UTC) - timedelta(hours=1)
+    for index in range(7):
+        store.record_battle("U1", "U2", "U1", index, at=start + timedelta(minutes=index), pokemon=(25, 6), turns=index + 3)
+    store.record_battle("U3", "U1", "U3", 99, at=start + timedelta(minutes=30), pokemon=(7, 94), turns=4)
+    store.record_battle("U2", "U3", "U2", 100, at=start + timedelta(minutes=40), pokemon=(1, 2), turns=9)
+    battles = upload_overview(base, token, PIKACHU)["recent_battles"]
+    assert len(battles) == 5
+    assert battles[0] == {
+        "opponent_name": "민수", "my_pokemon_id": 94, "opponent_pokemon_id": 7, "result": "loss", "turns": 4,
+        "at": battles[0]["at"],
+    }
+    assert [b["turns"] for b in battles[1:]] == [9, 8, 7, 6]
+    assert {b["result"] for b in battles[1:]} == {"win"}
+    assert battles[1]["my_pokemon_id"] == 25 and battles[1]["opponent_pokemon_id"] == 6
+
+
+def test_battles_stored_before_species_were_kept_come_back_with_nulls(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    store.record_battle("U1", "U2", "U1", 1)
+    (battle,) = upload_overview(base, token, PIKACHU)["recent_battles"]
+    assert (battle["my_pokemon_id"], battle["opponent_pokemon_id"], battle["turns"]) == (None, None, None)
+    assert battle["result"] == "win"
+
+
+def test_response_lists_the_other_users_current_leads(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    store.issue_token("U2")
+    store.issue_token("U3")
+    store.issue_token("U4")
+    store.save_party("U2", [{"pokemon_id": 6, "level": 55, "shiny": True, "ivs": {}}, {"pokemon_id": 1, "level": 5}])
+    store.save_party("U3", [{"pokemon_id": 94, "level": 38, "shiny": False, "ivs": {}}])
+    coworkers = upload_overview(base, token, PIKACHU)["coworkers"]
+    assert sorted(coworkers, key=lambda c: c["pokemon_id"]) == [
+        {"name": "리자몽 트레이너", "pokemon_id": 6, "level": 55, "shiny": True},
+        {"name": "민수", "pokemon_id": 94, "level": 38, "shiny": False},
+    ]
+
+
+def test_stale_uploads_drop_out_of_the_coworker_list(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    store.issue_token("U2")
+    store.save_party("U2", [{"pokemon_id": 6, "level": 55, "shiny": False, "ivs": {}}])
+    old = (datetime.now(UTC) - timedelta(days=31)).isoformat(timespec="seconds")
+    import sqlite3
+
+    with sqlite3.connect(store._path) as connection:
+        connection.execute("UPDATE users SET uploaded_at = ? WHERE slack_user_id = 'U2'", (old,))
+    assert upload_overview(base, token, PIKACHU)["coworkers"] == []
+
+
+def test_response_never_carries_slack_ids_or_tokens(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    other_token = store.issue_token("U2")
+    store.save_party("U2", [{"pokemon_id": 6, "level": 55, "shiny": False, "ivs": {}}])
+    store.record_battle("U1", "U2", "U1", 1, pokemon=(25, 6), turns=5)
+    _, raw = call_raw(f"{base}/v1/party", token, {"party": [PIKACHU]})
+    assert not re.search(r"\bU[0-9A-Z]{1,}\b", raw)
+    assert token not in raw and other_token not in raw
+
+
+def test_an_unresolvable_name_is_null_not_an_id(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    store.record_battle("U1", "UX", "U1", 1, pokemon=(25, 6), turns=5)
+    assert upload_overview(base, token, PIKACHU)["recent_battles"][0]["opponent_name"] is None
+
+
+def call_raw(url, token, body):
+    request = urllib.request.Request(
+        url, data=json.dumps(body).encode(), method="POST",
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"},
+    )
+    with urllib.request.urlopen(request, timeout=5) as response:
+        return response.status, response.read().decode()
+
+
+class FakeSlack:
+    def __init__(self, users):
+        self.users = users
+        self.calls = 0
+
+    def users_info(self, user):
+        self.calls += 1
+        if user not in self.users:
+            raise RuntimeError("user_not_found")
+        return {"user": self.users[user]}
+
+
+def test_display_name_prefers_display_then_real_name_and_is_cached():
+    slack = FakeSlack({
+        "U1": {"profile": {"display_name": "민수", "real_name": "김민수"}},
+        "U2": {"profile": {"display_name": "", "real_name": "박은정"}},
+        "U3": {"profile": {}, "real_name": "이름만"},
+    })
+    clock = [0.0]
+    names = DisplayNames(slack, clock=lambda: clock[0])
+    assert [names("U1"), names("U2"), names("U3")] == ["민수", "박은정", "이름만"]
+    names("U1")
+    assert slack.calls == 3
+    clock[0] = SUCCESS_TTL + 1
+    names("U1")
+    assert slack.calls == 4
+
+
+def test_a_failed_lookup_returns_none_and_retries_after_the_failure_ttl():
+    slack = FakeSlack({})
+    clock = [0.0]
+    names = DisplayNames(slack, clock=lambda: clock[0])
+    assert names("U9") is None and names("U9") is None
+    assert slack.calls == 1
+    clock[0] = FAILURE_TTL + 1
+    names("U9")
+    assert slack.calls == 2
+
+
+def test_a_database_from_before_species_were_kept_is_upgraded_in_place(tmp_path):
+    import sqlite3
+
+    path = str(tmp_path / "old.sqlite3")
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "CREATE TABLE battles (id INTEGER PRIMARY KEY AUTOINCREMENT, challenger_id TEXT NOT NULL, "
+            "opponent_id TEXT NOT NULL, winner_id TEXT NOT NULL, seed INTEGER NOT NULL, created_at TEXT NOT NULL)"
+        )
+        connection.execute("INSERT INTO battles VALUES (1, 'U1', 'U2', 'U2', 5, '2026-11-01T00:00:00+00:00')")
+    store = Store(path)
+    store.record_battle("U1", "U2", "U1", 6, pokemon=(25, 7), turns=4)
+    newest, oldest = store.recent_battles("U1", 5)
+    assert (newest.my_pokemon_id, newest.turns, newest.won) == (25, 4, True)
+    assert (oldest.my_pokemon_id, oldest.turns, oldest.won) == (None, None, False)
