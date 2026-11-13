@@ -172,7 +172,8 @@ def _fallback(respond: Callable | None, **message) -> None:
         log.warning("could not post a reply")
         return
     try:
-        respond(**message)
+        response = respond(**message)
+        log.info("response url answered %s %s", getattr(response, "status_code", None), str(getattr(response, "body", ""))[:80])
     except Exception:
         log.warning("could not post a reply by response url")
 
