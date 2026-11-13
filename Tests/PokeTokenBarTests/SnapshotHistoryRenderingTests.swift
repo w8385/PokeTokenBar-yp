@@ -30,49 +30,41 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
 
     func testTenSnapshotsStartCollapsedAndExpandAllRowsThenCollapseAndReopen() async throws {
         let (companion, usage) = try makeStores(snapshotCount: 10)
+        let create = companion.l.createSnapshotButton
         let root = host(companion, usage)
         let document = try await settingsDocument(in: root)
-        try await capture(document, name: "snapshots-collapsed")
-        try await waitForRows(0, in: document)
-        try await assertCreationAvailable(in: document, label: companion.l.createSnapshotButton)
+        try await settle(document, rows: 0, present: [create], capture: "snapshots-collapsed")
         let collapsedHeight = document.bounds.height
 
         try await toggleHistory(in: document, l: companion.l, expanded: false)
-        try await waitForRows(10, in: document)
+        try await settle(document, rows: 10, present: [create], capture: "snapshots-expanded")
         XCTAssertGreaterThan(document.bounds.height, collapsedHeight + 200)
         XCTAssertEqual(companion.availableSnapshots.count, 10)
-        try await capture(document, name: "snapshots-expanded")
-        try await assertCreationAvailable(in: document, label: companion.l.createSnapshotButton)
 
         try await toggleHistory(in: document, l: companion.l, expanded: true)
-        try await waitForRows(0, in: document)
+        try await settle(document, rows: 0, capture: "snapshots-collapsed-again")
         XCTAssertEqual(document.bounds.height, collapsedHeight, accuracy: 2)
-        try await capture(document, name: "snapshots-collapsed-again")
 
         // Reopening Settings starts a new visit, even after leaving its history expanded.
         try await toggleHistory(in: document, l: companion.l, expanded: false)
-        try await waitForRows(10, in: document)
+        try await settle(document, rows: 10)
         window?.close()
         let reopened = host(companion, usage)
         let reopenedDocument = try await settingsDocument(in: reopened)
-        try await waitForRows(0, in: reopenedDocument)
-        try await assertCreationAvailable(in: reopenedDocument, label: companion.l.createSnapshotButton)
+        try await settle(reopenedDocument, rows: 0, present: [create], capture: "snapshots-reopened")
         XCTAssertEqual(companion.availableSnapshots.count, 10)
-        try await capture(reopenedDocument, name: "snapshots-reopened")
     }
 
     func testEmptyHistoryIsDisclosedAndManualCreationRemainsAvailable() async throws {
         let (companion, usage) = try makeStores(snapshotCount: 0)
+        let create = companion.l.createSnapshotButton
         let document = try await settingsDocument(in: host(companion, usage))
-        try await assertCreationAvailable(in: document, label: companion.l.createSnapshotButton)
-        let collapsedWords = try await words(in: document)
+        let collapsedWords = try await settle(document, present: [create])
         XCTAssertFalse(collapsedWords.contains { $0.reads(companion.l.noSnapshotsYet) })
 
         try await toggleHistory(in: document, l: companion.l, expanded: false)
-        try await waitForText(companion.l.noSnapshotsYet, in: document)
-        try await waitForRows(0, in: document)
-        try await assertCreationAvailable(in: document, label: companion.l.createSnapshotButton)
-        try await capture(document, name: "snapshots-empty-expanded")
+        try await settle(document, rows: 0, present: [companion.l.noSnapshotsYet, create],
+                         capture: "snapshots-empty-expanded")
     }
 
     private func makeStores(snapshotCount: Int) throws -> (CompanionStore, UsageStore) {
@@ -279,19 +271,34 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
         } ?? []
     }
 
-    private func words(in view: NSView) async throws -> [Word] {
+    /// Top pixel row of the render to recognize: 150pt above the history toggle, which keeps the
+    /// "Create snapshot" button and every row below it. Falls back to the whole page.
+    private func backupSectionPixel(in view: NSView, imageHeight: Int) -> Int {
+        guard let root = view.window?.contentView,
+              let toggle = descendants(root).compactMap({ $0 as? NSButton })
+                  .first(where: { $0.accessibilityIdentifier() == "snapshotHistory" }) else { return 0 }
+        let frame = view.convert(toggle.bounds, from: toggle)
+        let top = view.isFlipped ? frame.minY - view.bounds.minY : view.bounds.maxY - frame.maxY
+        return max(0, min(imageHeight, Int(((top - 150) * 2).rounded(.down))))
+    }
+
+    private struct Render {
+        let words: [Word]
+        let bitmap: NSBitmapImageRep
+        let documentBounds: CGRect
+    }
+
+    private func render(_ view: NSView) async throws -> Render {
         let rendered = try await bitmap(of: view)
         let image = try XCTUnwrap(rendered.cgImage)
         let directory = try diagnosticDirectory()
-        let whole: [Word]
-        if directory != nil {
-            whole = try recognize(image, crop: CGRect(x: 0, y: 0, width: image.width, height: image.height))
-        } else { whole = [] }
         // Use native pixels without resizing. A 48pt overlap keeps row labels intact at crop
         // boundaries; global geometry merges only observations of the same physical label.
         let stripHeight = min(image.height, Int((try XCTUnwrap(view.enclosingScrollView).contentView.bounds.height * 2).rounded(.up)))
         let overlap = min(96, stripHeight / 4)
-        var y = 0
+        // Everything above the backup section is unrelated Settings; reading it only costs OCR time.
+        let firstPixel = backupSectionPixel(in: view, imageHeight: image.height)
+        var y = firstPixel
         var result = [Word]()
         var strips = [[String: Any]]()
         while y < image.height {
@@ -307,48 +314,39 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
             y += stripHeight - overlap
         }
         if let directory {
-            let metadata: [String: Any] = ["render": renderNumber, "whole": whole.map(\.diagnostic),
+            let metadata: [String: Any] = ["render": renderNumber, "firstOCRPixel": firstPixel,
                                          "strips": strips, "merged": result.map(\.diagnostic)]
             try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys])
                 .write(to: directory.appendingPathComponent("ocr-\(renderNumber).json"))
-            let wholeCount = whole.filter { $0.reads("Restore", exactly: true) }.count
-            let stripCount = result.filter { $0.reads("Restore", exactly: true) }.count
-            let wholeCreate = whole.contains { $0.reads("Create snapshot") }
-            let stripCreate = result.contains { $0.reads("Create snapshot") }
-            print("Snapshot OCR render=\(renderNumber) pixels=\(image.width)x\(image.height) wholeRestore=\(wholeCount) stripRestore=\(stripCount) wholeCreate=\(wholeCreate) stripCreate=\(stripCreate)")
         }
-        return result
+        return Render(words: result, bitmap: rendered, documentBounds: view.bounds)
     }
 
+    /// Renders the document until `rows` Restore rows (when given) and every `present` text are read
+    /// from the same render, so one OCR pass checks the whole screen. The render that matched is
+    /// saved as `capture`, re-rendered only if the layout moved while it settled.
     @discardableResult
-    private func waitForText(_ text: String, in view: NSView) async throws -> Word {
+    private func settle(_ document: NSView, rows: Int? = nil, present: [String] = [],
+                        capture name: String? = nil) async throws -> [Word] {
         let deadline = ContinuousClock.now + .seconds(5)
-        repeat {
-            if let match = try await words(in: view).first(where: { $0.reads(text) }) { return match }
-            try await Task.sleep(for: .milliseconds(100))
-        } while ContinuousClock.now < deadline
-        XCTFail("Missing rendered text: \(text)")
-        throw URLError(.cannotParseResponse)
-    }
-
-    private func waitForRows(_ count: Int, in document: NSView) async throws {
-        let deadline = ContinuousClock.now + .seconds(5)
-        var actual = -1
+        var problem = ""
         repeat {
             document.window?.contentView?.layoutSubtreeIfNeeded()
-            actual = try await words(in: document).filter { $0.reads("Restore", exactly: true) }.count
-            if actual == count {
+            let rendered = try await render(document)
+            let actual = rendered.words.filter { $0.reads("Restore", exactly: true) }.count
+            let missing = present.filter { text in !rendered.words.contains { $0.reads(text) } }
+            problem = "restore rows expected \(rows.map(String.init) ?? "any"), rendered \(actual); missing text \(missing)"
+            if (rows == nil || actual == rows) && missing.isEmpty {
                 try await Task.sleep(for: .milliseconds(300))
                 document.window?.contentView?.layoutSubtreeIfNeeded()
-                return
+                let final = document.bounds == rendered.documentBounds ? rendered : try await render(document)
+                if let name { try save(final.bitmap, name: name) }
+                return final.words
             }
             try await Task.sleep(for: .milliseconds(100))
         } while ContinuousClock.now < deadline
-        XCTFail("Expected \(count) restore rows, rendered \(actual)")
-    }
-
-    private func assertCreationAvailable(in document: NSView, label: String) async throws {
-        _ = try await waitForText(label, in: document)
+        XCTFail("Snapshot history never settled: \(problem)")
+        throw URLError(.cannotParseResponse)
     }
 
     private func toggleHistory(in document: NSView, l: L, expanded: Bool) async throws {
@@ -377,11 +375,10 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
         throw URLError(.cannotParseResponse)
     }
 
-    private func capture(_ view: NSView, name: String) async throws {
+    private func save(_ rendered: NSBitmapImageRep, name: String) throws {
         guard let path = ProcessInfo.processInfo.environment["PTB_SNAPSHOT_SCREENSHOT_DIR"] else { return }
         let directory = URL(fileURLWithPath: path, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        let rendered = try await bitmap(of: view)
         let data = try XCTUnwrap(rendered.representation(using: .png, properties: [:]))
         try data.write(to: directory.appendingPathComponent("\(name).png"))
     }

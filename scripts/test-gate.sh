@@ -12,6 +12,7 @@
 #
 # 사용:  ./scripts/test-gate.sh          # 게이트 실행
 #        THRESHOLD=75 ./scripts/test-gate.sh   # 임계값 임시 상향
+#        SWIFT_TEST_SKIP='ClassA|ClassB' ./scripts/test-gate.sh   # 정규식에 맞는 테스트 제외 (CI 는 UI 렌더 테스트를 다른 잡에서 돌린다)
 #
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -42,7 +43,7 @@ LOGIC_CORE=(
 )
 
 echo "▶ swift test (--enable-code-coverage)"
-swift test --enable-code-coverage
+swift test --enable-code-coverage ${SWIFT_TEST_SKIP:+--skip "$SWIFT_TEST_SKIP"}
 
 PROF=$(find .build -name 'default.profdata' | head -1)
 # dSYM 안에도 같은 이름의 DWARF 바이너리가 있어 head -1 이 그걸 집으면 llvm-cov 가 실패한다 → 제외.

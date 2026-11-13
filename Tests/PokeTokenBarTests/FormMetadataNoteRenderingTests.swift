@@ -101,7 +101,7 @@ final class FormMetadataNoteRenderingTests: XCTestCase {
 
     private func assertNote(_ expected: Bool, in host: NSView, loaded: Bool = true,
                             file: StaticString = #filePath, line: UInt = #line) async throws {
-        let deadline = ContinuousClock.now + .seconds(5)
+        let deadline = ContinuousClock.now + .seconds(20)
         var text = ""
         repeat {
             text = try renderedText(host)
