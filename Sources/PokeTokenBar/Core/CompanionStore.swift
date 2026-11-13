@@ -1061,41 +1061,51 @@ final class CompanionStore {
                 graduate(); break
             } else {
                 let nextIndex = a.stageIndex + 1
-                let next: EvoNode
-                if a.plannedPathIDs.indices.contains(nextIndex),
-                   let planned = node.children.first(where: { $0.speciesID == a.plannedPathIDs[nextIndex] }) {
-                    next = planned
-                } else {
-                    next = pickPlannedChild(node, baseID: a.baseID)
-                    let fallbackRoute = [node.speciesID] + makeEvolutionPlan(from: next, baseID: a.baseID)
-                    let repaired = Self.repairedPlan(realizedPath: a.pathIDs, stageIndex: a.stageIndex,
-                                                     fallbackRoute: fallbackRoute)
-                    state.active!.plannedPathIDs = repaired
-                    state.active!.totalForms = repaired.count
-                    AppLog.write("evolve: repaired invalid planned path for base \(a.baseID)")
+                let planned = a.plannedPathIDs.indices.contains(nextIndex)
+                    ? node.children.first(where: { $0.speciesID == a.plannedPathIDs[nextIndex] }) : nil
+                let picked = planned ?? pickPlannedChild(node, baseID: a.baseID)
+                let next = EvoNode.resolvingTimeOfDay(picked, among: node.children,
+                                                      at: DayPeriod.at(clock()))
+                if planned == nil || next.speciesID != picked.speciesID {
+                    replanEvolution(from: node, to: next, base: a)
+                    AppLog.write("evolve: replanned path for base \(a.baseID)")
                 }
-                state.active!.pathIDs = Array(a.pathIDs.prefix(a.stageIndex + 1)) + [next.speciesID]
-                state.active!.stageIndex += 1
-                state.active!.usedAtStage = a.usedAtStage - thr   // 초과분 이월
-                if let details = pokemonDetailsByID[next.speciesID] {
-                    state.active!.profile?.enrich(with: details)
-                } else if detailProvider != nil {
-                    Task { await self.loadPokemonDetails(speciesID: next.speciesID) }
-                }
-                let oldName = formDisplayName(line.localizedName(a.currentID, state.language),
-                                              speciesID: a.currentID, form: a.form)
-                let newName = formDisplayName(line.localizedName(next.speciesID, state.language),
-                                              speciesID: next.speciesID, form: a.form)
-                justEvolvedTo = newName
-                fireCelebration(.evolve)
-                // 짧은 levelUp 창 — 진화 순간 "…(으)로 진화했어요" 문구 노출(hatch/graduate 와 동일 패턴).
-                // 이게 없으면 computeState 가 .levelUp 을 안 내 statusEvolved 가 도달 불가(dead code)였다.
-                eventUntil = clock().addingTimeInterval(4)
-                notifyCompanionEvent(l.notifEvolveTitle, l.notifEvolveBody(from: oldName, to: newName))
+                completeEvolution(of: a, to: next, in: line, usedAtStage: a.usedAtStage - thr)   // 초과분 이월
             }
         }
         reconcileActiveProfileGrowth()
         save()
+    }
+
+    /// 실제로 간 갈래가 계획과 다르면 계획을 그 갈래 아래로 다시 세운다.
+    private func replanEvolution(from node: EvoNode, to next: EvoNode, base a: MonState) {
+        let fallbackRoute = [node.speciesID] + makeEvolutionPlan(from: next, baseID: a.baseID)
+        let repaired = Self.repairedPlan(realizedPath: a.pathIDs, stageIndex: a.stageIndex,
+                                         fallbackRoute: fallbackRoute)
+        state.active!.plannedPathIDs = repaired
+        state.active!.totalForms = repaired.count
+    }
+
+    /// 다음 형태로 넘어가는 공통 처리 — 경로·단계·프로필·연출·알림. 저장은 호출부가 한다.
+    private func completeEvolution(of a: MonState, to next: EvoNode, in line: EvoLine, usedAtStage: Int) {
+        state.active!.pathIDs = Array(a.pathIDs.prefix(a.stageIndex + 1)) + [next.speciesID]
+        state.active!.stageIndex += 1
+        state.active!.usedAtStage = usedAtStage
+        if let details = pokemonDetailsByID[next.speciesID] {
+            state.active!.profile?.enrich(with: details)
+        } else if detailProvider != nil {
+            Task { await self.loadPokemonDetails(speciesID: next.speciesID) }
+        }
+        let oldName = formDisplayName(line.localizedName(a.currentID, state.language),
+                                      speciesID: a.currentID, form: a.form)
+        let newName = formDisplayName(line.localizedName(next.speciesID, state.language),
+                                      speciesID: next.speciesID, form: a.form)
+        justEvolvedTo = newName
+        fireCelebration(.evolve)
+        // 짧은 levelUp 창 — 진화 순간 "…(으)로 진화했어요" 문구 노출(hatch/graduate 와 동일 패턴).
+        // 이게 없으면 computeState 가 .levelUp 을 안 내 statusEvolved 가 도달 불가(dead code)였다.
+        eventUntil = clock().addingTimeInterval(4)
+        notifyCompanionEvent(l.notifEvolveTitle, l.notifEvolveBody(from: oldName, to: newName))
     }
 
     private func pickPlannedChild(_ node: EvoNode, baseID: Int) -> EvoNode {
@@ -1310,6 +1320,41 @@ final class CompanionStore {
         return new
     }
 
+    // MARK: 진화의 돌
+
+    /// 돌 사용 결과 — wrongStone 이면 돌은 그대로 남는다.
+    enum StoneUseResult: Equatable { case evolved, wrongStone, unavailable }
+
+    /// 돌을 쓸 수 있는 상태 — 돌 재고 + 활성 포켓몬 + 라인 로딩 완료(위장 중인 메타몽 제외).
+    func canUseStone(_ kind: ItemKind) -> Bool {
+        guard kind.isEvolutionStone, itemCount(kind) > 0, let a = state.active, currentLine != nil else { return false }
+        return a.dittoDisguise == nil || a.dittoRevealed
+    }
+
+    /// 현재 형태가 이 돌로 진화하는 갈래를 가졌나.
+    func stoneFits(_ kind: ItemKind) -> Bool {
+        stoneTarget(kind) != nil
+    }
+
+    private func stoneTarget(_ kind: ItemKind) -> EvoNode? {
+        guard let item = kind.evolutionItemName, let a = state.active,
+              let node = currentLine?.tree.node(withID: a.currentID) else { return nil }
+        return node.children.first { $0.evolves(withItem: item) }
+    }
+
+    /// 돌 1개로 그 돌의 갈래로 바로 진화 — 현재 단계 XP는 그대로 이어진다. 안 맞는 돌이면 소모 없이 wrongStone.
+    @discardableResult
+    func useEvolutionStone(_ kind: ItemKind) -> StoneUseResult {
+        guard canUseStone(kind), let line = currentLine, let a = state.active,
+              let node = line.tree.node(withID: a.currentID) else { return .unavailable }
+        guard let next = stoneTarget(kind) else { return .wrongStone }
+        state.inventory[kind.rawValue] = itemCount(kind) - 1
+        replanEvolution(from: node, to: next, base: a)
+        completeEvolution(of: a, to: next, in: line, usedAtStage: a.usedAtStage)
+        applyUsage(0)   // 이어받은 XP가 다음 임계를 넘었으면 이어서 진화하고, 저장한다.
+        return .evolved
+    }
+
     // MARK: 상점 (재화 = 사용한 토큰)
 
     /// 상점에서 쓸 수 있는 토큰(재화) = 실사용 누적 − 상점 지출 누적. 성장 미터(usedSinceInstall)는
@@ -1319,7 +1364,7 @@ final class CompanionStore {
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
         ItemKind.allCases
-            .filter { $0.shopPrice != nil }
+            .filter { $0.shopPrice != nil && !$0.isEvolutionStone }
             .sorted { a, b in
                 // 구매 완료한 보유형(이로치 부적 등)은 맨 아래로 — 재구매 불가라 위에 있을 이유가 없다.
                 let aDone = a.isPassive && itemCount(a) > 0
@@ -1328,6 +1373,9 @@ final class CompanionStore {
                 return (a.shopPrice ?? 0) < (b.shopPrice ?? 0)   // 나머지는 가격 저렴한 순
             }
     }
+
+    /// 상점 "진화" 구역의 돌 — 별도 구역이라 `shopEntries` 의 가격순 목록에는 넣지 않는다.
+    var evolutionStoneItems: [ItemKind] { ItemKind.allCases.filter(\.isEvolutionStone) }
 
     /// 상점 표시 순서 — 판매 아이템 + 알 3종을 하나의 가격 오름차순 목록으로 병합.
     /// 정렬 규칙은 purchasableItems 와 동일: 구매 완료한 보유형은 맨 아래, 나머지는 가격 저렴한 순.

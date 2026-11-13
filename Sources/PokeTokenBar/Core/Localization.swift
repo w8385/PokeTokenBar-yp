@@ -2040,9 +2040,46 @@ struct L {
         case .rareCandy: return t("이상한 사탕", "Rare Candy", "ふしぎなアメ", "Caramelo Raro", "Super Bonbon", "Doce Raro", "Sonderbonbon", "Редкая конфета")
         case .mint:      return t("민트", "Mint", "ミント", "Menta", "Menthe", "Menta", "Minze", "Мята")
         case .shinyCharm: return t("이로치 부적", "Shiny Charm", "ひかるおまもり", "Amuleto Iris", "Charme Chroma", "Amuleto Shiny", "Schillerpin", "Шайни-талисман")
+        case .fireStone: return t("불꽃의돌", "Fire Stone", "ほのおのいし", "Piedra Fuego", "Pierre Feu", "Pedra do Fogo", "Feuerstein", "Огненный камень")
+        case .waterStone: return t("물의돌", "Water Stone", "みずのいし", "Piedra Agua", "Pierre Eau", "Pedra da Água", "Wasserstein", "Водный камень")
+        case .thunderStone: return t("천둥의돌", "Thunder Stone", "かみなりのいし", "Piedra Trueno", "Pierre Foudre", "Pedra do Trovão", "Donnerstein", "Громовой камень")
+        case .leafStone: return t("리프의돌", "Leaf Stone", "リーフのいし", "Piedra Hoja", "Pierre Plante", "Pedra da Folha", "Blattstein", "Лиственный камень")
+        case .moonStone: return t("달의돌", "Moon Stone", "つきのいし", "Piedra Lunar", "Pierre Lune", "Pedra da Lua", "Mondstein", "Лунный камень")
+        case .sunStone: return t("태양의돌", "Sun Stone", "たいようのいし", "Piedra Solar", "Pierre Soleil", "Pedra do Sol", "Sonnenstein", "Солнечный камень")
+        case .shinyStone: return t("빛의돌", "Shiny Stone", "ひかりのいし", "Piedra Día", "Pierre Éclat", "Pedra Brilhante", "Leuchtstein", "Сияющий камень")
+        case .duskStone: return t("어둠의돌", "Dusk Stone", "やみのいし", "Piedra Noche", "Pierre Nuit", "Pedra do Anoitecer", "Finsterstein", "Тёмный камень")
+        case .dawnStone: return t("각성의돌", "Dawn Stone", "めざめいし", "Piedra Alba", "Pierre Aube", "Pedra do Amanhecer", "Funkelstein", "Рассветный камень")
+        case .iceStone: return t("얼음의돌", "Ice Stone", "こおりのいし", "Piedra Hielo", "Pierre Glace", "Pedra do Gelo", "Eisstein", "Ледяной камень")
         }
     }
+
+    /// 상점 구역 제목 — 진화의 돌.
+    var shopEvolutionSection: String { t("진화", "Evolution", "進化", "Evolución", "Évolution", "Evolução", "Entwicklung", "Эволюция") }
+    /// 가방 돌 사용 컨트롤의 효과 힌트.
+    var stoneEffectHint: String { t("맞는 포켓몬이 바로 진화", "Evolves a matching Pokémon now", "合うポケモンがすぐ進化", "Evoluciona al instante a un Pokémon compatible", "Fait évoluer aussitôt un Pokémon compatible", "Evolui na hora um Pokémon compatível", "Entwickelt ein passendes Pokémon sofort", "Мгновенно эволюционирует подходящего покемона") }
+    /// 맞지 않는 돌을 썼을 때 — 돌은 소모되지 않는다.
+    func stoneWrongHint(_ pokemon: String, _ stone: String) -> String {
+        t("\(pokemon)은(는) \(stone)으로 진화하지 않아요. 돌은 그대로 남아 있어요.",
+          "\(pokemon) can't evolve with the \(stone). Your stone is kept.",
+          "\(pokemon)は\(stone)では進化しません。いしはそのまま残ります。",
+          "\(pokemon) no evoluciona con la \(stone). Conservas el objeto.",
+          "\(pokemon) n'évolue pas avec l'objet \(stone). Tu le gardes.",
+          "\(pokemon) não evolui com o item \(stone). O item foi mantido.",
+          "\(pokemon) entwickelt sich nicht mit dem \(stone). Der Stein bleibt erhalten.",
+          "\(pokemon) не эволюционирует с предметом «\(stone)». Предмет остался у вас.")
+    }
+
     func itemDescription(_ kind: ItemKind) -> String {
+        if kind.isEvolutionStone {
+            return t("쓰면 이 돌로 진화하는 포켓몬이 바로 진화해요. 진화 갈래가 여럿이면 이 돌의 갈래로 가요.",
+                     "Evolves a Pokémon that evolves with this stone right away. If it branches, it takes this stone's branch.",
+                     "この石で進化するポケモンがすぐに進化します。分岐があるときはこの石の進化先になります。",
+                     "Hace evolucionar al instante a un Pokémon que evoluciona con esta piedra. Si hay ramas, sigue la de esta piedra.",
+                     "Fait évoluer aussitôt un Pokémon qui évolue avec cette pierre. S'il y a plusieurs branches, il suit celle de la pierre.",
+                     "Evolui na hora um Pokémon que evolui com esta pedra. Se houver ramificações, segue a desta pedra.",
+                     "Entwickelt ein Pokémon, das sich mit diesem Stein entwickelt, sofort. Bei mehreren Zweigen folgt es dem Zweig dieses Steins.",
+                     "Мгновенно эволюционирует покемона, который эволюционирует с этим камнем. При ветвлении выбирается ветка этого камня.")
+        }
         switch kind {
         case .rareCandy:
             let xp = TokenFormatter.compact(RareCandy.xp)   // 상수에서 파생(하드코딩 드리프트 방지)
@@ -2072,6 +2109,8 @@ struct L {
                      "Enquanto estiver na sua bolsa, aumenta a chance de nascer um Pokémon shiny.",
                      "Erhöht im Beutel die Chance, dass ein schillerndes Pokémon schlüpft.",
                      "Пока он у вас, повышает шанс, что вылупится шайни.")
+        default:
+            return ""   // 진화의 돌은 위에서 처리
         }
     }
     /// 가방 사용 컨트롤의 효과 힌트 — 민트("성격 랜덤 변경", 사탕의 "+XP" 자리).

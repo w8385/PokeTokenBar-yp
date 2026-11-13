@@ -261,7 +261,16 @@ actor PokeAPIClient: PokeProviding, PokemonDetailProviding {
 
     private func node(from link: ChainLink) -> EvoNode {
         EvoNode(speciesID: Self.id(from: link.species.url ?? ""),
-                children: link.evolves_to.map(node(from:)))
+                children: link.evolves_to.map(node(from:)),
+                methods: Self.methods(from: link.evolution_details))
+    }
+
+    static func methods(from details: [EvolutionDetailDTO]?) -> [EvoMethod] {
+        (details ?? []).compactMap { detail in
+            guard let trigger = detail.trigger?.name else { return nil }
+            let time = detail.time_of_day.flatMap { $0.isEmpty ? nil : $0 }
+            return EvoMethod(trigger: trigger, item: detail.item?.name, timeOfDay: time)
+        }
     }
     private func allIDs(_ n: EvoNode) -> [Int] { [n.speciesID] + n.children.flatMap(allIDs) }
 
@@ -297,6 +306,12 @@ struct ChainDTO: Decodable, Sendable { let chain: ChainLink }
 struct ChainLink: Decodable, Sendable {
     let species: NamedRef
     let evolves_to: [ChainLink]
+    let evolution_details: [EvolutionDetailDTO]?
+}
+struct EvolutionDetailDTO: Decodable, Sendable {
+    let trigger: NamedRef?
+    let item: NamedRef?
+    let time_of_day: String?
 }
 
 struct PokemonDTO: Decodable, Sendable {
