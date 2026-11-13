@@ -79,6 +79,26 @@ class Record:
     losses: int
 
 
+@dataclass(frozen=True)
+class BattleSummary:
+    """One finished battle from a user's side. Species and turns are None for battles stored before they were kept."""
+
+    opponent_id: str
+    won: bool
+    my_pokemon_id: int | None
+    opponent_pokemon_id: int | None
+    turns: int | None
+    at: str
+
+
+@dataclass(frozen=True)
+class Lead:
+    user_id: str
+    pokemon_id: int
+    level: int
+    shiny: bool
+
+
 class Store:
     def __init__(self, path: str):
         self._path = path
@@ -88,6 +108,10 @@ class Store:
             columns = {row[1] for row in connection.execute("PRAGMA table_info(pending_challenges)")}
             if "echo" not in columns:
                 connection.execute("ALTER TABLE pending_challenges ADD COLUMN echo TEXT")
+            battle_columns = {row[1] for row in connection.execute("PRAGMA table_info(battles)")}
+            for column in ("challenger_pokemon", "opponent_pokemon", "turns"):
+                if column not in battle_columns:
+                    connection.execute(f"ALTER TABLE battles ADD COLUMN {column} INTEGER")
 
     def issue_token(self, slack_user_id: str, keep_existing: bool = False) -> str:
         """Create a new upload token for the user. Unless `keep_existing`, every previous token is revoked."""
@@ -126,6 +150,10 @@ class Store:
                 (json.dumps(party, ensure_ascii=False), _now(), slack_user_id),
             )
 
+    def linked_user_ids(self) -> list[str]:
+        with closing(self._connect()) as connection:
+            return [row[0] for row in connection.execute("SELECT slack_user_id FROM users")]
+
     def party(self, slack_user_id: str) -> StoredParty | None:
         with closing(self._connect()) as connection:
             row = connection.execute(
@@ -135,13 +163,58 @@ class Store:
         return StoredParty(party=json.loads(row[0]), uploaded_at=row[1]) if row else None
 
     def record_battle(
-        self, challenger_id: str, opponent_id: str, winner_id: str, seed: int, at: datetime | None = None
+        self,
+        challenger_id: str,
+        opponent_id: str,
+        winner_id: str,
+        seed: int,
+        at: datetime | None = None,
+        pokemon: tuple[int, int] | None = None,
+        turns: int | None = None,
     ) -> None:
+        """`pokemon` is the (challenger, opponent) lead species ids."""
+        challenger_pokemon, opponent_pokemon = pokemon or (None, None)
         with closing(self._connect()) as connection, connection:
             connection.execute(
-                "INSERT INTO battles (challenger_id, opponent_id, winner_id, seed, created_at) VALUES (?, ?, ?, ?, ?)",
-                (challenger_id, opponent_id, winner_id, seed, _timestamp(at or datetime.now(UTC))),
+                "INSERT INTO battles (challenger_id, opponent_id, winner_id, seed, created_at, "
+                "challenger_pokemon, opponent_pokemon, turns) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (challenger_id, opponent_id, winner_id, seed, _timestamp(at or datetime.now(UTC)),
+                 challenger_pokemon, opponent_pokemon, turns),
             )
+
+    def recent_battles(self, slack_user_id: str, limit: int) -> list[BattleSummary]:
+        with closing(self._connect()) as connection:
+            rows = connection.execute(
+                "SELECT challenger_id, opponent_id, winner_id, challenger_pokemon, opponent_pokemon, turns, created_at "
+                "FROM battles WHERE challenger_id = ?1 OR opponent_id = ?1 ORDER BY created_at DESC, id DESC LIMIT ?2",
+                (slack_user_id, limit),
+            ).fetchall()
+        summaries = []
+        for challenger_id, opponent_id, winner_id, challenger_pokemon, opponent_pokemon, turns, created_at in rows:
+            mine = challenger_id == slack_user_id
+            summaries.append(BattleSummary(
+                opponent_id=opponent_id if mine else challenger_id,
+                won=winner_id == slack_user_id,
+                my_pokemon_id=challenger_pokemon if mine else opponent_pokemon,
+                opponent_pokemon_id=opponent_pokemon if mine else challenger_pokemon,
+                turns=turns,
+                at=created_at,
+            ))
+        return summaries
+
+    def leads_except(self, slack_user_id: str, since: datetime, limit: int) -> list[Lead]:
+        """The first Pokémon of every other user's latest upload since `since`, newest upload first."""
+        with closing(self._connect()) as connection:
+            rows = connection.execute(
+                "SELECT slack_user_id, party_json FROM users WHERE party_json IS NOT NULL AND slack_user_id != ? "
+                "AND uploaded_at >= ? ORDER BY uploaded_at DESC LIMIT ?",
+                (slack_user_id, _timestamp(since), limit),
+            ).fetchall()
+        leads = []
+        for user_id, party_json in rows:
+            lead = json.loads(party_json)[0]
+            leads.append(Lead(user_id, lead["pokemon_id"], lead["level"], lead.get("shiny", False)))
+        return leads
 
     def records_since(self, since: datetime) -> dict[str, Record]:
         with closing(self._connect()) as connection:

@@ -9,6 +9,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient
 
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
+from ypoke.names import DisplayNames
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
 from ypoke.transport import deliver, mention_listener, rematch_listener, slash_listener
@@ -30,12 +31,15 @@ def main() -> None:
         bot_user_id=app.client.auth_test()["user_id"],
         home_channel=home_channel,
     )
+    names = DisplayNames(app.client)
+    names.warm(store.linked_user_ids())
     serve(
         store,
         os.environ.get("YPOKE_HTTP_HOST", "0.0.0.0"),
         int(os.environ.get("YPOKE_HTTP_PORT", "8790")),
         lambda user_id, party: _after_upload(pokeapi, handler, app.client, user_id, party),
         pokeapi.attacking_moves,
+        names,
     )
     for name in COMMAND_NAMES:
         app.command(name)(slash_listener(handler))

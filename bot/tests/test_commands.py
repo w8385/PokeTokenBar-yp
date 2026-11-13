@@ -195,6 +195,18 @@ def pending(store):
     return list({challenge for user in ("UA", "UB") for challenge in store.pending_for(user, since)})
 
 
+def test_a_battle_stores_both_lead_species_and_the_turn_count(store):
+    upload(store, "UA", 25, 60)
+    upload(store, "UB", 7, 20)
+    reply = handler(store).handle("UA", "<@UB>")
+    (mine,) = store.recent_battles("UA", 5)
+    (theirs,) = store.recent_battles("UB", 5)
+    assert (mine.my_pokemon_id, mine.opponent_pokemon_id, mine.opponent_id) == (25, 7, "UB")
+    assert (theirs.my_pokemon_id, theirs.opponent_pokemon_id, theirs.opponent_id) == (7, 25, "UA")
+    assert mine.won != theirs.won
+    assert f"({mine.turns}턴)" in reply.summary
+
+
 def test_a_rental_fights_at_the_opponents_level_and_counts(store):
     upload(store, "UA", 25, 60)
     store.issue_token("UB")

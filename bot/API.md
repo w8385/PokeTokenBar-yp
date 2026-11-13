@@ -60,11 +60,38 @@ Responses:
 
 | Status | Body |
 |---|---|
-| `200` | `{"ok": true, "party_size": 1}` |
+| `200` | `{"ok": true, "party_size": 1, "recent_battles": [...], "coworkers": [...]}`, see below |
 | `400` | `{"ok": false, "error": "<reason>"}` — bad JSON or a rule above broken |
 | `401` | `{"ok": false, "error": "unauthorized"}` — missing or unknown token |
 | `413` | `{"ok": false, "error": "too_large"}` |
 | `503` | `{"ok": false, "error": "pokeapi_unavailable"}` — `moves` sent and PokéAPI could not be reached to check them |
+
+### Battle info in the `200` body
+
+Both lists are fresh on every upload. Names only: the body never carries Slack ids or tokens. Apps
+that do not know these fields ignore them, and an old bot omits them.
+
+```json
+{
+  "recent_battles": [
+    {"opponent_name": "민수", "my_pokemon_id": 25, "opponent_pokemon_id": 7,
+     "result": "win", "turns": 6, "at": "2026-11-13T05:20:11+00:00"}
+  ],
+  "coworkers": [
+    {"name": "은정", "pokemon_id": 6, "level": 55, "shiny": true}
+  ]
+}
+```
+
+| Field | Rules |
+|---|---|
+| `recent_battles` | The uploader's last 5 stored battles (practice battles against the bot are not stored), newest first |
+| `opponent_name` | Slack display name; `null` when Slack cannot be asked |
+| `my_pokemon_id`, `opponent_pokemon_id`, `turns` | Lead species ids (same ids as `pokemon_id` above) and the turn count; `null` for battles stored before the bot kept them |
+| `result` | `"win"` or `"loss"` for the uploader |
+| `at` | ISO 8601 UTC |
+| `coworkers` | The first Pokémon of every other user's latest upload from the last 30 days, newest upload first, at most 30 |
+| `name`, `pokemon_id`, `level`, `shiny` | `name` is the Slack display name or `null`; `level` is the real level, not the battle level |
 
 ## `GET /v1/party`
 
