@@ -56,7 +56,9 @@ def test_coworkers_lists_users_with_a_pool_only(api):
 
     status, body = call(f"{api.base}/v1/coworkers", token=api.alice)
 
-    assert (status, body) == (200, {"ok": True, "coworkers": [{"id": BOB, "name": "밥"}]})
+    assert status == 200
+    assert [coworker["name"] for coworker in body["coworkers"]] == ["밥"]
+    assert BOB not in str(body)
     assert call(f"{api.base}/v1/coworkers", token=api.bob)[1]["coworkers"] == []
 
 

@@ -181,7 +181,7 @@ shiny, nature, IVs, level and original trainer as sent. Entries that fail the ru
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /v1/coworkers` | `{"ok": true, "coworkers": [{"id", "name"}]}`: linked players with a pool, not the caller |
+| `GET /v1/coworkers` | `{"ok": true, "coworkers": [{"id", "name"}]}`: linked players with a pool, not the caller. `id` is an opaque handle for `POST /v1/trades`, never a Slack id |
 | `POST /v1/trades` | `{"to": "<coworker id>", "give": "<individual id>"}` → `{"ok": true, "trade_id"}`. `400 {"ok": false, "error", "message"}` for `self`, `unknown_user`, `unknown_individual`, `locked` (already in an open trade), `too_many` (3 open offers). `message` is a short Korean reason to show as is |
 | `GET /v1/trades` | `{"ok": true, "trades": {"deliveries": [...], "history": [...]}}` |
 | `POST /v1/trades/ack` | `{"trade_ids": ["..."]}` → `{"ok": true}` |

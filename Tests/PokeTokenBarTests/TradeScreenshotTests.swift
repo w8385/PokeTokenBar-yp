@@ -82,6 +82,8 @@ final class TradeScreenshotTests: XCTestCase {
             .environment(uploader).environment(battle).environment(store),
                           to: directory.appendingPathComponent("trade-offer-sheet.png"))
 
+        try await capture(BagView(store: store, nav: PopoverNavigation()),
+                          to: directory.appendingPathComponent("trade-bag-cord.png"))
         let haunter = try XCTUnwrap(store.dexSpecies.first { $0.id == 93 })
         try await capture(PokemonDetailView(store: store, species: haunter, onBack: {})
             .environment(uploader).environment(battle).environment(store).environment(PopoverNavigation()),

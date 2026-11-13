@@ -90,8 +90,17 @@ def test_an_offer_is_refused_with_a_reason(trades, target, give, error):
 def test_a_user_without_a_pool_is_not_a_coworker_to_trade_with(trades):
     trades.save_pool(CAROL, "not a list")
 
-    assert [coworker["id"] for coworker in trades.coworkers(ALICE)] == [BOB]
-    assert trades.coworkers(ALICE)[0]["name"] == "밥"
+    assert [coworker["name"] for coworker in trades.coworkers(ALICE)] == ["밥"]
+
+
+def test_coworkers_carry_a_stable_handle_that_is_not_the_slack_id_and_works_as_the_offer_target(trades):
+    handle = trades.coworkers(ALICE)[0]["id"]
+
+    assert handle != BOB
+    assert trades.coworkers(ALICE)[0]["id"] == handle
+    result = trades.propose(ALICE, handle, HAUNTER["id"])
+    assert result.error is None
+    assert result.direct_messages[0].user_id == BOB
 
 
 def test_an_individual_in_an_open_offer_cannot_be_offered_again(trades):
