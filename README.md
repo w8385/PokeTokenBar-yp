@@ -80,7 +80,7 @@ Shiny hatches keep their distinct colors through every evolution — menu bar, h
 <tr>
 <td width="55%" valign="middle">
 <h3>A Pokédex worth filling</h3>
-The <b>Pokédex</b> folds every species you've owned into one cell — 16 per page in a 4×4 grid. Search by name or number, filter by rarity or shiny appearance, and change the sort order. Turn pages with the scroll wheel or trackpad, or use the larger arrow hit areas. Click a collected Pokémon on Home, its evolution line, or the <b>Catch log</b> to open its details; Back returns to its Pokédex page or the log row you opened. The log keeps each individual's full evolution line, rarity, nature, and capture date.
+The <b>Pokédex</b> folds every species you've owned into one cell — 16 per page in a 4×4 grid. Search by name or number, filter by rarity or shiny appearance, and change the sort order. Turn pages with the scroll wheel or trackpad, or use the larger arrow hit areas. Click a collected Pokémon in Home's evolution line or the <b>Catch log</b> to open its details (clicking the big Home sprite grows your companion instead); Back returns to its Pokédex page or the log row you opened. The log keeps each individual's full evolution line, rarity, nature, and capture date.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-collection-pokedex.png" width="300" alt="Pokédex — one cell per species"><br><br><img src="assets/screenshot-collection-catchlog.png" width="300" alt="Catch log — one row per Pokémon raised"></td>
 </tr>

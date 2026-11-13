@@ -101,13 +101,10 @@ enum Rarity: String, Codable, Sendable {
     }
 }
 
-/// Growth from clicking the pet. Tuned so clicking alone, at the daily cap, takes a common line
-/// from a new egg to graduation in about `targetDays`; the average token user is ~5× faster.
+/// Growth from clicking the pet. No daily limit; `minInterval` is the only guard against autoclickers.
 enum ClickGrowth {
-    static let dailyCap = 200
     static let minInterval: TimeInterval = 0.3
-    static let targetDays = 14
-    /// (egg 5M + common graduation 750M) / (200 clicks × 14 days) ≈ 270K tokens per click.
+    /// About 2,800 clicks take a common line from a new egg to graduation (egg 5M + graduation 750M).
     static let tokensPerClick = 270_000
 }
 
@@ -678,9 +675,6 @@ struct CompanionState: Codable, Sendable {
     var eggUsage = 0
     /// Growth earned by clicking the pet, in tokens. Applied like token growth but kept out of usage stats and the wallet.
     var clickGrowth = 0
-    /// Local day ("yyyy-MM-dd") that `clicksToday` belongs to.
-    var clickDay = ""
-    var clicksToday = 0
     // 현재 알이 보증하는 등급 하한(프리미엄 알). nil = 보증 없음(무료 알·기본 알).
     // ★영속이어야 한다 — 구매 시점엔 종을 못 정한다(롤에 네트워크가 필요). 보증을 상태에 적어 두고
     // 롤이 그것을 읽어야 오프라인·재시작을 건너서도 산 것을 받는다. 부화·졸업 때 nil 로 소비된다.
@@ -738,8 +732,6 @@ struct CompanionState: Codable, Sendable {
         spentTokens        = c.lenient(Int.self, forKey: .spentTokens, default: 0)
         eggUsage           = c.lenient(Int.self, forKey: .eggUsage, default: 0)
         clickGrowth        = c.lenient(Int.self, forKey: .clickGrowth, default: 0)
-        clickDay           = c.lenient(String.self, forKey: .clickDay, default: "")
-        clicksToday        = c.lenient(Int.self, forKey: .clicksToday, default: 0)
         // 모르는 rawValue 는 nil(보증 없음)로 강등 — 관대 디코딩의 안전한 방향(있지도 않은 보증을 만들지 않는다).
         eggTier            = c.lenientOptional(Rarity.self, forKey: .eggTier)
         pendingHatchID     = c.lenientOptional(Int.self, forKey: .pendingHatchID)

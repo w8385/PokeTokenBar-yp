@@ -44,19 +44,11 @@ final class ClickGrowthTests: XCTestCase {
         XCTAssertEqual(store.state.usedSinceInstall, 0)
     }
 
-    func testDailyCapStopsCountingUntilTheNextLocalDay() {
+    func testClicksKeepCountingPastTheOldDailyLimit() {
         let clock = Clock()
         let store = freshEgg(clock: clock)
-        XCTAssertEqual(click(store, clock, times: ClickGrowth.dailyCap + 50), ClickGrowth.dailyCap)
-        XCTAssertTrue(store.clickCapReachedToday)
-        XCTAssertEqual(store.state.clickGrowth, ClickGrowth.dailyCap * ClickGrowth.tokensPerClick)
-        clock.now += 1
-        XCTAssertEqual(store.growByClick(), .capped)
-
-        clock.now += 86_400
-        XCTAssertFalse(store.clickCapReachedToday)
-        XCTAssertEqual(store.growByClick(), .counted(ClickGrowth.tokensPerClick))
-        XCTAssertEqual(store.state.clicksToday, 1)
+        XCTAssertEqual(click(store, clock, times: 250), 250)
+        XCTAssertEqual(store.state.clickGrowth, 250 * ClickGrowth.tokensPerClick)
     }
 
     func testClicksFasterThanTheIntervalDoNotCount() {
@@ -67,73 +59,54 @@ final class ClickGrowthTests: XCTestCase {
         XCTAssertEqual(store.growByClick(), .tooSoon)
         clock.now += ClickGrowth.minInterval / 2 + 0.01
         XCTAssertEqual(store.growByClick(), .counted(ClickGrowth.tokensPerClick))
-        XCTAssertEqual(store.state.clicksToday, 2)
+        XCTAssertEqual(store.state.clickGrowth, 2 * ClickGrowth.tokensPerClick)
     }
 
-    func testOldSaveLoadsWithNoClickGrowthAndNewFieldsPersist() throws {
+    func testSaveWithTheOldDailyCountStillLoadsAndKeepsCounting() throws {
         let clock = Clock()
         let url = tempURL()
-        let store = freshEgg(clock: clock, url: url)
-        XCTAssertEqual(store.state.clickGrowth, 0)
-        XCTAssertEqual(store.state.clicksToday, 0)
-        XCTAssertEqual(store.state.clickDay, "")
+        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":0,\"spentTokens\":0,"
+            + "\"lastDate\":\"d\",\"active\":null,\"dex\":[],\"collectedFinals\":[],\"eggUsage\":0,\"pendingHatchID\":1,"
+            + "\"clickGrowth\":540000,\"clickDay\":\"2026-11-12\",\"clicksToday\":200}"
+        try XCTUnwrap(json.data(using: .utf8)).write(to: url)
+        let store = CompanionStore(provider: StubProvider(value: line), clock: { clock.now }, fileURL: url,
+                                   rng: SeededRNG(seed: 7))
+        XCTAssertEqual(store.state.clickGrowth, 540_000)
+        XCTAssertEqual(store.growByClick(), .counted(ClickGrowth.tokensPerClick))
 
-        store.growByClick()
         let reloaded = CompanionStore(provider: StubProvider(value: line), clock: { clock.now }, fileURL: url,
                                       rng: SeededRNG(seed: 7))
-        XCTAssertEqual(reloaded.state.clickGrowth, ClickGrowth.tokensPerClick)
-        XCTAssertEqual(reloaded.state.clicksToday, 1)
-        XCTAssertEqual(reloaded.state.clickDay, store.state.clickDay)
+        XCTAssertEqual(reloaded.state.clickGrowth, 540_000 + ClickGrowth.tokensPerClick)
     }
 
-    func testImportKeepsThisDevicesClickCountForToday() {
-        var current = CompanionState()
-        current.clickDay = "2026-11-12"
-        current.clicksToday = ClickGrowth.dailyCap
+    func testImportCarriesClickGrowth() {
         var imported = CompanionState()
         imported.clickGrowth = 5_000_000
-        let rebased = SaveTransfer.rebasedForThisDevice(imported, current: current, todayTokensByProvider: [:],
+        let rebased = SaveTransfer.rebasedForThisDevice(imported, current: CompanionState(), todayTokensByProvider: [:],
                                                         todayDate: "2026-11-12", hasUsageData: false)
-        XCTAssertEqual(rebased.clicksToday, ClickGrowth.dailyCap)
-        XCTAssertEqual(rebased.clickDay, "2026-11-12")
         XCTAssertEqual(rebased.clickGrowth, 5_000_000)
     }
 
-    func testSanitizeClampsClickFields() {
+    func testSanitizeClampsClickGrowth() {
         var state = CompanionState()
         state.clickGrowth = -5
-        state.clicksToday = 10_000
-        let clean = SaveTransfer.sanitized(state)
-        XCTAssertEqual(clean.clickGrowth, 0)
-        XCTAssertEqual(clean.clicksToday, ClickGrowth.dailyCap)
+        XCTAssertEqual(SaveTransfer.sanitized(state).clickGrowth, 0)
     }
 
-    /// The tuning target: clicking alone at the cap takes a common egg to graduation in `targetDays`.
-    func testCappedClickingGraduatesACommonLineInTargetDays() async {
+    func testClickingAloneGraduatesACommonLine() async {
         let clock = Clock()
         let store = freshEgg(clock: clock)
-        var days = 0
-        while store.state.dex.isEmpty, days < 60 {
-            days += 1
-            clock.now += 86_400
-            for _ in 0..<ClickGrowth.dailyCap {
-                clock.now += ClickGrowth.minInterval + 0.01
-                store.growByClick()
-                if store.state.active == nil, store.state.eggUsage >= store.eggHatchThreshold {
-                    await store.hatchIfNeeded()
-                }
+        var clicks = 0
+        while store.state.dex.isEmpty, clicks < 5_000 {
+            clicks += 1
+            clock.now += ClickGrowth.minInterval + 0.01
+            store.growByClick()
+            if store.state.active == nil, store.state.eggUsage >= store.eggHatchThreshold {
+                await store.hatchIfNeeded()
             }
         }
-        XCTAssertEqual(days, ClickGrowth.targetDays)
+        XCTAssertLessThan(clicks, 5_000)
         XCTAssertEqual(store.state.dex.first?.finalID, 3)
-    }
-
-    func testAverageTokenUserGrowsClearlyFasterThanCappedClicking() {
-        let commonRun = PokemonBalance.eggHatchThreshold + PokemonBalance.graduationTotal(.common)
-        let clickPerDay = ClickGrowth.dailyCap * ClickGrowth.tokensPerClick
-        let averageTokensPerDay = 253_000_000
-        XCTAssertGreaterThanOrEqual(averageTokensPerDay, clickPerDay * 4)
-        XCTAssertEqual(Int((Double(commonRun) / Double(clickPerDay)).rounded(.up)), ClickGrowth.targetDays)
     }
 
     func testHeartParticleKeepsItsGlyph() {

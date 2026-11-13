@@ -507,7 +507,6 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         clickRouter.handle(subjectIsEgg: companion.representativeSubject.speciesID == nil)
         switch growth {
         case .counted: prayerBurst.spawn(glyph: PrayerBurst.heart)
-        case .capped: popLine(L(companion.language).clickGrowthCapped)
         case .tooSoon: break
         }
     }
