@@ -360,11 +360,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func ensureMenuAnimation() {
         guard displayAwake else { return }
         let subject = companion.representativeSubject
-        let id = subject.speciesID
+        let id = subject.spriteSpeciesID
         let shiny = subject.isShiny
-        let form = subject.form
+        let form = subject.spriteForm
         let back = companion.facesBack
-        let female = subject.isFemale
+        let female = subject.spriteIsFemale
         let key = id.map { Self.menuSpriteKey(id: $0, shiny: shiny, floor: menuFrameFloor, form: form, back: back,
                                               female: female) }
         if key == menuSpriteKey, !menuFrames.isEmpty { return }   // 이미 이 개체로 애니메이션 중

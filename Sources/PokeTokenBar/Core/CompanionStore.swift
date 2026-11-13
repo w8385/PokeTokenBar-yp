@@ -221,6 +221,12 @@ final class CompanionStore {
         let isShiny: Bool
         var form: PokemonForm? = nil
         var isFemale = false
+        /// Mega form sprite shown while the matching Mega Stone is held; species and form stay the base ones.
+        var megaSpriteID: Int? = nil
+
+        var spriteSpeciesID: Int? { megaSpriteID ?? speciesID }
+        var spriteForm: PokemonForm? { megaSpriteID == nil ? form : nil }
+        var spriteIsFemale: Bool { megaSpriteID == nil && isFemale }
     }
 
     var representativeSpeciesID: Int? { state.representativeSpeciesID }
@@ -234,10 +240,12 @@ final class CompanionStore {
             next = RepresentativeSubject(speciesID: selected,
                 isShiny: state.ownsShinySpecies(selected, form: state.representativeForm),
                 form: PokemonForm.resolved(speciesID: selected, form: state.representativeForm),
-                isFemale: state.newestIndividualIsFemale(selected, form: state.representativeForm))
+                isFemale: state.newestIndividualIsFemale(selected, form: state.representativeForm),
+                megaSpriteID: megaSpriteID(forSpecies: selected))
         } else {
             next = RepresentativeSubject(speciesID: currentSpeciesID, isShiny: currentIsShiny,
-                                         form: currentForm, isFemale: currentIsFemale)
+                                         form: currentForm, isFemale: currentIsFemale,
+                                         megaSpriteID: currentMegaSpriteID)
         }
         if representativeSubject != next { representativeSubject = next }
     }
@@ -1316,13 +1324,80 @@ final class CompanionStore {
     /// 가방에 없거나 지닌 도구가 아니거나 가진 개체가 아니면 false.
     @discardableResult
     func equip(_ kind: ItemKind, to instanceID: String) -> Bool {
-        guard kind.isHeldItem, itemCount(kind) > 0, state.ownedInstanceIDs.contains(instanceID) else { return false }
-        if state.heldItems[instanceID] == kind.rawValue { return true }
+        kind.isHeldItem && equip(inventoryKey: kind.rawValue, to: instanceID)
+    }
+
+    @discardableResult
+    func equip(_ stone: MegaStone, to instanceID: String) -> Bool {
+        equip(inventoryKey: stone.inventoryKey, to: instanceID)
+    }
+
+    private func equip(inventoryKey key: String, to instanceID: String) -> Bool {
+        guard state.inventory[key, default: 0] > 0, state.ownedInstanceIDs.contains(instanceID) else { return false }
+        if state.heldItems[instanceID] == key { return true }
         if let previous = state.heldItems[instanceID] { state.inventory[previous, default: 0] += 1 }
-        state.inventory[kind.rawValue] = itemCount(kind) - 1
-        state.heldItems[instanceID] = kind.rawValue
+        state.inventory[key, default: 0] -= 1
+        state.heldItems[instanceID] = key
         save()
         return true
+    }
+
+    // MARK: 메가스톤 (포켓몬마다 한 개 — 키 `mega-stone:<slug>`)
+
+    func megaStoneCount(_ stone: MegaStone) -> Int { state.inventory[stone.inventoryKey] ?? 0 }
+
+    /// 가방의 메가스톤 — 도감 번호 순.
+    func ownedMegaStones(in category: ItemCategory? = nil) -> [(stone: MegaStone, count: Int)] {
+        guard category == nil || category == .megaStone else { return [] }
+        return MegaStone.all.compactMap { stone in
+            let count = megaStoneCount(stone)
+            return count > 0 ? (stone, count) : nil
+        }
+    }
+
+    func heldMegaStone(of instanceID: String) -> MegaStone? {
+        state.heldItems[instanceID].flatMap(MegaStone.stone(inventoryKey:))
+    }
+
+    /// 이 개체가 `speciesID` 로서 들고 있는 메가스톤 — 종이 맞을 때만 메가진화한다.
+    func megaStone(of instanceID: String, speciesID: Int) -> MegaStone? {
+        heldMegaStone(of: instanceID).flatMap { $0.speciesID == speciesID ? $0 : nil }
+    }
+
+    func canBuy(_ stone: MegaStone) -> Bool { availableTokens >= price(of: .megaStone(stone)) }
+
+    @discardableResult
+    func buy(_ stone: MegaStone) -> Bool {
+        guard canBuy(stone) else { return false }
+        state.spentTokens += price(of: .megaStone(stone))
+        state.inventory[stone.inventoryKey, default: 0] += 1
+        save()
+        return true
+    }
+
+    /// 상점 메가스톤 목록 — 가진 포켓몬의 돌이 먼저, 나머지는 도감 번호 순.
+    var megaStoneShopEntries: [ShopEntry] {
+        let owned = state.ownedSpeciesIDs
+        let (mine, others) = (MegaStone.all.filter { owned.contains($0.speciesID) }, MegaStone.all.filter { !owned.contains($0.speciesID) })
+        return (mine + others).map(ShopEntry.megaStone)
+    }
+
+    /// 홈·플로팅 펫·메뉴바가 그릴 메가 스프라이트 id. 표시만 바꾼다 — 종·레벨·저장 데이터는 그대로다.
+    func megaSpriteID(instanceID: String?, speciesID: Int?) -> Int? {
+        guard let instanceID, let speciesID else { return nil }
+        return megaStone(of: instanceID, speciesID: speciesID)?.spriteID
+    }
+
+    /// 그 종의 개체 중 맞는 메가스톤을 든 개체가 있으면 그 메가 스프라이트 id.
+    func megaSpriteID(forSpecies speciesID: Int) -> Int? {
+        var holders = state.dex.filter { $0.releasedAt == nil && $0.finalID == speciesID }.map(\.id)
+        if state.active?.currentID == speciesID, let id = state.active?.profile?.instanceID { holders.append(id) }
+        return holders.lazy.compactMap { self.megaSpriteID(instanceID: $0, speciesID: speciesID) }.first
+    }
+
+    /// 지금 키우는 개체가 메가진화 중으로 보일 때의 스프라이트 id.
+    var currentMegaSpriteID: Int? {
+        megaSpriteID(instanceID: state.active?.profile?.instanceID, speciesID: currentSpeciesID)
     }
 
     @discardableResult
@@ -1338,6 +1413,7 @@ final class CompanionStore {
     var bagCategories: [ItemCategory] {
         var present = Set(ownedItems.map { $0.kind.category })
         if !ownedScoutTickets.isEmpty { present.insert(.scout) }
+        if !ownedMegaStones().isEmpty { present.insert(.megaStone) }
         return ItemCategory.allCases.filter(present.contains)
     }
 
@@ -1530,12 +1606,14 @@ final class CompanionStore {
     /// 별도 구역(`evolutionStoneItems`)이라 여기에 없다.
     func shopEntries(in category: ItemCategory?) -> [ShopEntry] {
         guard let category else { return shopEntries }
+        if category == .megaStone { return megaStoneShopEntries }
         return shopEntries.filter { $0.category == category }
     }
 
-    /// 상점에 항목이 있는 분류 — 빈 분류는 탭에서 숨긴다.
+    /// 상점에 항목이 있는 분류 — 빈 분류는 탭에서 숨긴다. 메가스톤 92개는 전체 목록에 넣지 않고 이 탭에서만 판다.
     var shopCategories: [ItemCategory] {
-        let present = Set(shopEntries.map(\.category)).union(evolutionStoneItems.map(\.category)).union([.scout])
+        let present = Set(shopEntries.map(\.category)).union(evolutionStoneItems.map(\.category))
+            .union([.scout, .megaStone])
         return ItemCategory.allCases.filter(present.contains)
     }
 

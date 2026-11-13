@@ -42,6 +42,18 @@ class PokeAPIService:
     def __init__(self, store: Store):
         self._store = store
 
+    def mega_form(self, pokemon_id: int) -> dict:
+        """`pokemon()` of a Mega form plus its first non-hidden ability as `"ability_id"` (slug) and `"ability"`
+        (Korean name); both None if PokéAPI lists none."""
+        key = f"mega-v2/{pokemon_id}"
+        cached = self._store.cached(key)
+        if cached is not None:
+            return cached
+        ability_id, ability = self._ability(pokemon_id)
+        data = {**self.pokemon(pokemon_id), "ability": ability, "ability_id": ability_id}
+        self._store.cache(key, data)
+        return data
+
     def pokemon(self, pokemon_id: int) -> dict:
         """Return `{"name_ko", "types", "base"}` for a PokéAPI `/pokemon/{id}` id. Raises on network errors."""
         cached = self._store.cached_pokemon(pokemon_id)
@@ -105,6 +117,15 @@ class PokeAPIService:
         data = move_from(_get_json(f"{API_BASE}/move/{move_id}"))
         self._store.cache(key, data)
         return data
+
+    def _ability(self, pokemon_id: int) -> tuple[str | None, str | None]:
+        abilities = _get_json(f"{API_BASE}/pokemon/{pokemon_id}")["abilities"]
+        slots = [entry for entry in abilities if not entry["is_hidden"]] or abilities
+        if not slots:
+            return None, None
+        ability = _get_json(slots[0]["ability"]["url"])
+        names = {entry["language"]["name"]: entry["name"] for entry in ability["names"]}
+        return ability["name"], names.get("ko") or names.get("en") or ability["name"]
 
     def _fetch(self, pokemon_id: int) -> dict:
         pokemon = _get_json(f"{API_BASE}/pokemon/{pokemon_id}")

@@ -16,7 +16,7 @@ struct BagView: View {
                             onPicked: { scoutPool = nil; nav.tab = .home },
                             onBack: { scoutPool = nil })
                 .frame(height: 520)
-        } else if store.ownedItems.isEmpty && store.ownedScoutTickets.isEmpty {
+        } else if store.ownedItems.isEmpty && store.ownedScoutTickets.isEmpty && store.ownedMegaStones().isEmpty {
             emptyState
         } else {
             // 고정 높이 — 컬렉션과 동일(팝오버 재오픈 시 fitting size 축소 방지).
@@ -32,6 +32,9 @@ struct BagView: View {
                                 scoutPool = ticket.pool
                             }
                         }
+                    }
+                    ForEach(store.ownedMegaStones(in: category), id: \.stone) { item in
+                        MegaStoneCard(l: store.l, stone: item.stone, count: item.count)
                     }
                 }
                 .reservesScrollerLane()
@@ -52,6 +55,36 @@ struct BagView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 28)
+    }
+}
+
+/// 메가스톤 1장 — 쓰는 곳은 배틀 탭이라 가방에서는 설명만 보인다.
+@MainActor
+private struct MegaStoneCard: View {
+    let l: L
+    let stone: MegaStone
+    let count: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 10) {
+                ItemIconView(stone: stone, size: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(l.megaStoneName(stone)).font(.callout.weight(.semibold))
+                        Text("×\(count)").font(.caption.weight(.bold)).foregroundStyle(.secondary).monospacedDigit()
+                        Spacer(minLength: 4)
+                    }
+                    Text(l.megaStoneEffect)
+                        .font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Text(l.heldItemBagHint).font(.caption2).foregroundStyle(.tertiary)
+        }
+        .padding(10)
+        .background(Color.secondary.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 

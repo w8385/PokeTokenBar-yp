@@ -2,11 +2,12 @@
 (capped at 50), IVs, natures, type effectiveness and level-up moves with PP, priority, critical-hit stages,
 multi-hit, drain and recoil, the major statuses (burn, paralysis, poison, toxic, sleep, freeze), confusion, stat
 stages, five-turn weather, about twenty abilities (`ypoke.abilities`) and one held item per Pokémon
-(`ypoke.items`). The next member comes in when one faints; no other switching."""
+(`ypoke.items`). The next member comes in when one faints; no other switching. The first member of a side
+holding its Mega Stone Mega Evolves as it enters."""
 
 import random
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from ypoke import abilities, items
 from ypoke.type_chart import effectiveness
@@ -99,6 +100,17 @@ CONFUSION_HIT = Move("혼란", None, CONFUSION_SELF_HIT_POWER, physical=True)
 
 
 @dataclass(frozen=True)
+class MegaForm:
+    """What a Mega Evolution swaps in. `ability` is the narrated name, `ability_id` the PokéAPI slug that replaces
+    the Pokémon's ability (one the battle does not know does nothing; None keeps the old one)."""
+
+    types: tuple[str, ...]
+    base: BaseStats
+    ability: str | None = None
+    ability_id: str | None = None
+
+
+@dataclass(frozen=True)
 class Combatant:
     name: str
     level: int
@@ -111,6 +123,7 @@ class Combatant:
     nature: str | None = None
     ability: str | None = None
     item: str | None = None
+    mega: MegaForm | None = None
 
     @property
     def label(self) -> str:
@@ -217,7 +230,15 @@ class ItemHeal:
     hp: int
 
 
-Event = Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal
+@dataclass(frozen=True)
+class MegaEvolution:
+    turn: int
+    side: int
+    pokemon: str
+    ability: str | None
+
+
+Event = Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | MegaEvolution
 
 
 @dataclass
@@ -240,6 +261,8 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     teams = (_Team(_roster(sides[0])), _Team(_roster(sides[1])))
     events: list[Event] = []
     weather = _Weather()
+    for side in (0, 1):
+        _mega_evolve(teams[side], side, 1, events)
     events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng))
     turn = 0
     loser: int | None = None
@@ -272,6 +295,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
         entering = tuple(side for side in (0, 1) if loser is None and teams[side].active.hp == 0)
         for side in entering:
             events.append(SendOut(turn, side, teams[side].send_next().combatant.name))
+            _mega_evolve(teams[side], side, turn, events)
         if entering:
             events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, entering))
     if loser is None:
@@ -288,6 +312,20 @@ def _exhausted(teams: tuple["_Team", "_Team"], order: tuple[int, ...]) -> int | 
     return next((side for side in order if teams[side].active.hp == 0 and not teams[side].has_next), None)
 
 
+def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
+    """A Pokémon that just entered is at full health, so its Mega form simply replaces the base stats and types."""
+    fighter = team.active
+    mega = fighter.combatant.mega
+    if mega is None or team.mega_used:
+        return
+    ability = fighter.combatant.ability
+    if mega.ability_id is not None:
+        ability = mega.ability_id if mega.ability_id in abilities.NAMES else None
+    team.entered[-1] = _Fighter.enter(replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None))
+    team.mega_used = True
+    events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability))
+
+
 @dataclass
 class _Weather:
     kind: str | None = None
@@ -300,6 +338,7 @@ class _Team:
     def __init__(self, roster: tuple[Combatant, ...]):
         self.roster = roster
         self.entered = [_Fighter.enter(roster[0])]
+        self.mega_used = False
 
     @property
     def active(self) -> "_Fighter":
