@@ -1,6 +1,7 @@
 """Automatic one-on-one battle: base stats, level (capped at 50), IVs, natures, type effectiveness and
-level-up moves with PP, priority, critical-hit stages, burn, paralysis, stat stages and five-turn weather.
-No items, abilities or switching."""
+level-up moves with PP, priority, critical-hit stages, multi-hit, drain and recoil, the major statuses
+(burn, paralysis, poison, toxic, sleep, freeze), confusion, stat stages and five-turn weather. No items,
+abilities or switching."""
 
 import random
 from dataclasses import dataclass, field
@@ -11,13 +12,14 @@ STAB_MULTIPLIER = 1.5
 CRITICAL_MULTIPLIER = 1.5
 CRITICAL_CHANCES = (1 / 24, 1 / 8, 1 / 2, 1.0)
 BURN_DAMAGE_FRACTION = 16
+POISON_DAMAGE_FRACTION = 8
+TOXIC_DAMAGE_FRACTION = 16
 FULL_PARALYSIS_CHANCE = 0.25
 STRUGGLE_RECOIL_FRACTION = 4
 MAX_STAGE = 6
 TURN_LIMIT = 300
 BATTLE_LEVEL = 50
 BATTLE_STATS = ("attack", "defense", "special_attack", "special_defense", "speed")
-AILMENT_IMMUNE_TYPE = {"burn": "fire", "paralysis": "electric"}
 WEATHER_TURNS = 5
 WEATHER_CHIP_FRACTION = 16
 WEATHER_MOVE_BOOST = {
@@ -29,6 +31,17 @@ SPECIAL_DEFENSE_BOOSTED_TYPE = {"sandstorm": "rock"}
 DEFENSE_BOOSTED_TYPE = {"snow": "ice"}
 WEATHER_SWING_MIN = 1.3
 WEATHER_CHIP_SWING = 1.5
+FREEZE_THAW_CHANCE = 0.2
+CONFUSION_SELF_HIT_CHANCE = 1 / 3
+CONFUSION_SELF_HIT_POWER = 40
+SLEEP_TURNS = (1, 3)
+CONFUSION_TURNS = (2, 5)
+MULTI_HIT_ODDS = {2: 35, 3: 35, 4: 15, 5: 15}
+AILMENT_IMMUNE_TYPES = {
+    "burn": ("fire",), "paralysis": ("electric",), "poison": ("poison", "steel"), "toxic": ("poison", "steel"),
+    "freeze": ("ice",), "sleep": (), "confusion": (),
+}
+RESIDUAL_FRACTIONS = {"burn": BURN_DAMAGE_FRACTION, "poison": POISON_DAMAGE_FRACTION}
 _NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
 _NATURE_NAMES = (
     "hardy lonely brave adamant naughty bold docile relaxed impish lax timid hasty serious jolly naive "
@@ -67,9 +80,19 @@ class Move:
     priority: int = 0
     weather: str | None = None
     always_hits_in: tuple[str, ...] = ()
+    drain: int = 0
+    min_hits: int = 1
+    max_hits: int = 1
+
+    @property
+    def expected_hits(self) -> float:
+        if (self.min_hits, self.max_hits) == (2, 5):
+            return sum(hits * odds for hits, odds in MULTI_HIT_ODDS.items()) / 100
+        return (self.min_hits + self.max_hits) / 2
 
 
 STRUGGLE = Move("발버둥", None, 50, physical=True)
+CONFUSION_HIT = Move("혼란", None, CONFUSION_SELF_HIT_POWER, physical=True)
 
 
 @dataclass(frozen=True)
@@ -91,7 +114,7 @@ class Combatant:
 
 @dataclass(frozen=True)
 class Change:
-    """A secondary effect that landed: `kind` is "burn", "paralysis" or a `BATTLE_STATS` key with `stages`."""
+    """An effect that landed: a status (`AILMENT_IMMUNE_TYPES` key), "thaw", or a `BATTLE_STATS` key with `stages`."""
 
     side: int
     pokemon: str
@@ -101,7 +124,10 @@ class Change:
 
 @dataclass(frozen=True)
 class Action:
-    """One Pokémon's turn. `move` is "" when it was fully paralyzed."""
+    """One Pokémon's turn. `move` is "" when it could not act; `blocked` says why ("paralysis", "sleep", "freeze"
+    or "confusion", the last one meaning it hurt itself and `attacker_hp` is its HP share).
+    `recovered` lists what ended before it acted ("sleep", "freeze", "confusion"). `hits` counts a multi-hit
+    move's hits; `drained` means the user healed from the damage."""
 
     turn: int
     side: int
@@ -118,15 +144,23 @@ class Action:
     attacker_fainted: bool = False
     weather: str | None = None
     failed: bool = False
+    blocked: str = ""
+    recovered: tuple[str, ...] = ()
+    hits: int = 1
+    drained: bool = False
+    attacker_hp: int = 100
 
 
 @dataclass(frozen=True)
-class BurnDamage:
+class StatusDamage:
+    """End-of-turn damage from `kind` ("burn", "poison" or "toxic")."""
+
     turn: int
     side: int
     pokemon: str
     hp: int
     fainted: bool
+    kind: str = "burn"
 
 
 @dataclass(frozen=True)
@@ -145,7 +179,7 @@ class WeatherEnd:
     weather: str
 
 
-Event = Action | BurnDamage | WeatherDamage | WeatherEnd
+Event = Action | StatusDamage | WeatherDamage | WeatherEnd
 
 
 @dataclass
@@ -184,9 +218,11 @@ def simulate(sides: tuple[Combatant, Combatant], seed: int) -> BattleResult:
                 break
         for side in (0, 1):
             fighter = fighters[side]
-            if loser is None and fighter.status == "burn":
-                fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // BURN_DAMAGE_FRACTION))
-                events.append(BurnDamage(turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0))
+            if loser is None and fighter.status in ("burn", "poison", "toxic"):
+                fighter.hp = max(0, fighter.hp - fighter.residual_damage())
+                events.append(
+                    StatusDamage(turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0, fighter.status)
+                )
                 if fighter.hp == 0:
                     loser = side
         if loser is None:
@@ -211,6 +247,9 @@ class _Fighter:
     pp: list[int]
     stages: dict[str, int] = field(default_factory=lambda: dict.fromkeys(BATTLE_STATS, 0))
     status: str | None = None
+    sleep_left: int = 0
+    toxic_ticks: int = 0
+    confusion_left: int = 0
 
     @classmethod
     def enter(cls, combatant: Combatant) -> "_Fighter":
@@ -226,6 +265,12 @@ class _Fighter:
     @property
     def hp_percent(self) -> int:
         return 0 if self.hp <= 0 else max(1, round(self.hp * 100 / self.max_hp))
+
+    def residual_damage(self) -> int:
+        if self.status == "toxic":
+            self.toxic_ticks += 1
+            return max(1, self.max_hp * self.toxic_ticks // TOXIC_DAMAGE_FRACTION)
+        return max(1, self.max_hp // RESIDUAL_FRACTIONS[self.status])
 
     def stat(self, key: str) -> float:
         stage = self.stages[key]
@@ -275,31 +320,86 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
          rng: random.Random) -> Action:
     attacker, defender = fighters[side], fighters[1 - side]
     names = (attacker.combatant.name, defender.combatant.name)
-    if attacker.status == "paralysis" and rng.random() < FULL_PARALYSIS_CHANCE:
-        return Action(turn, side, *names, move="", defender_hp=defender.hp_percent)
     move = STRUGGLE if index is None else attacker.combatant.moves[index]
+    recovered, blocked = _start_of_action(attacker, move, rng)
+    if blocked:
+        if blocked == "confusion":
+            attacker.hp = max(0, attacker.hp - _damage(attacker, attacker, CONFUSION_HIT, 1.0, False, None, rng))
+        return Action(
+            turn, side, *names, move="", defender_hp=defender.hp_percent, blocked=blocked, recovered=recovered,
+            attacker_hp=attacker.hp_percent, attacker_fainted=attacker.hp == 0,
+        )
     if index is not None:
         attacker.pp[index] -= 1
     if move.weather:
         if weather.kind == move.weather:
-            return Action(turn, side, *names, move.name, failed=True, defender_hp=defender.hp_percent)
+            return Action(turn, side, *names, move.name, failed=True, recovered=recovered,
+                          defender_hp=defender.hp_percent)
         weather.kind, weather.turns_left = move.weather, WEATHER_TURNS
-        return Action(turn, side, *names, move.name, weather=move.weather, defender_hp=defender.hp_percent)
+        return Action(turn, side, *names, move.name, weather=move.weather, recovered=recovered,
+                      defender_hp=defender.hp_percent)
     multiplier = _multiplier(move, defender)
     if move.accuracy is not None and weather.kind not in move.always_hits_in and rng.random() * 100 >= move.accuracy:
-        return Action(turn, side, *names, move.name, missed=True, multiplier=multiplier, defender_hp=defender.hp_percent)
+        return Action(turn, side, *names, move.name, missed=True, multiplier=multiplier, recovered=recovered,
+                      defender_hp=defender.hp_percent)
     if multiplier == 0:
-        return Action(turn, side, *names, move.name, multiplier=0, defender_hp=defender.hp_percent)
-    critical = rng.random() < CRITICAL_CHANCES[min(move.crit_stage, len(CRITICAL_CHANCES) - 1)]
-    defender.hp = max(0, defender.hp - _damage(attacker, defender, move, multiplier, critical, weather.kind, rng))
+        return Action(turn, side, *names, move.name, multiplier=0, recovered=recovered, defender_hp=defender.hp_percent)
+    critical, hits, dealt = False, 0, 0
+    for _ in range(_hit_count(move, rng)):
+        hit_critical = rng.random() < CRITICAL_CHANCES[min(move.crit_stage, len(CRITICAL_CHANCES) - 1)]
+        damage = min(defender.hp, _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng))
+        defender.hp -= damage
+        critical, hits, dealt = critical or hit_critical, hits + 1, dealt + damage
+        if defender.hp == 0:
+            break
     changes = () if defender.hp == 0 else _secondary_effects(side, move, attacker, defender, rng)
-    recoil = move is STRUGGLE
+    recoil, drained = move is STRUGGLE, move.drain > 0
     if recoil:
         attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // STRUGGLE_RECOIL_FRACTION))
+    elif move.drain < 0:
+        attacker.hp = max(0, attacker.hp - max(1, dealt * -move.drain // 100))
+        recoil = True
+    elif drained:
+        attacker.hp = min(attacker.max_hp, attacker.hp + max(1, dealt * move.drain // 100))
     return Action(
         turn, side, *names, move.name, multiplier=multiplier, critical=critical, changes=changes, recoil=recoil,
         defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
+        recovered=recovered, hits=hits, drained=drained, attacker_hp=attacker.hp_percent,
     )
+
+
+def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tuple[tuple[str, ...], str]:
+    """What ended before the Pokémon acts, and what stops it from using its move ("" if nothing)."""
+    recovered: list[str] = []
+    if attacker.status == "sleep":
+        if attacker.sleep_left > 0:
+            attacker.sleep_left -= 1
+            return (), "sleep"
+        attacker.status = None
+        recovered.append("sleep")
+    elif attacker.status == "freeze":
+        thawed = rng.random() < FREEZE_THAW_CHANCE or move.type == "fire"
+        if not thawed:
+            return (), "freeze"
+        attacker.status = None
+        recovered.append("freeze")
+    if attacker.confusion_left > 0:
+        attacker.confusion_left -= 1
+        if attacker.confusion_left == 0:
+            recovered.append("confusion")
+        elif rng.random() < CONFUSION_SELF_HIT_CHANCE:
+            return tuple(recovered), "confusion"
+    if attacker.status == "paralysis" and rng.random() < FULL_PARALYSIS_CHANCE:
+        return tuple(recovered), "paralysis"
+    return tuple(recovered), ""
+
+
+def _hit_count(move: Move, rng: random.Random) -> int:
+    if move.max_hits <= 1:
+        return 1
+    if (move.min_hits, move.max_hits) == (2, 5):
+        return rng.choices(list(MULTI_HIT_ODDS), weights=list(MULTI_HIT_ODDS.values()))[0]
+    return rng.randint(move.min_hits, move.max_hits)
 
 
 def _damage(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float, critical: bool,
@@ -320,14 +420,11 @@ def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multipl
 def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fighter,
                        rng: random.Random) -> tuple[Change, ...]:
     changes: list[Change] = []
-    if (
-        move.ailment in AILMENT_IMMUNE_TYPE
-        and defender.status is None
-        and AILMENT_IMMUNE_TYPE[move.ailment] not in defender.combatant.types
-        and rng.random() * 100 < move.ailment_chance
-    ):
-        defender.status = move.ailment
-        changes.append(Change(1 - side, defender.combatant.name, move.ailment))
+    if _ailment_lands(move, defender, rng):
+        changes.append(_inflict(move.ailment, defender, 1 - side, rng))
+    if defender.status == "freeze" and move.type == "fire":
+        defender.status = None
+        changes.append(Change(1 - side, defender.combatant.name, "thaw"))
     if move.stat_changes and rng.random() * 100 < move.stat_chance:
         target, target_side = (attacker, side) if move.stat_on_user else (defender, 1 - side)
         for key, stages in move.stat_changes:
@@ -336,6 +433,26 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
             if target.stages[key] != before:
                 changes.append(Change(target_side, target.combatant.name, key, target.stages[key] - before))
     return tuple(changes)
+
+
+def _ailment_lands(move: Move, defender: _Fighter, rng: random.Random) -> bool:
+    if move.ailment not in AILMENT_IMMUNE_TYPES:
+        return False
+    if any(kind in defender.combatant.types for kind in AILMENT_IMMUNE_TYPES[move.ailment]):
+        return False
+    occupied = defender.confusion_left > 0 if move.ailment == "confusion" else defender.status is not None
+    return not occupied and rng.random() * 100 < move.ailment_chance
+
+
+def _inflict(ailment: str, defender: _Fighter, side: int, rng: random.Random) -> Change:
+    if ailment == "confusion":
+        defender.confusion_left = rng.randint(*CONFUSION_TURNS)
+    else:
+        defender.status = ailment
+        defender.toxic_ticks = 0
+        if ailment == "sleep":
+            defender.sleep_left = rng.randint(*SLEEP_TURNS)
+    return Change(side, defender.combatant.name, ailment)
 
 
 def _best_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> int | None:
@@ -396,7 +513,8 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
     attack, defense = _stats_for(attacker, defender, move.physical, weather)
     accuracy = 100 if move.accuracy is None or weather in move.always_hits_in else move.accuracy
     return (
-        move.power * _stab(attacker, move) * _multiplier(move, defender) * _weather_boost(move, weather)
+        move.power * move.expected_hits * _stab(attacker, move) * _multiplier(move, defender)
+        * _weather_boost(move, weather)
         * accuracy * attack / max(1, defense)
     )
 

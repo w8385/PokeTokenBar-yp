@@ -36,4 +36,7 @@ def _move(move: dict) -> Move:
         priority=move["priority"],
         weather=move["weather"],
         always_hits_in=tuple(move["always_hits_in"]),
+        drain=move["drain"],
+        min_hits=move["min_hits"],
+        max_hits=move["max_hits"],
     )

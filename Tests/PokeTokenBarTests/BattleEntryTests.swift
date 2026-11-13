@@ -233,5 +233,22 @@ final class LearnableMovesTests: XCTestCase {
         XCTAssertEqual(move.statChanges, [LearnableMove.StatChange(stat: "special_attack", change: -2)])
         XCTAssertEqual(move.statTarget, "user")
         XCTAssertEqual(move.statChance, 100)
+        XCTAssertNil(move.drain)
+        XCTAssertNil(move.maxHits)
+    }
+
+    func testDecodesStatusDrainAndHitFields() throws {
+        let body = Data("""
+        {"ok": true, "default": [3], "moves": [{"id": 3, "name": "연속뺨치기", "type": "normal", "power": 15,
+         "damage_class": "physical", "accuracy": 85, "level": 1, "ailment": "toxic", "ailment_chance": 50,
+         "drain": -25, "min_hits": 2, "max_hits": 5}]}
+        """.utf8)
+
+        let move = try XCTUnwrap(LearnableMoves.decode(body).moves.first)
+
+        XCTAssertEqual([move.ailment, move.drain.map(String.init), move.minHits.map(String.init),
+                        move.maxHits.map(String.init)], ["toxic", "-25", "2", "5"])
+        XCTAssertEqual(L(.en).moveAilment("toxic"), "Toxic")
+        XCTAssertEqual(L(.en).moveAilment("burn"), "Burn")
     }
 }

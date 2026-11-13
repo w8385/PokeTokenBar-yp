@@ -165,7 +165,11 @@ struct BattleEntrySection: View {
     private func effects(_ move: LearnableMove) -> String? {
         var parts: [String] = []
         if let ailment = move.ailment, let chance = move.ailmentChance {
-            parts.append("\(ailment == "burn" ? l.moveBurn : l.moveParalysis) \(chance)%")
+            parts.append("\(l.moveAilment(ailment)) \(chance)%")
+        }
+        if let drain = move.drain, drain != 0 { parts.append(drain > 0 ? l.moveDrain : l.moveRecoil) }
+        if let low = move.minHits, let high = move.maxHits, high > 1 {
+            parts.append(l.moveHits(low == high ? "\(low)" : "\(low)-\(high)"))
         }
         if let changes = move.statChanges, !changes.isEmpty, let chance = move.statChance {
             let arrows = changes.map { change in

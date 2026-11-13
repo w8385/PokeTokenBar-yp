@@ -326,6 +326,10 @@ struct LearnableMove: Decodable, Equatable, Sendable, Identifiable {
     var statChanges: [StatChange]? = nil
     var statTarget: String? = nil
     var statChance: Int? = nil
+    /// Nil from bots older than the status update; positive heals the user, negative is recoil (percent of damage).
+    var drain: Int? = nil
+    var minHits: Int? = nil
+    var maxHits: Int? = nil
 
     struct StatChange: Decodable, Equatable, Sendable {
         let stat: String

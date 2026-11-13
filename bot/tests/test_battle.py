@@ -4,8 +4,8 @@ from dataclasses import replace
 import pytest
 
 from ypoke.battle import (
-    NATURE_MODIFIERS, STRUGGLE, TURN_LIMIT, WEATHER_TURNS, Action, BaseStats, BurnDamage, Change, Combatant, Move,
-    WeatherDamage, WeatherEnd, _act, _best_move, _damage, _Fighter, _stats_for, _Weather, _weather_upkeep, simulate,
+    NATURE_MODIFIERS, STRUGGLE, TURN_LIMIT, WEATHER_TURNS, Action, BaseStats, Change, Combatant, Move,
+    StatusDamage, WeatherDamage, WeatherEnd, _act, _best_move, _damage, _Fighter, _stats_for, _Weather, _weather_upkeep, simulate,
 )
 from ypoke.type_chart import effectiveness
 
@@ -122,8 +122,8 @@ def test_burn_halves_physical_damage_and_hurts_each_turn():
     result = simulate((mon("A", ["fire"], moves=[flame], speed=200, attack=10),
                        mon("B", ["normal"], hp=200, defense=200)), seed=0)
     assert actions(result)[0].changes == (Change(1, "B", "burn"),)
-    burns = [event for event in result.events if isinstance(event, BurnDamage)]
-    assert burns and burns[0] == BurnDamage(1, 1, "B", burns[0].hp, False)
+    burns = [event for event in result.events if isinstance(event, StatusDamage)]
+    assert burns and burns[0] == StatusDamage(1, 1, "B", burns[0].hp, False)
     fighter = _Fighter.enter(mon("B", ["normal"]))
     plain = _stats_for(fighter, fighter, physical=True)[0]
     fighter.status = "burn"
