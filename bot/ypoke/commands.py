@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from urllib.parse import urlencode
 
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm, simulate
-from ypoke.dex import NATIONAL_TOTAL, REGIONS, sprite_url
+from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_url
 from ypoke.mega_stones import mega_form_id
 from ypoke.messages import DirectMessage
 from ypoke.moves import battle_moves
@@ -88,6 +88,7 @@ class Reply:
 
     A battle result has `summary` (one line) and `rematch` (the button value), and `text` is its turn log.
     `public` is a line the channel sees beside a private `text`. `image_url` is shown beside `text`.
+    `fields` (Slack's 2-column grid) follow `lead`, the part of `text` above them, in the blocks; `text` stays the fallback.
     """
 
     text: str
@@ -98,6 +99,8 @@ class Reply:
     rematch: str | None = None
     public: str | None = None
     image_url: str | None = None
+    fields: tuple[str, ...] = ()
+    lead: str | None = None
 
 
 @dataclass(frozen=True)
@@ -253,21 +256,21 @@ class CommandHandler:
                 hint = f" `{LINK_COMMAND}`로 연결해 주세요." if target_id == user_id else ""
                 return Reply(f"{who}님은 아직 YPoke에 연결하지 않았어요.{hint}")
             return Reply(f"{who}님의 도감은 아직 올라오지 않았어요. 앱을 최신 버전으로 켜 두면 올라와요.")
-        lines = [
+        head = [
             f"📖 {who}님의 도감",
             f"전체 *{summary['owned']}*/{NATIONAL_TOTAL} · ✨ 이로치 *{summary['shiny']}*",
         ]
-        progress = [
-            f"{name} {summary['regions'][key]}/{total}" + (" ✅" if summary["regions"][key] == total else "")
-            for key, (name, total) in REGIONS.items() if key in summary["regions"]
-        ]
-        if progress:
-            lines.append(" · ".join(progress))
         representative = summary.get("representative")
-        if representative is None:
-            return Reply("\n".join(lines))
-        lines.append(f"대표 포켓몬: {self._species_name(representative['pokemon_id'])}{' ✨' if representative['shiny'] else ''}")
-        return Reply("\n".join(lines), image_url=sprite_url(representative["pokemon_id"], representative["shiny"]))
+        tail = []
+        image_url = None
+        if representative is not None:
+            name = self._species_name(representative["pokemon_id"])
+            tail = [f"대표 포켓몬: {name}{' ✨' if representative['shiny'] else ''}"]
+            image_url = sprite_url(representative["pokemon_id"], representative["shiny"])
+        return Reply(
+            "\n".join(head + progress_lines(summary) + tail), image_url=image_url,
+            fields=tuple(progress_fields(summary)), lead="\n".join(head + tail),
+        )
 
     def _species_name(self, pokemon_id: int) -> str:
         try:
@@ -500,6 +503,17 @@ def result_blocks(reply: Reply, with_log: bool = False) -> list[dict]:
     }]})
     if with_log:
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": fit(reply.text, SECTION_TEXT_LIMIT)}})
+    return blocks
+
+
+def message_blocks(reply: Reply, visible: bool) -> list[dict] | None:
+    """Blocks of a plain reply: the lead (with the echo line when `visible`) and thumbnail, then the field grid."""
+    if not reply.fields:
+        text = "\n".join(filter(None, (reply.echo, reply.text))) if visible else reply.text
+        return image_blocks(text, reply.image_url)
+    lead = "\n".join(filter(None, (reply.echo if visible else None, reply.lead)))
+    blocks = image_blocks(lead, reply.image_url) or [{"type": "section", "text": {"type": "mrkdwn", "text": fit(lead, SECTION_TEXT_LIMIT)}}]
+    blocks.append({"type": "section", "fields": [{"type": "mrkdwn", "text": field} for field in reply.fields]})
     return blocks
 
 
