@@ -14,6 +14,19 @@ private struct CardProvider: PokeProviding {
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
 }
 
+private struct IndexedCardProvider: PokeProviding, SpeciesIndexProviding {
+    let tree: EvoNode
+    func line(baseSpeciesID: Int) async throws -> EvoLine {
+        EvoLine(baseID: tree.speciesID, tree: tree, rarity: .common, names: [:])
+    }
+    func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
+    func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
+    func speciesIndex() async throws -> SpeciesIndex {
+        SpeciesIndex(entries: [SpeciesIndexEntry(id: 208, names: ["en": "Steelix"], types: [], captureRate: 25,
+                                                 isLegendary: false, isMythical: false, evolvesFromID: 95)])
+    }
+}
+
 @MainActor
 final class EvolutionCardTests: XCTestCase {
     nonisolated(unsafe) private var paths: [URL] = []
@@ -24,7 +37,8 @@ final class EvolutionCardTests: XCTestCase {
         super.tearDown()
     }
 
-    private func store(tree: EvoNode, state: CompanionState = CompanionState()) throws -> CompanionStore {
+    private func store(tree: EvoNode, state: CompanionState = CompanionState(),
+                       provider: (any PokeProviding)? = nil) throws -> CompanionStore {
         var state = state
         state.installBaselineSet = true
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("evo-card-\(UUID())")
@@ -34,7 +48,7 @@ final class EvolutionCardTests: XCTestCase {
         try JSONEncoder().encode(state).write(to: file)
         let suite = "evo-card-\(UUID())"
         suites.append(suite)
-        return CompanionStore(provider: CardProvider(tree: tree), clock: { Date() }, fileURL: file,
+        return CompanionStore(provider: provider ?? CardProvider(tree: tree), clock: { Date() }, fileURL: file,
                               rng: SeededRNG(seed: 1), dittoDisguiseRollingEnabled: false,
                               defaults: try XCTUnwrap(UserDefaults(suiteName: suite)))
     }
@@ -107,6 +121,15 @@ final class EvolutionCardTests: XCTestCase {
         for rule in EvolutionRules.all where rule.trade != nil {
             XCTAssertNotNil(rule.from, "\(rule.species)")
         }
+    }
+
+    func testCardNamesComeFromTheSpeciesIndexWithoutAnyoneSearching() async throws {
+        let s = try store(tree: node(95), provider: IndexedCardProvider(tree: node(95)))
+        XCTAssertNil(s.speciesIndex)
+        await s.loadEvolutionCardNames(for: 1)
+        XCTAssertNil(s.speciesIndex, "a species with no card needs no names")
+        await s.loadEvolutionCardNames(for: 687)
+        XCTAssertEqual(s.speciesIndex?.entry(208)?.names["en"], "Steelix")
     }
 
     func testSpeciesWithoutASpecialStepShowsNoCard() async throws {

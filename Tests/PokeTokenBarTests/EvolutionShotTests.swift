@@ -75,7 +75,6 @@ final class EvolutionShotTests: XCTestCase {
             store.update(todayTokensByProvider: ["shot": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
                          limitWarning: false, hasUsageData: true)
             for _ in 0..<100 where store.currentLine == nil { await Task.yield() }
-            await store.loadSpeciesIndexIfNeeded()
             await store.loadPokemonDetails(speciesID: 686)
             await store.loadPokemonDetails(speciesID: 106)
             await store.loadPokemonDetails(speciesID: 95)

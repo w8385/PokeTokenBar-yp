@@ -2026,6 +2026,7 @@ struct PokemonDetailView: View {
             if selectedForm == nil { selectedForm = displayedSpecies.form }
             if selectedInstanceID.isEmpty { selectedInstanceID = individuals.first?.id ?? "" }
             await store.loadPokemonDetails(speciesID: species.id)
+            await store.loadEvolutionCardNames(for: species.id, individual: individual)
         }
     }
 

@@ -13,6 +13,12 @@ extension CompanionStore {
         var id: String { "\(rule.species)-\(isNextStep)" }
     }
 
+    /// The cards name other species, and the index that holds their names is otherwise fetched only by a search.
+    func loadEvolutionCardNames(for speciesID: Int, individual: DexEntry? = nil) async {
+        guard !evolutionCards(for: speciesID, individual: individual).isEmpty else { return }
+        await loadSpeciesIndexIfNeeded()
+    }
+
     /// The step into `speciesID`, and the raised Pokémon's waiting step when it is `speciesID` right now.
     /// For a graduated `individual` of `speciesID`, also the trade steps it can take.
     func evolutionCards(for speciesID: Int, individual: DexEntry? = nil) -> [EvolutionCard] {
