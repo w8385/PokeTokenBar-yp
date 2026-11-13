@@ -28,7 +28,8 @@ _STAT_KEYS = {
     "speed": "speed",
 }
 _BATTLE_STAT_KEYS = set(_STAT_KEYS) - {"hp"}
-_AILMENTS = {"burn", "paralysis"}
+_AILMENTS = {"burn", "paralysis", "poison", "toxic", "sleep", "freeze", "confusion"}
+_TOXIC_MOVE_IDS = {92, 305, 830}
 _STAT_CATEGORIES = {"damage-lower": "target", "damage-raise": "user"}
 WEATHER_MOVES = {241: "sun", 240: "rain", 201: "sandstorm", 258: "hail", 883: "snow"}
 _ALWAYS_HITS_IN = {87: ["rain"], 542: ["rain"], 59: ["hail", "snow"]}
@@ -72,7 +73,7 @@ class PokeAPIService:
         return data
 
     def move(self, move_id: int) -> dict:
-        """The move's battle data; `ailment` is only "burn" or "paralysis", other secondary effects are dropped."""
+        """The move's battle data; `ailment` is one of the simulated statuses and other secondary effects are dropped."""
         key = f"move-v4/{move_id}"
         cached = self._store.cached(key)
         if cached is not None:
@@ -112,10 +113,15 @@ def learnset_from(pokemon: dict) -> list[dict]:
 
 
 def move_from(move: dict) -> dict:
-    """Normalize a `/move/{id}` body. Stat changes count only for damaging moves that lower the target or change the user."""
+    """Normalize a `/move/{id}` body. Stat changes count only for damaging moves that lower the target or change the user.
+
+    `drain` is a percent of the damage dealt: positive heals the user, negative is recoil. PokéAPI has no badly-poisoned ailment, so the toxic moves are listed by id.
+    """
     names = {entry["language"]["name"]: entry["name"] for entry in move["names"]}
     meta = move.get("meta") or {}
     ailment = (meta.get("ailment") or {}).get("name")
+    if ailment == "poison" and move["id"] in _TOXIC_MOVE_IDS:
+        ailment = "toxic"
     category = (meta.get("category") or {}).get("name")
     stat_changes = [
         {"stat": _STAT_KEYS[entry["stat"]["name"]], "change": entry["change"]}
@@ -139,6 +145,9 @@ def move_from(move: dict) -> dict:
         "stat_chance": (meta.get("stat_chance") or 0) if stat_changes else 0,
         "weather": WEATHER_MOVES.get(move["id"]),
         "always_hits_in": _ALWAYS_HITS_IN.get(move["id"], []),
+        "drain": meta.get("drain") or 0,
+        "min_hits": meta.get("min_hits") or 1,
+        "max_hits": meta.get("max_hits") or 1,
     }
 
 

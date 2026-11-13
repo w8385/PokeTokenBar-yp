@@ -1,7 +1,7 @@
 import pytest
 
 from ypoke.battle import (
-    Action, BaseStats, BattleResult, BurnDamage, Change, Combatant, Move, WeatherDamage, WeatherEnd, simulate,
+    Action, BaseStats, BattleResult, Change, Combatant, Move, StatusDamage, WeatherDamage, WeatherEnd, simulate,
 )
 from ypoke.narration import MAX_EVENT_LINES, PRACTICE_NOTE, SKIPPED_LINE, battle_lines, with_particle
 
@@ -44,7 +44,7 @@ def test_every_action_gets_a_turn_line_with_its_details():
     lines = lines_for(
         act(1, 0, multiplier=2.0, critical=True, changes=(Change(1, "꼬부기", "paralysis"),), defender_hp=31),
         act(1, 1, move="물대포", multiplier=0.5, defender_hp=88),
-        act(2, 1, move=""),
+        act(2, 1, move="", blocked="paralysis"),
         act(2, 0, multiplier=2.0, knockout=True, defender_hp=0),
     )
     assert lines == [
@@ -72,8 +72,40 @@ def test_every_action_gets_a_turn_line_with_its_details():
      "1턴 🔵 피카츄의 10만볼트! 피카츄의 스피드가 올랐다! (꼬부기 HP 50%)"),
     (act(1, 0, move="발버둥", recoil=True, attacker_fainted=True, defender_hp=40),
      "1턴 🔵 피카츄의 발버둥! 피카츄는 반동으로 데미지를 입었다! 피카츄는 쓰러졌다!"),
-    (BurnDamage(3, 1, "꼬부기", 12, False), "3턴 🔴 꼬부기는 화상 데미지를 입었다! (HP 12%)"),
-    (BurnDamage(3, 1, "꼬부기", 0, True), "3턴 🔴 꼬부기는 화상 데미지를 입었다! 꼬부기는 쓰러졌다!"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "poison"),), defender_hp=50),
+     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 독에 걸렸다! (꼬부기 HP 50%)"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "toxic"),), defender_hp=50),
+     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 맹독에 걸렸다! (꼬부기 HP 50%)"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "sleep"),), defender_hp=50),
+     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 잠들어 버렸다! (꼬부기 HP 50%)"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "freeze"),), defender_hp=50),
+     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 얼어붙었다! (꼬부기 HP 50%)"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "confusion"),), defender_hp=50),
+     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 혼란에 빠졌다! (꼬부기 HP 50%)"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "thaw"),), defender_hp=50),
+     "1턴 🔵 피카츄의 10만볼트! 꼬부기의 얼음이 녹았다! (꼬부기 HP 50%)"),
+    (act(1, 0, move="기가드레인", drained=True, defender_hp=40),
+     "1턴 🔵 피카츄의 기가드레인! 꼬부기에게서 체력을 흡수했다! (꼬부기 HP 40%)"),
+    (act(1, 0, move="누르기", recoil=True, defender_hp=40),
+     "1턴 🔵 피카츄의 누르기! 피카츄는 반동으로 데미지를 입었다! (꼬부기 HP 40%)"),
+    (act(1, 0, move="연속뺨치기", hits=4, defender_hp=40),
+     "1턴 🔵 피카츄의 연속뺨치기! 4번 맞았다! (꼬부기 HP 40%)"),
+    (act(1, 0, move="연속뺨치기", hits=1, defender_hp=40), "1턴 🔵 피카츄의 연속뺨치기! (꼬부기 HP 40%)"),
+    (act(1, 1, move="", blocked="sleep"), "1턴 🔴 꼬부기는 쿨쿨 잠들어 있다!"),
+    (act(1, 1, move="", blocked="freeze"), "1턴 🔴 꼬부기는 얼어서 움직일 수 없다!"),
+    (act(1, 1, move="", blocked="confusion", attacker_hp=63), "1턴 🔴 꼬부기는 혼란에 빠져 자신을 공격했다! (꼬부기 HP 63%)"),
+    (act(1, 1, move="", blocked="confusion", attacker_hp=0, attacker_fainted=True),
+     "1턴 🔴 꼬부기는 혼란에 빠져 자신을 공격했다! 꼬부기는 쓰러졌다!"),
+    (act(1, 1, move="물대포", recovered=("sleep",), defender_hp=70),
+     "1턴 🔴 꼬부기는 눈을 떴다! 꼬부기의 물대포! (피카츄 HP 70%)"),
+    (act(1, 1, move="", blocked="paralysis", recovered=("sleep", "confusion")),
+     "1턴 🔴 꼬부기는 눈을 떴다! 꼬부기의 혼란이 풀렸다! 꼬부기는 몸이 저려서 움직일 수 없다!"),
+    (act(1, 1, move="물대포", recovered=("freeze",), defender_hp=70),
+     "1턴 🔴 꼬부기의 얼음이 녹았다! 꼬부기의 물대포! (피카츄 HP 70%)"),
+    (StatusDamage(3, 1, "꼬부기", 12, False), "3턴 🔴 꼬부기는 화상 데미지를 입었다! (HP 12%)"),
+    (StatusDamage(3, 1, "꼬부기", 30, False, "poison"), "3턴 🔴 꼬부기는 독 데미지를 입었다! (HP 30%)"),
+    (StatusDamage(3, 1, "꼬부기", 0, True, "toxic"), "3턴 🔴 꼬부기는 독 데미지를 입었다! 꼬부기는 쓰러졌다!"),
+    (StatusDamage(3, 1, "꼬부기", 0, True), "3턴 🔴 꼬부기는 화상 데미지를 입었다! 꼬부기는 쓰러졌다!"),
     (act(1, 0, move="비바라기", weather="rain"), "1턴 🔵 피카츄의 비바라기! 비가 내리기 시작했다!"),
     (act(1, 0, move="모래바람", weather="sandstorm"), "1턴 🔵 피카츄의 모래바람! 모래바람이 불기 시작했다!"),
     (act(1, 0, move="비바라기", failed=True), "1턴 🔵 피카츄의 비바라기! 하지만 실패했다!"),
@@ -106,3 +138,13 @@ def test_a_simulated_battle_narrates_from_send_out_to_knockout():
     assert first[-2].endswith("꼬부기는 쓰러졌다!")
     assert all(line.split(" ", 2)[2].startswith(("피카츄의 10만볼트!", "꼬부기의 물대포!", "꼬부기는 몸이 저려서"))
                for line in first[3:-1])
+
+
+def test_long_status_battles_still_collapse_the_middle_turns():
+    events = []
+    for turn in range(1, 20):
+        events += [act(turn, 1, move="", blocked="sleep"), StatusDamage(turn, 1, "꼬부기", 90 - turn, False, "toxic")]
+    lines = lines_for(*events)
+    assert len(lines) == 3 + MAX_EVENT_LINES + 1 + 1
+    assert lines[3 + MAX_EVENT_LINES // 2] == SKIPPED_LINE
+    assert lines[3].endswith("쿨쿨 잠들어 있다!") and lines[-2].startswith("19턴 ")

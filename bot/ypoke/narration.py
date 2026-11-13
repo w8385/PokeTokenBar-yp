@@ -1,6 +1,6 @@
 """In-game style battle narration built only from events the simulation produced."""
 
-from ypoke.battle import Action, BattleResult, BurnDamage, Change, Combatant, Event, WeatherDamage, WeatherEnd
+from ypoke.battle import Action, BattleResult, Change, Combatant, Event, StatusDamage, WeatherDamage, WeatherEnd
 
 MAX_EVENT_LINES = 24
 PRACTICE_NOTE = "(연습 대결 — 전적에 안 남아요)"
@@ -29,6 +29,21 @@ WEATHER_END = {
     "snow": "눈이 그쳤다!",
 }
 WEATHER_DAMAGE = {"sandstorm": "모래바람에 휩싸였다!", "hail": "싸라기눈에 맞았다!"}
+STATUS_TEXT = {
+    "burn": "화상을 입었다!",
+    "paralysis": "마비되어 기술이 나오기 어려워졌다!",
+    "poison": "독에 걸렸다!",
+    "toxic": "맹독에 걸렸다!",
+    "sleep": "잠들어 버렸다!",
+    "freeze": "얼어붙었다!",
+    "confusion": "혼란에 빠졌다!",
+}
+STATUS_DAMAGE_TEXT = {"burn": "화상", "poison": "독", "toxic": "독"}
+BLOCKED_TEXT = {
+    "paralysis": "몸이 저려서 움직일 수 없다!",
+    "sleep": "쿨쿨 잠들어 있다!",
+    "freeze": "얼어서 움직일 수 없다!",
+}
 
 
 def battle_lines(
@@ -39,7 +54,7 @@ def battle_lines(
 ) -> list[str]:
     """`trainers` are Slack mentions, challenger first; their particles are always written as "이(가)".
 
-    One line per action and burn tick; a long battle keeps its first and last `MAX_EVENT_LINES // 2`.
+    One line per action and status tick; a long battle keeps its first and last `MAX_EVENT_LINES // 2`.
     """
     lines = [f"{trainers[1]}에게 {trainers[0]}이(가) 승부를 걸어왔다!"]
     lines += [_send_out_line(trainer, combatant) for trainer, combatant in zip(trainers, combatants)]
@@ -72,13 +87,19 @@ def _event_line(event: Event) -> str:
     if isinstance(event, WeatherEnd):
         return f"{event.turn}턴 {WEATHER_END[event.weather]}"
     prefix = f"{event.turn}턴 {SIDE_MARKERS[event.side]}"
-    if isinstance(event, (BurnDamage, WeatherDamage)):
-        tail = f"{with_particle(event.pokemon, ('은', '는'))} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
-        cause = "화상 데미지를 입었다!" if isinstance(event, BurnDamage) else WEATHER_DAMAGE[event.weather]
-        return f"{prefix} {with_particle(event.pokemon, ('은', '는'))} {cause} {tail}"
-    if not event.move:
-        return f"{prefix} {with_particle(event.attacker, ('은', '는'))} 몸이 저려서 움직일 수 없다!"
-    parts = [f"{prefix} {event.attacker}의 {event.move}!"]
+    if isinstance(event, StatusDamage):
+        name = with_particle(event.pokemon, ("은", "는"))
+        tail = f"{name} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
+        return f"{prefix} {name} {STATUS_DAMAGE_TEXT[event.kind]} 데미지를 입었다! {tail}"
+    if isinstance(event, WeatherDamage):
+        name = with_particle(event.pokemon, ("은", "는"))
+        tail = f"{name} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
+        return f"{prefix} {name} {WEATHER_DAMAGE[event.weather]} {tail}"
+    parts = [prefix, *(_recovered_text(event.attacker, kind) for kind in event.recovered)]
+    if event.blocked:
+        parts.append(_blocked_text(event))
+        return " ".join(parts)
+    parts.append(f"{event.attacker}의 {event.move}!")
     if event.weather:
         return " ".join([*parts, WEATHER_START[event.weather]])
     if event.failed:
@@ -95,7 +116,11 @@ def _event_line(event: Event) -> str:
         parts.append("효과가 굉장했다!")
     elif event.multiplier < 1:
         parts.append("효과가 별로인 듯하다…")
+    if event.hits > 1:
+        parts.append(f"{event.hits}번 맞았다!")
     parts += [_change_text(change) for change in event.changes]
+    if event.drained:
+        parts.append(f"{event.defender}에게서 체력을 흡수했다!")
     if event.recoil:
         parts.append(f"{with_particle(event.attacker, ('은', '는'))} 반동으로 데미지를 입었다!")
     if event.knockout:
@@ -107,11 +132,27 @@ def _event_line(event: Event) -> str:
     return " ".join(parts)
 
 
+def _recovered_text(pokemon: str, kind: str) -> str:
+    return {
+        "sleep": f"{with_particle(pokemon, ('은', '는'))} 눈을 떴다!",
+        "freeze": f"{pokemon}의 얼음이 녹았다!",
+        "confusion": f"{pokemon}의 혼란이 풀렸다!",
+    }[kind]
+
+
+def _blocked_text(event: Action) -> str:
+    name = with_particle(event.attacker, ("은", "는"))
+    if event.blocked == "confusion":
+        tail = f"{name} 쓰러졌다!" if event.attacker_fainted else f"({event.attacker} HP {event.attacker_hp}%)"
+        return f"{name} 혼란에 빠져 자신을 공격했다! {tail}"
+    return f"{name} {BLOCKED_TEXT[event.blocked]}"
+
+
 def _change_text(change: Change) -> str:
-    if change.kind == "burn":
-        return f"{with_particle(change.pokemon, ('은', '는'))} 화상을 입었다!"
-    if change.kind == "paralysis":
-        return f"{with_particle(change.pokemon, ('은', '는'))} 마비되어 기술이 나오기 어려워졌다!"
+    if change.kind in STATUS_TEXT:
+        return f"{with_particle(change.pokemon, ('은', '는'))} {STATUS_TEXT[change.kind]}"
+    if change.kind == "thaw":
+        return f"{change.pokemon}의 얼음이 녹았다!"
     size = "크게 " if abs(change.stages) >= 2 else ""
     direction = "올랐다" if change.stages > 0 else "떨어졌다"
     return f"{change.pokemon}의 {with_particle(STAT_NAMES[change.kind], ('이', '가'))} {size}{direction}!"

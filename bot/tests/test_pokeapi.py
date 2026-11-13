@@ -77,10 +77,12 @@ def test_attacking_moves_keep_weather_moves_skip_other_status_and_powerless_move
     assert api.attacking_moves(25, 35) == [
         {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100,
          "pp": 30, "priority": 0, "crit_rate": 0, "ailment": "paralysis", "ailment_chance": 10, "stat_changes": [],
-         "stat_target": "target", "stat_chance": 0, "weather": None, "always_hits_in": [], "level": 1},
+         "stat_target": "target", "stat_chance": 0, "drain": 0, "min_hits": 1, "max_hits": 1, "weather": None,
+         "always_hits_in": [], "level": 1},
         {"id": 240, "name": "비바라기", "type": "water", "power": 0, "damage_class": "status", "accuracy": None,
          "pp": 5, "priority": 0, "crit_rate": 0, "ailment": None, "ailment_chance": 0, "stat_changes": [],
-         "stat_target": "target", "stat_chance": 0, "weather": "rain", "always_hits_in": [], "level": 20},
+         "stat_target": "target", "stat_chance": 0, "drain": 0, "min_hits": 1, "max_hits": 1, "weather": "rain",
+         "always_hits_in": [], "level": 20},
     ]
     assert [move["name"] for move in api.attacking_moves(25, 36)] == ["전기쇼크", "비바라기", "thunderbolt"]
 
@@ -121,19 +123,30 @@ def test_learnsets_and_moves_are_cached(service):
     assert len(fetched) == count == 1 + len(MOVES)
 
 
-def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chance=0, crit_rate=0, priority=0):
+def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chance=0, crit_rate=0, priority=0,
+         drain=0, hits=(None, None), move_id=1):
     return {
-        "id": 1, "names": [{"language": {"name": "ko"}, "name": "기술"}], "name": "move", "type": {"name": "fire"},
+        "id": move_id, "names": [{"language": {"name": "ko"}, "name": "기술"}], "name": "move", "type": {"name": "fire"},
         "power": 80, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 15, "priority": priority,
         "meta": {"ailment": {"name": ailment}, "ailment_chance": ailment_chance, "category": {"name": category},
-                 "crit_rate": crit_rate, "stat_chance": stat_chance},
+                 "crit_rate": crit_rate, "stat_chance": stat_chance, "drain": drain,
+                 "min_hits": hits[0], "max_hits": hits[1]},
         "stat_changes": [{"stat": {"name": stat}, "change": change} for stat, change in stat_changes],
     }
 
 
 @pytest.mark.parametrize("move,expected", [
     (body("damage-ailment", "burn", 10), {"ailment": "burn", "ailment_chance": 10}),
-    (body("damage-ailment", "poison", 30), {"ailment": None, "ailment_chance": 0}),
+    (body("damage-ailment", "poison", 30), {"ailment": "poison", "ailment_chance": 30}),
+    (body("damage-ailment", "poison", 50, move_id=305), {"ailment": "toxic", "ailment_chance": 50}),
+    (body("damage-ailment", "sleep", 10), {"ailment": "sleep", "ailment_chance": 10}),
+    (body("damage-ailment", "freeze", 10), {"ailment": "freeze", "ailment_chance": 10}),
+    (body("damage-ailment", "confusion", 20), {"ailment": "confusion", "ailment_chance": 20}),
+    (body("damage-ailment", "trap", 100), {"ailment": None, "ailment_chance": 0}),
+    (body("damage+heal", drain=50), {"drain": 50}),
+    (body("damage", drain=-33), {"drain": -33}),
+    (body("damage", hits=(2, 5)), {"min_hits": 2, "max_hits": 5}),
+    (body("damage"), {"drain": 0, "min_hits": 1, "max_hits": 1}),
     (body("damage-lower", stat_changes=[("defense", -1)], stat_chance=20),
      {"stat_changes": [{"stat": "defense", "change": -1}], "stat_target": "target", "stat_chance": 20}),
     (body("damage-raise", stat_changes=[("special-attack", -2)], stat_chance=100),

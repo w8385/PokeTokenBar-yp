@@ -38,6 +38,7 @@ def move(move_id, name, move_type, power, level, damage_class="special", accurac
     return {"id": move_id, "name": name, "type": move_type, "power": power,
             "damage_class": damage_class, "accuracy": accuracy, "pp": 15, "crit_rate": 0, "priority": priority,
             "ailment": None, "ailment_chance": 0, "stat_changes": [], "stat_target": "target", "stat_chance": 0,
+            "drain": 0, "min_hits": 1, "max_hits": 1,
             "weather": None, "always_hits_in": [], "level": level}
 
 
