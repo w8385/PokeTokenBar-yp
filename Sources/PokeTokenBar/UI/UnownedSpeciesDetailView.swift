@@ -8,6 +8,7 @@ struct UnownedSpeciesDetailView: View {
     let onOpen: (String) -> Void
     let onBack: () -> Void
     var spriteStore: SpriteStore = .shared
+    var flavorProvider: SpeciesFlavorProviding = SpeciesFlavorClient.shared
 
     private var index: SpeciesIndex? { store.speciesIndex }
 
@@ -24,6 +25,7 @@ struct UnownedSpeciesDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     identityHeader
+                    SpeciesFlavorCard(speciesID: species.id, language: store.language, provider: flavorProvider)
                     howToGetCard
                     evolutionLineCard
                 }
