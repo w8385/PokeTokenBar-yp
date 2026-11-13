@@ -561,7 +561,7 @@ final class SaveTransferTests: XCTestCase {
                                      "representativeSpeciesID", "representativeForm", "dex",
                                      "collectedFinals", "inventory",
                                      "notifiedDexCompletions", "dexCompletionsSeeded", "clickGrowth",
-                                     "friendEntryIDs", "rewardedDexRegions"]
+                                     "friendEntryIDs", "rewardedDexRegions", "scoutDraws", "scoutedEgg"]
         let deviceLedger: Set<String> = ["installBaselineSet", "claimedTodayTokensByProvider", "lastDate"]
         let accountLedger: Set<String> = ["candyGrantTier", "candyWindowEpoch", "candyFeatureSeeded"]
         let devicePreference: Set<String> = ["language"]

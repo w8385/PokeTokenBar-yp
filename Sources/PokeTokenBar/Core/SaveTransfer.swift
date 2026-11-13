@@ -155,6 +155,14 @@ enum SaveTransfer {
         // 그 보증으로 미리 뽑아둔 종(pendingHatchID)도 함께 버린다 — 보증만 지우면 졸업 후 받는 **무료**
         // 알이 그 pre-roll 로 부화해, 아무도 사지 않은 프리미엄 결과가 나온다.
         if s.active != nil { s.eggTier = nil; s.pendingHatchID = nil; s.resetEggPrayers() }
+        if s.active != nil || s.pendingHatchID == nil { s.scoutedEgg = false }
+        s.scoutDraws = s.scoutDraws.reduce(into: [:]) { result, entry in
+            guard let pool = ScoutPool(key: entry.key) else { return }
+            var seen = Set<Int>()
+            let ids = entry.value.filter { pool.dexRange.contains($0) && seen.insert($0).inserted }
+                .prefix(ScoutTicket.drawSize)
+            if !ids.isEmpty { result[entry.key] = Array(ids) }
+        }
         if var prayers = s.eggPrayers {   // pray() increments it, so an absurd saved count must not trap
             prayers.count = clampToken(prayers.count)
             s.eggPrayers = prayers

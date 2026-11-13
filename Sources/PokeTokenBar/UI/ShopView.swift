@@ -43,6 +43,9 @@ struct ShopView: View {
                         ShopItemCard(store: store, kind: kind)
                     }
                 }
+                if category == nil || category == .scout {
+                    ShopScoutSection(store: store)
+                }
             }
             .reservesScrollerLane()
         }
