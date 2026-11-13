@@ -1,7 +1,7 @@
 import pytest
 
 from ypoke import pokeapi
-from ypoke.pokeapi import PokeAPIService, learnset_from
+from ypoke.pokeapi import PokeAPIService, learnset_from, move_from
 from ypoke.store import Store
 
 GROUPS = {"red-blue": 1, "sword-shield": 20, "scarlet-violet": 25, "legends-za": 30}
@@ -36,13 +36,16 @@ def test_learnset_falls_back_to_a_side_game_when_no_main_game_has_it():
 
 MOVES = {
     84: {"id": 84, "names": [{"language": {"name": "ko"}, "name": "전기쇼크"}], "name": "thunder-shock",
-         "type": {"name": "electric"}, "power": 40, "damage_class": {"name": "special"}, "accuracy": 100},
+         "type": {"name": "electric"}, "power": 40, "damage_class": {"name": "special"}, "accuracy": 100, "pp": 30,
+         "meta": {"ailment": {"name": "paralysis"}, "ailment_chance": 10, "category": {"name": "damage-ailment"},
+                  "crit_rate": 0, "stat_chance": 0},
+         "stat_changes": []},
     86: {"id": 86, "names": [{"language": {"name": "ko"}, "name": "전기자석파"}], "name": "thunder-wave",
-         "type": {"name": "electric"}, "power": None, "damage_class": {"name": "status"}, "accuracy": 90},
+         "type": {"name": "electric"}, "power": None, "damage_class": {"name": "status"}, "accuracy": 90, "pp": 20},
     360: {"id": 360, "names": [{"language": {"name": "en"}, "name": "Gyro Ball"}], "name": "gyro-ball",
-          "type": {"name": "steel"}, "power": None, "damage_class": {"name": "physical"}, "accuracy": 100},
+          "type": {"name": "steel"}, "power": None, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 5},
     85: {"id": 85, "names": [], "name": "thunderbolt",
-         "type": {"name": "electric"}, "power": 90, "damage_class": {"name": "special"}, "accuracy": 100},
+         "type": {"name": "electric"}, "power": 90, "damage_class": {"name": "special"}, "accuracy": 100, "pp": 15, "meta": None},
 }
 PIKACHU = {"moves": [
     learned(84, ("scarlet-violet", "level-up", 1)),
@@ -68,7 +71,9 @@ def service(tmp_path, monkeypatch):
 def test_attacking_moves_skip_status_and_powerless_moves_and_respect_the_level(service):
     api, _ = service
     assert api.attacking_moves(25, 35) == [
-        {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100, "level": 1},
+        {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100,
+         "pp": 30, "crit_rate": 0, "ailment": "paralysis", "ailment_chance": 10, "stat_changes": [],
+         "stat_target": "target", "stat_chance": 0, "level": 1},
     ]
     assert [move["name"] for move in api.attacking_moves(25, 36)] == ["전기쇼크", "thunderbolt"]
 
@@ -98,3 +103,28 @@ def test_learnsets_and_moves_are_cached(service):
     count = len(fetched)
     api.attacking_moves(25, 50)
     assert len(fetched) == count == 1 + len(MOVES)
+
+
+def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chance=0, crit_rate=0):
+    return {
+        "id": 1, "names": [{"language": {"name": "ko"}, "name": "기술"}], "name": "move", "type": {"name": "fire"},
+        "power": 80, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 15,
+        "meta": {"ailment": {"name": ailment}, "ailment_chance": ailment_chance, "category": {"name": category},
+                 "crit_rate": crit_rate, "stat_chance": stat_chance},
+        "stat_changes": [{"stat": {"name": stat}, "change": change} for stat, change in stat_changes],
+    }
+
+
+@pytest.mark.parametrize("move,expected", [
+    (body("damage-ailment", "burn", 10), {"ailment": "burn", "ailment_chance": 10}),
+    (body("damage-ailment", "poison", 30), {"ailment": None, "ailment_chance": 0}),
+    (body("damage-lower", stat_changes=[("defense", -1)], stat_chance=20),
+     {"stat_changes": [{"stat": "defense", "change": -1}], "stat_target": "target", "stat_chance": 20}),
+    (body("damage-raise", stat_changes=[("special-attack", -2)], stat_chance=100),
+     {"stat_changes": [{"stat": "special_attack", "change": -2}], "stat_target": "user", "stat_chance": 100}),
+    (body("damage-lower", stat_changes=[("accuracy", -1)], stat_chance=30), {"stat_changes": [], "stat_chance": 0}),
+    (body("damage", crit_rate=1), {"crit_rate": 1, "pp": 15}),
+])
+def test_move_keeps_only_the_simulated_secondary_effects(move, expected):
+    data = move_from(move)
+    assert {key: data[key] for key in expected} == expected

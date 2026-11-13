@@ -33,33 +33,37 @@ final class BattleEntryTests: XCTestCase {
         XCTAssertNil(candidates[0].dexEntry)
     }
 
-    func testPartyFollowsTheChosenOrderWithChosenMoves() {
-        let slots = [BattleEntrySlot(instanceID: "pikachu", pokemonID: 25, moves: [85, 98]),
-                     BattleEntrySlot(instanceID: "raised")]
+    func testPartyIsTheChosenPokemonWithItsMoves() {
+        let party = BattleEntry.party(state: state(),
+                                      slot: BattleEntrySlot(instanceID: "pikachu", pokemonID: 25, moves: [85, 98]))
 
-        let party = BattleEntry.party(state: state(), slots: slots)
-
-        XCTAssertEqual(party.map(\.pokemonID), [25, 5])
-        XCTAssertEqual(party.map(\.level), [60, 42])
+        XCTAssertEqual(party.map(\.pokemonID), [25])
+        XCTAssertEqual(party.map(\.level), [60])
         XCTAssertEqual(party[0].moves, [85, 98])
-        XCTAssertNil(party[1].moves)
     }
 
     func testMovesChosenBeforeEvolutionAreDropped() {
-        let slots = [BattleEntrySlot(instanceID: "raised", pokemonID: 4, moves: [52])]
-
-        let party = BattleEntry.party(state: state(), slots: slots)
+        let party = BattleEntry.party(state: state(), slot: BattleEntrySlot(instanceID: "raised", pokemonID: 4, moves: [52]))
 
         XCTAssertEqual(party.map(\.pokemonID), [5])
         XCTAssertNil(party[0].moves)
     }
 
-    func testNoOwnedChoiceSendsThePokemonBeingRaised() {
-        let fallback = [5]
+    func testNoOwnedChoiceSendsThePokemonBeingRaisedWithoutTheStaleMoves() {
+        let gone = BattleEntrySlot(instanceID: "gone", pokemonID: 12, moves: [16])
 
-        XCTAssertEqual(BattleEntry.party(state: state(), slots: []).map(\.pokemonID), fallback)
-        XCTAssertEqual(BattleEntry.party(state: state(), slots: [BattleEntrySlot(instanceID: "gone")])
-            .map(\.pokemonID), fallback)
+        XCTAssertEqual(BattleEntry.party(state: state(), slot: nil).map(\.pokemonID), [5])
+        XCTAssertEqual(BattleEntry.party(state: state(), slot: gone).map(\.pokemonID), [5])
+        XCTAssertNil(BattleEntry.party(state: state(), slot: gone)[0].moves)
+    }
+
+    func testAnEggWithNothingChosenSendsNothing() {
+        var egg = state()
+        egg.active = nil
+
+        XCTAssertTrue(BattleEntry.party(state: egg, slot: nil).isEmpty)
+        XCTAssertNil(BattleEntry.fighter(state: egg, slot: nil))
+        XCTAssertEqual(BattleEntry.party(state: egg, slot: BattleEntrySlot(instanceID: "pikachu")).map(\.pokemonID), [25])
     }
 
     func testPayloadSendsMovesOnlyWhenChosen() throws {
@@ -88,31 +92,43 @@ final class BattleEntryStoreTests: XCTestCase {
         defaults.removePersistentDomain(forName: suite)
     }
 
-    func testAddsUpToThreeDistinctPokemonAndReorders() {
+    func testChoosingKeepsOnePokemonAndPersists() {
         let store = BattleEntryStore(defaults: defaults)
-        for id in ["a", "b", "a", "c", "d"] { store.add(id) }
-        XCTAssertEqual(store.slots.map(\.instanceID), ["a", "b", "c"])
+        store.choose("a")
+        store.choose("b")
+        XCTAssertEqual(store.slot, BattleEntrySlot(instanceID: "b"))
+        XCTAssertEqual(BattleEntryStore(defaults: defaults).slot, store.slot)
 
-        store.move("c", by: -1)
-        store.move("a", by: -1)
-        store.remove("b")
+        store.choose(nil)
+        XCTAssertNil(BattleEntryStore(defaults: defaults).slot)
+    }
 
-        XCTAssertEqual(store.slots.map(\.instanceID), ["a", "c"])
-        XCTAssertEqual(BattleEntryStore(defaults: defaults).slots, store.slots)
+    func testAnOlderThreeSlotEntryLoadsItsFirstSlot() throws {
+        let saved = [BattleEntrySlot(instanceID: "a", pokemonID: 25, moves: [85]),
+                     BattleEntrySlot(instanceID: "b"), BattleEntrySlot(instanceID: "c")]
+        defaults.set(try JSONEncoder().encode(saved), forKey: BattleEntryStore.defaultsKey)
+
+        XCTAssertEqual(BattleEntryStore(defaults: defaults).slot, saved[0])
+    }
+
+    func testChoosingTheSamePokemonKeepsItsMoves() {
+        let store = BattleEntryStore(defaults: defaults)
+        store.toggleMove(1, for: "a", pokemonID: 25, current: [1, 2])
+        store.choose("a")
+        XCTAssertEqual(store.slot, BattleEntrySlot(instanceID: "a", pokemonID: 25, moves: [2]))
     }
 
     func testTogglingStartsFromTheShownMovesAndStopsAtFour() {
         let store = BattleEntryStore(defaults: defaults)
-        store.add("a")
 
         store.toggleMove(1, for: "a", pokemonID: 25, current: [1, 2, 3, 4])
-        XCTAssertEqual(store.slots[0].moves, [2, 3, 4])
-        store.toggleMove(5, for: "a", pokemonID: 25, current: store.slots[0].moves)
-        store.toggleMove(6, for: "a", pokemonID: 25, current: store.slots[0].moves)
-        XCTAssertEqual(store.slots[0], BattleEntrySlot(instanceID: "a", pokemonID: 25, moves: [2, 3, 4, 5]))
+        XCTAssertEqual(store.slot?.moves, [2, 3, 4])
+        store.toggleMove(5, for: "a", pokemonID: 25, current: store.slot?.moves ?? [])
+        store.toggleMove(6, for: "a", pokemonID: 25, current: store.slot?.moves ?? [])
+        XCTAssertEqual(store.slot, BattleEntrySlot(instanceID: "a", pokemonID: 25, moves: [2, 3, 4, 5]))
 
-        store.resetMoves(for: "a")
-        XCTAssertEqual(store.slots[0], BattleEntrySlot(instanceID: "a"))
+        store.resetMoves()
+        XCTAssertEqual(store.slot, BattleEntrySlot(instanceID: "a"))
     }
 }
 
@@ -153,5 +169,22 @@ final class LearnableMovesTests: XCTestCase {
         XCTAssertEqual(moves?.moves, [LearnableMove(id: 85, name: "10만볼트", type: "electric", power: 90,
                                                     damageClass: "special", accuracy: nil, level: 26)])
         XCTAssertNil(offline)
+    }
+
+    func testDecodesTheDetailFields() throws {
+        let body = Data("""
+        {"ok": true, "default": [315], "moves": [{"id": 315, "name": "오버히트", "type": "fire", "power": 130,
+         "damage_class": "special", "accuracy": 90, "level": 50, "pp": 5, "crit_rate": 0, "ailment": null,
+         "ailment_chance": 0, "stat_changes": [{"stat": "special_attack", "change": -2}], "stat_target": "user",
+         "stat_chance": 100}]}
+        """.utf8)
+
+        let move = try XCTUnwrap(LearnableMoves.decode(body).moves.first)
+
+        XCTAssertEqual(move.pp, 5)
+        XCTAssertNil(move.ailment)
+        XCTAssertEqual(move.statChanges, [LearnableMove.StatChange(stat: "special_attack", change: -2)])
+        XCTAssertEqual(move.statTarget, "user")
+        XCTAssertEqual(move.statChance, 100)
     }
 }

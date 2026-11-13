@@ -1,14 +1,14 @@
 import Foundation
 import Observation
 
-/// One chosen entry slot. `moves` belong to `pokemonID`; empty means the bot's defaults.
+/// The chosen battle Pokémon. `moves` belong to `pokemonID`; empty means the bot's defaults.
 struct BattleEntrySlot: Codable, Equatable, Sendable {
     var instanceID: String
     var pokemonID: Int? = nil
     var moves: [Int] = []
 }
 
-/// An owned Pokémon that can join the entry. `dexEntry` is nil for the one being raised now.
+/// An owned Pokémon that can battle. `dexEntry` is nil for the one being raised now.
 struct BattleCandidate: Sendable, Identifiable {
     let id: String
     let member: PartyMember
@@ -16,7 +16,6 @@ struct BattleCandidate: Sendable, Identifiable {
 }
 
 enum BattleEntry {
-    static let maxSize = 3
     static let maxMoves = 4
 
     static func candidates(in state: CompanionState) -> [BattleCandidate] {
@@ -38,63 +37,51 @@ enum BattleEntry {
         return owned.filter { PartyBuilder.isAcceptedPokemonID($0.member.pokemonID) }
     }
 
-    /// The chosen slots that are still owned, in order; the Pokémon being raised when none are.
-    static func party(state: CompanionState, slots: [BattleEntrySlot]) -> [PartyMember] {
+    /// The chosen Pokémon if still owned, else the one being raised; nil for an egg with nothing chosen.
+    static func fighter(state: CompanionState, slot: BattleEntrySlot?) -> BattleCandidate? {
         let owned = candidates(in: state)
-        let chosen = slots.compactMap { slot -> PartyMember? in
-            guard var member = owned.first(where: { $0.id == slot.instanceID })?.member else { return nil }
-            if slot.pokemonID == member.pokemonID, !slot.moves.isEmpty {
-                member.moves = slot.moves
-            }
-            return member
+        return slot.flatMap { slot in owned.first { $0.id == slot.instanceID } } ?? owned.first { $0.dexEntry == nil }
+    }
+
+    /// One Pokémon with its chosen moves, or empty for an egg.
+    static func party(state: CompanionState, slot: BattleEntrySlot?) -> [PartyMember] {
+        guard let fighter = fighter(state: state, slot: slot) else { return [] }
+        var member = fighter.member
+        if let slot, slot.instanceID == fighter.id, slot.pokemonID == member.pokemonID, !slot.moves.isEmpty {
+            member.moves = slot.moves
         }
-        return chosen.isEmpty ? PartyBuilder.party(from: state) : chosen
+        return [member]
     }
 }
 
-/// The battle entry chosen on this Mac.
+/// The battle Pokémon chosen on this Mac, kept as a one-element list under the old 3-slot key.
+/// An older 3-slot entry loads as its first slot.
 @MainActor
 @Observable
 final class BattleEntryStore {
     static let defaultsKey = "battleEntrySlots"
 
-    private(set) var slots: [BattleEntrySlot] {
-        didSet { defaults.set(try? JSONEncoder().encode(slots), forKey: Self.defaultsKey) }
+    private(set) var slot: BattleEntrySlot? {
+        didSet { defaults.set(try? JSONEncoder().encode(slot.map { [$0] } ?? []), forKey: Self.defaultsKey) }
     }
 
     @ObservationIgnored private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        slots = defaults.data(forKey: Self.defaultsKey)
-            .flatMap { try? JSONDecoder().decode([BattleEntrySlot].self, from: $0) } ?? []
+        slot = defaults.data(forKey: Self.defaultsKey)
+            .flatMap { try? JSONDecoder().decode([BattleEntrySlot].self, from: $0) }?.first
     }
 
-    var isFull: Bool { slots.count >= BattleEntry.maxSize }
-
-    func contains(_ instanceID: String) -> Bool {
-        slots.contains { $0.instanceID == instanceID }
+    /// Nil goes back to the Pokémon being raised.
+    func choose(_ instanceID: String?) {
+        guard instanceID != slot?.instanceID else { return }
+        slot = instanceID.map { BattleEntrySlot(instanceID: $0) }
     }
 
-    func add(_ instanceID: String) {
-        guard !isFull, !contains(instanceID) else { return }
-        slots.append(BattleEntrySlot(instanceID: instanceID))
-    }
-
-    func remove(_ instanceID: String) {
-        slots.removeAll { $0.instanceID == instanceID }
-    }
-
-    func move(_ instanceID: String, by offset: Int) {
-        guard let from = slots.firstIndex(where: { $0.instanceID == instanceID }) else { return }
-        let to = from + offset
-        guard slots.indices.contains(to) else { return }
-        slots.swapAt(from, to)
-    }
-
-    /// Adds or drops one move; starting from `current` turns the bot's defaults into an explicit list.
+    /// Adds or drops one move of `instanceID` and chooses it; starting from `current` turns the bot's
+    /// defaults into an explicit list.
     func toggleMove(_ moveID: Int, for instanceID: String, pokemonID: Int, current: [Int]) {
-        guard let index = slots.firstIndex(where: { $0.instanceID == instanceID }) else { return }
         var moves = current
         if let found = moves.firstIndex(of: moveID) {
             moves.remove(at: found)
@@ -103,13 +90,11 @@ final class BattleEntryStore {
         } else {
             return
         }
-        slots[index].pokemonID = pokemonID
-        slots[index].moves = moves
+        slot = BattleEntrySlot(instanceID: instanceID, pokemonID: pokemonID, moves: moves)
     }
 
-    func resetMoves(for instanceID: String) {
-        guard let index = slots.firstIndex(where: { $0.instanceID == instanceID }) else { return }
-        slots[index].pokemonID = nil
-        slots[index].moves = []
+    func resetMoves() {
+        guard let slot else { return }
+        self.slot = BattleEntrySlot(instanceID: slot.instanceID)
     }
 }

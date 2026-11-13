@@ -1,24 +1,37 @@
 """In-game style battle narration built only from events the simulation produced."""
 
-from ypoke.battle import BattleResult, Combatant, Hit
+from ypoke.battle import Action, BattleResult, BurnDamage, Change, Combatant
 
-KEY_HITS = 3
+MAX_EVENT_LINES = 24
 PRACTICE_NOTE = "(연습 대결 — 전적에 안 남아요)"
+SKIPPED_LINE = "⋯"
+STAT_NAMES = {
+    "attack": "공격",
+    "defense": "방어",
+    "special_attack": "특수공격",
+    "special_defense": "특수방어",
+    "speed": "스피드",
+}
+SIDE_MARKERS = ("🔵", "🔴")
 
 
 def battle_lines(
     trainers: tuple[str, str],
-    entries: tuple[list[Combatant], list[Combatant]],
+    combatants: tuple[Combatant, Combatant],
     result: BattleResult,
     practice: bool = False,
 ) -> list[str]:
     """`trainers` are Slack mentions, challenger first; their particles are always written as "이(가)".
 
-    Every knockout gets a line, plus the opening hit and notable hits up to `KEY_HITS` hit lines.
+    One line per action and burn tick; a long battle keeps its first and last `MAX_EVENT_LINES // 2`.
     """
     lines = [f"{trainers[1]}에게 {trainers[0]}이(가) 승부를 걸어왔다!"]
-    lines += [_send_out_line(trainer, entry) for trainer, entry in zip(trainers, entries)]
-    lines += [_hit_line(hit) for hit in _key_hits(result.hits)]
+    lines += [_send_out_line(trainer, combatant) for trainer, combatant in zip(trainers, combatants)]
+    events = [_event_line(event) for event in result.events]
+    if len(events) > MAX_EVENT_LINES:
+        half = MAX_EVENT_LINES // 2
+        events = [*events[:half], SKIPPED_LINE, *events[-half:]]
+    lines += events
     win_line = f"{trainers[result.winner]}은(는) 승부에서 이겼다!"
     lines.append(f"{win_line} {PRACTICE_NOTE}" if practice else win_line)
     return lines
@@ -33,39 +46,48 @@ def with_particle(word: str, pair: tuple[str, str]) -> str:
     return f"{word}{pair[0]}({pair[1]})"
 
 
-def _send_out_line(trainer: str, entry: list[Combatant]) -> str:
-    if len(entry) == 1:
-        return f"{trainer}은(는) {with_particle(entry[0].name, ('을', '를'))} 내보냈다! ({_details(entry[0])})"
-    order = " → ".join(f"{combatant.name}({_details(combatant)})" for combatant in entry)
-    return f"{trainer}은(는) {order} 순으로 내보낸다!"
+def _send_out_line(trainer: str, combatant: Combatant) -> str:
+    details = f"Lv{combatant.level}{' ✨' if combatant.shiny else ''}"
+    return f"{trainer}은(는) {with_particle(combatant.name, ('을', '를'))} 내보냈다! ({details})"
 
 
-def _details(combatant: Combatant) -> str:
-    return f"Lv{combatant.level}{' ✨' if combatant.shiny else ''}"
-
-
-def _key_hits(hits: list[Hit]) -> list[Hit]:
-    if not hits:
-        return []
-    picked = [hit for hit in hits if hit.knockout]
-    notable = [hit for hit in hits[1:] if hit.critical or hit.missed or hit.multiplier != 1]
-    for hit in [hits[0], *notable]:
-        if hit not in picked and (hit is hits[0] or len(picked) < KEY_HITS):
-            picked.append(hit)
-    return sorted(picked, key=hits.index)
-
-
-def _hit_line(hit: Hit) -> str:
-    parts = [f"{hit.attacker}의 {hit.move}!"]
-    if hit.missed:
+def _event_line(event: Action | BurnDamage) -> str:
+    prefix = f"{event.turn}턴 {SIDE_MARKERS[event.side]}"
+    if isinstance(event, BurnDamage):
+        tail = f"{with_particle(event.pokemon, ('은', '는'))} 쓰러졌다!" if event.fainted else f"(HP {event.hp}%)"
+        return f"{prefix} {with_particle(event.pokemon, ('은', '는'))} 화상 데미지를 입었다! {tail}"
+    if not event.move:
+        return f"{prefix} {with_particle(event.attacker, ('은', '는'))} 몸이 저려서 움직일 수 없다!"
+    parts = [f"{prefix} {event.attacker}의 {event.move}!"]
+    if event.missed:
         parts.append("하지만 빗나갔다!")
+        return " ".join(parts)
+    if event.multiplier == 0:
+        parts.append(f"{event.defender}에게는 효과가 없는 것 같다…")
+        return " ".join(parts)
+    if event.critical:
+        parts.append("급소에 맞았다!")
+    if event.multiplier > 1:
+        parts.append("효과가 굉장했다!")
+    elif event.multiplier < 1:
+        parts.append("효과가 별로인 듯하다…")
+    parts += [_change_text(change) for change in event.changes]
+    if event.recoil:
+        parts.append(f"{with_particle(event.attacker, ('은', '는'))} 반동으로 데미지를 입었다!")
+    if event.knockout:
+        parts.append(f"{with_particle(event.defender, ('은', '는'))} 쓰러졌다!")
+    elif event.attacker_fainted:
+        parts.append(f"{with_particle(event.attacker, ('은', '는'))} 쓰러졌다!")
     else:
-        if hit.critical:
-            parts.append("급소에 맞았다!")
-        if hit.multiplier > 1:
-            parts.append("효과가 굉장했다!")
-        elif 0 < hit.multiplier < 1:
-            parts.append("효과가 별로인 듯하다…")
-    if hit.knockout:
-        parts.append(f"{with_particle(hit.defender, ('은', '는'))} 쓰러졌다!")
+        parts.append(f"({event.defender} HP {event.defender_hp}%)")
     return " ".join(parts)
+
+
+def _change_text(change: Change) -> str:
+    if change.kind == "burn":
+        return f"{with_particle(change.pokemon, ('은', '는'))} 화상을 입었다!"
+    if change.kind == "paralysis":
+        return f"{with_particle(change.pokemon, ('은', '는'))} 마비되어 기술이 나오기 어려워졌다!"
+    size = "크게 " if abs(change.stages) >= 2 else ""
+    direction = "올랐다" if change.stages > 0 else "떨어졌다"
+    return f"{change.pokemon}의 {with_particle(STAT_NAMES[change.kind], ('이', '가'))} {size}{direction}!"

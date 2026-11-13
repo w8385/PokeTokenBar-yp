@@ -1,6 +1,7 @@
 """LAN HTTP endpoint the app posts its battle entry to. Contract: bot/API.md."""
 
 import json
+import logging
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Callable
@@ -11,7 +12,6 @@ from ypoke.store import Store
 
 MAX_BODY_BYTES = 64 * 1024
 MAX_PARTY_SIZE = 6
-MAX_ENTRY_SIZE = 3
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
 MovesFor = Callable[[int, int], list[dict]]
@@ -114,6 +114,10 @@ class _UploadHandler(BaseHTTPRequestHandler):
         self.store.save_party(user_id, party)
         self.on_upload(party)
         self._reply(200, {"ok": True, "party_size": len(party)})
+
+    def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
+        if urlsplit(self.path).path != "/v1/health":
+            logging.getLogger(__name__).info("%s %s -> %s", self.command, urlsplit(self.path).path, code)
 
     def log_message(self, format: str, *args: object) -> None:
         pass

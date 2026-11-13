@@ -1,14 +1,15 @@
 # YPoke bot
 
-Slack bot for office battles between PokeTokenBar users' entries of up to 3 Pokémon.
-Slack Socket Mode, plus a small LAN HTTP server the app uploads its entry to ([API.md](API.md)).
+Slack bot for one-on-one office battles between PokeTokenBar users' Pokémon.
+Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Pokémon to ([API.md](API.md)).
 
-- `/대결 @상대` runs one automatic battle (PokéAPI base stats, level, IVs, type chart, level-up moves)
-  and posts the result, written like the in-game battle text, in the channel it was called from.
-  Entries fight in order, the next one comes out on a faint, and each Pokémon uses its move with
-  the highest expected damage every turn. Only win/loss is recorded. With no mention it shows help.
-- `/대결 @YPoke` or a channel message `@YPoke 대결` is a practice battle against 3 random species
-  (#1–1025, picked from the battle seed) at your lead Pokémon's level. Nothing is recorded.
+- `/대결 @상대` runs one automatic one-on-one battle (PokéAPI base stats, level, IVs, type chart,
+  level-up moves with PP, critical-hit stages, burn, paralysis and stat stages) and posts a turn-by-turn
+  log, written like the in-game battle text, in the channel it was called from. Each Pokémon uses its
+  move with the highest expected damage every turn. Only win/loss is recorded. With no mention it shows
+  help. If the opponent has not linked the app or has no Pokémon uploaded yet, the bot says so in the channel.
+- `/대결 @YPoke` or a channel message `@YPoke 대결` is a practice battle against a random species
+  (#1–1025, picked from the battle seed) at your Pokémon's level. Nothing is recorded.
 - `/포켓몬연결` DMs the caller a "PokeTokenBar 연결" button. It opens
   `poketokenbar://ypoke-register?token=…&server=…`, which saves the upload token and server in the app.
   The token is also in the DM for pasting by hand. Running it again rotates the token.

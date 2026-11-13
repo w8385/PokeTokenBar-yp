@@ -73,6 +73,11 @@ class Store:
             ).fetchone()
         return row[0] if row else None
 
+    def is_linked(self, slack_user_id: str) -> bool:
+        with closing(self._connect()) as connection:
+            row = connection.execute("SELECT 1 FROM users WHERE slack_user_id = ?", (slack_user_id,)).fetchone()
+        return row is not None
+
     def save_party(self, slack_user_id: str, party: list[dict]) -> None:
         with closing(self._connect()) as connection, connection:
             connection.execute(
