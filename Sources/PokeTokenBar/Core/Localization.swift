@@ -470,6 +470,9 @@ struct L {
         t("말풍선으로 알림 받기", "Show notifications as bubbles", "通知を吹き出しで表示", "Mostrar notificaciones como globos", "Afficher les notifications en bulles", "Mostrar notificações em balões", "Benachrichtigungen als Sprechblasen anzeigen", "Показывать уведомления в облачке")
     }
     var floatingPetMenuOpen: String { t("토큰 바 열기", "Open Token Bar", "トークンバーを開く", "Abrir Token Bar", "Ouvrir Token Bar", "Abrir o Token Bar", "Token Bar öffnen", "Открыть Token Bar") }
+    var floatingPetHoverMenuHint: String {
+        t("우클릭: 메뉴", "Right-click: menu", "右クリック: メニュー", "Clic derecho: menú", "Clic droit : menu", "Clique direito: menu", "Rechtsklick: Menü", "Правый щелчок: меню")
+    }
     var floatingPetMenuHide: String {
         t("플로팅 펫 끄기", "Turn off floating pet", "フローティングペットをオフ", "Desactivar mascota flotante", "Désactiver le compagnon flottant", "Desativar mascote flutuante", "Schwebendes Pokémon ausschalten", "Выключить питомца на экране")
     }

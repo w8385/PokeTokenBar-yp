@@ -52,14 +52,14 @@ PokeTokenBar turns the AI coding tokens you're already burning — Claude Code, 
 <td width="45%" align="center"><img src="assets/floating-pet.gif" width="340" alt="Floating desktop pet with a hover callout and right-click menu"></td>
 <td width="55%" valign="middle">
 <h3>🐾 Let it live on your desktop</h3>
-Move your companion out of the menu bar and onto the desktop, at any size from 48 to 384px. Hover for today's usage, right-click for a menu, and drag it wherever you like. Click an egg to pray or a hatched Pokémon to open the popover; <b>right-click → Open</b> always opens it. Limit alerts can appear as speech bubbles.
+Move your companion out of the menu bar and onto the desktop, at any size from 48 to 384px. Hover for today's usage, right-click for a menu, and drag it wherever you like. Click an egg to pray or a hatched Pokémon to pet it; clicks never open the popover, so use <b>right-click → Open</b> (or the menu bar icon). Limit alerts can appear as speech bubbles.
 </td>
 </tr>
 <tr>
 <td width="45%" align="center"><img src="assets/screenshot-pet-interactions.png" width="300" alt="Separate native pet samples for prayer, petting, sulking, and agent waiting"><br><small>Native UI components · sample states</small></td>
 <td width="55%" valign="middle">
 <h3>A companion with a little personality</h3>
-Move the pointer over your floating pet to pet it, click an egg to pray, and watch for small reactions, sulking, and occasional event bubbles. These interactions are cosmetic: praying does not change hatch odds or growth rewards. Every 30 prayers, a quip can accompany a usage refresh. Agent activity can add working, waiting, and done reactions after <a href="#agent-activity">manual setup</a>.
+Move the pointer over your floating pet, or click it, to pet it; click an egg to pray, and watch for small reactions, sulking, and occasional event bubbles. These interactions are cosmetic: praying does not change hatch odds or growth rewards. Every 30 prayers, a quip can accompany a usage refresh. Agent activity can add working, waiting, and done reactions after <a href="#agent-activity">manual setup</a>.
 </td>
 </tr>
 <tr>
@@ -184,7 +184,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 - **Reconnect refresh** — usage and limits refresh when the network comes back.
 - **Representative Pokémon** — pin any owned Pokédex species to the menu bar and optional floating pet, independently of the companion you're raising. While pinned, the menu bar stops following egg, hatch, and evolution changes; raising progress remains visible on Home.
 - **Animation quality** — pick how smoothly the menu bar sprite and the floating pet animate (2.5 fps / 5 fps / 10 fps / Original). Both always-visible surfaces share the setting. 2.5 fps is the default and keeps the frame rate the app used before this setting existed; 5 fps and 10 fps trade battery for smoothness (measured idle CPU ~1.8% and ~5.1%). Original plays the floating pet's sprite at its own frame delays (usually 20–30 fps, same as the popover) and uses more battery; the menu bar stays capped at 10 fps, and macOS Low Power Mode still caps the frame rate.
-- **Interactive floating pet** — hover for today's usage, pet it with the pointer, click an egg to pray or a hatched Pokémon to open the popover, and right-click for the menu. Alerts and small events appear as bubbles.
+- **Interactive floating pet** — hover for today's usage, pet it with the pointer or a click, click an egg to pray, and right-click for the menu (Open shows the popover). Alerts and small events appear as bubbles.
 - **Per-service tabs** — when two or more of Claude Code, Codex, Gemini CLI, Antigravity, OpenCode, Hermes Agent, Cursor, Grok CLI, Copilot CLI, Kiro CLI, Pi Agent, omp, omo, Aside, Kimi Code, and Devin CLI are detected, compact tabs switch between them; today's total stays combined.
 - **Official limits** — Claude, Codex, and Antigravity limits with reset countdowns; OpenCode Go 5-hour / weekly / monthly allowances; and Grok CLI weekly subscription credits. Available limits depend on the provider login or subscription.
 - **Usage streak** — a flame beside the recap shortcut shows consecutive usage days, from two days onward. It stays gray until today's first usage extends the streak.
@@ -216,7 +216,7 @@ poketokenbar://agent?state=<working|waiting|done|idle>[&label=<name>][&message=<
 
 - `label` and `message` are optional, URL-encoded, and shown as plain text. `label` (up to 24 characters) names the agent so several can run at once, each with its own state. Without a label, all events belong to one agent.
 - `working` falls back to idle after 10 minutes without news. `done` shows for about 6 seconds, then the pet walks home. `waiting` stays until that agent's next event or until you click the pet.
-- With several agents, a question comes first: the bubble shows the latest waiting agent and how many more are waiting, and the pet keeps bobbing while any agent works. A `done` shows its label for a few seconds, then the earlier bubble comes back. Clicking the pet clears every question, then prays when an egg is shown or opens the popover for a hatched Pokémon. Use right-click → Open to open it while showing an egg. Up to 8 labels are tracked.
+- With several agents, a question comes first: the bubble shows the latest waiting agent and how many more are waiting, and the pet keeps bobbing while any agent works. A `done` shows its label for a few seconds, then the earlier bubble comes back. Clicking the pet clears every question, then prays when an egg is shown or pets a hatched Pokémon. Clicks never open the popover; use right-click → Open or the menu bar icon. Up to 8 labels are tracked.
 - A limit alert bubble takes priority. With Reduce Motion or Low Power Mode on, the pet shows bubbles without moving.
 - Nothing happens while the floating pet is off. Turn the reactions off in **Settings → Floating Pet → React to agent activity**.
 
