@@ -29,6 +29,7 @@ CLASSES=(
   LiveCredentialCallGateTests      # networking limit providers are gated
   AppLogTests                      # logging call sites use the flushing writer
   ItemLoreTests                    # every item has official text and name in every language
+  EvolutionRulesTests              # every special evolution step in the fixture has an app rule
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).

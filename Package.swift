@@ -14,6 +14,7 @@ let package = Package(
             name: "PokeTokenBarTests",
             dependencies: ["PokeTokenBar"],
             path: "Tests/PokeTokenBarTests",
+            exclude: ["Fixtures/evolution-steps.json"],
             resources: [
                 .copy("Fixtures/CodexFork"),
                 .copy("Fixtures/CodexSubagent"),
