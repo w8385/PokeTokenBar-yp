@@ -25,6 +25,13 @@
 - **커밋 메시지도 영어 기본.** 스쿼시 전 브랜치 커밋 목록도 PR 리뷰어에게 노출되므로 영어로 쓴다.
 - 범위 밖(추후): 코드 주석·이 `CLAUDE.md` 본문의 영어 전환. README/랜딩은 이미 en/ko/ja 다국어 유지.
 
+## push 전 검증
+
+push 전에 `./scripts/invariant-tests.sh`(저장소 전체를 훑는 불변식 테스트)와 자기 변경의
+`swift test --filter <Suite>`를 같이 돌린다. 필터만 돌리면 `SwiftUIIsolationTests` 같은 전역
+스캐너를 놓쳐 CI에서 터진다. 워크플로 파일(`.github/workflows/*.yml`)을 고쳤으면 `actionlint`도 돌린다.
+세부는 `CONTRIBUTING.md` "Build & test".
+
 ## PR 작성
 
 PR 생성·준비·갱신 시 `.agents/skills/prepare-pr/SKILL.md`를 사용한다. 개인 PR skill의

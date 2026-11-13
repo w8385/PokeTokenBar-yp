@@ -1565,7 +1565,7 @@ private struct ScrollWheelPager: NSViewRepresentable {
 
 /// 도감 — 보유 종만 도감 번호순으로, 한 페이지 16칸(4열×4행) 고정 격자.
 @MainActor
-private struct DexGridView: View {
+struct DexGridView: View {
     let store: CompanionStore
     let searchText: String
     let shinyOnly: Bool
