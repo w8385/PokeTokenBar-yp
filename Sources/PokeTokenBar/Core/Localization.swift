@@ -866,6 +866,23 @@ struct L {
     var moveAccuracy: String { t("명중", "Acc", "命中", "Prec", "Préc", "Prec", "Genau", "Точн") }
     var moveBurn: String { t("화상", "Burn", "やけど", "Quemadura", "Brûlure", "Queimadura", "Verbrennung", "Ожог") }
     var moveParalysis: String { t("마비", "Paralysis", "まひ", "Parálisis", "Paralysie", "Paralisia", "Paralyse", "Паралич") }
+    func moveAilment(_ key: String) -> String {
+        switch key {
+        case "burn": moveBurn
+        case "poison": t("독", "Poison", "どく", "Veneno", "Poison", "Veneno", "Gift", "Яд")
+        case "toxic": t("맹독", "Toxic", "もうどく", "Tóxico", "Toxik", "Tóxico", "Toxin", "Тяж. яд")
+        case "sleep": t("잠듦", "Sleep", "ねむり", "Sueño", "Sommeil", "Sono", "Schlaf", "Сон")
+        case "freeze": t("얼음", "Freeze", "こおり", "Congelación", "Gel", "Congelamento", "Frost", "Заморозка")
+        case "confusion": t("혼란", "Confusion", "こんらん", "Confusión", "Confusion", "Confusão", "Verwirrung", "Смятение")
+        default: moveParalysis
+        }
+    }
+    var moveDrain: String { t("체력 흡수", "Drain", "吸収", "Absorbe", "Absorption", "Absorção", "Absorb.", "Поглощ.") }
+    var moveRecoil: String { t("반동", "Recoil", "反動", "Retroceso", "Recul", "Recuo", "Rückstoß", "Отдача") }
+    func moveHits(_ range: String) -> String {
+        t("\(range)회", "\(range) hits", "\(range)回", "\(range) golpes", "\(range) coups", "\(range) golpes",
+          "\(range) Treffer", "\(range) уд.")
+    }
     var moveHighCrit: String { t("급소율↑", "High crit", "急所↑", "Crítico↑", "Critique↑", "Crítico↑", "Volltreffer↑", "Крит↑") }
     var moveSelf: String { t("자신", "self", "自分", "propio", "soi", "próprio", "selbst", "себе") }
     func statName(_ key: String) -> String {
