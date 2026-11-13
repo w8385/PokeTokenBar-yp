@@ -63,7 +63,7 @@ final class HeldItemScreenshotTests: XCTestCase {
 
         let defaults = UserDefaults(suiteName: "held-shot-\(UUID())")!
         let battle = BattleEntryStore(defaults: defaults)
-        battle.choose("pikachu")
+        _ = battle.add("pikachu")
         let uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,
             appVersion: "shot", send: { _ in 200 },

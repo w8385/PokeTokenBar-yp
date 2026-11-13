@@ -76,6 +76,22 @@ def test_focus_sash_survives_one_lethal_hit_from_full_hp():
     assert hits[1].knockout and hits[1].defender_item == ""
 
 
+def test_a_member_sent_out_later_still_has_its_own_focus_sash():
+    strong = mon("강함", level=100, attack=255, speed=255)
+    team = (mon("첫째", level=5, speed=1), mon("둘째", items.FOCUS_SASH, level=5, speed=1))
+    result = simulate((team, (strong,)), seed=5)
+    second = [action for action in actions(result) if action.defender == "둘째"]
+    assert second[0].defender_item == items.FOCUS_SASH and not second[0].knockout
+
+
+def test_leftovers_never_heals_a_fainted_member_waiting_to_be_replaced():
+    strong = mon("강함", level=100, attack=255, speed=255)
+    team = (mon("첫째", items.LEFTOVERS, level=5, speed=1), mon("둘째", level=5, speed=1))
+    result = simulate((team, (strong,)), seed=5)
+    assert not [event for event in result.events if isinstance(event, ItemHeal) and event.pokemon == "첫째"]
+    assert result.winner == 1
+
+
 def test_focus_sash_does_nothing_when_not_at_full_hp():
     strong = mon("강함", level=100, attack=255, speed=255)
     weak = mon("띠", items.FOCUS_SASH, level=5, speed=1)

@@ -111,11 +111,37 @@ final class HeldItemTests: XCTestCase {
     func testPartyCarriesTheHeldItemSlugOfTheFighter() {
         let state = state(held: ["pikachu": .choiceScarf])
 
-        let pikachu = BattleEntry.party(state: state, slot: BattleEntrySlot(instanceID: "pikachu"), rentalSpeciesID: 4)
-        let caterpie = BattleEntry.party(state: state, slot: BattleEntrySlot(instanceID: "caterpie"), rentalSpeciesID: 4)
+        let pikachu = BattleEntry.party(state: state, slots: [BattleEntrySlot(instanceID: "pikachu")], rentalSpeciesID: 4)
+        let caterpie = BattleEntry.party(state: state, slots: [BattleEntrySlot(instanceID: "caterpie")], rentalSpeciesID: 4)
 
         XCTAssertEqual(pikachu.first?.heldItem, "choice-scarf")
         XCTAssertNil(caterpie.first?.heldItem)
+    }
+
+    func testEveryMemberOfAThreeLineupCarriesItsOwnItem() {
+        var state = state(held: ["pikachu": .choiceScarf, "weedle": .leftovers])
+        state.dex.append(entry(13, id: "weedle"))
+        let slots = ["pikachu", "caterpie", "weedle"].map { BattleEntrySlot(instanceID: $0) }
+
+        let party = BattleEntry.party(state: state, slots: slots, rentalSpeciesID: 4)
+
+        XCTAssertEqual(party.map(\.heldItem), ["choice-scarf", nil, "leftovers"])
+    }
+
+    func testTradingAwayAHolderReturnsItsItemToTheBag() throws {
+        let store = try store(state(held: ["caterpie": .charcoal]))
+        let theirs = entry(92, id: "theirs")
+        let item = TradePoolEntry(id: theirs.id, pokemonID: 92, level: 5, shiny: false, name: "고오스", entry: theirs)
+        let json: [String: Any] = [
+            "trade_id": "t1", "give_id": "caterpie", "from_name": "Sam",
+            "receive": try JSONSerialization.jsonObject(with: JSONEncoder().encode(item)),
+        ]
+        let body = try JSONSerialization.data(withJSONObject: ["ok": true, "trades": ["deliveries": [json]]])
+
+        XCTAssertEqual(store.applyTrades(TradeSyncReply.decode(body).deliveries), ["t1"])
+
+        XCTAssertNil(store.heldItem(of: "caterpie"))
+        XCTAssertEqual(store.state.inventory[ItemKind.charcoal.rawValue], 1)
     }
 
     func testUploadBodyHasHeldItemOnlyWhenHolding() throws {
