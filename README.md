@@ -192,7 +192,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 - **Additional scan folders** — per-provider extra scan roots for logs kept outside the built-in paths (Settings → Advanced).
 - **Several Claude accounts** — Claude Code logins kept in their own config folder (`CLAUDE_CONFIG_DIR`) each get a tab under the official limits, with their own gauges, Rare Candy, alerts, and today/month tokens. `~/.claude-*` folders and an exported `CLAUDE_CONFIG_DIR` are found automatically; add others in Settings → Advanced. The menu bar percentage, companion mood, and forecast follow the account you used last (Settings → General → Tracked Claude account). Each account can take its own claude.ai session key (Settings → Advanced), so its limits keep refreshing without the Keychain.
 - **Burn-rate forecast** — projects when the current 5h window hits 100%.
-- **In-app updates** — one-click update check; current version shown in Settings.
+- **In-app updates** — installs new fork releases by itself (checksum-verified), or on one click when automatic updates are off; current version shown in Settings.
 - **Usage recap** — a Pokédex-style recap of any week, month, or year (total, meters, comparison, best day, best streak, graduations). Hover a meter for its date and full token count, and jump back to This week / This month / This year in one click. History is kept locally for this year and the last.
 
 - **Local save backups** — automatic snapshots and corruption recovery, with a restore screen in Settings. Backup history starts collapsed; expand it to browse snapshots. **Create snapshot** stays available outside the list.
@@ -291,6 +291,7 @@ curl -L https://github.com/w8385/PokeTokenBar-yp/releases/latest/download/PokeTo
 ```
 
 Upgrading keeps your progress: save data stays in `~/Library/Application Support/PokeTokenBar`.
+From v2.5.7-yp7 on, the app updates itself: it installs a new release while the popover is closed and reopens. Turn this off in Settings → Updates → Automatic updates.
 
 The fork has no Homebrew cask. `chattymin/tap/poke-token-bar` installs the upstream app, which lacks the fork features.
 
@@ -340,7 +341,8 @@ swift test                   # unit tests
 | [PokéAPI](https://pokeapi.co/) — `pokeapi.co`, `graphql.pokeapi.co` | Pokémon species, stats, abilities, moves &amp; evolution | runtime fetch; cached locally, never bundled |
 | `raw.githubusercontent.com/PokeAPI/sprites` | Pokémon &amp; item sprites | runtime fetch; cached under Application Support, never bundled |
 | `status.claude.com`, `status.openai.com` | provider incident banner | statuspage summary; display only — turn it off in Settings |
-| `api.github.com` | update check | latest release tag; on launch and when the popover opens |
+| `api.github.com` | update check | latest release tag; on launch, every 30 minutes and when the popover opens |
+| `github.com` release assets (via `release-assets.githubusercontent.com`) | update install | the release zip and its `.sha256`; only when a newer release is installed |
 
 If a provider's logs live **outside** those built-in paths, add the folder in **Settings → Advanced → Additional scan folders**. Pick the provider first — each folder is parsed only by that provider, so pointing a Gemini field at Claude logs would mis-attribute tokens. Extra folders are added to the built-in locations; they never replace them.
 

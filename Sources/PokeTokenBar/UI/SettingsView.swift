@@ -436,8 +436,11 @@ struct SettingsView: View {
     @ViewBuilder
     private func updateGroup(_ store: UsageStore) -> some View {
         @Bindable var store = store
+        @Bindable var updater = updater
         settingsSection(l.updateSectionTitle) {
             toggleRow(l.updateNotificationsLabel, $store.updateNotificationsEnabled)
+            Divider()
+            toggleRow(l.autoUpdateLabel, $updater.autoUpdateEnabled, hint: l.autoUpdateHint)
             Divider()
             groupRow {
                 Text(l.checkForUpdatesLabel)
