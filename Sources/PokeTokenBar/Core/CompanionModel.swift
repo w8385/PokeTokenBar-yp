@@ -253,6 +253,20 @@ enum EvolutionStone {
     static let price = 1_000_000_000
 }
 
+/// 상점·가방의 분류 탭. 빈 분류는 화면에서 숨긴다 — 아이템을 추가하는 쪽이 `ItemKind.category` 한 줄만 채운다.
+enum ItemCategory: String, CaseIterable, Sendable {
+    case growth, egg, scout, evolution, heldItem, megaStone
+}
+
+extension ItemKind {
+    var category: ItemCategory {
+        switch self {
+        case .rareCandy, .mint, .shinyCharm: return .growth
+        default: return .evolution
+        }
+    }
+}
+
 /// 이상한 사탕 밸런스 상수.
 enum RareCandy {
     /// 사용 시 현재 포켓몬에 주입하는 XP(토큰 환산). 2× 성장의 최소 임계는 62.5M 이지만,
@@ -317,6 +331,13 @@ enum FreshEgg {
 enum ShopEntry: Hashable, Sendable {
     case item(ItemKind)
     case egg(Rarity?)
+
+    var category: ItemCategory {
+        switch self {
+        case .item(let kind): return kind.category
+        case .egg: return .egg
+        }
+    }
 
     var price: Int {
         switch self {

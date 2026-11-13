@@ -257,4 +257,26 @@ final class ShopTests: XCTestCase {
         }
         XCTAssertEqual(s.availableTokens, 5_000_000_000, "차단된 구매 시도로 잔액이 줄지 않는다")
     }
+    // MARK: 분류 탭
+
+    func testEveryItemKindHasACategoryThatIsNotEmptyForShopItems() {
+        let s = store(used: 0)
+        XCTAssertEqual(s.shopCategories, [.growth, .egg, .evolution])
+        XCTAssertEqual(s.shopEntries(in: .egg), [.egg(nil), .egg(.uncommon), .egg(.rare)])
+        XCTAssertEqual(s.shopEntries(in: .growth), [.item(.mint), .item(.rareCandy), .item(.shinyCharm)])
+        XCTAssertEqual(s.shopEntries(in: .megaStone), [])
+    }
+
+    func testAllTabKeepsPriceOrder() {
+        let s = store(used: 0)
+        XCTAssertEqual(s.shopEntries(in: nil), s.shopEntries)
+    }
+
+    func testBagCategoriesListOnlyOwnedCategories() {
+        let s = store(used: 0, rareCandy: 2)
+        XCTAssertEqual(s.bagCategories, [.growth])
+        XCTAssertEqual(s.ownedItems(in: .growth).map(\.kind), [.rareCandy])
+        XCTAssertTrue(s.ownedItems(in: .egg).isEmpty)
+        XCTAssertEqual(s.ownedItems(in: nil).map(\.kind), [.rareCandy])
+    }
 }
