@@ -121,10 +121,12 @@ struct PartyTokenStore: Sendable {
 final class PartyUploader {
     static let serverURLDefaultsKey = "partyUploadServerURL"
     static let lastSuccessDefaultsKey = "partyUploadLastSuccessAt"
+    static let battleInfoDefaultsKey = "partyUploadBattleInfo"
     static let checkInterval: TimeInterval = 60
     nonisolated static let resendInterval: TimeInterval = 300
 
     typealias Send = @Sendable (URLRequest) async throws -> Int
+    typealias Exchange = @Sendable (URLRequest) async throws -> (Data, Int)
     typealias Fetch = @Sendable (URLRequest) async throws -> (Data, Int)
 
     private(set) var hasToken: Bool
@@ -134,6 +136,10 @@ final class PartyUploader {
     /// The latest attempt got no answer or an error other than 401; cleared by the next success.
     private(set) var lastAttemptFailed = false
     private(set) var tokenRejected = false
+    /// The recent battles and coworkers from the last upload reply that carried them; kept across restarts.
+    private(set) var battleInfo: BattleInfo? {
+        didSet { defaults.set(battleInfo.flatMap { try? $0.encoded() }, forKey: Self.battleInfoDefaultsKey) }
+    }
     var serverURL: String {
         didSet {
             defaults.set(serverURL, forKey: Self.serverURLDefaultsKey)
@@ -143,7 +149,7 @@ final class PartyUploader {
 
     @ObservationIgnored private let tokenStore: PartyTokenStore
     @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let send: Send
+    @ObservationIgnored private let exchange: Exchange
     @ObservationIgnored private let fetch: Fetch
     @ObservationIgnored private let appVersion: String?
     @ObservationIgnored private let partySource: @MainActor () -> [PartyMember]
@@ -155,18 +161,30 @@ final class PartyUploader {
     init(tokenStore: PartyTokenStore = PartyTokenStore(),
          defaults: UserDefaults = .standard,
          appVersion: String? = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
-         send: @escaping Send = PartyUploader.urlSessionSend,
+         exchange: @escaping Exchange = PartyUploader.urlSessionExchange,
          fetch: @escaping Fetch = PartyUploader.urlSessionFetch,
          partySource: @escaping @MainActor () -> [PartyMember]) {
         self.tokenStore = tokenStore
         self.defaults = defaults
         self.appVersion = appVersion
-        self.send = send
+        self.exchange = exchange
         self.fetch = fetch
         self.partySource = partySource
         hasToken = tokenStore.load() != nil
         serverURL = defaults.string(forKey: Self.serverURLDefaultsKey) ?? ""
         lastSuccessAt = hasToken ? defaults.object(forKey: Self.lastSuccessDefaultsKey) as? Date : nil
+        battleInfo = hasToken ? defaults.data(forKey: Self.battleInfoDefaultsKey).flatMap(BattleInfo.decode) : nil
+    }
+
+    /// For a sender that reports only the status code and has no reply body to read.
+    convenience init(tokenStore: PartyTokenStore = PartyTokenStore(),
+                     defaults: UserDefaults = .standard,
+                     appVersion: String? = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+                     send: @escaping Send,
+                     fetch: @escaping Fetch = PartyUploader.urlSessionFetch,
+                     partySource: @escaping @MainActor () -> [PartyMember]) {
+        self.init(tokenStore: tokenStore, defaults: defaults, appVersion: appVersion,
+                  exchange: { (Data(), try await send($0)) }, fetch: fetch, partySource: partySource)
     }
 
     var hasServer: Bool { Self.baseURL(serverURL) != nil }
@@ -205,6 +223,7 @@ final class PartyUploader {
         tokenRejected = false
         lastAttemptFailed = false
         lastSuccessAt = nil
+        battleInfo = nil
         resetThrottle()
     }
 
@@ -220,12 +239,16 @@ final class PartyUploader {
         lastAttemptBody = body
         isSending = true
         defer { isSending = false }
-        guard let status = try? await send(request) else {
+        guard let (reply, status) = try? await exchange(request) else {
             lastAttemptFailed = true
             return
         }
         switch status {
-        case 200: lastSuccessAt = now; tokenRejected = false; lastAttemptFailed = false
+        case 200:
+            lastSuccessAt = now
+            tokenRejected = false
+            lastAttemptFailed = false
+            if let info = BattleInfo.decode(reply) { battleInfo = info }
         case 401: tokenRejected = true; lastAttemptFailed = false
         default: lastAttemptFailed = true
         }
@@ -287,9 +310,9 @@ final class PartyUploader {
         return URLSession(configuration: config)
     }()
 
-    static let urlSessionSend: Send = { request in
-        let (_, response) = try await session.data(for: request)
-        return (response as? HTTPURLResponse)?.statusCode ?? 0
+    static let urlSessionExchange: Exchange = { request in
+        let (data, response) = try await session.data(for: request)
+        return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
     }
 
     static let urlSessionFetch: Fetch = { request in

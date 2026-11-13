@@ -45,6 +45,9 @@ struct BattleView: View {
                                 }
                             }
                         }
+                        if uploader.hasToken, uploader.hasServer {
+                            BattleInfoSections(info: uploader.battleInfo, l: l)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
