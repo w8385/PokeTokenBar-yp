@@ -14,7 +14,7 @@ from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_ur
 from ypoke.mega_stones import mega_form_id
 from ypoke.messages import DirectMessage
 from ypoke.moves import battle_moves
-from ypoke.narration import battle_lines
+from ypoke.narration import Card, battle_card, battle_header, battle_log
 from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.store import PendingChallenge, Record, Store
 from ypoke.upload_server import IV_KEYS, MAX_ENTRY_SIZE
@@ -28,7 +28,8 @@ REMATCH_LABEL = "다시 붙기"
 REMATCH_DENIED = "대결한 두 사람만 누를 수 있어요."
 SECTION_TEXT_LIMIT = 3000
 ECHO_ARG_LIMIT = 200
-_REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)")
+_REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)(?::([13]))?")
+FULL_ENTRY_WORDS = frozenset({"3", "3:3", "풀"})
 _MENTION_SPLIT = re.compile(r"(<@[UW][A-Z0-9]+(?:\|[^>]*)?>)")
 _MENTION = re.compile(r"<@([UW][A-Z0-9]+)(?:\|[^>]*)?>")
 KST = timezone(timedelta(hours=9), "KST")
@@ -58,10 +59,10 @@ MENTION_WORDS = {
 
 HELP_TEXT = (
     "*YPoke 대결*\n"
-    f"`{BATTLE_COMMAND} @상대` 서로 최대 3마리를 정한 순서대로 내보내 한 판 붙어요. 앱 대결 탭에서 고른 포켓몬이, 안 골랐으면 지금 키우는 포켓몬이 나가요. "
-    "한 마리가 쓰러지면 다음 포켓몬이 나오고, 교체는 없어요. "
+    f"`{BATTLE_COMMAND} @상대` 서로 한 마리씩 내보내 한 판 붙어요(1:1). 앱 대결 탭에서 첫 번째로 고른 포켓몬이, 안 골랐으면 지금 키우는 포켓몬이 나가요. "
+    f"`{BATTLE_COMMAND} @상대 3`(`3:3`·`풀`도 돼요)이면 최대 3마리를 정한 순서대로 내보내요. 한 마리가 쓰러지면 다음 포켓몬이 나오고, 교체는 없어요. "
     "알만 있으면 대여 포켓몬이 상대 레벨로 나가요. 상대가 아직 준비 전이면 연결 안내를 보내고, 준비되면 결과가 이 채널에 올라가요.\n"
-    f"`{BATTLE_COMMAND} @YPoke` 또는 `@YPoke 대결` 봇이 내 마리 수만큼 무작위 포켓몬을 내보내 연습 대결을 해요. 전적에 안 남아요.\n"
+    f"`{BATTLE_COMMAND} @YPoke [3]` 또는 `@YPoke 대결 [3]` 봇이 무작위 포켓몬을 내보내 연습 대결을 해요. 전적에 안 남아요.\n"
     f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
     f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
@@ -86,7 +87,8 @@ class Where:
 class Reply:
     """`echo` names who ran which slash command; it heads the visible messages (`in_channel` or `public`).
 
-    A battle result has `summary` (one line) and `rematch` (the button value), and `text` is its turn log.
+    A battle result has `summary` (the header line), `card` (lineups and highlights) and `rematch` (the button
+    value), and `text` is its compact turn log.
     `public` is a line the channel sees beside a private `text`. `image_url` is shown beside `text`.
     `fields` (Slack's 2-column grid) follow `lead`, the part of `text` above them, in the blocks; `text` stays the fallback.
     """
@@ -96,6 +98,7 @@ class Reply:
     direct_messages: tuple[DirectMessage, ...] = ()
     echo: str | None = None
     summary: str | None = None
+    card: Card | None = None
     rematch: str | None = None
     public: str | None = None
     image_url: str | None = None
@@ -124,6 +127,7 @@ class _Match:
     seed: int
     practice: bool
     pokemon: tuple[int, int]
+    size: int
 
 
 class CommandHandler:
@@ -149,7 +153,7 @@ class CommandHandler:
         if command is None:
             return Reply(self._help)
         if command == BATTLE_COMMAND and not _MENTION.search(rest):
-            return self._start(user_id, self._bot_user_id, where)
+            return self._start(user_id, self._bot_user_id, where, size=battle_size(rest))
         reply = self.handle(user_id, rest, command, where)
         return replace(reply, in_channel=True) if command == DEX_COMMAND else reply
 
@@ -173,7 +177,8 @@ class CommandHandler:
         if parsed is None or user_id not in parsed.groups():
             return Reply(REMATCH_DENIED)
         line = f"<@{user_id}> 님이 {REMATCH_LABEL}를 눌렀어요"
-        return _echoed(self._start(*parsed.groups(), where, line), line)
+        challenger_id, opponent_id, size = parsed.groups()
+        return _echoed(self._start(challenger_id, opponent_id, where, line, int(size or 1)), line)
 
     def run_pending(self, user_id: str) -> list[Delivery]:
         """After `user_id` uploads: play every pending challenge of theirs whose sides are now both ready, once."""
@@ -181,7 +186,7 @@ class CommandHandler:
         deliveries = []
         for challenge in self._store.pending_for(user_id, since=now - PENDING_LIFETIME):
             try:
-                match = self._prepare(challenge.challenger_id, challenge.opponent_id)
+                match = self._prepare(challenge.challenger_id, challenge.opponent_id, challenge.size)
             except OSError:
                 continue
             if match is None or not self._store.claim_pending(challenge):
@@ -189,7 +194,7 @@ class CommandHandler:
             fresh = now - challenge.created_at < RESPONSE_URL_LIFETIME
             where = Where(challenge.channel_id, challenge.thread_ts, challenge.response_url if fresh else None)
             reply = self._result(match)
-            reply = replace(reply, text=f"{PENDING_HEADER}\n{reply.text}", echo=challenge.echo)
+            reply = replace(reply, card=replace(reply.card, note=PENDING_HEADER), echo=challenge.echo)
             deliveries.append(Delivery(challenge.challenger_id, where, reply))
         return deliveries
 
@@ -206,11 +211,9 @@ class CommandHandler:
         if command == RANKING_COMMAND:
             return self._ranking()
         if command == BATTLE_COMMAND and mention:
-            if mention.group(1) == self._bot_user_id:
-                return self._start(user_id, self._bot_user_id, where, echo)
             if mention.group(1) == user_id:
                 return Reply("자기 자신과는 대결할 수 없어요.")
-            return self._start(user_id, mention.group(1), where, echo)
+            return self._start(user_id, mention.group(1), where, echo, battle_size(text))
         return Reply(self._help)
 
     def _register(self, user_id: str) -> Reply:
@@ -294,21 +297,25 @@ class CommandHandler:
             )
         return Reply("\n".join(lines), in_channel=True)
 
-    def _start(self, challenger_id: str, opponent_id: str, where: Where | None, echo: str | None = None) -> Reply:
-        """A battle against `opponent_id`; against the bot it is a practice battle and nothing is stored."""
+    def _start(
+        self, challenger_id: str, opponent_id: str, where: Where | None, echo: str | None = None, size: int = 1
+    ) -> Reply:
+        """A battle against `opponent_id` with each side's first `size` Pokémon; against the bot it is a practice
+        battle and nothing is stored."""
         try:
-            match = self._prepare(challenger_id, opponent_id)
+            match = self._prepare(challenger_id, opponent_id, size)
         except OSError:
             return Reply("포켓몬 정보를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.")
         if match is None:
-            return self._wait(challenger_id, opponent_id, where, echo)
+            return self._wait(challenger_id, opponent_id, where, echo, size)
         return self._result(match)
 
-    def _wait(self, challenger_id: str, opponent_id: str, where: Where | None, echo: str | None) -> Reply:
+    def _wait(self, challenger_id: str, opponent_id: str, where: Where | None, echo: str | None, size: int) -> Reply:
         """Keep the challenge until both sides have uploaded, and send the side(s) without one the link button."""
         if where is not None:
             self._store.save_pending(PendingChallenge(
                 challenger_id, opponent_id, where.channel_id, where.thread_ts, where.response_url, self._now(), echo,
+                size,
             ))
         not_ready = [user for user in (challenger_id, opponent_id)
                      if user != self._bot_user_id and self._store.party(user) is None]
@@ -355,24 +362,24 @@ class CommandHandler:
         ]
         return DirectMessage(user_id, intro, blocks)
 
-    def _prepare(self, challenger_id: str, opponent_id: str) -> _Match | None:
-        """Both sides' combatants, or None while a side has no upload. Raises OSError when PokéAPI is down."""
+    def _prepare(self, challenger_id: str, opponent_id: str, size: int) -> _Match | None:
+        """Both sides' first `size` combatants, or None while a side has no upload. Raises OSError when PokéAPI is down."""
         challenger = self._store.party(challenger_id)
         if challenger is None:
             return None
-        entry = challenger.party[:MAX_ENTRY_SIZE]
+        entry = challenger.party[:size]
         seed = secrets.randbits(31)
         if opponent_id == self._bot_user_id:
             wild = [{"pokemon_id": species, "level": member["level"], "shiny": False, "ivs": {}}
                     for species, member in zip(bot_entry(seed, len(entry)), entry)]
             return _Match(challenger_id, opponent_id, self._combatants(entry, wild), seed, practice=True,
-                          pokemon=(entry[0]["pokemon_id"], wild[0]["pokemon_id"]))
+                          pokemon=(entry[0]["pokemon_id"], wild[0]["pokemon_id"]), size=size)
         opponent = self._store.party(opponent_id)
         if opponent is None:
             return None
-        rival = opponent.party[:MAX_ENTRY_SIZE]
+        rival = opponent.party[:size]
         return _Match(challenger_id, opponent_id, self._combatants(entry, rival), seed, practice=False,
-                      pokemon=(entry[0]["pokemon_id"], rival[0]["pokemon_id"]))
+                      pokemon=(entry[0]["pokemon_id"], rival[0]["pokemon_id"]), size=size)
 
     def _result(self, match: _Match) -> Reply:
         result = simulate(match.sides, match.seed)
@@ -382,15 +389,12 @@ class CommandHandler:
                 match.challenger_id, match.opponent_id, winner_id, match.seed, pokemon=match.pokemon, turns=result.turns
             )
         trainers = (f"<@{match.challenger_id}>", self._label(match.opponent_id))
-        names = [" · ".join(combatant.name for combatant in side) for side in match.sides]
-        summary = f"🏆 {trainers[result.winner]} 승 — {names[0]} vs {names[1]} ({result.turns}턴)"
-        if match.practice:
-            summary += " · 연습 대결"
         return Reply(
-            "\n".join(battle_lines(trainers, match.sides, result, practice=match.practice)),
+            "\n".join(battle_log(result)),
             in_channel=True,
-            summary=summary,
-            rematch=f"{match.challenger_id}:{match.opponent_id}",
+            summary=battle_header(trainers, match.sides, result, match.practice),
+            card=battle_card(trainers, match.sides, result),
+            rematch=f"{match.challenger_id}:{match.opponent_id}:{match.size}",
         )
 
     def _label(self, user_id: str | None) -> str:
@@ -448,6 +452,12 @@ def parse_mention(text: str, bot_user_id: str | None) -> tuple[str | None, str]:
     return command, rest.strip()
 
 
+def battle_size(text: str) -> int:
+    """3 when the battle text asks for the full lineup (`3`, `3:3`, `풀`), else 1."""
+    words = _MENTION.sub(" ", text).split()
+    return MAX_ENTRY_SIZE if any(word in FULL_ENTRY_WORDS for word in words) else 1
+
+
 def reply_thread_ts(event: dict) -> str:
     """Answer inside the mention's thread; a top-level mention starts one."""
     return event.get("thread_ts") or event["ts"]
@@ -491,18 +501,21 @@ def fallback_text(reply: Reply) -> str:
     return "\n".join(line for line in (reply.echo, reply.summary) if line)
 
 
-def result_blocks(reply: Reply, with_log: bool = False) -> list[dict]:
-    """Echo line, one-line summary and the rematch button; `with_log` adds the turn log for a place with no thread."""
+def result_blocks(reply: Reply) -> list[dict]:
+    """The result card: echo and note, the header, both lineups side by side, the highlights and the rematch button."""
+    card = reply.card
     blocks: list[dict] = []
-    if reply.echo:
-        blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": reply.echo}]})
-    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": reply.summary}})
+    context = [line for line in (reply.echo, card.note) if line]
+    if context:
+        blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": line} for line in context]})
+    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": f"*{reply.summary}*"}})
+    blocks.append({"type": "section", "fields": [{"type": "mrkdwn", "text": column} for column in card.columns]})
+    if card.highlights:
+        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "\n".join(card.highlights)}})
     blocks.append({"type": "actions", "elements": [{
         "type": "button", "action_id": REMATCH_ACTION_ID, "value": reply.rematch,
         "text": {"type": "plain_text", "text": REMATCH_LABEL},
     }]})
-    if with_log:
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": fit(reply.text, SECTION_TEXT_LIMIT)}})
     return blocks
 
 

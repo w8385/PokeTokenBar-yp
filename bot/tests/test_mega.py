@@ -5,7 +5,7 @@ import pytest
 from ypoke import pokeapi
 from ypoke.battle import AbilityTrigger, Action, BaseStats, Combatant, MegaEvolution, MegaForm, Move, simulate
 from ypoke.mega_stones import MEGA_STONES, mega_form_id
-from ypoke.narration import battle_lines
+from ypoke.narration import battle_card, battle_log
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
 
@@ -109,11 +109,11 @@ def test_without_a_stone_the_battle_is_unchanged():
 
 def test_narration_announces_the_mega_evolution():
     holder, plain = mon("리자몽", MEGA), mon("상대")
-    lines = battle_lines(("<@UA>", "<@UB>"), (holder, plain), simulate((holder, plain), seed=3))
-    assert lines[3] == "1턴 🔵 리자몽은 메가스톤이 반응해 메가진화했다! (특성: 단단한발톱)"
+    result = simulate((holder, plain), seed=3)
+    assert battle_log(result)[0].startswith("1턴 🔵 리자몽 메가진화 [단단한발톱] · ")
+    assert battle_card(("<@UA>", "<@UB>"), ((holder,), (plain,)), result).columns[0].splitlines()[1].startswith("리자몽(메가)")
     no_ability = replace(MEGA, ability=None)
-    lines = battle_lines(("<@UA>", "<@UB>"), (holder, plain), simulate((replace(holder, mega=no_ability), plain), seed=3))
-    assert lines[3].endswith("메가진화했다!")
+    assert battle_log(simulate((replace(holder, mega=no_ability), plain), seed=3))[0].startswith("1턴 🔵 리자몽 메가진화 · ")
 
 
 @pytest.fixture

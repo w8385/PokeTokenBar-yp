@@ -4,7 +4,7 @@ import pytest
 
 from ypoke import items
 from ypoke.battle import STRUGGLE, Action, BaseStats, Combatant, ItemHeal, Move, _Fighter, _unrolled_damage, simulate
-from ypoke.narration import battle_lines
+from ypoke.narration import battle_card, battle_log
 from ypoke.upload_server import PartyError, validate_party
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
@@ -132,15 +132,14 @@ def test_unknown_item_changes_nothing():
 def test_narration_names_the_item_and_its_triggers():
     strong = mon("강함", level=100, attack=255, speed=255)
     weak = mon("띠", items.FOCUS_SASH, level=5, speed=1)
-    lines = battle_lines(("<@UA>", "<@UB>"), (strong, weak), simulate((strong, weak), seed=5))
-    assert lines[2].endswith("(Lv5 · 기합의띠)")
-    assert any("띠는 기합의띠 덕분에 버텼다!" in line for line in lines)
+    sides = ((strong,), (weak,))
+    result = simulate((strong, weak), seed=5)
+    assert battle_card(("<@UA>", "<@UB>"), sides, result).columns[1].splitlines()[1].startswith("띠 Lv5 @기합의띠")
+    assert battle_log(result)[0] == "1턴 🔵 강함 몸통박치기 → 띠 4% @기합의띠 · 🔴 띠 몸통박치기 → 강함 99%"
     heal = ItemHeal(2, 1, "먹보", items.LEFTOVERS, 80)
     life_orb = Action(1, 0, "구슬", "상대", "몸통박치기", attacker_item=items.LIFE_ORB, attacker_hp=90, defender_hp=50)
-    result = replace(simulate((strong, weak), seed=5), events=[life_orb, heal], winner=0)
-    lines = battle_lines(("<@UA>", "<@UB>"), (strong, weak), result)
-    assert "구슬은 생명의구슬의 반동으로 데미지를 입었다!" in lines[3]
-    assert lines[4] == "2턴 🔴 먹보는 먹다남은음식 덕분에 체력을 회복했다! (HP 80%)"
+    lines = battle_log(replace(result, events=[life_orb, heal], winner=0))
+    assert lines == ["1턴 🔵 구슬 몸통박치기 → 상대 50% @생명의구슬", "2턴 🔴 먹보 @먹다남은음식 80%"]
 
 
 def test_upload_keeps_a_normalized_held_item_and_ignores_junk():

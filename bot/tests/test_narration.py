@@ -2,35 +2,23 @@ from dataclasses import replace
 
 import pytest
 
+from ypoke import items
 from ypoke.battle import (
-    AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, Move, SendOut, StatusDamage,
-    WeatherDamage, WeatherEnd, simulate,
+    AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, ItemHeal, MegaEvolution, Move, SendOut,
+    StatusDamage, WeatherDamage, WeatherEnd, simulate,
 )
-from ypoke.narration import MAX_EVENT_LINES, MAX_LOG_CHARS, PRACTICE_NOTE, SKIPPED_LINE, battle_lines, with_particle
+from ypoke.narration import (
+    MAX_HIGHLIGHTS, MAX_LOG_CHARS, MAX_TURN_LINES, PRACTICE_NOTE, SKIPPED_LINE, battle_card, battle_header, battle_log,
+)
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
-THUNDERBOLT = Move("10만볼트", "electric", 90, physical=False, accuracy=100, ailment="paralysis", ailment_chance=10)
-WATER_GUN = Move("물대포", "water", 40, physical=False, accuracy=100)
 TRAINERS = ("<@UA>", "<@UB>")
 
 
-def mon(name, types=("normal",), level=50, shiny=False, moves=()):
-    return Combatant(name=name, level=level, types=tuple(types), base=BaseStats(80, 80, 80, 80, 80, 80),
-                     ivs=IVS, shiny=shiny, moves=tuple(moves))
-
-
-@pytest.mark.parametrize("word,pair,expected", [
-    ("피카츄", ("을", "를"), "피카츄를"),
-    ("리자몽", ("을", "를"), "리자몽을"),
-    ("이상해꽃", ("은", "는"), "이상해꽃은"),
-    ("꼬부기", ("은", "는"), "꼬부기는"),
-    ("뮤", ("이", "가"), "뮤가"),
-    ("Pikachu", ("을", "를"), "Pikachu을(를)"),
-    ("포리곤2", ("은", "는"), "포리곤2은(는)"),
-    ("", ("이", "가"), "이(가)"),
-])
-def test_particle_follows_the_final_consonant_or_falls_back(word, pair, expected):
-    assert with_particle(word, pair) == expected
+def mon(name, level=50, shiny=False, rental=False, item=None, base=(80, 80, 80, 80, 80, 80), moves=(),
+        types=("normal",), **fields):
+    return Combatant(name=name, level=level, types=tuple(types), base=BaseStats(*base), ivs=IVS, shiny=shiny,
+                     rental=rental, item=item, moves=tuple(moves), **fields)
 
 
 def act(turn, side, move="10만볼트", **fields):
@@ -38,183 +26,289 @@ def act(turn, side, move="10만볼트", **fields):
     return Action(turn, side, attacker, defender, move, **fields)
 
 
-def lines_for(*events, winner=0, practice=False):
-    return battle_lines(TRAINERS, (mon("피카츄", shiny=True), mon("꼬부기", level=20)),
-                        BattleResult(winner=winner, turns=len(events), events=list(events)), practice)
+def log_for(*events):
+    return battle_log(BattleResult(winner=0, turns=len(events), events=list(events)))
 
 
-def test_every_action_gets_a_turn_line_with_its_details():
-    lines = lines_for(
-        act(1, 0, multiplier=2.0, critical=True, changes=(Change(1, "꼬부기", "paralysis"),), defender_hp=31),
-        act(1, 1, move="물대포", multiplier=0.5, defender_hp=88),
-        act(2, 1, move="", blocked="paralysis"),
-        act(2, 0, multiplier=2.0, knockout=True, defender_hp=0),
-    )
-    assert lines == [
-        "<@UB>에게 <@UA>이(가) 승부를 걸어왔다!",
-        "<@UA>은(는) 피카츄를 내보냈다! (Lv50 ✨)",
-        "<@UB>은(는) 꼬부기를 내보냈다! (Lv20)",
-        "1턴 🔵 피카츄의 10만볼트! 급소에 맞았다! 효과가 굉장했다! 꼬부기는 마비되어 기술이 나오기 어려워졌다! (꼬부기 HP 31%)",
-        "1턴 🔴 꼬부기의 물대포! 효과가 별로인 듯하다… (피카츄 HP 88%)",
-        "2턴 🔴 꼬부기는 몸이 저려서 움직일 수 없다!",
-        "2턴 🔵 피카츄의 10만볼트! 효과가 굉장했다! 꼬부기는 쓰러졌다!",
-        "<@UA>은(는) 승부에서 이겼다!",
-    ]
+def result_for(events, remaining, winner=0, turns=9):
+    return BattleResult(winner=winner, turns=turns, events=list(events), remaining=remaining)
 
 
 @pytest.mark.parametrize("event,expected", [
-    (act(1, 0, move="번개", missed=True), "1턴 🔵 피카츄의 번개! 하지만 빗나갔다!"),
-    (act(1, 0, move="몸통박치기", multiplier=0), "1턴 🔵 피카츄의 몸통박치기! 꼬부기에게는 효과가 없는 것 같다…"),
-    (act(1, 0, changes=(Change(1, "꼬부기", "burn"),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 화상을 입었다! (꼬부기 HP 50%)"),
-    (act(1, 0, changes=(Change(1, "꼬부기", "defense", -1),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 꼬부기의 방어가 떨어졌다! (꼬부기 HP 50%)"),
+    (act(1, 0), "1턴 🔵 피카츄 10만볼트 → 꼬부기 100%"),
+    (act(1, 0, defender_hp=31, critical=True, multiplier=2.0), "1턴 🔵 피카츄 10만볼트 → 꼬부기 31% 급소 굉장"),
+    (act(1, 1, move="물대포", multiplier=0.5, defender_hp=88), "1턴 🔴 꼬부기 물대포 → 피카츄 88% 별로"),
+    (act(1, 0, move="번개", missed=True), "1턴 🔵 피카츄 번개 → 빗나감"),
+    (act(1, 0, move="몸통박치기", multiplier=0), "1턴 🔵 피카츄 몸통박치기 → 꼬부기 무효"),
+    (act(1, 0, move="지진", multiplier=0, ability="levitate"), "1턴 🔵 피카츄 지진 → 꼬부기 무효 [부유]"),
+    (act(1, 0, move="지진", ability="sturdy", defender_hp=1), "1턴 🔵 피카츄 지진 → 꼬부기 1% [옹골참]"),
+    (act(1, 0, multiplier=2.0, knockout=True, defender_hp=0), "1턴 🔵 피카츄 10만볼트 → 꼬부기 쓰러짐 굉장"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "burn"),), defender_hp=50), "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% 🔥화상"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "toxic"),), defender_hp=50), "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% ☠️맹독"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "paralysis"),), defender_hp=50), "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% ⚡마비"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "sleep"),), defender_hp=50), "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% 💤잠듦"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "freeze"),), defender_hp=50), "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% 🧊얼음"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "confusion"),), defender_hp=50), "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% 💫혼란"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "thaw"),), defender_hp=50), "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% 🧊해동"),
+    (act(1, 0, changes=(Change(1, "꼬부기", "defense", -1),), defender_hp=50), "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% 방어↓"),
     (act(1, 0, changes=(Change(0, "피카츄", "special_attack", -2),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 피카츄의 특수공격이 크게 떨어졌다! (꼬부기 HP 50%)"),
-    (act(1, 0, changes=(Change(0, "피카츄", "speed", 1),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 피카츄의 스피드가 올랐다! (꼬부기 HP 50%)"),
+     "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% 자신 특공↓↓"),
+    (act(1, 0, move="기가드레인", drained=True, defender_hp=40), "1턴 🔵 피카츄 기가드레인 → 꼬부기 40% 흡수"),
+    (act(1, 0, move="누르기", recoil=True, defender_hp=40), "1턴 🔵 피카츄 누르기 → 꼬부기 40% 반동"),
     (act(1, 0, move="발버둥", recoil=True, attacker_fainted=True, defender_hp=40),
-     "1턴 🔵 피카츄의 발버둥! 피카츄는 반동으로 데미지를 입었다! 피카츄는 쓰러졌다!"),
-    (act(1, 0, changes=(Change(1, "꼬부기", "poison"),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 독에 걸렸다! (꼬부기 HP 50%)"),
-    (act(1, 0, changes=(Change(1, "꼬부기", "toxic"),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 맹독에 걸렸다! (꼬부기 HP 50%)"),
-    (act(1, 0, changes=(Change(1, "꼬부기", "sleep"),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 잠들어 버렸다! (꼬부기 HP 50%)"),
-    (act(1, 0, changes=(Change(1, "꼬부기", "freeze"),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 얼어붙었다! (꼬부기 HP 50%)"),
-    (act(1, 0, changes=(Change(1, "꼬부기", "confusion"),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 꼬부기는 혼란에 빠졌다! (꼬부기 HP 50%)"),
-    (act(1, 0, changes=(Change(1, "꼬부기", "thaw"),), defender_hp=50),
-     "1턴 🔵 피카츄의 10만볼트! 꼬부기의 얼음이 녹았다! (꼬부기 HP 50%)"),
-    (act(1, 0, move="기가드레인", drained=True, defender_hp=40),
-     "1턴 🔵 피카츄의 기가드레인! 꼬부기에게서 체력을 흡수했다! (꼬부기 HP 40%)"),
-    (act(1, 0, move="누르기", recoil=True, defender_hp=40),
-     "1턴 🔵 피카츄의 누르기! 피카츄는 반동으로 데미지를 입었다! (꼬부기 HP 40%)"),
-    (act(1, 0, move="연속뺨치기", hits=4, defender_hp=40),
-     "1턴 🔵 피카츄의 연속뺨치기! 4번 맞았다! (꼬부기 HP 40%)"),
-    (act(1, 0, move="연속뺨치기", hits=1, defender_hp=40), "1턴 🔵 피카츄의 연속뺨치기! (꼬부기 HP 40%)"),
-    (act(1, 1, move="", blocked="sleep"), "1턴 🔴 꼬부기는 쿨쿨 잠들어 있다!"),
-    (act(1, 1, move="", blocked="freeze"), "1턴 🔴 꼬부기는 얼어서 움직일 수 없다!"),
-    (act(1, 1, move="", blocked="confusion", attacker_hp=63), "1턴 🔴 꼬부기는 혼란에 빠져 자신을 공격했다! (꼬부기 HP 63%)"),
-    (act(1, 1, move="", blocked="confusion", attacker_hp=0, attacker_fainted=True),
-     "1턴 🔴 꼬부기는 혼란에 빠져 자신을 공격했다! 꼬부기는 쓰러졌다!"),
-    (act(1, 1, move="물대포", recovered=("sleep",), defender_hp=70),
-     "1턴 🔴 꼬부기는 눈을 떴다! 꼬부기의 물대포! (피카츄 HP 70%)"),
-    (act(1, 1, move="", blocked="paralysis", recovered=("sleep", "confusion")),
-     "1턴 🔴 꼬부기는 눈을 떴다! 꼬부기의 혼란이 풀렸다! 꼬부기는 몸이 저려서 움직일 수 없다!"),
-    (act(1, 1, move="물대포", recovered=("freeze",), defender_hp=70),
-     "1턴 🔴 꼬부기의 얼음이 녹았다! 꼬부기의 물대포! (피카츄 HP 70%)"),
-    (StatusDamage(3, 1, "꼬부기", 12, False), "3턴 🔴 꼬부기는 화상 데미지를 입었다! (HP 12%)"),
-    (StatusDamage(3, 1, "꼬부기", 30, False, "poison"), "3턴 🔴 꼬부기는 독 데미지를 입었다! (HP 30%)"),
-    (StatusDamage(3, 1, "꼬부기", 0, True, "toxic"), "3턴 🔴 꼬부기는 독 데미지를 입었다! 꼬부기는 쓰러졌다!"),
-    (StatusDamage(3, 1, "꼬부기", 0, True), "3턴 🔴 꼬부기는 화상 데미지를 입었다! 꼬부기는 쓰러졌다!"),
-    (act(1, 0, move="비바라기", weather="rain"), "1턴 🔵 피카츄의 비바라기! 비가 내리기 시작했다!"),
-    (act(1, 0, move="모래바람", weather="sandstorm"), "1턴 🔵 피카츄의 모래바람! 모래바람이 불기 시작했다!"),
-    (act(1, 0, move="비바라기", failed=True), "1턴 🔵 피카츄의 비바라기! 하지만 실패했다!"),
-    (WeatherDamage(2, 1, "꼬부기", 80, False, "sandstorm"), "2턴 🔴 꼬부기는 모래바람에 휩싸였다! (HP 80%)"),
-    (WeatherDamage(2, 0, "피카츄", 0, True, "hail"), "2턴 🔵 피카츄는 싸라기눈에 맞았다! 피카츄는 쓰러졌다!"),
-    (WeatherEnd(5, "rain"), "5턴 비가 그쳤다!"),
-    (WeatherEnd(5, "sun"), "5턴 햇살이 원래대로 돌아왔다!"),
+     "1턴 🔵 피카츄 발버둥 → 꼬부기 40% 반동 피카츄 쓰러짐"),
+    (act(1, 0, move="연속뺨치기", hits=4, defender_hp=40), "1턴 🔵 피카츄 연속뺨치기 → 꼬부기 40% 4연타"),
+    (act(1, 0, attacker_item=items.LIFE_ORB, defender_hp=40), "1턴 🔵 피카츄 10만볼트 → 꼬부기 40% @생명의구슬"),
+    (act(1, 0, defender_item=items.FOCUS_SASH, defender_hp=1), "1턴 🔵 피카츄 10만볼트 → 꼬부기 1% @기합의띠"),
+    (act(1, 1, move="", blocked="sleep"), "1턴 🔴 꼬부기 💤자는 중"),
+    (act(1, 1, move="", blocked="freeze"), "1턴 🔴 꼬부기 🧊얼어서 못 움직임"),
+    (act(1, 1, move="", blocked="paralysis", recovered=("sleep",)), "1턴 🔴 꼬부기 💤깸 ⚡몸이 저려 못 움직임"),
+    (act(1, 1, move="", blocked="confusion", attacker_hp=63), "1턴 🔴 꼬부기 💫혼란 자해 63%"),
+    (act(1, 1, move="", blocked="confusion", attacker_hp=0, attacker_fainted=True), "1턴 🔴 꼬부기 💫혼란 자해 쓰러짐"),
+    (act(1, 1, move="물대포", recovered=("freeze",), defender_hp=70), "1턴 🔴 꼬부기 🧊풀림 물대포 → 피카츄 70%"),
+    (act(1, 0, move="비바라기", weather="rain"), "1턴 🔵 피카츄 비바라기 ☔"),
+    (act(1, 0, move="모래바람", weather="sandstorm"), "1턴 🔵 피카츄 모래바람 🏜️"),
+    (act(1, 0, move="비바라기", failed=True), "1턴 🔵 피카츄 비바라기 → 실패"),
+    (StatusDamage(3, 1, "꼬부기", 12, False), "3턴 🔴 꼬부기 🔥 12%"),
+    (StatusDamage(3, 1, "꼬부기", 0, True, "toxic"), "3턴 🔴 꼬부기 ☠️ 쓰러짐"),
+    (WeatherDamage(2, 1, "꼬부기", 80, False, "sandstorm"), "2턴 🔴 꼬부기 🏜️ 80%"),
+    (WeatherDamage(2, 0, "피카츄", 0, True, "hail"), "2턴 🔵 피카츄 🌨️ 쓰러짐"),
+    (WeatherEnd(5, "rain"), "5턴 ☔끝"),
+    (ItemHeal(2, 1, "꼬부기", items.LEFTOVERS, 80), "2턴 🔴 꼬부기 @먹다남은음식 80%"),
 ])
-def test_event_lines(event, expected):
-    assert lines_for(event)[3] == expected
+def test_one_event_makes_one_turn_line(event, expected):
+    assert log_for(event) == [expected]
 
 
-def test_long_battles_keep_the_start_and_the_end():
-    events = [act(turn, 0, defender_hp=99) for turn in range(1, 40)]
-    lines = lines_for(*events)
-    assert len(lines) == 3 + MAX_EVENT_LINES + 1 + 1
-    assert lines[3].startswith("1턴 ")
-    assert lines[3 + MAX_EVENT_LINES // 2] == SKIPPED_LINE
-    assert lines[-2].startswith("39턴 ")
-
-
-def test_practice_battle_says_so_on_the_last_line():
-    assert lines_for(practice=True)[-1] == f"<@UA>은(는) 승부에서 이겼다! {PRACTICE_NOTE}"
-
-
-def test_a_simulated_battle_narrates_from_send_out_to_knockout():
-    sides = (mon("피카츄", ["electric"], level=40, moves=[THUNDERBOLT]), mon("꼬부기", ["water"], level=40, moves=[WATER_GUN]))
-    first = battle_lines(TRAINERS, sides, simulate(sides, 9))
-    assert first == battle_lines(TRAINERS, sides, simulate(sides, 9))
-    assert first[-2].endswith("꼬부기는 쓰러졌다!")
-    assert all(line.split(" ", 2)[2].startswith(("피카츄의 10만볼트!", "꼬부기의 물대포!", "꼬부기는 몸이 저려서"))
-               for line in first[3:-1])
-
-
-def test_long_status_battles_still_collapse_the_middle_turns():
-    events = []
-    for turn in range(1, 20):
-        events += [act(turn, 1, move="", blocked="sleep"), StatusDamage(turn, 1, "꼬부기", 90 - turn, False, "toxic")]
-    lines = lines_for(*events)
-    assert len(lines) == 3 + MAX_EVENT_LINES + 1 + 1
-    assert lines[3 + MAX_EVENT_LINES // 2] == SKIPPED_LINE
-    assert lines[3].endswith("쿨쿨 잠들어 있다!") and lines[-2].startswith("19턴 ")
-
-
-def test_an_entry_ability_is_narrated_without_a_turn_number():
-    intimidate = AbilityTrigger(0, "피카츄", "intimidate", change=Change(1, "꼬부기", "attack", -1))
-    drizzle = AbilityTrigger(1, "꼬부기", "drizzle", weather="rain")
-    assert lines_for(intimidate, drizzle)[3:5] == [
-        "🔵 피카츄의 위협! 꼬부기의 공격이 떨어졌다!",
-        "🔴 꼬부기의 잔비! 비가 내리기 시작했다!",
+def test_a_turn_is_one_line_with_both_actions_and_the_end_of_turn_effects():
+    lines = log_for(
+        act(1, 0, defender_hp=50), act(1, 1, move="물대포", defender_hp=90), StatusDamage(1, 1, "꼬부기", 44, False),
+        WeatherEnd(1, "rain"), act(2, 0, defender_hp=20),
+    )
+    assert lines == [
+        "1턴 🔵 피카츄 10만볼트 → 꼬부기 50% · 🔴 꼬부기 물대포 → 피카츄 90% · 🔴 꼬부기 🔥 44% · ☔끝",
+        "2턴 🔵 피카츄 10만볼트 → 꼬부기 20%",
     ]
 
 
-def test_levitate_and_sturdy_are_narrated_inside_the_move_line():
-    dodged = act(1, 0, "지진", multiplier=0, ability="levitate", defender_hp=100)
-    held = act(2, 0, "지진", ability="sturdy", defender_hp=1)
-    assert lines_for(dodged)[3] == "1턴 🔵 피카츄의 지진! 꼬부기의 부유! 땅 타입 기술이 맞지 않는다!"
-    assert lines_for(held)[3] == "2턴 🔵 피카츄의 지진! 꼬부기의 옹골참! 간신히 버텼다! (꼬부기 HP 1%)"
-
-
-def test_a_battle_with_abilities_narrates_every_event():
-    sides = (replace(mon("피카츄", ["electric"], moves=[THUNDERBOLT]), ability="drizzle"),
-             replace(mon("꼬부기", ["water"], moves=[WATER_GUN]), ability="intimidate"))
-    lines = battle_lines(TRAINERS, sides, simulate(sides, 4))
-    assert set(lines[3:5]) == {"🔴 꼬부기의 위협! 피카츄의 공격이 떨어졌다!", "🔵 피카츄의 잔비! 비가 내리기 시작했다!"}
-
-
-def test_a_status_ability_is_narrated_inside_the_move_line():
-    shocked = act(1, 0, "몸통박치기", ability="static", changes=(Change(0, "피카츄", "paralysis"),), defender_hp=70)
-    blocked = act(2, 0, "10만볼트", ability="limber", defender_hp=70)
-    assert lines_for(shocked)[3] == (
-        "1턴 🔵 피카츄의 몸통박치기! 꼬부기의 정전기! 피카츄는 마비되어 기술이 나오기 어려워졌다! (꼬부기 HP 70%)"
+def test_a_faint_and_the_send_out_share_the_turn_line():
+    lines = log_for(
+        act(3, 0, multiplier=2.0, knockout=True, defender_hp=0), SendOut(3, 1, "거북왕"),
+        act(4, 1, move="물대포", defender_hp=70),
     )
-    assert lines_for(blocked)[3] == "2턴 🔵 피카츄의 10만볼트! 꼬부기의 유연! 마비되지 않는다! (꼬부기 HP 70%)"
+    assert lines == [
+        "3턴 🔵 피카츄 10만볼트 → 꼬부기 쓰러짐 굉장 → 🔴 거북왕",
+        "4턴 🔴 꼬부기 물대포 → 피카츄 70%",
+    ]
 
 
-def test_a_send_out_line_names_the_incoming_pokemon():
-    lines = battle_lines(TRAINERS, ((mon("피카츄"), mon("이상해씨")), (mon("꼬부기"),)),
-                         BattleResult(1, 2, [SendOut(2, 0, "이상해씨")]))
-    assert lines[3:5] == ["🔵 피카츄 → 이상해씨", "2턴 🔵 가라, 이상해씨!"]
+def test_both_sides_sending_out_in_one_turn_are_listed_on_that_line():
+    lines = log_for(
+        act(2, 0, move="폭발", knockout=True, attacker_fainted=True, defender_hp=0),
+        SendOut(2, 0, "이상해씨"), SendOut(2, 1, "거북왕"),
+    )
+    assert lines == ["2턴 🔵 피카츄 폭발 → 꼬부기 쓰러짐 → 🔵 이상해씨, 🔴 거북왕"]
 
 
-def test_a_long_three_on_three_log_keeps_every_send_out_and_faint_and_the_win_line_within_the_limit():
-    events = long_events(40)
-    events.insert(10, SendOut(10, 0, "이상해씨"))
-    events.insert(20, Action(20, 1, "꼬부기", "이상해씨", "물대포", knockout=True, defender_hp=0))
+def test_start_of_battle_abilities_and_mega_join_the_first_turn_line():
+    intimidate = AbilityTrigger(0, "피카츄", "intimidate", change=Change(1, "꼬부기", "attack", -1))
+    drizzle = AbilityTrigger(1, "꼬부기", "drizzle", weather="rain")
+    mega = MegaEvolution(1, 0, "피카츄", "단단한발톱")
+    assert log_for(mega, intimidate, drizzle, act(1, 0, defender_hp=80)) == [
+        "1턴 🔵 피카츄 메가진화 [단단한발톱] · 🔵 피카츄 [위협] 공격↓ · 🔴 꼬부기 [잔비] ☔ · "
+        "🔵 피카츄 10만볼트 → 꼬부기 80%"
+    ]
+
+
+def test_an_ability_or_mega_after_a_send_out_folds_into_that_send_out():
+    lines = log_for(
+        act(3, 0, knockout=True, defender_hp=0), SendOut(3, 1, "거북왕"),
+        AbilityTrigger(1, "거북왕", "intimidate", change=Change(0, "피카츄", "attack", -1)),
+        act(4, 0, knockout=True, defender_hp=0), SendOut(4, 1, "리자몽"), MegaEvolution(4, 1, "리자몽", None),
+    )
+    assert lines == [
+        "3턴 🔵 피카츄 10만볼트 → 꼬부기 쓰러짐 → 🔴 거북왕 [위협] 공격↓",
+        "4턴 🔵 피카츄 10만볼트 → 꼬부기 쓰러짐 → 🔴 리자몽 메가진화",
+    ]
+
+
+def test_weather_status_and_ability_moments_fold_into_the_turn_lines_of_a_simulated_battle():
+    rain = Move("비바라기", None, 0, physical=False, weather="rain")
+    burn = Move("화염방사", "fire", 90, physical=False, accuracy=100, ailment="burn", ailment_chance=100)
+    sides = (
+        (mon("골덕", moves=[rain, burn], ability="intimidate"),),
+        (mon("괴력몬", base=(150, 80, 80, 80, 80, 20), moves=[Move("몸통박치기", "normal", 40, True, accuracy=100)]),),
+    )
+    lines = battle_log(simulate(sides, 3))
+    assert lines[0].startswith("1턴 🔵 골덕 [위협] 공격↓ · ")
+    text = "\n".join(lines)
+    assert "🔥화상" in text and "🔥 " in text
+    assert all(line.startswith(f"{number}턴 ") for number, line in enumerate(lines, start=1))
+
+
+def test_long_battles_keep_the_start_and_the_end():
+    lines = log_for(*[act(turn, 0, defender_hp=99) for turn in range(1, 60)])
+    assert len(lines) == MAX_TURN_LINES + 1
+    assert lines[0].startswith("1턴 ")
+    assert lines[MAX_TURN_LINES // 2] == SKIPPED_LINE
+    assert lines[-1].startswith("59턴 ")
+
+
+def test_a_long_log_keeps_every_faint_and_send_out_within_the_limit():
+    events = [act(turn, turn % 2, defender_hp=50) for turn in range(1, 41)]
+    events.insert(20, act(20, 1, move="물대포", knockout=True, defender_hp=0))
     events.insert(21, SendOut(20, 0, "리자몽"))
-    events.insert(30, StatusDamage(30, 1, "꼬부기", 0, True, "burn"))
-    events.insert(31, SendOut(30, 1, "거북왕"))
-    team = (mon("피카츄"), mon("이상해씨"), mon("리자몽")), (mon("꼬부기"), mon("거북왕"), mon("어니부기"))
-    lines = battle_lines(TRAINERS, team, BattleResult(0, 40, events))
+    events.insert(31, StatusDamage(30, 1, "꼬부기", 0, True, "burn"))
+    lines = log_for(*events)
     assert len("\n".join(lines)) <= MAX_LOG_CHARS
-    assert lines[-1] == "<@UA>은(는) 승부에서 이겼다!"
-    assert {"10턴 🔵 가라, 이상해씨!", "20턴 🔵 가라, 리자몽!", "30턴 🔴 가라, 거북왕!"} <= set(lines)
-    assert any("이상해씨는 쓰러졌다!" in line for line in lines)
-    assert any("꼬부기는 쓰러졌다!" in line for line in lines)
+    assert any(line.startswith("20턴 ") and line.endswith("→ 🔵 리자몽") for line in lines)
+    assert any(line.startswith("30턴 ") and "🔥 쓰러짐" in line for line in lines)
     assert SKIPPED_LINE in lines
 
 
 def test_long_lines_shrink_the_kept_ends_until_the_log_fits():
     long_name = "아주아주긴이름의포켓몬" * 3
     events = [Action(turn, 0, long_name, "꼬부기", "아주아주긴이름의기술" * 4, defender_hp=1) for turn in range(1, 80)]
-    lines = battle_lines(TRAINERS, (mon("피카츄"), mon("꼬부기")), BattleResult(0, 79, events))
+    lines = log_for(*events)
     assert len("\n".join(lines)) <= MAX_LOG_CHARS
-    assert lines[-1] == "<@UA>은(는) 승부에서 이겼다!"
 
 
-def long_events(turns):
-    return [Action(turn, turn % 2, "피카츄", "꼬부기", "10만볼트", defender_hp=50) for turn in range(1, turns + 1)]
+def test_the_header_names_the_winner_the_format_and_the_turns():
+    one = ((mon("피카츄"),), (mon("꼬부기"),))
+    three = ((mon("피카츄"),) * 3, (mon("꼬부기"),) * 3)
+    result = BattleResult(winner=1, turns=9)
+    assert battle_header(TRAINERS, one, result) == "🏆 <@UB> 승 · 1:1 · 9턴"
+    assert battle_header(TRAINERS, three, BattleResult(0, 9)) == "🏆 <@UA> 승 · 3:3 · 9턴"
+    assert battle_header(TRAINERS, three, result, practice=True) == f"🏆 <@UB> 승 · 3:3 · 9턴 · {PRACTICE_NOTE}"
+
+
+def test_the_card_lists_each_lineup_in_order_with_its_fate():
+    sides = (
+        (mon("골덕", shiny=True), mon("괴력몬", level=30), mon("쥬레곤", item=items.LEFTOVERS)),
+        (mon("때때무노", rental=True), mon("이올브"), mon("이브이")),
+    )
+    result = result_for([], ((0, 0, 72), (0, 0, None)))
+    card = battle_card(TRAINERS, sides, result)
+    assert card.columns[0].splitlines() == ["🔵 *<@UA>*", "골덕✨ 💥", "괴력몬 Lv30 💥", "쥬레곤 @먹다남은음식 72%"]
+    assert card.columns[1].splitlines() == ["🔴 *<@UB>*", "때때무노(대여) 💥", "이올브 💥", "이브이 대기"]
+
+
+def test_the_card_marks_a_mega_evolved_member_and_a_one_on_one_has_one_line_per_column():
+    sides = ((mon("리자몽"),), (mon("꼬부기"),))
+    result = result_for([MegaEvolution(1, 0, "리자몽", None)], ((55,), (0,)))
+    card = battle_card(("<@UA>", "YPoke"), sides, result)
+    assert card.columns == ("🔵 *<@UA>*\n리자몽(메가) 55%", "🔴 *YPoke*\n꼬부기 💥")
+
+
+def test_highlights_are_the_deciding_knockout_then_super_effective_knockouts_then_crits():
+    events = [
+        act(2, 0, critical=True, defender_hp=60),
+        act(3, 0, move="번개", multiplier=2.0, knockout=True, defender_hp=0),
+        SendOut(3, 1, "거북왕"),
+        act(5, 0, move="냉동빔", multiplier=2.0, knockout=True, critical=True, defender_hp=0),
+        SendOut(5, 1, "어니부기"),
+        act(9, 0, move="파도타기", knockout=True, critical=True, defender_hp=0),
+    ]
+    card = battle_card(TRAINERS, ((mon("피카츄"),), (mon("꼬부기"),) * 3), result_for(events, ((80,), (0, 0, 0))))
+    assert card.highlights == (
+        "💥 결정타 🔵 피카츄 파도타기 → 꼬부기 쓰러짐 급소 (9턴)",
+        "⚡ 🔵 피카츄 번개 → 꼬부기 쓰러짐 굉장 (3턴)",
+        "⚡ 🔵 피카츄 냉동빔 → 꼬부기 쓰러짐 급소 굉장 (5턴)",
+    )
+
+
+def test_highlights_cap_at_three_and_a_crit_without_a_knockout_ranks_below_knockouts():
+    events = [act(turn, 0, critical=True, defender_hp=50) for turn in range(1, 6)]
+    events.append(act(6, 0, move="번개", multiplier=2.0, knockout=True, defender_hp=0))
+    card = battle_card(TRAINERS, ((mon("피카츄"),), (mon("꼬부기"),)), result_for(events, ((80,), (0,))))
+    assert len(card.highlights) == MAX_HIGHLIGHTS
+    assert card.highlights[0].startswith("💥 결정타")
+    assert all(line.startswith("🎯") for line in card.highlights[1:])
+    assert [line.endswith(f"({turn}턴)") for turn, line in enumerate(card.highlights[1:], start=1)] == [True, True]
+
+
+def test_a_faint_from_burn_can_decide_the_battle_and_ability_and_weather_moments_follow_crits():
+    events = [
+        AbilityTrigger(0, "피카츄", "drizzle", weather="rain"),
+        act(2, 1, move="모래바람", weather="sandstorm"),
+        act(3, 0, move="지진", multiplier=0, ability="levitate"),
+        StatusDamage(4, 1, "꼬부기", 0, True, "burn"),
+    ]
+    card = battle_card(TRAINERS, ((mon("피카츄"),), (mon("꼬부기"),)), result_for(events, ((80,), (0,))))
+    assert card.highlights == (
+        "💥 결정타 🔴 꼬부기 🔥 쓰러짐 (4턴)",
+        "✨ 🔵 피카츄 [잔비] ☔",
+        "🔴 꼬부기 모래바람 🏜️ (2턴)",
+    )
+
+
+def test_mega_comes_last_and_no_highlight_means_none():
+    events = [MegaEvolution(1, 0, "피카츄", None)]
+    card = battle_card(TRAINERS, ((mon("피카츄"),), (mon("꼬부기"),)), result_for(events, ((80,), (30,))))
+    assert card.highlights == ("🌟 🔵 피카츄 메가진화 (1턴)",)
+    assert battle_card(TRAINERS, ((mon("피카츄"),), (mon("꼬부기"),)), result_for([], ((80,), (30,)))).highlights == ()
+
+
+def test_a_turn_limit_ending_has_no_deciding_knockout():
+    events = [act(1, 0, multiplier=2.0, knockout=True, defender_hp=0), SendOut(1, 1, "거북왕")]
+    result = result_for(events, ((80,), (0, 40)))
+    card = battle_card(TRAINERS, ((mon("피카츄"),), (mon("꼬부기"), mon("거북왕"))), result)
+    assert not any(line.startswith("💥") for line in card.highlights)
+
+
+SIMULATED_SEED = 2
+
+
+def three_on_three():
+    hydro = Move("하이드로펌프", "water", 110, physical=False, accuracy=80)
+    psychic = Move("사이코키네시스", "psychic", 90, physical=False, accuracy=100)
+    double_edge = Move("이판사판태클", "normal", 120, physical=True, accuracy=100, drain=-33)
+    bug = Move("벌레의야단법석", "bug", 90, physical=False, accuracy=100)
+    rain = Move("비바라기", None, 0, physical=False, weather="rain")
+    thunder = Move("10만볼트", "electric", 90, physical=False, accuracy=100, ailment="paralysis", ailment_chance=30)
+    return (
+        (
+            mon("골덕", types=["water"], base=(80, 82, 78, 95, 80, 85), moves=[hydro, psychic]),
+            mon("괴력몬", types=["fighting"], base=(90, 130, 80, 65, 85, 55), moves=[double_edge]),
+            mon("쥬레곤", types=["water"], base=(130, 65, 60, 110, 95, 65), moves=[hydro, thunder]),
+        ),
+        (
+            mon("때때무노", types=["bug"], base=(90, 45, 85, 20, 80, 56), moves=[bug], ability="intimidate"),
+            mon("이올브", types=["psychic"], base=(95, 50, 90, 100, 90, 60), moves=[bug, psychic], ability="drizzle"),
+            mon("이브이", base=(100, 55, 90, 45, 85, 55), moves=[double_edge, rain]),
+        ),
+    )
+
+
+def test_a_seeded_nine_turn_three_on_three_fits_in_a_dozen_lines_beside_a_card_with_both_lineups():
+    sides = three_on_three()
+    result = simulate(sides, SIMULATED_SEED)
+    assert result.turns == 9
+    log = battle_log(result)
+    assert len(log) <= 12
+    assert [line.split(" ", 1)[0] for line in log] == [f"{turn}턴" for turn in range(1, 10)]
+    assert sum("→ 🔵" in line or "→ 🔴" in line for line in log) == 4
+    card = battle_card(TRAINERS, sides, result)
+    assert [column.splitlines()[0] for column in card.columns] == ["🔵 *<@UA>*", "🔴 *<@UB>*"]
+    assert [line.split(" ")[0] for line in card.columns[0].splitlines()[1:]] == ["골덕", "괴력몬", "쥬레곤"]
+    assert [line.split(" ")[0] for line in card.columns[1].splitlines()[1:]] == ["때때무노", "이올브", "이브이"]
+    assert [line.split(" ")[-1] for line in card.columns[1].splitlines()[1:]] == ["💥"] * 3
+    assert 1 <= len(card.highlights) <= MAX_HIGHLIGHTS
+    assert battle_header(TRAINERS, sides, result) == "🏆 <@UA> 승 · 3:3 · 9턴"
+
+
+def test_a_one_on_one_simulated_battle_renders_a_card_and_a_log():
+    sides = tuple(side[:1] for side in three_on_three())
+    result = simulate(sides, 1)
+    card = battle_card(TRAINERS, sides, result)
+    assert [len(column.splitlines()) for column in card.columns] == [2, 2]
+    assert len(battle_log(result)) == result.turns
+
+
+def test_the_result_records_each_members_final_share_and_unentered_members_as_none():
+    strong = mon("강함", level=100, base=(200, 200, 100, 100, 100, 200), moves=[Move("몸통박치기", "normal", 90, True)])
+    weak = mon("약함", level=5, base=(20, 20, 20, 20, 20, 1), moves=[Move("몸통박치기", "normal", 40, True)])
+    result = simulate(((strong, strong, strong), (weak,)), 1)
+    assert result.remaining[1] == (0,)
+    assert result.remaining[0][0] is not None and result.remaining[0][1:] == (None, None)
+    assert replace(result, remaining=((), ())).remaining == ((), ())

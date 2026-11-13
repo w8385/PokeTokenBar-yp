@@ -1,8 +1,8 @@
 # YPoke party upload API
 
 The app posts the user's battle Pokémon to the YPoke bot. The bot keeps only the latest
-upload per user and sends out its first three Pokémon, in order, in `/대결` battles. When
-one faints the next comes in; there is no switching. Battles never change the party.
+upload per user and sends out its first Pokémon in `/대결` battles, or its first three, in order,
+in `/대결 @상대 3` battles. When one faints the next comes in; there is no switching. Battles never change the party.
 
 - Base URL: the bot's `YPOKE_PUBLIC_URL`, for example `http://<bot-host>:8790`
 - Auth: `Authorization: Bearer <token>`. Users get the token from `/포켓몬연결`:
