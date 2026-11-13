@@ -18,6 +18,10 @@ final class CompanionStore {
     var facesBack: Bool { state.active != nil && (alwaysFacesBack || displayState == .sulk) }
     private(set) var currentLine: EvoLine?
     private(set) var representativeSubject = RepresentativeSubject(speciesID: nil, isShiny: false)
+    /// Graduated Pokémon shown beside the active one. Display only: no growth, stats or save effect beyond the pick.
+    private(set) var friendSubjects: [FriendSubject] = []
+    /// Bumped when the active Pokémon hatches, evolves, graduates or reveals as Ditto; friends cheer on a change.
+    private(set) var cheerSeq = 0
     private(set) var isHatching = false
     private var isRevealingDitto = false   // 메타몽 리빌 비동기 중복 방지(isHatching 자매)
     private(set) var justEvolvedTo: String?     // 이름(연출/문구)
@@ -28,7 +32,7 @@ final class CompanionStore {
     enum Celebration: Equatable { case hatch(shiny: Bool), evolve, dittoReveal(shiny: Bool) }
     private(set) var celebration: Celebration?
     private(set) var celebrationSeq = 0
-    private func fireCelebration(_ c: Celebration) { celebration = c; celebrationSeq += 1 }
+    private func fireCelebration(_ c: Celebration) { celebration = c; celebrationSeq += 1; cheerSeq += 1 }
     /// 연출 재생 후 UI 가 호출(1회성 보장).
     func consumeCelebration() { celebration = nil }
 
@@ -108,6 +112,7 @@ final class CompanionStore {
         migratePokemonProfilesIfNeeded()
         seedDexCompletionsIfNeeded()
         refreshRepresentativeSubject()
+        refreshFriendSubjects()
         refreshSnapshots()
         if state.active != nil { displayState = .idle }
     }
@@ -242,6 +247,35 @@ final class CompanionStore {
         state.representativeForm = PokemonForm.resolved(speciesID: id ?? 0, form: form)
         save()
         return true
+    }
+
+    // MARK: 동행 포켓몬
+
+    var friendCandidates: [DexEntry] {
+        state.friendCandidates.sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
+    }
+
+    /// Only a graduated entry that is not a friend yet, while a slot is free. Returns false and keeps the picks otherwise.
+    @discardableResult
+    func addFriend(entryID: String) -> Bool {
+        guard state.friendEntryIDs.count < CompanionState.maxFriends,
+              state.friendCandidates.contains(where: { $0.id == entryID }) else { return false }
+        state.friendEntryIDs.append(entryID)
+        save()
+        return true
+    }
+
+    func removeFriend(entryID: String) {
+        guard state.friendEntryIDs.contains(entryID) else { return }
+        state.friendEntryIDs.removeAll { $0 == entryID }
+        save()
+    }
+
+    private func refreshFriendSubjects() {
+        let next = state.friendEntryIDs.compactMap { id in
+            state.dex.first { $0.id == id }.map(FriendSubject.init)
+        }
+        if friendSubjects != next { friendSubjects = next }
     }
 
     func isRepresentative(_ species: DexSpecies) -> Bool {
@@ -1204,6 +1238,7 @@ final class CompanionStore {
         notifyCompanionEvent(l.notifGraduateTitle, l.notifGraduateBody(name))
         eventUntil = clock().addingTimeInterval(6)
         state.active = nil
+        cheerSeq += 1
         state.reconcileRepresentativeSelection()   // 졸업 체인이 dex 로 옮겨져 선택은 정상적으로 유지된다
         activeGeneration += 1
         currentLine = nil
@@ -2434,7 +2469,9 @@ final class CompanionStore {
         state = SaveTransfer.sanitized(s)
     }
     private func save() {
+        state.reconcileFriends()
         refreshRepresentativeSubject()
+        refreshFriendSubjects()
         checkDexCompletions()   // 보유 성장분이 영속되는 매 지점에서 세대 완성 알림을 한 번만 띄운다
         guard let data = try? JSONEncoder().encode(state) else { return }
         try? data.write(to: fileURL, options: .atomic)   // 부분 쓰기 손상 방지(펫 상태)

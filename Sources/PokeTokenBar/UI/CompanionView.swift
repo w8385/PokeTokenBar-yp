@@ -718,6 +718,9 @@ struct CompanionHeader: View {
     // 민트 사용 시 "반짝" 스파클 (성격 변경 피드백 — 텍스트 없이 짧은 이펙트)
     @State private var seenMintSeq = -1
     @State private var mintSparkle = false
+    /// Friends beside the sprite react to clicks and to hatch / evolution; one timer, only while Home is mounted.
+    @State private var crowd = PetCrowd()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Hover tooltip for the growth bars: "X / Y · Z%". Used is clamped to total (egg usage can
     /// overshoot while a hatch retry is pending) and the percent floors, so 100% means done.
@@ -735,6 +738,7 @@ struct CompanionHeader: View {
         SpriteView(speciesID: store.currentSpeciesID, size: 76, bob: true, animated: true,
                    shiny: store.currentIsShiny, spriteStore: spriteStore, form: store.currentForm,
                    back: store.facesBack, female: store.currentIsFemale)
+            .crowdMember(crowd, slot: 0, size: 76)
             .frame(width: 76, height: 76)
             .background(Color.secondary.opacity(0.06))
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -784,7 +788,11 @@ struct CompanionHeader: View {
         let dexLinks = onOpenDexEntry == nil ? [:] : store.dexLinkTargets
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: 12) {
-                bigSprite
+                bigSprite.overlay(alignment: .bottom) {
+                    // Straddles the tile's bottom edge so the header keeps its height with or without friends.
+                    FriendSlotsRow(store: store, crowd: crowd, spriteStore: spriteStore, cryPlayer: cryPlayer)
+                        .offset(y: FriendSlotsRow.slotSize / 2 + 2)
+                }
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(store.displayName).font(.callout.weight(.semibold))
@@ -877,7 +885,12 @@ struct CompanionHeader: View {
             showCandyXPIfNeeded()
             showMintIfNeeded()
             syncEggWiggle()
+            configureCrowd()
         }
+        .onDisappear { crowd.stop() }
+        .onChange(of: store.friendSubjects) { configureCrowd() }
+        .onChange(of: reduceMotion) { configureCrowd() }
+        .onChange(of: store.cheerSeq) { crowd.cheer() }
         .onChange(of: store.celebrationSeq) { playCelebrationIfNeeded() }
         .onChange(of: store.candyFeedbackSeq) { showCandyXPIfNeeded() }
         .onChange(of: store.mintFeedbackSeq) { showMintIfNeeded() }
@@ -925,8 +938,19 @@ struct CompanionHeader: View {
         flashXP(amount)
     }
 
+    private func configureCrowd() {
+        let order: [Int]
+        switch store.friendSubjects.count {
+        case 0: order = [0]
+        case 1: order = [1, 0]
+        default: order = [1, 0, 2]
+        }
+        crowd.configure(order: order, motionAllowed: !reduceMotion, active: true)
+    }
+
     /// A press always bounces the sprite; only a counted click shows "+XP".
     private func pet() {
+        crowd.clicked(slot: 0)
         celebScale = 0.9
         withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) { celebScale = 1 }
         cryPlayer.play(speciesID: store.currentSpeciesID, form: store.currentForm)
