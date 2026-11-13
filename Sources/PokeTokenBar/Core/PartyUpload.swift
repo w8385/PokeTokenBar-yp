@@ -15,6 +15,8 @@ struct PartyMember: Encodable, Equatable, Sendable {
     var nature: String? = nil
     /// PokéAPI ability name of the individual (`"huge-power"`); nil is left out of the JSON and the bot gives it none.
     var ability: String? = nil
+    /// `ItemKind.heldItemSlug` of the item it holds; nil is left out of the JSON.
+    var heldItem: String? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
@@ -45,7 +47,7 @@ enum PartyBuilder {
     }
 
     static func member(speciesID: Int, form: PokemonForm?, shiny: Bool, profile: PokemonProfile?,
-                       nature: PokemonNature? = nil) -> PartyMember {
+                       nature: PokemonNature? = nil, heldItem: String? = nil) -> PartyMember {
         let resolved = PokemonForm.resolved(speciesID: speciesID, form: form)
         let variety = PokemonForm.entries(speciesID: speciesID).first { $0.form == resolved }?.pokemonID
         return PartyMember(pokemonID: variety ?? speciesID,
@@ -53,7 +55,8 @@ enum PartyBuilder {
                            shiny: shiny,
                            ivs: profile?.ivs,
                            nature: nature?.rawValue,
-                           ability: profile?.abilityName)
+                           ability: profile?.abilityName,
+                           heldItem: heldItem)
     }
 
     static func isAcceptedPokemonID(_ id: Int) -> Bool {

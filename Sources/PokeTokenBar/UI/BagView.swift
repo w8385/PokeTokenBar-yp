@@ -163,6 +163,8 @@ private struct ItemCard: View {
             }
         } else if kind.isLinkingCord {
             Text(l.linkingCordBagHint).font(.caption2).foregroundStyle(.tertiary)
+        } else if kind.isHeldItem {
+            Text(l.heldItemBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if canUse {
             if confirming {
                 HStack(spacing: 8) {

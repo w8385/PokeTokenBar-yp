@@ -199,6 +199,7 @@ enum SaveTransfer {
         }
         s.reconcileRepresentativeSelection()
         s.reconcileFriends()
+        s.returnOrphanedHeldItems()
         return s
     }
 

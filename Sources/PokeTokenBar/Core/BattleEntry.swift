@@ -40,7 +40,7 @@ enum BattleEntry {
                 id: id,
                 member: PartyBuilder.member(speciesID: active.currentID, form: active.form,
                                             shiny: active.displaysShiny, profile: active.profile,
-                                            nature: active.nature),
+                                            nature: active.nature, heldItem: state.heldItemSlug(of: id)),
                 dexEntry: nil))
         }
         for entry in state.dex where entry.releasedAt == nil {
@@ -48,7 +48,7 @@ enum BattleEntry {
                 id: entry.id,
                 member: PartyBuilder.member(speciesID: entry.finalID, form: entry.form,
                                             shiny: entry.isShiny, profile: entry.profile,
-                                            nature: entry.nature),
+                                            nature: entry.nature, heldItem: state.heldItemSlug(of: entry.id)),
                 dexEntry: entry))
         }
         return owned.filter { PartyBuilder.isAcceptedPokemonID($0.member.pokemonID) }

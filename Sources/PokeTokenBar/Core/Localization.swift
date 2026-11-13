@@ -2122,6 +2122,81 @@ struct L {
         case .dawnStone: return t("각성의돌", "Dawn Stone", "めざめいし", "Piedra Alba", "Pierre Aube", "Pedra do Amanhecer", "Funkelstein", "Рассветный камень")
         case .iceStone: return t("얼음의돌", "Ice Stone", "こおりのいし", "Piedra Hielo", "Pierre Glace", "Pedra do Gelo", "Eisstein", "Ледяной камень")
         case .linkingCord: return t("연결의끈", "Linking Cord", "つながりのヒモ", "Cordón Unión", "Cordon Lien", "Cordão Elo", "Verbindungsband", "Связующий шнур")
+        case .leftovers: return t("먹다남은음식", "Leftovers", "たべのこし", "Restos", "Restes", "Sobras", "Überreste", "Остатки")
+        case .choiceScarf: return t("구애스카프", "Choice Scarf", "こだわりスカーフ", "Pañuelo Elegido", "Mouchoir Choix", "Lenço Escolha", "Wahlschal", "Шарф выбора")
+        case .choiceBand: return t("구애머리띠", "Choice Band", "こだわりハチマキ", "Cinta Elegida", "Bandeau Choix", "Faixa Escolha", "Wahlband", "Головная повязка выбора")
+        case .focusSash: return t("기합의띠", "Focus Sash", "きあいのタスキ", "Banda Focus", "Ceinture Force", "Faixa Focus", "Fokusband", "Пояс фокуса")
+        case .lifeOrb: return t("생명의구슬", "Life Orb", "いのちのたま", "Vidasfera", "Orbe Vie", "Orbe Vital", "Leben-Orb", "Сфера жизни")
+        case .expertBelt: return t("달인의띠", "Expert Belt", "たつじんのおび", "Cinta Experto", "Ceinture Pro", "Cinto Perito", "Expertengurt", "Пояс эксперта")
+        case .charcoal: return t("목탄", "Charcoal", "もくたん", "Carbón", "Charbon", "Carvão", "Holzkohle", "Древесный уголь")
+        }
+    }
+
+    // MARK: 지닌 도구
+    var heldItemLabel: String { t("지닌 도구", "Held item", "もちもの", "Objeto", "Objet tenu", "Item seguro", "Item", "Предмет") }
+    var heldItemNone: String { t("없음", "None", "なし", "Ninguno", "Aucun", "Nenhum", "Keins", "Нет") }
+    var heldItemEquip: String { t("장착", "Equip", "持たせる", "Equipar", "Équiper", "Equipar", "Ausrüsten", "Дать") }
+    var heldItemRemove: String { t("해제", "Remove", "外す", "Quitar", "Retirer", "Remover", "Abnehmen", "Снять") }
+    var heldItemNoneOwned: String {
+        t("가방에 지닌 도구가 없어요. 상점에서 살 수 있어요.",
+          "No held items in your bag. You can buy some in the shop.",
+          "バッグにもちものがありません。ショップで買えます。",
+          "No tienes objetos en la mochila. Puedes comprarlos en la tienda.",
+          "Aucun objet dans ton sac. Tu peux en acheter à la boutique.",
+          "Nenhum item na bolsa. Você pode comprar na loja.",
+          "Keine Items im Beutel. Du kannst welche im Shop kaufen.",
+          "В сумке нет предметов. Их можно купить в магазине.")
+    }
+    var heldItemBagHint: String {
+        t("배틀 탭에서 배틀 포켓몬에게 장착해요",
+          "Equip it to your battle Pokémon in the Battle tab",
+          "バトルタブでバトルのポケモンに持たせます",
+          "Equípalo a tu Pokémon de combate en la pestaña de Combate",
+          "Équipe-le à ton Pokémon de combat dans l'onglet Combat",
+          "Equipe no Pokémon de batalha na aba Batalha",
+          "Rüste es im Kampf-Tab deinem Kampf-Pokémon aus",
+          "Выдайте его боевому покемону на вкладке «Бой»")
+    }
+
+    func heldItemEffect(_ kind: ItemKind) -> String {
+        switch kind {
+        case .leftovers:
+            return t("매 턴 끝에 최대 HP의 1/16을 회복해요.", "Restores 1/16 of max HP at the end of each turn.",
+                     "毎ターン終了時に最大HPの1/16を回復します。", "Recupera 1/16 de los PS máx. al final de cada turno.",
+                     "Restaure 1/16 des PV max à la fin de chaque tour.", "Restaura 1/16 do HP máx. no fim de cada turno.",
+                     "Heilt am Ende jeder Runde 1/16 der max. KP.", "В конце каждого хода восстанавливает 1/16 макс. HP.")
+        case .choiceScarf:
+            return t("스피드가 1.5배. 처음 쓴 기술만 쓸 수 있어요.", "Speed ×1.5, but locks into the first move used.",
+                     "素早さが1.5倍。最初に使った技しか出せません。", "Velocidad ×1,5, pero se queda con el primer movimiento.",
+                     "Vitesse ×1,5, mais bloqué sur la première attaque.", "Velocidade ×1,5, mas fica preso ao primeiro golpe.",
+                     "Initiative ×1,5, aber nur die erste Attacke ist erlaubt.", "Скорость ×1,5, но доступна только первая применённая атака.")
+        case .choiceBand:
+            return t("공격이 1.5배. 처음 쓴 기술만 쓸 수 있어요.", "Attack ×1.5, but locks into the first move used.",
+                     "攻撃が1.5倍。最初に使った技しか出せません。", "Ataque ×1,5, pero se queda con el primer movimiento.",
+                     "Attaque ×1,5, mais bloqué sur la première attaque.", "Ataque ×1,5, mas fica preso ao primeiro golpe.",
+                     "Angriff ×1,5, aber nur die erste Attacke ist erlaubt.", "Атака ×1,5, но доступна только первая применённая атака.")
+        case .focusSash:
+            return t("HP가 가득일 때 쓰러질 공격을 한 번 HP 1로 버텨요.", "From full HP, survives one knockout hit with 1 HP.",
+                     "HPが満タンのとき、一度だけひんし級の攻撃をHP1で耐えます。", "Con los PS al máximo, resiste un golpe mortal con 1 PS.",
+                     "À PV max, survit à un coup fatal avec 1 PV.", "Com o HP cheio, sobrevive a um golpe fatal com 1 HP.",
+                     "Übersteht bei vollen KP einen K.o.-Treffer mit 1 KP.", "При полном HP один раз переживает смертельный удар с 1 HP.")
+        case .lifeOrb:
+            return t("주는 데미지가 1.3배. 공격할 때마다 최대 HP의 10%를 잃어요.", "Damage ×1.3, but costs 10% of max HP per attack.",
+                     "与えるダメージが1.3倍。攻撃のたび最大HPの10%を失います。", "Daño ×1,3, pero pierde el 10% de los PS máx. por ataque.",
+                     "Dégâts ×1,3, mais perd 10 % des PV max à chaque attaque.", "Dano ×1,3, mas perde 10% do HP máx. a cada ataque.",
+                     "Schaden ×1,3, kostet aber bei jedem Angriff 10 % der max. KP.", "Урон ×1,3, но каждая атака отнимает 10% макс. HP.")
+        case .expertBelt:
+            return t("효과가 굉장한 공격의 데미지가 1.2배.", "Super-effective moves deal ×1.2 damage.",
+                     "効果ばつぐんの技のダメージが1.2倍。", "Los movimientos supereficaces hacen ×1,2 de daño.",
+                     "Les attaques super efficaces font ×1,2 de dégâts.", "Golpes super efetivos causam ×1,2 de dano.",
+                     "Sehr effektive Attacken richten ×1,2 Schaden an.", "Сверхэффективные атаки наносят ×1,2 урона.")
+        case .charcoal:
+            return t("불꽃타입 기술의 데미지가 1.2배.", "Fire-type moves deal ×1.2 damage.",
+                     "ほのおタイプの技のダメージが1.2倍。", "Los movimientos de tipo Fuego hacen ×1,2 de daño.",
+                     "Les attaques de type Feu font ×1,2 de dégâts.", "Golpes do tipo Fogo causam ×1,2 de dano.",
+                     "Feuer-Attacken richten ×1,2 Schaden an.", "Атаки типа Огонь наносят ×1,2 урона.")
+        default:
+            return ""
         }
     }
 
@@ -2184,7 +2259,7 @@ struct L {
         case .linkingCord:
             return linkingCordDescription
         default:
-            return ""   // 진화의 돌은 위에서 처리
+            return heldItemEffect(kind)   // 진화의 돌은 위에서 처리
         }
     }
     /// 가방 사용 컨트롤의 효과 힌트 — 민트("성격 랜덤 변경", 사탕의 "+XP" 자리).

@@ -13,6 +13,7 @@ private struct ShopNoProvider: PokeProviding {
 @MainActor
 final class ShopTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
+    private let heldItemEntries: [ShopEntry] = ItemKind.allCases.filter(\.isHeldItem).map { .item($0) }
 
     /// usedSinceInstall/spentTokens 를 직접 지정한 상태 파일을 만들어 로드 — 지갑 잔액을 결정적으로
     /// 세팅(update() 의 delta 적립 경로를 우회). testCannotUseWhileLineUnloaded 와 동일한 JSON 시드 패턴.
@@ -194,7 +195,7 @@ final class ShopTests: XCTestCase {
     /// 상점 목록은 가격 오름차순(민트 100M < 사탕 500M < 이로치 부적 3B).
     func testItemsSortedByPriceAscending() {
         let items = store(used: 0).purchasableItems
-        XCTAssertEqual(items, [.mint, .rareCandy, .shinyCharm])
+        XCTAssertEqual(items, [.mint, .rareCandy] + ItemKind.allCases.filter(\.isHeldItem) + [.shinyCharm])
         let prices = items.compactMap(\.shopPrice)
         XCTAssertEqual(prices, prices.sorted(), "shopPrice 오름차순 — 가격 상수가 바뀌어도 정렬 불변식 유지")
     }
@@ -228,11 +229,12 @@ final class ShopTests: XCTestCase {
         XCTAssertTrue(s.hasActive)
         XCTAssertEqual(s.shopEntries,
                        [.item(.mint),        // 100M
-                        .item(.rareCandy),   // 500M
-                        .egg(nil),           // 1B
-                        .egg(.uncommon),     // 2.5B
-                        .item(.shinyCharm),  // 3B
-                        .egg(.rare)])        // 4B
+                        .item(.rareCandy)]   // 500M
+                       + heldItemEntries     // 1B
+                       + [.egg(nil),         // 1B
+                          .egg(.uncommon),   // 2.5B
+                          .item(.shinyCharm), // 3B
+                          .egg(.rare)])      // 4B
         let prices = s.shopEntries.map(\.price)
         XCTAssertEqual(prices, prices.sorted(), "가격 상수가 바뀌어도 오름차순 불변식 유지")
     }
@@ -245,11 +247,12 @@ final class ShopTests: XCTestCase {
         XCTAssertFalse(s.hasActive)
         XCTAssertEqual(s.shopEntries,
                        [.item(.mint),        // 100M
-                        .item(.rareCandy),   // 500M
-                        .egg(nil),           // 1B
-                        .egg(.uncommon),     // 2.5B
-                        .item(.shinyCharm),  // 3B
-                        .egg(.rare)])        // 4B
+                        .item(.rareCandy)]   // 500M
+                       + heldItemEntries     // 1B
+                       + [.egg(nil),         // 1B
+                          .egg(.uncommon),   // 2.5B
+                          .item(.shinyCharm), // 3B
+                          .egg(.rare)])      // 4B
         for tier in FreshEgg.shopTiers {
             XCTAssertTrue(s.shopEntries.contains(.egg(tier)), "알 상태에서도 \(tier?.rawValue ?? "기본") 알은 노출 유지")
             XCTAssertFalse(s.canBuyEgg(tier), "노출은 되지만 \(tier?.rawValue ?? "기본") 알 구매는 hasActive 게이트로 차단")
@@ -261,7 +264,7 @@ final class ShopTests: XCTestCase {
 
     func testEveryItemKindHasACategoryThatIsNotEmptyForShopItems() {
         let s = store(used: 0)
-        XCTAssertEqual(s.shopCategories, [.growth, .egg, .scout, .evolution])
+        XCTAssertEqual(s.shopCategories, [.growth, .egg, .scout, .evolution, .heldItem])
         XCTAssertEqual(s.shopEntries(in: .egg), [.egg(nil), .egg(.uncommon), .egg(.rare)])
         XCTAssertEqual(s.shopEntries(in: .growth), [.item(.mint), .item(.rareCandy), .item(.shinyCharm)])
         XCTAssertEqual(s.shopEntries(in: .megaStone), [])

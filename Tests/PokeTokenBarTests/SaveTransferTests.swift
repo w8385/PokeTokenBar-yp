@@ -559,7 +559,7 @@ final class SaveTransferTests: XCTestCase {
         let progress: Set<String> = ["usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
-                                     "collectedFinals", "inventory",
+                                     "collectedFinals", "inventory", "heldItems",
                                      "notifiedDexCompletions", "dexCompletionsSeeded", "clickGrowth",
                                      "friendEntryIDs", "rewardedDexRegions", "scoutDraws", "scoutedEgg"]
         let deviceLedger: Set<String> = ["installBaselineSet", "claimedTodayTokensByProvider", "lastDate"]
