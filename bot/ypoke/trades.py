@@ -46,6 +46,10 @@ CREATE TABLE IF NOT EXISTS trades (
     proposer_applied INTEGER NOT NULL DEFAULT 0,
     target_applied INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS trade_handles (
+    slack_user_id TEXT PRIMARY KEY,
+    handle TEXT NOT NULL UNIQUE
+);
 CREATE INDEX IF NOT EXISTS trades_proposer ON trades (proposer_id);
 CREATE INDEX IF NOT EXISTS trades_target ON trades (target_id);
 """
@@ -130,7 +134,7 @@ class TradeService:
                 "SELECT slack_user_id, pool_json FROM trade_pools WHERE slack_user_id != ?", (user_id,)
             ).fetchall()
         return [
-            {"id": other, "name": self._name(other)}
+            {"id": self._handle(other), "name": self._name(other)}
             for other, pool_json in rows
             if other != self._bot_user_id and json.loads(pool_json)
         ]
@@ -138,6 +142,7 @@ class TradeService:
     def propose(self, user_id: str, to_id: str, give_id: str) -> ProposeResult:
         """An offer of the user's `give_id` to `to_id`, who gets a DM to pick one back."""
         self._expire()
+        to_id = self._user_for(to_id)
         error = self._proposal_error(user_id, to_id, give_id)
         if error:
             return ProposeResult(error=error)
@@ -324,6 +329,19 @@ class TradeService:
 
     def _name(self, user_id: str) -> str:
         return self._name_for(user_id) or DEFAULT_PARTNER
+
+    def _handle(self, user_id: str) -> str:
+        """The id apps use for a coworker, so Slack ids never leave the bot."""
+        with closing(self._connect()) as connection, connection:
+            connection.execute(
+                "INSERT OR IGNORE INTO trade_handles (slack_user_id, handle) VALUES (?, ?)", (user_id, uuid.uuid4().hex[:16])
+            )
+            return connection.execute("SELECT handle FROM trade_handles WHERE slack_user_id = ?", (user_id,)).fetchone()[0]
+
+    def _user_for(self, handle: str) -> str:
+        with closing(self._connect()) as connection:
+            row = connection.execute("SELECT slack_user_id FROM trade_handles WHERE handle = ?", (handle,)).fetchone()
+        return row[0] if row else handle
 
     def _expire(self) -> None:
         with closing(self._connect()) as connection, connection:

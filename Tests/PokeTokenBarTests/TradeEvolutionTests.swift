@@ -109,6 +109,24 @@ final class TradeEvolutionTests: XCTestCase {
         XCTAssertEqual(graduated.chainOrder, [92, 93])
     }
 
+    func testGateSurvivesARelaunchAndTheLineReload() async throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("trade-evo-\(UUID())")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        paths.append(dir)
+        let file = dir.appendingPathComponent("state.json")
+        try JSONEncoder().encode(CompanionState()).write(to: file)
+        let first = try makeStore(file: file)
+        await first.hatch(baseID: 92)
+        XCTAssertEqual(first.state.active?.tradeGated, true)
+
+        let second = try makeStore(file: file)
+        try await waitForLine(second)
+        XCTAssertEqual(second.state.active?.tradeGated, true)
+        XCTAssertEqual(second.currentLine?.totalForms, 2)
+        growToEnd(second)
+        XCTAssertEqual(second.state.dex.last?.finalID, 93)
+    }
+
     func testGrandfatheredCompanionStillReachesGengar() async throws {
         let store = try makeStore { state in
             state.active = MonState(baseID: 92, pathIDs: [92], stageIndex: 0, usedAtStage: 0,
@@ -380,6 +398,12 @@ final class TradeUploaderTests: XCTestCase {
         await up.tick()
         XCTAssertEqual(applied.all, ["t1"])
         XCTAssertEqual(calls.all, ["GET /v1/trades", "POST /v1/trades/ack"])
+    }
+
+    func testTheShippedPartyReplyDecoderIgnoresTheTradesKey() throws {
+        let reply = #"{"ok":true,"party_size":1,"recent_battles":[],"coworkers":[],"trades":{"deliveries":[{"trade_id":"x"}]}}"#
+        XCTAssertNotNil(BattleInfo.decode(Data(reply.utf8)))
+        XCTAssertNil(BattleInfo.decode(Data(#"{"ok":true,"party_size":1,"trades":{"deliveries":[]}}"#.utf8)))
     }
 
     func testBotWithoutTradesIsLeftAloneAfterTheFirst404() async throws {
