@@ -131,17 +131,21 @@ final class UsageStore {
     /// 왜 사용자 선택인가: 프레임당 비용이 상태바 재합성(FrontBoardServices IPC + 렌더 fence)이라
     /// 기기·스프라이트에 따라 체감과 배터리 영향이 갈린다 — 하나의 값으로 모두를 만족시킬 수 없다.
     enum AnimationQuality: String, CaseIterable {
-        case powerSaver, balanced, smooth
+        case powerSaver, balanced, smooth, native
 
-        /// 프레임 지속 하한(초) = fps 상한. **0 인 케이스를 만들지 마라** — 네이티브 fps 는
-        /// idle wakeup 회귀다(근거는 defect-log '에너지' 절). 가드: `testNoAnimationQualityPresetDisablesTheCap`.
+        /// 프레임 지속 하한(초) = fps 상한. `native` 만 0(캡 없음)이고 사용자가 직접 골라야 한다 —
+        /// 기본값은 캡이 있는 `powerSaver` 다. 근거는 defect-log '에너지' 절.
         var frameFloor: TimeInterval {
             switch self {
-            case .powerSaver: 0.4   // ≈2.5fps
-            case .balanced:   0.2   // ≈5fps
-            case .smooth:     0.1   // ≈10fps
+            case .powerSaver: 0.4   // 2.5fps
+            case .balanced:   0.2   // 5fps
+            case .smooth:     0.1   // 10fps
+            case .native:     0     // 스프라이트 원본 delay
             }
         }
+
+        /// 메뉴바 하한 — 22px 아이콘은 10fps 위로 보이는 이득이 없고 상태바 재드로잉이 비싸서 `native` 도 10fps 로 캡한다.
+        var menuFrameFloor: TimeInterval { max(frameFloor, Self.smooth.frameFloor) }
 
         /// macOS 저전력 모드를 반영한 유효 하한 — **저장된 선택은 건드리지 않는 파생값**이다.
         /// 저전력이면 powerSaver 하한까지 늦추고(이미 더 느린 선택은 그대로), 해제되면 선택값으로
@@ -149,6 +153,10 @@ final class UsageStore {
         /// 종료되거나 사용자가 설정을 바꿔도 충돌할 복원 로직이 존재하지 않는다.
         func effectiveFrameFloor(lowPower: Bool) -> TimeInterval {
             lowPower ? max(frameFloor, Self.powerSaver.frameFloor) : frameFloor
+        }
+
+        func effectiveMenuFrameFloor(lowPower: Bool) -> TimeInterval {
+            lowPower ? max(menuFrameFloor, Self.powerSaver.frameFloor) : menuFrameFloor
         }
     }
     var animationQuality: AnimationQuality {

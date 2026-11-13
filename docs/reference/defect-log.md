@@ -1156,7 +1156,7 @@ read_when:
   CA 커밋 → WindowServer 디스플레이 사이클 왕복이 wakeup을 증폭한다(실측 ~47 wakeup/s). `setStatusImage`
   diff-gate(동일 프레임 객체 재대입 스킵 — 애니 프레임은 서로 다른 객체라 정상 통과) + GIF fps 하한
   (`AppDelegate.menuFrameFloor`, 당시 0.4s≈2.5fps) + `Timer.tolerance` 0.5(코얼레싱)로 ~5 wakeup/s(−89%),
-  애니메이션 유지. **캡 값 자체는 튜닝 가능하고 0 만 금지**다 — 세 대책 중 CPU 14%의 주범은 CA 전환·팝오버
+  애니메이션 유지. **캡 값 자체는 튜닝 가능하고, 0 은 사용자가 고른 플로팅 펫 "원본"뿐이다(아래 네이티브 fps 항목).** 세 대책 중 CPU 14%의 주범은 CA 전환·팝오버
   상주였고 fps 캡의 몫은 wakeup 을 프레임 수에 비례해 줄이는 것뿐이다(22px 에서도 2.5fps 는 느리다는
   지적이 있어 값을 사용자 선택으로 열었다 — `UsageStore.AnimationQuality` 의 0.4/0.2/0.1. CA 전환이
   제거된 뒤라 14% 당시와 같은 조건이 아니다. 단 **fps 를 올리면 CPU 는 실제로 오른다**: 실측 idle
@@ -1213,17 +1213,25 @@ read_when:
   "캡이 존재한다(>0)"이며 값의 일치가 아니다** — 표면이 크면 같은 fps 에서도 끊김이 더 보여 값은 갈릴 수
   있다(현재는 두 표면이 사용자 설정 `UsageStore.AnimationQuality` 하나를 공유한다 — 표면별로 값을
   갈라야 할 근거가 생기면 그때 프리셋에서 표면별 값을 뽑아라): ① GIF fps 하한
-  (`SpriteView(minFrameDelay:)` — 펫은 `store.animationQuality.frameFloor`, 메뉴바는
+  (`SpriteView(minFrameDelay:)` — 펫은 `store.animationQuality.effectiveFrameFloor`, 메뉴바는
   `AppDelegate.menuFrameFloor`, 팝오버 등 *일시적* 표시는 0=네이티브) + `Task.sleep(for:tolerance:)` 코얼레싱, ② 저전력 모드 정적화(`FloatingPetController.shouldAnimate(lowPower:)`
   — `NSProcessInfoPowerStateDidChange` 관찰 후 콘텐츠 재구성), ③ 숨김/슬립 시 `contentView=nil` 로 프레임 루프 정지
-  (팝오버 `popoverDidClose` 패턴). 회귀 가드: `FloatingPetEnergyTests`(fps 하한 clamp·`frameFloor>0`·팝오버 불변·
+  (팝오버 `popoverDidClose` 패턴). 회귀 가드: `FloatingPetEnergyTests`(fps 하한 clamp·`native` 만 0·팝오버 불변·
   low-power 정적화 순수 판정 — SwiftUI `.task` 타이밍 자체는 호스트 없이 xctest 불가라 순수 경로만 잠금).
   **가드 비대칭 주의:** 펫 캡만 상수로 잠겨 있었고 메뉴바 캡은 인라인 리터럴 `max(0.4, delay)` 여서
   *캡이 통째로 사라져도 테스트가 못 잡았다*. 지금은 두 표면이 같은 프리셋 값을 읽어 비대칭 자체가
-  구조적으로 불가능하고, 가드는 프리셋 계약에 걸린다(`testNoAnimationQualityPresetDisablesTheCap`,
+  구조적으로 불가능하고, 가드는 프리셋 계약에 걸린다(`testOnlyExplicitNativeChoiceRemovesTheCap`,
   `testTransientSurfaceIsTheOnlyUncappedOne` — 캡=0 주입으로 실패 확인). 상시 표시 표면을 더할 땐
   캡을 반드시 **이름 있는 값**으로 두고 `>0` 를 단정한다. occlusion 게이팅은
   all-spaces/`.floating` 펫이 실제로 거의 안 가려져 메뉴바와 동일 수확체감으로 미도입. (#102 리뷰 지적 반영, 2026-07-22.)
+- **네이티브 fps("원본")는 사용자가 직접 고르는 플로팅 펫 전용 opt-in 이다 — 캡 없는 기본값·메뉴바 해제는 여전히 회귀다.**
+  `AnimationQuality.native`(`frameFloor` 0)는 스프라이트 원래 delay(보통 20–30fps)로 돈다. 사용자가 팝오버와
+  같은 부드러움을 원해 열었다(2026-11-13). 가드는 셋이다: 기본값은 `powerSaver`(저장값을 모르면 거기로
+  내려앉음), 메뉴바는 `menuFrameFloor`(`max(frameFloor, 0.1)`)로 `native` 도 10fps 캡 — 22px 에서 이득이 없고
+  상태바 재드로잉이 wakeup 증폭 경로다, 저전력 모드는 `effectiveFrameFloor` 로 둘 다 powerSaver 로 다시 캡.
+  플로팅 펫 호출부는 날것 `frameFloor` 가 아니라 `effectiveFrameFloor` 를 읽는다(전엔 저전력에서 하한이
+  안 걸렸다 — 정적화가 막아 드러나지 않았을 뿐). 가드: `testOnlyExplicitNativeChoiceRemovesTheCap`,
+  `testNativeUncapsPetOnlyAndLowPowerCapsIt`, `testFloatingPetReadsTheEffectiveFloor`.
 
 ## 알림
 

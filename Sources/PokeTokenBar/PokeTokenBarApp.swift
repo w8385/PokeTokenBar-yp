@@ -324,13 +324,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     /// 메뉴바 GIF 프레임 지속의 하한(초) = fps 상한. 사용자 설정
     /// (`UsageStore.AnimationQuality`)이 값을 정하고, `GIFDecoder.capFrameRate` 가 프레임을
-    /// 솎아내 적용한다. 하한 자체는 없어질 수 없다 — 근거는 그 enum 과 defect-log '에너지' 절.
+    /// 솎아내 적용한다. 원본(native)을 골라도 메뉴바는 10fps 로 캡된다 — 근거는 그 enum 과 defect-log '에너지' 절.
     /// 히스토리: 0.4s 고정 → 프리셋(0.4/0.2/0.1) 중 사용자 선택. 기기·스프라이트마다 체감과
     /// 배터리 영향이 갈려 하나의 값으로 수렴하지 못했다 — 기본값은 고정 캡과 같은 0.4s 다.
     /// 저전력 모드에선 powerSaver 하한으로 캡된다(`effectiveFrameFloor` — 저장 설정 무변경 파생,
     /// 해제 시 자동 복귀). 이 값이 `menuSpriteKey` 에 들어가므로 저전력 토글 → 키 변화 → 재구성.
     private var menuFrameFloor: TimeInterval {
-        store.animationQuality.effectiveFrameFloor(
+        store.animationQuality.effectiveMenuFrameFloor(
             lowPower: ProcessInfo.processInfo.isLowPowerModeEnabled)
     }
 

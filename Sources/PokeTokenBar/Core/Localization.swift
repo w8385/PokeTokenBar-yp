@@ -385,9 +385,25 @@ struct L {
           "Flüssigere Animationen verbrauchen mehr Batterie",
           "Чем плавнее, тем больше расход батареи")
     }
-    var animationPowerSaver: String { t("배터리 절약", "Power saver", "バッテリー優先", "Ahorro de batería", "Économie d'énergie", "Economia de bateria", "Energiesparmodus", "Экономия энергии") }
-    var animationBalanced: String { t("기본", "Balanced", "標準", "Equilibrado", "Équilibré", "Equilibrado", "Ausgewogen", "Баланс") }
-    var animationSmooth: String { t("부드럽게", "Smooth", "滑らか", "Fluido", "Fluide", "Fluido", "Flüssig", "Плавность") }
+    func animationQualityOption(_ q: UsageStore.AnimationQuality) -> String {
+        switch q {
+        case .powerSaver: "2.5 fps"
+        case .balanced: "5 fps"
+        case .smooth: "10 fps"
+        case .native: t("원본", "Original", "オリジナル", "Original", "Original", "Original", "Original", "Оригинал")
+        }
+    }
+    func animationQualityCaption(_ q: UsageStore.AnimationQuality) -> String {
+        guard q == .native else { return animationQualityHint }
+        return t("스프라이트 원본 프레임(보통 20–30 fps). 배터리를 더 써요. 메뉴바는 최대 10 fps",
+                 "Sprite's own frame rate (usually 20–30 fps). Uses more battery. Menu bar is capped at 10 fps",
+                 "スプライト本来のフレームレート（通常 20～30 fps）。バッテリーを多く使います。メニューバーは最大 10 fps",
+                 "Fotogramas originales del sprite (normalmente 20–30 fps). Consume más batería. La barra de menús se limita a 10 fps",
+                 "Fréquence d'origine du sprite (souvent 20–30 fps). Consomme plus de batterie. La barre des menus est limitée à 10 fps",
+                 "Quadros originais do sprite (normalmente 20–30 fps). Consome mais bateria. A barra de menus fica limitada a 10 fps",
+                 "Originale Bildrate des Sprites (meist 20–30 fps). Verbraucht mehr Akku. Die Menüleiste ist auf 10 fps begrenzt",
+                 "Исходная частота кадров спрайта (обычно 20–30 fps). Расходует больше батареи. В строке меню максимум 10 fps")
+    }
     var limitDisplayModeLabel: String { t("한도 표시 방식", "Limit display", "上限の表示", "Visualización del límite", "Affichage de la limite", "Exibição do limite", "Limit-Anzeige", "Показ лимитов") }
     var limitDisplayUsed: String { t("사용량", "Used", "使用量", "Usado", "Utilisé", "Usado", "Verbraucht", "Потрачено") }
     var limitDisplayRemaining: String { t("남은 양", "Remaining", "残量", "Restante", "Restant", "Restante", "Verbleibend", "Осталось") }

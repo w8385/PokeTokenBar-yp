@@ -757,6 +757,17 @@ final class UsageStoreTests: XCTestCase {
         XCTAssertEqual(s2.animationQuality, .smooth, "같은 defaults 재로드 → 유지")
     }
 
+    /// 예전에 저장된 값은 그대로 로드되고, 모르는 값은 캡이 있는 기본값으로 내려앉는다 — 캡 해제는 명시 선택뿐.
+    func testSavedAnimationQualityRawValuesLoadUnchanged() {
+        for (raw, expected) in [("powerSaver", UsageStore.AnimationQuality.powerSaver), ("balanced", .balanced),
+                                ("smooth", .smooth), ("native", .native)] {
+            testDefaults.set(raw, forKey: "animationQuality")
+            XCTAssertEqual(makeStore(providers: []).animationQuality, expected, raw)
+        }
+        testDefaults.set("bogus", forKey: "animationQuality")
+        XCTAssertEqual(makeStore(providers: []).animationQuality, .powerSaver)
+    }
+
     // MARK: 집계
 
     func testAggregatesTodayTokensAcrossProviders() async {

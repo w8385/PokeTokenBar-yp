@@ -111,11 +111,8 @@ struct SpriteView: View {
     var animated: Bool = false
     var shiny: Bool = false
     /// GIF 프레임 지속의 하한(초). 0=원본 delay 그대로. >0 이면 fps 상한 + wakeup 코얼레싱을 적용해
-    /// idle 배터리를 통제한다 — 항상 떠 있는 플로팅 펫과 메뉴바 GIF 가 **같은 규율**을 쓰게.
-    /// 규율 = "캡이 존재한다(>0)"이며, 두 표면은 지금 같은 사용자 설정
-    /// (`UsageStore.AnimationQuality.frameFloor`)을 읽는다. 값이 표면별로 갈릴 수는 있다 —
-    /// 22px 메뉴바보다 큰 펫은 같은 fps 에서도 끊김이 더 보인다.
-    /// 팝오버 등 일시적 표시는 0(기본)으로 두어 네이티브 fps 유지.
+    /// idle 배터리를 통제한다. 플로팅 펫은 사용자 설정(`UsageStore.AnimationQuality.effectiveFrameFloor`)을
+    /// 읽어 사용자가 "원본"을 고르면 0 이 된다(저전력 모드에선 다시 캡). 팝오버 등 일시적 표시는 항상 0.
     var minFrameDelay: TimeInterval = 0
     var form: PokemonForm? = nil
     /// Show the back sprite (the companion turned away); missing back sprites fall back to the front one.
