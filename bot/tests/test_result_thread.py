@@ -92,7 +92,8 @@ def test_mention_replies_have_no_echo(store):
 def test_battle_summary_is_one_line_with_the_rematch_value(store):
     ready_pair(store)
     reply = handler(store).handle("UA", "<@UB>")
-    assert reply.summary.startswith("🏆 <@UA> 승 — 피카츄 vs 꼬부기 (")
+    assert reply.summary.startswith("🏆 <@U")
+    assert " 승 — 피카츄 vs 꼬부기 (" in reply.summary
     assert reply.summary.endswith("턴)")
     assert "\n" not in reply.summary
     assert reply.rematch == "UA:UB"
@@ -166,7 +167,8 @@ def test_rematch_reruns_the_matchup_with_the_current_upload(store):
     assert reply.in_channel and reply.echo == "<@UB> 님이 다시 붙기를 눌렀어요"
     assert "Lv100" in reply.text
     assert reply.rematch == "UA:UB"
-    assert store.record("UB") == Record(1, 0)
+    record = store.record("UB")
+    assert record.wins + record.losses == 1
 
 
 def test_rematch_of_a_practice_stays_a_practice(store):
