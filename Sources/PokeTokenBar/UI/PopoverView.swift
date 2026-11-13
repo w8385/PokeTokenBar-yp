@@ -81,6 +81,12 @@ final class PopoverNavigation {
         showingCollectionLog = false
         tab = .collection
     }
+
+    func openBattle() {
+        showSettings = false
+        showingRecap = false
+        tab = .battle
+    }
 }
 
 @MainActor
