@@ -19,6 +19,7 @@ from ypoke.commands import (
     image_blocks,
     result_blocks,
 )
+from ypoke.trades import TradeService
 
 DM_FALLBACK_NOTE = "(대결을 신청한 곳에 올릴 수 없어서 DM으로 보내요)"
 ERROR_TEXT = "대결 봇에서 오류가 났어요. 잠시 뒤 다시 해 주세요."
@@ -87,8 +88,39 @@ def rematch_listener(handler: CommandHandler):
     return listener
 
 
+def trade_listener(trades: TradeService, kind: str):
+    """A trade button or select: `kind` is `pick`, `accept` or `decline`. A refusal answers privately and keeps the buttons."""
+
+    def listener(ack, body, action, respond, client) -> None:
+        ack()
+        user_id = body["user"]["id"]
+        value = action.get("value") or (action.get("selected_option") or {}).get("value") or ""
+        trade_id, _, individual_id = value.partition("|")
+        log_command("button", user_id, f"trade_{kind}", trade_id)
+        try:
+            if kind == "pick":
+                reply = trades.pick(user_id, trade_id, individual_id)
+            else:
+                reply = (trades.accept if kind == "accept" else trades.decline)(user_id, trade_id)
+        except Exception:
+            log.exception("trade button failed")
+            respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            return
+        post_direct_messages(client, reply.direct_messages)
+        if reply.final:
+            respond(text=reply.text, replace_original=True)
+        else:
+            respond(text=reply.text, response_type="ephemeral", replace_original=False)
+
+    return listener
+
+
 def send_direct_messages(client: WebClient, reply: Reply) -> None:
-    for message in reply.direct_messages:
+    post_direct_messages(client, reply.direct_messages)
+
+
+def post_direct_messages(client: WebClient, messages) -> None:
+    for message in messages:
         try:
             client.chat_postMessage(channel=message.user_id, text=message.text, blocks=message.blocks)
         except Exception:

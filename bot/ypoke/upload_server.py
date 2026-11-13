@@ -11,7 +11,9 @@ from urllib.parse import parse_qs, urlsplit
 
 from ypoke.dex import normalize_dex
 from ypoke.moves import MAX_MOVES, default_move_ids
+from ypoke.messages import DirectMessage
 from ypoke.store import Store
+from ypoke.trades import PROPOSE_ERRORS, TradeService
 
 MAX_BODY_BYTES = 64 * 1024
 MAX_PARTY_SIZE = 6
@@ -25,24 +27,31 @@ IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "spee
 MovesFor = Callable[[int, int], list[dict]]
 OnUpload = Callable[[str, list[dict]], None]
 NameFor = Callable[[str], str | None]
+Notify = Callable[[tuple[DirectMessage, ...]], None]
 
 
 class PartyError(ValueError):
     pass
 
 
+_REPLIED = object()
+
+
 def serve(
-    store: Store, host: str, port: int, on_upload: OnUpload, moves_for: MovesFor, name_for: NameFor = lambda user_id: None
+    store: Store, host: str, port: int, on_upload: OnUpload, moves_for: MovesFor,
+    name_for: NameFor = lambda user_id: None,
+    trades: TradeService | None = None, notify: Notify = lambda messages: None,
 ) -> ThreadingHTTPServer:
     """Start the upload server on a daemon thread and return it.
 
     `on_upload(user_id, party)` runs after each stored upload, before the reply.
     `moves_for(pokemon_id, level)` returns the attacking moves learnable at that level and raises OSError when offline.
     `name_for(user_id)` returns a Slack display name, or None when it cannot be found.
+    With `trades`, the trade endpoints are served and `notify` sends the DMs a new offer produces.
     """
     handler = type("BoundUploadHandler", (_UploadHandler,), {
         "store": store, "on_upload": staticmethod(on_upload), "moves_for": staticmethod(moves_for),
-        "name_for": staticmethod(name_for),
+        "name_for": staticmethod(name_for), "trades": trades, "notify": staticmethod(notify),
     })
     server = ThreadingHTTPServer((host, port), handler)
     threading.Thread(target=server.serve_forever, name="upload-server", daemon=True).start()
@@ -98,17 +107,22 @@ class _UploadHandler(BaseHTTPRequestHandler):
     on_upload: OnUpload
     moves_for: MovesFor
     name_for: NameFor
+    trades: TradeService | None
+    notify: Notify
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
         if url.path == "/v1/health":
             self._reply(200, {"ok": True})
             return
-        if url.path not in ("/v1/party", "/v1/moves"):
+        if url.path not in ("/v1/party", "/v1/moves", "/v1/coworkers", "/v1/trades"):
             self._reply(404, {"ok": False, "error": "not_found"})
             return
         user_id = self._authenticated_user()
         if user_id is None:
+            return
+        if url.path in ("/v1/coworkers", "/v1/trades"):
+            self._trade_read(url.path, user_id)
             return
         if url.path == "/v1/moves":
             self._learnable_moves(parse_qs(url.query))
@@ -120,26 +134,40 @@ class _UploadHandler(BaseHTTPRequestHandler):
         self._reply(200, {"ok": True, "party": stored.party, "uploaded_at": stored.uploaded_at})
 
     def do_POST(self) -> None:
-        if self.path != "/v1/party":
+        if self.path not in ("/v1/party", "/v1/trades", "/v1/trades/ack"):
             self._reply(404, {"ok": False, "error": "not_found"})
             return
         user_id = self._authenticated_user()
         if user_id is None:
             return
+        payload = self._read_json()
+        if payload is _REPLIED:
+            return
+        if self.path == "/v1/trades":
+            self._propose(user_id, payload)
+        elif self.path == "/v1/trades/ack":
+            self._acknowledge(user_id, payload)
+        else:
+            self._store_party(user_id, payload)
+
+    def _read_json(self) -> object:
         try:
             length = max(0, int(self.headers.get("Content-Length") or 0))
         except ValueError:
             length = 0
         if length > MAX_BODY_BYTES:
             self._reply(413, {"ok": False, "error": "too_large"})
-            return
+            return _REPLIED
         try:
-            payload = json.loads(self.rfile.read(length) or b"null")
-            party = validate_party(payload)
-            check_moves(party, self.moves_for)
+            return json.loads(self.rfile.read(length) or b"null")
         except json.JSONDecodeError:
             self._reply(400, {"ok": False, "error": "invalid JSON"})
-            return
+            return _REPLIED
+
+    def _store_party(self, user_id: str, payload: object) -> None:
+        try:
+            party = validate_party(payload)
+            check_moves(party, self.moves_for)
         except PartyError as error:
             self._reply(400, {"ok": False, "error": str(error)})
             return
@@ -147,8 +175,43 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
             return
         self.store.save_party(user_id, party, normalize_dex(payload))
+        body = {"ok": True, "party_size": len(party)}
+        if self.trades is not None:
+            if "trade_pool" in payload:
+                self.trades.save_pool(user_id, payload["trade_pool"])
+            body["trades"] = {"deliveries": self.trades.deliveries(user_id)}
         self.on_upload(user_id, party)
-        self._reply(200, {"ok": True, "party_size": len(party), **battle_overview(self.store, user_id, self.name_for)})
+        self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for)})
+
+    def _trade_read(self, path: str, user_id: str) -> None:
+        if self.trades is None:
+            self._reply(404, {"ok": False, "error": "not_found"})
+        elif path == "/v1/coworkers":
+            self._reply(200, {"ok": True, "coworkers": self.trades.coworkers(user_id)})
+        else:
+            self._reply(200, {"ok": True, "trades": {
+                "deliveries": self.trades.deliveries(user_id), "history": self.trades.history(user_id),
+            }})
+
+    def _propose(self, user_id: str, payload: object) -> None:
+        to_id, give_id = (payload.get("to"), payload.get("give")) if isinstance(payload, dict) else (None, None)
+        if self.trades is None or not (isinstance(to_id, str) and isinstance(give_id, str)):
+            self._reply(400, {"ok": False, "error": "to and give are required strings"})
+            return
+        result = self.trades.propose(user_id, to_id, give_id)
+        if result.error:
+            self._reply(400, {"ok": False, "error": result.error, "message": PROPOSE_ERRORS[result.error]})
+            return
+        self.notify(result.direct_messages)
+        self._reply(200, {"ok": True, "trade_id": result.trade_id})
+
+    def _acknowledge(self, user_id: str, payload: object) -> None:
+        trade_ids = payload.get("trade_ids") if isinstance(payload, dict) else None
+        if self.trades is None or not (isinstance(trade_ids, list) and all(isinstance(item, str) for item in trade_ids)):
+            self._reply(400, {"ok": False, "error": "trade_ids must be a list of strings"})
+            return
+        self.trades.ack(user_id, trade_ids[:100])
+        self._reply(200, {"ok": True})
 
     def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
         if urlsplit(self.path).path != "/v1/health":

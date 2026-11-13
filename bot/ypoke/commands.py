@@ -11,6 +11,7 @@ from urllib.parse import urlencode
 
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, simulate
 from ypoke.dex import NATIONAL_TOTAL, REGIONS, sprite_url
+from ypoke.messages import DirectMessage
 from ypoke.moves import battle_moves
 from ypoke.narration import battle_lines
 from ypoke.pokeapi import PokeAPIService, base_stats
@@ -78,13 +79,6 @@ class Where:
     channel_id: str
     thread_ts: str | None = None
     response_url: str | None = None
-
-
-@dataclass(frozen=True)
-class DirectMessage:
-    user_id: str
-    text: str
-    blocks: list[dict] | None = None
 
 
 @dataclass(frozen=True)

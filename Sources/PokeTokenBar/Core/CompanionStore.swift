@@ -1959,7 +1959,7 @@ final class CompanionStore {
     private func hatchCore(baseID: Int, generation: Int, form pendingForm: PokemonForm? = nil) async {
         let line: EvoLine
         do {
-            line = try await provider.line(baseSpeciesID: baseID)
+            line = try await provider.line(baseSpeciesID: baseID).prunedTradeOnly()
         } catch {
             markHatchRetryDelayedIfReady(generation: generation)
             AppLog.write("hatch: line fetch failed for base \(baseID) — egg kept, retry next tick")
@@ -2022,7 +2022,7 @@ final class CompanionStore {
         state.active = MonState(baseID: line.baseID, pathIDs: [line.baseID], plannedPathIDs: evolutionPlan,
                                 stageIndex: 0, usedAtStage: 0, rarity: line.rarity, totalForms: evolutionPlan.count,
                                 isShiny: isShiny, nature: nature, profile: profile, hasGrowthBoost: hasGrowthBoost,
-                                dittoDisguise: dittoDisguise, form: form, prayers: prayers)
+                                dittoDisguise: dittoDisguise, form: form, prayers: prayers, tradeGated: true)
         AppLog.write("hatch: base=\(line.baseID) rarity=\(line.rarity) shiny=\(isShiny) forms=\(evolutionPlan.count) boost=\(hasGrowthBoost) ditto=\(dittoDisguise != nil)")
         let name = formDisplayName(line.localizedName(line.baseID, state.language),
                                    speciesID: line.baseID, form: form)
@@ -2104,7 +2104,8 @@ final class CompanionStore {
         let generation = activeGeneration
         isHatching = true
         defer { isHatching = false }
-        if let line = try? await provider.line(baseSpeciesID: a.baseID) {
+        if let fullLine = try? await provider.line(baseSpeciesID: a.baseID) {
+            let line = a.tradeGated == true ? fullLine.prunedTradeOnly() : fullLine
             // await 중 사용량·민트 등 활성 상태는 계속 바뀔 수 있다. 요청 당시 스냅샷을 다시 쓰지 말고
             // 같은 개체가 아직 활성인 경우에만 최신 상태를 정규화한다.
             guard activeGeneration == generation,
