@@ -272,9 +272,17 @@ final class EggPrayerTests: XCTestCase {
 
     // MARK: floating pet click routing and particles
 
-    func testClickPraysOverAnEggAndOpensThePopoverForAPokemon() {
+    func testClickPraysOverAnEggAndPetsAPokemon() {
         XCTAssertEqual(FloatingPetController.clickAction(subjectIsEgg: true), .pray)
-        XCTAssertEqual(FloatingPetController.clickAction(subjectIsEgg: false), .openPopover)
+        XCTAssertEqual(FloatingPetController.clickAction(subjectIsEgg: false), .pet)
+    }
+
+    func testOpenMenuHintIsTranslatedForEveryLanguage() {
+        XCTAssertEqual(L(.ko).floatingPetHoverMenuHint, "우클릭: 메뉴")
+        XCTAssertEqual(L(.en).floatingPetHoverMenuHint, "Right-click: menu")
+        for language in AppLanguage.allCases {
+            XCTAssertFalse(L(language).floatingPetHoverMenuHint.isEmpty, "\(language)")
+        }
     }
 
     func testBurstSpawnsClampedParticlesAndRemovesThemItself() async throws {
@@ -318,7 +326,7 @@ final class EggPrayerTests: XCTestCase {
         PetClickRouter(pray: { log.prays += 1; log.eggPrayers += 1 }, prayerCount: { log.eggPrayers },
                        didPray: { log.didPray += 1 },
                        spawnEmoji: { log.emojis += 1 }, refreshUsage: { log.refreshes += 1 },
-                       openPopover: { log.opens += 1 }, clock: clock)
+                       pet: { log.pets += 1 }, clock: clock)
     }
 
     private func pray(_ times: Int, on router: PetClickRouter) {
@@ -388,12 +396,12 @@ final class EggPrayerTests: XCTestCase {
         XCTAssertEqual(log.refreshes, 2, "the new egg's 30th prayer refreshes again")
     }
 
-    func testClickingAHatchedPokemonOpensThePopoverWithoutPrayingOrRefreshing() {
+    func testClickingAHatchedPokemonPetsWithoutPrayingOrRefreshing() {
         let log = PrayerCallLog()
         let router = makeRouter(clock: { self.now }, log: log)
         pray(29, on: router)
         for _ in 0..<50 { router.handle(subjectIsEgg: false) }
-        XCTAssertEqual(log.opens, 50)
+        XCTAssertEqual(log.pets, 50)
         XCTAssertEqual(log.prays, 29)
         XCTAssertEqual(log.didPray, 29, "hatched clicks do not touch the prayer hover text")
         XCTAssertEqual(log.refreshes, 0, "hatched-Pokémon clicks never count")
@@ -418,7 +426,7 @@ final class EggPrayerTests: XCTestCase {
 
 @MainActor
 private final class PrayerCallLog {
-    var prays = 0, emojis = 0, refreshes = 0, opens = 0, didPray = 0
+    var prays = 0, emojis = 0, refreshes = 0, pets = 0, didPray = 0
     /// The persisted prayer count of the current egg (reset by the test to simulate a new egg).
     var eggPrayers = 0
 }

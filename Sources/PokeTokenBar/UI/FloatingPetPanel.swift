@@ -248,7 +248,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     private let motionOverride: Bool?
     /// Owned here and handed to the view once, so a prayer never rebuilds the hosting `rootView`.
     private let prayerBurst = PrayerBurst()
-    private let hearts = PetHeartState()
+    let hearts = PetHeartState()
     private var heartExpiry: Task<Void, Never>?
     private var isHovering = false
     /// The event text while the self-popped callout is up (nil otherwise, so it never shows on a later hover).
@@ -256,10 +256,10 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     private var eventPopExpiry: Task<Void, Never>?
     private var lastSeenEventSeq: Int?
 
-    /// What a click on the pet does: an egg is prayed over, a hatched Pokémon opens the popover.
-    enum ClickAction: Equatable { case pray, openPopover }
+    /// What a click on the pet does: an egg is prayed over, a hatched Pokémon is petted. A click never opens the popover.
+    enum ClickAction: Equatable { case pray, pet }
 
-    static func clickAction(subjectIsEgg: Bool) -> ClickAction { subjectIsEgg ? .pray : .openPopover }
+    static func clickAction(subjectIsEgg: Bool) -> ClickAction { subjectIsEgg ? .pray : .pet }
 
     /// Praying refreshes usage every 30 prayers (30, 60, 90...), the same step as the hover quip, so the egg's
     /// progress moves without a request per click.
@@ -298,7 +298,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
             guard let store = self?.store else { return }
             Task { await store.refresh() }
         },
-        openPopover: { [weak self] in self?.onOpenPopover?() },
+        pet: { [weak self] in self?.petWasStroked() },
         clock: clock)
 
     private let clock: () -> Date
@@ -500,7 +500,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         })
     }
 
-    /// A plain click answers waiting/done agents, then prays over an egg or opens a hatched pet.
+    /// A click answers waiting/done agents, then prays over an egg or pets a hatched pet.
     func petClicked() {
         if tracker.dismissBubble() { agentDidChange() }
         let growth = companion.growByClick()
@@ -704,14 +704,16 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     }
 
     private func currentHoverText() -> String {
-        FloatingPetView.hoverTooltip(
+        let l = L(companion.language)
+        return FloatingPetView.hoverTooltip(
             todayTokens: store.todayTotalTokens,
             limitUtilization: store.highestLimitUtilization,
             mode: store.limitDisplayMode,
-            l: L(companion.language),
+            l: l,
             sulkIdle: companion.sulkIdle,
             eventLine: eventPopText,
             prayers: companion.representativeSubject.speciesID == nil ? companion.state.eggPrayers?.count ?? 0 : 0)
+            + "\n" + l.floatingPetHoverMenuHint
     }
 
     /// A prayer changes the count in the hover text. Rebuild it right here instead of waiting for the observation
@@ -855,7 +857,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     }
 }
 
-/// Routes a plain click on the pet. Praying always counts and spawns its emoji at once;
+/// Routes a click on the pet. Praying always counts and spawns its emoji at once;
 /// only the usage refresh it triggers is throttled (at growing prayer milestones, at most once per interval).
 @MainActor
 final class PetClickRouter {
@@ -864,20 +866,20 @@ final class PetClickRouter {
     private let didPray: () -> Void
     private let spawnEmoji: () -> Void
     private let refreshUsage: () -> Void
-    private let openPopover: () -> Void
+    private let pet: () -> Void
     private let clock: () -> Date
     private var lastPrayerRefreshAt: Date?
     /// In memory only: after a restart the first click past a milestone may refresh once more, which is harmless.
     private var lastRefreshedMilestone = 0
 
     init(pray: @escaping () -> Void, prayerCount: @escaping () -> Int, didPray: @escaping () -> Void = {}, spawnEmoji: @escaping () -> Void, refreshUsage: @escaping () -> Void,
-         openPopover: @escaping () -> Void, clock: @escaping () -> Date) {
+         pet: @escaping () -> Void, clock: @escaping () -> Date) {
         self.pray = pray
         self.prayerCount = prayerCount
         self.didPray = didPray
         self.spawnEmoji = spawnEmoji
         self.refreshUsage = refreshUsage
-        self.openPopover = openPopover
+        self.pet = pet
         self.clock = clock
     }
 
@@ -897,15 +899,15 @@ final class PetClickRouter {
                 lastPrayerRefreshAt = now
                 refreshUsage()
             }
-        case .openPopover:
-            openPopover()
+        case .pet:
+            pet()
         }
     }
 }
 
 final class PetHostingView: NSHostingView<AnyView> {
     var onOpenPopover: (() -> Void)?
-    /// A plain click on the pet. The controller decides between praying and opening the popover.
+    /// A click on the pet, however rapid. The controller decides between praying and petting; it never opens the popover.
     var onClick: (() -> Void)?
     var onStroke: (() -> Void)?
     /// Minimum horizontal travel (pt) for one stroke; scales with the pet size.

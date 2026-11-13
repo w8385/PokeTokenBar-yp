@@ -357,7 +357,7 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         XCTAssertEqual(fixture.defaults.double(forKey: "floatingPetOriginY"), Double(pet.y))
     }
 
-    func testClickDismissesTheBubbleAndStillOpensThePopover() throws {
+    func testClickDismissesTheBubbleAndNeverOpensThePopover() throws {
         var opened = 0
         let fixture = try makeFixture(onOpenPopover: { opened += 1 })
         defer { fixture.cleanUp() }
@@ -365,12 +365,56 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         try send("waiting", to: fixture.controller)
         fixture.controller.petClicked()
         XCTAssertEqual(fixture.controller.tracker.activity, .idle)
-        XCTAssertEqual(opened, 1)
+        XCTAssertEqual(opened, 0)
 
         try send("working", to: fixture.controller)
         fixture.controller.petClicked()
         XCTAssertEqual(fixture.controller.tracker.activity, .working, "a click does not stop work")
-        XCTAssertEqual(opened, 2)
+        XCTAssertEqual(opened, 0)
+    }
+
+    func testRapidClicksOnAHatchedPetNeverOpenThePopover() throws {
+        var opened = 0
+        let fixture = try makeFixture(onOpenPopover: { opened += 1 })
+        defer { fixture.controller.setDisplayAwake(false); fixture.cleanUp() }
+        fixture.controller.setDisplayAwake(true)
+        let hosting = fixture.controller.makeHostingView(animated: false)
+        for clickCount in 1...6 {
+            let down = try XCTUnwrap(NSEvent.mouseEvent(with: .leftMouseDown, location: .zero, modifierFlags: [],
+                timestamp: 0, windowNumber: 0, context: nil, eventNumber: 0, clickCount: clickCount, pressure: 1))
+            let up = try XCTUnwrap(NSEvent.mouseEvent(with: .leftMouseUp, location: .zero, modifierFlags: [],
+                timestamp: 0, windowNumber: 0, context: nil, eventNumber: 0, clickCount: clickCount, pressure: 1))
+            hosting.mouseDown(with: down)
+            hosting.mouseUp(with: up)
+        }
+        XCTAssertEqual(opened, 0, "single, double and triple clicks all pet")
+        XCTAssertTrue(fixture.controller.hearts.isShowing)
+        hosting.handleOpen(nil)
+        XCTAssertEqual(opened, 1, "the context menu Open still opens a hatched pet")
+    }
+
+    func testClickingAHatchedPetShowsHeartsAndAnEggDoesNot() throws {
+        let hatched = try makeFixture()
+        defer { hatched.controller.setDisplayAwake(false); hatched.cleanUp() }
+        hatched.controller.setDisplayAwake(true)
+        hatched.controller.makeHostingView(animated: false).onClick?()
+        XCTAssertTrue(hatched.controller.hearts.isShowing)
+
+        let egg = try makeFixture(hatched: false)
+        defer { egg.controller.setDisplayAwake(false); egg.cleanUp() }
+        egg.controller.setDisplayAwake(true)
+        egg.controller.makeHostingView(animated: false).onClick?()
+        XCTAssertFalse(egg.controller.hearts.isShowing)
+    }
+
+    func testClickingAWaitingHatchedPetClearsTheQuestionThenShowsHearts() throws {
+        let fixture = try makeFixture()
+        defer { fixture.controller.setDisplayAwake(false); fixture.cleanUp() }
+        fixture.controller.setDisplayAwake(true)
+        try send("waiting", to: fixture.controller)
+        fixture.controller.makeHostingView(animated: false).onClick?()
+        XCTAssertEqual(fixture.controller.tracker.activity, .idle)
+        XCTAssertTrue(fixture.controller.hearts.isShowing)
     }
 
     /// Exercise the callback installed on the actual hosting view, so resolving the mouse-up
@@ -401,7 +445,7 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         XCTAssertEqual(fixture.companion.state.eggPrayers?.count, 2)
     }
 
-    func testHostingClickAcknowledgesAgentsAndOpensAHatchedPet() throws {
+    func testHostingClickAcknowledgesAgentsAndPetsAHatchedPetWithoutOpening() throws {
         var opened = 0
         let fixture = try makeFixture(onOpenPopover: { opened += 1 })
         defer { fixture.cleanUp() }
@@ -410,7 +454,7 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         try send("waiting", to: fixture.controller)
         hosting.onClick?()
         XCTAssertEqual(fixture.controller.tracker.activity, .idle)
-        XCTAssertEqual(opened, 1)
+        XCTAssertEqual(opened, 0)
         XCTAssertNil(fixture.companion.state.eggPrayers)
     }
 
@@ -488,6 +532,6 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         XCTAssertNil(bubble(fixture.controller), "both questions were seen")
         XCTAssertEqual(fixture.controller.tracker.summary.working, true)
         XCTAssertTrue(fixture.controller.isBobbing)
-        XCTAssertEqual(opened, 1)
+        XCTAssertEqual(opened, 0)
     }
 }
