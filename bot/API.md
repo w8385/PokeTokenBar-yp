@@ -41,6 +41,7 @@ Replaces the caller's stored party.
 | `level` | int | `1..100` |
 | `name` | string | optional display name, max 40 chars. Default: Korean species name from PokéAPI |
 | `shiny` | bool | optional, default `false`. Shown as ✨ in the battle log |
+| `rental` | bool | optional, default `false`. A loaner: it fights at the opponent's level (both keep their own when both are rentals) and is announced as "대여 포켓몬 …" |
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
 | `moves` | array | optional, up to 4 distinct PokéAPI move ids, each an attacking move from `GET /v1/moves` at that level. Missing or empty: the 4 most recently learned |
 
@@ -48,7 +49,10 @@ Unknown keys are ignored, so the app can send more fields later.
 At battle time, chosen moves the Pokémon can no longer use (it evolved, say) are dropped; if none
 are left it uses the defaults.
 
-The app sends nothing while the user has an egg (no Pokémon being raised).
+While the user has only an egg and no kept catch, the app sends a rental Gen-1 starter
+(`{"pokemon_id": 1|4|7, "level": 5, "rental": true}`, no `moves`).
+
+The first upload that makes both sides of a waiting challenge ready plays it (see README).
 
 Responses:
 

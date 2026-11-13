@@ -56,6 +56,7 @@ class Combatant:
     ivs: BaseStats
     shiny: bool = False
     moves: tuple[Move, ...] = ()
+    rental: bool = False
 
     @property
     def label(self) -> str:

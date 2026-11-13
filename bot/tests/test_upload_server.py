@@ -34,7 +34,7 @@ def moves_for():
 def server(tmp_path, moves_for):
     store = Store(str(tmp_path / "bot.sqlite3"))
     uploads = []
-    http_server = serve(store, "127.0.0.1", 0, uploads.append, moves_for)
+    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: uploads.append((user_id, party)), moves_for)
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}", uploads
     http_server.shutdown()
 
@@ -62,7 +62,7 @@ def test_upload_then_read_back(server):
     token = store.issue_token("U1")
     status, body = call(f"{base}/v1/party", "POST", token, {"app_version": "2.5.7", "party": [PIKACHU], "extra": 1})
     assert (status, body) == (200, {"ok": True, "party_size": 1})
-    assert uploads == [[PIKACHU]]
+    assert uploads == [("U1", [PIKACHU])]
     status, body = call(f"{base}/v1/party", token=token)
     assert status == 200
     assert body["party"] == [PIKACHU]
@@ -75,6 +75,34 @@ def test_reregistering_revokes_the_old_token(server):
     new = store.issue_token("U1")
     assert call(f"{base}/v1/party", "POST", old, {"party": [PIKACHU]})[0] == 401
     assert call(f"{base}/v1/party", "POST", new, {"party": [PIKACHU]})[0] == 200
+
+
+def test_a_prompt_token_works_beside_the_old_one_until_relinking(server):
+    store, base, _ = server
+    old = store.issue_token("U1")
+    prompt = store.issue_token("U1", keep_existing=True)
+    assert call(f"{base}/v1/party", "POST", old, {"party": [PIKACHU]})[0] == 200
+    assert call(f"{base}/v1/party", "POST", prompt, {"party": [PIKACHU]})[0] == 200
+    relinked = store.issue_token("U1")
+    assert call(f"{base}/v1/party", "POST", prompt, {"party": [PIKACHU]})[0] == 401
+    assert call(f"{base}/v1/party", "POST", relinked, {"party": [PIKACHU]})[0] == 200
+
+
+def test_a_prompt_token_links_an_unlinked_user(server):
+    store, base, _ = server
+    token = store.issue_token("U1", keep_existing=True)
+    assert call(f"{base}/v1/party", "POST", token, {"party": [PIKACHU]})[0] == 200
+
+
+def test_rental_is_kept_only_when_true(server):
+    store, base, _ = server
+    token = store.issue_token("U1")
+    rental = {"pokemon_id": 1, "level": 5, "rental": True}
+    assert call(f"{base}/v1/party", "POST", token, {"party": [rental]})[0] == 200
+    assert call(f"{base}/v1/party", token=token)[1]["party"][0]["rental"] is True
+    assert "rental" not in validate_party({"party": [{"pokemon_id": 1, "level": 5, "rental": False}]})[0]
+    with pytest.raises(PartyError, match="rental must be a boolean"):
+        validate_party({"party": [{"pokemon_id": 1, "level": 5, "rental": "yes"}]})
 
 
 @pytest.mark.parametrize("token", [None, "wrong"])

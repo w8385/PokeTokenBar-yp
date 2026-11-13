@@ -780,15 +780,56 @@ struct L {
         t("자동 (키우는 포켓몬)", "Auto (the one you're raising)", "自動(育成中のポケモン)", "Auto (el que crías)",
           "Auto (celui que tu élèves)", "Auto (o que você cria)", "Automatisch (aktuelles Pokémon)", "Авто (выращиваемый)")
     }
-    var battleEntryEgg: String {
-        t("알이 부화하면 대결에 나갈 수 있어요. 그 전에는 봇에 아무것도 올라가지 않아요.",
-          "You can battle once your egg hatches. Until then nothing is sent to the bot.",
-          "タマゴがかえると対戦に出られます。それまではボットに何も送られません。",
-          "Podrás combatir cuando el huevo eclosione. Hasta entonces no se envía nada al bot.",
-          "Tu pourras combattre quand l'œuf éclora. D'ici là, rien n'est envoyé au bot.",
-          "Você poderá batalhar quando o ovo chocar. Até lá nada é enviado ao bot.",
-          "Sobald das Ei schlüpft, kannst du kämpfen. Bis dahin wird nichts an den Bot gesendet.",
-          "Сражаться можно, когда вылупится яйцо. До этого боту ничего не отправляется.")
+    var battleRentalLabel: String { t("대여 포켓몬", "Rental Pokémon", "レンタルポケモン", "Pokémon de alquiler", "Pokémon de location", "Pokémon alugado", "Leih-Pokémon", "Прокатный покемон") }
+    var battleRentalHint: String {
+        t("알이 부화하기 전까지 대여 포켓몬이 대결에 나가요. 상대 레벨에 맞춰 싸우고 기술은 자동이에요.",
+          "Until your egg hatches, a rental Pokémon battles for you. It fights at the opponent's level with automatic moves.",
+          "タマゴがかえるまではレンタルポケモンが対戦に出ます。相手のレベルに合わせて戦い、わざは自動です。",
+          "Hasta que el huevo eclosione, combate un Pokémon de alquiler. Lucha al nivel del rival con movimientos automáticos.",
+          "Jusqu'à l'éclosion de l'œuf, un Pokémon de location combat pour toi, au niveau de l'adversaire et avec des capacités automatiques.",
+          "Até o ovo chocar, um Pokémon alugado batalha por você, no nível do oponente e com golpes automáticos.",
+          "Bis dein Ei schlüpft, kämpft ein Leih-Pokémon für dich – auf dem Level des Gegners und mit automatischen Attacken.",
+          "Пока яйцо не вылупится, за вас сражается прокатный покемон — на уровне соперника и с автоматическими приёмами.")
+    }
+    func rentalStarterName(_ speciesID: Int) -> String {
+        switch speciesID {
+        case 1: t("이상해씨", "Bulbasaur", "フシギダネ", "Bulbasaur", "Bulbizarre", "Bulbasaur", "Bisasam", "Бульбазавр")
+        case 4: t("파이리", "Charmander", "ヒトカゲ", "Charmander", "Salamèche", "Charmander", "Glumanda", "Чармандер")
+        default: t("꼬부기", "Squirtle", "ゼニガメ", "Squirtle", "Carapuce", "Squirtle", "Schiggy", "Сквиртл")
+        }
+    }
+    var ypokeNotLinked: String { t("연결 안 됨", "Not connected", "未接続", "Sin conectar", "Non connecté", "Não conectado", "Nicht verbunden", "Не подключено") }
+    var ypokeLinkSteps: [String] {
+        [t("Slack에서 /포켓몬연결 을 입력해요.", "In Slack, type /포켓몬연결.", "Slackで /포켓몬연결 と入力します。",
+           "En Slack, escribe /포켓몬연결.", "Dans Slack, tape /포켓몬연결.", "No Slack, digite /포켓몬연결.",
+           "Gib in Slack /포켓몬연결 ein.", "В Slack введите /포켓몬연결."),
+         t("YPoke가 보낸 DM에서 'PokeTokenBar 연결' 버튼을 눌러요.",
+           "In the DM from YPoke, click \"PokeTokenBar 연결\".",
+           "YPokeから届いたDMで「PokeTokenBar 연결」ボタンを押します。",
+           "En el DM de YPoke, pulsa «PokeTokenBar 연결».",
+           "Dans le DM de YPoke, clique sur « PokeTokenBar 연결 ».",
+           "Na DM do YPoke, clique em \"PokeTokenBar 연결\".",
+           "Klicke in der DM von YPoke auf „PokeTokenBar 연결“.",
+           "В личном сообщении от YPoke нажмите «PokeTokenBar 연결»."),
+         t("회사 네트워크에서 앱을 켜 두면 포켓몬이 올라가요.",
+           "Keep the app open on the office network and your Pokémon uploads.",
+           "社内ネットワークでアプリを開いておくとポケモンが送られます。",
+           "Deja la app abierta en la red de la oficina y tu Pokémon se sube.",
+           "Garde l'app ouverte sur le réseau du bureau et ton Pokémon est envoyé.",
+           "Deixe o app aberto na rede do escritório e seu Pokémon é enviado.",
+           "Lass die App im Büronetz offen, dann wird dein Pokémon hochgeladen.",
+           "Держите приложение открытым в офисной сети — покемон загрузится.")]
+    }
+    var ypokeUploadFailed: String { t("업로드 실패", "Upload failed", "アップロード失敗", "Error de subida", "Échec de l'envoi", "Falha no envio", "Upload fehlgeschlagen", "Ошибка загрузки") }
+    var ypokeUploadFailedHint: String {
+        t("마지막 업로드가 실패했어요. 회사 네트워크(사내망)에 연결돼 있는지 확인해 주세요. 연결되면 1분 안에 다시 올려요.",
+          "The last upload failed. Check that you're on the office network; it retries within a minute once you are.",
+          "最後のアップロードに失敗しました。社内ネットワークに接続しているか確認してください。接続されると1分以内に再送します。",
+          "La última subida falló. Comprueba que estás en la red de la oficina; se reintenta en menos de un minuto.",
+          "Le dernier envoi a échoué. Vérifie que tu es sur le réseau du bureau ; il réessaie en moins d'une minute.",
+          "O último envio falhou. Verifique se você está na rede do escritório; ele tenta de novo em até um minuto.",
+          "Der letzte Upload ist fehlgeschlagen. Prüfe, ob du im Büronetz bist; er wird innerhalb einer Minute wiederholt.",
+          "Последняя загрузка не удалась. Проверьте, что вы в офисной сети; повтор будет в течение минуты.")
     }
     var battleEntryNotSent: String {
         t("아직 봇에 올라가지 않았어요. 사내망에서 앱을 켜 두면 1분 안에 올라가요.",

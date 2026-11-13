@@ -9,6 +9,8 @@ struct PartyMember: Encodable, Equatable, Sendable {
     let ivs: PokemonIVs?
     /// PokéAPI move ids; nil lets the bot pick the 4 most recently learned.
     var moves: [Int]? = nil
+    /// True only for the loaner sent before the first hatch; the bot then sets its level. Nil is left out of the JSON.
+    var rental: Bool? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
@@ -114,6 +116,7 @@ struct PartyTokenStore: Sendable {
 @Observable
 final class PartyUploader {
     static let serverURLDefaultsKey = "partyUploadServerURL"
+    static let lastSuccessDefaultsKey = "partyUploadLastSuccessAt"
     static let checkInterval: TimeInterval = 60
     nonisolated static let resendInterval: TimeInterval = 300
 
@@ -121,7 +124,11 @@ final class PartyUploader {
     typealias Fetch = @Sendable (URLRequest) async throws -> (Data, Int)
 
     private(set) var hasToken: Bool
-    private(set) var lastSuccessAt: Date?
+    private(set) var lastSuccessAt: Date? {
+        didSet { defaults.set(lastSuccessAt, forKey: Self.lastSuccessDefaultsKey) }
+    }
+    /// The latest attempt got no answer or an error other than 401; cleared by the next success.
+    private(set) var lastAttemptFailed = false
     private(set) var tokenRejected = false
     var serverURL: String {
         didSet {
@@ -155,6 +162,7 @@ final class PartyUploader {
         self.partySource = partySource
         hasToken = tokenStore.load() != nil
         serverURL = defaults.string(forKey: Self.serverURLDefaultsKey) ?? ""
+        lastSuccessAt = hasToken ? defaults.object(forKey: Self.lastSuccessDefaultsKey) as? Date : nil
     }
 
     var hasServer: Bool { Self.baseURL(serverURL) != nil }
@@ -181,6 +189,7 @@ final class PartyUploader {
         guard let token = PartyTokenStore.normalize(raw), (try? tokenStore.save(token)) != nil else { return false }
         hasToken = true
         tokenRejected = false
+        lastAttemptFailed = false
         lastSuccessAt = nil
         resetThrottle()
         return true
@@ -190,6 +199,7 @@ final class PartyUploader {
         tokenStore.clear()
         hasToken = false
         tokenRejected = false
+        lastAttemptFailed = false
         lastSuccessAt = nil
         resetThrottle()
     }
@@ -206,11 +216,14 @@ final class PartyUploader {
         lastAttemptBody = body
         isSending = true
         defer { isSending = false }
-        guard let status = try? await send(request) else { return }
+        guard let status = try? await send(request) else {
+            lastAttemptFailed = true
+            return
+        }
         switch status {
-        case 200: lastSuccessAt = now; tokenRejected = false
-        case 401: tokenRejected = true
-        default: break
+        case 200: lastSuccessAt = now; tokenRejected = false; lastAttemptFailed = false
+        case 401: tokenRejected = true; lastAttemptFailed = false
+        default: lastAttemptFailed = true
         }
     }
 

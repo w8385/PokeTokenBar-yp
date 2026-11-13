@@ -14,7 +14,35 @@ struct BattleEntrySection: View {
 
     var body: some View {
         let candidates = BattleEntry.candidates(in: companion.state)
-        let fighter = BattleEntry.fighter(state: companion.state, slot: entry.slot)
+        if let fighter = BattleEntry.fighter(state: companion.state, slot: entry.slot) {
+            entryRow(candidates, fighter: fighter)
+            moveList(fighter)
+        } else {
+            rentalRow
+        }
+    }
+
+    private var rentalRow: some View {
+        row {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(l.battleRentalLabel)
+                Text(l.battleRentalHint).font(.caption2).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+            Picker(l.battleRentalLabel, selection: Binding(
+                get: { entry.rentalSpeciesID },
+                set: { id in change { entry.chooseRental(id) } })) {
+                ForEach(BattleEntry.rentalSpeciesIDs, id: \.self) { id in
+                    Text(l.rentalStarterName(id)).tag(id)
+                }
+            }
+            .labelsHidden()
+            .fixedSize()
+        }
+    }
+
+    private func entryRow(_ candidates: [BattleCandidate], fighter: BattleCandidate) -> some View {
         row {
             VStack(alignment: .leading, spacing: 1) {
                 Text(l.battleEntryLabel)
@@ -22,7 +50,7 @@ struct BattleEntrySection: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
-            Menu(entry.slot == nil ? l.battleEntryAutoPick : fighter.map(label) ?? l.battleEntryAutoPick) {
+            Menu(entry.slot == nil ? l.battleEntryAutoPick : label(fighter)) {
                 Button(l.battleEntryAutoPick) { change { entry.choose(nil) } }
                 Divider()
                 ForEach(candidates) { candidate in
@@ -30,16 +58,6 @@ struct BattleEntrySection: View {
                 }
             }
             .fixedSize()
-            .disabled(candidates.isEmpty)
-        }
-        if let fighter {
-            moveList(fighter)
-        } else {
-            Text(l.battleEntryEgg)
-                .font(.caption2).foregroundStyle(.orange)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12).padding(.bottom, 8)
         }
     }
 

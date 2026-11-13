@@ -33,6 +33,23 @@ CREATE TABLE IF NOT EXISTS api_cache (
     cache_key TEXT PRIMARY KEY,
     data_json TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS extra_tokens (
+    token_hash TEXT PRIMARY KEY,
+    slack_user_id TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS pending_challenges (
+    challenger_id TEXT NOT NULL,
+    opponent_id TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    thread_ts TEXT,
+    response_url TEXT,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (challenger_id, opponent_id)
+);
+CREATE TABLE IF NOT EXISTS link_prompts (
+    slack_user_id TEXT PRIMARY KEY,
+    prompted_at TEXT NOT NULL
+);
 """
 
 
@@ -40,6 +57,18 @@ CREATE TABLE IF NOT EXISTS api_cache (
 class StoredParty:
     party: list[dict]
     uploaded_at: str
+
+
+@dataclass(frozen=True)
+class PendingChallenge:
+    """A challenge waiting for a side's first upload. `thread_ts` and `response_url` are None when absent."""
+
+    challenger_id: str
+    opponent_id: str
+    channel_id: str
+    thread_ts: str | None
+    response_url: str | None
+    created_at: datetime
 
 
 @dataclass(frozen=True)
@@ -55,10 +84,20 @@ class Store:
             connection.execute("PRAGMA journal_mode=WAL")
             connection.executescript(_SCHEMA)
 
-    def issue_token(self, slack_user_id: str) -> str:
-        """Create a new upload token for the user, revoking any previous one."""
+    def issue_token(self, slack_user_id: str, keep_existing: bool = False) -> str:
+        """Create a new upload token for the user. Unless `keep_existing`, every previous token is revoked."""
         token = secrets.token_urlsafe(24)
         with closing(self._connect()) as connection, connection:
+            linked = connection.execute(
+                "SELECT 1 FROM users WHERE slack_user_id = ?", (slack_user_id,)
+            ).fetchone()
+            if keep_existing and linked:
+                connection.execute(
+                    "INSERT INTO extra_tokens (token_hash, slack_user_id) VALUES (?, ?)",
+                    (_hash_token(token), slack_user_id),
+                )
+                return token
+            connection.execute("DELETE FROM extra_tokens WHERE slack_user_id = ?", (slack_user_id,))
             connection.execute(
                 "INSERT INTO users (slack_user_id, token_hash) VALUES (?, ?) "
                 "ON CONFLICT (slack_user_id) DO UPDATE SET token_hash = excluded.token_hash",
@@ -69,14 +108,11 @@ class Store:
     def user_for_token(self, token: str) -> str | None:
         with closing(self._connect()) as connection:
             row = connection.execute(
-                "SELECT slack_user_id FROM users WHERE token_hash = ?", (_hash_token(token),)
+                "SELECT slack_user_id FROM users WHERE token_hash = ?1 "
+                "UNION SELECT slack_user_id FROM extra_tokens WHERE token_hash = ?1",
+                (_hash_token(token),),
             ).fetchone()
         return row[0] if row else None
-
-    def is_linked(self, slack_user_id: str) -> bool:
-        with closing(self._connect()) as connection:
-            row = connection.execute("SELECT 1 FROM users WHERE slack_user_id = ?", (slack_user_id,)).fetchone()
-        return row is not None
 
     def save_party(self, slack_user_id: str, party: list[dict]) -> None:
         with closing(self._connect()) as connection, connection:
@@ -124,6 +160,47 @@ class Store:
                 (slack_user_id, slack_user_id, slack_user_id),
             ).fetchone()
         return Record(wins=wins, losses=total - wins)
+
+    def save_pending(self, challenge: PendingChallenge) -> None:
+        """Keep one pending challenge per (challenger, opponent); a new one replaces the old."""
+        with closing(self._connect()) as connection, connection:
+            connection.execute(
+                "INSERT OR REPLACE INTO pending_challenges "
+                "(challenger_id, opponent_id, channel_id, thread_ts, response_url, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (challenge.challenger_id, challenge.opponent_id, challenge.channel_id, challenge.thread_ts,
+                 challenge.response_url, _timestamp(challenge.created_at)),
+            )
+
+    def pending_for(self, slack_user_id: str, since: datetime) -> list[PendingChallenge]:
+        """Pending challenges the user is part of, after dropping every one created before `since`."""
+        with closing(self._connect()) as connection, connection:
+            connection.execute("DELETE FROM pending_challenges WHERE created_at < ?", (_timestamp(since),))
+            rows = connection.execute(
+                "SELECT challenger_id, opponent_id, channel_id, thread_ts, response_url, created_at "
+                "FROM pending_challenges WHERE challenger_id = ?1 OR opponent_id = ?1 ORDER BY created_at",
+                (slack_user_id,),
+            ).fetchall()
+        return [PendingChallenge(*row[:5], created_at=datetime.fromisoformat(row[5])) for row in rows]
+
+    def claim_pending(self, challenge: PendingChallenge) -> bool:
+        """Delete the challenge; True only for the one caller that removed it."""
+        with closing(self._connect()) as connection, connection:
+            cursor = connection.execute(
+                "DELETE FROM pending_challenges WHERE challenger_id = ? AND opponent_id = ? AND created_at = ?",
+                (challenge.challenger_id, challenge.opponent_id, _timestamp(challenge.created_at)),
+            )
+        return cursor.rowcount == 1
+
+    def mark_prompted(self, slack_user_id: str, since: datetime, at: datetime) -> bool:
+        """Record a link prompt at `at` unless one was sent at or after `since`; True when recorded."""
+        with closing(self._connect()) as connection, connection:
+            cursor = connection.execute(
+                "INSERT INTO link_prompts (slack_user_id, prompted_at) VALUES (?1, ?2) "
+                "ON CONFLICT (slack_user_id) DO UPDATE SET prompted_at = ?2 WHERE prompted_at < ?3",
+                (slack_user_id, _timestamp(at), _timestamp(since)),
+            )
+        return cursor.rowcount == 1
 
     def cached_pokemon(self, pokemon_id: int) -> dict | None:
         with closing(self._connect()) as connection:
