@@ -694,6 +694,7 @@ struct CompanionHeader: View {
     var onOpenDexEntry: ((String) -> Void)? = nil
     /// Injectable so render tests stay offline and away from the real sprite cache.
     var spriteStore: SpriteStore = .shared
+    var cryPlayer: CryPlayer = .shared
     // 연출 상태 — 부화/진화 순간 흰 플래시 + 스프링 스케일(본가 진화 신 오마주)
     @State private var flashOpacity: Double = 0
     @State private var celebScale: CGFloat = 1
@@ -883,6 +884,7 @@ struct CompanionHeader: View {
         celebScale = 0.6
         withAnimation(.easeOut(duration: 0.8)) { flashOpacity = 0 }
         withAnimation(.spring(response: 0.5, dampingFraction: 0.55)) { celebScale = 1 }
+        cryPlayer.play(speciesID: store.currentSpeciesID, form: store.currentForm)
         if case .hatch(shiny: true) = c {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.5).delay(0.3)) { shinyBurst = true }
             Task { @MainActor in
@@ -917,6 +919,7 @@ struct CompanionHeader: View {
     private func pet() {
         celebScale = 0.9
         withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) { celebScale = 1 }
+        cryPlayer.play(speciesID: store.currentSpeciesID, form: store.currentForm)
         if case .counted(let xp) = store.growByClick() { flashXP(xp) }
     }
 
