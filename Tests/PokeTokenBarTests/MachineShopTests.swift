@@ -116,6 +116,17 @@ final class MachineShopTests: XCTestCase {
         XCTAssertEqual(before - store.availableTokens, 80_000_000)
     }
 
+    func testABoughtTMCanBeTakenBackInsideTheUndoWindow() throws {
+        let store = try makeStore()
+        let move = try XCTUnwrap(MachineCatalog.moves.first { $0.id == thunderbolt })
+        let before = store.availableTokens
+        store.buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather)
+        let receipt = try XCTUnwrap(store.purchaseReceipts[MachineMove.inventoryKey(thunderbolt)])
+        XCTAssertTrue(store.undoPurchase(receipt))
+        XCTAssertFalse(store.ownsTM(thunderbolt))
+        XCTAssertEqual(store.availableTokens, before)
+    }
+
     func testWeatherMovesCostTheTopTier() throws {
         let store = try makeStore()
         let weather = MachineCatalog.moves.filter(\.isWeather)

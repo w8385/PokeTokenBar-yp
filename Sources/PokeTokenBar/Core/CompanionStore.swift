@@ -1795,9 +1795,7 @@ final class CompanionStore {
     @discardableResult
     func buyTM(moveID: Int, power: Int, isWeather: Bool) -> Bool {
         guard !ownsTM(moveID), canBuyTM(power: power, isWeather: isWeather) else { return false }
-        state.spentTokens += tmPrice(power: power, isWeather: isWeather)
-        state.inventory[MachineMove.inventoryKey(moveID)] = 1
-        save()
+        completePurchase(key: MachineMove.inventoryKey(moveID), count: 1, cost: tmPrice(power: power, isWeather: isWeather))
         return true
     }
 

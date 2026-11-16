@@ -74,7 +74,6 @@ struct MachineShopSection: View {
 private struct MachineShopCard: View {
     let store: CompanionStore
     let move: MachineEntry
-    @State private var confirming = false
 
     var body: some View {
         let l = store.l
@@ -97,6 +96,7 @@ private struct MachineShopCard: View {
                 }
             }
             controls(l)
+            PurchaseUndoLine(store: store, inventoryKey: MachineMove.inventoryKey(move.id))
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
@@ -112,26 +112,13 @@ private struct MachineShopCard: View {
                 Text(l.ownedAlready).font(.caption2.weight(.semibold)).foregroundStyle(.green)
                 Spacer()
             }
-        } else if confirming {
-            HStack(spacing: 8) {
-                Text(l.buyConfirm("\(l.moveGroupMachine) \(move.name(store.language))"))
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-                Spacer()
-                Button(l.buy) {
-                    confirming = false
-                    store.buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather)
-                }
-                .buttonStyle(.borderedProminent).controlSize(.small)
-                Button(l.cancel) { confirming = false }
-                    .buttonStyle(.borderless).controlSize(.small)
-            }
         } else {
             HStack {
                 Text("\(l.shopPriceLabel) \(TokenFormatter.compact(price))")
                     .font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
                 Spacer()
                 if store.canBuyTM(power: move.power, isWeather: move.isWeather) {
-                    Button(l.buy) { confirming = true }
+                    Button(l.buy) { store.buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather) }
                         .buttonStyle(.bordered).controlSize(.small)
                 } else {
                     Text(l.notEnoughTokens).font(.caption2).foregroundStyle(.tertiary)
