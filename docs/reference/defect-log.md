@@ -1628,12 +1628,13 @@ read_when:
   run says nothing about the CI model.
   Why review missed it: the assertion matched `contains(label)` on the top candidate, which is only
   as reliable as the runner's model, and the diff that added the row passed on the author's machine.
-  The suite now compares text through `ocrFolded` (case, spaces, i/l/1/|/!, o/0, 이/미 folded), and
-  the "costs stay on one line" check asks whether label and amount sit in the same observation
-  (Vision returns one observation per text line), which does not depend on reading either word
-  exactly. `testOCRFoldTreatsLookalikeGlyphsAsEqual` pins the fold.
-  Class sweep: the other OCR users (`BoxTests`, `CollectionReadabilityRenderingTests`,
-  `DexColorRenderingTests`, `DexBackNavigationTests`, `FormMetadataNoteRenderingTests`,
-  `SnapshotHistoryRenderingTests`, `SessionKeySettingsRenderingTests`) were not changed. A new OCR
-  assertion starts from `ocrFolded` and asks for layout (same observation, bounding boxes), not an
-  exact string.
+  The suite now compares text through `OCRText.folded` (case, spaces, i/l/1/|/!, o/0, 이/미
+  folded), and the "costs stay on one line" check asks whether label and amount sit in the same
+  observation (Vision returns one observation per text line), which does not depend on reading
+  either word exactly. `OCRTextTests` pins the fold.
+  Class sweep: every OCR user now goes through `OCRText` (`ZeroUsageHomeRenderingTests`,
+  `BoxTests`, `CollectionReadabilityRenderingTests`, `DexColorRenderingTests`,
+  `DexBackNavigationTests`, `FormMetadataNoteRenderingTests`, `SnapshotHistoryRenderingTests`,
+  `SessionKeySettingsRenderingTests`). The exact-equality lookups (`SessionKeySettingsRendering`,
+  `DexBackNavigation`) compare folded text across the top candidates. A new OCR assertion starts
+  from `OCRText` and asks for layout (same observation, bounding boxes), not an exact string.

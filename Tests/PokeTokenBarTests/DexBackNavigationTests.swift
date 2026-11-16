@@ -88,20 +88,32 @@ final class DexBackNavigationTests: XCTestCase {
         let box: CGRect   // normalized, y-up
         let readings: [VNRecognizedText]
 
-        /// Spaces are ignored: Vision splits and joins words inconsistently.
+        /// Folded text: Vision splits and joins words inconsistently and confuses look-alike glyphs.
         func reads(_ text: String, exactly: Bool) -> Bool {
-            let wanted = text.replacingOccurrences(of: " ", with: "")
+            let wanted = OCRText.folded(text)
             return candidates.contains {
-                let candidate = $0.replacingOccurrences(of: " ", with: "")
+                let candidate = OCRText.folded($0)
                 return exactly ? candidate == wanted : candidate.contains(wanted)
             }
+        }
+
+        /// The label's range in a reading: exact, else a same-length window that folds to the label.
+        private static func range(of text: String, in reading: String) -> Range<String.Index>? {
+            if let exact = reading.range(of: text) { return exact }
+            let wanted = OCRText.folded(text)
+            var start = reading.startIndex
+            while let end = reading.index(start, offsetBy: text.count, limitedBy: reading.endIndex) {
+                if OCRText.folded(String(reading[start..<end])) == wanted { return start..<end }
+                start = reading.index(after: start)
+            }
+            return nil
         }
 
         /// Vision may combine neighboring chips into one observation. Click this label's glyphs,
         /// rather than the midpoint of that whole row (which can be a different, disabled chip).
         func focused(on text: String) throws -> Word? {
             for reading in readings {
-                guard let range = reading.string.range(of: text),
+                guard let range = Self.range(of: text, in: reading.string),
                       let rectangle = try reading.boundingBox(for: range) else { continue }
                 return Word(candidates: candidates, box: rectangle.boundingBox, readings: readings)
             }
@@ -251,7 +263,7 @@ final class DexBackNavigationTests: XCTestCase {
         request.recognitionLanguages = ["en-US"]
         try VNImageRequestHandler(cgImage: XCTUnwrap(renderer.cgImage)).perform([request])
         let observation = try XCTUnwrap(request.results?.first { result in
-            result.topCandidates(10).contains { $0.string.contains("Before Middle After") }
+            result.topCandidates(10).contains { $0.string.ocrContains("Before Middle After") }
         })
         let readings = observation.topCandidates(10)
         let merged = Word(candidates: readings.map(\.string), box: observation.boundingBox, readings: readings)

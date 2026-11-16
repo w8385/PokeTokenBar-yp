@@ -93,7 +93,7 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         request.recognitionLanguages = ["en-US"]
         try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
         guard let observation = request.results?.first(where: {
-            $0.topCandidates(1).first?.string == text
+            $0.topCandidates(10).contains { OCRText.folded($0.string) == OCRText.folded(text) }
         }) else { return nil }
         let rect = observation.boundingBox
         return NSRect(x: rect.minX * host.bounds.width,

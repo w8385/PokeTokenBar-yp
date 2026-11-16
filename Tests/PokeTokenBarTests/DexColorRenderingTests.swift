@@ -178,8 +178,8 @@ final class DexColorRenderingTests: XCTestCase {
             recognition.recognitionLanguages = ["en-US"]
             try VNImageRequestHandler(cgImage: header).perform([recognition])
             let text = recognition.results?.compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ") ?? ""
-            XCTAssertTrue(text.contains("Elgyem"), "header crop must contain the rendered identity: \(text)")
-            XCTAssertEqual(text.contains("Shiny"), shiny, "badge must follow the displayed individual: \(text)")
+            XCTAssertTrue(OCRText.contains(text, "Elgyem"), "header crop must contain the rendered identity: \(text)")
+            XCTAssertEqual(OCRText.contains(text, "Shiny"), shiny, "badge must follow the displayed individual: \(text)")
             try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
                 URL(fileURLWithPath: "/private/tmp/dex-color-detail-\(shiny ? "shiny" : "normal").png"))
         }
