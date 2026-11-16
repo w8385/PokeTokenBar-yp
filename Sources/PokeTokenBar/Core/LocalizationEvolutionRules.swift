@@ -33,13 +33,12 @@ extension L {
         return "\(now) · \(until)"
     }
 
-    /// Home header: "Day · 7 min".
+    /// Home header, next to the dial: "Day 7m".
     func dayNightBadge(_ period: DayPeriod, minutesLeft m: Int) -> String {
         switch period {
-        case .day: return t("낮 · \(m)분", "Day · \(m) min", "昼 · \(m)分", "Día · \(m) min", "Jour · \(m) min",
-                            "Dia · \(m) min", "Tag · \(m) Min.", "День · \(m) мин")
-        case .night: return t("밤 · \(m)분", "Night · \(m) min", "夜 · \(m)分", "Noche · \(m) min", "Nuit · \(m) min",
-                              "Noite · \(m) min", "Nacht · \(m) Min.", "Ночь · \(m) мин")
+        case .day: return t("낮 \(m)분", "Day \(m)m", "昼 \(m)分", "Día \(m)m", "Jour \(m)m", "Dia \(m)m", "Tag \(m)m", "День \(m)м")
+        case .night: return t("밤 \(m)분", "Night \(m)m", "夜 \(m)分", "Noche \(m)m", "Nuit \(m)m", "Noite \(m)m",
+                              "Nacht \(m)m", "Ночь \(m)м")
         }
     }
 

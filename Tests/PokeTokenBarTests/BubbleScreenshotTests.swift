@@ -86,14 +86,12 @@ final class BubbleScreenshotTests: XCTestCase {
             homeCrowd.cheer()
             homeCrowd.play(.note, between: 1, and: 0, bubbleOn: 0)
             let home = HomePetRow(store: store, crowd: homeCrowd, spriteStore: sprites) {
-                SpriteView(speciesID: 4, size: 76, animated: false, spriteStore: sprites)
-                    .crowdMember(homeCrowd, slot: 0, size: 76)
-                    .frame(width: 76, height: 76)
-                    .background(Color.secondary.opacity(0.06))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                SpriteView(speciesID: 4, size: HomePetRow<EmptyView>.mainSize, animated: false, spriteStore: sprites)
+                    .crowdMember(homeCrowd, slot: 0, size: HomePetRow<EmptyView>.mainSize)
+                    .frame(width: HomePetRow<EmptyView>.mainSize, height: HomePetRow<EmptyView>.mainSize)
             }
             .padding(EdgeInsets(top: 30, leading: 14, bottom: 14, trailing: 14))
-            try await capture(home.environment(store).environment(usage), width: 200,
+            try await capture(home.environment(store).environment(usage), width: 160,
                               height: 130, appearance: appearance, scheme: scheme,
                               background: .windowBackgroundColor,
                               to: directory.appendingPathComponent("bubble-\(prefix)-home-\(name).png"))
