@@ -46,8 +46,10 @@ For every affected screen or state, embed images directly in `UI changes`:
   parent screen after removal.
 
 If images are not ready, create them yourself as part of preparing the PR.
-Reuse accurate existing images or capture the app; when capture is impractical,
-render the relevant UI locally or draw it based on the actual change. Inspect
+Reuse accurate existing images or render the relevant UI offscreen with the test
+harnesses below. Never launch, activate or click the installed app to capture it:
+that takes the user's focus. If a harness cannot show the change, draw it based on
+the actual change. Inspect
 the result and attach it. Do not stop, ask the user to provide images, or request
 separate permission merely because no image already exists. An authorized PR
 creation/update includes producing and attaching its required UI images; a
@@ -71,8 +73,9 @@ PTB_COLLECTION_SCREENSHOT_DIR=<existing-dir> swift test --filter CollectionReada
 ```
 
 Read the selected harness before using its output. Some AppKit controls and
-scroll views do not render faithfully in tests; capture the running app when
-those details are the change being demonstrated. Capture/render the base and
+scroll views do not render faithfully in tests; when those details are the change
+being demonstrated, label the image as a sample-data render or an illustration, and
+capture the running app only when the user is at the machine and asks for it. Capture/render the base and
 head separately when no accurate before image exists; do not reset the user's
 working tree to obtain a before image. Do not regenerate release screenshots
 merely to prepare a PR.

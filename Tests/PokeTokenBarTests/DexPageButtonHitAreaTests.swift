@@ -23,23 +23,12 @@ final class DexPageButtonHitAreaTests: XCTestCase {
             .font(.system(size: 13, weight: .semibold))
             .frame(width: side, height: side))
         host.frame = NSRect(x: 0, y: 0, width: side, height: side)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000, width: side, height: side),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.contentView = host
-        window.orderFront(nil)
+        let window = OffscreenRender.windowHosting(host)
         defer { window.close() }
         host.layoutSubtreeIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
 
-        for type in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
-            let event = try XCTUnwrap(NSEvent.mouseEvent(
-                with: type, location: point, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
-                windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1,
-                pressure: type == .leftMouseDown ? 1 : 0))
-            window.sendEvent(event)
-            RunLoop.main.run(until: Date().addingTimeInterval(0.05))
-        }
+        try OffscreenRender.click(at: point, in: window)
         return taps
     }
 }

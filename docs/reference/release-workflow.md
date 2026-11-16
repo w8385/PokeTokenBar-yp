@@ -23,6 +23,8 @@ read_when:
   (팝오버 라이브 캡처 아님) — Chrome `--headless --screenshot --force-device-scale-factor=2` 로 다크
   팝오버를 720px PNG 로 그린다. 애니 GIF(home)는 프레임 합성 후 `gifsicle -O3 --lossy` 로 최적화
   (PIL 재인코딩 단독은 용량 팽창 주의). 언어별 이미지(`settings.png`/`-ko`/`-ja` 등) 각 README 참조.
+  테스트로 뜨는 캡처(`PTB_*_DIR` 환경변수, `swift test --filter <Suite>`)는 `OffscreenRender` 로 화면 밖에서 그려서
+  앱을 띄우거나 창을 보이지 않는다 — 릴리스 중에도 사용자의 포커스를 건드리지 않는다.
 - homebrew-tap cask caveat.
 
 ### 게이트의 함정

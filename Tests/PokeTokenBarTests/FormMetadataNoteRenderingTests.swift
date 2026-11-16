@@ -26,13 +26,6 @@ private struct FormMetadataProvider: PokeProviding, PokemonDetailProviding {
 /// Reads the real Home and Pokédex pixels: a helper-only test would miss either missing call site.
 @MainActor
 final class FormMetadataNoteRenderingTests: XCTestCase {
-    private var windows: [NSWindow] = []
-
-    override func tearDown() async throws {
-        windows.forEach { $0.close() }
-        windows = []
-    }
-
     private func store(form: PokemonForm?, speciesID: Int = 492, egg: Bool = false,
                        detailsAvailable: Bool = true) async throws -> CompanionStore {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("form-note-\(UUID())")
@@ -64,17 +57,9 @@ final class FormMetadataNoteRenderingTests: XCTestCase {
     }
 
     private func mount<V: View>(_ view: V, height: CGFloat) -> NSView {
-        let host = NSHostingView(rootView: view.frame(width: PopoverMetrics.contentWidth, height: height)
-            .background(Color.white).environment(\.colorScheme, .light))
-        host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: height)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000,
-            width: host.frame.width, height: height), styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
-        windows.append(window)
-        return host
+        OffscreenRender.host(view.frame(width: PopoverMetrics.contentWidth, height: height)
+            .background(Color.white).environment(\.colorScheme, .light),
+            size: CGSize(width: PopoverMetrics.contentWidth, height: height), appearance: .aqua)
     }
 
     private func renderedText(_ host: NSView) throws -> String {

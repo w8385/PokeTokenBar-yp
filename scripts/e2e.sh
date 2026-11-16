@@ -9,6 +9,7 @@
 #   5) 팝오버 오픈 — Accessibility 권한 있으면 클릭→윈도우 출현 확인(없으면 SKIP)
 #
 # XCUITest 미채택 근거: SwiftPM 단독 레포에 Xcode 프로젝트/테스트 번들 도입 필요 — 1인 로컬 over-spec.
+# 앱을 띄우고 상태바를 누르고 Escape 키를 보낸다 — 사용자의 포커스를 가져가므로 사용자가 자리에 있을 때만 돌린다.
 # 사용:  ./scripts/e2e.sh          (GUI 세션에서 실행. 5단계는 터미널에 손쉬운 사용 권한 필요)
 #
 set -uo pipefail

@@ -7,6 +7,7 @@ read_when:
   - 메뉴바·플로팅 펫 등 상시 표시 애니메이션의 성능을 손볼 때
   - 스프라이트·이미지를 고정 크기 프레임에 그릴 때(비율 왜곡 부류)
   - 세이브 이전/병합·외부 파일 입력 경로를 만들 때
+  - 스크린샷·렌더링 테스트를 쓰거나 창·활성화(`NSWindow`, `NSApp.activate`)를 다루는 테스트를 만들 때
 ---
 
 # 결함 대응 축적 규칙
@@ -1527,3 +1528,42 @@ read_when:
   `save()`'s friend reconcile. Residual: an offer the other player picks in Slack reaches this app at its next sync
   (up to a minute), and a pool upload lags a few minutes, so an unequip in that gap is settled by `give_held_item`
   on delivery rather than prevented. Tests: `TradeItemLockTests`, `test_trades.py` (item taken off, put on, swapped).
+
+## Tests and the user's desktop
+
+- **A test run must not take the user's focus: render through `OffscreenRender`, and keep any window it needs off every screen.**
+  A user working in another app reported that reviewing screenshots "pops up" something and breaks
+  their focus. About 35 test files built their own `NSWindow`, called `orderFront` (one called
+  `makeKeyAndOrderFront` with a `canBecomeKey` override) and slept; nothing stopped a new one from
+  doing the same. Measured before the fix: under `swift test` the process is already
+  `.prohibited` (`type="BackgroundOnly"` in `lsappinfo`), `lsappinfo front` sampled every 0.25 s
+  never named xctest, and no Dock entry appeared, even with every `PTB_*_DIR` screenshot variable
+  set. So the tests did not reproduce the focus loss; those windows were a risk that rested on
+  the activation policy never changing. The cause is not proven. Candidates outside `swift test`:
+  `scripts/e2e.sh` (opens the installed app, `AXPress` on the status item, a global Escape key
+  code), capturing "the running app" for PR images (the `prepare-pr` skill used to suggest it),
+  and agent steps that open or click the installed app. Why no test or review caught the window
+  risk: each test was correct in isolation, none asserted anything about the desktop, and a
+  one-test diff with `window.orderFront(nil)` at -10000,-10000 looks harmless.
+  The fix removes the dependency. `OffscreenRender` renders a windowless `NSHostingView`
+  (`onAppear`, `.task`, `ScrollView` and AppKit controls run without a window).
+  `OffscreenRender.windowHosting` is the single place that builds a window, for the tests that
+  deliver clicks or need real window layout or `ScrollViewReader.scrollTo`: `DexPageButtonHitArea`,
+  `DexBackNavigation`, `CollectionReadabilityRendering`, `HomeFitRendering`,
+  `SessionKeySettingsRendering`, `ZeroUsageHomeRendering`, `TradeBeforeAfterShot`,
+  `EvolutionStoneScreenshot`, `LimitProgressRendering` (pace-marker pixels). That window is ordered in behind everything at (-10000, -10000) on
+  no screen, so it is not on any display; it is never key or main, and the process is
+  `.prohibited`, so it cannot become the front app. Delivering events and `scrollTo` did not work
+  on a window that was never ordered in.
+  `OffscreenRenderGuardTests` (listed in `scripts/invariant-tests.sh`) fails when any other
+  Tests file builds an `NSWindow`/`NSPanel`, orders a window, makes one key or main, calls
+  `activate(`, or touches `NSWorkspace` or `/usr/bin/open`. The `PTB_VERIFY_KEYBOARD_FOCUS` branch
+  of `SessionKeySettingsRenderingTests` made a window key on purpose; it is gone, and its check
+  needs a person at the machine anyway.
+  Class sweep: nothing else in `Tests/` opens or activates the app. In `scripts/`, only `e2e.sh`
+  does; it now says at the top that it is attended-only, and `RELEASE.md` says the same. The
+  `prepare-pr` skill no longer tells agents to capture the running app. Steps outside the repo
+  that open the installed app or click its popover or pet are not covered by any test here.
+  Rendering differences when comparing old and new PNGs: a windowless host draws AppKit controls
+  in their active color (the limit bar is green, it was grey in an inactive window), and animated
+  sprites differ by frame.

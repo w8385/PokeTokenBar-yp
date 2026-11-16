@@ -43,17 +43,7 @@ final class DexRegionRewardScreenshotTests: XCTestCase {
     }
 
     private func write(_ view: NSView, appearance: NSAppearance, to file: URL) throws {
-        let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -10000, y: -10000), size: view.frame.size),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = appearance
-        window.backgroundColor = appearance.name == .darkAqua ? NSColor(white: 0.12, alpha: 1) : .white
-        window.contentView = view
-        window.orderFront(nil)
-        defer { window.close() }
-        view.layoutSubtreeIfNeeded()
-        let rep = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: view.bounds))
-        view.cacheDisplay(in: view.bounds, to: rep)
-        try XCTUnwrap(rep.representation(using: .png, properties: [:])).write(to: file)
+        view.appearance = appearance
+        try OffscreenRender.writePNG(of: view, to: file)
     }
 }

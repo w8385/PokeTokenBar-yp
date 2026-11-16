@@ -73,7 +73,7 @@ enum MegaSurfaceFixture {
 ///     PTB_MEGA_SPRITE_SHOT_DIR=/tmp/shots PTB_MEGA_SPRITE_SHOT_PREFIX=after swift test --filter MegaSpriteScreenshotTests
 @MainActor
 final class MegaSpriteScreenshotTests: XCTestCase {
-    private typealias Opened = (host: NSHostingView<AnyView>, window: NSWindow)
+    private typealias Opened = NSHostingView<AnyView>
 
     func testCaptureLucarioZSurfaces() async throws {
         guard let output = ProcessInfo.processInfo.environment["PTB_MEGA_SPRITE_SHOT_DIR"] else {
@@ -104,7 +104,6 @@ final class MegaSpriteScreenshotTests: XCTestCase {
         uploader.serverURL = "http://bot-host:8790"
         let battleHost = open(BattleView(store: store, navigation: PopoverNavigation(), initialPickerQuery: "")
             .environment(uploader).environment(battle).environment(store), height: 520)
-        defer { battleHost.window.close() }
         try await Task.sleep(for: .seconds(5))
         XCTAssertTrue(store.equip(lucarioZ, to: "lucario"))
         try await Task.sleep(for: .seconds(6))
@@ -118,9 +117,7 @@ final class MegaSpriteScreenshotTests: XCTestCase {
         // The holder is the raised Pokémon: Home, floating pet and menu bar all draw `representativeSubject`.
         let raised = try await MegaSurfaceFixture.makeStore(activeIsLucario: true, scratch: scratch)
         let homeHost = open(CompanionHeader(store: raised), height: 230)
-        defer { homeHost.window.close() }
         let petHost = open(PetShot(store: raised), height: 180)
-        defer { petHost.window.close() }
         try await Task.sleep(for: .seconds(5))
         XCTAssertTrue(raised.equip(lucarioZ, to: "raised"))
         try await Task.sleep(for: .seconds(6))
@@ -139,32 +136,19 @@ final class MegaSpriteScreenshotTests: XCTestCase {
 
     private func capture<V: View>(_ view: V, to file: URL, height: CGFloat) async throws {
         let opened = open(view, height: height)
-        defer { opened.window.close() }
         try await Task.sleep(for: .seconds(6))
         try snapshot(opened, to: file)
     }
 
     private func open<V: View>(_ view: V, height: CGFloat) -> Opened {
         let size = NSSize(width: PopoverMetrics.contentWidth, height: height)
-        let host = NSHostingView(rootView: AnyView(view.frame(width: size.width, height: size.height)
+        return OffscreenRender.host(AnyView(view.frame(width: size.width, height: size.height)
             .background(Color.white)
             .environment(\.colorScheme, .light)
-            .environment(\.locale, AppLanguage.ko.displayLocale)))
-        host.frame = NSRect(origin: .zero, size: size)
-        let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -10000, y: -10000), size: size),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
-        return (host, window)
+            .environment(\.locale, AppLanguage.ko.displayLocale)), size: size, appearance: .aqua)
     }
 
     private func snapshot(_ opened: Opened, to file: URL) throws {
-        let host = opened.host
-        host.layoutSubtreeIfNeeded()
-        let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-        host.cacheDisplay(in: host.bounds, to: bitmap)
-        try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: file)
+        try OffscreenRender.writePNG(of: opened, to: file)
     }
 }

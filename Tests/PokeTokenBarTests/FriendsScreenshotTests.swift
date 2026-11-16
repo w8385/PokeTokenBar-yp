@@ -91,25 +91,9 @@ final class FriendsScreenshotTests: XCTestCase {
 
     private func capture<V: View>(_ view: V, width: CGFloat, height: CGFloat, to file: URL) async throws {
         let size = NSSize(width: width, height: height)
-        let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height)
+        try await OffscreenRender.capture(view.frame(width: size.width, height: size.height)
             .background(Color.white)
-            .environment(\.colorScheme, .light))
-        host.frame = NSRect(origin: .zero, size: size)
-        let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -10000, y: -10000), size: size),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
-        defer { window.close() }
-        try await Task.sleep(for: .seconds(5))
-        host.layoutSubtreeIfNeeded()
-        let rep = try XCTUnwrap(NSBitmapImageRep(
-            bitmapDataPlanes: nil, pixelsWide: Int(size.width * 2), pixelsHigh: Int(size.height * 2),
-            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
-        rep.size = size
-        host.cacheDisplay(in: host.bounds, to: rep)
-        try XCTUnwrap(rep.representation(using: .png, properties: [:])).write(to: file)
+            .environment(\.colorScheme, .light),
+            size: size, appearance: .aqua, scale: 2, settle: .seconds(5), to: file)
     }
 }

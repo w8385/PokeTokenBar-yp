@@ -155,19 +155,9 @@ final class PokemonNameLocalizationTests: XCTestCase {
         label.provider = provider
         label.displayStore = store
         let root = label.frame(width: 320, height: 80).foregroundStyle(.black).background(Color.white)
-        let host = NSHostingView(rootView: root)
-        host.frame = NSRect(x: 0, y: 0, width: 320, height: 80)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000, width: 320, height: 80),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.contentView = host
-        window.orderFront(nil)
-        defer { window.close() }
+        let host = OffscreenRender.host(root, size: CGSize(width: 320, height: 80))
         func snapshot(_ view: NSView) throws -> Data {
-            view.layoutSubtreeIfNeeded()
-            let bitmap = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: view.bounds))
-            view.cacheDisplay(in: view.bounds, to: bitmap)
-            return try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+            try OffscreenRender.png(of: view)
         }
         for _ in 0..<200 {
             if await provider.started { break }
@@ -186,9 +176,7 @@ final class PokemonNameLocalizationTests: XCTestCase {
         }
         XCTAssertEqual(store.names[resource]?["ko"], "몸통박치기")
         XCTAssertNotEqual(translated, pending, "Observable snapshot must update the mounted label")
-        let reopened = NSHostingView(rootView: root)
-        reopened.frame = host.frame
-        window.contentView = reopened
+        let reopened = OffscreenRender.host(root, size: host.frame.size)
         // Snapshot synchronously, before the new view's task can load anything.
         XCTAssertEqual(try snapshot(reopened), translated)
         if let path = ProcessInfo.processInfo.environment["PTB_NAMES_PREVIEW"] {

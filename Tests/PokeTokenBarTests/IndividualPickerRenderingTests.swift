@@ -38,17 +38,9 @@ final class IndividualPickerRenderingTests: XCTestCase {
                 spriteStore: SpriteStore(directory: dir))
                 .frame(width: PopoverMetrics.contentWidth, height: 520)
                 .background(Color.white).environment(\.colorScheme, .light)
-            let host = NSHostingView(rootView: view)
-            host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: 520)
-            let window = NSWindow(contentRect: host.frame, styleMask: .borderless, backing: .buffered, defer: false)
-            window.isReleasedWhenClosed = false
-            defer { window.close() }
-            window.appearance = NSAppearance(named: .aqua)
-            window.contentView = host
-            window.setFrameOrigin(NSPoint(x: -10000, y: -10000))
-            window.orderFront(nil)
-            try await Task.sleep(for: .milliseconds(100))
-            host.layoutSubtreeIfNeeded()
+            let host = OffscreenRender.host(view, size: CGSize(width: PopoverMetrics.contentWidth, height: 520),
+                                            appearance: .aqua)
+            try await OffscreenRender.settle(host, for: .milliseconds(100))
             func descendants(_ v: NSView) -> [NSView] { [v] + v.subviews.flatMap(descendants) }
             let menus = descendants(host).compactMap { $0 as? NSPopUpButton }
             XCTAssertEqual(menus.count, count == 1 ? 0 : 1)

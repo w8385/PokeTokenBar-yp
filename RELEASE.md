@@ -60,7 +60,9 @@ PTB_NOTES_FILE=/tmp/notes.md PTB_CONTRIBUTORS_FILE=/tmp/contributors.txt \
   PTB_COAUTHORS_FILE=/tmp/coauthors.txt ./scripts/release.sh 2.1.1
 ```
 
-## E2E 스모크 (선택 — GUI 세션 필요)
+## E2E 스모크 (선택 — GUI 세션 필요, 사용자가 자리에 있을 때만)
+
+앱을 `open` 하고 상태바 항목을 눌러 팝오버를 열며 Escape 를 보낸다. 작업 중인 사용자의 화면과 포커스를 가져가므로 에이전트·무인 실행은 하지 않는다.
 
 ```bash
 ./scripts/e2e.sh

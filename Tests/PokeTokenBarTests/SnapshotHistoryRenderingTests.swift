@@ -10,22 +10,15 @@ private struct SnapshotHistoryOfflineProvider: PokeProviding {
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
 }
 
-private final class SnapshotHistoryTestWindow: NSWindow {
-    override var canBecomeKey: Bool { true }
-}
-
 /// Drives the production Settings disclosure, including rows outside the scroll viewport.
 @MainActor
 final class SnapshotHistoryRenderingTests: XCTestCase {
     private var window: NSWindow?
-    private var previousKeyWindow: NSWindow?
     private var renderNumber = 0
 
     override func tearDown() async throws {
         window?.close()
         window = nil
-        previousKeyWindow?.makeKey()
-        previousKeyWindow = nil
     }
 
     func testTenSnapshotsStartCollapsedAndExpandAllRowsThenCollapseAndReopen() async throws {
@@ -111,21 +104,12 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
     }
 
     private func host(_ companion: CompanionStore, _ usage: UsageStore) -> NSView {
-        _ = NSApplication.shared
-        if previousKeyWindow == nil { previousKeyWindow = NSApp.keyWindow }
         let host = NSHostingView(rootView: SettingsView(onClose: {}, onChooseRepresentative: {})
             .environment(companion).environment(usage).environment(UpdateChecker())
             .environment(\.colorScheme, .light)
             .frame(width: PopoverMetrics.width))
         host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.width, height: 460)
-        let window = SnapshotHistoryTestWindow(
-            contentRect: NSRect(x: -10000, y: -10000, width: PopoverMetrics.width, height: 460),
-            styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.makeKeyAndOrderFront(nil)
-        self.window = window
+        window = OffscreenRender.windowHosting(host, appearance: .aqua)
         return host
     }
 
