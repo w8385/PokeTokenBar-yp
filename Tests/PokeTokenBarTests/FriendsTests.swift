@@ -315,7 +315,8 @@ final class PetRowLayoutTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(ratio, 0.55)
         XCTAssertLessThanOrEqual(ratio, 0.6)
         let slots = 2 * Row.friendSize + Row.mainSize - 2 * Row.slotOverlap
-        XCTAssertLessThanOrEqual(slots + 2 * 4, Row.tileWidth, "friends and the raised Pokémon share one tile")
+        XCTAssertEqual(slots + 2 * Row.tileInset, Row.tileWidth, "friends and the raised Pokémon share one tile")
+        XCTAssertEqual(Row.slotOverlap / Row.friendSize, 0.3, accuracy: 0.03, "a friend tucks about 30% behind the raised Pokémon")
         XCTAssertGreaterThanOrEqual(PopoverMetrics.contentWidth - Row.tileWidth - Row.headerGap, 196)
     }
 
