@@ -74,7 +74,7 @@ struct GymRunPosition: Decodable, Equatable, Sendable {
 
 struct GymOpponent: Decodable, Equatable, Sendable, Identifiable {
     let id: String
-    /// `gym`, `elite`, `champion`, `grunt`, `admin` or `boss`; a later bot may send others, which the app leaves out.
+    /// `gym`, `elite`, `champion`, `grunt`, `admin` or `boss`.
     let kind: String
     let index: Int
     let types: [String]

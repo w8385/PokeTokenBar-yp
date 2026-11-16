@@ -3499,7 +3499,7 @@ final class CompanionStore {
         try? data.write(to: fileURL, options: .atomic)   // 부분 쓰기 손상 방지(펫 상태)
     }
 
-    /// Records a first gym clear: the badge, its TM if any is left, one save, one notification.
+    /// Records a first gym clear: the badge, its TM if any is left, a save and a notification.
     func applyGymReward(_ reward: GymReward, trainer: String, region: String) {
         state.gymBadges = reward.badges
         if let moveID = reward.tmMoveID { grantTM(moveID: moveID) }

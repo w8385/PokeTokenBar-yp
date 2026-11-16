@@ -95,7 +95,7 @@ extension L {
     func gymFailure(_ failure: GymService.Failure) -> String {
         switch failure {
         case .rateLimited(let seconds):
-            let wait = Int(seconds.rounded(.up))
+            let wait = Int(min(max(seconds, 0), 3600).rounded(.up))
             return t("너무 빨라요. \(wait)초 뒤에 다시 눌러 주세요.", "Too fast. Try again in \(wait) s.", "早すぎます。\(wait)秒後にもう一度。",
                      "Demasiado rápido. Inténtalo en \(wait) s.", "Trop rapide. Réessaie dans \(wait) s.", "Rápido demais. Tente em \(wait) s.",
                      "Zu schnell. Versuche es in \(wait) s erneut.", "Слишком быстро. Повторите через \(wait) с.")

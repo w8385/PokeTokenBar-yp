@@ -89,7 +89,7 @@ final class GymStoreTests: XCTestCase {
         XCTAssertEqual(team.members.count, 6)
         XCTAssertEqual(team.ids.count, 6)
         XCTAssertEqual(team.members[1].moves, [33, 45])
-        XCTAssertFalse(team.ids.contains("rental"))
+        XCTAssertFalse(team.ids.contains { $0.hasPrefix("rental") })
     }
 
     func testTMMoveIsDroppedFromTheTeamWhileTheTMIsNotOwned() {
@@ -105,8 +105,15 @@ final class GymStoreTests: XCTestCase {
     func testNothingOwnedFightsWithTheRentalStarter() {
         let team = GymTeam.team(state: CompanionState(), slots: [], moveChoices: [:], rentalSpeciesID: 4)
 
-        XCTAssertEqual(team.ids, [GymTeam.rentalID])
+        XCTAssertEqual(team.ids, [GymTeam.rentalID(4)])
         XCTAssertEqual(team.members.map(\.pokemonID), [4])
         XCTAssertEqual(team.members.first?.rental, true)
+    }
+
+    func testChangingTheRentalStarterChangesTheTeamIdentity() {
+        let first = GymTeam.team(state: CompanionState(), slots: [], moveChoices: [:], rentalSpeciesID: 4)
+        let second = GymTeam.team(state: CompanionState(), slots: [], moveChoices: [:], rentalSpeciesID: 7)
+
+        XCTAssertNotEqual(first.ids, second.ids)
     }
 }
