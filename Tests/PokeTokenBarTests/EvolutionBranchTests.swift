@@ -20,8 +20,8 @@ private struct BranchProvider: PokeProviding {
 
 private final class ClockBox: @unchecked Sendable {
     var now = Date()
-    func set(hour: Int) {
-        now = Calendar.current.date(bySettingHour: hour, minute: 30, second: 0, of: Date())!
+    func set(_ period: DayPeriod) {
+        now = Calendar.current.date(bySettingHour: 12, minute: period == .day ? 5 : 15, second: 0, of: Date())!
     }
 }
 
@@ -109,14 +109,14 @@ final class EvolutionBranchTests: XCTestCase {
     func testEeveeLevelUpAtNightBecomesUmbreonAndByDayEspeon() async throws {
         let twoWay = EvoNode(speciesID: 133, children: [levelUp(196, time: "day"), levelUp(197, time: "night")])
         for seed in 1...8 as ClosedRange<UInt64> {
-            for (hour, species) in [(23, 197), (3, 197), (12, 196), (6, 196), (17, 196), (18, 197)] {
+            for (period, species) in [(DayPeriod.night, 197), (.day, 196)] {
                 let clock = ClockBox()
                 let s = try store(tree: twoWay, clock: clock, seed: seed)
                 await s.hatch(baseID: 133)
                 for _ in 0..<30 { clock.now.addTimeInterval(11); s.recordPet() }
-                clock.set(hour: hour)
+                clock.set(period)
                 s.applyUsage(s.tokensToNext)
-                XCTAssertEqual(s.currentSpeciesID, species, "seed \(seed) hour \(hour)")
+                XCTAssertEqual(s.currentSpeciesID, species, "seed \(seed) \(period)")
                 XCTAssertEqual(s.state.active?.plannedPathIDs, [133, species])
             }
         }
@@ -174,12 +174,27 @@ final class EvolutionBranchTests: XCTestCase {
 
     func testDayPeriodBoundaries() {
         let cal = Calendar.current
-        func period(_ hour: Int) -> DayPeriod {
-            DayPeriod.at(cal.date(bySettingHour: hour, minute: 0, second: 0, of: Date())!)
+        func period(_ minute: Int, _ second: Int, hour: Int = 3) -> DayPeriod {
+            DayPeriod.at(cal.date(bySettingHour: hour, minute: minute, second: second, of: Date())!)
         }
-        XCTAssertEqual(period(5), .night)
-        XCTAssertEqual(period(6), .day)
-        XCTAssertEqual(period(17), .day)
-        XCTAssertEqual(period(18), .night)
+        XCTAssertEqual(period(9, 59), .day)
+        XCTAssertEqual(period(10, 0), .night)
+        XCTAssertEqual(period(19, 59), .night)
+        XCTAssertEqual(period(20, 0), .day)
+        XCTAssertEqual(period(0, 0, hour: 18), .day, "the hour does not matter")
+        XCTAssertEqual(period(40, 0, hour: 18), .day)
+        XCTAssertEqual(period(50, 0, hour: 18), .night)
+        XCTAssertEqual(period(59, 59), .night)
+    }
+
+    func testSecondsUntilSwitchCountsDownToTheNextTenMinuteMark() {
+        let cal = Calendar.current
+        func left(_ minute: Int, _ second: Int) -> TimeInterval {
+            DayPeriod.secondsUntilSwitch(from: cal.date(bySettingHour: 3, minute: minute, second: second, of: Date())!)
+        }
+        XCTAssertEqual(left(10, 0), 600)
+        XCTAssertEqual(left(12, 30), 450)
+        XCTAssertEqual(left(19, 59), 1)
+        XCTAssertEqual(left(20, 0), 600)
     }
 }

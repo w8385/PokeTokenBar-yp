@@ -17,7 +17,9 @@ private struct GateProvider: PokeProviding {
 
 private final class GateClock: @unchecked Sendable {
     var now = Date()
-    func set(hour: Int) { now = Calendar.current.date(bySettingHour: hour, minute: 30, second: 0, of: Date())! }
+    func set(_ period: DayPeriod) {
+        now = Calendar.current.date(bySettingHour: 12, minute: period == .day ? 5 : 15, second: 0, of: Date())!
+    }
 }
 
 private func context(_ edit: (inout EvolutionContext) -> Void = { _ in }) -> EvolutionContext {
@@ -117,6 +119,23 @@ final class EvolutionGateRuleTests: XCTestCase {
         let mon = try JSONDecoder().decode(MonState.self, from: Data(
             #"{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":1}"#.utf8))
         XCTAssertEqual(mon.evolution, EvolutionProgress())
+        XCTAssertNil(mon.evolution.stuckNotified)
+    }
+
+    func testStuckMarkerSurvivesASaveAndResetsWithTheNextForm() throws {
+        var progress = EvolutionProgress()
+        progress.stuckNotified = "358"
+        let back = try JSONDecoder().decode(EvolutionProgress.self, from: JSONEncoder().encode(progress))
+        XCTAssertEqual(back.stuckNotified, "358")
+        XCTAssertNil(progress.nextForm(spentBaseline: 0).stuckNotified)
+    }
+
+    func testUnmetRequirementsNameThePathNearestToOpen() throws {
+        let chansey = try XCTUnwrap(EvolutionRules.rule(for: 113))
+        let none = context { $0.period = .night }
+        XCTAssertEqual(chansey.unmetRequirements(in: none), [.holds(.ovalStone), .time(.day)])
+        let held = context { $0.period = .night; $0.heldItem = .ovalStone }
+        XCTAssertEqual(chansey.unmetRequirements(in: held), [.time(.day)])
     }
 }
 
@@ -208,14 +227,14 @@ final class EvolutionGateStoreTests: XCTestCase {
 
     func testHeldItemAndTimeOfDayBothGateChanseyAndTheItemIsUsedUp() async throws {
         let clock = GateClock()
-        clock.set(hour: 23)
+        clock.set(.night)
         let s = try store(tree: node(440, [node(113)]), clock: clock, inventory: [.ovalStone: 1])
         await s.hatch(baseID: 440)
         let id = try XCTUnwrap(s.state.active?.profile?.instanceID)
         s.applyUsage(s.tokensToNext)
         XCTAssertTrue(s.equip(.ovalStone, to: id))
         XCTAssertEqual(s.currentSpeciesID, 440, "night")
-        clock.set(hour: 12)
+        clock.set(.day)
         s.reevaluateEvolution()
         XCTAssertEqual(s.currentSpeciesID, 113)
         XCTAssertNil(s.heldItem(of: id), "the Oval Stone is consumed")
@@ -224,13 +243,13 @@ final class EvolutionGateStoreTests: XCTestCase {
 
     func testTimeOfDayAloneOpensTheGateOnTheNextTickWithoutNewUsage() async throws {
         let clock = GateClock()
-        clock.set(hour: 23)
         let s = try store(tree: node(406, [node(315)]), clock: clock)
         await s.hatch(baseID: 406)
         for _ in 0..<30 { clock.now.addTimeInterval(11); s.recordPet() }
+        clock.set(.night)
         s.applyUsage(s.tokensToNext)
         XCTAssertEqual(s.currentSpeciesID, 406, "Roselia only by day")
-        clock.set(hour: 12)
+        clock.set(.day)
         s.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
                  limitWarning: false, hasUsageData: true)
         XCTAssertEqual(s.currentSpeciesID, 315)
@@ -274,14 +293,14 @@ final class EvolutionGateStoreTests: XCTestCase {
 
     func testItemOnlyFormIsReachedByItsItemNotByGrowth() async throws {
         let clock = GateClock()
-        clock.set(hour: 12)
+        clock.set(.day)
         let tree = node(217, [node(901, item: "peat-block")])
         let s = try store(tree: tree, clock: clock, inventory: [.peatBlock: 1])
         await s.hatch(baseID: 217)
         XCTAssertEqual(s.state.active?.plannedPathIDs, [217], "growth alone never plans Ursaluna")
         XCTAssertEqual(s.useEvolutionStone(.peatBlock), .notReady, "a Peat Block works only at night")
         XCTAssertEqual(s.itemCount(.peatBlock), 1)
-        clock.set(hour: 23)
+        clock.set(.night)
         XCTAssertEqual(s.useEvolutionStone(.peatBlock), .evolved)
         XCTAssertEqual(s.currentSpeciesID, 901)
         XCTAssertEqual(s.itemCount(.peatBlock), 0)
@@ -388,5 +407,81 @@ final class EvolutionGateStoreTests: XCTestCase {
         await s.hatch(baseID: 1)
         s.applyUsage(s.tokensToNext)
         XCTAssertEqual(s.currentSpeciesID, 2)
+    }
+
+    // MARK: Day/night on the wall clock, and the stuck-evolution notification
+
+    private func at(minute: Int) -> Date {
+        Calendar.current.date(bySettingHour: 12, minute: minute, second: 0, of: Date())!
+    }
+
+    func testNightOnlyEvolutionReadyByDayEvolvesAfterTheClockPassesTenMinutes() async throws {
+        let clock = GateClock()
+        clock.now = at(minute: 5)
+        let s = try store(tree: node(433, [node(358)]), clock: clock)
+        await s.hatch(baseID: 433)
+        for _ in 0..<40 { clock.now.addTimeInterval(1); s.recordPet(); clock.now.addTimeInterval(10) }
+        clock.now = at(minute: 5)
+        s.applyUsage(s.tokensToNext)
+        s.checkEvolutionGate()
+        XCTAssertEqual(s.currentSpeciesID, 433, "Chimecho only at night")
+        clock.now = at(minute: 10).addingTimeInterval(1)
+        s.checkEvolutionGate()
+        XCTAssertEqual(s.currentSpeciesID, 358)
+    }
+
+    private func stuckChimecho(_ clock: GateClock) async throws -> CompanionStore {
+        let s = try store(tree: node(433, [node(358)]), clock: clock)
+        await s.hatch(baseID: 433)
+        for _ in 0..<40 { clock.now.addTimeInterval(11); s.recordPet() }
+        clock.now = at(minute: 5)
+        return s
+    }
+
+    func testStuckEvolutionNotifiesOnceAndNamesTheWait() async throws {
+        let clock = GateClock()
+        let s = try await stuckChimecho(clock)
+        let before = s.latestEvent?.seq ?? 0
+        s.applyUsage(s.tokensToNext)
+        XCTAssertEqual(s.latestEvent?.seq, before + 1)
+        XCTAssertTrue(s.latestEvent?.text.contains("5") == true, "five minutes to night: \(s.latestEvent?.text ?? "")")
+        XCTAssertNotNil(s.state.active?.evolution.stuckNotified)
+        s.applyUsage(0)
+        clock.now = at(minute: 8)
+        s.checkEvolutionGate()
+        XCTAssertEqual(s.latestEvent?.seq, before + 1, "same reason, no second notification")
+    }
+
+    func testStuckNotificationFollowsTheReasonNotThePeriod() async throws {
+        let clock = GateClock()
+        clock.set(.night)
+        let s = try store(tree: node(440, [node(113)]), clock: clock, inventory: [.ovalStone: 1])
+        await s.hatch(baseID: 440)
+        let id = try XCTUnwrap(s.state.active?.profile?.instanceID)
+        let before = s.latestEvent?.seq ?? 0
+        s.applyUsage(s.tokensToNext)
+        XCTAssertEqual(s.latestEvent?.seq, before + 1, "needs the stone and day")
+        clock.now = clock.now.addingTimeInterval(DayPeriod.length)
+        s.checkEvolutionGate()
+        XCTAssertEqual(s.currentSpeciesID, 440)
+        XCTAssertEqual(s.latestEvent?.seq, before + 1, "the period flipped but the stone is still missing")
+        clock.now = clock.now.addingTimeInterval(DayPeriod.length)
+        XCTAssertTrue(s.equip(.ovalStone, to: id))
+        XCTAssertEqual(s.currentSpeciesID, 440)
+        XCTAssertEqual(s.latestEvent?.seq, before + 2, "now only the day is missing")
+    }
+
+    func testNoStuckNotificationWhenTheFormCanEvolveNow() async throws {
+        let clock = GateClock()
+        clock.set(.day)
+        let s = try store(tree: node(440, [node(113)]), clock: clock, inventory: [.ovalStone: 1])
+        await s.hatch(baseID: 440)
+        let id = try XCTUnwrap(s.state.active?.profile?.instanceID)
+        XCTAssertTrue(s.equip(.ovalStone, to: id))
+        let before = s.latestEvent?.seq ?? 0
+        s.applyUsage(s.tokensToNext)
+        XCTAssertEqual(s.currentSpeciesID, 113)
+        XCTAssertEqual(s.latestEvent?.seq, before + 1, "only the evolution itself")
+        XCTAssertNil(s.state.active?.evolution.stuckNotified)
     }
 }

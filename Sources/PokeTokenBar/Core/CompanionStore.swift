@@ -999,18 +999,28 @@ final class CompanionStore {
             Task { await revealDitto() }
         }
         if burnTier == .blazing { recordTokenRain() }
-        // A gate that waits on the clock (day/night) opens without any new usage.
-        if let a = state.active, currentLine != nil, a.dittoDisguise == nil || a.dittoRevealed,
-           a.usedAtStage >= stageThreshold(for: a), clock() >= nextEvolutionGateCheck {
-            nextEvolutionGateCheck = clock().addingTimeInterval(30)
-            applyUsage(0)
-        }
+        checkEvolutionGate()
         displayState = computeState(burnTier: burnTier, limitWarning: limitWarning,
                                     hasUsageData: hasUsageData, today: todayTokens,
                                     timeSinceLastUsage: idle)
         sulkIdle = displayState == .sulk ? idle ?? 0 : 0
         save()
         autoSnapshotIfNeeded()
+    }
+
+    /// A gate that waits on the clock (day/night) opens without any new usage. Called from every usage update and
+    /// from the app's 30-second tick; at most one check per 20 seconds.
+    func checkEvolutionGate() {
+        guard let a = state.active, currentLine != nil, a.dittoDisguise == nil || a.dittoRevealed,
+              a.usedAtStage >= stageThreshold(for: a), clock() >= nextEvolutionGateCheck else { return }
+        nextEvolutionGateCheck = clock().addingTimeInterval(20)
+        applyUsage(0)
+    }
+
+    /// The period now and the seconds left in it, on the app's clock.
+    func dayPeriodNow() -> (period: DayPeriod, secondsLeft: TimeInterval) {
+        let now = clock()
+        return (DayPeriod.at(now), DayPeriod.secondsUntilSwitch(from: now))
     }
 
     /// 토큰 증분을 현재 포켓몬에 적용 — 임계 도달 시 진화/졸업.
@@ -1049,7 +1059,10 @@ final class CompanionStore {
                 let context = evolutionContext(for: a, thresholdOverride: thr)
                 let openPath = EvolutionRules.openPath(into: next.speciesID, in: context)
                 // A closed gate keeps the stage open: the XP keeps adding up and carries over once it opens.
-                guard let openPath else { break }
+                guard let openPath else {
+                    notifyEvolutionStuckIfNeeded(of: a, into: next, in: line, context: context)
+                    break
+                }
                 if planned == nil || next.speciesID != picked.speciesID {
                     replanEvolution(from: node, to: next, base: a)
                     AppLog.write("evolve: replanned path for base \(a.baseID)")
@@ -1061,6 +1074,32 @@ final class CompanionStore {
         reconcileActiveProfileGrowth()
         save()
     }
+
+    /// Tells the player once per blocking reason that the form is ready but a condition is unmet. Time is one
+    /// reason however many times the period flips, so a day/night wait is not announced every ten minutes.
+    private func notifyEvolutionStuckIfNeeded(of a: MonState, into next: EvoNode, in line: EvoLine, context: EvolutionContext) {
+        guard let rule = EvolutionRules.rule(for: next.speciesID) else { return }
+        let unmet = rule.unmetRequirements(in: context)
+        guard !unmet.isEmpty else { return }
+        let timeOnly = unmet.allSatisfy { if case .time = $0 { return true } else { return false } }
+        let blocking = timeOnly ? [] : unmet.filter { if case .time = $0 { return false } else { return true } }
+        let key = ([String(next.speciesID)] + blocking.map { String(describing: $0) }).joined(separator: "|")
+        guard a.evolution.stuckNotified != key else { return }
+        state.active!.evolution.stuckNotified = key
+        let name = formDisplayName(line.localizedName(a.currentID, state.language),
+                                   speciesID: a.currentID, form: a.form)
+        let what: String
+        if timeOnly, case .time(let period) = unmet[0] {
+            what = l.notifEvolveStuckWaitsFor(period, minutes: Self.minutes(DayPeriod.secondsUntilSwitch(from: clock())))
+        } else {
+            what = blocking.map {
+                l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" })
+            }.joined(separator: " + ")
+        }
+        notifyCompanionEvent(l.notifEvolveStuckTitle, l.notifEvolveStuckBody(name, what))
+    }
+
+    static func minutes(_ seconds: TimeInterval) -> Int { max(1, Int((seconds / 60).rounded(.up))) }
 
     /// 실제로 간 갈래가 계획과 다르면 계획을 그 갈래 아래로 다시 세운다.
     private func replanEvolution(from node: EvoNode, to next: EvoNode, base a: MonState) {
