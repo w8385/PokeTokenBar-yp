@@ -166,6 +166,16 @@ def test_duplicate_held_item_is_kept_on_the_first_member_only():
     assert _items(party) == ["charizardite-x", None, "light-ball", None]
 
 
+@pytest.mark.parametrize("item, wrong_id, right_id", [
+    ("wellspring-mask", 25, 1017),
+    ("stellar-crystal", 25, 1024),
+])
+def test_an_item_on_the_wrong_species_does_not_take_the_slot_from_its_real_holder(item, wrong_id, right_id):
+    party = [{"pokemon_id": wrong_id, "level": 50, "held_item": item},
+             {"pokemon_id": right_id, "level": 50, "held_item": item}]
+    assert _items(party) == [item, item]
+
+
 def test_distinct_held_items_are_untouched():
     party = [{"pokemon_id": 6, "level": 50, "held_item": "charizardite-x"},
              {"pokemon_id": 25, "level": 50, "held_item": "light-ball"},
