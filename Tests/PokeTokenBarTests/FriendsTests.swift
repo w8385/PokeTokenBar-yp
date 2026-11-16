@@ -245,6 +245,76 @@ final class PetRowLayoutTests: XCTestCase {
         XCTAssertEqual(right.hit(x: petSize + slot + 2, petSize: petSize, bubbleWidth: nil), .friend(1))
     }
 
+    func testTwoFriendsFlankTheMainPet() {
+        let layout = PetRowLayout(friendCount: 2, friendsOnLeft: true, friendsFlank: true)
+        let slot = PetRowLayout.friendSlotWidth(petSize: petSize)
+        XCTAssertEqual(layout.slotOrder, [1, 0, 2])
+        XCTAssertEqual(layout.margins(petSize: petSize, bubbleWidth: nil).left, slot)
+        XCTAssertEqual(layout.margins(petSize: petSize, bubbleWidth: nil).right, slot)
+        XCTAssertEqual(layout.panelWidth(petSize: petSize, bubbleWidth: nil), petSize + 2 * slot)
+        XCTAssertGreaterThanOrEqual(layout.margins(petSize: petSize, bubbleWidth: FloatingPetController.bubbleMinWidth).left, slot)
+    }
+
+    func testFlankingIsOnlyForTwoFriends() {
+        for count in [0, 1] {
+            let layout = PetRowLayout(friendCount: count, friendsOnLeft: true, friendsFlank: true)
+            XCTAssertFalse(layout.isFlanking)
+            XCTAssertEqual(layout.slotOrder, count == 0 ? [0] : [1, 0])
+        }
+        XCTAssertEqual(PetRowLayout(friendCount: 1, friendsOnLeft: false, friendsFlank: true).slotOrder, [0, 1])
+    }
+
+    func testHitTestInTheFlankingLayoutFindsEachFriend() {
+        let layout = PetRowLayout(friendCount: 2, friendsOnLeft: true, friendsFlank: true)
+        let mainX = layout.mainXOffset(petSize: petSize, bubbleWidth: nil)
+        let slot = PetRowLayout.friendSlotWidth(petSize: petSize)
+        XCTAssertEqual(layout.hit(x: mainX - 2, petSize: petSize, bubbleWidth: nil), .friend(0))
+        XCTAssertEqual(layout.hit(x: mainX + 10, petSize: petSize, bubbleWidth: nil), .main)
+        XCTAssertEqual(layout.hit(x: mainX + petSize + 2, petSize: petSize, bubbleWidth: nil), .friend(1))
+        XCTAssertEqual(layout.hit(x: mainX + petSize + slot + 2, petSize: petSize, bubbleWidth: nil), .main)
+        XCTAssertEqual(layout.hit(x: mainX - slot - 2, petSize: petSize, bubbleWidth: nil), .main)
+    }
+
+    func testSavedHomeSurvivesTheFlankingLayout() {
+        let layout = PetRowLayout(friendCount: 2, friendsOnLeft: true, friendsFlank: true)
+        for bubble in [false, true] {
+            let size = FloatingPetController.panelSize(petSize: petSize, showingBubble: bubble, layout: layout)
+            let home = NSPoint(x: 400, y: 300)
+            let panel = FloatingPetController.panelOrigin(petOrigin: home, petSize: petSize, panelSize: size,
+                                                          layout: layout, showingBubble: bubble)
+            XCTAssertEqual(FloatingPetController.petOrigin(panelOrigin: panel, petSize: petSize, panelSize: size,
+                                                           layout: layout, showingBubble: bubble), home)
+        }
+    }
+
+    func testFlankingNeedsRoomOnBothSides() {
+        let screen = NSRect(x: 0, y: 0, width: 1000, height: 800)
+        XCTAssertTrue(FloatingPetController.friendsFitBothSides(petOrigin: NSPoint(x: 400, y: 0), petSize: petSize,
+                                                                visibleFrame: screen))
+        XCTAssertFalse(FloatingPetController.friendsFitBothSides(petOrigin: NSPoint(x: 10, y: 0), petSize: petSize,
+                                                                 visibleFrame: screen))
+        XCTAssertFalse(FloatingPetController.friendsFitBothSides(petOrigin: NSPoint(x: 900, y: 0), petSize: petSize,
+                                                                 visibleFrame: screen))
+    }
+
+    func testHomeSlotsPutFriendsAtTheCornersAndTheAddSlotWhereTheNextFriendGoes() {
+        typealias A = FriendSlotsRow.Arrangement
+        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 0, canAdd: true), A(center: .add))
+        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 0, canAdd: false), A())
+        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 1, canAdd: true), A(leading: .friend(0), trailing: .add))
+        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 1, canAdd: false), A(leading: .friend(0)))
+        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 2, canAdd: true),
+                       A(leading: .friend(0), trailing: .friend(1)))
+    }
+
+    func testCrowdBubbleEmojiStaysSmallInsideTheSpriteBox() {
+        for size in stride(from: CGFloat(28), through: 384, by: 4) {
+            let emoji = CrowdBubble.emojiSize(for: size)
+            XCTAssertLessThanOrEqual(emoji + 2 + MiniBubbleShape.tailHeight, size, "size \(size)")
+            XCTAssertLessThanOrEqual(emoji, 24, "size \(size)")
+        }
+    }
+
     func testFriendsStayOnScreen() {
         let screen = NSRect(x: 0, y: 0, width: 1000, height: 800)
         XCTAssertTrue(FloatingPetController.friendsFitLeft(petOrigin: NSPoint(x: 400, y: 0), petSize: petSize,
