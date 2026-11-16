@@ -49,6 +49,9 @@ struct BattleView: View {
                                     }
                                 }
                             }
+                            if let entry {
+                                section(l.gymSectionTitle) { GymSection(store: store, uploader: uploader, entry: entry) }
+                            }
                             if uploader.hasToken, uploader.hasServer {
                                 BattleInfoSections(info: uploader.battleInfo, l: l, parts: [.recent])
                             }
