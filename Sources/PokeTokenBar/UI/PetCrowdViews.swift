@@ -99,10 +99,11 @@ struct HomePetRow<Main: View>: View {
 
     static var mainSize: CGFloat { 58 }
     static var friendSize: CGFloat { 32 }
-    static var tileWidth: CGFloat { 124 }
+    static var tileWidth: CGFloat { mainSize + 2 * friendSize - 2 * slotOverlap + 2 * tileInset }
     static var tileHeight: CGFloat { 72 }
-    /// Sprite boxes overlap by this much; the pixel art leaves transparent margins, so the art does not touch.
-    static var slotOverlap: CGFloat { 3 }
+    static var tileInset: CGFloat { 4 }
+    /// A friend's box tucks this far behind the raised Pokémon's box (30% of the friend's box).
+    static var slotOverlap: CGFloat { (friendSize * 0.3).rounded() }
     static var floorInset: CGFloat { 7 }
     /// Space between the tile and the text column.
     static var headerGap: CGFloat { 10 }
@@ -134,7 +135,7 @@ struct HomePetRow<Main: View>: View {
             main.zIndex(1)
             slotView(layout.trailing, friends: friends, outer: .topTrailing, l: l)
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, Self.tileInset)
         .padding(.bottom, Self.floorInset)
         .frame(width: Self.tileWidth, height: Self.tileHeight, alignment: .bottom)
         .background(alignment: .bottom) {
