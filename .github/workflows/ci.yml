@@ -121,3 +121,17 @@ jobs:
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Single check to require: it always reports, and passes when every needed job succeeded or was skipped.
+  ci-ok:
+    name: ci-ok
+    needs: [changes, build-test, ui-tests, secret-scan]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if a needed job failed or was cancelled
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          case " $RESULTS " in *" failure "*|*" cancelled "*) exit 1 ;; esac
