@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Coworkers tab: the linked coworkers' lead Pokémon and trading with them. The bot connection itself
-/// stays on the Battle tab; without it this tab only points there.
+/// is in Settings; without it this tab only points there.
 @MainActor
 struct CoworkersView: View {
     let store: CompanionStore
@@ -54,7 +54,7 @@ struct CoworkersView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(l.coworkersNotConnected).font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Button(l.coworkersOpenConnection) { navigation.tab = .battle }
+                Button(l.coworkersOpenConnection) { navigation.openYPokeSettings() }
                     .controlSize(.small)
             }
         }

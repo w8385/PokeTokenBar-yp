@@ -13,6 +13,11 @@ struct SettingsView: View {
     /// 고급 섹션을 펼친 채로 열지. 세션 키 만료 안내에서 들어온 경우에만 true —
     /// 접힌 채로 열면 고칠 입력란이 안 보여 안내가 막다른 길이 된다.
     var startExpanded = false
+    /// The selected settings tab; `PopoverNavigation.settingsTab` owns and persists it.
+    var tab: Binding<SettingsTab> = .constant(.general)
+    @Environment(PartyUploader.self) private var uploader: PartyUploader?
+    @State private var tokenInput = ""
+    @State private var tokenInvalid = false
     @State private var launchAtLoginEnabled = false
     @State private var launchAtLoginNeedsApproval = false
     @State private var launchAtLoginError: Error?
@@ -67,24 +72,17 @@ struct SettingsView: View {
         @Bindable var store = store
         VStack(spacing: 0) {
             header
+            SettingsTabPicker(selection: tab, l: l)
+                .padding(.horizontal, 16).padding(.bottom, 8)
             Divider()
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
-                        generalGroup(store)
-                        difficultyGroup
-                        menuBarGroup(store)
-                        trackedProvidersGroup(store)
-                        floatingPetGroup(store)
-                        notificationsGroup(store)
-                        updateGroup(store)
-                        transferGroup(store)
-                        advancedGroup(store)
-                            .id("advancedSettingsSection")
-                        aboutSupportGroup
+                        ForEach(tab.wrappedValue.sections, id: \.self) { sectionView($0, store) }
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .id(tab.wrappedValue)
                 }
                 .onAppear {
                     companion.refreshSnapshots()
@@ -92,6 +90,7 @@ struct SettingsView: View {
                     guard !didApplyStartExpanded else { return }
                     didApplyStartExpanded = true
                     if startExpanded {
+                        tab.wrappedValue = .advanced
                         advancedExpanded = true
                         Task { @MainActor in
                             try? await Task.sleep(nanoseconds: 80_000_000)
@@ -180,6 +179,23 @@ struct SettingsView: View {
     }
 
     // MARK: 그룹 섹션
+
+    @ViewBuilder
+    private func sectionView(_ section: SettingsSection, _ store: UsageStore) -> some View {
+        switch section {
+        case .general: generalGroup(store)
+        case .difficulty: difficultyGroup
+        case .menuBar: menuBarGroup(store)
+        case .trackedProviders: trackedProvidersGroup(store)
+        case .floatingPet: floatingPetGroup(store)
+        case .notifications: notificationsGroup(store)
+        case .update: updateGroup(store)
+        case .transfer: transferGroup(store)
+        case .advanced: advancedGroup(store).id("advancedSettingsSection")
+        case .aboutSupport: aboutSupportGroup
+        case .ypoke: if let uploader { ypokeGroup(uploader) }
+        }
+    }
 
     @ViewBuilder
     private func generalGroup(_ store: UsageStore) -> some View {
@@ -963,6 +979,99 @@ struct SettingsView: View {
                     .font(.caption2).foregroundStyle(.orange).textSelection(.enabled)
                     .padding(.horizontal, 12).padding(.bottom, 6)
             }
+        }
+    }
+
+    private func ypokeGroup(_ uploader: PartyUploader) -> some View {
+        @Bindable var uploader = uploader
+        return settingsSection(l.partyUploadSectionTitle) {
+            groupRow {
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 6) {
+                        Text(l.partyUploadTokenLabel)
+                        if !uploader.hasToken {
+                            Text(l.ypokeNotLinked).font(.caption2).foregroundStyle(.secondary)
+                        } else if uploader.tokenRejected {
+                            Text(l.partyUploadTokenRejected).font(.caption2).foregroundStyle(.orange)
+                        } else if uploader.lastAttemptFailed {
+                            Text(l.ypokeUploadFailed).font(.caption2).foregroundStyle(.orange)
+                        } else if uploader.lastSuccessAt != nil {
+                            Text(l.partyUploadConnected).font(.caption2).foregroundStyle(.green)
+                        } else {
+                            Text(l.partyUploadTokenSaved).font(.caption2).foregroundStyle(.green)
+                        }
+                    }
+                    if uploader.hasToken {
+                        Text(uploader.hasServer ? l.partyUploadHint : l.partyUploadLinkHint)
+                            .font(.caption2).foregroundStyle(.tertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Spacer()
+            }
+            if !uploader.hasToken {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(Array(l.ypokeLinkSteps.enumerated()), id: \.offset) { index, step in
+                        Text("\(index + 1). \(step)").fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12).padding(.bottom, 8)
+            }
+            groupRow {
+                SecureField(uploader.hasToken ? "••••••••" : l.partyUploadTokenLabel, text: $tokenInput)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { submitToken(uploader) }
+                Button(l.save) { submitToken(uploader) }
+                    .disabled(tokenInput.isEmpty)
+                if uploader.hasToken {
+                    Button(l.delete) {
+                        tokenInput = ""
+                        tokenInvalid = false
+                        uploader.clearToken()
+                    }
+                }
+            }
+            if tokenInvalid {
+                Text(l.partyUploadTokenInvalid)
+                    .font(.caption2).foregroundStyle(.orange)
+                    .padding(.horizontal, 12).padding(.bottom, 6)
+            } else if uploader.hasToken {
+                VStack(alignment: .leading, spacing: 2) {
+                    if uploader.lastAttemptFailed, !uploader.tokenRejected {
+                        Text(l.ypokeUploadFailedHint).foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if let sent = uploader.lastSuccessAt {
+                        Text("\(l.partyUploadLastSent): \(sent, format: .dateTime.month().day().hour().minute())")
+                    } else if uploader.hasServer, !uploader.tokenRejected, !uploader.lastAttemptFailed {
+                        Text(l.battleEntryNotSent).foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Text(l.partyUploadStorageNote)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .font(.caption2).foregroundStyle(.tertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12).padding(.bottom, 6)
+            }
+            Divider()
+            groupRow {
+                Text(l.partyUploadServerLabel)
+                Spacer()
+                TextField("http://bot-host:8790", text: $uploader.serverURL)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(maxWidth: 200)
+            }
+        }
+    }
+
+    private func submitToken(_ uploader: PartyUploader) {
+        tokenInvalid = !uploader.saveToken(tokenInput)
+        if !tokenInvalid {
+            tokenInput = ""
+            Task { await uploader.tick() }
         }
     }
 
