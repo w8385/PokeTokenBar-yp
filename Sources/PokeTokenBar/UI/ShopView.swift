@@ -8,10 +8,12 @@ struct ShopView: View {
     let store: CompanionStore
     let nav: PopoverNavigation
     @State private var category: ItemCategory?
+    private let machineQuery: String
 
-    init(store: CompanionStore, nav: PopoverNavigation, initialCategory: ItemCategory? = nil) {
+    init(store: CompanionStore, nav: PopoverNavigation, initialCategory: ItemCategory? = nil, machineQuery: String = "") {
         self.store = store
         self.nav = nav
+        self.machineQuery = machineQuery
         _category = State(initialValue: initialCategory)
     }
 
@@ -47,6 +49,9 @@ struct ShopView: View {
                 }
                 if category == nil || category == .scout {
                     ShopScoutSection(store: store)
+                }
+                if category == .machine {
+                    MachineShopSection(store: store, initialQuery: machineQuery)
                 }
             }
             .reservesScrollerLane()

@@ -106,6 +106,43 @@ extension L {
           "Нажмите на приём, чтобы заменить. Приёмы ТМ доступны на любом уровне. Их используют только покемоны из состава.")
     }
 
+    var shopMachineHint: String {
+        t("한 번 사면 계속 써요. 그 기술을 배우는 내 포켓몬은 모두 쓸 수 있어요.",
+          "Buy a TM once and keep it. Every Pokémon of yours that can learn the move may use it.",
+          "一度買えばずっと使えます。そのわざを覚えられる手持ちのポケモンはみな使えます。",
+          "Cómprala una vez y es tuya. Todos tus Pokémon que aprendan el movimiento pueden usarla.",
+          "Achète-la une fois, elle reste à toi. Tous tes Pokémon qui apprennent la capacité peuvent l'utiliser.",
+          "Compre uma vez e fica sua. Todos os seus Pokémon que aprendem o golpe podem usar.",
+          "Einmal kaufen, für immer behalten. Alle deine Pokémon, die die Attacke lernen, dürfen sie nutzen.",
+          "Купите ТМ один раз, и она ваша. Её могут использовать все ваши покемоны, способные выучить приём.")
+    }
+
+    var shopMachineSearchPrompt: String {
+        t("기술 이름 검색…", "Search moves…", "わざ名で検索…", "Buscar movimientos…", "Rechercher une capacité…",
+          "Buscar golpes…", "Attacke suchen…", "Поиск приёмов…")
+    }
+
+    var shopMachineLearnableOnly: String {
+        t("내 포켓몬이 배울 수 있는 기술만", "Only moves my Pokémon can learn", "手持ちが覚えられるわざだけ",
+          "Solo lo que aprenden mis Pokémon", "Seulement ce que mes Pokémon apprennent",
+          "Só o que meus Pokémon aprendem", "Nur was meine Pokémon lernen", "Только то, что учат мои покемоны")
+    }
+
+    func shopMachineMine(_ count: Int) -> String {
+        t("내 포켓몬 \(count)마리", "\(count) of yours", "手持ち\(count)匹", "\(count) tuyos", "\(count) à toi",
+          "\(count) seus", "\(count) von dir", "ваших: \(count)")
+    }
+
+    var shopMachineEmpty: String {
+        t("맞는 기술머신이 없어요.", "No TMs match.", "該当するわざマシンがありません。", "Ninguna MT coincide.",
+          "Aucune CT ne correspond.", "Nenhuma TM encontrada.", "Keine passende TM.", "Подходящих ТМ нет.")
+    }
+
+    var moveWeatherMove: String {
+        t("날씨 기술", "Weather move", "天気わざ", "Mov. de clima", "Capacité météo", "Golpe de clima",
+          "Wetter-Attacke", "Погодный приём")
+    }
+
     var heldItemEquipAtTop: String {
         t("위쪽 지닌 도구 칸에서 장착해요.", "Equip it in the held item slot above.", "上のもちもの欄で持たせます。",
           "Equípalo en la casilla de objeto de arriba.", "Équipe-le dans l'emplacement d'objet ci-dessus.",

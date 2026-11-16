@@ -479,7 +479,7 @@ enum HeldItem {
 
 /// 상점·가방의 분류 탭. 빈 분류는 화면에서 숨긴다 — 아이템을 추가하는 쪽이 `ItemKind.category` 한 줄만 채운다.
 enum ItemCategory: String, CaseIterable, Sendable {
-    case growth, egg, scout, evolution, heldItem, megaStone
+    case growth, egg, scout, evolution, heldItem, megaStone, machine
 }
 
 extension ItemKind {
