@@ -1654,7 +1654,14 @@ final class CompanionStore {
         heldMegaStone(of: instanceID).flatMap { $0.speciesID == speciesID ? $0 : nil }
     }
 
-    func canBuy(_ stone: MegaStone) -> Bool { availableTokens >= price(of: .megaStone(stone)) }
+    /// The bag plus every Pokémon holding it. The shop sells a stone only while this is zero.
+    func megaStoneOwnedTotal(_ stone: MegaStone) -> Int {
+        megaStoneCount(stone) + state.heldItems.values.filter { $0 == stone.inventoryKey }.count
+    }
+
+    func canBuy(_ stone: MegaStone) -> Bool {
+        megaStoneOwnedTotal(stone) == 0 && availableTokens >= price(of: .megaStone(stone))
+    }
 
     @discardableResult
     func buy(_ stone: MegaStone) -> Bool {
