@@ -50,7 +50,7 @@ struct CoworkersView: View {
     }
 
     private var notConnected: some View {
-        card(l.battleCoworkersTitle) {
+        card(l.friendsTitle) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(l.coworkersNotConnected).font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

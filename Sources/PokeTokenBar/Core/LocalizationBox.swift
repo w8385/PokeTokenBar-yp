@@ -9,7 +9,7 @@ extension L {
         case .dex: dexTitle
         case .box: boxTab
         case .battle: battle
-        case .coworkers: battleCoworkersTitle
+        case .coworkers: friendsTitle
         }
     }
 
