@@ -89,3 +89,31 @@ extension L {
           "Equipe no espaço de item acima.", "Rüste es im Item-Feld oben aus.", "Выдайте его в ячейке предмета выше.")
     }
 }
+
+extension L {
+    func title(of tab: SettingsTab) -> String {
+        switch tab {
+        case .general: generalSectionTitle
+        case .usage: settingsTabUsage
+        case .companion: settingsTabCompanion
+        case .notifications: notificationsSection
+        case .ypoke: "YPoke"
+        case .advanced: advancedSectionTitle
+        }
+    }
+
+    var settingsTabUsage: String {
+        t("사용량", "Usage", "使用量", "Uso", "Utilisation", "Uso", "Nutzung", "Использование")
+    }
+
+    var settingsTabCompanion: String {
+        t("동반자", "Companion", "相棒", "Compañero", "Compagnon", "Companheiro", "Begleiter", "Спутник")
+    }
+
+    var ypokeBattleLinkLine: String {
+        t("YPoke 연결 안 됨 · 설정에서 연결", "YPoke not connected · Connect in Settings",
+          "YPoke未接続 · 設定でつなぐ", "YPoke sin conectar · Conectar en Ajustes",
+          "YPoke non connecté · Connecter dans Réglages", "YPoke não conectado · Conectar nos Ajustes",
+          "YPoke nicht verbunden · In den Einstellungen verbinden", "YPoke не подключён · Подключить в настройках")
+    }
+}
