@@ -3,7 +3,10 @@ from dataclasses import replace
 import pytest
 
 from ypoke import pokeapi
-from ypoke.battle import AbilityTrigger, Action, BaseStats, Combatant, MegaEvolution, MegaForm, Move, simulate
+from ypoke.battle import (
+    AbilityTrigger, Action, BaseStats, BattleResult, Combatant, MegaEvolution, MegaForm, Move, SendOut, simulate,
+)
+from ypoke.commands import Reply, result_blocks
 from ypoke.mega_stones import MEGA_STONES, mega_form_id
 from ypoke.narration import battle_card, battle_log
 from ypoke.pokeapi import PokeAPIService
@@ -116,6 +119,57 @@ def test_narration_announces_the_mega_evolution():
     assert battle_log(simulate((replace(holder, mega=no_ability), plain), seed=3))[0].splitlines()[1] == "🔵 리자몽 메가진화"
 
 
+MEGA_ART = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10034.png"
+
+
+def log_blocks(card):
+    reply = Reply("h", summary="h", card=card, rematch="UA:UB:1")
+    return [block for block in result_blocks(reply) if block["type"] == "context"]
+
+
+def test_the_opening_mega_image_sits_in_the_first_turns_log_block():
+    form = replace(MEGA, form_id=10034)
+    holder, plain = replace(mon("리자몽", form), shiny=True), mon("상대")
+    card = battle_card(("<@UA>", "<@UB>"), ((holder,), (plain,)), simulate((holder, plain), seed=3))
+    first, second = log_blocks(card)[:2]
+    assert first["elements"][0] == {"type": "image", "image_url": MEGA_ART, "alt_text": "리자몽 메가진화"}
+    assert "리자몽 메가진화 [단단한발톱]" in first["elements"][1]["text"]
+    assert [element["type"] for element in second["elements"]] == ["mrkdwn"]
+
+
+def test_a_mega_sent_out_mid_battle_puts_its_image_on_that_turn():
+    sides = ((mon("첫째"), mon("둘째", replace(MEGA, form_id=10034))), (mon("상대"),))
+    events = [Action(1, 0, "첫째", "상대", "몸통박치기", defender_hp=90), SendOut(5, 0, "둘째"),
+              MegaEvolution(5, 0, "둘째", None, 10034), Action(5, 0, "둘째", "상대", "몸통박치기", defender_hp=50)]
+    card = battle_card(("<@UA>", "<@UB>"), sides, BattleResult(0, 5, events, remaining=((0, 80), (50,))))
+    by_turn = {block["elements"][-1]["text"].splitlines()[0]: block for block in log_blocks(card)}
+    assert [element["type"] for element in by_turn["*1턴*"]["elements"]] == ["mrkdwn"]
+    assert by_turn["*5턴*"]["elements"][0]["image_url"] == MEGA_ART
+
+
+def test_a_mega_without_a_form_id_or_a_stone_adds_no_image():
+    holder, plain = mon("리자몽", MEGA), mon("상대")
+    card = battle_card(("<@UA>", "<@UB>"), ((holder,), (plain,)), simulate((holder, plain), seed=3))
+    assert not any(element["type"] == "image" for block in log_blocks(card) for element in block["elements"])
+    no_stone = mon("리자몽")
+    card = battle_card(("<@UA>", "<@UB>"), ((no_stone,), (plain,)), simulate((no_stone, plain), seed=3))
+    assert not any(element["type"] == "image" for block in log_blocks(card) for element in block["elements"])
+
+
+def test_both_sides_mega_images_add_no_block_to_a_long_battle():
+    form = replace(MEGA, form_id=10034)
+    sides = ((mon("가", form),) * 3, (mon("나", form),) * 3)
+    events = [Action(turn, turn % 2, "가", "나", "몸통박치기", defender_hp=99) for turn in range(1, 301)]
+    events[:0] = [MegaEvolution(1, 0, "가", None, 10034), MegaEvolution(1, 1, "나", None, 10034)]
+    for turn in (40, 120, 200, 260):
+        events.insert(turn, SendOut(turn, 1, "나"))
+    result = BattleResult(0, 300, events, remaining=((50, None, None), (0, 0, 70)))
+    card = battle_card(("<@UA>", "<@UB>"), sides, result)
+    reply = Reply("h", summary="h", card=card, rematch="UA:UB:3")
+    assert len(result_blocks(replace(reply, echo="echo", card=replace(card, note="n", practice=True)))) <= 49
+    assert sum(element["type"] == "image" for block in log_blocks(card) for element in block["elements"]) == 2
+
+
 @pytest.fixture
 def service(tmp_path, monkeypatch):
     fetched = []
@@ -150,3 +204,18 @@ def test_mega_form_reads_stats_types_and_the_visible_ability_once(service):
     calls = len(fetched)
     assert api.mega_form(10034) == form
     assert len(fetched) == calls
+
+
+def test_a_battle_with_a_stone_holder_carries_the_mega_form_image(tmp_path):
+    from test_commands import FakePokeAPI, handler, member
+
+    class MegaAPI(FakePokeAPI):
+        def mega_form(self, pokemon_id):
+            return {**self.pokemon(pokemon_id), "ability": None, "ability_id": None}
+
+    store = Store(str(tmp_path / "bot.sqlite3"))
+    for user, party in (("UA", [{**member(6, 60), "held_item": "charizardite-x"}]), ("UB", [member(7, 20)])):
+        store.issue_token(user)
+        store.save_party(user, party)
+    reply = handler(store, pokeapi=MegaAPI()).handle("UA", "<@UB>")
+    assert [image for images in reply.card.log_images for image in images] == [(MEGA_ART, "야생몬 메가진화")]

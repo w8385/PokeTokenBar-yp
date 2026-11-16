@@ -69,7 +69,7 @@ final class MegaEvolveShotTests: XCTestCase {
         }
         let mega = try XCTUnwrap(NSImage(contentsOf: URL(fileURLWithPath: base).appendingPathComponent("samples/10034-s.png")))
         func grey(_ text: String) -> some View { Text(text).font(.system(size: 12)).foregroundStyle(Color(white: 0.4)) }
-        let message = VStack(alignment: .leading, spacing: 8) {
+        func message(withMegaImage: Bool) -> some View { VStack(alignment: .leading, spacing: 8) {
             Text("Illustration of the battle message (sample data)").font(.caption2).foregroundStyle(.secondary)
             Text("🏆 @alice 승").font(.system(size: 15, weight: .bold))
             Text("1:1 · 6턴").font(.system(size: 13))
@@ -79,22 +79,28 @@ final class MegaEvolveShotTests: XCTestCase {
             }
             Text("다시 붙기").font(.system(size: 13, weight: .semibold)).padding(.horizontal, 12).padding(.vertical, 5)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color(white: 0.7)))
-            HStack(spacing: 6) {
-                Image(nsImage: mega).resizable().scaledToFit().frame(width: 20, height: 20)
-                Text("리자몽 메가진화").font(.system(size: 12, weight: .bold)).foregroundStyle(Color(white: 0.3))
-            }
             Divider()
-            grey("1턴").bold()
-            grey("🔵 리자몽 메가진화 [단단한발톱]")
-            grey("🔵 리자몽 › 몸통박치기 → 거북왕 84%")
+            HStack(alignment: .top, spacing: 6) {
+                if withMegaImage {
+                    Image(nsImage: mega).resizable().scaledToFit().frame(width: 22, height: 22)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    grey("1턴").bold()
+                    grey("🔵 리자몽 메가진화 [단단한발톱]")
+                    grey("🔵 리자몽 › 몸통박치기 → 거북왕 84%")
+                }
+            }
         }
         .padding(16).frame(width: 420, alignment: .leading).background(Color.white).environment(\.colorScheme, .light)
-        let renderer = ImageRenderer(content: message)
-        renderer.scale = 2
-        let image = try XCTUnwrap(renderer.cgImage)
+        }
         try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
-        try XCTUnwrap(NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]))
-            .write(to: URL(fileURLWithPath: dir).appendingPathComponent("mega-fx-bot-message.png"))
+        for (name, withImage) in [("mega-fx-bot-message-before", false), ("mega-fx-bot-message", true)] {
+            let renderer = ImageRenderer(content: message(withMegaImage: withImage))
+            renderer.scale = 2
+            let image = try XCTUnwrap(renderer.cgImage)
+            try XCTUnwrap(NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]))
+                .write(to: URL(fileURLWithPath: dir).appendingPathComponent("\(name).png"))
+        }
     }
 
     func testTheGlowAndFlashActuallyDrawWhiteOverTheSprite() throws {

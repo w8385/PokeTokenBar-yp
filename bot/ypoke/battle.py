@@ -108,6 +108,7 @@ class MegaForm:
     base: BaseStats
     ability: str | None = None
     ability_id: str | None = None
+    form_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -237,6 +238,7 @@ class MegaEvolution:
     side: int
     pokemon: str
     ability: str | None
+    form_id: int | None = None
 
 
 Event = Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | MegaEvolution
@@ -327,7 +329,7 @@ def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> No
         ability = mega.ability_id if mega.ability_id in abilities.NAMES else None
     team.entered[-1] = _Fighter.enter(replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None))
     team.mega_used = True
-    events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability))
+    events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability, mega.form_id))
 
 
 @dataclass

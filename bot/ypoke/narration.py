@@ -1,7 +1,7 @@
 """Battle result card and turn log, built only from events the simulation produced."""
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
@@ -32,10 +32,14 @@ STAT_SHORT = {
 }
 
 
+Image = tuple[str, str]
+
+
 @dataclass(frozen=True)
 class Card:
     """What the result message shows. `log` is one mrkdwn text per turn (`*N턴*` then one action per line)
-    and a `⋯ N턴 생략` text for each gap; `highlights` is the deciding knockout of a full-lineup battle."""
+    and a `⋯ N턴 생략` text for each gap; `log_images` holds, per log text, the Mega form images shown beside it;
+    `highlights` is the deciding knockout of a full-lineup battle."""
 
     columns: tuple[str, str]
     title: str = ""
@@ -43,6 +47,7 @@ class Card:
     highlights: tuple[str, ...] = ()
     log: tuple[str, ...] = ()
     sprite: tuple[str, str] | None = None
+    log_images: tuple[tuple[Image, ...], ...] = ()
     practice: bool = False
     note: str | None = None
 
@@ -66,9 +71,11 @@ def battle_card(
         for side, roster in enumerate(sides)
     )
     decisive = _decisive_line(result) if len(sides[0]) > 1 or len(sides[1]) > 1 else None
+    entries = _log_entries(result, MAX_LOG_BLOCKS)
     return Card(
         columns, _title(trainers, result), _detail(sides, result), (decisive,) if decisive else (),
-        battle_log(result), _winner_sprite(sides[result.winner], result), practice,
+        tuple(text for text, _ in entries), _winner_sprite(sides[result.winner], result),
+        tuple(images for _, images in entries), practice,
     )
 
 
@@ -154,6 +161,7 @@ class _Turn:
     number: int
     lines: list[str]
     essential: bool = False
+    images: list[Image] = field(default_factory=list)
 
     def render(self) -> str:
         return "\n".join([f"*{self.number}턴*", *self.lines])
@@ -162,24 +170,28 @@ class _Turn:
 def battle_log(result: BattleResult, budget: int = MAX_LOG_BLOCKS) -> tuple[str, ...]:
     """One text per turn. When the turns do not fit `budget` blocks, the first and last `ends` turns stay with
     every turn that has a faint or a send-out, and each gap becomes one `⋯ N턴 생략` text."""
+    return tuple(text for text, _ in _log_entries(result, budget))
+
+
+def _log_entries(result: BattleResult, budget: int) -> list[tuple[str, tuple[Image, ...]]]:
     turns = _turns(result.events)
     ends = len(turns)
     while True:
         entries = _entries(turns, ends)
         if len(entries) <= budget or ends <= 1:
-            return tuple(entries)
+            return entries
         ends -= 1
 
 
-def _entries(turns: list[_Turn], ends: int) -> list[str]:
-    entries: list[str] = []
+def _entries(turns: list[_Turn], ends: int) -> list[tuple[str, tuple[Image, ...]]]:
+    entries: list[tuple[str, tuple[Image, ...]]] = []
     skipped = 0
     for index, turn in enumerate(turns):
         if index < ends or index >= len(turns) - ends or turn.essential:
             if skipped:
-                entries.append(f"{SKIPPED_MARK} {skipped}턴 생략")
+                entries.append((f"{SKIPPED_MARK} {skipped}턴 생략", ()))
                 skipped = 0
-            entries.append(turn.render())
+            entries.append((turn.render(), tuple(turn.images)))
         else:
             skipped += 1
     return entries
@@ -190,6 +202,7 @@ def _turns(events: list[Event]) -> list[_Turn]:
     those before any turn open turn 1."""
     turns: list[_Turn] = []
     opening: list[str] = []
+    opening_images: list[Image] = []
     sent: dict[int, int] = {}
     for event in events:
         if isinstance(event, (AbilityTrigger, MegaEvolution)):
@@ -198,12 +211,15 @@ def _turns(events: list[Event]) -> list[_Turn]:
                 current[sent[event.side]] += f" {_entry_effect(event)}"
             else:
                 current.append(_entry_segment(event))
+            if isinstance(event, MegaEvolution) and event.form_id is not None:
+                (turns[-1].images if turns else opening_images).append(
+                    (sprite_url(event.form_id, False), f"{event.pokemon} 메가진화"))
             continue
         if not isinstance(event, SendOut):
             sent = {}
         if not turns or turns[-1].number != event.turn:
-            turns.append(_Turn(event.turn, opening))
-            opening = []
+            turns.append(_Turn(event.turn, opening, images=opening_images))
+            opening, opening_images = [], []
         turn = turns[-1]
         lines = _event_lines(event)
         if isinstance(event, SendOut):
