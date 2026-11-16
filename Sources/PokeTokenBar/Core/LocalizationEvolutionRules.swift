@@ -33,6 +33,34 @@ extension L {
         return "\(now) · \(until)"
     }
 
+    /// Home header: "Day · 7 min".
+    func dayNightBadge(_ period: DayPeriod, minutesLeft m: Int) -> String {
+        switch period {
+        case .day: return t("낮 · \(m)분", "Day · \(m) min", "昼 · \(m)分", "Día · \(m) min", "Jour · \(m) min",
+                            "Dia · \(m) min", "Tag · \(m) Min.", "День · \(m) мин")
+        case .night: return t("밤 · \(m)분", "Night · \(m) min", "夜 · \(m)分", "Noche · \(m) min", "Nuit · \(m) min",
+                              "Noite · \(m) min", "Nacht · \(m) Min.", "Ночь · \(m) мин")
+        }
+    }
+
+    func dayNightAccessibility(_ period: DayPeriod, minutesLeft m: Int) -> String {
+        switch period {
+        case .day: return t("낮, 밤까지 \(m)분", "Day, night in \(m) min", "昼、夜まで\(m)分", "Día, noche en \(m) min",
+                            "Jour, nuit dans \(m) min", "Dia, noite em \(m) min", "Tag, Nacht in \(m) Min.",
+                            "День, ночь через \(m) мин")
+        case .night: return t("밤, 낮까지 \(m)분", "Night, day in \(m) min", "夜、昼まで\(m)分", "Noche, día en \(m) min",
+                              "Nuit, jour dans \(m) min", "Noite, dia em \(m) min", "Nacht, Tag in \(m) Min.",
+                              "Ночь, день через \(m) мин")
+        }
+    }
+
+    var dayNightHelp: String {
+        t("10분마다 낮과 밤이 바뀌어요", "Day and night switch every 10 minutes", "昼と夜は10分ごとに切り替わります",
+          "El día y la noche cambian cada 10 minutos", "Le jour et la nuit alternent toutes les 10 minutes",
+          "Dia e noite alternam a cada 10 minutos", "Tag und Nacht wechseln alle 10 Minuten",
+          "День и ночь сменяются каждые 10 минут")
+    }
+
     var notifEvolveStuckTitle: String {
         t("🔎 진화가 멈췄어요", "🔎 Evolution is waiting", "🔎 進化が止まっています", "🔎 La evolución espera",
           "🔎 L'évolution attend", "🔎 A evolução está esperando", "🔎 Entwicklung wartet", "🔎 Эволюция ждёт")

@@ -667,6 +667,13 @@ enum DayPeriod: String, Sendable {
 
     var other: DayPeriod { self == .day ? .night : .day }
 
+    /// Degrees through the 20-minute day+night cycle: 0 at :00 (sunrise), 90 at :05, 180 at :10 (sunset), 270 at :15.
+    static func cycleDegrees(from date: Date, calendar: Calendar = .current) -> Double {
+        let parts = calendar.dateComponents([.minute, .second], from: date)
+        let seconds = (parts.minute ?? 0) % 20 * 60 + (parts.second ?? 0)
+        return Double(seconds) / (2 * length) * 360
+    }
+
     /// Seconds until the period flips, 1...600.
     static func secondsUntilSwitch(from date: Date, calendar: Calendar = .current) -> TimeInterval {
         let parts = calendar.dateComponents([.minute, .second], from: date)
