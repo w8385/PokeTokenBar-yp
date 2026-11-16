@@ -16,6 +16,7 @@ from ypoke.commands import (
     RECORD_COMMAND,
     REMATCH_ACTION_ID,
     REMATCH_DENIED,
+    REMATCH_LOSER_ONLY,
     Delivery,
     Reply,
     Where,
@@ -100,7 +101,7 @@ def test_battle_summary_is_one_line_with_the_rematch_value(store):
     ready_pair(store)
     reply = handler(store).handle("UA", "<@UB>")
     assert re.fullmatch(r"🏆 <@U[AB]> 승 · 1:1 · \d+턴", reply.summary)
-    assert reply.rematch == "UA:UB:1"
+    assert reply.rematch in ("UA:UB:1:UA", "UA:UB:1:UB")
     assert reply.card.columns[0].startswith("🔵 *<@UA>*") and reply.card.columns[1].startswith("🔴 *<@UB>*")
     assert reply.text == reply.summary
     assert reply.card.log[0].startswith("*1턴*\n")
@@ -124,7 +125,8 @@ def test_result_blocks_are_context_header_lineups_button_divider_and_one_context
     assert [field["text"] for field in lineups["fields"]] == list(reply.card.columns)
     button = actions["elements"][0]
     assert (button["action_id"], button["value"], button["text"]["text"]) == (
-        REMATCH_ACTION_ID, "UA:UB:1", "다시 붙기")
+        REMATCH_ACTION_ID, reply.rematch, "다시 붙기")
+    assert reply.rematch in ("UA:UB:1:UA", "UA:UB:1:UB")
     assert divider == {"type": "divider"}
     assert [turn["type"] for turn in turns] == ["context"] * len(reply.card.log)
     assert [turn["elements"][0]["text"] for turn in turns] == list(reply.card.log)
@@ -188,7 +190,7 @@ def test_a_pending_battle_keeps_the_original_command_echo(store):
     upload(store, "UB", 7, 20)
     [delivery] = bot.run_pending("UB")
     assert delivery.reply.echo == "<@UA> 님이 `/대결` <@UB> 을(를) 썼어요"
-    assert delivery.reply.summary and delivery.reply.rematch == "UA:UB:1"
+    assert delivery.reply.summary and delivery.reply.rematch in ("UA:UB:1:UA", "UA:UB:1:UB")
     assert delivery.reply.card.note == "기다리던 포켓몬이 올라와서 대결을 시작해요!"
 
 
@@ -216,7 +218,7 @@ def test_a_pending_row_from_before_the_echo_column_still_loads(tmp_path):
 
 def test_rematch_by_a_non_participant_is_refused_and_plays_nothing(store):
     ready_pair(store)
-    reply = handler(store).rematch("UC", "UA:UB", Where("CCHAN", "1.1"))
+    reply = handler(store).rematch("UC", "UA:UB:1:UB", Where("CCHAN", "1.1"))
     assert reply.text == REMATCH_DENIED
     assert not reply.in_channel
     assert store.record("UA") == Record(0, 0)
@@ -226,10 +228,10 @@ def test_rematch_reruns_the_matchup_with_the_current_upload(store):
     ready_pair(store)
     bot = handler(store)
     store.save_party("UB", [{"pokemon_id": 7, "level": 40, "shiny": False, "ivs": {}}])
-    reply = bot.rematch("UB", "UA:UB:1", Where("CCHAN", "1.1"))
+    reply = bot.rematch("UB", "UA:UB:1:UB", Where("CCHAN", "1.1"))
     assert reply.in_channel and reply.echo == "<@UB> 님이 다시 붙기를 눌렀어요"
     assert lineups(reply)[1][0].startswith("꼬부기 Lv40")
-    assert reply.rematch == "UA:UB:1"
+    assert reply.rematch in ("UA:UB:1:UA", "UA:UB:1:UB")
     record = store.record("UB")
     assert record.wins + record.losses == 1
 
@@ -238,25 +240,77 @@ def test_rematch_keeps_the_three_member_format(store):
     for user in ("UA", "UB"):
         store.issue_token(user)
         store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
-    reply = handler(store).rematch("UA", "UA:UB:3", Where("CCHAN", "1.1"))
+    reply = handler(store).rematch("UA", "UA:UB:3:UA", Where("CCHAN", "1.1"))
     assert [len(side) for side in lineups(reply)] == [3, 3]
     assert " · 3:3 · " in reply.summary
-    assert reply.rematch == "UA:UB:3"
+    assert reply.rematch in ("UA:UB:3:UA", "UA:UB:3:UB")
 
 
-def test_a_rematch_value_without_a_size_is_one_on_one(store):
+def test_an_old_value_without_a_size_or_loser_is_one_on_one_for_the_stored_loser(store):
     for user in ("UA", "UB"):
         store.issue_token(user)
         store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
+    store.record_battle("UA", "UB", "UB", 1)
     reply = handler(store).rematch("UA", "UA:UB", Where("CCHAN", "1.1"))
     assert [len(side) for side in lineups(reply)] == [1, 1]
-    assert reply.rematch == "UA:UB:1"
+    assert reply.rematch in ("UA:UB:1:UA", "UA:UB:1:UB")
+
+
+def test_an_old_three_part_value_resolves_the_loser_from_the_latest_battle_of_the_pair(store):
+    ready_pair(store)
+    store.record_battle("UA", "UB", "UB", 1, at=NOW - timedelta(hours=2))
+    store.record_battle("UB", "UA", "UB", 2, at=NOW - timedelta(hours=1))
+    assert handler(store).rematch("UB", "UA:UB:1", Where("CCHAN", "1.1")).text == REMATCH_LOSER_ONLY
+    store.record_battle("UA", "UB", "UA", 3, at=NOW)
+    assert handler(store).rematch("UB", "UA:UB:1", Where("CCHAN", "1.1")).in_channel
+
+
+def test_an_old_value_with_no_stored_battle_is_refused(store):
+    ready_pair(store)
+    reply = handler(store).rematch("UA", "UA:UB:1", Where("CCHAN", "1.1"))
+    assert reply.text == REMATCH_DENIED and not reply.in_channel
+    assert store.record("UA") == Record(0, 0)
+
+
+def test_the_winner_cannot_rematch_and_nothing_is_recorded(store):
+    ready_pair(store)
+    reply = handler(store).rematch("UA", "UA:UB:1:UB", Where("CCHAN", "1.1"))
+    assert reply.text == REMATCH_LOSER_ONLY
+    assert not reply.in_channel and reply.card is None
+    assert store.record("UA") == Record(0, 0)
+
+
+def test_the_loser_rematch_runs_and_the_new_value_names_the_new_loser(store):
+    ready_pair(store)
+    reply = handler(store).rematch("UB", "UA:UB:1:UB", Where("CCHAN", "1.1"))
+    assert reply.in_channel and reply.card is not None
+    assert reply.rematch in ("UA:UB:1:UA", "UA:UB:1:UB")
+
+
+def test_a_malformed_rematch_value_is_refused(store):
+    ready_pair(store)
+    for value in ("", "UA", "UA:UB:2", "UA:UB:1:", "UA:UB:1:UC:UD", "UA:UB:1:lower", "x:UB:1:UB"):
+        reply = handler(store).rematch("UA", value, Where("CCHAN", "1.1"))
+        assert reply.text == REMATCH_DENIED
+    assert store.record("UA") == Record(0, 0)
+
+
+def test_a_third_party_named_as_loser_is_still_refused(store):
+    ready_pair(store)
+    assert handler(store).rematch("UC", "UA:UB:1:UC", Where("CCHAN", "1.1")).text == REMATCH_DENIED
+    assert store.record("UA") == Record(0, 0)
+
+
+def test_the_practice_rematch_value_has_no_loser_and_either_trainer_pressing_is_as_before(store):
+    upload(store, "UA", 25, 60)
+    reply = handler(store).rematch("UA", "UA:UBOT:1", Where("CCHAN", "1.1"))
+    assert reply.rematch == "UA:UBOT:1"
 
 
 def test_a_rematch_waiting_on_an_upload_keeps_the_three_member_format(store):
     store.issue_token("UA")
     store.save_party("UA", [member(25, 50)] * 3)
-    handler(store).rematch("UA", "UA:UB:3", Where("CCHAN", "1.1"))
+    handler(store).rematch("UA", "UA:UB:3:UA", Where("CCHAN", "1.1"))
     [challenge] = pending(store)
     assert challenge.size == 3
 
@@ -270,7 +324,7 @@ def test_rematch_of_a_practice_stays_a_practice(store):
 
 def test_rematch_when_a_side_has_no_upload_goes_to_the_pending_flow(store):
     upload(store, "UA", 25, 60)
-    reply = handler(store).rematch("UA", "UA:UB", Where("CCHAN", "1.1"))
+    reply = handler(store).rematch("UA", "UA:UB:1:UA", Where("CCHAN", "1.1"))
     assert reply.in_channel and reply.summary is None
     [challenge] = pending(store)
     assert (challenge.channel_id, challenge.thread_ts) == ("CCHAN", "1.1")
@@ -335,7 +389,7 @@ def test_the_slash_three_member_battle_posts_both_lineups_with_bars_and_a_three_
     members = [line for field in fields for line in field["text"].splitlines()[1:]]
     assert all(re.search(r"[▰▱]{10} \d+%$|💥$|대기$", line) for line in members)
     assert [line.split(" ")[0] for line in fields[0]["text"].splitlines()[1:]] == ["피카츄", "꼬부기", "피카츄"]
-    assert button_of(message)["value"] == "UA:UB:3"
+    assert button_of(message)["value"] in ("UA:UB:3:UA", "UA:UB:3:UB")
 
 
 class FakeWebhook:
@@ -441,20 +495,20 @@ def rematch_body(user="UA", message=None):
 def test_rematch_posts_the_new_result_as_one_message_in_the_same_thread(store):
     ready_pair(store)
     client, respond = FakeClient(), FakeRespond()
-    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1"}, respond, client)
+    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1:UA"}, respond, client)
     [message] = client.posts
     assert message["thread_ts"] == "9.1"
     assert message["blocks"][0]["elements"][0]["text"] == "<@UA> 님이 다시 붙기를 눌렀어요"
-    assert button_of(message)["value"] == "UA:UB:1"
+    assert button_of(message)["value"] in ("UA:UB:1:UA", "UA:UB:1:UB")
     assert respond.calls == []
 
 
 def test_a_rematch_where_the_bot_cannot_post_answers_the_one_message_without_replacing_the_original(store):
     ready_pair(store)
     client, respond = FakeClient(fail_post=True), FakeRespond()
-    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1"}, respond, client)
+    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1:UA"}, respond, client)
     [message] = respond.calls
-    assert button_of(message)["value"] == "UA:UB:1"
+    assert button_of(message)["value"] in ("UA:UB:1:UA", "UA:UB:1:UB")
     assert_one_blocks_only_message(message)
     assert message["replace_original"] is False and message["thread_ts"] == "9.1"
 
@@ -462,7 +516,7 @@ def test_a_rematch_where_the_bot_cannot_post_answers_the_one_message_without_rep
 def test_a_rematch_waiting_on_the_opponent_keeps_its_echo_line_in_the_thread(store):
     upload(store, "UA", 25, 60)
     client = FakeClient()
-    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB"}, FakeRespond(), client)
+    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1:UA"}, FakeRespond(), client)
     [notice] = [post for post in client.posts if post["channel"] == "CCHAN"]
     assert notice["thread_ts"] == "9.1"
     assert notice["text"].startswith("<@UA> 님이 다시 붙기를 눌렀어요\n<@UB>님은 아직 YPoke에 포켓몬이 없어서")
@@ -472,17 +526,27 @@ def test_rematch_in_a_reply_uses_the_threads_root(store):
     ready_pair(store)
     client = FakeClient()
     message = {"ts": "9.3", "thread_ts": "9.1"}
-    rematch_listener(handler(store))(lambda: None, rematch_body(message=message), {"value": "UB:UA"}, FakeRespond(), client)
+    rematch_listener(handler(store))(lambda: None, rematch_body(message=message), {"value": "UB:UA:1:UA"}, FakeRespond(), client)
     assert {post["thread_ts"] for post in client.posts} == {"9.1"}
 
 
 def test_rematch_by_someone_else_gets_only_a_private_refusal(store):
     ready_pair(store)
     client, respond = FakeClient(), FakeRespond()
-    rematch_listener(handler(store))(lambda: None, rematch_body(user="UC"), {"value": "UA:UB"}, respond, client)
+    rematch_listener(handler(store))(lambda: None, rematch_body(user="UC"), {"value": "UA:UB:1:UA"}, respond, client)
     assert client.posts == []
     [call] = respond.calls
     assert call["text"] == REMATCH_DENIED and call["response_type"] == "ephemeral"
+
+
+def test_rematch_by_the_winner_gets_only_a_private_refusal_and_posts_nothing(store):
+    ready_pair(store)
+    client, respond = FakeClient(), FakeRespond()
+    rematch_listener(handler(store))(lambda: None, rematch_body(user="UA"), {"value": "UA:UB:1:UB"}, respond, client)
+    assert client.posts == []
+    [call] = respond.calls
+    assert call["text"] == REMATCH_LOSER_ONLY and call["response_type"] == "ephemeral"
+    assert store.record("UA") == Record(0, 0)
 
 
 def test_the_command_log_line_has_no_token_or_response_url(store, caplog):

@@ -26,10 +26,11 @@ REGISTER_ACTION_ID = "open_poketokenbar"
 REMATCH_ACTION_ID = "rematch"
 REMATCH_LABEL = "다시 붙기"
 REMATCH_DENIED = "대결한 두 사람만 누를 수 있어요."
+REMATCH_LOSER_ONLY = "다시 붙기는 진 쪽만 누를 수 있어요."
 SECTION_TEXT_LIMIT = 3000
 FIELD_TEXT_LIMIT = 2000
 ECHO_ARG_LIMIT = 200
-_REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)(?::([13]))?")
+_REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)(?::([13]))?(?::([UW][A-Z0-9]+))?")
 FULL_ENTRY_WORDS = frozenset({"3", "3:3", "풀"})
 _MENTION_SPLIT = re.compile(r"(<@[UW][A-Z0-9]+(?:\|[^>]*)?>)")
 _MENTION = re.compile(r"<@([UW][A-Z0-9]+)(?:\|[^>]*)?>")
@@ -173,12 +174,20 @@ class CommandHandler:
         return _echoed(self._dispatch(user_id, text, command, where, line), line)
 
     def rematch(self, user_id: str, value: str, where: Where) -> Reply:
-        """The 다시 붙기 button: only the two who fought may rerun the matchup with their current uploads."""
+        """The 다시 붙기 button: the two who fought may rerun the matchup; in a recorded battle only the loser."""
         parsed = _REMATCH_VALUE.fullmatch(value)
-        if parsed is None or user_id not in parsed.groups():
+        if parsed is None:
             return Reply(REMATCH_DENIED)
+        challenger_id, opponent_id, size, loser_id = parsed.groups()
+        if user_id not in (challenger_id, opponent_id):
+            return Reply(REMATCH_DENIED)
+        if opponent_id != self._bot_user_id:
+            loser_id = loser_id or self._store.latest_loser(challenger_id, opponent_id)
+            if loser_id is None:
+                return Reply(REMATCH_DENIED)
+            if user_id != loser_id:
+                return Reply(REMATCH_LOSER_ONLY)
         line = f"<@{user_id}> 님이 {REMATCH_LABEL}를 눌렀어요"
-        challenger_id, opponent_id, size = parsed.groups()
         return _echoed(self._start(challenger_id, opponent_id, where, line, int(size or 1)), line)
 
     def run_pending(self, user_id: str) -> list[Delivery]:
@@ -384,11 +393,15 @@ class CommandHandler:
 
     def _result(self, match: _Match) -> Reply:
         result = simulate(match.sides, match.seed)
+        rematch = f"{match.challenger_id}:{match.opponent_id}:{match.size}"
         if not match.practice:
-            winner_id = match.challenger_id if result.winner == 0 else match.opponent_id
+            winner_id, loser_id = (
+                (match.challenger_id, match.opponent_id) if result.winner == 0 else (match.opponent_id, match.challenger_id)
+            )
             self._store.record_battle(
                 match.challenger_id, match.opponent_id, winner_id, match.seed, pokemon=match.pokemon, turns=result.turns
             )
+            rematch += f":{loser_id}"
         trainers = (f"<@{match.challenger_id}>", self._label(match.opponent_id))
         summary = battle_header(trainers, match.sides, result, match.practice)
         return Reply(
@@ -396,7 +409,7 @@ class CommandHandler:
             in_channel=True,
             summary=summary,
             card=battle_card(trainers, match.sides, result, match.practice),
-            rematch=f"{match.challenger_id}:{match.opponent_id}:{match.size}",
+            rematch=rematch,
         )
 
     def _label(self, user_id: str | None) -> str:

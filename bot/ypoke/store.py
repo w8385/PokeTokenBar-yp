@@ -202,6 +202,17 @@ class Store:
                  challenger_pokemon, opponent_pokemon, turns),
             )
 
+    def latest_loser(self, first_id: str, second_id: str) -> str | None:
+        with closing(self._connect()) as connection:
+            row = connection.execute(
+                "SELECT winner_id FROM battles WHERE (challenger_id = ?1 AND opponent_id = ?2) "
+                "OR (challenger_id = ?2 AND opponent_id = ?1) ORDER BY created_at DESC, id DESC LIMIT 1",
+                (first_id, second_id),
+            ).fetchone()
+        if row is None:
+            return None
+        return second_id if row[0] == first_id else first_id
+
     def recent_battles(self, slack_user_id: str, limit: int) -> list[BattleSummary]:
         with closing(self._connect()) as connection:
             rows = connection.execute(

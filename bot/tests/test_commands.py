@@ -143,7 +143,7 @@ def test_a_three_member_upload_still_fights_one_on_one_by_default(store):
     store.save_party("UB", [member(7, 20), member(25, 30), member(7, 5)])
     reply = handler(store).handle("UA", "<@UB>")
     assert [len(side) for side in lineups(reply)] == [1, 1]
-    assert reply.rematch == "UA:UB:1"
+    assert reply.rematch in ("UA:UB:1:UA", "UA:UB:1:UB")
     assert " · 1:1 · " in reply.summary
     assert (store.record("UA").wins, store.record("UA").losses) in ((1, 0), (0, 1))
 
@@ -158,7 +158,7 @@ def test_a_trailing_three_word_asks_for_the_three_member_lineup(store, word):
     assert lineups(reply)[0][0].startswith("꼬부기 Lv5")
     assert not any("Lv100" in line for line in lineups(reply)[0])
     assert " · 3:1 · " in reply.summary
-    assert reply.rematch == "UA:UB:3"
+    assert reply.rematch in ("UA:UB:3:UA", "UA:UB:3:UB")
 
 
 def test_the_three_word_works_before_the_mention_and_in_a_mention_battle(store):
@@ -467,7 +467,8 @@ def test_a_waiting_three_member_challenge_keeps_its_size_and_a_default_one_stays
     [single] = bot.run_pending("UC")
     assert [len(side) for side in lineups(full.reply)] == [3, 3]
     assert [len(side) for side in lineups(single.reply)] == [1, 1]
-    assert (full.reply.rematch, single.reply.rematch) == ("UA:UB:3", "UA:UC:1")
+    assert full.reply.rematch in ("UA:UB:3:UA", "UA:UB:3:UB")
+    assert single.reply.rematch in ("UA:UC:1:UA", "UA:UC:1:UC")
 
 
 def test_a_challenge_saved_before_the_size_column_existed_loads_as_one_on_one(tmp_path):
