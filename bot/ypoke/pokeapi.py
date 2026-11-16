@@ -8,7 +8,9 @@ import urllib.request
 from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 
+from ypoke import items, tera_forms
 from ypoke.battle import BaseStats
+from ypoke.mega_stones import mega_form_id
 from ypoke.store import Store
 
 API_BASE = "https://pokeapi.co/api/v2"
@@ -77,11 +79,12 @@ class PokeAPIService:
         return data
 
     def warm(self, members: list[dict]) -> int:
-        """Cache the species, learnset and moves every member needs, in parallel within the request slots.
+        """Cache the species, form, learnset and moves every member needs, in parallel within the request slots.
 
         Every member is tried; the first OSError is raised afterwards. Returns the number of distinct Pokémon.
         """
         needed = sorted({(member["pokemon_id"], member["level"], tuple(member.get("moves") or ())) for member in members})
+        forms = sorted({form for member in members for form in _forms_of(member)})
 
         def fetch(item: tuple[int, int, tuple[int, ...]]) -> OSError | None:
             try:
@@ -91,8 +94,16 @@ class PokeAPIService:
                 return error
             return None
 
+        def fetch_form(form: tuple[str, int]) -> OSError | None:
+            try:
+                (self.mega_form if form[0] == "mega" else self.pokemon)(form[1])
+            except OSError as error:
+                return error
+            return None
+
         with ThreadPoolExecutor(max_workers=MOVE_FETCH_WORKERS) as pool:
-            errors = [error for error in pool.map(fetch, needed) if error is not None]
+            results = [*pool.map(fetch, needed), *pool.map(fetch_form, forms)]
+        errors = [error for error in results if error is not None]
         if errors:
             raise errors[0]
         return len({pokemon_id for pokemon_id, _, _ in needed})
@@ -157,6 +168,23 @@ class PokeAPIService:
             "types": [entry["type"]["name"] for entry in sorted(pokemon["types"], key=lambda t: t["slot"])],
             "base": base,
         }
+
+
+def _forms_of(member: dict) -> list[tuple[str, int]]:
+    """The form `/pokemon` ids `combatant()` reads for the member, as ("pokemon" | "mega", id)."""
+    pokemon_id = member["pokemon_id"]
+    item = tera_forms.usable_item(member.get("held_item"), pokemon_id)
+    forms = []
+    if pokemon_id == tera_forms.TERAPAGOS:
+        forms.append(("pokemon", tera_forms.TERASTAL_FORM))
+    if item in tera_forms.MASKS and tera_forms.MASKS[item][0] is not None:
+        forms.append(("pokemon", tera_forms.MASKS[item][0]))
+    if item == items.STELLAR_CRYSTAL:
+        forms.append(("pokemon", tera_forms.STELLAR_FORM))
+    mega = mega_form_id(item, pokemon_id)
+    if mega is not None:
+        forms.append(("mega", mega))
+    return forms
 
 
 def learnset_from(pokemon: dict) -> list[dict]:
