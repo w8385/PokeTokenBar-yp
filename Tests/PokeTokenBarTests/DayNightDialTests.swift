@@ -91,8 +91,8 @@ final class DayNightLabelTests: XCTestCase {
 
     func testBadgeNamesThePeriodAndMinutes() {
         let l = L(.ko)
-        XCTAssertEqual(l.dayNightBadge(.day, minutesLeft: 7), "낮 · 7분")
-        XCTAssertEqual(l.dayNightBadge(.night, minutesLeft: 3), "밤 · 3분")
+        XCTAssertEqual(l.dayNightBadge(.day, minutesLeft: 7), "낮 7분")
+        XCTAssertEqual(l.dayNightBadge(.night, minutesLeft: 3), "밤 3분")
         XCTAssertEqual(l.dayNightAccessibility(.day, minutesLeft: 7), "낮, 밤까지 7분")
     }
 

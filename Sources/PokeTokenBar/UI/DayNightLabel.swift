@@ -37,21 +37,22 @@ private struct HalfDisc: Shape {
     }
 }
 
-/// A small horizon window with the sun and moon travelling across it, plus "Day · 7 min". The angle is read from
+/// A small horizon window with the sun and moon travelling across it, plus "Day 7m". The angle is read from
 /// the clock every 15 seconds, never animated continuously; the timeline stops while the popover is closed.
 @MainActor
 struct DayNightLabel: View {
     let store: CompanionStore
-    static let dialWidth: CGFloat = 40
+    static let dialWidth: CGFloat = 28
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 15)) { _ in
             let now = store.dayPeriodNow()
             let minutes = CompanionStore.minutes(now.secondsLeft)
-            VStack(alignment: .trailing, spacing: 2) {
+            HStack(spacing: 4) {
                 dial(degrees: now.degrees)
                 Text(store.l.dayNightBadge(now.period, minutesLeft: minutes))
                     .font(.caption2).foregroundStyle(.secondary)
+                    .lineLimit(1).fixedSize()
             }
             .help(store.l.dayNightHelp)
             .accessibilityElement(children: .ignore)
@@ -70,32 +71,34 @@ struct DayNightDial: View {
     let width: CGFloat
 
     private var radius: CGFloat { width / 2 }
+    /// Everything inside the disc scales with the width; 40 pt is the design size.
+    private var k: CGFloat { width / 40 }
 
     var body: some View {
         let sky = DayNightSky.sky(degrees: degrees)
-        let orbit = radius - 6
+        let orbit = radius - 6 * k
         let sun = DayNightSky.sun(degrees: degrees)
         let moon = DayNightSky.moon(degrees: degrees)
         ZStack {
             Color(red: sky.red, green: sky.green, blue: sky.blue)
             Group {
-                Circle().frame(width: 2, height: 2).offset(x: -10, y: -radius + 9)
-                Circle().frame(width: 1.5, height: 1.5).offset(x: 5, y: -radius + 6)
-                Circle().frame(width: 2, height: 2).offset(x: 12, y: -radius + 12)
+                Circle().frame(width: 2 * k, height: 2 * k).offset(x: -10 * k, y: -radius + 9 * k)
+                Circle().frame(width: 1.5 * k, height: 1.5 * k).offset(x: 5 * k, y: -radius + 6 * k)
+                Circle().frame(width: 2 * k, height: 2 * k).offset(x: 12 * k, y: -radius + 12 * k)
             }
             .foregroundStyle(.white)
             .opacity(DayNightSky.starOpacity(degrees: degrees))
             .offset(y: radius / 2)
-            Image(systemName: "sun.max.fill").font(.system(size: 11))
+            Image(systemName: "sun.max.fill").font(.system(size: 11 * k))
                 .foregroundStyle(Color(red: 1, green: 0.85, blue: 0.25))
                 .offset(x: sun.x * orbit, y: -sun.y * orbit + radius / 2)
-            Image(systemName: "moon.fill").font(.system(size: 10))
+            Image(systemName: "moon.fill").font(.system(size: 10 * k))
                 .foregroundStyle(Color(red: 0.93, green: 0.93, blue: 0.85))
                 .offset(x: moon.x * orbit, y: -moon.y * orbit + radius / 2)
         }
         .frame(width: width, height: radius)
         .clipShape(HalfDisc())
-        .overlay(HalfDisc().stroke(Color.secondary.opacity(0.5), lineWidth: 1))
+        .overlay(HalfDisc().stroke(Color.secondary.opacity(0.5), lineWidth: max(0.5, k)))
         .animation(.easeInOut(duration: 0.4), value: degrees)
         .accessibilityHidden(true)
     }
