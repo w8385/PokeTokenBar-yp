@@ -1663,3 +1663,15 @@ read_when:
   `SessionKeySettingsRenderingTests`). The exact-equality lookups (`SessionKeySettingsRendering`,
   `DexBackNavigation`) compare folded text across the top candidates. A new OCR assertion starts
   from `OCRText` and asks for layout (same observation, bounding boxes), not an exact string.
+
+## CI on a stale base
+
+- **A PR's green CI says nothing about a scanner that landed on `main` after the PR's base.** #89 added
+  `RoundedRectangle(cornerRadius: 8)` in `TimeModeViews.swift`. Its CI ran on a base from before #79
+  merged, and #79 had added the repo-wide `DesignTokenScanTests`, so the scan never saw the line and
+  main went red on merge. Why review missed it: the PR was green and the scanner lived in a PR that
+  merged later; nothing re-ran the new global guard against the older branch.
+  `merge-pr.sh` no longer requires the PR to be up to date with `main` (rebases restart the stalled
+  macOS queue), so this class is closed by the merge queue (`ci-ok`/`bot-ok` run on the merge result),
+  not by rebasing. Class sweep: a grep of `Sources/` for numeric `cornerRadius:`, `.system(size:` and
+  `Color(red:` outside `Palette.swift` found no other numeric literal.
