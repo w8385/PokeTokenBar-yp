@@ -45,9 +45,9 @@ read_when:
 - **움직이는 상세 화면은 첫 렌더부터 캐시된 GIF 프레임을 사용한다.** 정적 PNG는 96px 투명
   캔버스이고 GIF는 본체에 맞춘 작은 캔버스라, PNG를 먼저 보여준 뒤 같은 슬롯에 GIF를 맞추면
   정지한 작은 포켓몬이 뒤늦게 커진다. 디코드 프레임을 캐시해 시드와 재생에서 공유하고 GIF 요청을
-  정적 PNG 다운로드 뒤에 직렬화하지 않는다. 미캐시 정적 폴백만 콘텐츠 크롭하고 원본 PNG 상태는
-  보존해 정적 보기로 전환할 때 복원한다. `SpriteAnimationPreviewTests`는 실제 SwiftUI 첫 렌더의
-  GIF 픽셀·크기, 캐시 재사용, 프레임 지연, 정적 원본 보존을 검사한다.
+  정적 PNG 다운로드 뒤에 직렬화하지 않는다. (옛 처리 — 미캐시 정적 폴백만 콘텐츠 크롭하고 원본 PNG를
+  보존 — 는 아래 "렌더 기하"의 `SpriteFrame` 규칙으로 대체됐다. 이제 정적·GIF 모두 로드 때 크롭한다.)
+  `SpriteAnimationPreviewTests`는 실제 SwiftUI 첫 렌더의 GIF 픽셀·크기, 캐시 재사용, 프레임 지연을 검사한다.
 
 - **A display contract must be stated in the copy exactly as far as the code draws it.** A report said "I equipped the
   Mega Stone and the sprite did not change". The Mega form was drawn everywhere the contract says, but the holder was a
@@ -1380,6 +1380,31 @@ read_when:
   width). `menuBarLayout` now fits 20pt tall up to `menuBarSpriteMaxWidth` (36pt, 645/649 at full
   height). Measure a new cap against every canvas in the dex, not the cached few; the guard is
   `testWideSpriteFillsMenuBarHeightUntilTheWidthCap` with the real Swanna and Tynamo canvases.
+
+- **Sprites from different sources must be cropped to their content at load, not fitted as raw canvases.**
+  A report said the animations from different sources "differ a lot in size". Measured on 40 sprites
+  (30 species, 10 Megas; static, GIF, shiny, back) at the 76pt Home box: the opaque height ran from 24 to
+  76pt (median 58) because PokéAPI PNGs sit in a 96px canvas with 25–70% padding while the GIFs are tight,
+  so the same Caterpie drew 28pt as a PNG and 73pt as a GIF. Sprites were also centred, so feet floated at
+  different heights (median 9pt above the bottom, up to 26pt). The cause is that `SpriteFit` fits a
+  canvas, and canvases are not comparable across sources. Why no test caught it: every fit test used one
+  fixture shape, and the screenshot tests drew one source at a time. `SpriteFrame` now crops every PNG
+  and GIF once, at decode (`SpriteLoader.cachedImage`/`image`/`rememberFrames`, `GIFDecoder.frames`), to the
+  opaque box of the union of all frames (alpha above 16), so a frame never changes size mid-animation, an
+  empty frame does not count and an all-empty sprite stays uncropped. `SpriteView.fitted` draws the
+  cropped image aspect-fit into the box minus `SpriteFit.margin` (2% per side) and bottom-anchored, and
+  `SpriteVisibleTop.inset` uses the same geometry. Any new sprite source must enter through
+  `SpriteFrame.decode`/`decodeStill`; a new draw path must fit with `SpriteFit.contentBox` and anchor
+  to the bottom. After the fix, the height at 76pt runs 38–72pt (median 70) and the median bottom gap is
+  2pt. Real static/GIF pairs of one species still differ (median 8pt, max 34pt at 76pt, 8 of 33 pairs
+  within 1pt) because the two sources draw different poses and aspect ratios; an aspect-fit cannot remove
+  that, and animations that stretch (Greninja's jump, Mega GIFs on wide canvases) draw smaller because the
+  union box is wider. Tests: `SpriteFrameTests` (union over frames, empty frame, no opaque pixel, static vs
+  animated drawn height ±1pt for the same subject on different canvases, bottom gap equal for tall, wide
+  and square shapes; injecting `.center` alignment or skipping the static crop fails them). The decode
+  adds a one-time scan: 14ms per GIF on average, 34ms worst (-O), 33 sampled GIFs; frame bytes are
+  unchanged for tight GIFs, so `capFrameRate` keeps its savings. `SpriteSizeShotTests` (opt-in with
+  `PTB_SPRITE_SIZE_DIR`) re-measures all of this.
 
 ## 프로세스 제어·업데이트
 

@@ -144,25 +144,27 @@ final class StrokeHeartBubbleTests: XCTestCase {
 
     // MARK: anchoring to the visible sprite
 
+    // A 96pt box keeps a 1.92pt margin (SpriteFit.margin), so sprites fit a 92.16pt square and stand on the bottom edge.
+
     func testTallSpriteTopIsNearTheBoxTop() {
-        // 36×66 canvas (Jackie-like) fills the 96pt box height; sprite starts 5% below the canvas top.
+        // 36×66 canvas (Jackie-like) fills the 92.16pt content height; sprite starts 5% below the canvas top.
         let inset = SpriteVisibleTop.inset(box: 96, imageSize: CGSize(width: 36, height: 66),
                                            opaqueTopFraction: 0.05)
-        XCTAssertEqual(inset, 4.8, accuracy: 0.001)
+        XCTAssertEqual(inset, 1.92 + 0.05 * 92.16, accuracy: 0.001)
     }
 
     func testWideShortSpriteTopSitsBelowTheBoxTop() {
-        // 60×30 canvas fits 96×48: 24pt of empty box above, then 10% of the canvas is transparent.
+        // 60×30 canvas fits 92.16×46.08 on the bottom edge: 48pt of empty box above, then 10% of the canvas is transparent.
         let inset = SpriteVisibleTop.inset(box: 96, imageSize: CGSize(width: 60, height: 30),
                                            opaqueTopFraction: 0.1)
-        XCTAssertEqual(inset, 24 + 4.8, accuracy: 0.001)
+        XCTAssertEqual(inset, 96 - 1.92 - 46.08 + 4.608, accuracy: 0.001)
     }
 
     func testEggTopUsesItsOwnOpaqueBounds() {
         // Cropped 30×30 egg: square, so no letterboxing; the top 3 rows are empty.
         let inset = SpriteVisibleTop.inset(box: 96, imageSize: CGSize(width: 30, height: 30),
                                            opaqueTopFraction: 0.1)
-        XCTAssertEqual(inset, 9.6, accuracy: 0.001)
+        XCTAssertEqual(inset, 1.92 + 0.1 * 92.16, accuracy: 0.001)
     }
 
     func testBubbleTailLandsJustInsideTheVisibleTop() {
