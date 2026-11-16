@@ -33,6 +33,9 @@ push 전에 `./scripts/invariant-tests.sh`(저장소 전체를 훑는 불변식 
 스캐너를 놓쳐 CI에서 터진다. 워크플로 파일(`.github/workflows/*.yml`)을 고쳤으면 `actionlint`도 돌린다.
 세부는 `CONTRIBUTING.md` "Build & test".
 
+PTB 리프는 push하지 않고 로컬 브랜치를 넘긴다. 통합자가 train PR 하나로 CI를 한 번 돌린다.
+세부는 `CONTRIBUTING.md` "Build & test".
+
 ## PR 작성
 
 PR 생성·준비·갱신 시 `.agents/skills/prepare-pr/SKILL.md`를 사용한다. 개인 PR skill의

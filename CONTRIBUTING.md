@@ -43,6 +43,16 @@ The script lists the classes and methods it runs. A test method named `...InEver
 `...EveryLanguage` or `...AllLanguages` joins it automatically, and the script fails if a test file
 that reads `Sources/PokeTokenBar` has none of its classes listed, so add new source scanners there.
 
+Maintainer branches ride a train: each change lands on a local branch, and one integrator opens one
+PR with one CI run. That run and every push to `main` use the maintainer's self-hosted Mac (labels
+`self-hosted`, `macOS`, `ptb`) with the Xcode major in `.xcode-version`. The CI job waits for the
+local build slot, so it never builds at the same time as a local `build-slot.sh` build.
+
+External contributors open normal PRs from forks. Their CI runs only after a maintainer approves it,
+on a GitHub-hosted image with the same Xcode major. Before approving, read the PR's
+`.github/workflows` diff: a workflow change could otherwise target the self-hosted runner.
+`WorkflowInvariantTests` allows only the guarded `runs-on`.
+
 ## Contribution workflow
 
 1. Create a feature branch off `main` (fork the repo if you don't have write
