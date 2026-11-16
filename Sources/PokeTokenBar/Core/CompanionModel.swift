@@ -655,12 +655,22 @@ struct EvoMethod: Codable, Equatable, Sendable {
     var isPlainTrade: Bool { trigger == "trade" && heldItem == nil && tradeSpecies == nil }
 }
 
-/// 진화 순간의 낮/밤 — 이 맥의 로컬 시계 기준(06:00–17:59 낮, 그 밖은 밤).
+/// 낮/밤 — 벽시계 10분 간격으로 번갈아 바뀐다(:00–:09 낮, :10–:19 밤, :20–:29 낮 …). 실제 해와는 무관하다.
 enum DayPeriod: String, Sendable {
     case day, night
 
+    static let length: TimeInterval = 600
+
     static func at(_ date: Date, calendar: Calendar = .current) -> DayPeriod {
-        (6..<18).contains(calendar.component(.hour, from: date)) ? .day : .night
+        (calendar.component(.minute, from: date) / 10) % 2 == 0 ? .day : .night
+    }
+
+    var other: DayPeriod { self == .day ? .night : .day }
+
+    /// Seconds until the period flips, 1...600.
+    static func secondsUntilSwitch(from date: Date, calendar: Calendar = .current) -> TimeInterval {
+        let parts = calendar.dateComponents([.minute, .second], from: date)
+        return length - Double((parts.minute ?? 0) % 10 * 60 + (parts.second ?? 0))
     }
 }
 

@@ -16,6 +16,54 @@ extension L {
         }
     }
 
+    /// "Now day · night in 7 min" — day and night alternate every ten minutes on the wall clock.
+    func dayNightStatus(_ period: DayPeriod, minutesLeft m: Int) -> String {
+        let now: String
+        let until: String
+        switch period {
+        case .day:
+            now = t("지금 낮", "Day now", "今は昼", "Ahora es de día", "Il fait jour", "Agora é dia", "Jetzt Tag", "Сейчас день")
+            until = t("밤까지 \(m)분", "night in \(m) min", "夜まで\(m)分", "noche en \(m) min", "nuit dans \(m) min",
+                      "noite em \(m) min", "Nacht in \(m) Min.", "ночь через \(m) мин")
+        case .night:
+            now = t("지금 밤", "Night now", "今は夜", "Ahora es de noche", "Il fait nuit", "Agora é noite", "Jetzt Nacht", "Сейчас ночь")
+            until = t("낮까지 \(m)분", "day in \(m) min", "昼まで\(m)分", "día en \(m) min", "jour dans \(m) min",
+                      "dia em \(m) min", "Tag in \(m) Min.", "день через \(m) мин")
+        }
+        return "\(now) · \(until)"
+    }
+
+    var notifEvolveStuckTitle: String {
+        t("🔎 진화가 멈췄어요", "🔎 Evolution is waiting", "🔎 進化が止まっています", "🔎 La evolución espera",
+          "🔎 L'évolution attend", "🔎 A evolução está esperando", "🔎 Entwicklung wartet", "🔎 Эволюция ждёт")
+    }
+
+    func notifEvolveStuckBody(_ name: String, _ what: String) -> String {
+        t("\(name): \(what) — 도감에서 진화 조건을 확인하세요",
+          "\(name): \(what) — check the Pokédex for its evolution condition",
+          "\(name): \(what) — 図鑑で進化条件を確認してください",
+          "\(name): \(what) — mira la condición de evolución en la Pokédex",
+          "\(name) : \(what) — vérifie la condition d'évolution dans le Pokédex",
+          "\(name): \(what) — veja a condição de evolução na Pokédex",
+          "\(name): \(what) — Entwicklungsbedingung im Pokédex prüfen",
+          "\(name): \(what) — проверьте условие эволюции в Покедексе")
+    }
+
+    func notifEvolveStuckWaitsFor(_ period: DayPeriod, minutes m: Int) -> String {
+        switch period {
+        case .day:
+            return t("낮이 되면 진화해요 · \(m)분 뒤", "Evolves when day comes · in \(m) min",
+                     "昼になると進化します · \(m)分後", "Evoluciona al llegar el día · en \(m) min",
+                     "Évolue au lever du jour · dans \(m) min", "Evolui quando amanhecer · em \(m) min",
+                     "Entwickelt sich, sobald es Tag wird · in \(m) Min.", "Эволюция, когда наступит день · через \(m) мин")
+        case .night:
+            return t("밤이 되면 진화해요 · \(m)분 뒤", "Evolves when night comes · in \(m) min",
+                     "夜になると進化します · \(m)分後", "Evoluciona al llegar la noche · en \(m) min",
+                     "Évolue à la tombée de la nuit · dans \(m) min", "Evolui quando anoitecer · em \(m) min",
+                     "Entwickelt sich, sobald es Nacht wird · in \(m) Min.", "Эволюция, когда наступит ночь · через \(m) мин")
+        }
+    }
+
     func stoneNotReadyHint(_ pokemon: String) -> String {
         t("\(pokemon)에게 맞는 돌이지만 아직 조건이 남았어요. 도감의 진화 카드를 확인하세요. 돌은 그대로 남아 있어요.",
           "This fits \(pokemon), but its other conditions are not met yet. Check the Evolution card in the Pokédex. Your item is kept.",

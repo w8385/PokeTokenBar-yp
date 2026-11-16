@@ -83,6 +83,7 @@ struct EvolutionCardView: View {
                 Text("•").foregroundStyle(.secondary)
             }
             Text(l.evolutionRequirementText(requirement, speciesName: speciesLabel))
+            if case .time = requirement { dayNightClock }
             if let progress, progress.need > 1 {
                 Text("\(min(progress.have, progress.need))/\(progress.need)")
                     .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
@@ -92,6 +93,18 @@ struct EvolutionCardView: View {
         }
         if progress != nil, !met, case .holds(let kind) = requirement, store.itemCount(kind) > 0 {
             equipHint
+        }
+    }
+
+    /// "Day now · night in 7 min", re-read every 15 seconds while the card is on screen.
+    private var dayNightClock: some View {
+        TimelineView(.periodic(from: .now, by: 15)) { _ in
+            let now = store.dayPeriodNow()
+            HStack(spacing: 3) {
+                Image(systemName: now.period == .day ? "sun.max.fill" : "moon.stars.fill")
+                Text(l.dayNightStatus(now.period, minutesLeft: CompanionStore.minutes(now.secondsLeft)))
+            }
+            .font(.caption).foregroundStyle(.secondary)
         }
     }
 

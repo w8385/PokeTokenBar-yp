@@ -19,6 +19,8 @@ struct EvolutionProgress: Codable, Equatable, Sendable {
     /// Newest battle time already read; only later battles count, so the battles that were there when this
     /// feature arrived (or when the egg hatched) are not credited. Nil until the first read.
     var battleCursor: Date?
+    /// The blocking reason the player was last told about (`CompanionStore.evolutionBlockKey`). Resets with the form.
+    var stuckNotified: String?
 
     static let seenBattleLimit = 200
 
@@ -42,6 +44,7 @@ struct EvolutionProgress: Codable, Equatable, Sendable {
         tower = c.lenientOptional(String.self, forKey: .tower)
         seenBattles = c.lenient([String].self, forKey: .seenBattles, default: [])
         battleCursor = c.lenientOptional(Date.self, forKey: .battleCursor)
+        stuckNotified = c.lenientOptional(String.self, forKey: .stuckNotified)
     }
 
     /// The next form starts clean, but battles already counted stay counted.
@@ -130,6 +133,12 @@ extension EvolutionRule {
     }
 
     func isOpen(in ctx: EvolutionContext) -> Bool { openPath(in: ctx) != nil }
+
+    /// What a closed gate still lacks: the unmet requirements of the path that is nearest to open.
+    func unmetRequirements(in ctx: EvolutionContext) -> [EvolutionRequirement] {
+        let unmet = paths.map { path in path.filter { !$0.isMet(in: ctx) } }
+        return unmet.min { $0.count < $1.count } ?? []
+    }
 
     /// Paths that use `kind` from the bag, with every other requirement still to hold.
     func path(usingBag kind: ItemKind) -> [EvolutionRequirement]? {

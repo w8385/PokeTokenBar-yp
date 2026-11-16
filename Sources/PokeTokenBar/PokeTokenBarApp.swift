@@ -160,6 +160,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             }
         }
 
+        Task { @MainActor [companion] in   // a time gate opens within ~30s of the day/night switch even with polling off
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(30), tolerance: .seconds(10))
+                companion?.checkEvolutionGate()
+            }
+        }
+
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
             button.imagePosition = .imageLeading
