@@ -1200,7 +1200,7 @@ final class CompanionStore {
             if options.isEmpty {
                 graduate(); break
             } else if holdsEverstone(a.profile?.instanceID) {
-                break   // The XP keeps adding up and carries over once the stone comes off.
+                break
             } else {
                 let nextIndex = a.stageIndex + 1
                 let traits = evolutionTraits(of: a)

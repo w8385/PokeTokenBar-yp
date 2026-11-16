@@ -16,7 +16,7 @@ private struct ItemsShotProvider: PokeProviding, PokemonDetailProviding {
     }
 }
 
-/// Opt-in captures for the PR: a synthetic save, the real views.
+/// Opt-in captures of the real views over a synthetic save.
 ///
 ///     PTB_ITEMS_MORE_SHOT_DIR=/tmp/shots swift test --filter ItemsMoreScreenshotTests
 @MainActor
