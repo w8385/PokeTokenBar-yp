@@ -95,7 +95,11 @@ struct BoxDetailView: View {
     private var actions: some View {
         VStack(alignment: .leading, spacing: 6) {
             WrappingHStack(spacing: 6, lineSpacing: 6) {
-                if let battleEntry, store.battleCandidate(for: entry) != nil { battleButton(battleEntry) }
+                if let battleEntry, store.battleCandidate(for: entry) != nil {
+                    BattleSlotControl(store: store, entry: entry, battleEntry: battleEntry) {
+                        Task { await uploader?.tick() }
+                    }
+                }
                 friendButton
                 tradeButtons
                 if let target = store.dexLinkTargets[individual.speciesID] {
@@ -109,24 +113,6 @@ struct BoxDetailView: View {
             }
             tradeNotes
         }
-    }
-
-    /// Fills the first free battle slot with this Pokémon. The representative and the Pokémon being raised stay as they are.
-    private func battleButton(_ battleEntry: BattleEntryStore) -> some View {
-        let fighting = battleEntry.isFighting(entry, in: store)
-        let full = !fighting && battleEntry.isFull(in: store)
-        return Button {
-            if battleEntry.sendToBattle(entry, in: store) {
-                Task { await uploader?.tick() }
-            }
-        } label: {
-            Label(fighting ? l.battleFighting : full ? l.battleSlotsFull : l.battleSendToBattle,
-                  systemImage: fighting ? "checkmark" : full ? "person.3.fill" : "bolt.fill")
-        }
-        .buttonStyle(.bordered)
-        .controlSize(.mini)
-        .fixedSize()
-        .disabled(fighting || full)
     }
 
     @ViewBuilder

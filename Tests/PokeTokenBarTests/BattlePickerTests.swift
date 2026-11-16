@@ -71,57 +71,38 @@ final class BattlePickerTests: XCTestCase {
         XCTAssertEqual(store.filteredBattleCandidates(rarity: .common, shinyOnly: true).map(\.id), [])
     }
 
-    func testSendingFromTheDexDetailFillsTheNextSlotAndTouchesNothingElse() throws {
+    func testPlacingFromTheBoxKeepsTheRaisedPokemonInSlotOneAndTouchesNothingElse() throws {
         let store = store()
         _ = store.setRepresentativeSpeciesID(10)
         let raisedBefore = store.state.active?.profile?.instanceID
         let pikachu = try XCTUnwrap(store.dexEntries.first { $0.id == "pikachu" })
         let battle = entryStore()
 
-        XCTAssertFalse(battle.isFighting(pikachu, in: store))
-        XCTAssertTrue(battle.sendToBattle(pikachu, in: store))
+        XCTAssertNil(battle.slotIndex(of: pikachu, in: store))
+        XCTAssertTrue(battle.place(pikachu, at: 1, in: store))
 
         XCTAssertEqual(battle.slots.map(\.instanceID), ["raised", "pikachu"])
-        XCTAssertTrue(battle.isFighting(pikachu, in: store))
+        XCTAssertEqual(battle.slotIndex(of: pikachu, in: store), 1)
         XCTAssertEqual(store.representativeSpeciesID, 10)
         XCTAssertEqual(store.state.active?.profile?.instanceID, raisedBefore)
         XCTAssertEqual(store.state.active?.currentID, 5)
     }
 
-    func testTheRaisedPokemonCanBeSentFromItsSynthesizedCatchLogRow() throws {
+    func testTheRaisedPokemonCanBePlacedFromItsSynthesizedCatchLogRow() throws {
         let store = store()
         let raised = try XCTUnwrap(store.dexEntries.first { store.isActiveDexEntry($0) })
         let battle = entryStore()
 
-        XCTAssertTrue(battle.sendToBattle(raised, in: store))
-
-        XCTAssertEqual(battle.slots.map(\.instanceID), ["raised"])
+        XCTAssertFalse(battle.place(raised, at: 1, in: store))
+        XCTAssertEqual(battle.slotIndex(of: raised, in: store), 0)
     }
 
-    func testTheButtonKnowsWhenTheLineupIsFullAndNeverAddsTheSamePokemonTwice() throws {
-        let store = store()
-        let battle = entryStore()
-        let pikachu = try XCTUnwrap(store.dexEntries.first { $0.id == "pikachu" })
-        let caterpie = try XCTUnwrap(store.dexEntries.first { $0.id == "caterpie" })
-        battle.add("stale")
-        XCTAssertFalse(battle.isFull(in: store))
-
-        XCTAssertTrue(battle.sendToBattle(pikachu, in: store))
-        XCTAssertFalse(battle.isFull(in: store))
-        XCTAssertTrue(battle.sendToBattle(caterpie, in: store))
-
-        XCTAssertEqual(battle.slots.map(\.instanceID), ["raised", "pikachu", "caterpie"])
-        XCTAssertTrue(battle.isFull(in: store))
-        XCTAssertFalse(battle.sendToBattle(pikachu, in: store))
-        XCTAssertEqual(battle.slots.count, 3)
-    }
-
-    func testAReleasedIndividualCannotBeSent() throws {
+    func testAReleasedIndividualCannotBePlaced() throws {
         let store = store()
         let gone = try XCTUnwrap(store.state.dex.first { $0.id == "gone" })
         let battle = entryStore()
 
-        XCTAssertFalse(battle.sendToBattle(gone, in: store))
+        XCTAssertFalse(battle.place(gone, at: 0, in: store))
         XCTAssertEqual(battle.slots, [])
     }
 
@@ -132,7 +113,7 @@ final class BattlePickerTests: XCTestCase {
         battle.add("caterpie")
         let pikachu = try XCTUnwrap(store.dexEntries.first { $0.id == "pikachu" })
 
-        XCTAssertFalse(battle.isFighting(pikachu, in: store))
+        XCTAssertNil(battle.slotIndex(of: pikachu, in: store))
         XCTAssertEqual(BattleEntry.lineup(state: store.state, slots: battle.slots).map(\.id), ["caterpie"])
     }
 
