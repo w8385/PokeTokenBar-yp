@@ -9,6 +9,7 @@ read_when:
   - 세이브 이전/병합·외부 파일 입력 경로를 만들 때
   - 스크린샷·렌더링 테스트를 쓰거나 창·활성화(`NSWindow`, `NSApp.activate`)를 다루는 테스트를 만들 때
   - 테스트 픽스처·스크린샷 provider 가 종(species) 데이터(타입·종족값·성비·이름)를 돌려줄 때
+  - 렌더 결과의 픽셀을 세거나 비교하는 테스트를 쓸 때(화면 배율에 따라 결과가 갈리는 부류)
 ---
 
 # 결함 대응 축적 규칙
@@ -1671,6 +1672,23 @@ read_when:
   Rendering differences when comparing old and new PNGs: a windowless host draws AppKit controls
   in their active color (the limit bar is green, it was grey in an inactive window), and animated
   sprites differ by frame.
+
+- **A pixel test must render at a fixed scale, never at the host screen's.**
+  `LimitProgressRenderingTests.testPaceMarkerStaysCloseToPaintedTrackHeight` failed on a Mac with a
+  1080p display (track 6.0pt, marker 8.0pt, expected 10 ± 1) and passed in CI and on Retina Macs.
+  `OffscreenRender.bitmap(of:)` took the `scale == 1` path through `bitmapImageRepForCachingDisplay`,
+  which allocates at the main screen's backing scale. At 1x the anti-aliased ends of a 2pt marker fall
+  under the darkness threshold, so the measured height is short. The test itself divides by
+  `pixelsHigh / height`, so it was correct at any scale; only the bitmap changed with the machine.
+  Why no test caught it: the suite only ever ran on 2x displays and CI, and nothing asserted the scale.
+  `OffscreenRender.bitmap(of:scale:)` now always allocates the bitmap (2x by default), and 9 call sites
+  that used `bitmapImageRepForCachingDisplay` directly go through it. A test that counts pixels
+  converts to points with `pixelsWide / bounds.width` (`DexBackNavigationTests.pixels` did not and failed at 2x until it counted square points).
+  Guard: `OffscreenRenderGuardTests.testNoTestRendersAtTheHostScreensScale` fails on
+  `bitmapImageRepForCachingDisplay` or `NSScreen` anywhere under `Tests/` outside `OffscreenRender.swift`,
+  and `testTheBitmapIsAtTheRequestedScaleWhateverTheDisplayIs` pins the requested scale.
+  Not covered: `ImageRenderer` without an explicit `scale`, and tests that read colors from an
+  `NSAppearance` or font the host overrides.
 
 ## Rendering tests that read text with OCR
 

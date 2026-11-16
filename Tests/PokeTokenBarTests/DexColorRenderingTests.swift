@@ -129,9 +129,7 @@ final class DexColorRenderingTests: XCTestCase {
     private func waitForDetailSprite(_ host: NSView, shiny: Bool) async throws -> NSBitmapImageRep {
         let deadline = ContinuousClock.now + .seconds(5)
         while true {
-            host.layoutSubtreeIfNeeded()
-            let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-            host.cacheDisplay(in: host.bounds, to: bitmap)
+            let bitmap = try OffscreenRender.bitmap(of: host)
             let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
             let normalized = try XCTUnwrap(NSBitmapImageRep(data: png))
             let scale = CGFloat(bitmap.pixelsWide) / host.bounds.width
@@ -212,8 +210,7 @@ final class DexColorRenderingTests: XCTestCase {
                     host.layoutSubtreeIfNeeded()
                     RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
                     host.layoutSubtreeIfNeeded()
-                    let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-                    host.cacheDisplay(in: host.bounds, to: bitmap)
+                    let bitmap = try OffscreenRender.bitmap(of: host)
                     try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
                         URL(fileURLWithPath: "/private/tmp/dex-color-log-shiny-last-\(shinyLast).png"))
                     let normalRows = colorRows(bitmap, shiny: false)
@@ -249,8 +246,7 @@ final class DexColorRenderingTests: XCTestCase {
                 host.layoutSubtreeIfNeeded()
                 RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
                 host.layoutSubtreeIfNeeded()
-                let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-                host.cacheDisplay(in: host.bounds, to: bitmap)
+                let bitmap = try OffscreenRender.bitmap(of: host)
                 let normalRows = colorRows(bitmap, shiny: false)
                 let shinyRows = colorRows(bitmap, shiny: true)
                 if shiny {

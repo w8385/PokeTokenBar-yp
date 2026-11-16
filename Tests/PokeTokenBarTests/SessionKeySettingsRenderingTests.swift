@@ -83,9 +83,7 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
             clip.scroll(to: NSPoint(x: 0, y: origin))
             scroll.reflectScrolledClipView(clip)
             try await Task.sleep(for: .milliseconds(100))
-            host.layoutSubtreeIfNeeded()
-            let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-            host.cacheDisplay(in: host.bounds, to: bitmap)
+            let bitmap = try OffscreenRender.bitmap(of: host)
             let scale = Double(bitmap.pixelsWide) / host.bounds.width
             for y in 0..<bitmap.pixelsHigh {
                 var run = 0, start = 0

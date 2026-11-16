@@ -82,9 +82,7 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
         var previous: Data?
         repeat {
             try await Task.sleep(for: .milliseconds(100))
-            host.layoutSubtreeIfNeeded()
-            let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-            host.cacheDisplay(in: host.bounds, to: bitmap)
+            let bitmap = try OffscreenRender.bitmap(of: host)
             let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
             if png == previous { return bitmap }
             previous = png
