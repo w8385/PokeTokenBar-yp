@@ -1720,3 +1720,22 @@ read_when:
   macOS queue), so this class is closed by the merge queue (`ci-ok`/`bot-ok` run on the merge result),
   not by rebasing. Class sweep: a grep of `Sources/` for numeric `cornerRadius:`, `.system(size:` and
   `Color(red:` outside `Palette.swift` found no other numeric literal.
+
+## CI toolchain older than the local one
+
+- **A test that compiles on this Mac's Xcode can fail to compile on CI's older Xcode.** #101 added
+  `EverstoneTests`, a `@MainActor` XCTestCase. Its `tearDown() async throws` ended with
+  `try await super.tearDown()`, and Xcode 16.4 on `macos-15` rejected it with "sending value of
+  non-Sendable type 'XCTestCase' risks causing data races". The first fix, a sync
+  `tearDownWithError()`, also failed there. That override is nonisolated, so reading the class's
+  main-actor stored properties is an error. Local Swift 6.4.2 accepted both versions.
+  Why it was missed: #101's own macOS jobs were cancelled for lack of runners and never compiled it.
+  It joined train #107 on local checks alone, and `ci-ok` passed a run whose macOS jobs came back
+  `abandoned`.
+  The fix copies `BoxTests`: register cleanup with `addTeardownBlock` inside the helper and
+  capture only local `Sendable` values (`URL`, `String`), with no `setUp`/`tearDown` override.
+  An `async` override with no `super` call that touches stored properties is also green on CI
+  (`BattleEntryTests`, `PartyUploadTests`, `MachineShopTests`).
+  A branch whose macOS CI was cancelled or abandoned has not been compiled by CI. Treat it as
+  untested until a run where `build-test` actually ran is green.
+  Class sweep: the train's added test lines contained no other `setUp`/`tearDown` override.
