@@ -21,10 +21,10 @@ final class EverstoneTests: XCTestCase {
     private var paths: [URL] = []
     private var suites: [String] = []
 
-    override func tearDown() async throws {
+    override func tearDownWithError() throws {
         paths.forEach { try? FileManager.default.removeItem(at: $0) }
         suites.forEach { UserDefaults().removePersistentDomain(forName: $0) }
-        try await super.tearDown()
+        try super.tearDownWithError()
     }
 
     private func store(tree: EvoNode, state: CompanionState = CompanionState(),
