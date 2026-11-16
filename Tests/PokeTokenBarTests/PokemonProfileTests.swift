@@ -195,7 +195,7 @@ final class PokemonProfileLogicTests: XCTestCase {
         profile.enrich(with: profileDetails)
         let ivs = profile.ivs
 
-        profile.applyGrowth(125_000_000, rarity: .common)
+        profile.applyGrowth(25_000_000, rarity: .common)
         profile.rebaseForSpeciesIdentity(from: .common, to: .rare)
 
         XCTAssertEqual(profile.instanceID, "ditto")
@@ -205,7 +205,7 @@ final class PokemonProfileLogicTests: XCTestCase {
         XCTAssertNil(profile.abilityName)
         XCTAssertFalse(profile.abilityIsHidden)
         XCTAssertTrue(profile.moves.isEmpty)
-        XCTAssertEqual(profile.growthTokens, 500_000_000)
+        XCTAssertEqual(profile.growthTokens, 100_000_000)
         XCTAssertEqual(profile.level, 20)
     }
 }
@@ -380,7 +380,7 @@ final class PokemonProfileMigrationTests: XCTestCase {
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: dir) }
         let file = dir.appendingPathComponent("companion-state.json")
-        let json = #"{"active":{"baseID":79,"pathIDs":[79],"plannedPathIDs":[79],"stageIndex":0,"usedAtStage":10,"rarity":"common","totalForms":1,"profile":"broken"},"dex":[{"id":"kept","baseID":1,"finalID":1,"chainOrder":[1],"rarity":"common","profile":"broken"}]}"#
+        let json = #"{"economyVersion":2,"active":{"baseID":79,"pathIDs":[79],"plannedPathIDs":[79],"stageIndex":0,"usedAtStage":10,"rarity":"common","totalForms":1,"profile":"broken"},"dex":[{"id":"kept","baseID":1,"finalID":1,"chainOrder":[1],"rarity":"common","profile":"broken"}]}"#
         try Data(json.utf8).write(to: file)
 
         let store = CompanionStore(provider: ProfileLineProvider(), fileURL: file)

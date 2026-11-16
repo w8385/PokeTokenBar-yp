@@ -20,9 +20,9 @@ final class PreciousCompanionGuardTests: XCTestCase {
     ) -> CompanionStore {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("guard-\(UUID().uuidString).json")
         let disguiseField = dittoDisguise != nil ? ",\"dittoDisguise\":\(dittoDisguise!),\"dittoRevealed\":\(dittoRevealed)" : ""
-        let mon = "{\"baseID\":10,\"pathIDs\":[10],\"stageIndex\":0,\"usedAtStage\":200000000,"
+        let mon = "{\"baseID\":10,\"pathIDs\":[10],\"stageIndex\":0,\"usedAtStage\":40000000,"
             + "\"rarity\":\"\(rarity.rawValue)\",\"totalForms\":3,\"isShiny\":\(shiny)\(disguiseField)}"
-        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":5000000000,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":5000000000,\"spentTokens\":0,"
             + "\"lastDate\":\"d\",\"active\":\(active ? mon : "null"),\"dex\":[],\"collectedFinals\":[]}"
         try? json.data(using: .utf8)!.write(to: url)
         return CompanionStore(provider: NoOpProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))

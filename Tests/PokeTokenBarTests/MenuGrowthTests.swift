@@ -74,14 +74,14 @@ final class MenuGrowthTests: XCTestCase {
     func testEggPercentageMatchesHomeAtExactTwentyNinePercentBoundary() async throws {
         try await fixture { usage, companion in
             companion.setLanguage(.ko)
-            XCTAssertEqual(companion.eggHatchThreshold, 5_000_000)
+            XCTAssertEqual(companion.eggHatchThreshold, 1_000_000)
             companion.update(todayTokensByProvider: ["test": 0], todayDate: "d", monthTotal: 0,
                              burnTier: .idle, limitWarning: false, hasUsageData: true)
             // The former Double conversion turns exactly 29% into 28.999999999999996.
             // Also protect flooring just below a boundary and clamping while hatching is pending.
-            for (credits, percent) in [(0, 0), (1_449_999, 28), (1_450_000, 29),
-                                       (1_499_999, 29), (1_500_000, 30), (4_999_999, 99),
-                                       (5_000_000, 100), (5_000_001, 100)] {
+            for (credits, percent) in [(0, 0), (289_999, 28), (290_000, 29),
+                                       (299_999, 29), (300_000, 30), (999_999, 99),
+                                       (1_000_000, 100), (1_000_001, 100)] {
                 companion.update(todayTokensByProvider: ["test": credits], todayDate: "d", monthTotal: 0,
                                  burnTier: .idle, limitWarning: false, hasUsageData: true)
                 XCTAssertTrue(companion.isEgg)

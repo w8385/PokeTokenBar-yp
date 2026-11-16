@@ -21,7 +21,7 @@ final class ShopTests: XCTestCase {
                        file: String = #filePath) -> CompanionStore {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("shop-\(UUID().uuidString).json")
         let inv = rareCandy > 0 ? ",\"inventory\":{\"rareCandy\":\(rareCandy)}" : ""
-        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":\(used),\"spentTokens\":\(spent),"
+        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":\(used),\"spentTokens\":\(spent),"
             + "\"lastDate\":\"d\",\"dex\":[],\"collectedFinals\":[]\(inv)}"
         try? json.data(using: .utf8)!.write(to: url)
         return CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
@@ -30,16 +30,16 @@ final class ShopTests: XCTestCase {
     // MARK: 잔액 계산
 
     func testAvailableEqualsUsedWhenNothingSpent() {
-        XCTAssertEqual(store(used: 1_000_000_000).availableTokens, 1_000_000_000)
+        XCTAssertEqual(store(used: 200_000_000).availableTokens, 200_000_000)
     }
 
     func testAvailableSubtractsSpent() {
-        XCTAssertEqual(store(used: 1_000_000_000, spent: 300_000_000).availableTokens, 700_000_000)
+        XCTAssertEqual(store(used: 200_000_000, spent: 60_000_000).availableTokens, 140_000_000)
     }
 
     /// spent > used(비정상 상태 파일)이어도 음수로 새지 않는다(max 가드).
     func testAvailableNeverNegative() {
-        XCTAssertEqual(store(used: 100_000_000, spent: 500_000_000).availableTokens, 0)
+        XCTAssertEqual(store(used: 20_000_000, spent: 100_000_000).availableTokens, 0)
     }
 
     /// 하위호환: spentTokens 키 없는 구버전 저장 → 0 으로 로드(잔액 = used).
@@ -71,17 +71,17 @@ final class ShopTests: XCTestCase {
     // MARK: 구매 (차감 + 적립 + 영속)
 
     func testBuyDebitsWalletAndCreditsInventory() {
-        let s = store(used: 1_000_000_000)
+        let s = store(used: 200_000_000)
         XCTAssertTrue(s.buyRareCandy())
         XCTAssertEqual(s.rareCandyCount, 1)
         XCTAssertEqual(s.state.spentTokens, RareCandy.price)
-        XCTAssertEqual(s.availableTokens, 1_000_000_000 - RareCandy.price)
-        XCTAssertEqual(s.state.usedSinceInstall, 1_000_000_000, "성장 미터(usedSinceInstall)는 불변")
+        XCTAssertEqual(s.availableTokens, 200_000_000 - RareCandy.price)
+        XCTAssertEqual(s.state.usedSinceInstall, 200_000_000, "성장 미터(usedSinceInstall)는 불변")
     }
 
     /// 잔액 부족이면 no-op — 인벤토리·지출 원장 불변, false 반환.
     func testBuyInsufficientIsNoOp() {
-        let s = store(used: 400_000_000)
+        let s = store(used: 80_000_000)
         XCTAssertFalse(s.buyRareCandy())
         XCTAssertEqual(s.rareCandyCount, 0)
         XCTAssertEqual(s.state.spentTokens, 0)
@@ -89,18 +89,18 @@ final class ShopTests: XCTestCase {
 
     /// 여러 번 구매하면 잔액이 바닥날 때까지만 성공(가드가 매번 재평가).
     func testMultipleBuysUntilBroke() {
-        let s = store(used: 1_200_000_000)          // 2개까지 가능(1B), 3번째 실패(잔액 200M)
+        let s = store(used: 240_000_000)          // 2개까지 가능(200M), 3번째 실패(잔액 40M)
         XCTAssertTrue(s.buyRareCandy())
         XCTAssertTrue(s.buyRareCandy())
         XCTAssertFalse(s.buyRareCandy())
         XCTAssertEqual(s.rareCandyCount, 2)
         XCTAssertEqual(s.state.spentTokens, 2 * RareCandy.price)
-        XCTAssertEqual(s.availableTokens, 200_000_000)
+        XCTAssertEqual(s.availableTokens, 40_000_000)
     }
 
     /// 구매는 이미 가진 사탕에 합산된다(무료 지급분과 같은 인벤토리).
     func testBuyAddsToExistingStock() {
-        let s = store(used: 1_000_000_000, rareCandy: 3)
+        let s = store(used: 200_000_000, rareCandy: 3)
         XCTAssertTrue(s.buyRareCandy())
         XCTAssertEqual(s.rareCandyCount, 4)
         XCTAssertEqual(s.ownedItems.first?.kind, .rareCandy)
@@ -110,7 +110,7 @@ final class ShopTests: XCTestCase {
     /// [영속] 재시작(같은 파일 재로드) 후 지출·재고가 유지된다.
     func testBuyPersistsAcrossRestart() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("shop-persist-\(UUID().uuidString).json")
-        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":1000000000,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":200000000,\"spentTokens\":0,"
             + "\"lastDate\":\"d\",\"dex\":[],\"collectedFinals\":[]}"
         try? json.data(using: .utf8)!.write(to: url)
         let s1 = CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
@@ -119,15 +119,15 @@ final class ShopTests: XCTestCase {
         let s2 = CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
         XCTAssertEqual(s2.rareCandyCount, 1, "재고 영속")
         XCTAssertEqual(s2.state.spentTokens, RareCandy.price, "지출 영속")
-        XCTAssertEqual(s2.availableTokens, 1_000_000_000 - RareCandy.price)
+        XCTAssertEqual(s2.availableTokens, 200_000_000 - RareCandy.price)
     }
 
     // MARK: 수량 구매 (buy(_:count:) / maxBuyCount)
 
     /// 최대 수량 = 잔액 ÷ 가격(내림). 가격 미만이면 0.
     func testMaxBuyCountIsFloorOfWalletOverPrice() {
-        XCTAssertEqual(store(used: 1_200_000_000).maxBuyCount(.rareCandy), 2)
-        XCTAssertEqual(store(used: 1_200_000_000).maxBuyCount(.mint), 12)
+        XCTAssertEqual(store(used: 240_000_000).maxBuyCount(.rareCandy), 2)
+        XCTAssertEqual(store(used: 240_000_000).maxBuyCount(.mint), 12)
         XCTAssertEqual(store(used: RareCandy.price - 1).maxBuyCount(.rareCandy), 0)
     }
 
@@ -143,12 +143,12 @@ final class ShopTests: XCTestCase {
 
     /// N개 구매 = 지갑 price×N 차감, 인벤토리 +N(기존 재고에 합산), 성장 미터 불변.
     func testBuyCountDebitsTotalAndCreditsInventory() {
-        let s = store(used: 2_000_000_000, rareCandy: 1)
+        let s = store(used: 400_000_000, rareCandy: 1)
         XCTAssertTrue(s.buy(.rareCandy, count: 3))
         XCTAssertEqual(s.rareCandyCount, 4)
         XCTAssertEqual(s.state.spentTokens, 3 * RareCandy.price)
-        XCTAssertEqual(s.availableTokens, 2_000_000_000 - 3 * RareCandy.price)
-        XCTAssertEqual(s.state.usedSinceInstall, 2_000_000_000, "성장 미터(usedSinceInstall)는 불변")
+        XCTAssertEqual(s.availableTokens, 400_000_000 - 3 * RareCandy.price)
+        XCTAssertEqual(s.state.usedSinceInstall, 400_000_000, "성장 미터(usedSinceInstall)는 불변")
     }
 
     /// 잔액을 정확히 소진하는 최대 수량까지는 성공.
@@ -161,7 +161,7 @@ final class ShopTests: XCTestCase {
 
     /// 잔액을 넘는 수량은 부분 구매 없이 전부 거부 — 살 수 있는 만큼만 사고 끝나면 안 된다.
     func testBuyCountAboveAffordableIsNoOp() {
-        let s = store(used: 1_200_000_000)   // 2개까지 가능
+        let s = store(used: 240_000_000)   // 2개까지 가능
         XCTAssertFalse(s.buy(.rareCandy, count: 3))
         XCTAssertEqual(s.rareCandyCount, 0)
         XCTAssertEqual(s.state.spentTokens, 0)
@@ -169,7 +169,7 @@ final class ShopTests: XCTestCase {
 
     /// 0·음수 수량은 no-op(음수 차감으로 잔액이 늘어나는 경로 차단).
     func testBuyNonPositiveCountIsNoOp() {
-        let s = store(used: 1_000_000_000)
+        let s = store(used: 200_000_000)
         XCTAssertFalse(s.buy(.rareCandy, count: 0))
         XCTAssertFalse(s.buy(.rareCandy, count: -1))
         XCTAssertEqual(s.rareCandyCount, 0)
@@ -179,7 +179,7 @@ final class ShopTests: XCTestCase {
     /// [영속] 수량 구매도 재시작 후 지출·재고가 유지된다.
     func testBuyCountPersistsAcrossRestart() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("shop-bulk-\(UUID().uuidString).json")
-        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":1000000000,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":200000000,\"spentTokens\":0,"
             + "\"lastDate\":\"d\",\"dex\":[],\"collectedFinals\":[]}"
         try? json.data(using: .utf8)!.write(to: url)
         let s1 = CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
@@ -193,9 +193,9 @@ final class ShopTests: XCTestCase {
     // MARK: 배틀 도구·스카우트 가격
 
     func testBattleToolAndScoutPrices() {
-        XCTAssertEqual(ScoutTicket.price, 2_000_000_000)
-        XCTAssertEqual(HeldItem.price, 3_000_000_000)
-        XCTAssertEqual(MegaStone.price, 6_000_000_000)
+        XCTAssertEqual(ScoutTicket.price, 400_000_000)
+        XCTAssertEqual(HeldItem.price, 600_000_000)
+        XCTAssertEqual(MegaStone.price, 1_200_000_000)
     }
 
     func testEveryHeldItemIsBuyableAtExactPriceAndNotOneBelow() {
@@ -211,11 +211,11 @@ final class ShopTests: XCTestCase {
 
     // MARK: 정렬 (가격 저렴한 순 + 구매 완료 보유형 맨 아래)
 
-    /// 상점 목록은 가격 오름차순(민트 100M < 사탕 500M < 이로치 부적 3B).
+    /// 상점 목록은 가격 오름차순(민트 20M < 사탕 100M < 이로치 부적 600M).
     func testItemsSortedByPriceAscending() {
         let items = store(used: 0).purchasableItems
         XCTAssertEqual(Array(items.prefix(2)), [.mint, .rareCandy])
-        XCTAssertEqual(Set(items.dropFirst(2)), Set(ItemKind.allCases.filter(\.isHeldItem) + [.shinyCharm]), "held items and the charm share 3B")
+        XCTAssertEqual(Set(items.dropFirst(2)), Set(ItemKind.allCases.filter(\.isHeldItem) + [.shinyCharm]), "held items and the charm share 600M")
         let prices = items.compactMap(\.shopPrice)
         XCTAssertEqual(prices, prices.sorted(), "shopPrice 오름차순 — 가격 상수가 바뀌어도 정렬 불변식 유지")
     }
@@ -224,7 +224,7 @@ final class ShopTests: XCTestCase {
     /// (현재 부적이 최고가라 가격순 결과와 일치하지만, 향후 저가 보유형이 생겨도 규칙이 유지되도록 게이트.)
     func testOwnedPassiveSinksToBottom() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("shop-sort-\(UUID().uuidString).json")
-        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":0,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":0,\"spentTokens\":0,"
             + "\"lastDate\":\"d\",\"dex\":[],\"collectedFinals\":[],\"inventory\":{\"shinyCharm\":1}}"
         try? json.data(using: .utf8)!.write(to: url)
         let s = CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
@@ -235,26 +235,26 @@ final class ShopTests: XCTestCase {
     // MARK: shopEntries (판매 아이템 + 알 3종을 하나의 가격 오름차순 목록으로 병합)
 
     /// 활성 포켓몬이 있으면 알 3종이 각자의 가격 위치에 끼워져 전체가 가격 오름차순.
-    /// (회귀: 알이 ForEach 밖에서 무조건 맨 아래로 append 돼 3B 부적보다 아래에 놓이던 표시.)
-    /// 등급 알을 인접 그룹으로 묶지 **않는** 것이 의도다 — 그러면 4B 희귀 알이 3B 부적 위로 올라가
+    /// (회귀: 알이 ForEach 밖에서 무조건 맨 아래로 append 돼 600M 부적보다 아래에 놓이던 표시.)
+    /// 등급 알을 인접 그룹으로 묶지 **않는** 것이 의도다 — 그러면 800M 희귀 알이 600M 부적 위로 올라가
     /// 위 회귀를 부분적으로 되살린다. 티어 관계는 카드의 등급 배지로 읽힌다.
     func testShopEntriesInterleavesFreshEggByPrice() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("shop-entries-\(UUID().uuidString).json")
         let mon = "{\"baseID\":10,\"pathIDs\":[10],\"stageIndex\":0,\"usedAtStage\":200000000,"
             + "\"rarity\":\"common\",\"totalForms\":3,\"isShiny\":false}"
-        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":5000000000,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1000000000,\"spentTokens\":0,"
             + "\"lastDate\":\"d\",\"active\":\(mon),\"dex\":[],\"collectedFinals\":[]}"
         try? json.data(using: .utf8)!.write(to: url)
         let s = CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
         XCTAssertTrue(s.hasActive)
         XCTAssertEqual(s.shopEntries,
-                       [.item(.mint),        // 100M
-                        .item(.rareCandy)]   // 500M
-                       + [.egg(nil),         // 1B
-                          .egg(.uncommon)]   // 2.5B
-                       + [.item(.shinyCharm)] // 3B, ties keep ItemKind declaration order
-                       + heldItemEntries     // 3B
-                       + [.egg(.rare)])      // 4B
+                       [.item(.mint),        // 20M
+                        .item(.rareCandy)]   // 100M
+                       + [.egg(nil),         // 200M
+                          .egg(.uncommon)]   // 500M
+                       + [.item(.shinyCharm)] // 600M, ties keep ItemKind declaration order
+                       + heldItemEntries     // 600M
+                       + [.egg(.rare)])      // 800M
         let prices = s.shopEntries.map(\.price)
         XCTAssertEqual(prices, prices.sorted(), "가격 상수가 바뀌어도 오름차순 불변식 유지")
     }
@@ -263,22 +263,22 @@ final class ShopTests: XCTestCase {
     /// 읽힌다. 대신 구매는 `canBuyEgg` 의 `hasActive` 게이트가 전부 막는다(EggCard 는 비활성 버튼 +
     /// 사유 한 줄). 잔액이 충분한 상태로 검증해 게이트가 잔액이 아니라 hasActive 에서 걸림을 확인한다.
     func testShopEntriesKeepsEggsVisibleButUnbuyableWhenNoActive() {
-        let s = store(used: 5_000_000_000)   // active 없음, 잔액은 전 티어 가격 이상
+        let s = store(used: 1_000_000_000)   // active 없음, 잔액은 전 티어 가격 이상
         XCTAssertFalse(s.hasActive)
         XCTAssertEqual(s.shopEntries,
-                       [.item(.mint),        // 100M
-                        .item(.rareCandy)]   // 500M
-                       + [.egg(nil),         // 1B
-                          .egg(.uncommon)]   // 2.5B
-                       + [.item(.shinyCharm)] // 3B, ties keep ItemKind declaration order
-                       + heldItemEntries     // 3B
-                       + [.egg(.rare)])      // 4B
+                       [.item(.mint),        // 20M
+                        .item(.rareCandy)]   // 100M
+                       + [.egg(nil),         // 200M
+                          .egg(.uncommon)]   // 500M
+                       + [.item(.shinyCharm)] // 600M, ties keep ItemKind declaration order
+                       + heldItemEntries     // 600M
+                       + [.egg(.rare)])      // 800M
         for tier in FreshEgg.shopTiers {
             XCTAssertTrue(s.shopEntries.contains(.egg(tier)), "알 상태에서도 \(tier?.rawValue ?? "기본") 알은 노출 유지")
             XCTAssertFalse(s.canBuyEgg(tier), "노출은 되지만 \(tier?.rawValue ?? "기본") 알 구매는 hasActive 게이트로 차단")
             XCTAssertFalse(s.buyEgg(tier), "buyEgg 도 no-op — 토큰이 빠져나가면 안 된다")
         }
-        XCTAssertEqual(s.availableTokens, 5_000_000_000, "차단된 구매 시도로 잔액이 줄지 않는다")
+        XCTAssertEqual(s.availableTokens, 1_000_000_000, "차단된 구매 시도로 잔액이 줄지 않는다")
     }
     // MARK: 분류 탭
 

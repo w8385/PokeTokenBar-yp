@@ -147,7 +147,7 @@ final class SaveTransferTests: XCTestCase {
 
         XCTAssertTrue(envelope.state.active?.hasGrowthBoost == true)
         XCTAssertEqual(envelope.state.active?.usedAtStage, 12_000_000)
-        XCTAssertEqual(envelope.state.active?.phaseThreshold, 62_500_000)
+        XCTAssertEqual(envelope.state.active?.phaseThreshold, 12_500_000)
     }
 
     /// [핵심] 봉투가 없으면 `CompanionState` 의 관대 디코딩이 아무 JSON 이나 빈 상태로 흡수해
@@ -526,7 +526,7 @@ final class SaveTransferTests: XCTestCase {
     func testCorruptStateOnDiskIsClampedOnLoadNotJustOnImport() throws {
         let url = tempURL("diskclamp")
         // 앱이 아니라 손편집·이전 버전이 남긴 것처럼 극단값을 직접 파일에 심는다.
-        let json = #"{"installBaselineSet":true,"usedSinceInstall":9223372036854775807,"#
+        let json = #"{"economyVersion":2,"installBaselineSet":true,"usedSinceInstall":9223372036854775807,"#
             + #""spentTokens":-9223372036854775808,"eggUsage":9223372036854775807,"#
             + #""claimedTodayTokens":-1,"lastDate":"2026-08-03"}"#
         try Data(json.utf8).write(to: url)
@@ -556,7 +556,7 @@ final class SaveTransferTests: XCTestCase {
         // rewardedDexRegions = 진행 — 보상으로 받은 사탕이 inventory 와 함께 따라가므로 받은 지역도 같이 가야
         // 옮긴 기기에서 같은 지역 보상을 한 번 더 받지 않는다.
         // appliedTradeIDs = 진행 — 적용한 교환 기록은 도감과 함께 가야 옮긴 기기에서 같은 교환이 다시 적용되지 않는다.
-        let progress: Set<String> = ["usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs",
+        let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
                                      "collectedFinals", "inventory", "heldItems",

@@ -32,7 +32,7 @@ final class PokemonBalanceTests: XCTestCase {
             PokemonBalance.phaseThreshold(
                 rarity: .common, totalForms: 3, stageIndex: 0,
                 growthMultiplier: PokemonBalance.repeatGrowthMultiplier),
-            62_500_000)
+            12_500_000)
     }
     func testHigherStageCostsMore() {
         for k in 2...3 {
@@ -316,7 +316,7 @@ final class CompanionStoreTests: XCTestCase {
     func testCorruptActiveFallsBackToEggWhileRestSurvives() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-active-corrupt-\(UUID().uuidString).json")
         // active 는 pathIDs 누락 → MonState decode 실패. dex/inventory/usedSinceInstall 은 유효.
-        let json = #"{"active":{"baseID":1},"#
+        let json = #"{"economyVersion":2,"active":{"baseID":1},"#
             + #""dex":[{"baseID":1,"finalID":3,"chainOrder":[1,2,3],"rarity":"common"}],"#
             + #""inventory":{"rareCandy":3},"usedSinceInstall":5000}"#
         try Data(json.utf8).write(to: url)
@@ -420,7 +420,7 @@ final class CompanionStoreTests: XCTestCase {
                               usedAtStage: 0, rarity: .common, totalForms: 3, nature: .brave)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-\(UUID().uuidString).json")
         let json = String(decoding: try JSONEncoder().encode(active), as: UTF8.self)
-        try Data(#"{"active":\#(json),"language":"ko"}"#.utf8).write(to: url)
+        try Data(#"{"economyVersion":2,"active":\#(json),"language":"ko"}"#.utf8).write(to: url)
 
         let s = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
                                fileURL: url, rng: SeededRNG(seed: 7))
@@ -502,7 +502,7 @@ final class CompanionStoreTests: XCTestCase {
                               rarity: .common, totalForms: 3, isShiny: true)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-\(UUID().uuidString).json")
         let activeJSON = String(decoding: try JSONEncoder().encode(active), as: UTF8.self)
-        try Data(#"{"active":\#(activeJSON)}"#.utf8).write(to: url)
+        try Data(#"{"economyVersion":2,"active":\#(activeJSON)}"#.utf8).write(to: url)
 
         let s = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
                                fileURL: url, rng: SeededRNG(seed: 7))
@@ -592,7 +592,7 @@ final class CompanionStoreTests: XCTestCase {
                               rarity: .common, totalForms: 3)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-\(UUID().uuidString).json")
         let activeJSON = String(decoding: try JSONEncoder().encode(active), as: UTF8.self)
-        try Data(#"{"active":\#(activeJSON),"representativeSpeciesID":1,"usedSinceInstall":1000000000}"#.utf8)
+        try Data(#"{"economyVersion":2,"active":\#(activeJSON),"representativeSpeciesID":1,"usedSinceInstall":1000000000}"#.utf8)
             .write(to: url)
 
         let s = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
@@ -624,7 +624,7 @@ final class CompanionStoreTests: XCTestCase {
             let url = FileManager.default.temporaryDirectory
                 .appendingPathComponent("poke-\(UUID().uuidString).json")
             let json = String(decoding: try JSONEncoder().encode(active), as: UTF8.self)
-            try Data(#"{"active":\#(json),"language":"ko"}"#.utf8).write(to: url)
+            try Data(#"{"economyVersion":2,"active":\#(json),"language":"ko"}"#.utf8).write(to: url)
             return CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
                                   fileURL: url, rng: SeededRNG(seed: 7))
         }
@@ -746,7 +746,7 @@ final class CompanionStoreTests: XCTestCase {
                               usedAtStage: 0, rarity: .common, totalForms: 3)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-\(UUID().uuidString).json")
         let activeJSON = String(decoding: try JSONEncoder().encode(active), as: UTF8.self)
-        try Data(#"{"active":\#(activeJSON),"usedSinceInstall":5000000000}"#.utf8).write(to: url)
+        try Data(#"{"economyVersion":2,"active":\#(activeJSON),"usedSinceInstall":5000000000}"#.utf8).write(to: url)
 
         let s = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
                                fileURL: url, rng: SeededRNG(seed: 7))
@@ -768,7 +768,7 @@ final class CompanionStoreTests: XCTestCase {
                               dittoDisguise: 1, dittoRevealed: false)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-\(UUID().uuidString).json")
         let activeJSON = String(decoding: try JSONEncoder().encode(active), as: UTF8.self)
-        try Data(#"{"active":\#(activeJSON),"usedSinceInstall":5000000000}"#.utf8).write(to: url)
+        try Data(#"{"economyVersion":2,"active":\#(activeJSON),"usedSinceInstall":5000000000}"#.utf8).write(to: url)
 
         let s = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
                                fileURL: url, rng: SeededRNG(seed: 7))
@@ -958,7 +958,7 @@ final class CompanionStoreTests: XCTestCase {
     /// 추정하지 않고 첫 유효 snapshot을 seed한다. 이후 증가분은 새 ledger로 정상 적립한다.
     func testLegacyAggregateLedgerSeedsProviderMapWithoutRetrospectiveCredit() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-\(UUID().uuidString).json")
-        let legacy = #"{"installBaselineSet":true,"usedSinceInstall":10000,"claimedTodayTokens":9000,"lastDate":"d1"}"#
+        let legacy = #"{"economyVersion":2,"installBaselineSet":true,"usedSinceInstall":10000,"claimedTodayTokens":9000,"lastDate":"d1"}"#
         try Data(legacy.utf8).write(to: url)
 
         let s = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow }, fileURL: url,
@@ -1035,7 +1035,7 @@ final class CompanionStoreTests: XCTestCase {
     /// 도감 빈 화면으로 떨어지지 않는다.
     func testLoadedActiveCompanionPreventsEmptyDexState() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-active-\(UUID().uuidString).json")
-        let json = #"{"active":{"baseID":529,"pathIDs":[529],"stageIndex":0,"usedAtStage":148344233,"rarity":"uncommon","totalForms":2,"isShiny":false,"nature":"timid"},"dex":[]}"#
+        let json = #"{"economyVersion":2,"active":{"baseID":529,"pathIDs":[529],"stageIndex":0,"usedAtStage":148344233,"rarity":"uncommon","totalForms":2,"isShiny":false,"nature":"timid"},"dex":[]}"#
         try json.data(using: .utf8)!.write(to: url)
 
         let s = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
@@ -1050,7 +1050,7 @@ final class CompanionStoreTests: XCTestCase {
     /// caughtAt 이 없는 구버전 졸업 항목은 active 로 오인하지 않는다.
     func testActiveCompanionPinnedBeforeGraduatedEntries() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-active-sort-\(UUID().uuidString).json")
-        let json = #"{"active":{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":5,"rarity":"common","totalForms":3},"dex":[{"id":"legacy-graduated","baseID":150,"finalID":150,"chainOrder":[150],"rarity":"legendary"}]}"#
+        let json = #"{"economyVersion":2,"active":{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":5,"rarity":"common","totalForms":3},"dex":[{"id":"legacy-graduated","baseID":150,"finalID":150,"chainOrder":[150],"rarity":"legendary"}]}"#
         try json.data(using: .utf8)!.write(to: url)
 
         let s = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
@@ -1109,7 +1109,7 @@ final class CompanionStoreTests: XCTestCase {
 
     func testStateDecodesWithoutEggUsage() throws {
         // 기존 저장(필드 없음)도 깨지지 않고 eggUsage=0 으로 로드
-        let json = #"{"installBaselineSet":true,"usedSinceInstall":5,"claimedTodayTokens":5,"lastDate":"d","active":null,"dex":[],"collectedFinals":[],"language":"ko"}"#
+        let json = #"{"economyVersion":2,"installBaselineSet":true,"usedSinceInstall":5,"claimedTodayTokens":5,"lastDate":"d","active":null,"dex":[],"collectedFinals":[],"language":"ko"}"#
         let state = try JSONDecoder().decode(CompanionState.self, from: Data(json.utf8))
         XCTAssertEqual(state.eggUsage, 0)
         XCTAssertEqual(state.usedSinceInstall, 5)
@@ -1292,12 +1292,12 @@ final class CompanionStoreTests: XCTestCase {
         let s2 = CompanionStore(provider: StubProvider(value: linear3), clock: { fixedNow },
                                 fileURL: url, rng: SeededRNG(seed: 1))
         XCTAssertTrue(s2.state.active?.hasGrowthBoost == true)
-        XCTAssertEqual(s2.tokensToNext, 62_500_000)
+        XCTAssertEqual(s2.tokensToNext, 12_500_000)
 
         let legacy = #"{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":3}"#
         let decoded = try JSONDecoder().decode(MonState.self, from: Data(legacy.utf8))
         XCTAssertFalse(decoded.hasGrowthBoost)
-        XCTAssertEqual(decoded.phaseThreshold, 125_000_000)
+        XCTAssertEqual(decoded.phaseThreshold, 25_000_000)
     }
 
     func testReloadPreservesCompleteShortPlannedRouteLength() async {
@@ -1332,7 +1332,7 @@ final class CompanionStoreTests: XCTestCase {
     func testReloadLegacyIncompletePlanMigratesToPersistedCompleteRoute() async throws {
         let line = wurmpleLine
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-reload-legacy-\(UUID().uuidString).json")
-        let legacy = #"{"active":{"baseID":265,"pathIDs":[265],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":1}}"#
+        let legacy = #"{"economyVersion":2,"active":{"baseID":265,"pathIDs":[265],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":1}}"#
         try Data(legacy.utf8).write(to: url)
         let rng = CountingRNG(seed: 7)
         let s = CompanionStore(provider: StubProvider(value: line), clock: { fixedNow }, fileURL: url, rng: rng)
@@ -1360,7 +1360,7 @@ final class CompanionStoreTests: XCTestCase {
 
     func testReloadRepairsInvalidPlanSuffixWithoutRewindingRealizedPath() async throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-invalid-plan-\(UUID().uuidString).json")
-        let saved = #"{"active":{"baseID":265,"pathIDs":[265,266],"plannedPathIDs":[265,266,269],"stageIndex":1,"usedAtStage":42,"rarity":"common","totalForms":3}}"#
+        let saved = #"{"economyVersion":2,"active":{"baseID":265,"pathIDs":[265,266],"plannedPathIDs":[265,266,269],"stageIndex":1,"usedAtStage":42,"rarity":"common","totalForms":3}}"#
         try Data(saved.utf8).write(to: url)
         let s = CompanionStore(provider: StubProvider(value: wurmpleLine), clock: { fixedNow }, fileURL: url, rng: SeededRNG(seed: 9))
 
@@ -1378,7 +1378,7 @@ final class CompanionStoreTests: XCTestCase {
 
     func testReloadWrongRootNormalizesPathWithoutChangingIdentityOrDisguise() async throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-wrong-root-\(UUID().uuidString).json")
-        let saved = #"{"active":{"baseID":265,"pathIDs":[999],"plannedPathIDs":[999],"stageIndex":0,"usedAtStage":42,"rarity":"common","totalForms":1,"isShiny":true,"nature":"timid","dittoDisguise":265}}"#
+        let saved = #"{"economyVersion":2,"active":{"baseID":265,"pathIDs":[999],"plannedPathIDs":[999],"stageIndex":0,"usedAtStage":42,"rarity":"common","totalForms":1,"isShiny":true,"nature":"timid","dittoDisguise":265}}"#
         try Data(saved.utf8).write(to: url)
         let s = CompanionStore(provider: StubProvider(value: wurmpleLine), clock: { fixedNow }, fileURL: url, rng: SeededRNG(seed: 9))
 
@@ -1398,7 +1398,7 @@ final class CompanionStoreTests: XCTestCase {
 
     func testReloadLeafCurrentPlanDoesNotConsumeRNG() async throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-leaf-plan-\(UUID().uuidString).json")
-        let saved = #"{"active":{"baseID":265,"pathIDs":[265,266,267],"plannedPathIDs":[265,266,267],"stageIndex":2,"usedAtStage":42,"rarity":"common","totalForms":3}}"#
+        let saved = #"{"economyVersion":2,"active":{"baseID":265,"pathIDs":[265,266,267],"plannedPathIDs":[265,266,267],"stageIndex":2,"usedAtStage":42,"rarity":"common","totalForms":3}}"#
         try Data(saved.utf8).write(to: url)
         let rng = CountingRNG(seed: 9)
         let s = CompanionStore(provider: StubProvider(value: wurmpleLine), clock: { fixedNow }, fileURL: url, rng: rng)
@@ -1415,7 +1415,7 @@ final class CompanionStoreTests: XCTestCase {
 
     func testLineLoadPreservesUpdatesMadeWhileProviderIsSuspended() async throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-load-race-\(UUID().uuidString).json")
-        let saved = #"{"active":{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":1,"nature":"adamant"},"inventory":{"mint":1}}"#
+        let saved = #"{"economyVersion":2,"active":{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":1,"nature":"adamant"},"inventory":{"mint":1}}"#
         try Data(saved.utf8).write(to: url)
         let provider = SuspendedLineProvider(value: linear3)
         let s = CompanionStore(provider: provider, clock: { fixedNow }, fileURL: url, rng: SeededRNG(seed: 7))
@@ -1746,23 +1746,23 @@ final class CompanionIdentityTests: XCTestCase {
                                 fileURL: url, rng: SeededRNG(seed: 5))
         XCTAssertNotNil(s2.state.active)
         XCTAssertNil(s2.currentLine)
-        // 라인 없는 상태에서 stage0 임계(125M) 초과 델타 → 유실 없이 적립, 진화는 보류
-        s2.applyUsage(300_000_000)
-        XCTAssertEqual(s2.state.active?.usedAtStage, 300_000_000, "라인 미로딩 중 델타가 유실되면 안 된다")
+        // 라인 없는 상태에서 stage0 임계(25M) 초과 델타 → 유실 없이 적립, 진화는 보류
+        s2.applyUsage(60_000_000)
+        XCTAssertEqual(s2.state.active?.usedAtStage, 60_000_000, "라인 미로딩 중 델타가 유실되면 안 된다")
         XCTAssertEqual(s2.state.active?.stageIndex, 0)
         // update → loadCurrentLine 완료 시 적립분으로 진화 판정(드레인)
         s2.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle, limitWarning: false, hasUsageData: true)
         for _ in 0..<50 where s2.currentLine == nil { await Task.yield() }
         XCTAssertNotNil(s2.currentLine)
         XCTAssertEqual(s2.state.active?.stageIndex, 1, "라인 로드 후 적립분으로 진화해야 한다")
-        XCTAssertEqual(s2.state.active?.usedAtStage, 300_000_000 - 125_000_000)   // 초과분 이월
+        XCTAssertEqual(s2.state.active?.usedAtStage, 60_000_000 - 25_000_000)   // 초과분 이월
     }
 
     /// [회귀] 구버전 상태가 GIF 미지원 후대 진화형까지 진행했어도, 라인 재로딩 시 마지막 지원 형태로
     /// 복구하고 단계 수를 현재 에셋 개수에 맞춘다. 그렇지 않으면 트리에서 현재 종을 못 찾아 성장이 멈춘다.
     func testLineLoadMigratesPersistedUnsupportedEvolution() async throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("poke-assets-\(UUID().uuidString).json")
-        let json = #"{"installBaselineSet":true,"lastDate":"d1","active":{"baseID":56,"pathIDs":[56,57,1026],"stageIndex":2,"usedAtStage":123,"rarity":"common","totalForms":3},"dex":[]}"#
+        let json = #"{"economyVersion":2,"installBaselineSet":true,"lastDate":"d1","active":{"baseID":56,"pathIDs":[56,57,1026],"stageIndex":2,"usedAtStage":123,"rarity":"common","totalForms":3},"dex":[]}"#
         try Data(json.utf8).write(to: url)
         let supportedLine = makeLine(base: 56, tree: node(56, [node(57, [node(1026)])]))
         let s = CompanionStore(provider: StubProvider(value: supportedLine), clock: { fixedNow },
@@ -1794,8 +1794,8 @@ final class CompanionIdentityTests: XCTestCase {
 
         let s = store(linear3, seed: seed)
         s.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle, limitWarning: false, hasUsageData: true)
-        // 알 임계(5M) + stage0 임계(125M) 초과 → 부화 즉시 1회 진화하는 이월
-        s.update(todayTokensByProvider: ["test": 135_000_000], todayDate: "d1", monthTotal: 0, burnTier: .idle, limitWarning: false, hasUsageData: true)
+        // 알 임계(1M) + stage0 임계(25M) 초과 → 부화 즉시 1회 진화하는 이월
+        s.update(todayTokensByProvider: ["test": 27_000_000], todayDate: "d1", monthTotal: 0, burnTier: .idle, limitWarning: false, hasUsageData: true)
         await s.hatchIfNeeded()
         XCTAssertEqual(s.state.active?.isShiny, true)
         XCTAssertEqual(s.state.active?.stageIndex, 1, "이월로 1회 진화했어야 함")

@@ -26,6 +26,7 @@ final class DifficultySaveTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: "difficulty-save-\(UUID())"))
         defaults.set(difficulty, forKey: "growthDifficulty")
         defaults.set(20.0, forKey: "shopDifficulty")
+        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         let store = CompanionStore(provider: DifficultySaveProvider(), fileURL: url,
                                    dittoDisguiseRollingEnabled: false, defaults: defaults)
         return (store, url, defaults)

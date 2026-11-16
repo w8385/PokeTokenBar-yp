@@ -41,6 +41,7 @@ final class ProfileGrowthIntegrationTests: XCTestCase {
         suites.append(suite)
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defaults.set(difficulty, forKey: "growthDifficulty")
+        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         return (CompanionStore(provider: GrowthProfileProvider(forms: forms), fileURL: file,
                                dittoDisguiseRollingEnabled: false, defaults: defaults), file, defaults)
     }
@@ -57,7 +58,7 @@ final class ProfileGrowthIntegrationTests: XCTestCase {
                     for _ in 0..<forms { s.applyUsage(s.tokensToNext) }
                     XCTAssertNil(s.state.active)
                     XCTAssertEqual(s.state.dex.last?.profile?.level, 100)
-                    XCTAssertEqual(s.state.dex.last?.profile?.growthTokens, 750_000_000)
+                    XCTAssertEqual(s.state.dex.last?.profile?.growthTokens, 150_000_000)
                     XCTAssertEqual(s.state.dex.last?.profile?.moves.map(\.name), ["final-\(forms)"])
                 }
             }
@@ -69,7 +70,7 @@ final class ProfileGrowthIntegrationTests: XCTestCase {
         seed.collectedFinals = ["1:1"]
         let (s, file, defaults) = try fixture(seed, difficulty: 0.5, forms: 1)
         await s.hatch(baseID: 1)
-        s.applyUsage(93_750_000)
+        s.applyUsage(18_750_000)
         let profile = try XCTUnwrap(s.state.active?.profile)
         XCTAssertEqual(profile.level, 52)
         s.setGrowthDifficulty(2)
@@ -101,10 +102,10 @@ final class ProfileGrowthIntegrationTests: XCTestCase {
     func testLegacyStageMigrationUsesBoostAndDifficulty() throws {
         var seed = CompanionState()
         seed.active = MonState(baseID: 1, pathIDs: [1, 2], plannedPathIDs: [1, 2, 3],
-                               stageIndex: 1, usedAtStage: 6_250_000, rarity: .common,
+                               stageIndex: 1, usedAtStage: 1_250_000, rarity: .common,
                                totalForms: 3, hasGrowthBoost: true)
         let (s, _, _) = try fixture(seed, difficulty: 0.1)
-        XCTAssertEqual(s.state.active?.profile?.growthTokens, 250_000_000)
+        XCTAssertEqual(s.state.active?.profile?.growthTokens, 50_000_000)
         XCTAssertEqual(s.state.active?.profile?.level, 36)
     }
 
@@ -128,7 +129,7 @@ final class ProfileGrowthIntegrationTests: XCTestCase {
     func testImportOntoHarderDeviceKeepsEarnedIdentityAndLevel() async throws {
         let (source, _, _) = try fixture(difficulty: 0.1, forms: 1)
         await source.hatch(baseID: 1)
-        source.applyUsage(37_500_000)
+        source.applyUsage(7_500_000)
         let original = try XCTUnwrap(source.state.active?.profile)
         XCTAssertEqual(original.level, 52)
         let data = try SaveTransfer.encode(state: source.state, appVersion: "test",
