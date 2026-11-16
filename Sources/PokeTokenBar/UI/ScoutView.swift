@@ -1,10 +1,9 @@
 import SwiftUI
 
-/// 상점의 스카우트 구역 — 지역마다·전국 티켓 한 줄. 같은 가격. 인라인 확인(.sheet/.alert 금지, ShopView 주석과 같은 이유).
+/// 상점의 스카우트 구역 — 지역마다·전국 티켓 한 줄. 같은 가격. 한 번 눌러 바로 산다(되돌리기는 PurchaseUndoLine).
 @MainActor
 struct ShopScoutSection: View {
     let store: CompanionStore
-    @State private var confirming: ScoutPool?
 
     var body: some View {
         let l = store.l
@@ -24,17 +23,9 @@ struct ShopScoutSection: View {
     }
 
     private func row(_ pool: ScoutPool, _ l: L) -> some View {
-        HStack(spacing: 8) {
-            ScoutTicketIcon(size: 22)
-            if confirming == pool {
-                Text(l.buyConfirm(l.scoutTicketName(pool)))
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
-                Spacer(minLength: 4)
-                Button(l.buy) { buy(pool) }
-                    .buttonStyle(.borderedProminent).controlSize(.small)
-                Button(l.cancel) { confirming = nil }
-                    .buttonStyle(.borderless).controlSize(.small)
-            } else {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                ScoutTicketIcon(size: 22)
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 6) {
                         Text(l.scoutTicketName(pool)).font(.caption.weight(.semibold))
@@ -49,18 +40,14 @@ struct ShopScoutSection: View {
                 }
                 Spacer(minLength: 4)
                 if store.canBuyScoutTicket {
-                    Button(l.buy) { confirming = pool }
+                    Button(l.buy) { store.buyScoutTicket(pool) }
                         .buttonStyle(.bordered).controlSize(.small)
                 } else {
                     Text(l.notEnoughTokens).font(.caption2).foregroundStyle(.tertiary)
                 }
             }
+            PurchaseUndoLine(store: store, inventoryKey: pool.inventoryKey)
         }
-    }
-
-    private func buy(_ pool: ScoutPool) {
-        confirming = nil
-        store.buyScoutTicket(pool)
     }
 }
 

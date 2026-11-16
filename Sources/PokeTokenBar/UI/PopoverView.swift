@@ -111,6 +111,12 @@ final class PopoverNavigation {
     }
     /// The Battle tab's fighter picker replaces the tab's content while open.
     var battlePicker: BattlePickerTarget?
+    /// The Box's sort, filters and search text; kept here so leaving the tab does not reset them.
+    let boxFilters: BoxFilterStore
+
+    init(boxFilters: BoxFilterStore = BoxFilterStore()) {
+        self.boxFilters = boxFilters
+    }
     /// The Coworkers tab's trade offer screen; `tradeGiveID` preselects the individual a Box page sent over.
     var showingTradeOffer = false
     var tradeGiveID: String?
