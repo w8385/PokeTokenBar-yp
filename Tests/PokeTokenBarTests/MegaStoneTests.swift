@@ -88,7 +88,7 @@ final class MegaStoneTests: XCTestCase {
         XCTAssertTrue(store.shopCategories.contains(.megaStone))
         XCTAssertFalse(store.shopEntries.contains { $0.category == .megaStone })
         let entries = store.shopEntries(in: .megaStone)
-        XCTAssertEqual(entries.count, 92)
+        XCTAssertEqual(entries.count, MegaStone.all.count + 1, "the stones plus the Stellar Crystal")
         let slugs = entries.compactMap { entry -> String? in
             if case .megaStone(let stone) = entry { return stone.slug } else { return nil }
         }

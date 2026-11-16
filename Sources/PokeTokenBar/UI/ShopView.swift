@@ -82,7 +82,7 @@ struct ShopView: View {
 /// kind 별 store.canBuy(kind)/buy(kind:count:) 로 일반화 — 판매 목록은 store.purchasableItems.
 /// 소모품은 수량 Stepper(가방의 사탕 일괄 사용과 같은 패턴)로 잔액 한도까지 한 번에 산다.
 @MainActor
-private struct ShopItemCard: View {
+struct ShopItemCard: View {
     let store: CompanionStore
     let kind: ItemKind
     @State private var quantity = 1
@@ -103,7 +103,7 @@ private struct ShopItemCard: View {
                     HStack(spacing: 6) {
                         Text(l.itemName(kind)).font(.callout.weight(.semibold))
                         let owned = store.itemCount(kind)
-                        if owned > 0 && !kind.isPassive {
+                        if owned > 0 && !kind.isPassive && !kind.isSingleCopy {
                             Text(l.ownedCount(owned)).font(.caption2.weight(.bold))
                                 .foregroundStyle(.secondary).monospacedDigit()
                         }
@@ -142,8 +142,8 @@ private struct ShopItemCard: View {
 
     @ViewBuilder
     private func buyControls(_ l: L) -> some View {
-        if kind.isPassive && store.itemCount(kind) > 0 {
-            // 보유형(이로치 부적 등) — 1회 구매라 소유 후엔 "보유 중" 표시(재구매 버튼 없음).
+        if store.isSoldOut(kind) {
+            // 보유형(이로치 부적 등)·단품 — 1회 구매라 소유 후엔 "보유 중" 표시(재구매 버튼 없음).
             HStack(spacing: 5) {
                 Image(systemName: "checkmark.seal.fill").font(.caption2).foregroundStyle(.green)
                 Text(l.ownedAlready).font(.caption2.weight(.semibold)).foregroundStyle(.green)

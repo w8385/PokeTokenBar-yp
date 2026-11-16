@@ -2184,6 +2184,7 @@ struct L {
         case .lifeOrb: return t("생명의구슬", "Life Orb", "いのちのたま", "Vidasfera", "Orbe Vie", "Orbe Vital", "Leben-Orb", "Сфера жизни")
         case .expertBelt: return t("달인의띠", "Expert Belt", "たつじんのおび", "Cinta Experto", "Ceinture Pro", "Cinto Perito", "Expertengurt", "Пояс эксперта")
         case .charcoal: return t("목탄", "Charcoal", "もくたん", "Carbón", "Charbon", "Carvão", "Holzkohle", "Древесный уголь")
+        case .stellarCrystal: return t("별빛 결정", "Stellar Crystal", "ほしぞらのけっしょう", "Cristal Estelar", "Cristal Stellaire", "Cristal Estelar", "Sternenkristall", "Звёздный кристалл")
         default: return evolutionItemName(kind)
         }
     }

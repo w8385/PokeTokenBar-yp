@@ -62,6 +62,7 @@ struct BoxDetailView: View {
     private var identityHeader: some View {
         let mega = store.boxMegaSpriteID(individual)
         let stone = store.megaStone(of: individual.id, speciesID: individual.speciesID)
+        let tera = store.teraForm(of: individual.id, speciesID: individual.speciesID)
         return HStack(spacing: 14) {
             MegaEvolveStage(megaSpriteID: mega, size: 104, event: store.megaEvolveEvent) { shown in
                 SpriteView(speciesID: shown ?? individual.speciesID, size: 104, animated: true, shiny: entry.isShiny,
@@ -77,8 +78,8 @@ struct BoxDetailView: View {
                     Spacer(minLength: 8)
                     Text(l.rarityLabel(entry.rarity)).font(.callout.weight(.semibold)).foregroundStyle(.secondary)
                 }
-                if let stone {
-                    TypeBadges(types: stone.types, language: store.language, size: 11,
+                if let types = stone?.types ?? tera?.types {
+                    TypeBadges(types: types, language: store.language, size: 11,
                                horizontalPadding: 7, verticalPadding: 2)
                 } else if let details = store.pokemonDetailsByID[individual.speciesID] {
                     TypeBadges(types: details.types, language: store.language, size: 11,
@@ -394,6 +395,8 @@ struct HeldItemSlot: View {
     private func note(_ held: HeldItemRef?, locked: Bool, hasSpare: Bool) -> some View {
         if locked {
             caption(l.tradeLockedItemText, color: .orange)
+        } else if case .item(let kind) = held, let owner = kind.holderSpeciesID, owner != speciesID {
+            caption(l.megaStoneWrongHolder(l.itemName(kind), speciesName), color: .orange)
         } else if case .item(let kind) = held {
             caption(kind.isHeldItem ? l.heldItemEffect(kind) : l.itemAppNote(kind), color: .secondary)
         } else if case .stone(let stone) = held {

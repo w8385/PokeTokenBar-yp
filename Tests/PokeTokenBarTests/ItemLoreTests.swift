@@ -38,6 +38,7 @@ final class ItemLoreTests: XCTestCase {
         let flaggedKinds: Set<ItemKind> = [
             .mint, .linkingCord, .fairyFeather, .syrupyApple, .auspiciousArmor, .maliciousArmor, .unremarkableTeacup,
             .masterpieceTeacup, .metalAlloy, .peatBlock, .blackAugurite, .scrollOfDarkness, .scrollOfWaters,
+            .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
         ]
         for kind in ItemKind.allCases {
             XCTAssertEqual(ItemLore.isAppOriginal(kind.loreSlug), flaggedKinds.contains(kind), "\(kind)")
@@ -77,7 +78,7 @@ final class ItemLoreTests: XCTestCase {
     func testItemNamesMatchTheOfficialNames() {
         for lang in officialLanguages {
             let l = L(lang)
-            for kind in ItemKind.allCases where kind != .mint {
+            for kind in ItemKind.allCases where kind != .mint && kind != .stellarCrystal {
                 XCTAssertEqual(l.itemName(kind), ItemLore.officialName(kind.loreSlug, in: lang), "\(kind) \(lang)")
             }
             for stone in MegaStone.all {

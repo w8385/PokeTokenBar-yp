@@ -1812,13 +1812,33 @@ final class CompanionStore {
     var megaStoneShopEntries: [ShopEntry] {
         let owned = state.ownedSpeciesIDs
         let (mine, others) = (MegaStone.all.filter { owned.contains($0.speciesID) }, MegaStone.all.filter { !owned.contains($0.speciesID) })
-        return (mine + others).map(ShopEntry.megaStone)
+        let crystal = ShopEntry.item(.stellarCrystal)
+        let stones = (mine + others).map(ShopEntry.megaStone)
+        let crystalIndex = owned.contains(TeraForm.terapagos) ? mine.count : stones.count
+        return Array(stones[..<crystalIndex]) + [crystal] + Array(stones[crystalIndex...])
     }
 
     /// 홈·플로팅 펫·메뉴바가 그릴 메가 스프라이트 id. 표시만 바꾼다 — 종·레벨·저장 데이터는 그대로다.
     func megaSpriteID(instanceID: String?, speciesID: Int?) -> Int? {
         guard let instanceID, let speciesID else { return nil }
         return megaStone(of: instanceID, speciesID: speciesID)?.spriteID
+            ?? teraForm(of: instanceID, speciesID: speciesID)?.id
+    }
+
+    /// The form a mask or the Stellar Crystal gives this individual — only on its own species.
+    func teraForm(of instanceID: String, speciesID: Int) -> TeraForm.Sprite? {
+        guard let kind = heldItem(of: instanceID), kind.holderSpeciesID == speciesID else { return nil }
+        return kind.formSprite
+    }
+
+    /// The bag plus every Pokémon holding it.
+    func itemOwnedTotal(_ kind: ItemKind) -> Int {
+        itemCount(kind) + state.heldItems.values.filter { $0 == kind.rawValue }.count
+    }
+
+    /// An item the shop sells once: a bought passive item, or a single-copy item that is in the bag or on a holder.
+    func isSoldOut(_ kind: ItemKind) -> Bool {
+        (kind.isPassive && itemCount(kind) > 0) || (kind.isSingleCopy && itemOwnedTotal(kind) > 0)
     }
 
     /// 그 종의 개체 중 맞는 메가스톤을 든 개체가 있으면 그 메가 스프라이트 id.
@@ -2008,7 +2028,8 @@ final class CompanionStore {
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
         ItemKind.allCases
-            .filter { $0.shopPrice != nil && !$0.isEvolutionStone && !$0.isEvolutionHeld && !$0.isLinkingCord }
+            .filter { $0.shopPrice != nil && !$0.isEvolutionStone && !$0.isEvolutionHeld && !$0.isLinkingCord
+                && $0.category != .megaStone }
             .sorted { a, b in
                 // 구매 완료한 보유형(이로치 부적 등)은 맨 아래로 — 재구매 불가라 위에 있을 이유가 없다.
                 let aDone = a.isPassive && itemCount(a) > 0
@@ -2073,7 +2094,7 @@ final class CompanionStore {
     /// 구매 가능 — 잔액이 그 아이템 가격 이상(상점 미판매면 false). 활성/알 무관(재고는 미리 쌓아둘 수 있음).
     func canBuy(_ kind: ItemKind) -> Bool {
         guard let price = price(of: kind) else { return false }
-        if kind.isPassive && itemCount(kind) > 0 { return false }   // 보유형은 1회만(재구매 불가)
+        if isSoldOut(kind) { return false }   // 보유형·단품은 1회만(재구매 불가)
         return availableTokens >= price
     }
 
@@ -2081,7 +2102,7 @@ final class CompanionStore {
     /// 미판매·잔액 부족이면 0.
     func maxBuyCount(_ kind: ItemKind) -> Int {
         guard canBuy(kind), let price = price(of: kind), price > 0 else { return 0 }
-        return kind.isPassive ? 1 : availableTokens / price
+        return kind.isPassive || kind.isSingleCopy ? 1 : availableTokens / price
     }
 
     /// 아이템 count 개 구매 — 지갑에서 price × count 차감, 인벤토리 +count. usedSinceInstall(성장·통계)·
