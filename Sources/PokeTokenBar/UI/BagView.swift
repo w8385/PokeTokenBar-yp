@@ -235,7 +235,7 @@ private struct ItemCard: View {
             }
         } else {
             // 알(부화 전)/활성 없음/(사탕만)라인 미로딩 — 비활성 + 사유
-            Text(store.isEgg ? l.useAfterHatch : l.useNeedsPokemon)
+            Text(store.isLineParked ? l.parkedLockedHint : store.isEgg ? l.useAfterHatch : l.useNeedsPokemon)
                 .font(.caption2).foregroundStyle(.tertiary)
         }
     }

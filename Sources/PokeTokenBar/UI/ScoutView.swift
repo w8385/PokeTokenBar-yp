@@ -135,7 +135,7 @@ struct ScoutPickerView: View {
                 Spacer()
                 Text(l.scoutTicketName(pool)).font(.callout.weight(.semibold))
             }
-            Text(store.canPickScout ? l.scoutPickHint : l.scoutPickLocked)
+            Text(store.canPickScout ? l.scoutPickHint : store.isLineParked ? l.parkedLockedHint : l.scoutPickLocked)
                 .font(.caption2).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             content(l)

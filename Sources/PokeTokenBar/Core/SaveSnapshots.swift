@@ -77,9 +77,9 @@ enum SaveSnapshotManager {
                     date: envelope.exportedAt,
                     dexCount: st.dex.count,
                     lifetimeTokens: st.usedSinceInstall,
-                    currentSpeciesID: st.active?.currentID,
-                    currentIsShiny: st.active?.displaysShiny ?? false,
-                    currentForm: st.active.flatMap { PokemonForm.resolved(speciesID: $0.currentID, form: $0.form) }
+                    currentSpeciesID: st.currentPokemonPreview.speciesID,
+                    currentIsShiny: st.currentPokemonPreview.isShiny,
+                    currentForm: st.currentPokemonPreview.form
                 ))
             } else if let st = try? JSONDecoder().decode(CompanionState.self, from: data) {
                 let date = parseStamp(file) ?? (try? url.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date()
@@ -89,9 +89,9 @@ enum SaveSnapshotManager {
                     date: date,
                     dexCount: st.dex.count,
                     lifetimeTokens: st.usedSinceInstall,
-                    currentSpeciesID: st.active?.currentID,
-                    currentIsShiny: st.active?.displaysShiny ?? false,
-                    currentForm: st.active.flatMap { PokemonForm.resolved(speciesID: $0.currentID, form: $0.form) }
+                    currentSpeciesID: st.currentPokemonPreview.speciesID,
+                    currentIsShiny: st.currentPokemonPreview.isShiny,
+                    currentForm: st.currentPokemonPreview.form
                 ))
             }
         }
@@ -158,9 +158,9 @@ enum SaveSnapshotManager {
             date: date,
             dexCount: state.dex.count,
             lifetimeTokens: state.usedSinceInstall,
-            currentSpeciesID: state.active?.currentID,
-            currentIsShiny: state.active?.displaysShiny ?? false,
-            currentForm: state.active.flatMap { PokemonForm.resolved(speciesID: $0.currentID, form: $0.form) }
+            currentSpeciesID: state.currentPokemonPreview.speciesID,
+            currentIsShiny: state.currentPokemonPreview.isShiny,
+            currentForm: state.currentPokemonPreview.form
         )
     }
 
