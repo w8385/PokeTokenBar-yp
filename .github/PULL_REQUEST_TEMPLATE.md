@@ -37,7 +37,7 @@ section only if there is no visible UI change.
 
 ## Checklist
 
-- [ ] `swift build` and `swift test` pass locally
+- [ ] `./scripts/invariant-tests.sh` and the changed suites (`swift test --filter …`) pass locally; the full suite passes in CI
 - [ ] PR title follows Conventional Commits and title/description are written in English
 - [ ] UI changes include embedded images (before/after for existing screens; image of a new screen), or there is no visible UI change
 - [ ] No copyrighted assets, secrets, or private tooling references are committed (see [CONTRIBUTING](../CONTRIBUTING.md))

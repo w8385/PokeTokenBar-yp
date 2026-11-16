@@ -8,6 +8,7 @@ read_when:
   - 스프라이트·이미지를 고정 크기 프레임에 그릴 때(비율 왜곡 부류)
   - 세이브 이전/병합·외부 파일 입력 경로를 만들 때
   - 스크린샷·렌더링 테스트를 쓰거나 창·활성화(`NSWindow`, `NSApp.activate`)를 다루는 테스트를 만들 때
+  - 테스트 픽스처·스크린샷 provider 가 종(species) 데이터(타입·종족값·성비·이름)를 돌려줄 때
 ---
 
 # 결함 대응 축적 규칙
@@ -67,6 +68,33 @@ read_when:
   retry hook instead).
 
 ## 판정·데이터
+
+- **A fixture must give a species its own facts, never another species' or invented ones.**
+  `BoxDexProvider.pokemonDetails` answered every id with name "synthetic", type Normal and Pikachu-ish
+  stats, so the raise-pick screenshots showed Onix as a Normal-type Lv41. Eighteen fixture providers did
+  the same in different ways: one hard-coded block for every id (Lucario's stats under Charizard,
+  Parasect's under every egg), a `?? ["normal"]` fallback, `types: []` and `baseStats: [:]`, and
+  index entries with capture rate 255 for Gyarados. **Why the tests never noticed:** a render test asserts
+  that something appears, not that it is true, and a screenshot is only looked at when it is made. The
+  wrong facts were invisible to every assertion and landed in PR images.
+  **Rule: absent data is allowed, wrong data is not.** Types, stats, gender ratio, size, names and capture
+  rate come from `SpeciesFacts` (`SpeciesFactsData.swift`, generated from PokéAPI by
+  `scripts/generate-species-facts.py`, offline at test time). Moves and abilities are not in the table and
+  default to none; a test that needs them passes them in. An id outside the table records a failure and
+  throws, so it never falls back to made-up data and never shows "unavailable" under a green test.
+  A test that needs a value no species has (a corrupt save, a gender ratio the test controls, an orphan
+  evolution link) says so with `SpeciesFacts.counterfactual(because:…)` /
+  `counterfactualIndexEntry(because:…)`; first look for a real species that already has the property
+  (always-male Nidorino, genderless Magnemite) instead of handing Slowpoke a different ratio.
+  **Class sweep:** every `PokemonDetails(` (18 provider fixtures, 5 in `PokemonProfileTests`) and
+  `SpeciesIndexEntry(` (6 fixtures) in `Tests/`. **Guard:** `SpeciesFactsGuardTests` fails on any
+  hand-built `PokemonDetails(`/`SpeciesIndexEntry(` outside `SpeciesFacts.swift` (listed in
+  `scripts/invariant-tests.sh`); its own tests check the scanner against sample sources, that an unknown
+  id fails, and the table against facts typed from the games. Adding a hand-built `PokemonDetails(` to any
+  test turns the scanner red.
+  **Still open, not covered by the guard:** 27 fixture providers return one fixed `EvoLine` for any
+  `line(baseSpeciesID:)` (mostly Charmander's), and fixtures write ko/en names into `EvoLine.names` and
+  `DexEntry.names` by hand. They are correct only while the test asks for its own base.
 
 - **Provider opt-out must also cover independently added official limits.** The provider toggle
   and the OpenCode Go/Grok limit integrations passed separately, but their combined refresh

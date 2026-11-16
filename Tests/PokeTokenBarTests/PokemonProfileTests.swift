@@ -1,18 +1,8 @@
 import XCTest
 @testable import PokeTokenBar
 
-private let profileDetails = PokemonDetails(
-    speciesID: 79,
-    name: "slowpoke",
-    height: 12,
-    weight: 360,
-    baseExperience: 63,
-    genderRate: 8,
-    types: ["water", "psychic"],
-    baseStats: [
-        "hp": 90, "attack": 65, "defense": 65,
-        "special-attack": 40, "special-defense": 40, "speed": 15,
-    ],
+private let profileDetails = try! SpeciesFacts.details(
+    79,
     abilities: [PokemonAbilityOption(name: "oblivious", slot: 1, isHidden: false)],
     moves: [
         PokemonMoveOption(name: "tackle", learnMethods: [
@@ -31,9 +21,8 @@ private let profileDetails = PokemonDetails(
 
 private func profileDetails(genderRate: Int,
                             abilities: [PokemonAbilityOption]) -> PokemonDetails {
-    PokemonDetails(speciesID: 999, name: "test", height: 10, weight: 100,
-                   baseExperience: nil, genderRate: genderRate, types: ["normal"],
-                   baseStats: ["hp": 50], abilities: abilities, moves: [])
+    SpeciesFacts.counterfactual(because: "the ability and gender-ratio variants the roll tests control",
+                                speciesID: 999, genderRate: genderRate, abilities: abilities)
 }
 
 final class PokemonProfileLogicTests: XCTestCase {
@@ -52,7 +41,7 @@ final class PokemonProfileLogicTests: XCTestCase {
         profile.level = 9
         profile.enrich(with: profileDetails)
 
-        XCTAssertEqual(profile.gender, .female)
+        XCTAssertTrue([.male, .female].contains(profile.gender), "Slowpoke is a 50/50 species")
         XCTAssertEqual(profile.abilityName, "oblivious")
         XCTAssertEqual(profile.abilitySlot, 1)
         XCTAssertEqual(profile.moves.count, 4)
@@ -79,12 +68,7 @@ final class PokemonProfileLogicTests: XCTestCase {
     /// Shedinja (#292) always has exactly 1 HP in the main series, regardless of level and IVs.
     /// The generic HP formula gives it level + 12 or more. Nincada's branch makes it reachable.
     func testShedinjaAlwaysHasOneHP() throws {
-        let shedinja = PokemonDetails(
-            speciesID: 292, name: "shedinja", height: 8, weight: 12, baseExperience: 83,
-            genderRate: -1, types: ["bug", "ghost"],
-            baseStats: ["hp": 1, "attack": 90, "defense": 45,
-                        "special-attack": 30, "special-defense": 30, "speed": 40],
-            abilities: [], moves: [])
+        let shedinja = try SpeciesFacts.details(292)
         for level in [1, 50, 100] {
             var profile = PokemonProfile.generate(seed: 3, instanceID: "shedinja")
             profile.level = level
@@ -95,9 +79,8 @@ final class PokemonProfileLogicTests: XCTestCase {
         }
         var other = PokemonProfile.generate(seed: 3, instanceID: "base-1")
         other.level = 50
-        let oneBase = PokemonDetails(
-            speciesID: 999, name: "test", height: 1, weight: 1, baseExperience: nil,
-            genderRate: -1, types: ["normal"], baseStats: ["hp": 1], abilities: [], moves: [])
+        let oneBase = SpeciesFacts.counterfactual(because: "base HP 1 on a species that is not Shedinja",
+                                                  speciesID: 999, baseStats: ["hp": 1])
         XCTAssertEqual(PokemonStatCalculator.stats(details: oneBase, profile: other, nature: nil).first?.value,
                        ((2 + other.ivs.hp) * 50) / 100 + 60, "only Shedinja is special, not base HP 1")
     }
@@ -131,13 +114,13 @@ final class PokemonProfileLogicTests: XCTestCase {
         XCTAssertEqual(profile.level, 100)
     }
 
-    func testGenderlessAndMaleBranchesAreResolved() {
+    func testGenderlessAndMaleBranchesAreResolved() throws {
         var genderless = PokemonProfile.generate(seed: 1, instanceID: "genderless")
-        genderless.enrich(with: profileDetails(genderRate: -1, abilities: []))
+        genderless.enrich(with: try SpeciesFacts.details(81))   // Magnemite
         XCTAssertEqual(genderless.gender, .genderless)
 
         var male = PokemonProfile.generate(seed: 1, instanceID: "male")
-        male.enrich(with: profileDetails(genderRate: 0, abilities: []))
+        male.enrich(with: try SpeciesFacts.details(33))   // Nidorino
         XCTAssertEqual(male.gender, .male)
     }
 
@@ -346,9 +329,7 @@ private actor RecordingProfileProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
         requestedDetails.append(speciesID)
-        return PokemonDetails(speciesID: speciesID, name: "test", height: 10, weight: 100,
-                              baseExperience: nil, genderRate: -1, types: ["normal"],
-                              baseStats: ["hp": 50], abilities: [], moves: [])
+        return try SpeciesFacts.details(speciesID)
     }
     func detailIDs() -> [Int] { requestedDetails }
 }
@@ -414,7 +395,7 @@ final class PokemonProfileMigrationTests: XCTestCase {
         let instanceID = try XCTUnwrap(store.state.active?.profile?.instanceID)
         await store.loadPokemonDetails(speciesID: 79)
         XCTAssertEqual(store.state.active?.profile?.instanceID, instanceID)
-        XCTAssertEqual(store.state.active?.profile?.gender, .female)
+        XCTAssertTrue([.male, .female].contains(store.state.active?.profile?.gender), "Slowpoke is a 50/50 species")
         XCTAssertEqual(store.state.active?.profile?.abilityName, "oblivious")
 
         let reloaded = CompanionStore(provider: ProfileLineProvider(), fileURL: file)
@@ -496,7 +477,9 @@ final class PokemonProfileMigrationTests: XCTestCase {
 
         await store.loadPokemonDetails(speciesID: 79)
 
-        XCTAssertEqual(store.state.dex.compactMap(\.profile?.gender), [.female, .female])
+        let genders = store.state.dex.compactMap(\.profile?.gender)
+        XCTAssertEqual(genders.count, 2)
+        XCTAssertTrue(genders.allSatisfy { $0 == .male || $0 == .female }, "Slowpoke is a 50/50 species")
         XCTAssertTrue(store.state.dex.allSatisfy { $0.profile?.abilityName == "oblivious" })
         XCTAssertTrue(store.state.dex.allSatisfy { !($0.profile?.moves.isEmpty ?? true) })
     }
@@ -559,7 +542,7 @@ final class PokemonProfileMigrationTests: XCTestCase {
         XCTAssertEqual(store.currentSpeciesID, 79)
         let detailIDs = await provider.detailIDs()
         XCTAssertEqual(detailIDs, [79])
-        XCTAssertEqual(store.state.active?.profile?.gender, .genderless)
+        XCTAssertTrue([.male, .female].contains(store.state.active?.profile?.gender), "Slowpoke is a 50/50 species")
     }
 
     func testLineLoadReleasesHatchingLockBeforeDetailRequestCompletes() async throws {

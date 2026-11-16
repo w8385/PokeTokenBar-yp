@@ -13,12 +13,7 @@ private struct ShotProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        let types: [Int: [String]] = [6: ["fire", "flying"], 25: ["electric"], 94: ["ghost", "poison"],
-                                      130: ["water", "flying"], 143: ["normal"], 149: ["dragon", "flying"]]
-        return PokemonDetails(speciesID: speciesID, name: "synthetic", height: 10, weight: 295,
-            baseExperience: 142, genderRate: 4, types: types[speciesID] ?? ["normal"],
-            baseStats: ["hp": 60, "attack": 95, "defense": 80, "special-attack": 60, "special-defense": 80, "speed": 30],
-            abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 

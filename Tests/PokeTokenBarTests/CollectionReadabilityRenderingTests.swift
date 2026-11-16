@@ -8,13 +8,7 @@ private struct ReadabilityProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "fixture", height: 12, weight: 360,
-                       baseExperience: 63, genderRate: 4, types: ["water", "psychic"],
-                       baseStats: ["hp": 90, "attack": 65, "defense": 65,
-                                   "special-attack": 40, "special-defense": 40, "speed": 15],
-                       abilities: [PokemonAbilityOption(name: "oblivious", slot: 1, isHidden: false)],
-                       moves: [PokemonMoveOption(name: "tackle", learnMethods: [
-                           PokemonMoveLearnMethod(method: "level-up", level: 1)])])
+        try SpeciesFacts.details(speciesID)
     }
 }
 
