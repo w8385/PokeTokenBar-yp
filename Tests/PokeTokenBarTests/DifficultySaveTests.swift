@@ -117,9 +117,7 @@ final class DifficultySaveTests: XCTestCase {
                 let host = NSHostingController(rootView: editedView.padding(16).frame(width: 332)
                     .background(Color(nsColor: .windowBackgroundColor)))
                 host.view.frame = CGRect(origin: .zero, size: host.sizeThatFits(in: CGSize(width: 332, height: 500)))
-                host.view.layoutSubtreeIfNeeded()
-                let bitmap = try XCTUnwrap(host.view.bitmapImageRepForCachingDisplay(in: host.view.bounds))
-                host.view.cacheDisplay(in: host.view.bounds, to: bitmap)
+                let bitmap = try OffscreenRender.bitmap(of: host.view)
                 try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: URL(fileURLWithPath: path))
             }
         }

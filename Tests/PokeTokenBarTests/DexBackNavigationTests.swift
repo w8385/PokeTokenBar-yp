@@ -113,11 +113,10 @@ final class DexBackNavigationTests: XCTestCase {
 
     // MARK: Rendered pixels
 
-    /// How many pixels of `swatch` the screen draws now.
+    /// How many square points of `swatch` the screen draws now, so the thresholds hold at any bitmap scale.
     private func pixels(_ swatch: Swatch, in host: NSView) throws -> Int {
-        host.layoutSubtreeIfNeeded()
-        let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-        host.cacheDisplay(in: host.bounds, to: bitmap)
+        let bitmap = try OffscreenRender.bitmap(of: host)
+        let scale = CGFloat(bitmap.pixelsWide) / host.bounds.width
         let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
         let normalized = try XCTUnwrap(NSBitmapImageRep(data: png))
         var count = 0
@@ -128,7 +127,7 @@ final class DexBackNavigationTests: XCTestCase {
                 }
             }
         }
-        return count
+        return Int((CGFloat(count) / (scale * scale)).rounded())
     }
 
     /// A cell is a 96pt sprite scaled into the grid, so its color covers far more than stray pixels.

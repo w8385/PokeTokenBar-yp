@@ -84,8 +84,7 @@ final class TradeBeforeAfterShotTests: XCTestCase {
             scroll.reflectScrolledClipView(scroll.contentView)
             try await Task.sleep(for: .seconds(1))
         }
-        let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-        host.cacheDisplay(in: host.bounds, to: bitmap)
+        let bitmap = try OffscreenRender.bitmap(of: host)
         try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: file)
     }
 

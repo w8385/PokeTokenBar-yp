@@ -27,21 +27,14 @@ enum OffscreenRender {
         view.layoutSubtreeIfNeeded()
     }
 
-    /// 1x bitmap of `view.bounds` (at the main screen's scale), or 2x with `scale: 2` (what the popover
-    /// draws on a Retina screen). Pixel assertions keep this form; PNG output uses `fixedBitmap`.
-    static func bitmap(of view: NSView, scale: CGFloat = 1) throws -> NSBitmapImageRep {
-        view.layoutSubtreeIfNeeded()
-        let bounds = view.bounds
-        if scale == 1 {
-            let bitmap = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: bounds))
-            view.cacheDisplay(in: bounds, to: bitmap)
-            return bitmap
-        }
-        return try fixedBitmap(of: view, scale: scale)
+    /// Bitmap of `view.bounds` at exactly `scale` pixels per point (2x by default, what the popover draws
+    /// on a Retina screen), whatever display the machine has. Divide pixel counts by `scale` to get points.
+    static func bitmap(of view: NSView, scale: CGFloat = 2) throws -> NSBitmapImageRep {
+        try fixedBitmap(of: view, scale: scale)
     }
 
-    /// Bitmap of exactly `scale` pixels per point. `bitmapImageRepForCachingDisplay` follows the main
-    /// screen, so the same test wrote 1x or 2x PNGs depending on whether a display was awake.
+    /// `bitmapImageRepForCachingDisplay` follows the main screen, so the same test saw 1x or 2x pixels
+    /// depending on the display. This allocates the bitmap itself.
     static func fixedBitmap(of view: NSView, scale: CGFloat) throws -> NSBitmapImageRep {
         view.layoutSubtreeIfNeeded()
         let bounds = view.bounds
