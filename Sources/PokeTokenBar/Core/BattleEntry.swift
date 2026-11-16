@@ -88,24 +88,36 @@ enum BattleEntry {
         var seen = Set<String>()
         var duplicates = Set<String>()
         for candidate in lineup(state: state, slots: slots) {
-            guard let key = state.heldItems[candidate.id] else { continue }
-            if let holder = ItemKind(rawValue: key)?.holderSpeciesID, holder != candidate.member.pokemonID { continue }
+            guard let key = countedItem(of: candidate.id, species: candidate.member.pokemonID, state: state) else { continue }
             if !seen.insert(key).inserted { duplicates.insert(candidate.id) }
         }
         return duplicates
+    }
+
+    /// The item `id` really battles with: nil when it holds none or a species-bound one on the wrong species.
+    private static func countedItem(of id: String, species: Int, state: CompanionState) -> String? {
+        guard let key = state.heldItems[id] else { return nil }
+        if let holder = ItemKind(rawValue: key)?.holderSpeciesID, holder != species { return nil }
+        return key
     }
 
     /// Whether `id` joining `ids` (taking over `replacing`'s place) would give two members the same item.
     /// A member already in `ids` only moves or leaves, so it never clashes.
     static func itemClash(_ id: String, replacing: String?, among ids: [String], state: CompanionState) -> Bool {
         guard !ids.contains(id), let key = state.heldItems[id] else { return false }
-        return ids.contains { $0 != replacing && state.heldItems[$0] == key }
+        let others = ids.filter { $0 != replacing && state.heldItems[$0] == key }
+        guard let holder = ItemKind(rawValue: key)?.holderSpeciesID else { return !others.isEmpty }
+        let species = Dictionary(candidates(in: state).map { ($0.id, $0.member.pokemonID) }, uniquingKeysWith: { first, _ in first })
+        return species[id] == holder && others.contains { species[$0] == holder }
     }
 
     /// Whether giving `key` to `id` would match another lineup member's item; `id` outside the lineup never clashes.
     static func equipClash(_ key: String, onto id: String, state: CompanionState, slots: [BattleEntrySlot]) -> Bool {
-        let ids = lineup(state: state, slots: slots).map(\.id)
-        return ids.contains(id) && ids.contains { $0 != id && state.heldItems[$0] == key }
+        let members = lineup(state: state, slots: slots)
+        guard let target = members.first(where: { $0.id == id }) else { return false }
+        let holder = ItemKind(rawValue: key)?.holderSpeciesID
+        if let holder, target.member.pokemonID != holder { return false }
+        return members.contains { $0.id != id && state.heldItems[$0.id] == key && (holder == nil || $0.member.pokemonID == holder) }
     }
 
     /// Candidates the picker must not offer: their item matches a lineup member who stays.

@@ -159,6 +159,21 @@ final class TeraItemsTests: XCTestCase {
         XCTAssertEqual(BattleEntry.duplicateItemHolders(state: twins.state, slots: both), ["ogerpon2"])
     }
 
+    func testAMaskOnTheWrongSpeciesIsNotAClashButTwoRealHoldersAre() throws {
+        let mask = ItemKind.tealMask.rawValue
+        let mixed = try store(held: ["pikachu": mask, "ogerpon": mask])
+        let slots = ["pikachu", "ogerpon"].map { BattleEntrySlot(instanceID: $0) }
+        XCTAssertFalse(BattleEntry.equipClash(mask, onto: "ogerpon", state: mixed.state, slots: slots))
+        XCTAssertFalse(BattleEntry.equipClash(mask, onto: "pikachu", state: mixed.state, slots: slots))
+        XCTAssertFalse(BattleEntry.itemClash("ogerpon", replacing: nil, among: ["pikachu"], state: mixed.state))
+        XCTAssertFalse(BattleEntry.itemClash("pikachu", replacing: nil, among: ["ogerpon"], state: mixed.state))
+
+        let twins = try store(held: ["ogerpon": mask, "ogerpon2": mask])
+        let both = ["ogerpon", "ogerpon2"].map { BattleEntrySlot(instanceID: $0) }
+        XCTAssertTrue(BattleEntry.equipClash(mask, onto: "ogerpon2", state: twins.state, slots: both))
+        XCTAssertTrue(BattleEntry.itemClash("ogerpon2", replacing: nil, among: ["ogerpon"], state: twins.state))
+    }
+
     func testTheUploadedItemIsTheSlugEvenOnTheWrongSpecies() throws {
         let s = try store(held: ["ogerpon": ItemKind.cornerstoneMask.rawValue, "pikachu": ItemKind.tealMask.rawValue,
                                  "terapagos": ItemKind.stellarCrystal.rawValue])
