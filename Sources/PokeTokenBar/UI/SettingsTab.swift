@@ -56,7 +56,7 @@ struct SettingsTabPicker: View {
                 let selected = tab == selection
                 Button { selection = tab } label: {
                     HStack(spacing: 5) {
-                        Image(systemName: tab.symbol).font(.system(size: 13, weight: .semibold))
+                        Image(systemName: tab.symbol).font(.ptb(.control, weight: .semibold))
                         if selected {
                             Text(l.title(of: tab)).font(.callout.weight(.semibold)).lineLimit(1).fixedSize()
                         }
@@ -64,7 +64,7 @@ struct SettingsTabPicker: View {
                     .padding(.horizontal, selected ? 10 : 0)
                     .frame(maxWidth: selected ? nil : .infinity, minHeight: 26)
                     .background(selected ? Color.accentColor.opacity(0.18) : .clear,
-                                in: RoundedRectangle(cornerRadius: 7))
+                                in: RoundedRectangle(cornerRadius: Radius.chip))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -75,6 +75,6 @@ struct SettingsTabPicker: View {
             }
         }
         .padding(3)
-        .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 9))
+        .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card))
     }
 }
