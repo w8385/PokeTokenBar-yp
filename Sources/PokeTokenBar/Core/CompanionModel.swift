@@ -108,6 +108,14 @@ enum ClickGrowth {
     static let tokensPerClick = 54_000
 }
 
+/// Where new growth and wallet income come from. Banked progress is the same in both modes.
+enum GrowthMode: String, Codable, Sendable, CaseIterable {
+    /// Real usage from the coding agents (the original behaviour).
+    case token
+    /// Virtual tokens for time the Mac is in active use. Real token usage earns nothing here.
+    case time
+}
+
 /// 토큰 경제 — 동료 중앙값(~44M/일) 기준.
 /// 졸업 총량 T 는 같은 희귀도면 진화 단계 수와 무관하게 동일.
 /// 형태 k개 라인에서 i번째 형태 성장 비용 = T·i / (k(k+1)/2) → 합 = T, 단계↑일수록 비용↑.
@@ -124,6 +132,22 @@ enum PokemonBalance {
     /// UserDefaults flag: the two difficulty sliders were multiplied by `economyDivisor` once.
     static let difficultyMigratedKey = "economyDifficultyV2"
     static let legacyGrowthKey = "economyLegacyGrowth"
+
+    // MARK: Time mode
+
+    /// Virtual tokens per active hour, before difficulty (which scales thresholds and prices, not this).
+    static let timeTokensPerActiveHour = 5_000_000
+
+    static func timeTokens(forActiveSeconds seconds: TimeInterval) -> Int {
+        max(0, Int(seconds * Double(timeTokensPerActiveHour) / 3600))
+    }
+    /// Input within this long counts as active.
+    static let timeIdleLimit: TimeInterval = 5 * 60
+    static let timeDailyCap: TimeInterval = 8 * 3600
+    /// One tick never credits more than this, so a long gap (sleep, a stalled timer) cannot pay out.
+    static let timeMaxStep: TimeInterval = 2 * 60
+    /// Token mode with no usage for this long offers the switch to time mode.
+    static let idleTokenHintAfter: TimeInterval = 3 * 86400
 
     static func graduationTotal(_ rarity: Rarity) -> Int {
         switch rarity {
@@ -1110,6 +1134,16 @@ struct CompanionState: Codable, Sendable {
     /// Which token scale the stored egg/stage credits and profile growth are in. A save without the field is
     /// from before the base economy was divided by `PokemonBalance.economyDivisor`.
     var economyVersion = PokemonBalance.economyVersion
+    var growthMode = GrowthMode.token
+    /// Virtual tokens earned by active time. Part of the wallet, kept out of `usedSinceInstall` and usage stats.
+    var timeCredit = 0
+    /// Local day key and active seconds credited on it (the daily cap). A device ledger: imports keep this Mac's.
+    var timeActiveDay = ""
+    var timeActiveSeconds = 0.0
+    /// When token mode last began, and when real usage last grew. Drive the "no usage" hint.
+    var tokenModeSince: Date?
+    var lastUsageAt: Date?
+    var idleHintDismissed = false
 
     init() {}
 
@@ -1165,6 +1199,13 @@ struct CompanionState: Codable, Sendable {
         rewardedDexRegions = c.lenient(Set<String>.self, forKey: .rewardedDexRegions, default: [])
         appliedTradeIDs    = c.lenient([String].self, forKey: .appliedTradeIDs, default: [])
         economyVersion     = c.lenient(Int.self, forKey: .economyVersion, default: 1)
+        growthMode         = c.lenient(GrowthMode.self, forKey: .growthMode, default: .token)
+        timeCredit         = c.lenient(Int.self, forKey: .timeCredit, default: 0)
+        timeActiveDay      = c.lenient(String.self, forKey: .timeActiveDay, default: "")
+        timeActiveSeconds  = c.lenient(Double.self, forKey: .timeActiveSeconds, default: 0)
+        tokenModeSince     = c.lenientOptional(Date.self, forKey: .tokenModeSince)
+        lastUsageAt        = c.lenientOptional(Date.self, forKey: .lastUsageAt)
+        idleHintDismissed  = c.lenient(Bool.self, forKey: .idleHintDismissed, default: false)
     }
 
     /// 지금 가진(놓아주지 않은) 개체의 instanceID — 지닌 도구를 달 수 있는 대상.
