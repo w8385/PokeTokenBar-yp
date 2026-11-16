@@ -343,6 +343,7 @@ struct PopoverView: View {
 
     private var homeContent: some View {
         VStack(alignment: .leading, spacing: 8) {
+            IdleTokenHintBanner(store: companion)
             CompanionHeader(store: companion) { nav.openDexEntry(collectionID: $0) }
             Divider()
             header
@@ -364,6 +365,7 @@ struct PopoverView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
+                TimeModeBadge(store: companion)
                 Spacer(minLength: 0)
                 StreakBadge(streak: store.currentStreak, l: l)
                 recapButton

@@ -4,19 +4,22 @@ import SwiftUI
 struct DifficultyDraft: Equatable {
     var growth: Double
     var shop: Double
+    var mode: GrowthMode
 
     @MainActor init(companion: CompanionStore) {
         growth = companion.growthDifficulty
         shop = companion.shopDifficulty
+        mode = companion.growthMode
     }
 
     @MainActor func differs(from companion: CompanionStore) -> Bool {
-        growth != companion.growthDifficulty || shop != companion.shopDifficulty
+        growth != companion.growthDifficulty || shop != companion.shopDifficulty || mode != companion.growthMode
     }
 
     @MainActor mutating func save(to companion: CompanionStore) {
         companion.setGrowthDifficulty(growth)
         companion.setShopDifficulty(shop)
+        companion.setGrowthMode(mode)
         self = DifficultyDraft(companion: companion)
     }
 }
@@ -38,6 +41,8 @@ struct DifficultySettingsSection: View {
                 .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
                 .textCase(.uppercase).padding(.leading, 4)
             VStack(spacing: 0) {
+                modeRow
+                Divider()
                 row(l.difficultyGrowthLabel, value: $draft.growth, low: l.difficultyGrowthLowLabel, high: l.difficultyGrowthHighLabel)
                 Divider()
                 row(l.difficultyShopLabel, value: $draft.shop, low: l.difficultyShopLowLabel, high: l.difficultyShopHighLabel)
@@ -54,6 +59,24 @@ struct DifficultySettingsSection: View {
                 }
             }
         }
+    }
+
+    private var modeRow: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 10) {
+                Text(l.growthModeLabel).font(.callout)
+                Picker(l.growthModeLabel, selection: $draft.mode) {
+                    Text(l.growthModeToken).tag(GrowthMode.token)
+                    Text(l.growthModeTime).tag(GrowthMode.time)
+                }
+                .pickerStyle(.segmented).labelsHidden()
+                .accessibilityIdentifier("growthModePicker")
+            }
+            Text(draft.mode == .time ? l.growthModeTimeHint : l.growthModeTokenHint)
+                .font(.caption2).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 10).padding(.vertical, 8)
     }
 
     private func row(_ label: String, value: Binding<Double>, low: String, high: String) -> some View {
