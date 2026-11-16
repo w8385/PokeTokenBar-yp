@@ -97,20 +97,29 @@ final class CompanionStore {
         self.rng = rng
         self.dittoDisguiseRollingEnabled = dittoDisguiseRollingEnabled
         self.defaults = defaults
-        let storedGrowth = defaults.object(forKey: "growthDifficulty") as? Double ?? PokemonBalance.defaultDifficulty
+        let storedGrowth = defaults.object(forKey: "growthDifficulty") as? Double
+        let storedShop = defaults.object(forKey: "shopDifficulty") as? Double
+        let difficultyMigrated = defaults.bool(forKey: PokemonBalance.difficultyMigratedKey)
         // Previous releases accepted 0.01%–2000%. Reprice their banked progress before
         // persisting the narrower range, otherwise an upgrade silently changes completion.
-        let previousGrowth = storedGrowth.isFinite ? min(20, max(0.0001, storedGrowth)) : 1
-        growthDifficulty = PokemonBalance.clampDifficulty(storedGrowth)
-        shopDifficulty = PokemonBalance.clampDifficulty(
-            defaults.object(forKey: "shopDifficulty") as? Double ?? PokemonBalance.defaultDifficulty)
+        let previousGrowth = storedGrowth.map { $0.isFinite ? min(20, max(0.0001, $0)) : 1 } ?? 1
+        if difficultyMigrated {
+            growthDifficulty = PokemonBalance.clampDifficulty(storedGrowth ?? PokemonBalance.defaultDifficulty)
+            shopDifficulty = PokemonBalance.clampDifficulty(storedShop ?? PokemonBalance.defaultDifficulty)
+        } else {
+            growthDifficulty = PokemonBalance.migratedDifficulty(storedGrowth)
+            shopDifficulty = PokemonBalance.migratedDifficulty(storedShop)
+        }
         load()
-        if previousGrowth != growthDifficulty {
+        if difficultyMigrated, previousGrowth != growthDifficulty {
             rescaleBankedGrowth(from: previousGrowth, to: growthDifficulty)
             save()
         }
+        migrateEconomyIfNeeded(previousGrowth: difficultyMigrated ? nil : previousGrowth)
         defaults.set(growthDifficulty, forKey: "growthDifficulty")
         defaults.set(shopDifficulty, forKey: "shopDifficulty")
+        if !difficultyMigrated { defaults.set(previousGrowth, forKey: PokemonBalance.legacyGrowthKey) }
+        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         migratePokemonProfilesIfNeeded()
         seedDexCompletionsIfNeeded()
         // A region finished before the reward shipped is paid on the first launch that sees it.
@@ -149,7 +158,46 @@ final class CompanionStore {
         save()
     }
 
-    private func rescaleBankedGrowth(from old: Double, to new: Double) {
+    /// Moves a save from the old token tables to the current ones. Credits keep the fraction they had:
+    /// the old effective multiplier (`previousGrowth`, in the old tables) is `economyDivisor` times larger
+    /// when written against the new tables. Without `previousGrowth` (an import or snapshot restore) the
+    /// current difficulty is assumed. Profile growth is table-relative, so it always shrinks by the divisor.
+    private func migrateEconomyIfNeeded(previousGrowth: Double?) {
+        guard state.economyVersion < PokemonBalance.economyVersion else { return }
+        let divisor = Double(PokemonBalance.economyDivisor)
+        let from = (previousGrowth ?? growthDifficulty) * divisor
+        if state.usedSinceInstall > 0 || state.active != nil || !state.dex.isEmpty,
+           FileManager.default.fileExists(atPath: fileURL.path) {
+            let backup = fileURL.deletingLastPathComponent()
+                .appendingPathComponent("companion-state.pre-economy-v2.json")
+            if !FileManager.default.fileExists(atPath: backup.path) {
+                try? FileManager.default.copyItem(at: fileURL, to: backup)
+            }
+        }
+        if from != growthDifficulty {
+            rescaleBankedGrowth(from: from, to: growthDifficulty, alsoEgg: true)
+        }
+        if var active = state.active, var profile = active.profile {
+            profile.growthTokens /= PokemonBalance.economyDivisor
+            active.profile = profile
+            state.active = active
+        }
+        for index in state.dex.indices {
+            state.dex[index].profile?.growthTokens /= PokemonBalance.economyDivisor
+        }
+        state.economyVersion = PokemonBalance.economyVersion
+        save()
+        AppLog.write("economy migration complete — token tables divided by \(PokemonBalance.economyDivisor)")
+    }
+
+    /// The slider the player had before the ÷5 tables, while the migrated slider is still untouched.
+    private var legacyGrowthForOldSaves: Double? {
+        guard let legacy = defaults.object(forKey: PokemonBalance.legacyGrowthKey) as? Double,
+              PokemonBalance.migratedDifficulty(legacy) == growthDifficulty else { return nil }
+        return legacy
+    }
+
+    private func rescaleBankedGrowth(from old: Double, to new: Double, alsoEgg: Bool = false) {
         func rescaled(_ credits: Int, base: Int) -> Int {
             // Calculate the old threshold without the new range clamp during migration.
             let oldThreshold = max(1, Int((Double(base) * old).rounded()))
@@ -162,6 +210,7 @@ final class CompanionStore {
         if var active = state.active {
             active.usedAtStage = rescaled(active.usedAtStage, base: active.phaseThreshold)
             state.active = active
+            if alsoEgg { state.eggUsage = rescaled(state.eggUsage, base: PokemonBalance.eggHatchThreshold) }
         } else {
             state.eggUsage = rescaled(state.eggUsage, base: PokemonBalance.eggHatchThreshold)
         }
@@ -1832,7 +1881,7 @@ final class CompanionStore {
         state.reconcileRepresentativeSelection()
         activeGeneration += 1
         currentLine = nil
-        state.eggUsage = 0            // 새 알은 처음부터 인큐베이션(재부화에 5M 필요)
+        state.eggUsage = 0            // 새 알은 처음부터 인큐베이션(재부화에 부화 임계만큼 필요)
         state.resetEggPrayers()
         isHatchRetryDelayed = false
         state.eggTier = tier          // 등급 보증(nil = 보증 없음)
@@ -2592,6 +2641,7 @@ final class CompanionStore {
         candyFeedbackAmount = 0
         mintFeedbackNature = nil
         displayState = state.active != nil ? .idle : .egg
+        migrateEconomyIfNeeded(previousGrowth: legacyGrowthForOldSaves)
         migratePokemonProfilesIfNeeded()
         seedDexCompletionsIfNeeded()
         save()

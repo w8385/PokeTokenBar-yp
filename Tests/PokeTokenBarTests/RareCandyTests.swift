@@ -236,7 +236,7 @@ final class CandyGrantEvaluationTests: XCTestCase {
 final class InventoryDecodeTests: XCTestCase {
     /// 구버전 저장(인벤토리 키 없음)도 깨지지 않고 기본값으로 로드.
     func testDecodesWithoutInventoryFields() throws {
-        let json = #"{"installBaselineSet":true,"usedSinceInstall":5,"lastDate":"d","dex":[],"language":"ko"}"#
+        let json = #"{"economyVersion":2,"installBaselineSet":true,"usedSinceInstall":5,"lastDate":"d","dex":[],"language":"ko"}"#
         let s = try JSONDecoder().decode(CompanionState.self, from: Data(json.utf8))
         XCTAssertEqual(s.inventory, [:])
         XCTAssertEqual(s.candyGrantTier, [:])
@@ -369,7 +369,7 @@ final class RareCandyStoreTests: XCTestCase {
     func testBatchCarriesXPThroughMultipleEvolutions() async throws {
         let s = store(rcLinear3)
         await s.hatch(baseID: 1)
-        s.applyUsage(100_000_000)
+        s.applyUsage(20_000_000)
         giveCandies(s, 10)
         let before = s.state.usedSinceInstall
         let preview = try XCTUnwrap(s.planRareCandyUse(count: 3))
@@ -377,27 +377,27 @@ final class RareCandyStoreTests: XCTestCase {
         XCTAssertEqual(preview.count, 3)
         XCTAssertTrue(preview.evolves)
         XCTAssertFalse(preview.graduates)
-        XCTAssertEqual(preview.carryoverXP, 25_000_000)
+        XCTAssertEqual(preview.carryoverXP, 5_000_000)
         XCTAssertEqual(preview.discardedXP, 0)
         XCTAssertEqual(s.useRareCandy(count: 3), .evolved)
         XCTAssertEqual(s.state.active?.stageIndex, 2)
         XCTAssertEqual(s.state.active?.usedAtStage, preview.carryoverXP)
         XCTAssertEqual(s.rareCandyCount, 7)
-        XCTAssertEqual(s.candyFeedbackAmount, 300_000_000)
+        XCTAssertEqual(s.candyFeedbackAmount, 60_000_000)
         XCTAssertEqual(s.state.usedSinceInstall, before)
     }
 
     func testBatchCapsAtGraduationAndPreservesUnusedCandies() async throws {
-        for remaining in [250_000_000, 300_000_000] {
+        for remaining in [50_000_000, 60_000_000] {
             let s = store(rcNoEvo)
             await s.hatch(baseID: 20)
-            s.applyUsage(750_000_000 - remaining)
+            s.applyUsage(150_000_000 - remaining)
             giveCandies(s, 5)
             XCTAssertEqual(s.maxRareCandyUseCount, 3)
             let preview = try XCTUnwrap(s.planRareCandyUse(count: 5))
             XCTAssertEqual(preview.count, 3)
             XCTAssertTrue(preview.graduates)
-            XCTAssertEqual(preview.discardedXP, 300_000_000 - remaining)
+            XCTAssertEqual(preview.discardedXP, 60_000_000 - remaining)
             XCTAssertEqual(s.useRareCandy(count: 5), .graduated)
             XCTAssertEqual(s.rareCandyCount, 2)
             XCTAssertEqual(s.state.eggUsage, 0)
@@ -433,6 +433,7 @@ final class RareCandyStoreTests: XCTestCase {
                 let defaults = UserDefaults(suiteName: suiteName)!
                 defer { defaults.removePersistentDomain(forName: suiteName) }
                 defaults.set(difficulty, forKey: "growthDifficulty")
+                defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
                 let s = CompanionStore(provider: StubProvider(value: rcLinear3), clock: { rcNow },
                                        fileURL: url, rng: SeededRNG(seed: 7), defaults: defaults)
                 await s.hatch(baseID: 1)
@@ -465,7 +466,7 @@ final class RareCandyStoreTests: XCTestCase {
         }
     }
 
-    /// 사탕 XP(100M) < 최소 임계(125M) → 진화 못 시키는 케이스는 부분 진행(.progressed), 통계 불변.
+    /// 사탕 XP(20M) < 최소 임계(25M) → 진화 못 시키는 케이스는 부분 진행(.progressed), 통계 불변.
     func testUseProgressesWithoutEvolution() async {
         let s = store(rcLinear3)
         await s.hatch(baseID: 1)
@@ -484,7 +485,7 @@ final class RareCandyStoreTests: XCTestCase {
     func testUseEvolvesWhenCrossingThreshold() async {
         let s = store(rcLinear3)
         await s.hatch(baseID: 1)
-        s.applyUsage(50_000_000)   // stage0(125M) 잔여 75M ≤ 100M
+        s.applyUsage(10_000_000)   // stage0(25M) 잔여 15M ≤ 20M
         giveCandies(s, 1)
         let result = s.useRareCandy()
         XCTAssertEqual(result, .evolved)
@@ -492,13 +493,13 @@ final class RareCandyStoreTests: XCTestCase {
         XCTAssertEqual(s.state.active?.stageIndex, 1)
     }
 
-    /// [불변식] 사탕 1개 = 최대 1단계 — 임계 직전(124M)에서 써도 2단계 연쇄 안 됨.
+    /// [불변식] 사탕 1개 = 최대 1단계 — 임계 직전(24.8M)에서 써도 2단계 연쇄 안 됨.
     func testSingleCandyAdvancesAtMostOneStage() async {
         let s = store(rcLinear3)
         await s.hatch(baseID: 1)
-        s.applyUsage(124_000_000)   // stage0 임계 직전
+        s.applyUsage(24_800_000)   // stage0 임계 직전
         giveCandies(s, 1)
-        _ = s.useRareCandy()        // +100M → 224M: stage0(125M) 1회만, stage1(250M) 미달
+        _ = s.useRareCandy()        // +20M → 44.8M: stage0(25M) 1회만, stage1(50M) 미달
         XCTAssertEqual(s.state.active?.stageIndex, 1, "최대 1단계")
     }
 
@@ -526,7 +527,7 @@ final class RareCandyStoreTests: XCTestCase {
     func testUseGraduatesFinalStage() async {
         let s = store(rcNoEvo)
         await s.hatch(baseID: 20)
-        s.applyUsage(700_000_000)   // 졸업 총량 750M 잔여 50M ≤ 100M
+        s.applyUsage(140_000_000)   // 졸업 총량 150M 잔여 10M ≤ 20M
         giveCandies(s, 1)
         let result = s.useRareCandy()
         XCTAssertEqual(result, .graduated)
@@ -541,7 +542,7 @@ final class RareCandyStoreTests: XCTestCase {
     func testCandyGraduationFiresSpriteIdentityObservation() async {
         let s = store(rcNoEvo)
         await s.hatch(baseID: 20)
-        s.applyUsage(700_000_000)   // 졸업 총량 750M 잔여 50M ≤ 100M
+        s.applyUsage(140_000_000)   // 졸업 총량 150M 잔여 10M ≤ 20M
         giveCandies(s, 1)
         let fired = expectation(description: "sprite identity observation fired")
         withObservationTracking {
@@ -577,7 +578,7 @@ final class RareCandyStoreTests: XCTestCase {
     func testCannotUseWhileLineUnloaded() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("rc-unloaded-\(UUID().uuidString).json")
         // 활성 포켓몬 + 사탕 1 + 시드완료 상태를 저장 → RCLineThrows 로 로드하면 currentLine 이 nil.
-        let json = #"{"installBaselineSet":true,"lastDate":"d1","active":{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":3},"inventory":{"rareCandy":1},"candyFeatureSeeded":true,"dex":[],"collectedFinals":[]}"#
+        let json = #"{"economyVersion":2,"installBaselineSet":true,"lastDate":"d1","active":{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":3},"inventory":{"rareCandy":1},"candyFeatureSeeded":true,"dex":[],"collectedFinals":[]}"#
         try? json.data(using: .utf8)!.write(to: url)
         let s = CompanionStore(provider: RCLineThrows(), clock: { rcNow }, fileURL: url, rng: SeededRNG(seed: 1))
         XCTAssertNotNil(s.state.active, "활성 포켓몬 로드")
@@ -608,17 +609,17 @@ final class RareCandyStoreTests: XCTestCase {
         XCTAssertEqual(s.ownedItems.first?.count, 3)
     }
 
-    /// 데모 시나리오(구구 3형태, usedAtStage 100M, 사탕 3): 진화 → 부분성장 → 진화, 그 뒤 재고 0.
+    /// 데모 시나리오(구구 3형태, usedAtStage 20M, 사탕 3): 진화 → 부분성장 → 진화, 그 뒤 재고 0.
     func testSequentialCandyUseMatchesDemo() async {
         let s = store(rcLinear3)
         await s.hatch(baseID: 1)
-        s.applyUsage(100_000_000)                      // stage0(125M) 도달 전
+        s.applyUsage(20_000_000)                      // stage0(25M) 도달 전
         giveCandies(s, 3)
-        XCTAssertEqual(s.useRareCandy(), .evolved)     // 200M ≥125M → stage1, 이월 75M
+        XCTAssertEqual(s.useRareCandy(), .evolved)     // 40M ≥25M → stage1, 이월 15M
         XCTAssertEqual(s.state.active?.stageIndex, 1)
-        XCTAssertEqual(s.useRareCandy(), .progressed)  // 175M <250M → 부분성장
+        XCTAssertEqual(s.useRareCandy(), .progressed)  // 35M <50M → 부분성장
         XCTAssertEqual(s.state.active?.stageIndex, 1)
-        XCTAssertEqual(s.useRareCandy(), .evolved)     // 275M ≥250M → stage2
+        XCTAssertEqual(s.useRareCandy(), .evolved)     // 55M ≥50M → stage2
         XCTAssertEqual(s.state.active?.stageIndex, 2)
         XCTAssertEqual(s.rareCandyCount, 0)
     }

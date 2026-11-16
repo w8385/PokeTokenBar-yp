@@ -21,7 +21,7 @@ final class ShinyCharmTests: XCTestCase {
     private func store(used: Int = 5_000_000_000, spent: Int = 0, charm: Bool = false, seed: UInt64 = 7) -> CompanionStore {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("charm-\(UUID().uuidString).json")
         let inv = charm ? ",\"inventory\":{\"shinyCharm\":1}" : ""
-        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":\(used),\"spentTokens\":\(spent),"
+        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":\(used),\"spentTokens\":\(spent),"
             + "\"lastDate\":\"d\",\"active\":null,\"dex\":[],\"collectedFinals\":[]\(inv)}"
         try? json.data(using: .utf8)!.write(to: url)
         return CompanionStore(provider: CharmStubProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: seed))
@@ -69,7 +69,7 @@ final class ShinyCharmTests: XCTestCase {
     }
 
     func testConstantsAndPassiveFlag() {
-        XCTAssertEqual(ShinyCharm.price, 3_000_000_000)
+        XCTAssertEqual(ShinyCharm.price, 600_000_000)
         XCTAssertEqual(ShinyCharm.shinyDenominator, 48)
         XCTAssertTrue(ItemKind.shinyCharm.isPassive)
         XCTAssertFalse(ItemKind.rareCandy.isPassive)
@@ -87,7 +87,7 @@ final class ShinyCharmTests: XCTestCase {
         XCTAssertTrue(s.buy(.shinyCharm))
         XCTAssertTrue(s.ownsShinyCharm)
         XCTAssertEqual(s.itemCount(.shinyCharm), 1)
-        XCTAssertEqual(s.state.spentTokens, ShinyCharm.price, "지갑에서 3B 차감")
+        XCTAssertEqual(s.state.spentTokens, ShinyCharm.price, "지갑에서 600M 차감")
         XCTAssertEqual(s.availableTokens, 5_000_000_000 - ShinyCharm.price)
     }
 
@@ -103,7 +103,7 @@ final class ShinyCharmTests: XCTestCase {
     }
 
     func testCanBuyNeedsEnoughTokens() {
-        let s = store(used: 2_000_000_000)   // 3B 미만
+        let s = store(used: 300_000_000)   // 600M 미만
         XCTAssertFalse(s.canBuy(.shinyCharm))
         XCTAssertFalse(s.buy(.shinyCharm))
         XCTAssertFalse(s.ownsShinyCharm)

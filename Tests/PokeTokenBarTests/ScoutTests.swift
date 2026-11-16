@@ -42,7 +42,7 @@ final class ScoutTests: XCTestCase {
                        file: URL? = nil) -> CompanionStore {
         let f = file ?? url()
         let inv = tickets.map { "\"\($0.key)\":\($0.value)" }.joined(separator: ",")
-        let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":\(used),\"spentTokens\":0,\"lastDate\":\"d\","
+        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":\(used),\"spentTokens\":0,\"lastDate\":\"d\","
             + "\"active\":\(active ? activeMon : "null"),\"dex\":[],\"collectedFinals\":[],"
             + "\"inventory\":{\(inv)}}"
         try? json.data(using: .utf8)!.write(to: f)
@@ -139,7 +139,7 @@ final class ScoutTests: XCTestCase {
         let index = try await provider.baseSpeciesIndex()
         for seed in UInt64(1)...12 {
             let f = url()
-            let json = "{\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\","
+            let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\","
                 + "\"active\":null,\"dex\":[],\"collectedFinals\":[],\"eggUsage\":\(PokemonBalance.eggHatchThreshold)}"
             try json.data(using: .utf8)!.write(to: f)
             let egg = CompanionStore(provider: provider, clock: { self.now }, fileURL: f, rng: SeededRNG(seed: seed))
@@ -284,7 +284,7 @@ final class ScoutTests: XCTestCase {
     func testScoutedEggNeverHatchesAsDisguisedDitto() async throws {
         // ZeroRNG makes the 1/128 disguise roll hit every time, so only the scout flag can stop it.
         let plain = url()
-        try "{\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\",\"active\":null,"
+        try "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\",\"active\":null,"
             .appending("\"dex\":[],\"collectedFinals\":[],\"eggUsage\":\(PokemonBalance.eggHatchThreshold),\"pendingHatchID\":5}")
             .data(using: .utf8)!.write(to: plain)
         let control = CompanionStore(provider: ScoutProvider(), clock: { self.now }, fileURL: plain,
@@ -293,7 +293,7 @@ final class ScoutTests: XCTestCase {
         XCTAssertNotNil(control.state.active?.dittoDisguise, "control: the disguise roll is live")
 
         let scouted = url()
-        try "{\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\",\"active\":null,"
+        try "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\",\"active\":null,"
             .appending("\"dex\":[],\"collectedFinals\":[],\"eggUsage\":\(PokemonBalance.eggHatchThreshold),\"pendingHatchID\":5,\"scoutedEgg\":true}")
             .data(using: .utf8)!.write(to: scouted)
         let s = CompanionStore(provider: ScoutProvider(), clock: { self.now }, fileURL: scouted,
