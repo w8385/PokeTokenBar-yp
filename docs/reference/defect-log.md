@@ -1362,6 +1362,17 @@ read_when:
   넣어 보고, 로컬 장부만 새 기기 기준으로 다시 잡는다(`SaveTransfer.rebasedForThisDevice`). 회귀 가드:
   `testTransferDayTokensStillCountAfterRebase` — 재정렬 없는 대조군을 같이 돌려 결함 조건이 살아 있는지도
   함께 확인한다(테스트가 트리거 브랜치를 실제로 밟는지 보증).
+- **A per-device time ledger is local, and its time source must not read the wall clock.** Time mode
+  (`ActiveTimeMeter`, `CompanionStore.creditActiveTime`) credits virtual tokens for active minutes.
+  `timeActiveDay`/`timeActiveSeconds` is the daily-cap ledger for *this Mac*, so `rebasedForThisDevice`
+  keeps the local one and `sanitized` clamps hostile values; importing the other Mac's would grant or
+  withhold a day of credit. Intervals come from `ProcessInfo.systemUptime` (monotonic, stops in sleep) with a
+  per-tick step cap, so a clock change or a long sleep cannot mint tokens; the wall clock only picks the day
+  bucket, and that bucket only moves forward (rewinding the clock must not reopen the cap). Provider deltas
+  keep advancing the usage ledger in time mode and are simply not credited; switching back also skips the
+  first refresh's delta, because usage seen for the first time after the switch happened in time mode. A user with no coding agent has no provider data, so the install
+  baseline is set by the first time-mode tick instead of by `update()`.
+  Guards: `TimeModeTests` (cap, clock jump, sleep/idle, ledger across restart and import, no retro credit).
 - **Read a rotated file into memory before any write that can prune it.** Snapshot restore took
   the pre-restore safety snapshot first; at exactly `maxSnapshotsToKeep` files that 11th snapshot
   pruned the oldest one, so restoring the oldest entry read a deleted file. The restore test only

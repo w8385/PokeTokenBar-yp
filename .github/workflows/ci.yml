@@ -8,8 +8,8 @@ on:
 
 # Cancel superseded runs on the same ref (e.g. rapid pushes to a PR).
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # The offscreen render tests are about 60% of the test time and need no coverage, so they run
 # in the ui-tests jobs in parallel. Any other test class, including a new one, runs in build-test.
@@ -121,3 +121,17 @@ jobs:
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Single check to require: it always reports, and passes when every needed job succeeded or was skipped.
+  ci-ok:
+    name: ci-ok
+    needs: [changes, build-test, ui-tests, secret-scan]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if a needed job failed or was cancelled
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          case " $RESULTS " in *" failure "*|*" cancelled "*) exit 1 ;; esac

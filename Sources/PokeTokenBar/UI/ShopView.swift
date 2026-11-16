@@ -56,8 +56,11 @@ struct ShopView: View {
 
     private func walletHeader(_ l: L) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(l.spendableTokens)
-                .font(.caption).foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                Text(l.spendableTokens)
+                    .font(.caption).foregroundStyle(.secondary)
+                TimeModeBadge(store: store)
+            }
             Text(TokenFormatter.compact(store.availableTokens))
                 .font(.ptb(.display, weight: .bold)).monospacedDigit()
             Text(l.shopHint)
@@ -232,7 +235,8 @@ private struct MegaStoneShopCard: View {
                         Button(l.buy) { confirming = true }
                             .buttonStyle(.bordered).controlSize(.small)
                     } else {
-                        Text(l.notEnoughTokens).font(.caption2).foregroundStyle(.tertiary)
+                        Text(store.megaStoneOwnedTotal(stone) > 0 ? l.ownedAlready : l.notEnoughTokens)
+                            .font(.caption2).foregroundStyle(.tertiary)
                     }
                 }
             }

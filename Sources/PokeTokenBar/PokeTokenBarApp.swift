@@ -38,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var menuLayerFrames: [CGImage] = []
     private var menuIndex = 0
     private var menuTimer: Timer?
+    private let activityMonitor = ActivityMonitor()
     private var menuLoadGen = 0     // async 로드 경합 방지
     private var menuLoadTask: Task<Void, Never>?
     private var displayAwake = true     // 디스플레이 켜짐 여부 (꺼지면 메뉴 애니메이션 정지 — 배터리)
@@ -161,10 +162,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             }
         }
 
-        Task { @MainActor [companion] in   // a time gate opens within ~30s of the day/night switch even with polling off
+        activityMonitor.onBreak = { [weak companion] in companion?.noteActivityBreak() }
+        activityMonitor.start()
+        Task { @MainActor [companion, activityMonitor] in   // a time gate opens within ~30s of the day/night switch even with polling off
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(30), tolerance: .seconds(10))
                 companion?.checkEvolutionGate()
+                companion?.creditActiveTime(uptime: activityMonitor.uptime, idle: activityMonitor.idleSeconds,
+                                            present: activityMonitor.isPresent)
             }
         }
 

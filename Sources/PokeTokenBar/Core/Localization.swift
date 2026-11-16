@@ -423,6 +423,37 @@ struct L {
         t("대표로 설정", "Set as representative", "代表ポケモンに設定", "Establecer como representante", "Définir comme représentatif", "Definir como representante", "Als repräsentativ festlegen", "Сделать основным")
     }
     var representativeBadge: String { t("대표", "Representative", "代表", "Representante", "Représentatif", "Representante", "Repräsentativ", "Основной") }
+    // MARK: 성장 방식
+    var growthModeLabel: String { t("성장 방식", "Growth source", "成長の方式", "Fuente de crecimiento", "Source de croissance", "Fonte de crescimento", "Wachstumsquelle", "Источник роста") }
+    var growthModeToken: String { t("토큰 (개발자)", "Tokens", "トークン", "Tokens", "Tokens", "Tokens", "Tokens", "Токены") }
+    var growthModeTime: String { t("시간 (일반)", "Time", "時間", "Tiempo", "Temps", "Tempo", "Zeit", "Время") }
+    var growthModeTokenHint: String {
+        t("코딩 에이전트가 쓴 토큰으로 자랍니다.", "Grows with the tokens your coding agents use.",
+          "コーディングエージェントが使ったトークンで成長します。", "Crece con los tokens que usan tus agentes de código.",
+          "Grandit avec les tokens utilisés par vos agents de code.", "Cresce com os tokens usados pelos seus agentes de código.",
+          "Wächst mit den Tokens deiner Coding-Agenten.", "Растёт от токенов, которые тратят ваши кодовые агенты.")
+    }
+    var growthModeTimeHint: String {
+        t("Mac을 쓰는 시간으로 자랍니다. 하루 최대 8시간까지 인정하고, 이 모드에서는 토큰 사용량이 성장에 반영되지 않습니다.",
+          "Grows with the time you are active on this Mac, up to 8 hours a day. Token usage does not count in this mode.",
+          "このMacを使っている時間で成長します。1日最大8時間まで。このモードではトークン使用量は反映されません。",
+          "Crece con el tiempo que usas este Mac, hasta 8 horas al día. El uso de tokens no cuenta en este modo.",
+          "Grandit avec le temps d'activité sur ce Mac, jusqu'à 8 heures par jour. L'usage des tokens ne compte pas dans ce mode.",
+          "Cresce com o tempo de uso deste Mac, até 8 horas por dia. O uso de tokens não conta neste modo.",
+          "Wächst mit der Zeit, die du an diesem Mac aktiv bist, bis zu 8 Stunden am Tag. Token-Nutzung zählt in diesem Modus nicht.",
+          "Растёт от времени, которое вы проводите за этим Mac, до 8 часов в день. Расход токенов в этом режиме не учитывается.")
+    }
+    var timeModeBadge: String { t("시간 모드", "Time mode", "時間モード", "Modo tiempo", "Mode temps", "Modo tempo", "Zeitmodus", "Режим времени") }
+    var idleTokenHint: String {
+        t("토큰 사용이 없나요? 설정에서 시간 모드로 키울 수 있어요",
+          "No token usage? You can grow by time in Settings.",
+          "トークンを使っていませんか？設定で時間モードに切り替えられます",
+          "¿No usas tokens? En Ajustes puedes crecer por tiempo.",
+          "Pas d'usage de tokens ? Vous pouvez grandir avec le temps dans Réglages.",
+          "Sem uso de tokens? Nos Ajustes você pode crescer por tempo.",
+          "Keine Token-Nutzung? In den Einstellungen kannst du per Zeit wachsen.",
+          "Не используете токены? В настройках можно расти по времени.")
+    }
     // MARK: 난이도
     var difficultySectionTitle: String { t("난이도", "Difficulty", "難易度", "Dificultad", "Difficulté", "Dificuldade", "Schwierigkeit", "Сложность") }
     var difficultyGrowthLabel: String { t("성장", "Growth", "成長", "Crecimiento", "Croissance", "Crescimento", "Wachstum", "Рост") }
@@ -930,6 +961,26 @@ struct L {
           "Está em uma troca: a vaga de batalha fica bloqueada até a troca terminar ou ser cancelada.",
           "Im Tausch: Der Kampfplatz ist gesperrt, bis der Tausch endet oder abgebrochen wird.",
           "Участвует в обмене: место в бою заблокировано, пока обмен не завершится или не будет отменён.")
+    }
+    var battleItemClause: String {
+        t("같은 도구를 든 포켓몬이 이미 엔트리에 있어요",
+          "A Pokémon holding the same item is already in the lineup",
+          "同じ道具を持つポケモンがすでにエントリーにいます",
+          "Ya hay un Pokémon con el mismo objeto en el equipo",
+          "Un Pokémon avec le même objet est déjà dans l'équipe",
+          "Já há um Pokémon com o mesmo item na equipe",
+          "Ein Pokémon mit demselben Item ist schon in der Aufstellung",
+          "Покемон с таким же предметом уже в составе")
+    }
+    var battleItemDuplicateWarning: String {
+        t("엔트리에 같은 도구를 든 포켓몬이 있어요. 대결에는 앞 순서만 도구를 들고 나가요.",
+          "Two lineup members hold the same item. In battle only the earlier one keeps it.",
+          "エントリーに同じ道具を持つポケモンがいます。対戦では先の順番だけが道具を持ちます。",
+          "Dos miembros del equipo tienen el mismo objeto. En combate solo el primero lo conserva.",
+          "Deux membres de l'équipe ont le même objet. En combat, seul le premier le garde.",
+          "Dois membros da equipe têm o mesmo item. Na batalha, só o primeiro fica com ele.",
+          "Zwei Aufstellungsmitglieder halten dasselbe Item. Im Kampf behält nur das frühere es.",
+          "Два покемона в составе держат один предмет. В бою предмет останется только у первого.")
     }
     var battleFighting: String { t("대결 중", "In battle", "対戦中", "En combate", "En combat", "Em batalha", "Im Kampf", "В бою") }
     func battleLevelCap(_ level: Int) -> String {
