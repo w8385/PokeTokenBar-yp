@@ -1,6 +1,7 @@
 #!/bin/bash
 # Publishes a fork release with the asset and checksum the in-app updater expects.
 # Usage: scripts/fork-release.sh v2.5.7-yp7 notes.md
+# PTB_RELEASE_TARGET=<sha> tags that main commit instead of the branch head at publish time.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -19,4 +20,5 @@ ditto -c -k --keepParent build/PokeTokenBar.app "build/$ASSET"
 cp "build/$ASSET" "build/$VERSIONED"
 (cd build && shasum -a 256 "$ASSET" > "$ASSET.sha256")
 gh release create "$TAG" "build/$ASSET" "build/$ASSET.sha256" "build/$VERSIONED" --repo "$REPO" \
+    ${PTB_RELEASE_TARGET:+--target "$PTB_RELEASE_TARGET"} \
     --title "PokeTokenBar-yp $TAG" --notes-file "$NOTES"
