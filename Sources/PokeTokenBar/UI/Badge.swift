@@ -74,7 +74,7 @@ struct Badge<Label: View>: View {
             .font(.system(size: size, weight: .bold))
             .foregroundStyle(style == .solid ? Color.white : tint.color)
             // Light type fills (electric, ice, fairy…) keep white text legible the way the game chart does.
-            .shadow(color: isType ? .black.opacity(0.35) : .clear, radius: 0.5, y: 0.5)
+            .ptbShadow(isType ? .glyph : .none)
             .padding(.horizontal, horizontalPadding).padding(.vertical, verticalPadding)
             .background(style == .solid ? tint.color : tint.color.opacity(0.14), in: Capsule())
     }

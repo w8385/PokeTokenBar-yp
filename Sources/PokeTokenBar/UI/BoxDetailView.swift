@@ -261,7 +261,7 @@ struct BoxDetailView: View {
                 }
             }
             VStack(alignment: .leading, spacing: 1) {
-                Text(l.ability).font(.system(size: 11)).foregroundStyle(.secondary)
+                Text(l.ability).font(.ptb(.body)).foregroundStyle(.secondary)
                 if let abilityName = profile.abilityName {
                     PokemonNameLabel(.ability, abilityName, language: store.language,
                                      suffix: profile.abilityIsHidden ? " · " + l.hiddenAbility : "")
@@ -351,8 +351,8 @@ struct HeldItemSlot: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1))
+        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: Radius.panel))
+        .overlay(RoundedRectangle(cornerRadius: Radius.panel).strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1))
         .accessibilityElement(children: .contain)
     }
 
@@ -362,12 +362,12 @@ struct HeldItemSlot: View {
             switch held {
             case .item(let kind): ItemIconView(kind: kind, size: 38)
             case .stone(let stone): ItemIconView(stone: stone, size: 38)
-            case nil: Image(systemName: "bag").font(.system(size: 22)).foregroundStyle(.tertiary)
+            case nil: Image(systemName: "bag").font(.ptb(.title)).foregroundStyle(.tertiary)
             }
         }
         .frame(width: 52, height: 52)
-        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.secondary.opacity(0.25), lineWidth: 1))
+        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: Radius.panel))
+        .overlay(RoundedRectangle(cornerRadius: Radius.panel).strokeBorder(Color.secondary.opacity(0.25), lineWidth: 1))
     }
 
     @ViewBuilder

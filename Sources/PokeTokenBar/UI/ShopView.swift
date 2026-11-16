@@ -59,14 +59,14 @@ struct ShopView: View {
             Text(l.spendableTokens)
                 .font(.caption).foregroundStyle(.secondary)
             Text(TokenFormatter.compact(store.availableTokens))
-                .font(.system(size: 24, weight: .bold)).monospacedDigit()
+                .font(.ptb(.display, weight: .bold)).monospacedDigit()
             Text(l.shopHint)
                 .font(.caption2).foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
         .background(Color.secondary.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
     }
 }
 
@@ -126,7 +126,7 @@ private struct ShopItemCard: View {
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
         .onChange(of: store.maxBuyCount(kind)) { _, _ in
             quantity = selectedQuantity
         }
@@ -239,7 +239,7 @@ private struct MegaStoneShopCard: View {
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
     }
 }
 
@@ -294,7 +294,7 @@ private struct EggCard: View {
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
     }
 
     @ViewBuilder

@@ -93,9 +93,7 @@ struct TradeOfferView: View {
                             if coworker != coworkers.last { Divider() }
                         }
                     }
-                    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
-                    .overlay(RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color(nsColor: .separatorColor).opacity(0.6), lineWidth: 1))
+                    .ptbCard()
                 }
             } else if loadFailed {
                 Text(l.tradeCoworkersUnavailable).font(.caption).foregroundStyle(.orange)
@@ -215,7 +213,7 @@ struct TradeArrivalBanner: View {
             }
             .padding(8)
             .background(Color.accentColor.opacity(0.12))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
             .id(arrival.id)
             .transition(.opacity)
         }

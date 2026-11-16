@@ -87,7 +87,7 @@ private struct MegaStoneCard: View {
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
     }
 }
 
@@ -160,7 +160,7 @@ private struct ItemCard: View {
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
         .onChange(of: store.maxRareCandyUseCount) { _, _ in
             candyCount = selectedCandyCount
         }

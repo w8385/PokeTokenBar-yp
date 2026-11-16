@@ -30,7 +30,7 @@ struct SpeciesFlavorCard: View {
                 }
                 .padding(9)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 9))
+                .ptbPanel()
             }
         }
         .task(id: speciesID) { flavor = await provider.flavor(speciesID: speciesID) }

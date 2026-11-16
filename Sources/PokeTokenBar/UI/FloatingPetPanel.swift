@@ -1400,10 +1400,10 @@ struct SpeechBubbleView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(content.title)
-                .font(.system(size: 11, weight: .bold))
+                .font(.ptb(.body, weight: .bold))
                 .foregroundColor(content.isCritical ? .red : .primary)
             Text(content.body)
-                .font(.system(size: 10))
+                .font(.ptb(.small))
                 .foregroundColor(.secondary)
                 .lineLimit(FloatingPetController.bubbleBodyLineLimit)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1481,8 +1481,8 @@ struct HeartBubbleView: View {
 
     var body: some View {
         Image(systemName: "heart.fill")
-            .font(.system(size: 17))
-            .foregroundStyle(Color(red: 0xE0 / 255, green: 0x30 / 255, blue: 0x3C / 255))
+            .font(.ptb(.headline))
+            .foregroundStyle(Palette.heart)
             .frame(width: HeartBubbleArt.width, height: HeartBubbleArt.height - BubbleMetrics.standard.tailHeight)
             .speechBubbleSurface()
             .accessibilityLabel(l.floatingPetHeartsLabel)

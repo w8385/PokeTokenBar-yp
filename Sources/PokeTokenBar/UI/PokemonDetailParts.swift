@@ -6,7 +6,7 @@ extension View {
     func detailCard() -> some View {
         self.padding(9)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 9))
+            .ptbPanel()
     }
 }
 
@@ -33,7 +33,7 @@ struct DetailValuePair: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(label).font(.system(size: 11)).foregroundStyle(.secondary)
+            Text(label).font(.ptb(.body)).foregroundStyle(.secondary)
             Text(value).font(.callout.weight(.semibold))
         }
     }
@@ -54,7 +54,7 @@ struct PokemonStatRow: View {
             Text("\(value)").monospacedDigit().frame(width: 30, alignment: .trailing)
             if let iv { Text("IV \(iv)").foregroundStyle(.secondary).frame(width: 38, alignment: .trailing) }
         }
-        .font(.system(size: 12))
+        .font(.ptb(.label))
     }
 }
 

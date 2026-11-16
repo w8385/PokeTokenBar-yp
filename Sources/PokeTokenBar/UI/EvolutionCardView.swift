@@ -37,7 +37,7 @@ struct EvolutionCardView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+        .ptbPanel()
         .accessibilityElement(children: .contain)
     }
 

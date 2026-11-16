@@ -257,7 +257,7 @@ struct ActivityHeatmap: View {
                     firstWeekday: Calendar.current.firstWeekday,
                     locale: l.lang.displayLocale).enumerated()), id: \.offset) { _, label in
                     Text(label)
-                        .font(.system(size: 8))
+                        .font(.ptb(.tiny))
                         .foregroundStyle(.tertiary)
                         .frame(height: ActivityHeatmapMetrics.cell)
                 }
@@ -277,10 +277,10 @@ struct ActivityHeatmap: View {
     private func cellView(_ cell: ActivityCell, peak: Int) -> some View {
         let level = cell.isOutsideRange ? -1
                                         : ActivityHeatmapMetrics.level(tokens: cell.tokens, peak: peak)
-        return RoundedRectangle(cornerRadius: 2, style: .continuous)
+        return RoundedRectangle(cornerRadius: Radius.bar, style: .continuous)
             .fill(ActivityHeatmapMetrics.fill(level: level))
             .overlay(
-                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.bar, style: .continuous)
                     .strokeBorder(cell.date == today ? Color.primary.opacity(0.55) : Color.clear,
                                   lineWidth: 1)
             )
