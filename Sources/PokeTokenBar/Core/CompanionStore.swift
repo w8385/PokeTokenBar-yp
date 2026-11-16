@@ -1018,9 +1018,9 @@ final class CompanionStore {
     }
 
     /// The period now and the seconds left in it, on the app's clock.
-    func dayPeriodNow() -> (period: DayPeriod, secondsLeft: TimeInterval) {
+    func dayPeriodNow() -> (period: DayPeriod, secondsLeft: TimeInterval, degrees: Double) {
         let now = clock()
-        return (DayPeriod.at(now), DayPeriod.secondsUntilSwitch(from: now))
+        return (DayPeriod.at(now), DayPeriod.secondsUntilSwitch(from: now), DayPeriod.cycleDegrees(from: now))
     }
 
     /// 토큰 증분을 현재 포켓몬에 적용 — 임계 도달 시 진화/졸업.

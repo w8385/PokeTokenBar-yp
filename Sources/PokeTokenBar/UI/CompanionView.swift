@@ -896,6 +896,8 @@ struct CompanionHeader: View {
                 }
                 Spacer()
             }
+            // Bottom-right of the header's text area, where the lines are short; adds no height.
+            .overlay(alignment: .bottomTrailing) { DayNightLabel(store: store) }
             if store.hasActive, !store.lineNodes.isEmpty {
                 // 폭을 안 주면 분기 라인(이브이)이 넘쳐 팝오버 콘텐츠 전체가 좌우로 잘린다.
                 EvoLineView(nodes: store.lineNodes, mysteryLabel: store.l.unknownNextEvolution,
