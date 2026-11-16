@@ -284,7 +284,7 @@ final class ShopTests: XCTestCase {
 
     func testEveryItemKindHasACategoryThatIsNotEmptyForShopItems() {
         let s = store(used: 0)
-        XCTAssertEqual(s.shopCategories, [.growth, .egg, .scout, .evolution, .heldItem, .megaStone])
+        XCTAssertEqual(s.shopCategories, [.growth, .egg, .scout, .evolution, .heldItem, .megaStone, .machine])
         XCTAssertEqual(s.shopEntries(in: .egg), [.egg(nil), .egg(.uncommon), .egg(.rare)])
         XCTAssertEqual(s.shopEntries(in: .growth), [.item(.mint), .item(.rareCandy), .item(.shinyCharm)])
         XCTAssertEqual(s.shopEntries(in: .megaStone).count, MegaStone.all.count)
