@@ -37,7 +37,7 @@ struct IdleTokenHintBanner: View {
                 .accessibilityLabel(store.l.close)
             }
             .padding(8)
-            .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+            .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card))
             .accessibilityIdentifier("idleTokenHint")
         }
     }
