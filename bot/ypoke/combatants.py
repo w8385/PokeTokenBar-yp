@@ -1,5 +1,6 @@
 """Turn an uploaded party member into a battle `Combatant`."""
 
+from ypoke import items
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm
 from ypoke.mega_stones import mega_form_id
 from ypoke.moves import battle_moves
@@ -28,7 +29,18 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
         item=member.get("held_item"),
         mega=_mega(pokeapi, member),
         pokemon_id=member["pokemon_id"],
+        can_evolve=_can_evolve(pokeapi, member),
     )
+
+
+def _can_evolve(pokeapi: PokeAPIService, member: dict) -> bool:
+    """Only Eviolite needs it; a failed lookup counts as fully evolved rather than failing the battle."""
+    if member.get("held_item") != items.EVIOLITE:
+        return False
+    try:
+        return pokeapi.can_evolve(member["pokemon_id"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
 
 
 def _mega(pokeapi: PokeAPIService, member: dict) -> MegaForm | None:
