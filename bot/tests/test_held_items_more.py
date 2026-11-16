@@ -441,17 +441,44 @@ def test_can_evolve_reads_the_species_chain_once_and_caches_it(monkeypatch):
     assert len(calls) == 3
 
 
+DOUBLE_HIT = Move("연타", "normal", 40, physical=True, accuracy=100, min_hits=2, max_hits=2)
+
+
+def test_rocky_helmet_hurts_between_hits_and_a_fainted_attacker_stops_hitting():
+    helmet = _Fighter.enter(mon("헬멧", items.ROCKY_HELMET, hp=255, defense=255))
+    frail = _Fighter.enter(mon("공격수", moves=(DOUBLE_HIT,)))
+    frail.hp = 1
+    action = _act(1, 0, (frail, helmet), 0, _Weather(), FixedRng(0.5))
+    assert action.hits == 1 and action.attacker_fainted and action.defender_item == items.ROCKY_HELMET
+
+
+def test_rocky_helmet_hurts_once_per_hit_of_a_multi_hit_move():
+    helmet = _Fighter.enter(mon("헬멧", items.ROCKY_HELMET, hp=255, defense=255))
+    attacker = _Fighter.enter(mon("공격수", hp=255, moves=(DOUBLE_HIT,)))
+    action = _act(1, 0, (attacker, helmet), 0, _Weather(), FixedRng(0.5))
+    assert action.hits == 2 and attacker.hp == attacker.max_hp - 2 * (attacker.max_hp // 6)
+
+
+def test_sitrus_berry_is_eaten_between_the_hits_of_a_multi_hit_move(monkeypatch):
+    holder = _Fighter.enter(mon("열매", items.SITRUS_BERRY))
+    attacker = _Fighter.enter(mon("공격수", moves=(DOUBLE_HIT,)))
+    monkeypatch.setattr("ypoke.battle._damage", lambda *args: holder.max_hp * 55 // 100)
+    action = _act(1, 0, (attacker, holder), 0, _Weather(), FixedRng(0.5))
+    assert action.hits == 2 and not action.knockout and holder.item is None
+    assert action.defender_item == items.SITRUS_BERRY
+
+
 def test_the_battle_looks_up_evolution_only_for_an_eviolite_holder_and_survives_a_failed_lookup(tmp_path):
     from ypoke.commands import CommandHandler
 
     class Fake:
-        def __init__(self, fail=False):
+        def __init__(self, fail=None):
             self.asked, self.fail = [], fail
 
         def can_evolve(self, pokemon_id):
             self.asked.append(pokemon_id)
             if self.fail:
-                raise OSError("offline")
+                raise self.fail
             return True
 
     store = Store(str(tmp_path / "bot.sqlite3"))
@@ -461,8 +488,9 @@ def test_the_battle_looks_up_evolution_only_for_an_eviolite_holder_and_survives_
     assert handler._can_evolve({"pokemon_id": 26, "held_item": "leftovers"}) is False
     assert handler._can_evolve({"pokemon_id": 26}) is False
     assert api.asked == [25]
-    offline = CommandHandler(store, Fake(fail=True), None, lambda: None, bot_user_id="UBOT")
-    assert offline._can_evolve({"pokemon_id": 25, "held_item": "eviolite"}) is False
+    for failure in (OSError("offline"), ValueError("not json"), KeyError("evolution_chain"), TypeError("null chain")):
+        broken = CommandHandler(store, Fake(fail=failure), None, lambda: None, bot_user_id="UBOT")
+        assert broken._can_evolve({"pokemon_id": 25, "held_item": "eviolite"}) is False
 
 
 def actions(result):

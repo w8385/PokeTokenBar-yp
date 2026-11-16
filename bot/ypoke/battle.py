@@ -540,10 +540,11 @@ def _item_triggers(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[
         if fighter.hp <= 0:
             continue
         name, item = fighter.combatant.name, fighter.item
-        if item == items.SITRUS_BERRY and fighter.hp * items.SITRUS_THRESHOLD_FRACTION <= fighter.max_hp:
-            fighter.hp = min(fighter.max_hp, fighter.hp + max(1, fighter.max_hp // items.SITRUS_HEAL_FRACTION))
+        if _sitrus_ready(fighter):
+            _eat_sitrus(fighter)
             events.append(ItemHeal(turn, side, name, item, fighter.hp_percent))
-        elif item == items.LUM_BERRY and (fighter.status is not None or fighter.confusion_left > 0):
+            continue
+        if item == items.LUM_BERRY and (fighter.status is not None or fighter.confusion_left > 0):
             fighter.status, fighter.confusion_left, fighter.sleep_left = None, 0, 0
             events.append(ItemEffect(turn, side, name, item, "cure"))
         elif item == items.WHITE_HERB and any(stage < 0 for stage in fighter.stages.values()):
@@ -552,6 +553,15 @@ def _item_triggers(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[
         else:
             continue
         fighter.item = None
+
+
+def _sitrus_ready(fighter: _Fighter) -> bool:
+    return fighter.item == items.SITRUS_BERRY and fighter.hp * items.SITRUS_THRESHOLD_FRACTION <= fighter.max_hp
+
+
+def _eat_sitrus(fighter: _Fighter) -> None:
+    fighter.hp = min(fighter.max_hp, fighter.hp + max(1, fighter.max_hp // items.SITRUS_HEAL_FRACTION))
+    fighter.item = None
 
 
 def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:
@@ -593,9 +603,11 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
             move.type, defender.combatant.types) > 0
         return Action(turn, side, *names, move.name, multiplier=0, recovered=recovered,
                       defender_hp=defender.hp_percent, ability=defender.ability if granted else None)
-    critical, hits, dealt, sturdy, endured = False, 0, 0, False, ""
+    critical, hits, dealt, sturdy, endured, berry = False, 0, 0, False, "", ""
     crit_stage = move.crit_stage + items.crit_stage_bonus(attacker.item)
-    for _ in range(_hit_count(move, rng)):
+    helmet = defender.item == items.ROCKY_HELMET and move.physical
+    hit_count = _hit_count(move, rng)
+    for hit in range(hit_count):
         hit_critical = rng.random() < CRITICAL_CHANCES[min(crit_stage, len(CRITICAL_CHANCES) - 1)]
         damage = min(defender.hp, _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng))
         lethal, from_full = damage >= defender.hp, defender.hp == defender.max_hp > 1
@@ -607,8 +619,13 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
             damage, endured = defender.hp - 1, items.FOCUS_BAND
         defender.hp -= damage
         critical, hits, dealt = critical or hit_critical, hits + 1, dealt + damage
-        if defender.hp == 0:
+        if helmet and damage > 0:
+            attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // items.ROCKY_HELMET_FRACTION))
+        if defender.hp == 0 or attacker.hp == 0:
             break
+        if hit < hit_count - 1 and _sitrus_ready(defender):
+            _eat_sitrus(defender)
+            berry = items.SITRUS_BERRY
     changes, ability = (), "sturdy" if sturdy else None
     if defender.hp > 0:
         changes, blocked_by = _secondary_effects(side, move, attacker, defender, rng)
@@ -625,7 +642,7 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
     elif drained:
         attacker.hp = min(attacker.max_hp, attacker.hp + items.drain_heal(attacker.item, max(1, dealt * move.drain // 100)))
     attacker_item = _attacker_item_effect(attacker, move, dealt, drained)
-    defender_item = endured or _defender_item_effect(attacker, defender, move, multiplier, dealt, hits)
+    defender_item = endured or _defender_item_effect(defender, move, multiplier, dealt, helmet) or berry
     return Action(
         turn, side, *names, move.name, multiplier=multiplier, critical=critical, changes=changes, recoil=recoil,
         defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
@@ -648,13 +665,11 @@ def _attacker_item_effect(attacker: _Fighter, move: Move, dealt: int, drained: b
     return item
 
 
-def _defender_item_effect(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float, dealt: int,
-                          hits: int) -> str:
-    """Rocky Helmet hurts a physical (contact) attacker per hit; Weakness Policy is spent on a super-effective hit
-    the holder survives. Returns the item that triggered."""
+def _defender_item_effect(defender: _Fighter, move: Move, multiplier: float, dealt: int, helmet: bool) -> str:
+    """Names the Rocky Helmet that hurt the attacker per hit (applied in the hit loop); Weakness Policy is spent on a
+    super-effective hit the holder survives. Returns the item that triggered."""
     item = defender.item
-    if item == items.ROCKY_HELMET and move.physical and dealt > 0:
-        attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // items.ROCKY_HELMET_FRACTION) * hits)
+    if helmet and dealt > 0:
         return item
     if item == items.WEAKNESS_POLICY and multiplier > 1 and dealt > 0 and defender.hp > 0:
         for key in ("attack", "special_attack"):
@@ -844,7 +859,7 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
 
 
 def _item_boost(attacker: _Fighter, move: Move, multiplier: float) -> float:
-    if move is STRUGGLE or move is CONFUSION_HIT:
+    if move is STRUGGLE:
         return 1.0
     return items.damage_multiplier(attacker.item, move.type, multiplier, move.physical)
 

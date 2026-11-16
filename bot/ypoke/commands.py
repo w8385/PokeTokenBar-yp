@@ -451,7 +451,7 @@ class CommandHandler:
             return False
         try:
             return self._pokeapi.can_evolve(member["pokemon_id"])
-        except OSError:
+        except (OSError, ValueError, KeyError, TypeError):
             return False
 
     def _mega(self, member: dict) -> MegaForm | None:

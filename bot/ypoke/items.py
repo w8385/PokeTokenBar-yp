@@ -97,7 +97,7 @@ def damage_multiplier(item: str | None, move_type: str | None, effectiveness: fl
         return BOOST_MULTIPLIER
     if move_type is not None and TYPE_BOOST_ITEMS.get(item) == move_type:
         return BOOST_MULTIPLIER
-    if item == (MUSCLE_BAND if physical else WISE_GLASSES):
+    if move_type is not None and item == (MUSCLE_BAND if physical else WISE_GLASSES):
         return BAND_MULTIPLIER
     return 1.0
 

@@ -314,7 +314,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     /// A battle item sold in the held-item tier. Metal Coat and Razor Claw also act in battle but stay evolution items.
     var isHeldItem: Bool { heldItemSlug != nil && !isEvolutionHeld }
 
-    /// PokéAPI name of an evolution item that is held, not used up. Never sent to the bot.
+    /// PokéAPI name of an evolution item that is held, not used up. Metal Coat and Razor Claw are also uploaded as battle items.
     var evolutionHeldSlug: String? {
         switch self {
         case .ovalStone: return "oval-stone"
