@@ -41,6 +41,12 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
 - Trades: the app's Battle tab offers one graduated Pokémon to a linked coworker. The bot DMs them a picker of
   their own Pokémon with Accept/Decline; after they accept, the offerer confirms in a DM. Each app picks its side
   up on its next sync, once. Offers expire after 24 hours. Wire format: [API.md](API.md#trades).
+- Gyms (PvE, [API.md](API.md#gyms-pve)): the app's 체육관 screen calls `GET /v1/gyms` (9 regions, each with 8 gyms,
+  the Elite Four and champion, and a villain hideout; six Lv50 Pokémon per trainer, drawn from the region's own
+  species by a seed made of region and trainer) and `POST /v1/gym/battle` (a team of up to 6 against one trainer, one
+  automatic battle; the Elite Four and hideout runs carry HP and status in a `carried`/`carry` pair the app keeps).
+  Nothing is stored or posted. The species table behind the teams is `ypoke/species.json`, made by
+  `tools/generate_species.py`; the trainers' text is in `ypoke/gym_data.py`.
 - `/전적 [@누구]` shows win/loss.
 - `/랭킹` posts this week's top 10 (since Monday 00:00 KST) by wins, then win rate, then fewer battles.
 - `/도감 [@누구]` shows the target's (default: your own) dex summary the app uploaded: owned species, shiny count,

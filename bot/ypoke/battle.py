@@ -262,17 +262,31 @@ Event = (
 )
 
 
+@dataclass(frozen=True)
+class Carry:
+    """What a Pokémon brings into a battle from the previous one of a run: its HP share (1..100) and its status."""
+
+    hp: int
+    status: str | None = None
+
+
+CARRIED_STATUSES = ("burn", "poison", "toxic", "paralysis", "sleep", "freeze")
+
+
 @dataclass
 class BattleResult:
-    """`remaining` is each side's HP share per roster member at the end (None: never sent out)."""
+    """`remaining` is each side's HP share per roster member at the end (None: never sent out).
+    `statuses` is the status each member ended with (None: none, or never sent out)."""
 
     winner: int
     turns: int
     events: list[Event] = field(default_factory=list)
     remaining: tuple[tuple[int | None, ...], tuple[int | None, ...]] = ((), ())
+    statuses: tuple[tuple[str | None, ...], tuple[str | None, ...]] = ((), ())
 
 
-def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[Combatant]], seed: int) -> BattleResult:
+def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[Combatant]], seed: int,
+             carried: Sequence[Carry | None] = ()) -> BattleResult:
     """Fight until one side has no Pokémon left or `TURN_LIMIT` turns pass.
 
     At the limit the side with more Pokémon left wins, then the one with the higher HP share.
@@ -280,9 +294,10 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     The higher move priority acts first, then the faster Pokémon; a full tie is a coin flip from the seed.
     A weather move is picked when it swings the exchange by `WEATHER_SWING_MIN`; the weather lasts `WEATHER_TURNS` turns.
     A fainted Pokémon is replaced after the end-of-turn effects, so its successor takes no chip damage that turn.
+    `carried` (per member of the first side, in order) starts a member hurt or with a status.
     """
     rng = random.Random(seed)
-    teams = (_Team(_roster(sides[0])), _Team(_roster(sides[1])))
+    teams = (_Team(_roster(sides[0]), carried), _Team(_roster(sides[1])))
     events: list[Event] = []
     weather = _Weather()
     for side in (0, 1):
@@ -329,7 +344,10 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
             _item_triggers(turn, (teams[0].active, teams[1].active), events)
     if loser is None:
         loser = 1 if teams[0].standing() >= teams[1].standing() else 0
-    return BattleResult(winner=1 - loser, turns=turn, events=events, remaining=(teams[0].shares(), teams[1].shares()))
+    return BattleResult(
+        winner=1 - loser, turns=turn, events=events, remaining=(teams[0].shares(), teams[1].shares()),
+        statuses=(teams[0].statuses(), teams[1].statuses()),
+    )
 
 
 def _roster(side: Combatant | Sequence[Combatant]) -> tuple[Combatant, ...]:
@@ -342,7 +360,7 @@ def _exhausted(teams: tuple["_Team", "_Team"], order: tuple[int, ...]) -> int | 
 
 
 def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
-    """A Pokémon that just entered is at full health, so its Mega form simply replaces the base stats and types."""
+    """A Pokémon that just entered keeps its HP share and status; its Mega form replaces the base stats and types."""
     fighter = team.active
     mega = fighter.combatant.mega
     if mega is None or team.mega_used:
@@ -350,7 +368,8 @@ def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> No
     ability = fighter.combatant.ability
     if mega.ability_id is not None:
         ability = mega.ability_id if mega.ability_id in abilities.NAMES else None
-    team.entered[-1] = _Fighter.enter(replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None))
+    evolved = replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None)
+    team.entered[-1] = _Fighter.enter(evolved, _carry_of(fighter))
     team.mega_used = True
     events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability, mega.form_id))
 
@@ -364,9 +383,10 @@ class _Weather:
 class _Team:
     """A roster fought in order: `active` is the member in the field, entered fresh when its turn comes."""
 
-    def __init__(self, roster: tuple[Combatant, ...]):
+    def __init__(self, roster: tuple[Combatant, ...], carried: Sequence[Carry | None] = ()):
         self.roster = roster
-        self.entered = [_Fighter.enter(roster[0])]
+        self.carried = tuple(carried) + (None,) * (len(roster) - len(carried))
+        self.entered = [_Fighter.enter(roster[0], self.carried[0])]
         self.mega_used = False
 
     @property
@@ -378,17 +398,21 @@ class _Team:
         return len(self.entered) < len(self.roster)
 
     def send_next(self) -> "_Fighter":
-        self.entered.append(_Fighter.enter(self.roster[len(self.entered)]))
+        index = len(self.entered)
+        self.entered.append(_Fighter.enter(self.roster[index], self.carried[index]))
         return self.active
 
     def shares(self) -> tuple[int | None, ...]:
         return (*(fighter.hp_percent for fighter in self.entered), *(None,) * (len(self.roster) - len(self.entered)))
 
+    def statuses(self) -> tuple[str | None, ...]:
+        return (*(fighter.status for fighter in self.entered), *(None,) * (len(self.roster) - len(self.entered)))
+
     def standing(self) -> tuple[int, float]:
-        """Members not yet fainted, then the sum of their HP shares; an unentered member counts as full."""
-        unentered = len(self.roster) - len(self.entered)
+        """Members not yet fainted, then the sum of their HP shares; an unentered member counts at its carried HP."""
+        waiting = [carry.hp / 100 if carry else 1.0 for carry in self.carried[len(self.entered):]]
         alive = [fighter for fighter in self.entered if fighter.hp > 0]
-        return unentered + len(alive), unentered + sum(fighter.hp / fighter.max_hp for fighter in alive)
+        return len(waiting) + len(alive), sum(waiting) + sum(fighter.hp / fighter.max_hp for fighter in alive)
 
 
 @dataclass
@@ -407,7 +431,7 @@ class _Fighter:
     locked: int | None = None
 
     @classmethod
-    def enter(cls, combatant: Combatant) -> "_Fighter":
+    def enter(cls, combatant: Combatant, carry: Carry | None = None) -> "_Fighter":
         base, ivs, level = combatant.base, combatant.ivs, combatant.level
         max_hp = 1 if base.hp == 1 else (2 * base.hp + ivs.hp) * level // 100 + level + 10
         stats = {key: _other_stat(getattr(base, key), getattr(ivs, key), level) for key in BATTLE_STATS}
@@ -415,7 +439,12 @@ class _Fighter:
             up, down = NATURE_MODIFIERS[combatant.nature]
             stats[up] = stats[up] * 110 // 100
             stats[down] = stats[down] * 90 // 100
-        return cls(combatant, max_hp, max_hp, stats, [move.pp for move in combatant.moves], item=items.known(combatant.item))
+        fighter = cls(combatant, max_hp, max_hp, stats, [move.pp for move in combatant.moves], item=items.known(combatant.item))
+        if carry is not None:
+            fighter.hp = max(1, min(max_hp, round(max_hp * carry.hp / 100)))
+            fighter.status = carry.status
+            fighter.sleep_left = SLEEP_TURNS[0] if carry.status == "sleep" else 0
+        return fighter
 
     @property
     def hp_percent(self) -> int:
@@ -438,6 +467,13 @@ class _Fighter:
         if key == "speed" and self.status == "paralysis":
             value /= 2
         return value * abilities.stat_multiplier(self.ability, key, weather, self.status is not None)
+
+
+def _carry_of(fighter: _Fighter) -> Carry | None:
+    """None for a fighter at full health with no status, so an ordinary entry stays exact."""
+    if fighter.hp == fighter.max_hp and fighter.status is None:
+        return None
+    return Carry(fighter.hp_percent, fighter.status)
 
 
 def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: random.Random,
