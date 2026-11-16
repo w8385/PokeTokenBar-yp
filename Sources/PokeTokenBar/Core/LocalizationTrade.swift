@@ -51,6 +51,14 @@ extension L {
           "Не удалось связаться с ботом. Проверьте адрес и токен.")
     }
     var tradeSendOffer: String { t("제안 보내기", "Send offer", "提案を送る", "Enviar propuesta", "Envoyer l'offre", "Enviar proposta", "Angebot senden", "Отправить предложение") }
+    var tradeSend: String { t("보내기", "Send", "送る", "Enviar", "Envoyer", "Enviar", "Senden", "Отправить") }
+    var tradeChange: String { t("바꾸기", "Change", "変更", "Cambiar", "Changer", "Trocar", "Ändern", "Сменить") }
+    func tradeGivingSummary(_ pokemon: String) -> String {
+        t("보낼 포켓몬: \(pokemon)", "Sending: \(pokemon)", "送るポケモン: \(pokemon)", "Enviar: \(pokemon)", "À envoyer : \(pokemon)", "Enviar: \(pokemon)", "Senden: \(pokemon)", "Отправить: \(pokemon)")
+    }
+    func tradeConfirmLine(friend: String, pokemon: String) -> String {
+        t("\(friend)에게 \(pokemon) 교환 제안", "Offer \(pokemon) to \(friend)", "\(friend)さんに\(pokemon)の交換を提案", "Ofrecer \(pokemon) a \(friend)", "Proposer \(pokemon) à \(friend)", "Oferecer \(pokemon) a \(friend)", "\(pokemon) an \(friend) anbieten", "Предложить \(pokemon) — \(friend)")
+    }
     var tradeSending: String { t("보내는 중…", "Sending…", "送信中…", "Enviando…", "Envoi…", "Enviando…", "Sende…", "Отправка…") }
     func tradeOfferSent(_ name: String) -> String {
         t("\(name)님에게 제안을 보냈어요. 슬랙 DM에서 상대가 고르고 수락하면 교환돼요. 24시간 안에 답이 없으면 사라져요.",
