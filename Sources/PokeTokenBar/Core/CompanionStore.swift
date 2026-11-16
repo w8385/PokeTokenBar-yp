@@ -3498,4 +3498,13 @@ final class CompanionStore {
         guard let data = try? JSONEncoder().encode(state) else { return }
         try? data.write(to: fileURL, options: .atomic)   // 부분 쓰기 손상 방지(펫 상태)
     }
+
+    /// Records a first gym clear: the badge, its TM if any is left, one save, one notification.
+    func applyGymReward(_ reward: GymReward, trainer: String, region: String) {
+        state.gymBadges = reward.badges
+        if let moveID = reward.tmMoveID { grantTM(moveID: moveID) }
+        save()
+        let tm = reward.tmMoveID.flatMap { id in MachineCatalog.moves.first { $0.id == id }?.name(language) }
+        notifyCompanionEvent(l.gymRewardTitle(reward.kind), l.gymRewardBody(reward.kind, trainer: trainer, region: region, tm: tm))
+    }
 }

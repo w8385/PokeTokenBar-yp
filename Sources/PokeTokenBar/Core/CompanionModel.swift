@@ -1266,6 +1266,8 @@ struct CompanionState: Codable, Sendable {
     var tokenModeSince: Date?
     var lastUsageAt: Date?
     var idleHintDismissed = false
+    /// Gym badges, Hall of Fame and hideout marks; a save from before gyms has none.
+    var gymBadges = GymBadges()
 
     init() {}
 
@@ -1328,6 +1330,7 @@ struct CompanionState: Codable, Sendable {
         tokenModeSince     = c.lenientOptional(Date.self, forKey: .tokenModeSince)
         lastUsageAt        = c.lenientOptional(Date.self, forKey: .lastUsageAt)
         idleHintDismissed  = c.lenient(Bool.self, forKey: .idleHintDismissed, default: false)
+        gymBadges          = c.lenient(GymBadges.self, forKey: .gymBadges, default: GymBadges())
     }
 
     /// 지금 가진(놓아주지 않은) 개체의 instanceID — 지닌 도구를 달 수 있는 대상.
