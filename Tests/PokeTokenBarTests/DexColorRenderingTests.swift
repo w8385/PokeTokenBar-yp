@@ -89,6 +89,26 @@ final class DexColorRenderingTests: XCTestCase {
         return rows
     }
 
+    /// The Box lays individuals out left to right, so the order shows in the columns.
+    private func colorColumns(_ captured: NSBitmapImageRep, shiny: Bool) -> [Int] {
+        guard let data = captured.representation(using: .png, properties: [:]),
+              let bitmap = NSBitmapImageRep(data: data) else { return [] }
+        var columns: [Int] = []
+        for x in 0..<bitmap.pixelsWide {
+            var matches = 0
+            for y in 0..<bitmap.pixelsHigh {
+                guard let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) else { continue }
+                if color.greenComponent < 0.4,
+                   (shiny ? color.blueComponent > 0.8 && color.redComponent < 0.3
+                          : color.redComponent > 0.8 && color.blueComponent < 0.3) {
+                    matches += 1
+                }
+            }
+            if matches >= 20 { columns.append(x) }
+        }
+        return columns
+    }
+
     /// The selector's header updates synchronously, but SpriteView changes its cached image in
     /// .task(id:). Wait for those rendered pixels rather than assuming one 100ms sleep is enough.
     /// The deadline only bounds a broken test; the full pixel and badge assertions remain below.
@@ -165,15 +185,14 @@ final class DexColorRenderingTests: XCTestCase {
         }
     }
 
-    func testCatchLogRendersEachIndividualsColorInBothAcquisitionOrdersAndOnReentry() throws {
+    func testBoxRendersEachIndividualsColorInBothAcquisitionOrdersAndOnReentry() throws {
         try withSprites {
             for shinyLast in [false, true] {
                 let (store, file) = try fixture(shinyLast: shinyLast)
                 defer { try? FileManager.default.removeItem(at: file) }
                 for visit in 0..<2 {
                     let navigation = PopoverNavigation()
-                    navigation.showingCollectionLog = true
-                    let view = CollectionView(store: store, navigation: navigation)
+                    let view = BoxView(store: store, navigation: navigation)
                         .frame(width: PopoverMetrics.contentWidth, height: 520)
                         .background(Color.white)
                         .environment(\.colorScheme, .light)
@@ -191,9 +210,10 @@ final class DexColorRenderingTests: XCTestCase {
                     let shinyRows = colorRows(bitmap, shiny: true)
                     XCTAssertGreaterThan(normalRows.count, 20, "normal catch must retain normal pixels")
                     XCTAssertGreaterThan(shinyRows.count, 20, "shiny catch must retain shiny pixels")
-                    let firstNormal = try XCTUnwrap(normalRows.first)
-                    let firstShiny = try XCTUnwrap(shinyRows.first)
-                    XCTAssertEqual(firstShiny < firstNormal, shinyLast, "newest catch is first; colors must follow its individual")
+                    let firstNormal = try XCTUnwrap(colorColumns(bitmap, shiny: false).first)
+                    let firstShiny = try XCTUnwrap(colorColumns(bitmap, shiny: true).first)
+                    XCTAssertEqual(firstShiny < firstNormal, shinyLast,
+                                   "newest catch is the first cell; colors must follow its individual")
                     if visit == 0 {
                         try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
                             URL(fileURLWithPath: "/private/tmp/dex-color-log-shiny-last-\(shinyLast).png"))
@@ -209,7 +229,6 @@ final class DexColorRenderingTests: XCTestCase {
                 let (store, file) = try fixture(onlyShiny: shiny)
                 defer { try? FileManager.default.removeItem(at: file) }
                 let navigation = PopoverNavigation()
-                navigation.showingCollectionLog = false
                 let view = CollectionView(store: store, navigation: navigation)
                     .frame(width: PopoverMetrics.contentWidth, height: 520)
                     .background(Color.white)

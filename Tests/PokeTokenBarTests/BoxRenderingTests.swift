@@ -19,11 +19,11 @@ private final class LayoutCountingImage: NSImage, @unchecked Sendable {
 }
 
 @MainActor
-final class CatchLogRenderingTests: XCTestCase {
-    /// Sorting 1,000 entries does not exercise the SwiftUI list. Render the production screen
-    /// repeatedly with a large log: an eager VStack must fail this work-count bound.
-    func testOpeningAndReopeningLargeLogOnlyLaysOutViewportSprites() throws {
-        let file = FileManager.default.temporaryDirectory.appendingPathComponent("catch-log-\(UUID().uuidString).json")
+final class BoxRenderingTests: XCTestCase {
+    /// Sorting 1,000 entries does not exercise the SwiftUI grid. Render the production screen
+    /// repeatedly with a large Box: an eager grid must fail this work-count bound.
+    func testOpeningAndReopeningLargeBoxOnlyLaysOutViewportSprites() throws {
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("box-\(UUID().uuidString).json")
         defer { try? FileManager.default.removeItem(at: file) }
         var state = CompanionState()
         state.language = .en
@@ -50,9 +50,8 @@ final class CatchLogRenderingTests: XCTestCase {
         for attempt in 1...3 {
             autoreleasepool {
                 let navigation = PopoverNavigation()
-                navigation.showingCollectionLog = true
                 let before = image.sizeReadCount
-                let host = NSHostingController(rootView: CollectionView(store: store, navigation: navigation)
+                let host = NSHostingController(rootView: BoxView(store: store, navigation: navigation)
                     .frame(width: PopoverMetrics.contentWidth)
                     .environment(\.locale, store.language.displayLocale))
                 let size = host.sizeThatFits(in: CGSize(width: PopoverMetrics.contentWidth, height: 520))

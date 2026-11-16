@@ -1,14 +1,14 @@
 import Foundation
 
 extension CompanionStore {
-    /// One special evolution step for the dex detail: what the games ask for and what this app asks for.
+    /// One special evolution step: what the games ask for and what this app asks for.
     struct EvolutionCard: Identifiable {
         let rule: EvolutionRule
         /// Set when the raised Pokémon is on this step, so progress can be shown.
         let context: EvolutionContext?
         /// The raised Pokémon's next step, shown on the species it is now (not the species it becomes).
         let isNextStep: Bool
-        /// The graduated individual a trade step is for, so its held item can be changed from the card.
+        /// The graduated individual a trade step is for, so its held item is shown on the card.
         var individualID: String?
         var id: String { "\(rule.species)-\(isNextStep)" }
     }
@@ -19,17 +19,19 @@ extension CompanionStore {
         await loadSpeciesIndexIfNeeded()
     }
 
-    /// The step into `speciesID`, and the raised Pokémon's waiting step when it is `speciesID` right now.
-    /// For a graduated `individual` of `speciesID`, also the trade steps it can take.
+    /// The step into `speciesID`. Without an `individual` that is all there is (the Pokédex page is about the
+    /// species). For the raised Pokémon it also carries its progress and its waiting step; for a graduated
+    /// individual, the trade steps it can take.
     func evolutionCards(for speciesID: Int, individual: DexEntry? = nil) -> [EvolutionCard] {
-        let pending = pendingEvolutionGate()
+        let raised = individual.map { isActiveDexEntry($0) && $0.finalID == speciesID } ?? false
+        let pending = raised ? pendingEvolutionGate() : nil
         var cards: [EvolutionCard] = []
         if let rule = EvolutionRules.rule(for: speciesID),
            !rule.paths.isEmpty || rule.selector != nil || rule.trade != nil {
             let live = pending?.rule.species == speciesID ? pending?.context : nil
             cards.append(EvolutionCard(rule: rule, context: live, isNextStep: false))
         }
-        if let pending, pending.rule.species != speciesID, state.active?.currentID == speciesID {
+        if let pending, pending.rule.species != speciesID {
             cards.append(EvolutionCard(rule: pending.rule, context: pending.context, isNextStep: true))
         }
         if let individual, individual.releasedAt == nil, individual.profile != nil, individual.finalID == speciesID,

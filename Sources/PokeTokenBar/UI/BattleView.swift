@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Battle tab: the YPoke bot connection and the battle entry.
+/// Battle tab: the YPoke bot connection, the battle entry and the recent battles.
+/// Trade and the coworkers list live on the Coworkers tab.
 @MainActor
 struct BattleView: View {
     let store: CompanionStore
@@ -37,13 +38,6 @@ struct BattleView: View {
                 },
                 onBack: { navigation.battlePicker = nil })
             .frame(height: 520)
-        } else if navigation.showingTradeOffer, let entry, let uploader {
-            TradeOfferView(
-                store: store, uploader: uploader,
-                fightingIDs: TradePool.fightingIDs(state: store.state, slots: entry.slots),
-                initialGive: navigation.tradeGiveID,
-                onBack: { navigation.showingTradeOffer = false })
-            .frame(height: 520)
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
@@ -55,18 +49,9 @@ struct BattleView: View {
                                     navigation.battlePicker = $0
                                 }
                             }
-                            section(l.tradeSectionTitle) {
-                                row {
-                                    Text(l.tradeSectionHint).font(.caption).foregroundStyle(.secondary)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                    Spacer(minLength: 4)
-                                    Button(l.tradeOfferButton) { navigation.openTradeOffer(giving: nil) }
-                                        .controlSize(.small)
-                                }
-                            }
                         }
                         if uploader.hasToken, uploader.hasServer {
-                            BattleInfoSections(info: uploader.battleInfo, l: l)
+                            BattleInfoSections(info: uploader.battleInfo, l: l, parts: [.recent])
                         }
                     }
                 }

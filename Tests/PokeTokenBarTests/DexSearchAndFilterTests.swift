@@ -112,7 +112,7 @@ final class DexSearchAndFilterTests: XCTestCase {
 
         // Partial number, with or without the # prefix
         XCTAssertEqual(store.filteredDexSpecies(query: "15").map(\.id), [150])
-        XCTAssertEqual(store.filteredDexEntries(query: "#15").map(\.id), ["entry-3"])
+        XCTAssertEqual(store.filteredBoxIndividuals(query: "#15").map(\.id), ["entry-3"])
 
         // Search by English name
         let byName = store.filteredDexSpecies(query: "Venusaur")
@@ -166,7 +166,7 @@ final class DexSearchAndFilterTests: XCTestCase {
 
         for query in ["flabebe", "FLABEBE", "Flabébé", "flabébe"] {
             XCTAssertEqual(store.filteredDexSpecies(query: query).map(\.id), [669], "Pokédex: \(query)")
-            XCTAssertEqual(store.filteredDexEntries(query: query).map(\.id), ["entry-flabebe"], "Catch Log: \(query)")
+            XCTAssertEqual(store.filteredBoxIndividuals(query: query).map(\.id), ["entry-flabebe"], "Box: \(query)")
         }
     }
 
@@ -231,54 +231,29 @@ final class DexSearchAndFilterTests: XCTestCase {
         }
     }
 
-    func testCatchLogSearchAndFilters() {
+    func testBoxSearchAndFilters() {
         let store = createTestStore()
 
-        // Search by chain species ID
-        let matchChain = store.filteredDexEntries(query: "25")
-        XCTAssertEqual(matchChain.count, 1)
-        XCTAssertEqual(matchChain.first?.baseID, 25)
+        let matchChain = store.filteredBoxIndividuals(query: "25")
+        XCTAssertEqual(matchChain.map(\.speciesID), [26])
 
-        // Search by name
-        let matchName = store.filteredDexEntries(query: "Raichu")
-        XCTAssertEqual(matchName.count, 1)
-        XCTAssertEqual(matchName.first?.baseID, 25)
+        let matchName = store.filteredBoxIndividuals(query: "Raichu")
+        XCTAssertEqual(matchName.map(\.speciesID), [26])
 
-        // Shiny only
-        let shinies = store.filteredDexEntries(shinyOnly: true)
-        XCTAssertEqual(shinies.count, 1)
-        XCTAssertEqual(shinies.first?.baseID, 25)
+        let shinies = store.filteredBoxIndividuals(shinyOnly: true)
+        XCTAssertEqual(shinies.map(\.speciesID), [26])
 
-        // Rarity
-        let legendaryEntries = store.filteredDexEntries(rarity: .legendary)
-        XCTAssertEqual(legendaryEntries.count, 1)
-        XCTAssertEqual(legendaryEntries.first?.baseID, 150)
+        let ofSpecies = store.filteredBoxIndividuals(speciesID: 150)
+        XCTAssertEqual(ofSpecies.map(\.id), ["entry-3"])
+
+        XCTAssertTrue(store.filteredBoxIndividuals(hasItemOnly: true).isEmpty, "no item is held in this save")
     }
 
-    func testCatchLogSorting() {
+    func testBoxSorting() {
         let store = createTestStore()
 
-        // Recent first
-        let recent = store.filteredDexEntries(sort: .recentFirst)
-        XCTAssertEqual(recent.first?.finalID, 150) // caughtAt 300 is most recent
-        XCTAssertEqual(recent.last?.finalID, 3)    // caughtAt 100 is oldest
-
-        // Oldest first
-        let oldest = store.filteredDexEntries(sort: .oldestFirst)
-        XCTAssertEqual(oldest.first?.finalID, 3)
-        XCTAssertEqual(oldest.last?.finalID, 150)
-
-        // Number asc
-        let numAsc = store.filteredDexEntries(sort: .numberAsc)
-        XCTAssertEqual(numAsc.map(\.finalID), [3, 26, 150])
-
-        // Number desc
-        let numDesc = store.filteredDexEntries(sort: .numberDesc)
-        XCTAssertEqual(numDesc.map(\.finalID), [150, 26, 3])
-
-        // Rarity desc
-        let rarityDesc = store.filteredDexEntries(sort: .rarityDesc)
-        XCTAssertEqual(rarityDesc.map(\.rarity), [.legendary, .rare, .common])
+        XCTAssertEqual(store.filteredBoxIndividuals(sort: .recent).map(\.speciesID), [150, 26, 3])
+        XCTAssertEqual(store.filteredBoxIndividuals(sort: .number).map(\.speciesID), [3, 26, 150])
     }
 
     func testSortOptionLabelsExistInAllLanguages() {
@@ -288,9 +263,9 @@ final class DexSearchAndFilterTests: XCTestCase {
                 let label = l.label(for: option)
                 XCTAssertFalse(label.isEmpty, "Missing DexSortOption label for \(option) in \(lang)")
             }
-            for option in CompanionStore.CatchLogSortOption.allCases {
+            for option in BoxSortOption.allCases {
                 let label = l.label(for: option)
-                XCTAssertFalse(label.isEmpty, "Missing CatchLogSortOption label for \(option) in \(lang)")
+                XCTAssertFalse(label.isEmpty, "Missing BoxSortOption label for \(option) in \(lang)")
             }
             XCTAssertFalse(l.dexSearchPlaceholder.isEmpty)
             XCTAssertFalse(l.sortTitle.isEmpty)

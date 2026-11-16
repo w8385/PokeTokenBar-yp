@@ -1,7 +1,57 @@
 import AppKit
 import SwiftUI
 
-enum PopoverTab { case home, shop, bag, collection, battle }
+enum PopoverTab: CaseIterable {
+    case home, shop, bag, dex, box, battle, coworkers
+
+    var symbol: String {
+        switch self {
+        case .home: "house"
+        case .shop: "storefront"
+        case .bag: "bag"
+        case .dex: "books.vertical"
+        case .box: "shippingbox"
+        case .battle: "flame"
+        case .coworkers: "person.2"
+        }
+    }
+}
+
+/// Seven tabs do not fit as native segments in every language, so only the selected tab spells its name;
+/// the rest are icons with a tooltip and an accessibility label.
+@MainActor
+struct PopoverTabPicker: View {
+    @Binding var selection: PopoverTab
+    let l: L
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(PopoverTab.allCases, id: \.self) { tab in
+                let selected = tab == selection
+                Button { selection = tab } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: tab.symbol).font(.system(size: 13, weight: .semibold))
+                        if selected {
+                            Text(l.title(of: tab)).font(.callout.weight(.semibold)).lineLimit(1).fixedSize()
+                        }
+                    }
+                    .padding(.horizontal, selected ? 10 : 0)
+                    .frame(maxWidth: selected ? nil : .infinity, minHeight: 26)
+                    .background(selected ? Color.accentColor.opacity(0.18) : .clear,
+                                in: RoundedRectangle(cornerRadius: 7))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(selected ? Color.accentColor : .secondary)
+                .help(l.title(of: tab))
+                .accessibilityLabel(l.title(of: tab))
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(3)
+        .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 9))
+    }
+}
 
 /// 팝오버 치수의 단일 소스. 자식이 쓸 수 있는 폭을 알아야 할 때 이 값을 쓴다 — 넘치는 자식이
 /// 부모 폭을 부풀리므로 GeometryReader 로 재면 순환한다.
@@ -17,7 +67,7 @@ enum PopoverMetrics {
     /// `contentWidth` 대신 이 값을 써야 한다 — 제안 폭보다 넓은 자식 하나가 열 전체를 다시 넓혀 레인이 사라진다.
     static let scrollContentWidth: CGFloat = contentWidth - scrollerInset
 
-    /// Height of the fixed-size tabs (Shop, Bag, Collection, Battle) and Home's floor.
+    /// Height of the fixed-size tabs (Shop, Bag, Pokédex, Box, Battle, Coworkers) and Home's floor.
     static let tabHeight: CGFloat = 520
     /// Visible screen height left unused: the popover arrow, shadow and some air under it.
     static let screenMargin: CGFloat = 40
@@ -44,45 +94,44 @@ extension View {
     }
 }
 
-/// 팝오버 내부 내비게이션 상태(현재 탭 / 컬렉션 세그먼트 / 설정 표시 여부).
+/// 팝오버 내부 내비게이션 상태(현재 탭 / 도감·박스 상세 / 설정 표시 여부).
 /// NSHostingController 는 팝오버를 닫아도 재사용되어 @State 가 유지되므로, 화면 상태를 이
 /// Observable 로 분리해 AppDelegate 가 팝오버를 열 때마다 reset() 한다 — 닫혔다 열리면 항상 Home.
 @MainActor
 @Observable
 final class PopoverNavigation {
-    var showSettings = false { didSet { if showSettings { dexDetailCollectionID = nil } } }
+    var showSettings = false { didSet { if showSettings { dexDetailCollectionID = nil; boxDetailID = nil } } }
     var tab: PopoverTab = .home {
         didSet {
-            if tab != .collection { dexDetailCollectionID = nil }
-            if tab != .battle {
-                battlePicker = nil
-                showingTradeOffer = false
-            }
+            if tab != .dex { dexDetailCollectionID = nil }
+            if tab != .box { boxDetailID = nil; boxSpeciesFilter = nil }
+            if tab != .battle { battlePicker = nil }
+            if tab != .coworkers { showingTradeOffer = false }
         }
     }
     /// The Battle tab's fighter picker replaces the tab's content while open.
     var battlePicker: BattlePickerTarget?
-    /// The Battle tab's trade offer screen; `tradeGiveID` preselects the individual a Pokédex page sent over.
+    /// The Coworkers tab's trade offer screen; `tradeGiveID` preselects the individual a Box page sent over.
     var showingTradeOffer = false
     var tradeGiveID: String?
 
     func openTradeOffer(giving individualID: String?) {
+        showSettings = false
+        showingRecap = false
+        tab = .coworkers
         tradeGiveID = individualID
-        battlePicker = nil
-        showingTradeOffer = true
-        tab = .battle
-    }
-    /// 일반적인 컬렉션 재진입에는 마지막 세그먼트를 유지하되, 대표 포켓몬 선택 진입점은 도감으로 강제한다.
-    var showingCollectionLog = false {
-        didSet { if showingCollectionLog != oldValue { dexDetailCollectionID = nil } }
+        showingTradeOffer = true   // last: the tab didSet above clears it
     }
     /// The usage recap takes over the popover like Settings does; closing the popover drops it.
-    var showingRecap = false { didSet { if showingRecap { dexDetailCollectionID = nil } } }
-    /// The Collection tab's open Pokédex detail page (`DexSpecies.collectionID`); nil = grid or log.
-    /// It lives here so Home sprites can open it, but it only lasts while the collection content is
-    /// on screen: leaving the tab, switching segment, or covering it with Settings/Recap drops it —
-    /// the same lifetime it had as `CollectionView`'s own `@State`.
+    var showingRecap = false { didSet { if showingRecap { dexDetailCollectionID = nil; boxDetailID = nil } } }
+    /// The Pokédex tab's open species page (`DexSpecies.collectionID`); nil = the grid.
+    /// It lives here so Home sprites can open it, but it only lasts while the Pokédex is on screen:
+    /// leaving the tab or covering it with Settings/Recap drops it.
     var dexDetailCollectionID: String?
+    /// The Box tab's open individual page (`BoxIndividual.id`); nil = the grid. Same lifetime as the Pokédex page.
+    var boxDetailID: String?
+    /// Species the Box grid is narrowed to — set by the Pokédex page's "N in your Box"; dropped on leaving the tab.
+    var boxSpeciesFilter: Int?
     /// 프로바이더 탭 선택 — reset() 대상이 아님(팝오버를 다시 열어도 보던 서비스 유지).
     var providerID: String?
     /// Claude account tab in the limits section. Kept across openings, like `providerID`.
@@ -106,20 +155,34 @@ final class PopoverNavigation {
         expandAdvancedOnOpen = true
     }
 
-    /// Clicking a Pokémon sprite on Home opens that species' Pokédex detail page. The segment is left
-    /// as it was, so Back lands where the Collection tab would normally reopen.
+    /// Clicking a Pokémon sprite on Home opens that species' Pokédex detail page.
     func openDexEntry(collectionID: String) {
         showSettings = false
-        tab = .collection
+        tab = .dex
         dexDetailCollectionID = collectionID   // last: the didSets above clear it
     }
 
-    /// 설정의 대표 포켓몬 행에서 기존 도감으로 이동한다. 별도 선택 화면을 만들지 않고
-    /// 컬렉션 세그먼트를 도감으로 명시해, 직전에 포획 로그를 봤어도 선택 액션이 있는 화면을 연다.
+    /// 설정의 대표 포켓몬 행에서 도감으로 이동한다 — 대표는 종 단위라 도감에서 고른다.
     func openRepresentativeDex() {
         showSettings = false
-        showingCollectionLog = false
-        tab = .collection
+        tab = .dex
+    }
+
+    /// The Box grid narrowed to one species.
+    func openBox(speciesID: Int) {
+        showSettings = false
+        showingRecap = false
+        tab = .box
+        boxDetailID = nil
+        boxSpeciesFilter = speciesID   // last: the didSets above clear it
+    }
+
+    /// One individual's Box page — the only place a held item is equipped.
+    func openBoxDetail(id: String) {
+        showSettings = false
+        showingRecap = false
+        tab = .box
+        boxDetailID = id
     }
 
     func openBattle() {
@@ -204,24 +267,20 @@ struct PopoverView: View {
         return VStack(alignment: .leading, spacing: 12) {
             updateBanner
             TradeArrivalBanner(store: companion)
-            Picker("", selection: $nav.tab) {
-                Text(l.home).tag(PopoverTab.home)
-                Text(l.shop).tag(PopoverTab.shop)
-                Text(l.bag).tag(PopoverTab.bag)
-                Text(l.collection).tag(PopoverTab.collection)
-                Text(l.battle).tag(PopoverTab.battle)
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            PopoverTabPicker(selection: $nav.tab, l: l)
 
-            if nav.tab == .collection {
+            if nav.tab == .dex {
                 CollectionView(store: companion, navigation: nav)
+            } else if nav.tab == .box {
+                BoxView(store: companion, navigation: nav)
             } else if nav.tab == .bag {
                 BagView(store: companion, nav: nav)
             } else if nav.tab == .shop {
                 ShopView(store: companion, nav: nav)
             } else if nav.tab == .battle {
                 BattleView(store: companion, navigation: nav)
+            } else if nav.tab == .coworkers {
+                CoworkersView(store: companion, navigation: nav)
             } else {
                 homeBody
             }

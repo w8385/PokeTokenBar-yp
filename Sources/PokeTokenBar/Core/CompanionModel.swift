@@ -60,7 +60,7 @@ enum AppLanguage: String, Codable, Sendable, CaseIterable {
 enum Rarity: String, Codable, Sendable {
     case common, uncommon, rare, legendary
     /// 등급 크기(높을수록 희귀) — 두 `Rarity` 를 비교하기 위한 순위.
-    /// **목록 정렬용이 아니다**: 포획 로그는 기록 시각순, 도감은 도감 번호순이고 희귀도는 필터로만 좁힌다.
+    /// **목록 정렬용이 아니다**: 박스는 기록 시각순, 도감은 도감 번호순이고 희귀도는 필터로만 좁힌다.
     /// 유일한 소비자는 프리미엄 알의 보증 관문(`hatch` 의 `line.rarity.sortRank < tier.sortRank`) —
     /// 뽑힌 등급이 산 보증보다 낮은지 판정한다. 순서가 뒤집히면 고급/희귀 알이 조용히 낮은 등급을
     /// 통과시키므로 `testSortRankOrdersRarityAscendingByValue` 가 순서를 고정한다.
@@ -920,7 +920,7 @@ struct DexEntry: Codable, Sendable, Identifiable {
     var tradeHeldItem: String?
     /// The species the sender received for it. Kept until the trade evolution has been resolved.
     var tradePartnerID: Int?
-    /// 졸업이 아니라 놓아준 기록인가 — 포획 로그가 뱃지를 가르는 판정.
+    /// 졸업이 아니라 놓아준 기록인가 — 놓아준 개체는 박스에 나오지 않는다.
     var isReleased: Bool { releasedAt != nil }
 
     init(id: String = UUID().uuidString,

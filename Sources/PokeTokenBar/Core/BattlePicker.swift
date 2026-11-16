@@ -1,12 +1,12 @@
 import Foundation
 
 extension CompanionStore {
-    /// The Catch Log row behind a candidate. The Pokémon being raised has a synthesized one.
+    /// The Box record behind a candidate. The Pokémon being raised has a synthesized one.
     func dexEntry(for candidate: BattleCandidate) -> DexEntry? {
         candidate.dexEntry ?? dexEntries.first { isActiveDexEntry($0) }
     }
 
-    /// The candidate for a Catch Log individual; nil for a released or unsupported one.
+    /// The candidate for a Box individual; nil for a released or unsupported one.
     func battleCandidate(for entry: DexEntry) -> BattleCandidate? {
         let id = isActiveDexEntry(entry) ? entry.profile?.instanceID : entry.id
         return BattleEntry.candidates(in: state).first { $0.id == id }

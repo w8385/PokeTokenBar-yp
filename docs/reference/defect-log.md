@@ -1146,6 +1146,29 @@ read_when:
   (`questionmark.circle` 키체인 도움말, 검색 지우기 `xmark.circle.fill`)는 채워진 원형 글리프라 라벨
   프레임이 이미 아이콘 전체라 제외.
 
+- **A species page must not carry an individual's state, and a species-level screen is not the place to change it.**
+  The Pokédex detail showed and edited a single Pokémon's held item, trade state and evolution progress
+  because the catch log and the species page shared one view. A held item belongs to an individual
+  (`instanceID`; graduated ones use `DexEntry.id`), so two Pikachu share one species page but not one slot, and the
+  Battle tab's equip control hid which one it changed. Now the Pokédex is species only (count + "N in Box" link),
+  the Box lists every owned individual and its detail is the only place that calls `equip`/`unequip`; Battle,
+  evolution cards and Home only show the item and link to the Box detail. The live evolution progress is drawn only
+  when the card is for the raised individual. Old tests passed because they built one Pokémon per species, where
+  species and individual coincide. **Regression:** `BoxTests` source-scans `Sources/.../UI` so only `BoxDetailView`
+  may call `.equip(`/`.unequip(`, renders the equip slot locked while listed for trade, and uses two individuals
+  of one species. Sweep: held-item rows in Battle entry and the picker, the evolution cards and the Home tile were
+  the other readers; none writes.
+
+- **Anchors and measuring views go outside a `LazyVGrid`.** The Box scroll-to-top anchor was `Color.clear` placed
+  inside the grid, so it took the first cell and the first Pokémon started in column two. The fix moves it above the
+  grid. `testTheFirstBoxCellSitsInTheFirstColumn` counts the cards on the grid's top row, which a text-only render
+  test could not see. Sweep: the Pokédex and Bag grids have no scroll anchor; the one `Color.clear` inside the Pokédex grid is a deliberate row filler.
+
+- **A native segmented `Picker` has no width budget.** Adding the Box and Coworkers tabs made the picker 384–492pt
+  wide against the 332pt content width in every language but Korean, and it widened the whole popover. The tab bar
+  is now icon buttons where only the selected tab spells its name; `testTabBarFitsThePopoverWidthForEveryLanguageAndSelectedTab`
+  measures `fittingSize` for every language × selected tab. A new tab or a longer label fails that test before it ships.
+
 ## 에너지 (상시 표시 애니메이션)
 
 - **절전용 정지 상태는 짝 알림 하나에만 복구를 맡기지 마라.** `screensDidSleep` 이 폴링 타이머를 끄고

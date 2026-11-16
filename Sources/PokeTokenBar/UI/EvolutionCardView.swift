@@ -60,17 +60,13 @@ struct EvolutionCardView: View {
                 Spacer(minLength: 4)
                 if store.isTradeLocked(id) {
                     Image(systemName: "lock.fill").foregroundStyle(.secondary)
-                } else if held {
-                    Button(l.heldItemRemove) { _ = store.unequip(from: id) }
-                        .buttonStyle(.borderless).controlSize(.small)
-                } else if store.itemCount(kind) > 0 {
-                    Button(l.heldItemEquip) { _ = store.equip(kind, to: id) }
-                        .buttonStyle(.borderless).controlSize(.small)
                 }
             }
             if store.isTradeLocked(id) {
                 Text(l.tradeLockedItemText).font(.caption2).foregroundStyle(.orange)
                     .fixedSize(horizontal: false, vertical: true)
+            } else if !held, store.itemCount(kind) > 0 {
+                equipHint
             }
         }
     }
@@ -94,16 +90,20 @@ struct EvolutionCardView: View {
             Spacer(minLength: 4)
             if progress != nil, !met { action(for: requirement) }
         }
+        if progress != nil, !met, case .holds(let kind) = requirement, store.itemCount(kind) > 0 {
+            equipHint
+        }
+    }
+
+    /// The card shows what is held; the slot that changes it is at the top of the same Box page.
+    private var equipHint: some View {
+        Text(l.heldItemEquipAtTop).font(.caption2).foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     @ViewBuilder
     private func action(for requirement: EvolutionRequirement) -> some View {
         switch requirement {
-        case .holds(let kind):
-            if let id = store.state.active?.profile?.instanceID, store.itemCount(kind) > 0 {
-                Button(l.heldItemEquip) { _ = store.equip(kind, to: id) }
-                    .buttonStyle(.borderless).controlSize(.small)
-            }
         case .towerChosen:
             Button(l.evolutionTowerDarkness) { store.chooseTower("darkness") }
                 .buttonStyle(.borderless).controlSize(.small)

@@ -1043,7 +1043,7 @@ final class CompanionStoreTests: XCTestCase {
         XCTAssertTrue(s.state.dex.isEmpty)
         XCTAssertEqual(s.dexEntries.count, 1)
         XCTAssertEqual(s.dexEntries[0].baseID, 529)
-        XCTAssertEqual(s.dexCount(.uncommon), 1)
+        XCTAssertEqual(s.dexEntries[0].rarity, .uncommon)
     }
 
     /// [회귀] 현재 키우는 common 포켓몬은 더 희귀한 졸업 항목보다도 위에 고정된다.
@@ -1605,11 +1605,6 @@ final class DexSortingTests: XCTestCase {
         // 순수 시간 역순 — 희귀도는 순서에 관여하지 않는다.
         XCTAssertEqual(sorted.map(\.finalID), [101, 100, 200])
         XCTAssertEqual(sorted[2].rarity, .legendary, "가장 오래된 legendary 는 맨 뒤")
-
-        // 희귀도별 카운트(요약 헤더 — 정렬과 무관하게 개체 수 기준)
-        XCTAssertEqual(s.dexCount(.common), 2)
-        XCTAssertEqual(s.dexCount(.legendary), 1)
-        XCTAssertEqual(s.dexCount(.rare), 0)
     }
 }
 

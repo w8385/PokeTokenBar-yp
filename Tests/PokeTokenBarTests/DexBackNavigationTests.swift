@@ -34,8 +34,8 @@ private struct RegionHarness: View {
     }
 }
 
-/// The detail page replaces the grid/log, so Back rebuilds them. These drive the real `CollectionView`
-/// through that round trip and read the result off the rendered pixels.
+/// The detail page replaces the grid, so Back rebuilds it. These drive the real `CollectionView` and
+/// `BoxView` through that round trip and read the result off the rendered pixels.
 @MainActor
 final class DexBackNavigationTests: XCTestCase {
     private var window: NSWindow?
@@ -46,12 +46,12 @@ final class DexBackNavigationTests: XCTestCase {
     }
 
     /// 20 species = 2 grid pages: species 1…16, then 17…20.
-    private func makeStore() throws -> CompanionStore {
+    private func makeStore(count: Int = 20) throws -> CompanionStore {
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("dex-back-\(UUID()).json")
         addTeardownBlock { try? FileManager.default.removeItem(at: file) }
         var state = CompanionState()
         state.language = .en
-        state.dex = (1...20).map { id in
+        state.dex = (1...count).map { id in
             DexEntry(id: "entry-\(id)", baseID: id, finalID: id, chainOrder: [id], rarity: .common,
                      caughtAt: Date(timeIntervalSince1970: 1_700_000_000 + Double(id)),
                      // A word avoids the ambiguous digit in Mon1, which Vision reads as Mont/Monl.
@@ -63,6 +63,10 @@ final class DexBackNavigationTests: XCTestCase {
 
     private func host(_ store: CompanionStore, _ navigation: PopoverNavigation) -> NSView {
         host(CollectionView(store: store, navigation: navigation))
+    }
+
+    private func hostBox(_ store: CompanionStore, _ navigation: PopoverNavigation) -> NSView {
+        host(BoxView(store: store, navigation: navigation))
     }
 
     private func host<V: View>(_ content: V) -> NSView {
@@ -287,7 +291,7 @@ final class DexBackNavigationTests: XCTestCase {
     func testBackFromDetailReturnsToThePageOfThatSpecies() async throws {
         let store = try makeStore()
         let navigation = PopoverNavigation()
-        navigation.tab = .collection
+        navigation.tab = .dex
         let root = host(store, navigation)
         try await waitForText("Mon5", in: root)
 
@@ -299,69 +303,34 @@ final class DexBackNavigationTests: XCTestCase {
         XCTAssertFalse(footer.contains { $0.reads("Mon18", exactly: false) }, "Seen: \(footer.map(\.candidates))")
     }
 
-    func testReturnPageIsUsedOnlyOnce() async throws {
-        let store = try makeStore()
+    // MARK: Box
+
+    /// Oldest is the first catch, so it is the Box's last cell — off screen until scrolled to.
+    func testBackFromTheBoxPageReturnsTheGridToWhereItWas() async throws {
+        let store = try makeStore(count: 40)
         let navigation = PopoverNavigation()
-        navigation.tab = .collection
-        let root = host(store, navigation)
-        try await openPageTwoSpeciesAndGoBack(store, navigation, root)
-        try await waitForText("Mon20", in: root)
-
-        navigation.showingCollectionLog = true
-        try await Task.sleep(for: .milliseconds(100))
-        navigation.showingCollectionLog = false
-
-        try await waitForText("Mon5", in: root)
-    }
-
-    /// Back to the log must not leave the grid's return page behind for the next segment switch.
-    func testBackToTheLogLeavesTheGridOnItsFirstPage() async throws {
-        let store = try makeStore()
-        let navigation = PopoverNavigation()
-        navigation.tab = .collection
-        navigation.showingCollectionLog = true
-        let root = host(store, navigation)
-        try await openPageTwoSpeciesAndGoBack(store, navigation, root)
-        try await waitForText("Mon20", in: root)   // the log's top row
-
-        navigation.showingCollectionLog = false
-
-        try await waitForText("Mon5", in: root)
-    }
-
-    // MARK: Catch log
-
-    /// Oldest is the first catch, so it is the log's last row — off screen until scrolled to.
-    func testBackFromDetailReturnsTheLogToWhereItWas() async throws {
-        let store = try makeStore()
-        let navigation = PopoverNavigation()
-        navigation.tab = .collection
-        navigation.showingCollectionLog = true
-        let root = host(store, navigation)
-        try await waitForText("Mon20", in: root)
+        navigation.tab = .box
+        let root = hostBox(store, navigation)
+        try await waitForText("Mon40", in: root)
         func descendants(_ view: NSView) -> [NSView] { [view] + view.subviews.flatMap(descendants) }
-        let log = try XCTUnwrap(descendants(root).compactMap { $0 as? NSScrollView }
+        let grid = try XCTUnwrap(descendants(root).compactMap { $0 as? NSScrollView }
             .max { ($0.documentView?.frame.height ?? 0) < ($1.documentView?.frame.height ?? 0) })
-        // LazyVStack grows the document as rows are realized, so keep scrolling to the end.
-        var row: Word?
-        for _ in 0..<20 where row == nil {
-            let clip = log.contentView
-            let bottom = (log.documentView?.frame.height ?? 0) - clip.bounds.height
+        // LazyVGrid grows the document as cells are realized, so keep scrolling to the end.
+        var cell: Word?
+        for _ in 0..<20 where cell == nil {
+            let clip = grid.contentView
+            let bottom = (grid.documentView?.frame.height ?? 0) - clip.bounds.height
             clip.scroll(to: NSPoint(x: 0, y: clip.isFlipped ? bottom : 0))
-            log.reflectScrolledClipView(clip)
+            grid.reflectScrolledClipView(clip)
             try await Task.sleep(for: .milliseconds(100))
-            row = try words(in: root).first { $0.reads("Oldest", exactly: true) }
+            cell = try words(in: root).first { $0.reads("Oldest", exactly: true) }
         }
-        XCTAssertNotNil(row, "scrolling never reached Oldest")
+        XCTAssertNotNil(cell, "scrolling never reached Oldest")
         try await press("Oldest", exactly: true, opens: store.l.back, in: root)
+        XCTAssertEqual(navigation.boxDetailID, "entry-1")
         try await press(store.l.back, in: root)
 
         try await waitForText("Oldest", exactly: true, in: root)
-
-        // Like the grid's page, the position does not survive a segment switch.
-        navigation.showingCollectionLog = false
-        try await Task.sleep(for: .milliseconds(100))
-        navigation.showingCollectionLog = true
-        try await waitForText("Mon20", in: root)
+        XCTAssertNil(navigation.boxDetailID)
     }
 }

@@ -411,7 +411,7 @@ final class CompanionStore {
     /// 도달한 적 없는 진화형까지 보유로 잡힌다(`dexSpecies` 가 같은 prefix 규칙을 쓴다).
     ///
     /// 이로치는 `currentIsShiny` — 위장 중인 메타몽은 리빌 전까지 숨긴다(`activeDexEntry` 와 단일 판정).
-    /// `caughtAt` 은 놓아준 시각이다: 포획 로그가 그 값으로 정렬하므로 기록이 남은 시점과 일치해야 한다.
+    /// `caughtAt` 은 놓아준 시각이다.
     private func releasedDexEntry(from a: MonState) -> DexEntry {
         // stageIndex 가 음수·범위 밖이어도 최소 한 형태는 남긴다(손상 상태 파일 방어 — MonState.currentID 와 같은 태도).
         let reached = Array(a.pathIDs.prefix(max(1, a.stageIndex + 1)))
@@ -439,17 +439,14 @@ final class CompanionStore {
         return state.dex + [activeDexEntry]
     }
 
+    var raisedDexEntry: DexEntry? { activeDexEntry }
+
     /// 합성된 현재 포켓몬 항목인지 판별한다. caughtAt 이 없는 구버전 졸업 항목과 혼동하지 않는다.
     func isActiveDexEntry(_ entry: DexEntry) -> Bool {
         entry.id == activeDexEntry?.id
     }
 
-    /// 포획 로그 표시 순서 — 현재 키우는 포켓몬을 맨 앞에 고정하고, 졸업 항목은 **기록 시각 최신순**.
-    ///
-    /// 과거에는 희귀도 내림차순이 먼저였다(종 단위 도감의 규칙). 로그는 시간순 기록이라 희귀도로
-    /// 먼저 묶으면 방금 졸업한 개체가 며칠 전에 잡은 상위 희귀도 밑에 묻힌다. 희귀도로 좁히는 일은
-    /// 이제 필터 캡슐과 도감이 담당한다.
-    ///
+    /// 현재 키우는 포켓몬을 맨 앞에 고정하고, 졸업 항목은 기록 시각 최신순.
     /// caughtAt 이 없는 구버전 항목은 .distantPast 로 묶여 맨 뒤에 온다(그들끼리의 순서는 미정).
     var dexEntriesSorted: [DexEntry] {
         let graduated = state.dex.sorted {
@@ -459,22 +456,7 @@ final class CompanionStore {
         return [activeDexEntry] + graduated
     }
 
-    /// 희귀도별 포획 로그 개수(요약 헤더용) — 개체 수 기준. 도감(종 단위)은 dexSpecies 를 쓴다.
-    func dexCount(_ rarity: Rarity) -> Int { dexEntries.lazy.filter { $0.rarity == rarity }.count }
-
     enum DexSortOption: String, CaseIterable, Identifiable, Sendable {
-        case numberAsc
-        case numberDesc
-        case nameAsc
-        case nameDesc
-        case rarityDesc
-
-        var id: String { rawValue }
-    }
-
-    enum CatchLogSortOption: String, CaseIterable, Identifiable, Sendable {
-        case recentFirst
-        case oldestFirst
         case numberAsc
         case numberDesc
         case nameAsc
@@ -704,7 +686,7 @@ final class CompanionStore {
         return "#\(targetID)"
     }
 
-    /// The one search rule shared by the Pokédex grid and the Catch Log, so the two screens cannot
+    /// The one search rule shared by the Pokédex grid and the Box, so the two screens cannot
     /// drift apart. A query matches a Pokédex number (`25` or `#25`) or part of any stored name
     /// in any language, ignoring case and diacritics ("flabebe" finds Flabébé).
     struct DexSearchMatcher: Sendable {
@@ -816,106 +798,6 @@ final class CompanionStore {
                 if $0.rarity.sortRank != $1.rarity.sortRank {
                     return $0.rarity.sortRank > $1.rarity.sortRank
                 }
-                return $0.id < $1.id
-            }
-        }
-    }
-
-    /// Filters and sorts DexEntry records for the Catch Log.
-    func filteredDexEntries(
-        query: String = "",
-        rarity: Rarity? = nil,
-        shinyOnly: Bool = false,
-        sort: CatchLogSortOption = .recentFirst
-    ) -> [DexEntry] {
-        var result = dexEntries
-        if let rarity {
-            result = result.filter { $0.rarity == rarity }
-        }
-        if shinyOnly {
-            result = result.filter { $0.isShiny }
-        }
-        if let matcher = DexSearchMatcher(query) {
-            result = result.filter { matcher.matches($0) }
-        }
-        return sortDexEntries(result, by: sort)
-    }
-
-    /// Sorts DexEntry records by the given option.
-    func sortDexEntries(_ entries: [DexEntry], by sort: CatchLogSortOption) -> [DexEntry] {
-        switch sort {
-        case .recentFirst:
-            let active = entries.first(where: { isActiveDexEntry($0) })
-            let graduated = entries.filter { !isActiveDexEntry($0) }.sorted {
-                let d0 = $0.caughtAt ?? .distantPast
-                let d1 = $1.caughtAt ?? .distantPast
-                if d0 != d1 { return d0 > d1 }
-                return $0.id < $1.id
-            }
-            return (active.map { [$0] } ?? []) + graduated
-        case .oldestFirst:
-            let active = entries.first(where: { isActiveDexEntry($0) })
-            let graduated = entries.filter { !isActiveDexEntry($0) }.sorted {
-                let d0 = $0.caughtAt ?? .distantPast
-                let d1 = $1.caughtAt ?? .distantPast
-                if d0 != d1 { return d0 < d1 }
-                return $0.id < $1.id
-            }
-            return graduated + (active.map { [$0] } ?? [])
-        case .numberAsc:
-            return entries.sorted {
-                if $0.finalID != $1.finalID {
-                    return $0.finalID < $1.finalID
-                }
-                let d0 = $0.caughtAt ?? .distantPast
-                let d1 = $1.caughtAt ?? .distantPast
-                if d0 != d1 { return d0 > d1 }
-                return $0.id < $1.id
-            }
-        case .numberDesc:
-            return entries.sorted {
-                if $0.finalID != $1.finalID {
-                    return $0.finalID > $1.finalID
-                }
-                let d0 = $0.caughtAt ?? .distantPast
-                let d1 = $1.caughtAt ?? .distantPast
-                if d0 != d1 { return d0 > d1 }
-                return $0.id < $1.id
-            }
-        case .nameAsc:
-            return entries.sorted {
-                let name1 = dexEntryName($0)
-                let name2 = dexEntryName($1)
-                let cmp = name1.localizedCompare(name2)
-                if cmp != .orderedSame {
-                    return cmp == .orderedAscending
-                }
-                let d0 = $0.caughtAt ?? .distantPast
-                let d1 = $1.caughtAt ?? .distantPast
-                if d0 != d1 { return d0 > d1 }
-                return $0.id < $1.id
-            }
-        case .nameDesc:
-            return entries.sorted {
-                let name1 = dexEntryName($0)
-                let name2 = dexEntryName($1)
-                let cmp = name1.localizedCompare(name2)
-                if cmp != .orderedSame {
-                    return cmp == .orderedDescending
-                }
-                let d0 = $0.caughtAt ?? .distantPast
-                let d1 = $1.caughtAt ?? .distantPast
-                if d0 != d1 { return d0 > d1 }
-                return $0.id < $1.id
-            }
-        case .rarityDesc:
-            return entries.sorted {
-                if $0.rarity.sortRank != $1.rarity.sortRank {
-                    return $0.rarity.sortRank > $1.rarity.sortRank
-                }
-                let d0 = $0.caughtAt ?? .distantPast
-                let d1 = $1.caughtAt ?? .distantPast
-                if d0 != d1 { return d0 > d1 }
                 return $0.id < $1.id
             }
         }
