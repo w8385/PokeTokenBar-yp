@@ -504,8 +504,8 @@ struct EvoLineView: View {
 
     // MARK: 라인 본체
 
-    /// Which dex page a node opens. Only species already in the dex link — the `?` placeholder and
-    /// uncaught species have no page. Pure function (regression-tested).
+    /// Which dex page a node opens: owned or unowned species page, whichever `links` holds. The `?`
+    /// placeholder has none. Pure function (regression-tested).
     static func dexLinkTarget(for node: EvoLineItem, links: [Int: String]) -> String? {
         guard case .species(let id) = node.content else { return nil }
         return links[id]
@@ -820,7 +820,10 @@ struct CompanionHeader: View {
 
     var body: some View {
         // Computed once per render and shared by the evolution line.
-        let dexLinks = onOpenDexEntry == nil ? [:] : store.dexLinkTargets
+        let lineSpecies = store.lineNodes.compactMap { node -> Int? in
+            if case .species(let id) = node.content { id } else { nil }
+        }
+        let dexLinks = onOpenDexEntry == nil ? [:] : store.dexLinkTargets(including: lineSpecies)
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: HomePetRow<EmptyView>.headerGap) {
                 HomePetRow(store: store, crowd: crowd, spriteStore: spriteStore, cryPlayer: cryPlayer) { bigSprite }
@@ -949,6 +952,7 @@ struct CompanionHeader: View {
         .onChange(of: store.mintFeedbackSeq) { showMintIfNeeded() }
         .onChange(of: eggImminent) { syncEggWiggle() }
         .task(id: store.currentForm) { await store.loadActiveFormNames() }   // The title names the form.
+        .task { if onOpenDexEntry != nil { await store.loadSpeciesIndexIfNeeded() } }
     }
 
     /// 부화/진화 연출 1회 재생 — 흰 플래시 페이드아웃 + 스프링 팝. shiny 부화는 ✨ 버스트 추가.
