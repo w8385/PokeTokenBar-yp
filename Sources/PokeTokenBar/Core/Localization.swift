@@ -425,8 +425,8 @@ struct L {
     var representativeBadge: String { t("대표", "Representative", "代表", "Representante", "Représentatif", "Representante", "Repräsentativ", "Основной") }
     // MARK: 성장 방식
     var growthModeLabel: String { t("성장 방식", "Growth source", "成長の方式", "Fuente de crecimiento", "Source de croissance", "Fonte de crescimento", "Wachstumsquelle", "Источник роста") }
-    var growthModeToken: String { t("토큰 (개발자 모드)", "Tokens (developer)", "トークン（開発者モード）", "Tokens (desarrollador)", "Tokens (développeur)", "Tokens (desenvolvedor)", "Tokens (Entwickler)", "Токены (разработчик)") }
-    var growthModeTime: String { t("시간 (일반 모드)", "Time (general)", "時間（一般モード）", "Tiempo (general)", "Temps (général)", "Tempo (geral)", "Zeit (allgemein)", "Время (обычный)") }
+    var growthModeToken: String { t("토큰 (개발자)", "Tokens", "トークン", "Tokens", "Tokens", "Tokens", "Tokens", "Токены") }
+    var growthModeTime: String { t("시간 (일반)", "Time", "時間", "Tiempo", "Temps", "Tempo", "Zeit", "Время") }
     var growthModeTokenHint: String {
         t("코딩 에이전트가 쓴 토큰으로 자랍니다.", "Grows with the tokens your coding agents use.",
           "コーディングエージェントが使ったトークンで成長します。", "Crece con los tokens que usan tus agentes de código.",

@@ -283,6 +283,17 @@ final class TimeModeTests: XCTestCase {
         XCTAssertGreaterThan(try XCTUnwrap(s.state.dex.first?.profile?.growthTokens), 0)
     }
 
+    func testTheGrowthSourcePickerFitsTheSettingsWidthWithALegacyScrollerInEveryLanguage() {
+        let legacyScrollerLane: CGFloat = 20
+        let available = PopoverMetrics.width - 32 - legacyScrollerLane
+        for language in AppLanguage.allCases {
+            let s = store("{\"installBaselineSet\":true,\"growthMode\":\"time\",\"language\":\"\(language.rawValue)\"}",
+                          clock: Clock())
+            let ideal = LayoutMeasure.size(DifficultySettingsSection(companion: s), width: 100).width
+            XCTAssertLessThanOrEqual(ideal, available + 0.5, "settings section too wide in \(language.rawValue): \(ideal)pt")
+        }
+    }
+
     func testTimeIsIgnoredInTokenMode() {
         let clock = Clock(); var up: TimeInterval = 1000
         let s = egg(mode: "token", clock: clock)

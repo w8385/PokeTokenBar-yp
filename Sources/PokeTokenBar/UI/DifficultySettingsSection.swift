@@ -63,20 +63,18 @@ struct DifficultySettingsSection: View {
 
     private var modeRow: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 10) {
-                Text(l.growthModeLabel).font(.callout)
-                Picker(l.growthModeLabel, selection: $draft.mode) {
-                    Text(l.growthModeToken).tag(GrowthMode.token)
-                    Text(l.growthModeTime).tag(GrowthMode.time)
-                }
-                .pickerStyle(.segmented).labelsHidden()
-                .accessibilityIdentifier("growthModePicker")
+            Text(l.growthModeLabel).font(.callout)
+            Picker(l.growthModeLabel, selection: $draft.mode) {
+                Text(l.growthModeToken).tag(GrowthMode.token)
+                Text(l.growthModeTime).tag(GrowthMode.time)
             }
+            .pickerStyle(.segmented).labelsHidden()
+            .accessibilityIdentifier("growthModePicker")
             Text(draft.mode == .time ? l.growthModeTimeHint : l.growthModeTokenHint)
                 .font(.caption2).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, 10).padding(.vertical, 8)
+        .padding(.horizontal, 12).padding(.vertical, 8)
     }
 
     private func row(_ label: String, value: Binding<Double>, low: String, high: String) -> some View {
