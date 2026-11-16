@@ -44,7 +44,7 @@ struct MoveTrainingSection: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
+        .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: Radius.panel))
         .task(id: fetchKey) {
             if learnable != nil { editing = nil }
             buying = nil
@@ -102,8 +102,8 @@ struct MoveTrainingSection: View {
                 }
             }
             .padding(.horizontal, 8).padding(.vertical, 5)
-            .background(RoundedRectangle(cornerRadius: 7).fill(isEditing ? Color.accentColor.opacity(0.15) : Color.clear))
-            .overlay(RoundedRectangle(cornerRadius: 7)
+            .background(RoundedRectangle(cornerRadius: Radius.chip).fill(isEditing ? Color.accentColor.opacity(0.15) : Color.clear))
+            .overlay(RoundedRectangle(cornerRadius: Radius.chip)
                 .strokeBorder(isEditing ? Color.accentColor : Color.secondary.opacity(0.35), lineWidth: 1))
             .contentShape(Rectangle())
         }

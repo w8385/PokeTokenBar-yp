@@ -212,11 +212,7 @@ private struct MegaEvolveOverlay: View {
     let frame: MegaEvolveFX.Frame
     let size: CGFloat
 
-    private static let keystone: [Color] = [
-        Color(red: 1.0, green: 0.44, blue: 0.71), Color(red: 0.61, green: 0.42, blue: 1.0),
-        Color(red: 0.25, green: 0.82, blue: 1.0), Color(red: 0.36, green: 0.89, blue: 0.49),
-        Color(red: 1.0, green: 0.85, blue: 0.29), Color(red: 1.0, green: 0.44, blue: 0.71),
-    ]
+    private static let keystone = Palette.megaKeystone
 
     var body: some View {
         ZStack {

@@ -42,9 +42,7 @@ struct DifficultySettingsSection: View {
                 Divider()
                 row(l.difficultyShopLabel, value: $draft.shop, low: l.difficultyShopLowLabel, high: l.difficultyShopHighLabel)
             }
-            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8)
-                .stroke(Color(nsColor: .separatorColor).opacity(0.6), lineWidth: 1))
+            .ptbCard()
             if draft.differs(from: companion) {
                 HStack {
                     Spacer()
