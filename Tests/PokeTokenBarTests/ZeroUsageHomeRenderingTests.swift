@@ -63,6 +63,25 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
         try await render(history: true, language: .de, costs: .unavailable)
     }
 
+    func testOCRFoldTreatsLookalikeGlyphsAsEqual() {
+        XCTAssertEqual(Self.ocrFolded("Dleser Monat"), Self.ocrFolded("Dieser Monat"))
+        XCTAssertEqual(Self.ocrFolded("미번 주"), Self.ocrFolded("이번 주"))
+        XCTAssertNotEqual(Self.ocrFolded("Diese Woche"), Self.ocrFolded("Dieser Monat"))
+    }
+
+    /// Vision confuses i/l/1/| and 이/미 on the CI runner; compare text with those glyphs folded together.
+    private static func ocrFolded(_ text: String) -> String {
+        String(text.lowercased().compactMap { character -> Character? in
+            switch character {
+            case " ": return nil
+            case "i", "l", "1", "|", "!", "ı": return "i"
+            case "o", "0": return "o"
+            case "미": return "이"
+            default: return character
+            }
+        })
+    }
+
     private func render(history: Bool, language: AppLanguage = .ko, costs: CostCoverage? = nil) async throws {
         let suite = "QuietHome-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
@@ -141,11 +160,10 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
         request.recognitionLevel = .accurate
         try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
         let text = request.results?.compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ") ?? ""
-        // The runner's Vision reads 이 as 미 in the small 이번 주 / 이번 달 captions.
-        let normalizedText = text.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "미번", with: "이번")
+        let normalizedText = Self.ocrFolded(text)
         let chartCaptions = [
-            companion.l.title(for: store.dailyTrendWindow).replacingOccurrences(of: " ", with: ""),
-            companion.l.dailyTrend.replacingOccurrences(of: " ", with: ""),
+            Self.ocrFolded(companion.l.title(for: store.dailyTrendWindow)),
+            Self.ocrFolded(companion.l.dailyTrend),
         ]
         let chartVisible = (request.results ?? []).contains { observation in
             // CI ranks "일벌" before "일별" at the same confidence. Vision returns at most 10 candidates.
@@ -154,7 +172,7 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
             guard let maximumConfidence = alternatives.first?.confidence else { return false }
             return alternatives.contains { candidate in
                 candidate.confidence == maximumConfidence
-                    && chartCaptions.contains { candidate.string.replacingOccurrences(of: " ", with: "").contains($0) }
+                    && chartCaptions.contains { Self.ocrFolded(candidate.string).contains($0) }
             }
         }
         let candidates = (request.results ?? []).enumerated().map { index, observation in
@@ -165,7 +183,7 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
         }.joined(separator: "\n")
         let diagnostics = "OCR revision=\(request.revision) pixels=\(bitmap.pixelsWide)x\(bitmap.pixelsHigh)\n\(candidates)"
         for label in [companion.l.todayTokens, companion.l.thisWeek, companion.l.thisMonth] {
-            XCTAssertTrue(normalizedText.contains(label.replacingOccurrences(of: " ", with: "")),
+            XCTAssertTrue(normalizedText.contains(Self.ocrFolded(label)),
                           "Missing visible \(label): \(text)\n\(diagnostics)")
         }
         if costs == .source {
@@ -175,11 +193,20 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
                     $0.topCandidates(1).first?.string.replacingOccurrences(of: " ", with: "").contains(amount) == true
                 }, "Split or missing period cost \(amount) in \(language.rawValue): \(text)\n\(diagnostics)")
             }
+            // Vision joins one text line into one observation, so label and cost in the same observation means no wrap.
+            for (label, amount) in [(companion.l.thisWeek, "$31.64"), (companion.l.thisMonth, "$121.30")] {
+                XCTAssertTrue((request.results ?? []).contains { observation in
+                    observation.topCandidates(10).contains {
+                        let folded = Self.ocrFolded($0.string)
+                        return folded.contains(Self.ocrFolded(label)) && folded.contains(Self.ocrFolded(amount))
+                    }
+                }, "\(label) and \(amount) are not on one line in \(language.rawValue)\n\(diagnostics)")
+            }
         }
         if costs == .unavailable {
-            let unavailable = companion.l.costUnavailable.replacingOccurrences(of: " ", with: "")
+            let unavailable = Self.ocrFolded(companion.l.costUnavailable)
             XCTAssertEqual((request.results ?? []).filter {
-                $0.topCandidates(1).first?.string.replacingOccurrences(of: " ", with: "").contains(unavailable) == true
+                $0.topCandidates(1).first.map { Self.ocrFolded($0.string).contains(unavailable) } == true
             }.count, 2, "Both unavailable period costs must stay visible\n\(diagnostics)")
         }
         if costs == nil {

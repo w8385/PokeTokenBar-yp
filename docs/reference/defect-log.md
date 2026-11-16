@@ -1615,3 +1615,25 @@ read_when:
   Rendering differences when comparing old and new PNGs: a windowless host draws AppKit controls
   in their active color (the limit bar is green, it was grey in an inactive window), and animated
   sprites differ by frame.
+
+## Rendering tests that read text with OCR
+
+- **An OCR test must not assert exact text: fold look-alike glyphs, and check layout by geometry or by observation.**
+  `ZeroUsageHomeRenderingTests.testRecapLabelKeepsPeriodCostsOnOneLine` failed on CI main with
+  `Missing visible Dieser Monat`. The CI log shows one observation, `"Dleser Monat 17.9M $121.30"`,
+  so the row did not wrap: Vision read the `i` as `l`. The same suite had already been patched once
+  for 이번 read as 미번 and once for 일별 ranked below 일벌. Each patch fixed one string; the next
+  confusion (i/l/1/|, o/0, 이/미) failed another run. It passed three times locally because the CI
+  runner's Vision model ranks candidates differently from the developer machine's, so a local green
+  run says nothing about the CI model.
+  Why review missed it: the assertion matched `contains(label)` on the top candidate, which is only
+  as reliable as the runner's model, and the diff that added the row passed on the author's machine.
+  The suite now compares text through `ocrFolded` (case, spaces, i/l/1/|/!, o/0, 이/미 folded), and
+  the "costs stay on one line" check asks whether label and amount sit in the same observation
+  (Vision returns one observation per text line), which does not depend on reading either word
+  exactly. `testOCRFoldTreatsLookalikeGlyphsAsEqual` pins the fold.
+  Class sweep: the other OCR users (`BoxTests`, `CollectionReadabilityRenderingTests`,
+  `DexColorRenderingTests`, `DexBackNavigationTests`, `FormMetadataNoteRenderingTests`,
+  `SnapshotHistoryRenderingTests`, `SessionKeySettingsRenderingTests`) were not changed. A new OCR
+  assertion starts from `ocrFolded` and asks for layout (same observation, bounding boxes), not an
+  exact string.
