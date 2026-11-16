@@ -160,7 +160,7 @@ enum SpriteLoader {
         let f = directory.appendingPathComponent("\(key).\(ext)")
         let imageKey = f.path as NSString
         if let img = imageCache.object(forKey: imageKey) { return img }
-        if let d = try? Data(contentsOf: f), let img = NSImage(data: d) {
+        if let d = try? Data(contentsOf: f), let img = SpriteFrame.decodeStill(d) {
             imageCache.setObject(img, forKey: imageKey)
             return img
         }
@@ -287,20 +287,6 @@ enum SpriteLoader {
         return []
     }
 
-    /// The static PNG has a 96px padded canvas; animated GIFs are tightly framed.
-    /// Normalize only the animated view's placeholder, leaving static dex thumbnails unchanged.
-    private static let placeholderCache: NSCache<NSImage, NSImage> = {
-        let cache = NSCache<NSImage, NSImage>()
-        cache.countLimit = 64
-        return cache
-    }()
-    static func animationPlaceholder(_ image: NSImage) -> NSImage {
-        if let cached = placeholderCache.object(forKey: image) { return cached }
-        let cropped = cropToContent(image)
-        placeholderCache.setObject(cropped, forKey: image)
-        return cropped
-    }
-
     /// 정적 스프라이트. animated=true 면 Gen-V 움직이는 스프라이트(없으면 정적으로 폴백).
     /// shiny=true 는 색이 다른 스프라이트 — 미제공 종이면 일반으로 폴백.
     /// back=true 는 뒷모습을 먼저 시도하고, 없으면 앞모습으로 폴백한다.
@@ -317,7 +303,7 @@ enum SpriteLoader {
                                           shiny: shiny, form: form, back: back, female: female) else { continue }
             // await 중 같은 종의 다른 행이 로드를 끝냈으면 그 객체를 재사용한다.
             if let img = imageCache.object(forKey: imageKey) { return img }
-            guard let img = NSImage(data: d) else { continue }
+            guard let img = SpriteFrame.decodeStill(d) else { continue }
             imageCache.setObject(img, forKey: imageKey)
             return img
         }
@@ -413,6 +399,13 @@ enum SpriteFit {
         size(for: pixelSize, width: box, height: box)
     }
 
+    /// Empty space kept around a sprite inside its box, as a share of the box on each side. One value for
+    /// every surface and source; a sprite stands `margin × box` above the bottom edge of its box.
+    static let margin: CGFloat = 0.02
+
+    /// The square a sprite is fit into: its box minus the margin on both sides.
+    static func contentBox(_ box: CGFloat) -> CGFloat { box * (1 - 2 * margin) }
+
     /// Same fit inside a `width`×`height` box. An empty source falls back to a square on the shorter side.
     static func size(for pixelSize: CGSize, width: CGFloat, height: CGFloat) -> CGSize {
         guard pixelSize.width > 0, pixelSize.height > 0 else {
@@ -435,11 +428,11 @@ enum SpriteVisibleTop {
     nonisolated(unsafe) private static let cache = NSCache<NSImage, NSNumber>()
 
     /// Distance (pt) from the box top to the first visible row of an image that is aspect-fit
-    /// and centred in a `box`×`box` slot. `opaqueTopFraction` is the share of the image height
-    /// above its first opaque row (0 = the sprite touches the canvas top).
+    /// and bottom-anchored in a `box`×`box` slot (`SpriteView.fitted`). `opaqueTopFraction` is the
+    /// share of the image height above its first opaque row (0 = the sprite touches the image top).
     static func inset(box: CGFloat, imageSize: CGSize, opaqueTopFraction: CGFloat) -> CGFloat {
-        let fit = SpriteFit.size(for: imageSize, box: box)
-        return (box - fit.height) / 2 + min(max(opaqueTopFraction, 0), 1) * fit.height
+        let fit = SpriteFit.size(for: imageSize, box: SpriteFit.contentBox(box))
+        return box - SpriteFit.margin * box - fit.height + min(max(opaqueTopFraction, 0), 1) * fit.height
     }
 
     /// Which top to anchor to across an animation: the median frame. The minimum would follow the few

@@ -232,10 +232,11 @@ struct SpriteView: View {
     /// 그리드의 폭 계산(EvoLineView.rowWidth 등)이 칸을 정사각으로 전제한다 — 안쪽만 줄여야 안 흔들린다.
     @ViewBuilder
     private func fitted(_ image: NSImage) -> some View {
-        let fit = Self.imageSize(for: image, box: size)
+        let fit = Self.imageSize(for: image, box: SpriteFit.contentBox(size))
         Image(nsImage: image).resizable().interpolation(.none)
             .frame(width: fit.width, height: fit.height)
-            .frame(width: size, height: size)
+            .padding(.bottom, SpriteFit.margin * size)
+            .frame(width: size, height: size, alignment: .bottom)
     }
 
     /// One anchor for the whole animation (see `SpriteVisibleTop.anchorFraction`), so it does not jitter per frame.
@@ -254,7 +255,7 @@ struct SpriteView: View {
                 // (잭키 36×66) 정사각으로 늘리면 뚱뚱해진다 → fitted 로 비율 유지.
                 fitted(frames[frameIndex % frames.count].image)
             } else if let img = subject.image {
-                fitted(animated && speciesID != nil ? SpriteLoader.animationPlaceholder(img) : img)
+                fitted(img)
             } else {
                 Text("🥚").font(.system(size: size * 0.62)).frame(width: size, height: size)
             }

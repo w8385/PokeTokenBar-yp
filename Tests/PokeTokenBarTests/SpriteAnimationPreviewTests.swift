@@ -55,14 +55,13 @@ final class SpriteAnimationPreviewTests: XCTestCase {
             to: URL(fileURLWithPath: "/private/tmp/dex-animation-first-render.png"))
     }
 
-    func testAnimatedPlaceholderRemovesPaddingWithoutChangingStaticThumbnail() throws {
+    func testStaticSpriteIsCroppedToItsContentLikeTheAnimatedOne() throws {
         let directory = try fixture()
         defer { try? FileManager.default.removeItem(at: directory) }
-        let original = try XCTUnwrap(SpriteLoader.cachedImage(speciesID: 25, directory: directory))
-        let placeholder = SpriteLoader.animationPlaceholder(original)
-        XCTAssertEqual(original.size, NSSize(width: 96, height: 96))
-        XCTAssertEqual(placeholder.size, NSSize(width: 48, height: 48))
-        XCTAssertTrue(placeholder === SpriteLoader.animationPlaceholder(original))
+        let still = try XCTUnwrap(SpriteLoader.cachedImage(speciesID: 25, directory: directory))
+        XCTAssertEqual(still.size, NSSize(width: 48, height: 48), "the 96px padded canvas is cropped at load")
+        XCTAssertTrue(still === SpriteLoader.cachedImage(speciesID: 25, directory: directory),
+                      "the crop happens once; later reads share the cached image")
         XCTAssertNotEqual(SpriteView.frameTaskID(speciesID: 25, shiny: false, floor: 0, animated: false),
                           SpriteView.frameTaskID(speciesID: 25, shiny: false, floor: 0, animated: true))
         XCTAssertTrue(SpriteLoader.cachedFrames(speciesID: 25, shiny: true, directory: directory).isEmpty,
