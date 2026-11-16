@@ -87,6 +87,7 @@ PREV=$(grep -oE 'VERSION="[0-9.]+"' scripts/build-app.sh | grep -oE '[0-9.]+')
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 [[ "$BRANCH" == "main" ]] || { echo "✗ main 브랜치에서 실행하세요 (현재: $BRANCH) — 커밋/push 대상 일치 보장"; exit 1; }
 echo "=== PokeTokenBar 릴리스 $PREV → $VERSION ==="
+./scripts/xcode-pin.sh check >/dev/null || { echo "✗ 로컬 Xcode 메이저가 .xcode-version 과 다릅니다 — 중단"; exit 1; }
 
 # Fail before tests, version changes, local installation, or publication.
 NOTES_FILE="${PTB_NOTES_FILE:-}"
