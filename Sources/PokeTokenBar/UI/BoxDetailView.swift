@@ -12,6 +12,10 @@ struct BoxDetailView: View {
     @Environment(BattleEntryStore.self) private var battleEntry: BattleEntryStore?
     @Environment(PartyUploader.self) private var uploader: PartyUploader?
     @State private var cordMessage: String?
+    @State private var tradePanelOpen = false
+    /// Capture hooks: open the trade panel on appear, optionally with a friend already picked.
+    var opensTradePanel = false
+    var initialTradeTarget: String?
 
     private var l: L { store.l }
     private var entry: DexEntry { individual.entry }
@@ -132,7 +136,12 @@ struct BoxDetailView: View {
                 }
             }
             tradeNotes
+            if tradePanelOpen, let uploader {
+                BoxTradePanel(store: store, uploader: uploader, individualID: individual.id, pokemonName: name,
+                              initialTarget: initialTradeTarget)
+            }
         }
+        .onAppear { if opensTradePanel { tradePanelOpen = true } }
     }
 
     @ViewBuilder
@@ -195,7 +204,7 @@ struct BoxDetailView: View {
     private var tradeButtons: some View {
         if let uploader, uploader.hasToken, uploader.hasServer, tradeRefusal != .unavailable {
             Button {
-                navigation.openTradeOffer(giving: individual.id)
+                tradePanelOpen.toggle()
             } label: {
                 Label(l.tradeOfferButton, systemImage: "arrow.left.arrow.right")
             }

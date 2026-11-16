@@ -1,21 +1,16 @@
 import SwiftUI
 
-/// Battle tab screen: pick one of your graduated Pokémon and a linked coworker, then send the offer.
+/// Friends tab screen: pick one of your graduated Pokémon and a linked coworker, then send the offer.
 /// The coworker answers in a Slack DM; the trade lands on the next sync after both accept.
 @MainActor
 struct TradeOfferView: View {
     let store: CompanionStore
-    let uploader: PartyUploader
     let fightingIDs: Set<String>
     let onBack: () -> Void
 
-    @State private var give: String?
-    @State private var coworkers: [TradeCoworker]?
-    @State private var target: String?
-    @State private var phase = Phase.idle
-    @State private var loadFailed = false
-
-    enum Phase: Equatable { case idle, sending, sent(String), refused(String), failed }
+    @State private var model: TradeOfferModel
+    @State private var changing = false
+    private let startsPreselected: Bool
 
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 4)
     private var l: L { store.l }
@@ -23,11 +18,10 @@ struct TradeOfferView: View {
     init(store: CompanionStore, uploader: PartyUploader, fightingIDs: Set<String>, initialGive: String? = nil,
          initialCoworkers: [TradeCoworker]? = nil, onBack: @escaping () -> Void) {
         self.store = store
-        self.uploader = uploader
         self.fightingIDs = fightingIDs
         self.onBack = onBack
-        _give = State(initialValue: initialGive)
-        _coworkers = State(initialValue: initialCoworkers)
+        startsPreselected = initialGive != nil
+        _model = State(initialValue: TradeOfferModel(uploader: uploader, give: initialGive, coworkers: initialCoworkers))
     }
 
     var body: some View {
@@ -48,12 +42,37 @@ struct TradeOfferView: View {
                 .reservesScrollerLane()
             }
         }
-        .task { await loadCoworkers() }
+        .task { await model.load() }
     }
 
     private var entries: [DexEntry] { store.tradableEntries(fightingIDs: fightingIDs) }
 
+    private var givenEntry: DexEntry? { entries.first { $0.id == model.give } }
+
+    private var collapsed: Bool { Self.collapsesGrid(startsPreselected: startsPreselected, changing: changing,
+                                                      hasGive: givenEntry != nil) }
+
+    static func collapsesGrid(startsPreselected: Bool, changing: Bool, hasGive: Bool) -> Bool {
+        startsPreselected && !changing && hasGive
+    }
+
+    @ViewBuilder
     private var pokemonSection: some View {
+        if let givenEntry, collapsed {
+            HStack(spacing: 6) {
+                Text(l.tradeGivingSummary(store.dexEntryName(givenEntry))).font(.callout)
+                    .lineLimit(1).truncationMode(.tail)
+                Spacer(minLength: 4)
+                Button(l.tradeChange) { changing = true }
+                    .buttonStyle(.borderless).controlSize(.small)
+            }
+            .padding(.horizontal, 4)
+        } else {
+            pokemonGrid
+        }
+    }
+
+    private var pokemonGrid: some View {
         VStack(alignment: .leading, spacing: 6) {
             sectionTitle(l.tradePickPokemon)
             if entries.isEmpty {
@@ -62,10 +81,10 @@ struct TradeOfferView: View {
             } else {
                 LazyVGrid(columns: Self.columns, spacing: 4) {
                     ForEach(entries) { entry in
-                        DexSpeciesCell(store: store, species: species(of: entry), isSelected: entry.id == give,
+                        DexSpeciesCell(store: store, species: species(of: entry), isSelected: entry.id == model.give,
                                        isRepresentative: false, formCount: nil, level: entry.profile?.level) {
-                            give = entry.id
-                            phase = .idle
+                            model.pickGive(entry.id)
+                            changing = false
                         }
                     }
                 }
@@ -82,92 +101,25 @@ struct TradeOfferView: View {
     private var coworkerSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             sectionTitle(l.tradePickCoworker)
-            if let coworkers {
-                if coworkers.isEmpty {
-                    Text(l.tradeNoCoworkers).font(.caption).foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                } else {
-                    VStack(spacing: 0) {
-                        ForEach(coworkers) { coworker in
-                            coworkerRow(coworker)
-                            if coworker != coworkers.last { Divider() }
-                        }
-                    }
-                    .ptbCard()
-                }
-            } else if loadFailed {
-                Text(l.tradeCoworkersUnavailable).font(.caption).foregroundStyle(.orange)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                HStack(spacing: 6) {
-                    ProgressView().controlSize(.small)
-                    Text(l.tradeLoadingCoworkers).font(.caption).foregroundStyle(.secondary)
-                }
-            }
+            TradeCoworkerPicker(model: model, l: l)
         }
-    }
-
-    private func coworkerRow(_ coworker: TradeCoworker) -> some View {
-        Button {
-            target = coworker.id
-            phase = .idle
-        } label: {
-            HStack {
-                Image(systemName: target == coworker.id ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(target == coworker.id ? Color.accentColor : .secondary)
-                Text(coworker.name).font(.callout)
-                Spacer()
-            }
-            .padding(.horizontal, 12).padding(.vertical, 8)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 
     private var sendSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             Button {
-                send()
+                Task { await model.send() }
             } label: {
-                Text(phase == .sending ? l.tradeSending : l.tradeSendOffer)
+                Text(model.phase == .sending ? l.tradeSending : l.tradeSendOffer)
             }
             .buttonStyle(.borderedProminent)
-            .disabled(give == nil || target == nil || phase == .sending)
-            switch phase {
-            case .sent(let name):
-                Text(l.tradeOfferSent(name)).font(.caption).foregroundStyle(.green)
-                    .fixedSize(horizontal: false, vertical: true)
-            case .refused(let message):
-                Text(message).font(.caption).foregroundStyle(.orange)
-                    .fixedSize(horizontal: false, vertical: true)
-            case .failed:
-                Text(l.tradeSendFailed).font(.caption).foregroundStyle(.orange)
-            case .idle, .sending:
+            .disabled(!model.canSend)
+            TradePhaseLine(phase: model.phase, l: l)
+            if model.phase == .idle || model.phase == .sending {
                 Text(l.tradeSectionHint).font(.caption2).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-    }
-
-    private func send() {
-        guard let give, let target, let name = coworkers?.first(where: { $0.id == target })?.name else { return }
-        phase = .sending
-        Task {
-            switch await uploader.proposeTrade(to: target, give: give) {
-            case .sent:
-                phase = .sent(name)
-                self.give = nil
-                self.target = nil
-            case .refused(let message): phase = .refused(message)
-            case .failed: phase = .failed
-            }
-        }
-    }
-
-    private func loadCoworkers() async {
-        guard coworkers == nil else { return }
-        coworkers = await uploader.coworkers()
-        loadFailed = coworkers == nil
     }
 
     private func species(of entry: DexEntry) -> CompanionStore.DexSpecies {
@@ -181,6 +133,46 @@ struct TradeOfferView: View {
         Text(text)
             .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
             .textCase(.uppercase).padding(.leading, 4)
+    }
+}
+
+/// Box detail panel: the coworker list for one Pokémon, a confirm row for the picked friend, the result line.
+@MainActor
+struct BoxTradePanel: View {
+    let store: CompanionStore
+    let pokemonName: String
+    @State private var model: TradeOfferModel
+    private var l: L { store.l }
+
+    init(store: CompanionStore, uploader: PartyUploader, individualID: String, pokemonName: String,
+         initialTarget: String? = nil, initialCoworkers: [TradeCoworker]? = nil) {
+        self.store = store
+        self.pokemonName = pokemonName
+        _model = State(initialValue: TradeOfferModel(uploader: uploader, give: individualID, target: initialTarget,
+                                                     coworkers: initialCoworkers))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(l.tradePickCoworker)
+                .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
+                .textCase(.uppercase).padding(.leading, 4)
+            TradeCoworkerPicker(model: model, l: l)
+            if let friend = model.targetName, model.give != nil {
+                HStack(spacing: 8) {
+                    Text(l.tradeConfirmLine(friend: friend, pokemon: pokemonName)).font(.callout)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 4)
+                    Button(model.phase == .sending ? l.tradeSending : l.tradeSend) {
+                        Task { await model.send() }
+                    }
+                    .buttonStyle(.borderedProminent).controlSize(.small)
+                    .disabled(!model.canSend)
+                }
+            }
+            TradePhaseLine(phase: model.phase, l: l)
+        }
+        .task { await model.load() }
     }
 }
 
