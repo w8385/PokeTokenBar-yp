@@ -112,28 +112,28 @@ final class StrokeHeartBubbleTests: XCTestCase {
         XCTAssertFalse(PetHeartState().isShowing)
     }
 
-    func testHeartBubbleArtRowsShareOneWidth() {
-        let rows = HeartBubbleArt.rows
-        XCTAssertTrue(rows.allSatisfy { $0.count == rows[0].count })
-    }
-
-    func testBubbleHeartAndTailAreSymmetricExceptShadeAndHighlight() {
-        for row in HeartBubbleArt.rows {
-            let plain = row.map { "RDH".contains($0) ? Character("R") : $0 }
-            XCTAssertEqual(String(plain.reversed()), String(plain), row)
+    func testTailTipSitsAtTheHorizontalCenterOnTheBottomEdge() {
+        for metrics in [BubbleMetrics.standard, .mini] {
+            let rect = CGRect(x: 0, y: 0, width: 60, height: 40)
+            let box = BubbleShape(metrics: metrics).path(in: rect).boundingRect
+            XCTAssertEqual(box.maxY, rect.maxY, accuracy: 0.001)
+            XCTAssertEqual(box.minX, 0, accuracy: 0.001)
+            XCTAssertEqual(box.maxX, 60, accuracy: 0.001)
+            let path = BubbleShape(metrics: metrics).path(in: rect)
+            XCTAssertTrue(path.contains(CGPoint(x: rect.midX, y: rect.maxY - 0.5)))
+            XCTAssertFalse(path.contains(CGPoint(x: rect.midX + metrics.tailWidth, y: rect.maxY - 0.5)))
         }
     }
 
-    func testTailTipSitsAtTheHorizontalCenter() throws {
-        let rows = HeartBubbleArt.rows
-        let tip = try XCTUnwrap(rows.last)
-        XCTAssertEqual(tip.firstIndex(of: "O").map { tip.distance(from: tip.startIndex, to: $0) }, rows[0].count / 2)
-        XCTAssertEqual(tip.filter { $0 == "O" }.count, 1, "tail ends in a single pixel")
+    func testMiniBubbleIsTheStandardOneScaledDown() {
+        let standard = BubbleMetrics.standard, mini = BubbleMetrics.mini
+        XCTAssertEqual(standard.cornerRadius, 12)
+        XCTAssertEqual(mini.cornerRadius / standard.cornerRadius, mini.tailHeight / standard.tailHeight)
+        XCTAssertEqual(mini.cornerRadius / standard.cornerRadius, mini.shadowRadius / standard.shadowRadius)
     }
 
     func testHeartBubbleFitsThePanelAndHeadroom() {
-        let rows = HeartBubbleArt.rows
-        XCTAssertLessThanOrEqual(CGFloat(rows[0].count) * HeartBubbleArt.pixel, FloatingPetController.bubbleMinWidth)
+        XCTAssertLessThanOrEqual(HeartBubbleArt.width, FloatingPetController.bubbleMinWidth)
         // Worst case: the sprite touches its box top (visible top 0), so the bubble sits highest.
         XCTAssertLessThanOrEqual(HeartBubbleArt.height - HeartBubbleArt.tailOverlap,
                                  FloatingPetController.bubbleHeadroom)
@@ -232,12 +232,6 @@ final class StrokeHeartBubbleTests: XCTestCase {
     func testEmptyCentralBandFallsBackToTheFullWidth() throws {
         let sidesOnly = try image { row, column in (column == 0 || column == 9) && row >= 2 }
         XCTAssertEqual(SpriteVisibleTop.opaqueTopFraction(of: sidesOnly), 0.2, accuracy: 0.001)
-    }
-
-    func testEveryArtCellHasAColorOrIsTransparent() {
-        let cells = Set(HeartBubbleArt.rows.joined())
-        XCTAssertEqual(cells, ["O", "W", "R", "D", "H", "."])
-        for cell in cells where cell != "." { XCTAssertNotNil(HeartBubbleArt.color(for: cell)) }
     }
 
     func testHeartsLabelIsLocalizedInEveryLanguage() {

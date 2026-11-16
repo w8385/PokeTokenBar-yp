@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 @testable import PokeTokenBar
 
@@ -297,20 +298,27 @@ final class PetRowLayoutTests: XCTestCase {
                                                                  visibleFrame: screen))
     }
 
-    func testHomeSlotsPutFriendsAtTheCornersAndTheAddSlotWhereTheNextFriendGoes() {
-        typealias A = FriendSlotsRow.Arrangement
-        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 0, canAdd: true), A(center: .add))
-        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 0, canAdd: false), A())
-        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 1, canAdd: true), A(leading: .friend(0), trailing: .add))
-        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 1, canAdd: false), A(leading: .friend(0)))
-        XCTAssertEqual(FriendSlotsRow.arrangement(friendCount: 2, canAdd: true),
+    func testHomeSlotsStandBesideTheRaisedPokemonAndTheAddSlotTakesTheNextFriendsPlace() {
+        typealias A = HomePetRow<EmptyView>.Arrangement
+        XCTAssertEqual(HomePetRow<EmptyView>.arrangement(friendCount: 0, canAdd: true), A(leading: .add))
+        XCTAssertEqual(HomePetRow<EmptyView>.arrangement(friendCount: 0, canAdd: false), A())
+        XCTAssertEqual(HomePetRow<EmptyView>.arrangement(friendCount: 1, canAdd: true),
+                       A(leading: .friend(0), trailing: .add))
+        XCTAssertEqual(HomePetRow<EmptyView>.arrangement(friendCount: 1, canAdd: false), A(leading: .friend(0)))
+        XCTAssertEqual(HomePetRow<EmptyView>.arrangement(friendCount: 2, canAdd: true),
                        A(leading: .friend(0), trailing: .friend(1)))
+    }
+
+    func testFriendsAreSmallerThanTheRaisedPokemonAndTheRowFitsBesideItsTextColumn() {
+        XCTAssertLessThan(HomePetRow<EmptyView>.slotSize, 76)
+        let row = 2 * HomePetRow<EmptyView>.slotSize + 76 + 2 * HomePetRow<EmptyView>.gap
+        XCTAssertGreaterThanOrEqual(PopoverMetrics.contentWidth - row - 12, 180, "the text column keeps its width")
     }
 
     func testCrowdBubbleEmojiStaysSmallInsideTheSpriteBox() {
         for size in stride(from: CGFloat(28), through: 384, by: 4) {
             let emoji = CrowdBubble.emojiSize(for: size)
-            XCTAssertLessThanOrEqual(emoji + 2 + MiniBubbleShape.tailHeight, size, "size \(size)")
+            XCTAssertLessThanOrEqual(emoji + 2 + BubbleMetrics.mini.tailHeight, size, "size \(size)")
             XCTAssertLessThanOrEqual(emoji, 24, "size \(size)")
         }
     }
