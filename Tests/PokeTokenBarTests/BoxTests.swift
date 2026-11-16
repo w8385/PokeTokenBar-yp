@@ -53,11 +53,11 @@ final class BoxTests: XCTestCase {
             of: BattleView(store: link.store, navigation: PopoverNavigation())
                 .environment(link.uploader).environment(link.battle).environment(link.store),
             containing: l.battleRecentTitle, height: 1400)
-        XCTAssertTrue(text.localizedCaseInsensitiveContains(l.partyUploadTokenLabel), text)
-        XCTAssertTrue(text.localizedCaseInsensitiveContains(l.battleRecentTitle), text)
-        XCTAssertFalse(text.localizedCaseInsensitiveContains(l.tradeOfferButton), "trade moved to Coworkers: \(text)")
-        XCTAssertFalse(text.localizedCaseInsensitiveContains(l.friendsTitle), "coworkers moved: \(text)")
-        XCTAssertFalse(text.contains("Jordan"), text)
+        XCTAssertTrue(text.ocrContains(l.partyUploadTokenLabel), text)
+        XCTAssertTrue(text.ocrContains(l.battleRecentTitle), text)
+        XCTAssertFalse(text.ocrContains(l.tradeOfferButton), "trade moved to Coworkers: \(text)")
+        XCTAssertFalse(text.ocrContains(l.friendsTitle), "coworkers moved: \(text)")
+        XCTAssertFalse(text.ocrContains("Jordan"), text)
     }
 
     func testCoworkersTabListsCoworkersAndOffersATradeWhenConnected() async throws {
@@ -67,9 +67,9 @@ final class BoxTests: XCTestCase {
             of: CoworkersView(store: link.store, navigation: PopoverNavigation())
                 .environment(link.uploader).environment(link.battle).environment(link.store),
             containing: "Jordan", height: 700)
-        XCTAssertTrue(text.contains("Jordan"), text)
-        XCTAssertTrue(text.localizedCaseInsensitiveContains(l.tradeOfferButton), text)
-        XCTAssertFalse(text.localizedCaseInsensitiveContains(l.partyUploadTokenLabel), "no token UI here: \(text)")
+        XCTAssertTrue(text.ocrContains("Jordan"), text)
+        XCTAssertTrue(text.ocrContains(l.tradeOfferButton), text)
+        XCTAssertFalse(text.ocrContains(l.partyUploadTokenLabel), "no token UI here: \(text)")
     }
 
     func testDisconnectedCoworkersTabPointsAtTheBattleConnectionInsteadOfDuplicatingIt() async throws {
@@ -79,10 +79,10 @@ final class BoxTests: XCTestCase {
             of: CoworkersView(store: link.store, navigation: PopoverNavigation())
                 .environment(link.uploader).environment(link.battle).environment(link.store),
             containing: l.coworkersOpenConnection, height: 520)
-        XCTAssertTrue(text.localizedCaseInsensitiveContains(l.coworkersOpenConnection), text)
-        XCTAssertTrue(text.contains("YPoke"), text)
-        XCTAssertFalse(text.localizedCaseInsensitiveContains(l.tradeOfferButton), text)
-        XCTAssertFalse(text.localizedCaseInsensitiveContains(l.partyUploadTokenLabel), text)
+        XCTAssertTrue(text.ocrContains(l.coworkersOpenConnection), text)
+        XCTAssertTrue(text.ocrContains("YPoke"), text)
+        XCTAssertFalse(text.ocrContains(l.tradeOfferButton), text)
+        XCTAssertFalse(text.ocrContains(l.partyUploadTokenLabel), text)
     }
 
     func testTradeFromTheBoxDetailOpensTheOfferOnCoworkersWithTheGivePreselected() async throws {
@@ -99,8 +99,8 @@ final class BoxTests: XCTestCase {
             of: CoworkersView(store: link.store, navigation: nav)
                 .environment(link.uploader).environment(link.battle).environment(link.store),
             containing: "to send", height: 520)
-        XCTAssertTrue(text.localizedCaseInsensitiveContains("to send"), "the offer screen replaces the section list: \(text)")
-        XCTAssertFalse(text.contains("Jordan"), "coworkers list is behind the offer screen: \(text)")
+        XCTAssertTrue(text.ocrContains("to send"), "the offer screen replaces the section list: \(text)")
+        XCTAssertFalse(text.ocrContains("Jordan"), "coworkers list is behind the offer screen: \(text)")
     }
 
     func testDexTabIsNamedPokedexInEveryLanguageAndBoxHasItsOwnLabel() {
@@ -147,9 +147,9 @@ final class BoxTests: XCTestCase {
                 .scaleEffect(scale, anchor: .topLeading)
                 .frame(width: PopoverMetrics.contentWidth * scale, height: 90, alignment: .topLeading),
             containing: l.title(of: .battle), width: PopoverMetrics.contentWidth * scale, height: 90)
-        XCTAssertTrue(text.localizedCaseInsensitiveContains(l.title(of: .battle)), text)
+        XCTAssertTrue(text.ocrContains(l.title(of: .battle)), text)
         for other in PopoverTab.allCases where other != .battle {
-            XCTAssertFalse(text.localizedCaseInsensitiveContains(l.title(of: other)), "\(other) should be icon-only: \(text)")
+            XCTAssertFalse(text.ocrContains(l.title(of: other)), "\(other) should be icon-only: \(text)")
             XCTAssertFalse(other.symbol.isEmpty)
         }
     }
@@ -266,16 +266,16 @@ final class BoxTests: XCTestCase {
         let slot = HeldItemSlot(store: store, individualID: BoxDexFixture.pikachuID, speciesID: 25,
                                 speciesName: "Pikachu") {}
         let free = try await renderedText(of: slot, containing: store.l.heldItemRemove)
-        XCTAssertTrue(free.contains(store.l.heldItemRemove), "unlocked slot offers Remove: \(free)")
+        XCTAssertTrue(free.ocrContains(store.l.heldItemRemove), "unlocked slot offers Remove: \(free)")
 
         store.setTradeLocked([BoxDexFixture.pikachuID])
         XCTAssertFalse(store.unequip(from: BoxDexFixture.pikachuID))
         XCTAssertFalse(store.equip(.item(.leftovers), to: BoxDexFixture.pikachuID))
         XCTAssertEqual(store.heldItemRef(of: BoxDexFixture.pikachuID), .item(.choiceScarf))
         let locked = try await renderedText(of: slot, containing: store.l.heldItemLabel)
-        XCTAssertTrue(locked.contains(store.l.heldItemLabel), "the slot still names the item: \(locked)")
-        XCTAssertFalse(locked.contains(store.l.heldItemRemove), "no Remove while listed: \(locked)")
-        XCTAssertFalse(locked.contains(store.l.heldItemSwap), "no Swap while listed: \(locked)")
+        XCTAssertTrue(locked.ocrContains(store.l.heldItemLabel), "the slot still names the item: \(locked)")
+        XCTAssertFalse(locked.ocrContains(store.l.heldItemRemove), "no Remove while listed: \(locked)")
+        XCTAssertFalse(locked.ocrContains(store.l.heldItemSwap), "no Swap while listed: \(locked)")
     }
 
     private func renderedText<V: View>(of view: V, containing expected: String, width: CGFloat = PopoverMetrics.contentWidth,
@@ -291,7 +291,7 @@ final class BoxTests: XCTestCase {
         for _ in 0..<100 where store.currentLine == nil { await Task.yield() }
         let words = try await renderedWords(
             of: BoxView(store: store, navigation: PopoverNavigation()), containing: "Onix", height: 520)
-        let levels = words.filter { ($0.topCandidates(1).first?.string ?? "").lowercased().hasPrefix("lv") }
+        let levels = words.filter { OCRText.folded($0.topCandidates(1).first?.string ?? "").hasPrefix(OCRText.folded("lv")) }
         let top = try XCTUnwrap(levels.map(\.boundingBox.midY).max())
         XCTAssertEqual(levels.filter { abs($0.boundingBox.midY - top) < 0.03 }.count, 4,
                        "five individuals fill a row of four first; an empty cell before the first one shifts the grid")
@@ -311,7 +311,7 @@ final class BoxTests: XCTestCase {
             try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
             words = request.results ?? []
             let text = words.compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ")
-            if text.localizedCaseInsensitiveContains(expected) { break }
+            if OCRText.contains(text, expected) { break }
         }
         return words
     }
@@ -341,10 +341,10 @@ final class BoxTests: XCTestCase {
                 .environment(nav).frame(height: 700), containing: store.l.boxCount(1), height: 700)
         }
         let text = try await render(store, species)
-        XCTAssertTrue(text.contains(store.l.boxCount(1)), "Seen: \(text)")
+        XCTAssertTrue(text.ocrContains(store.l.boxCount(1)), "Seen: \(text)")
         for forbidden in [store.l.heldItemLabel, store.l.heldItemEquip, store.l.heldItemRemove,
                           store.l.friendLabel, store.l.dexRaising] {
-            XCTAssertFalse(text.localizedCaseInsensitiveContains(forbidden), "\(forbidden) belongs to the Box: \(text)")
+            XCTAssertFalse(text.ocrContains(forbidden), "\(forbidden) belongs to the Box: \(text)")
         }
 
         let sparse = try self.store { $0.dex.removeAll { $0.finalID == 6 } }

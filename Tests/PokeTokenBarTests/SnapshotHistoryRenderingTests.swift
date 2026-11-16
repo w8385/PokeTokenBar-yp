@@ -130,7 +130,7 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
         /// Pixel coordinates in the complete image, with the origin at the top left.
         let bounds: CGRect
         static func normalized(_ text: String) -> String {
-            text.lowercased().filter { $0.isLetter || $0.isNumber }
+            OCRText.folded(text).filter { $0.isLetter || $0.isNumber }
         }
         func reads(_ wanted: String, exactly: Bool = false) -> Bool {
             let normalized = Self.normalized(wanted)

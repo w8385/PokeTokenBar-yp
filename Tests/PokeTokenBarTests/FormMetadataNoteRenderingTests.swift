@@ -90,8 +90,8 @@ final class FormMetadataNoteRenderingTests: XCTestCase {
         var text = ""
         repeat {
             text = try renderedText(host)
-            let ready = loaded ? text.contains("grass") : !text.isEmpty
-            if ready && text.contains("data uses the default form") == expected { return }
+            let ready = loaded ? text.ocrContains("grass") : !text.isEmpty
+            if ready && text.ocrContains("data uses the default form") == expected { return }
             try await Task.sleep(for: .milliseconds(50))
         } while ContinuousClock.now < deadline
         XCTFail("Expected default-form note=\(expected). Rendered: \(text)", file: file, line: line)
