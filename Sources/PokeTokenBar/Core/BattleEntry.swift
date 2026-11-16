@@ -193,24 +193,40 @@ final class BattleEntryStore {
         slots[index] = BattleEntrySlot(instanceID: instanceID)
     }
 
-    /// The picker and the Pokédex button both go through here, so a pick never touches the
-    /// representative or the Pokémon being raised. False when the lineup is full or already has it.
+    /// Puts `entry` in battle slot `index` (0-based) of the lineup the Battle tab shows. Tapping its own slot
+    /// takes it out (never the last member); a slot past the end appends. Another slot's holder swaps with it,
+    /// a different holder of a slot it was not in leaves. The representative and the Pokémon being raised stay
+    /// as they are. False when nothing changed.
     @discardableResult
-    func sendToBattle(_ entry: DexEntry, in store: CompanionStore) -> Bool {
-        guard let candidate = store.battleCandidate(for: entry) else { return false }
+    func place(_ entry: DexEntry, at index: Int, in store: CompanionStore) -> Bool {
+        guard (0..<BattleEntry.maxSlots).contains(index), let candidate = store.battleCandidate(for: entry),
+              !store.isTradeLocked(candidate.id) else { return false }
         prune(owned: Set(BattleEntry.candidates(in: store.state).map(\.id)))
-        return add(candidate.id, pinning: BattleEntry.autoFighter(state: store.state)?.id)
-    }
-
-    func isFighting(_ entry: DexEntry, in store: CompanionStore) -> Bool {
-        guard let candidate = store.battleCandidate(for: entry) else { return false }
-        return BattleEntry.lineup(state: store.state, slots: slots).contains { $0.id == candidate.id }
-    }
-
-    func isFull(in store: CompanionStore) -> Bool {
-        let picked = BattleEntry.candidates(in: store.state).filter { candidate in
-            slots.contains { $0.instanceID == candidate.id }
+        let current = slots.isEmpty
+            ? BattleEntry.autoFighter(state: store.state).map { [BattleEntrySlot(instanceID: $0.id)] } ?? []
+            : slots
+        var next = current
+        if let from = current.firstIndex(where: { $0.instanceID == candidate.id }) {
+            let to = min(index, current.count - 1)
+            if from == to, index == to {
+                guard current.count > 1 else { return false }
+                next.remove(at: from)
+            } else {
+                next.swapAt(from, to)
+            }
+        } else if index < current.count {
+            next[index] = BattleEntrySlot(instanceID: candidate.id)
+        } else {
+            next.append(BattleEntrySlot(instanceID: candidate.id))
         }
-        return picked.count >= BattleEntry.maxSlots
+        guard next != current else { return false }
+        slots = next
+        return true
+    }
+
+    /// Where `entry` stands in the lineup the Battle tab shows, 0-based.
+    func slotIndex(of entry: DexEntry, in store: CompanionStore) -> Int? {
+        guard let candidate = store.battleCandidate(for: entry) else { return nil }
+        return BattleEntry.lineup(state: store.state, slots: slots).firstIndex { $0.id == candidate.id }
     }
 }

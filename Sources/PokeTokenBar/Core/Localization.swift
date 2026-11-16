@@ -803,10 +803,6 @@ struct L {
     var battleMoveLater: String {
         t("뒤로", "Move later", "後ろへ", "Retrasar", "Reculer", "Mover para trás", "Nach hinten", "Ниже")
     }
-    var battleSlotsFull: String {
-        t("3마리 가득", "Lineup full", "3匹で満員", "Equipo completo", "Équipe complète", "Equipe completa",
-          "Aufstellung voll", "Состав полон")
-    }
     var battleEntryAutoPick: String {
         t("자동 (키우는 포켓몬)", "Auto (the one you're raising)", "自動(育成中のポケモン)", "Auto (el que crías)",
           "Auto (celui que tu élèves)", "Auto (o que você cria)", "Automatisch (aktuelles Pokémon)", "Авто (выращиваемый)")
@@ -907,9 +903,33 @@ struct L {
         }
     }
     var battleChange: String { t("바꾸기", "Change", "変更", "Cambiar", "Changer", "Trocar", "Ändern", "Сменить") }
-    var battleSendToBattle: String {
-        t("대결에 내보내기", "Send to battle", "対戦に出す", "Enviar al combate", "Envoyer au combat",
-          "Enviar para a batalha", "In den Kampf schicken", "Отправить в бой")
+    func battleSlotPlace(_ n: Int) -> String {
+        t("대결 \(n)번 자리에 넣기", "Put in battle slot \(n)", "対戦の\(n)番に入れる", "Poner en el puesto \(n)",
+          "Mettre en position \(n)", "Colocar na vaga \(n)", "Auf Platz \(n) setzen", "Поставить на место \(n)")
+    }
+    func battleSlotRemove(_ n: Int) -> String {
+        t("대결 \(n)번 자리에서 빼기", "Remove from battle slot \(n)", "対戦の\(n)番から外す", "Quitar del puesto \(n)",
+          "Retirer de la position \(n)", "Tirar da vaga \(n)", "Von Platz \(n) entfernen", "Убрать с места \(n)")
+    }
+    var battleSlotLast: String {
+        t("대결에는 한 마리가 있어야 해요. 다른 포켓몬을 넣으면 빠져요.",
+          "One Pokémon has to stay in the lineup. Put another one in to swap it out.",
+          "対戦には1匹必要です。別のポケモンを入れると入れ替わります。",
+          "Debe quedar un Pokémon en el equipo. Pon otro para sustituirlo.",
+          "Un Pokémon doit rester dans l'équipe. Mets-en un autre pour le remplacer.",
+          "Um Pokémon precisa ficar na equipe. Coloque outro para trocá-lo.",
+          "Ein Pokémon muss in der Aufstellung bleiben. Setze ein anderes ein, um es zu tauschen.",
+          "В составе должен остаться один покемон. Поставьте другого, чтобы заменить его.")
+    }
+    var battleSlotLocked: String {
+        t("교환 중이라 대결 자리를 바꿀 수 없어요. 교환이 끝나거나 취소되면 풀려요.",
+          "In a trade, so its battle slot is locked until the trade ends or is cancelled.",
+          "交換中のため対戦の枠は変更できません。交換が終わるか取り消されると解除されます。",
+          "Está en un intercambio: su puesto de combate queda bloqueado hasta que termine o se cancele.",
+          "En cours d'échange : sa position de combat est verrouillée jusqu'à la fin ou l'annulation de l'échange.",
+          "Está em uma troca: a vaga de batalha fica bloqueada até a troca terminar ou ser cancelada.",
+          "Im Tausch: Der Kampfplatz ist gesperrt, bis der Tausch endet oder abgebrochen wird.",
+          "Участвует в обмене: место в бою заблокировано, пока обмен не завершится или не будет отменён.")
     }
     var battleFighting: String { t("대결 중", "In battle", "対戦中", "En combate", "En combat", "Em batalha", "Im Kampf", "В бою") }
     func battleLevelCap(_ level: Int) -> String {
