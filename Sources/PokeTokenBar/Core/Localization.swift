@@ -2257,13 +2257,8 @@ struct L {
                      "効果ばつぐんの技のダメージが1.2倍。", "Los movimientos supereficaces hacen ×1,2 de daño.",
                      "Les attaques super efficaces font ×1,2 de dégâts.", "Golpes super efetivos causam ×1,2 de dano.",
                      "Sehr effektive Attacken richten ×1,2 Schaden an.", "Сверхэффективные атаки наносят ×1,2 урона.")
-        case .charcoal:
-            return t("불꽃타입 기술의 데미지가 1.2배.", "Fire-type moves deal ×1.2 damage.",
-                     "ほのおタイプの技のダメージが1.2倍。", "Los movimientos de tipo Fuego hacen ×1,2 de daño.",
-                     "Les attaques de type Feu font ×1,2 de dégâts.", "Golpes do tipo Fogo causam ×1,2 de dano.",
-                     "Feuer-Attacken richten ×1,2 Schaden an.", "Атаки типа Огонь наносят ×1,2 урона.")
         default:
-            return ""
+            return moreHeldItemEffect(kind)
         }
     }
 
@@ -2336,9 +2331,11 @@ struct L {
         case .linkingCord:
             return linkingCordDescription
         default:
-            if kind.isTradeEvolutionItem { return evolutionTradeItemNote }
-            if kind.isEvolutionHeld { return evolutionHeldNote }
             let effect = heldItemEffect(kind)
+            if kind.isTradeEvolutionItem { return [evolutionTradeItemNote, effect].filter { !$0.isEmpty }.joined(separator: " ") }
+            if kind.isEvolutionHeld {
+                return effect.isEmpty ? evolutionHeldNote : "\(evolutionHeldCondition) \(effect)"
+            }
             return effect.isEmpty ? nil : effect
         }
     }

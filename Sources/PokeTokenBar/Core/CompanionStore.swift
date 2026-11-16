@@ -1199,6 +1199,8 @@ final class CompanionStore {
             let options = growthOptions(of: node, gender: gender)
             if options.isEmpty {
                 graduate(); break
+            } else if holdsEverstone(a.profile?.instanceID) {
+                break   // The XP keeps adding up and carries over once the stone comes off.
             } else {
                 let nextIndex = a.stageIndex + 1
                 let traits = evolutionTraits(of: a)
@@ -1593,6 +1595,10 @@ final class CompanionStore {
         state.heldItems[instanceID].flatMap(ItemKind.init(rawValue:))
     }
 
+    func holdsEverstone(_ instanceID: String?) -> Bool {
+        instanceID.map { heldItem(of: $0) == .everstone } ?? false
+    }
+
     /// `kind` 를 `instanceID` 에 단다. 이미 다른 도구를 들고 있으면 그건 가방으로 돌아온다.
     /// 가방에 없거나 지닌 도구가 아니거나 가진 개체가 아니면 false.
     @discardableResult
@@ -1732,7 +1738,7 @@ final class CompanionStore {
         state.inventory[key, default: 0] += 1
         state.heldItems[instanceID] = nil
         announceMegaChange(of: instanceID, from: megaBefore)
-        save()
+        if key == ItemKind.everstone.rawValue { reevaluateEvolution() } else { save() }
         return true
     }
 
@@ -1850,7 +1856,7 @@ final class CompanionStore {
     // MARK: 진화의 돌
 
     /// 돌 사용 결과 — wrongStone 이면 돌은 그대로 남는다.
-    enum StoneUseResult: Equatable { case evolved, wrongStone, unavailable, notReady }
+    enum StoneUseResult: Equatable { case evolved, wrongStone, unavailable, notReady, everstone }
 
     /// 돌을 쓸 수 있는 상태 — 돌 재고 + 활성 포켓몬 + 라인 로딩 완료(위장 중인 메타몽 제외).
     func canUseStone(_ kind: ItemKind) -> Bool {
@@ -1875,6 +1881,7 @@ final class CompanionStore {
         guard canUseStone(kind), let line = currentLine, let a = state.active,
               let node = line.tree.node(withID: a.currentID) else { return .unavailable }
         guard let next = stoneTarget(kind) else { return .wrongStone }
+        if holdsEverstone(a.profile?.instanceID) { return .everstone }
         var rest: [EvolutionRequirement] = []
         if let path = EvolutionRules.rule(for: next.speciesID)?.path(usingBag: kind) {
             rest = path.filter { $0 != .bag(kind) }
@@ -3058,11 +3065,11 @@ final class CompanionStore {
 
     func dismissTradeArrival() { tradeArrival = nil }
 
-    enum TradeEvolutionResult: Equatable { case evolved, noEvolution, notReady, unavailable }
+    enum TradeEvolutionResult: Equatable { case evolved, noEvolution, notReady, unavailable, everstone }
     /// `wrongTarget` and `notReady` (it evolves by trade, but the item or friend it needs is missing) leave the
     /// cord in the bag.
     /// `listed`: the individual is in an open trade, and a cord evolution would use up the item the trade carries.
-    enum CordUseResult: Equatable { case evolved, wrongTarget, notReady, unavailable, listed }
+    enum CordUseResult: Equatable { case evolved, wrongTarget, notReady, unavailable, listed, everstone }
 
     private static let appliedTradeLimit = 200
     /// An offer lives 24 hours on the bot; a lock the bot stops reporting is dropped at the next sync, and one it
@@ -3218,6 +3225,7 @@ final class CompanionStore {
         case .noEvolution: return .wrongTarget
         case .notReady: return .notReady
         case .unavailable: return .unavailable
+        case .everstone: return .everstone
         }
     }
 
@@ -3225,6 +3233,7 @@ final class CompanionStore {
     /// it was sent with and the species this side gave for it.
     private func evolveByTrade(entryID: String, withCord: Bool) async -> TradeEvolutionResult {
         func owned(_ entry: DexEntry) -> Bool { entry.id == entryID && entry.releasedAt == nil }
+        if holdsEverstone(entryID) { return .everstone }
         guard let baseID = state.dex.first(where: owned)?.baseID else { return .noEvolution }
         guard let line = try? await dexNameLine(baseID: baseID) else { return .unavailable }
         // The store may have changed while the line loaded; read the entry again.
