@@ -20,11 +20,11 @@ final class BoxTests: XCTestCase {
 
     // MARK: Tabs
 
-    func testTabsAreHomeShopBagDexBoxBattleCoworkersInThatOrder() {
+    func testTabsAreHomeShopBagDexBoxBattleFriendsInThatOrder() {
         XCTAssertEqual(PopoverTab.allCases, [.home, .shop, .bag, .dex, .box, .battle, .coworkers])
     }
 
-    // MARK: Coworkers tab
+    // MARK: Friends tab (the linked coworkers)
 
     private struct Link {
         let store: CompanionStore
@@ -56,7 +56,7 @@ final class BoxTests: XCTestCase {
         XCTAssertTrue(text.localizedCaseInsensitiveContains(l.partyUploadTokenLabel), text)
         XCTAssertTrue(text.localizedCaseInsensitiveContains(l.battleRecentTitle), text)
         XCTAssertFalse(text.localizedCaseInsensitiveContains(l.tradeOfferButton), "trade moved to Coworkers: \(text)")
-        XCTAssertFalse(text.localizedCaseInsensitiveContains(l.battleCoworkersTitle), "coworkers moved: \(text)")
+        XCTAssertFalse(text.localizedCaseInsensitiveContains(l.friendsTitle), "coworkers moved: \(text)")
         XCTAssertFalse(text.contains("Jordan"), text)
     }
 
@@ -113,6 +113,16 @@ final class BoxTests: XCTestCase {
         }
         XCTAssertEqual(L(.ko).title(of: .dex), "도감")
         XCTAssertEqual(L(.ko).title(of: .box), "박스")
+    }
+
+    func testTheCoworkersTabIsNamedFriendsInEveryLanguage() {
+        let names: [AppLanguage: String] = [.ko: "친구", .en: "Friends", .ja: "フレンド", .es: "Amigos",
+                                            .fr: "Amis", .pt: "Amigos", .de: "Freunde", .ru: "Друзья"]
+        XCTAssertEqual(Set(names.keys), Set(AppLanguage.allCases))
+        for (language, name) in names {
+            XCTAssertEqual(L(language).title(of: .coworkers), name, "\(language)")
+            XCTAssertEqual(L(language).friendsTitle, name, "\(language)")
+        }
     }
 
     func testTabBarFitsThePopoverWidthForEveryLanguageAndSelectedTab() {

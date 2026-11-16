@@ -921,7 +921,7 @@ struct L {
         t("아직 대결이 없어요.", "No battles yet.", "まだ対戦がありません。", "Aún no hay combates.", "Aucun combat pour l'instant.",
           "Ainda não há batalhas.", "Noch keine Kämpfe.", "Боёв пока нет.")
     }
-    var battleCoworkersTitle: String { t("동료", "Coworkers", "同僚", "Compañeros", "Collègues", "Colegas", "Kollegen", "Коллеги") }
+    var friendsTitle: String { t("친구", "Friends", "フレンド", "Amigos", "Amis", "Amigos", "Freunde", "Друзья") }
     var battleCoworkersEmpty: String {
         t("아직 동료가 없어요.", "No coworkers yet.", "まだ同僚がいません。", "Aún no hay compañeros.", "Aucun collègue pour l'instant.",
           "Ainda não há colegas.", "Noch keine Kollegen.", "Коллег пока нет.")

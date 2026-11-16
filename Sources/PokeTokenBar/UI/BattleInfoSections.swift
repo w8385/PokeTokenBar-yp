@@ -25,7 +25,7 @@ struct BattleInfoSections: View {
                 }
             }
             if parts.contains(.coworkers) {
-                section(l.battleCoworkersTitle) {
+                section(l.friendsTitle) {
                     if let empty = Self.coworkersEmptyText(info, l) {
                         emptyRow(empty)
                     } else {

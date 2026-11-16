@@ -1390,7 +1390,7 @@ private struct AgentBob: ViewModifier {
 
 /// Transient limit-alert or agent bubble. Width is capped so copy wraps instead of clipping the panel.
 @MainActor
-private struct SpeechBubbleView: View {
+struct SpeechBubbleView: View {
     let content: FloatingPetController.SpeechBubbleContent
 
     var body: some View {
@@ -1407,23 +1407,7 @@ private struct SpeechBubbleView: View {
         .frame(width: FloatingPetController.bubbleContentWidth, alignment: .leading)
         .padding(.horizontal, FloatingPetController.bubbleHorizontalPadding)
         .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(nsColor: .windowBackgroundColor))
-                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-        )
-        .overlay(
-            Path { path in
-                path.move(to: CGPoint(x: 10, y: 0))
-                path.addLine(to: CGPoint(x: 20, y: 0))
-                path.addLine(to: CGPoint(x: 15, y: 6))
-                path.closeSubpath()
-            }
-            .fill(Color(nsColor: .windowBackgroundColor))
-            .offset(y: 5),
-            alignment: .bottom
-        )
-        .padding(.bottom, 6)
+        .speechBubbleSurface()
     }
 }
 
@@ -1478,67 +1462,25 @@ final class PetHeartState {
     var isShowing = false
 }
 
-/// Pixel-art layout of the heart bubble, so it matches the Gen-V pixel sprites.
-/// One character per pixel: `.` empty, `O` outline, `W` fill, `R` heart, `D` heart shade, `H` heart highlight.
-/// A 2-step rounded bubble with its tail at the bottom center.
+/// Size of the stroke heart's bubble, which `SpriteVisibleTop` anchors above the sprite.
 enum HeartBubbleArt {
-    /// Pixel unit in points; an integer so edges stay crisp on 1x and 2x displays.
-    static let pixel: CGFloat = 2
-    static let rows = [
-        "..OOOOOOOOOOOOO..",
-        ".OWWWWWWWWWWWWWO.",
-        "OWWWWWWWWWWWWWWWO",
-        "OWWWWRRRWRRRWWWWO",
-        "OWWWRHHRRRRRRWWWO",
-        "OWWWRHRRRRRRDWWWO",
-        "OWWWRRRRRRRRDWWWO",
-        "OWWWWRRRRRRDWWWWO",
-        "OWWWWWRRRRDWWWWWO",
-        "OWWWWWWRRDWWWWWWO",
-        "OWWWWWWWDWWWWWWWO",
-        "OWWWWWWWWWWWWWWWO",
-        ".OWWWWWWWWWWWWWO.",
-        "..OOOOOWWWOOOOO..",
-        ".......OWO.......",
-        "........O........",
-    ]
-
-    static var height: CGFloat { CGFloat(rows.count) * pixel }
+    static let width: CGFloat = 34
+    static let height: CGFloat = 32
     /// How far the tail tip sticks into the sprite's visible top (pt).
     static let tailOverlap: CGFloat = 3
-
-    static func color(for cell: Character) -> Color? {
-        switch cell {
-        case "O": Color(red: 0x20 / 255, green: 0x20 / 255, blue: 0x20 / 255)
-        case "W": Color.white
-        case "R": Color(red: 0xE0 / 255, green: 0x30 / 255, blue: 0x3C / 255)
-        case "D": Color(red: 0xA8 / 255, green: 0x20 / 255, blue: 0x2C / 255)
-        case "H": Color(red: 0xFF / 255, green: 0x9A / 255, blue: 0xA2 / 255)
-        default: nil
-        }
-    }
 }
 
-/// Transient heart shown after stroking the pet: a pixel-art speech bubble drawn on an integer grid.
-/// Same colors in light and dark mode (game style).
+/// Transient heart shown after stroking the pet, in the same bubble style as the pet's speech.
 @MainActor
 struct HeartBubbleView: View {
     let l: L
 
     var body: some View {
-        let rows = HeartBubbleArt.rows
-        let pixel = HeartBubbleArt.pixel
-        Canvas { context, _ in
-            for (y, row) in rows.enumerated() {
-                for (x, cell) in row.enumerated() {
-                    guard let color = HeartBubbleArt.color(for: cell) else { continue }
-                    context.fill(Path(CGRect(x: CGFloat(x) * pixel, y: CGFloat(y) * pixel,
-                                             width: pixel, height: pixel)),
-                                 with: .color(color))
-                }
-            }
-        }
-        .frame(width: CGFloat(rows[0].count) * pixel, height: HeartBubbleArt.height)
-        .accessibilityLabel(l.floatingPetHeartsLabel)
+        Image(systemName: "heart.fill")
+            .font(.system(size: 17))
+            .foregroundStyle(Color(red: 0xE0 / 255, green: 0x30 / 255, blue: 0x3C / 255))
+            .frame(width: HeartBubbleArt.width, height: HeartBubbleArt.height - BubbleMetrics.standard.tailHeight)
+            .speechBubbleSurface()
+            .accessibilityLabel(l.floatingPetHeartsLabel)
     }
 }

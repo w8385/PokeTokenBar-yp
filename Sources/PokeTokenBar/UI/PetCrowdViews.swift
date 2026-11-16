@@ -37,23 +37,8 @@ extension View {
     }
 }
 
-/// A rounded box with a tail at the bottom center, pointing at the Pokémon below it.
-struct MiniBubbleShape: Shape {
-    static let tailHeight: CGFloat = 4
-
-    func path(in rect: CGRect) -> Path {
-        let body = CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height - Self.tailHeight)
-        var path = Path(roundedRect: body, cornerRadius: min(6, body.height / 2), style: .continuous)
-        path.move(to: CGPoint(x: rect.midX - 3, y: body.maxY - 0.5))
-        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.midX + 3, y: body.maxY - 0.5))
-        path.closeSubpath()
-        return path
-    }
-}
-
-/// A small emoji speech bubble in the pet bubbles' colors, drawn inside the sprite's box so it never grows
-/// the floating panel. Shared by Home and the floating pet.
+/// A small emoji speech bubble in the pet speech bubble's style, drawn inside the sprite's box so it never
+/// grows the floating panel. Shared by Home and the floating pet.
 @MainActor
 struct CrowdBubble: View {
     let bubble: PetCrowd.Bubble
@@ -61,12 +46,20 @@ struct CrowdBubble: View {
 
     static func emojiSize(for size: CGFloat) -> CGFloat { min(24, max(9, (size * 0.16).rounded())) }
 
+    /// The note emoji is a black glyph, unreadable on the dark bubble, so it is drawn as a text-colored symbol.
+    @ViewBuilder private var glyph: some View {
+        if bubble == .note {
+            Image(systemName: "music.note").foregroundStyle(.primary)
+        } else {
+            Text(bubble.rawValue)
+        }
+    }
+
     var body: some View {
-        Text(bubble.rawValue)
+        glyph
             .font(.system(size: Self.emojiSize(for: size)))
-            .padding(.horizontal, 3).padding(.top, 1).padding(.bottom, 1 + MiniBubbleShape.tailHeight)
-            .background(MiniBubbleShape().fill(Color.white))
-            .overlay(MiniBubbleShape().stroke(Color(red: 0x20 / 255, green: 0x20 / 255, blue: 0x20 / 255), lineWidth: 1))
+            .padding(.horizontal, 3).padding(.vertical, 1)
+            .speechBubbleSurface(.mini)
             .allowsHitTesting(false)
     }
 }
@@ -88,32 +81,35 @@ struct FriendSprite: View {
     }
 }
 
-/// Home: friend slots on the sprite tile's bottom edge, an add slot while a slot is free, and the picker behind it.
+/// Home: the raised Pokémon's tile with friend slots standing beside it on the same ground line,
+/// an add slot while a slot is free, and the picker behind it.
 @MainActor
-struct FriendSlotsRow: View {
+struct HomePetRow<Main: View>: View {
     let store: CompanionStore
     let crowd: PetCrowd
     var spriteStore: SpriteStore = .shared
     var cryPlayer: CryPlayer = .shared
+    @ViewBuilder let main: Main
     @State private var picking = false
 
-    static let slotSize: CGFloat = 28
+    static var slotSize: CGFloat { 24 }
+    static var gap: CGFloat { 4 }
 
     enum Slot: Equatable { case friend(Int), add }
 
-    /// What stands under the sprite tile. Friends sit at its bottom corners, so the raised Pokémon is the
-    /// middle of [friend, active, friend]; the add slot takes the corner a missing friend would fill.
-    /// With no friend yet the add slot is centered.
+    /// What stands beside the tile: [friend, active, friend]. The first friend goes on the left, the second
+    /// on the right, and the add slot takes the place the next friend would fill.
     struct Arrangement: Equatable {
         var leading: Slot?
-        var center: Slot?
         var trailing: Slot?
     }
 
     static func arrangement(friendCount: Int, canAdd: Bool) -> Arrangement {
-        guard friendCount > 0 else { return Arrangement(center: canAdd ? .add : nil) }
-        return Arrangement(leading: .friend(0),
-                           trailing: friendCount >= 2 ? .friend(1) : (canAdd ? .add : nil))
+        switch friendCount {
+        case 0: Arrangement(leading: canAdd ? .add : nil)
+        case 1: Arrangement(leading: .friend(0), trailing: canAdd ? .add : nil)
+        default: Arrangement(leading: .friend(0), trailing: .friend(1))
+        }
     }
 
     var body: some View {
@@ -121,20 +117,18 @@ struct FriendSlotsRow: View {
         let friends = store.friendSubjects
         let canAdd = friends.count < CompanionState.maxFriends && !store.friendCandidates.isEmpty
         let layout = Self.arrangement(friendCount: friends.count, canAdd: canAdd)
-        HStack(spacing: 0) {
-            slotView(layout.leading, friends: friends, l: l)
-            Spacer(minLength: 0)
-            slotView(layout.center, friends: friends, l: l)
-            if layout.center != nil { Spacer(minLength: 0) }
-            slotView(layout.trailing, friends: friends, l: l)
+        HStack(alignment: .bottom, spacing: Self.gap) {
+            slotView(layout.leading, friends: friends, outer: .topLeading, l: l)
+            main
+            slotView(layout.trailing, friends: friends, outer: .topTrailing, l: l)
         }
     }
 
     @ViewBuilder
-    private func slotView(_ slot: Slot?, friends: [FriendSubject], l: L) -> some View {
+    private func slotView(_ slot: Slot?, friends: [FriendSubject], outer: Alignment, l: L) -> some View {
         switch slot {
         case .friend(let index):
-            if friends.indices.contains(index) { friendSlot(friends[index], slot: index + 1, l: l) }
+            if friends.indices.contains(index) { friendSlot(friends[index], slot: index + 1, outer: outer, l: l) }
         case .add:
             addSlot(l: l)
         case nil:
@@ -158,7 +152,7 @@ struct FriendSlotsRow: View {
         }
     }
 
-    private func friendSlot(_ friend: FriendSubject, slot: Int, l: L) -> some View {
+    private func friendSlot(_ friend: FriendSubject, slot: Int, outer: Alignment, l: L) -> some View {
         Button {
             cryPlayer.play(speciesID: friend.speciesID, form: friend.form)
             crowd.clicked(slot: slot)
@@ -170,7 +164,8 @@ struct FriendSlotsRow: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l.friendLabel)
-        .overlay(alignment: .topTrailing) {
+        .overlay(alignment: outer) {
+            // On the outer corner, so the remove button never lands on the raised Pokémon's tile.
             Button { store.removeFriend(entryID: friend.entryID) } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 12))
@@ -179,7 +174,7 @@ struct FriendSlotsRow: View {
             .buttonStyle(.plain)
             .help(l.friendRemove)
             .accessibilityLabel(l.friendRemove)
-            .offset(x: 5, y: -5)
+            .offset(x: outer == .topLeading ? -5 : 5, y: -5)
         }
     }
 }
