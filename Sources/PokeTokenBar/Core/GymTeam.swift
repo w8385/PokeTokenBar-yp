@@ -3,12 +3,12 @@ import Foundation
 /// The six-slot lineup as a gym request sends it: every member, not only the three that fight in PvP.
 enum GymTeam {
     struct Team: Equatable, Sendable {
-        /// What stands for each member when a run checks it is still the same team: the instance id, or "rental".
+        /// What stands for each member when a run checks it is still the same team: the instance id, or the rental species.
         let ids: [String]
         let members: [PartyMember]
     }
 
-    static let rentalID = "rental"
+    static func rentalID(_ speciesID: Int) -> String { "rental:\(speciesID)" }
 
     /// The owned lineup with each member's chosen moves (a TM move only while the TM is owned) and an item
     /// an earlier member already holds left off. With nothing owned it is the rental starter.
@@ -16,7 +16,7 @@ enum GymTeam {
                      rentalSpeciesID: Int) -> Team {
         let lineup = BattleEntry.lineup(state: state, slots: slots)
         guard !lineup.isEmpty else {
-            return Team(ids: [rentalID], members: [
+            return Team(ids: [rentalID(rentalSpeciesID)], members: [
                 PartyMember(pokemonID: rentalSpeciesID, level: BattleEntry.rentalLevel, shiny: false, ivs: nil, rental: true),
             ])
         }

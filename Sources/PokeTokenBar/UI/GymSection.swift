@@ -56,7 +56,8 @@ struct GymSection: View {
         let badges = store.state.gymBadges
         let team = currentTeam
         if let record = service.last {
-            result(record, region: region, team: team)
+            let fought = catalog.regions.first { $0.opponent(record.opponent.id) != nil } ?? region
+            result(record, region: fought, team: team)
         } else if service.session.showsBadgeCase {
             header(catalog, region: region, badges: badges)
             Divider()
@@ -88,7 +89,7 @@ struct GymSection: View {
                     Picker(l.gymRegionLabel, selection: Bindable(service.session).regionID) {
                         ForEach(catalog.regions) { Text($0.name).tag($0.id) }
                     }
-                    .labelsHidden().fixedSize()
+                    .labelsHidden().fixedSize().disabled(service.inFlight != nil)
                     Text(l.gymBadgeProgress(badges.badgeCount(region.id), of: GymBadges.gymsPerRegion))
                         .font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 }
@@ -139,9 +140,11 @@ struct GymSection: View {
         let opponent = record.opponent
         let outcome = record.outcome
         let primary: String? = {
-            guard opponent.run != nil else { return l.gymRematch }
+            guard let run = opponent.run else { return l.gymRematch }
             if !outcome.won { return l.gymRestartRun }
-            return outcome.run?.next == nil ? nil : l.gymNextBattle
+            if outcome.run?.next == nil { return nil }
+            let battles = run.id == region.elite.run ? region.elite.battles : region.hideout.battles
+            return service.nextStep(of: run.id, battles: battles, team: team) == 1 ? l.gymRestartRun : l.gymNextBattle
         }()
         return VStack(alignment: .leading, spacing: 0) {
             GymResultView(

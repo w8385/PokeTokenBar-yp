@@ -207,6 +207,21 @@ final class GymServiceTests: XCTestCase {
         XCTAssertNil(try script.body(1)["carried"])
     }
 
+    func testARunWithNoBattlesSendsNothing() async {
+        let script = ExchangeScript([])
+        let service = service(script)
+        await service.fightRun("kanto-elite", battles: [], region: kanto, team: team)
+
+        XCTAssertTrue(script.requests.isEmpty)
+        XCTAssertNil(service.last)
+    }
+
+    func testAnAbsurdRetryAfterIsCappedInTheMessage() {
+        let message = L(.en).gymFailure(.rateLimited(retryAfter: 1e30))
+
+        XCTAssertTrue(message.contains("3600"))
+    }
+
     func testClearingTheWholeEliteRunRewardsTheChampionOnceAndEndsTheRun() async throws {
         let champion = (GymFixtures.outcomeData(gymID: "kanto-champion", kind: "champion", won: true,
                                                 run: ("kanto-elite", 5, 5, "kanto-elite-1", nil)), 200)

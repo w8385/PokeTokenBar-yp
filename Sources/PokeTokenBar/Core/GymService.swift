@@ -131,9 +131,10 @@ final class GymService {
     /// Fights the next battle of a run: the first when no run is under way or the team changed since, else the
     /// one after the last win, carrying the team's HP and status over.
     func fightRun(_ run: String, battles: [GymOpponent], region: GymRegion, team: GymTeam.Team) async {
+        guard let first = battles.first else { return }
         let state = session.runs[run].flatMap { $0.team == team.ids && battles.indices.contains($0.nextIndex) ? $0 : nil }
         if state == nil { session.setRun(nil, for: run) }
-        await fight(battles[state?.nextIndex ?? 0], region: region, team: team, carried: state?.carry)
+        await fight(state.map { battles[$0.nextIndex] } ?? first, region: region, team: team, carried: state?.carry)
     }
 
     /// Where a run stands for this team: the 1-based step it fights next, `1` when it would start over.
