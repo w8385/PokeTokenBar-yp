@@ -124,8 +124,8 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
         let bounds = host.bounds
         let bitmap = try XCTUnwrap(NSBitmapImageRep(
             bitmapDataPlanes: nil,
-            pixelsWide: Int((bounds.width * 3).rounded(.up)),
-            pixelsHigh: Int((bounds.height * 3).rounded(.up)),
+            pixelsWide: Int((bounds.width * 5).rounded(.up)),
+            pixelsHigh: Int((bounds.height * 5).rounded(.up)),
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
             colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
         bitmap.size = bounds.size

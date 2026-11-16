@@ -66,30 +66,27 @@ final class EvolutionCardTests: XCTestCase {
         for _ in 0..<100 where s.currentLine == nil { await Task.yield() }
     }
 
-    func testRaisedPokemonShowsItsWaitingStepWithLiveProgress() async throws {
+    func testRaisedPokemonShowsItsWaitingStepWithLiveProgressInTheBox() async throws {
         let s = try inkay()
         await loadLine(s)
-        let card = try XCTUnwrap(s.evolutionCards(for: 686).first)
+        let raised = try XCTUnwrap(s.dexEntries.first(where: s.isActiveDexEntry))
+        let card = try XCTUnwrap(s.evolutionCards(for: 686, individual: raised).first)
         XCTAssertTrue(card.isNextStep)
         XCTAssertEqual(card.rule.species, 687)
         let flip = try XCTUnwrap(card.rule.paths.first?.first)
         XCTAssertFalse(flip.isMet(in: try XCTUnwrap(card.context)))
         s.recordFlip()
-        let after = try XCTUnwrap(s.evolutionCards(for: 686).first)
+        let after = try XCTUnwrap(s.evolutionCards(for: 686, individual: raised).first)
         XCTAssertTrue(flip.isMet(in: try XCTUnwrap(after.context)))
+        XCTAssertTrue(s.evolutionCards(for: 686).isEmpty, "the Pokédex page is about the species, not this individual")
     }
 
-    func testTargetSpeciesShowsTheStepIntoItWithProgressOnlyWhileItIsTheRaisedOnesNextForm() async throws {
+    func testPokedexPageShowsTheStepIntoASpeciesButNeverAnyonesProgress() async throws {
         let raised = try inkay()
         await loadLine(raised)
-        let live = try XCTUnwrap(raised.evolutionCards(for: 687).first)
-        XCTAssertFalse(live.isNextStep)
-        XCTAssertNotNil(live.context)
-
-        let other = try store(tree: node(1, [node(2)]))
-        await other.hatch(baseID: 1)
-        let info = try XCTUnwrap(other.evolutionCards(for: 687).first)
-        XCTAssertNil(info.context, "not on that step, so no progress to show")
+        let info = try XCTUnwrap(raised.evolutionCards(for: 687).first)
+        XCTAssertFalse(info.isNextStep)
+        XCTAssertNil(info.context, "progress belongs to an individual, so it lives in the Box")
     }
 
     func testGraduatedOnixShowsTheSteelixStepWithAnEquipRowThatFollowsItsHeldItem() async throws {

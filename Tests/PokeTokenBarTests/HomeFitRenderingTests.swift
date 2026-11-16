@@ -224,7 +224,7 @@ final class HomeFitRenderingTests: XCTestCase {
         let homeHost = try await settle(home.popover(screenHeight: reference), width: PopoverMetrics.width)
         let homeHeight = fit(homeHost).height
         // The Bag is left out: an empty bag has no fixed height.
-        for tab in [PopoverTab.shop, .battle, .collection] {
+        for tab in [PopoverTab.shop, .battle, .dex, .box, .coworkers] {
             home.nav.tab = tab
             let host = try await settle(home.popover(screenHeight: 5000), width: PopoverMetrics.width)
             XCTAssertEqual(fit(host).height, homeHeight, accuracy: 1, "\(tab)")

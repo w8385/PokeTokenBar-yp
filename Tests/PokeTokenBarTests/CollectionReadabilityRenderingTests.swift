@@ -47,17 +47,17 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
             }
             try JSONEncoder().encode(state).write(to: file)
             let store = CompanionStore(provider: ReadabilityProvider(), fileURL: file)
-            for log in [false, true] {
-                let navigation = PopoverNavigation()
-                navigation.showingCollectionLog = log
-                try await capture(CollectionView(store: store, navigation: navigation), language: language,
-                                  expectedTexts: [.common, .uncommon, .rare, .legendary].map(store.l.rarityLabel),
-                                  to: directory.appendingPathComponent("\(language.rawValue)-\(log ? "log" : "grid").png"))
-            }
+            let navigation = PopoverNavigation()
+            try await capture(CollectionView(store: store, navigation: navigation), language: language,
+                              expectedTexts: [.common, .uncommon, .rare, .legendary].map(store.l.rarityLabel),
+                              to: directory.appendingPathComponent("\(language.rawValue)-grid.png"))
+            try await capture(BoxView(store: store, navigation: navigation), language: language,
+                              expectedTexts: [store.l.boxTab],
+                              to: directory.appendingPathComponent("\(language.rawValue)-box.png"))
             let species = try XCTUnwrap(store.dexSpecies.first)
             await store.loadPokemonDetails(speciesID: species.id)
             try await capture(PokemonDetailView(store: store, species: species, onBack: {}), language: language,
-                              expectedTexts: [store.l.pokemonIndividual],
+                              expectedTexts: [store.l.baseStats],
                               to: directory.appendingPathComponent("\(language.rawValue)-detail.png"))
         }
     }

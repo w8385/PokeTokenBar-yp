@@ -58,7 +58,7 @@ struct BagView: View {
     }
 }
 
-/// 메가스톤 1장 — 쓰는 곳은 배틀 탭이라 가방에서는 설명만 보인다.
+/// 메가스톤 1장 — 쓰는 곳은 박스라 가방에서는 설명만 보인다.
 @MainActor
 private struct MegaStoneCard: View {
     let l: L

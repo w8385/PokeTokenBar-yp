@@ -22,10 +22,7 @@ struct L {
 
     // MARK: 탭
     var home: String { t("홈", "Home", "ホーム", "Inicio", "Accueil", "Início", "Startseite", "Главная") }
-    /// 상위 탭 이름 — 안에서 도감/포획 로그를 세그먼트로 전환하므로 둘을 아우르는 말이어야 한다.
-    /// (ko 가 "도감"이면 탭과 세그먼트가 같은 이름이 돼 en/ja 의 Collection/コレクション 과도 어긋난다.)
     var battle: String { t("대결", "Battle", "バトル", "Combate", "Combat", "Batalha", "Kampf", "Бой") }
-    var collection: String { t("컬렉션", "Collection", "コレクション", "Colección", "Collection", "Coleção", "Sammlung", "Коллекция") }
 
     var costUnavailable: String { t("계산 불가", "Unavailable", "計算不可", "No disponible", "Indisponible", "Indisponível", "Nicht verfügbar", "Недоступно") }
     var costEstimateHint: String { t("모델 단가로 환산한 추정 비용입니다. 구독료나 실제 청구액이 아닙니다.", "Estimated from model token rates; not a subscription fee or invoice. Service-tier and other unlogged charges are excluded.", "モデル単価による推定です。購読料や実際の請求額ではありません。", "Estimación por tarifas del modelo; no es la cuota ni la factura real.", "Estimation selon les tarifs du modèle, pas un abonnement ni une facture.", "Estimativa pelas tarifas do modelo; não é assinatura nem fatura.", "Schätzung anhand der Modellpreise, keine Abogebühr oder Rechnung.", "Оценка по тарифам моделей за токены — не плата за подписку и не счёт. Наценки за уровень обслуживания и другие незаписанные расходы не учтены.") }
@@ -1459,9 +1456,7 @@ struct L {
     // MARK: 도감 요약 헤더
     var dexTitle: String { t("도감", "Pokédex", "図鑑", "Pokédex", "Pokédex", "Pokédex", "Pokédex", "Покедекс") }
     func dexTotal(_ n: Int) -> String { t("총 \(n)마리", "\(n) total", "全\(n)匹", "\(n) en total", "\(n) au total", "\(n) no total", "\(n) insgesamt", "Всего: \(n)") }
-    /// 포획 로그 = 개체 단위 기록(같은 라인 중복이 정상). 도감 = 종 단위 집계.
-    var catchLogTitle: String { t("포획 로그", "Catch log", "捕獲ログ", "Registro de capturas", "Journal de captures", "Registro de capturas", "Fangprotokoll", "Журнал поимок") }
-    /// 도감 총계는 개체가 아니라 종 수 — 로그의 dexTotal("총 N마리")과 단위가 다르다.
+    /// 도감 총계는 개체가 아니라 종 수 — 박스의 dexTotal("총 N마리")과 단위가 다르다.
     func dexSpeciesTotal(_ n: Int) -> String { t("\(n)종", "\(n) species", "\(n)種", "\(n) especies", "\(n) espèces", "\(n) espécies", "\(n) Spezies", "Видов: \(n)") }
     func formsCollected(_ count: Int, of total: Int) -> String {
         t("폼 \(count)/\(total)", "Forms \(count)/\(total)", "フォルム \(count)/\(total)",
@@ -1490,15 +1485,13 @@ struct L {
     var dexPagePrev: String { t("이전 페이지", "Previous page", "前のページ", "Página anterior", "Page précédente", "Página anterior", "Vorherige Seite", "Предыдущая страница") }
     var dexPageNext: String { t("다음 페이지", "Next page", "次のページ", "Página siguiente", "Page suivante", "Próxima página", "Nächste Seite", "Следующая страница") }
     var dexRaising: String { t("키우는 중", "Raising", "育成中", "Criando", "En élevage", "Treinando", "In Aufzucht", "Растёт") }
-    /// 포획 로그에서 졸업분과 놓아준 개체를 가르는 표식. 종은 도감에 남고 개체 기록만 이 뱃지를 단다.
-    var dexReleased: String { t("놓아줌", "Released", "逃がした", "Liberado", "Relâché", "Solto", "Freigelassen", "Отпущен") }
     var rarityCommon: String { t("일반", "Common", "ノーマル", "Común", "Commun", "Comum", "Gewöhnlich", "Обычный") }
     var rarityUncommon: String { t("고급", "Uncommon", "アンコモン", "Poco común", "Peu commun", "Incomum", "Ungewöhnlich", "Необычный") }
     var rarityRare: String { t("희귀", "Rare", "レア", "Raro", "Rare", "Raro", "Selten", "Редкий") }
     var rarityLegendary: String { t("전설", "Legendary", "伝説", "Legendario", "Légendaire", "Lendário", "Legendär", "Легендарный") }
     var dexFilterHint: String { t("탭하면 이 희귀도만 보기 · 다시 탭하면 전체", "Tap to show only this rarity · tap again to clear", "タップでこの希少度のみ表示・再タップで全体", "Toca para ver solo esta rareza · toca de nuevo para ver todo", "Touche pour n'afficher que cette rareté · touche à nouveau pour tout afficher", "Toque para ver só esta raridade · toque de novo para ver tudo", "Tippe, um nur diese Seltenheit zu sehen · tippe erneut für alle", "Нажмите — только эта редкость · ещё раз — сброс") }
     /// 스프라이트 클릭 → 그 종의 도감 상세. 툴팁·접근성 라벨 공용.
-    var dexOpenEntryHint: String { t("컬렉션에서 도감 항목 보기", "View entry in collection", "コレクションで図鑑を見る", "Ver entrada en la colección", "Voir la fiche dans la collection", "Ver registro na coleção", "Eintrag in der Sammlung ansehen", "Открыть запись в коллекции") }
+    var dexOpenEntryHint: String { t("도감에서 항목 보기", "View entry in Pokédex", "図鑑で見る", "Ver entrada en la Pokédex", "Voir la fiche dans le Pokédex", "Ver registro na Pokédex", "Eintrag im Pokédex ansehen", "Открыть запись в Покедексе") }
     /// 도감 칸의 ✨ 를 읽어주는 명사 — 이모지는 스크린리더가 일관되게 읽지 못한다.
     var dexShinyLabel: String { t("이로치", "Shiny", "色違い", "Variocolor", "Chromatique", "Shiny", "Schillernd", "Шайни") }
     var dexSearchPlaceholder: String { t("이름 또는 #번호 검색…", "Search name or #…", "名前または#番号で検索…", "Buscar por nombre o #…", "Rechercher par nom ou #…", "Buscar por nome ou #…", "Nach Name oder # suchen…", "Поиск по имени или №…") }
@@ -1519,24 +1512,11 @@ struct L {
     var sortNameAsc: String { t("이름 (가나다·A-Z)", "Name (A–Z)", "名前（五十音・A-Z）", "Nombre (A–Z)", "Nom (A–Z)", "Nome (A–Z)", "Name (A–Z)", "Имя (A–Z)") }
     var sortNameDesc: String { t("이름 (역순)", "Name (Z–A)", "名前（逆順）", "Nombre (Z–A)", "Nom (Z–A)", "Nome (Z–A)", "Name (Z–A)", "Имя (Z–A)") }
     var sortRarity: String { t("희귀도 순", "Rarity (High to Low)", "希少度順", "Rareza (mayor a menor)", "Rareté (décroissante)", "Raridade (maior a menor)", "Seltenheit (absteigend)", "Редкость (по убыванию)") }
-    var sortDateDesc: String { t("최근 잡은 순", "Most Recent", "最近捕獲", "Más recientes", "Plus récents", "Mais recentes", "Neueste zuerst", "Сначала новые") }
-    var sortDateAsc: String { t("오래된 순", "Oldest First", "古い順", "Más antiguos", "Plus anciens", "Mais antigos", "Älteste zuerst", "Сначала старые") }
     var filterShinyOnly: String { t("이로치만", "Shiny only", "色違いのみ", "Solo variocolor", "Chromatique uniquement", "Apenas Shiny", "Nur schillernde", "Только шайни") }
     var noSearchResults: String { t("검색 결과가 없어요", "No Pokémon found", "見つかりませんでした", "No se encontraron Pokémon", "Aucun Pokémon trouvé", "Nenhum Pokémon encontrado", "Keine Pokémon gefunden", "Покемоны не найдены") }
     var clearFilters: String { t("필터 초기화", "Reset filters", "フィルターを解除", "Restablecer filtros", "Réinitialiser les filtres", "Redefinir filtros", "Filter zurücksetzen", "Сбросить фильтры") }
     func label(for option: CompanionStore.DexSortOption) -> String {
         switch option {
-        case .numberAsc: return sortDexNumberAsc
-        case .numberDesc: return sortDexNumberDesc
-        case .nameAsc: return sortNameAsc
-        case .nameDesc: return sortNameDesc
-        case .rarityDesc: return sortRarity
-        }
-    }
-    func label(for option: CompanionStore.CatchLogSortOption) -> String {
-        switch option {
-        case .recentFirst: return sortDateDesc
-        case .oldestFirst: return sortDateAsc
         case .numberAsc: return sortDexNumberAsc
         case .numberDesc: return sortDexNumberDesc
         case .nameAsc: return sortNameAsc
@@ -2149,27 +2129,27 @@ struct L {
           "В сумке нет предметов. Их можно купить в магазине.")
     }
     var heldItemBagHint: String {
-        t("배틀 탭에서 배틀 포켓몬에게 장착해요",
-          "Equip it to your battle Pokémon in the Battle tab",
-          "バトルタブでバトルのポケモンに持たせます",
-          "Equípalo a tu Pokémon de combate en la pestaña de Combate",
-          "Équipe-le à ton Pokémon de combat dans l'onglet Combat",
-          "Equipe no Pokémon de batalha na aba Batalha",
-          "Rüste es im Kampf-Tab deinem Kampf-Pokémon aus",
-          "Выдайте его боевому покемону на вкладке «Бой»")
+        t("박스에서 포켓몬에게 장착해요",
+          "Equip it to a Pokémon in the Box",
+          "ボックスでポケモンに持たせます",
+          "Equípalo a un Pokémon en la pestaña Caja",
+          "Équipe-le à un Pokémon dans l'onglet Boîte",
+          "Equipe em um Pokémon na aba Caixa",
+          "Rüste es im Box-Tab einem Pokémon aus",
+          "Выдайте его покемону на вкладке «Коробка»")
     }
 
     // MARK: 메가스톤
     func megaStoneName(_ stone: MegaStone) -> String { stone.name(in: lang) }
     var megaStoneEffect: String {
-        t("배틀 탭에서 이 포켓몬에게 장착하면 배틀 시작 때 메가진화해요. 키우는 포켓몬·친구 포켓몬·대표 포켓몬으로 보일 때는 홈 화면, 플로팅 펫, 메뉴바에서도 메가 모습이에요.",
-          "Equip it to this Pokémon in the Battle tab: it Mega Evolves when a battle starts. Shown as your raised, friend or representative Pokémon, it also appears in its Mega form on the home screen, floating pet and menu bar.",
-          "バトルタブでこのポケモンに持たせると、バトル開始時にメガシンカします。育成中・ともだち・代表ポケモンとして表示されるときは、ホーム画面・フローティングペット・メニューバーでもメガ姿になります。",
-          "Equípalo a este Pokémon en la pestaña de Combate: se megaevoluciona al empezar el combate. Cuando se muestra como tu Pokémon criado, amigo o representativo, también aparece en forma Mega en la pantalla de inicio, la mascota flotante y la barra de menús.",
-          "Équipe-la à ce Pokémon dans l'onglet Combat : il méga-évolue au début du combat. Affiché comme Pokémon élevé, compagnon ou représentatif, il prend aussi sa forme Méga sur l'écran d'accueil, le compagnon flottant et la barre des menus.",
-          "Equipe neste Pokémon na aba Batalha: ele Mega Evolui no início da batalha. Quando aparece como seu Pokémon criado, amigo ou representativo, também fica na forma Mega na tela inicial, no mascote flutuante e na barra de menus.",
-          "Rüste sie diesem Pokémon im Kampf-Tab aus: Es mega-entwickelt sich zu Kampfbeginn. Als aufgezogenes, Freund- oder repräsentatives Pokémon gezeigt, erscheint es auch auf dem Startbildschirm, als schwebendes Pokémon und in der Menüleiste in Mega-Form.",
-          "Выдайте её этому покемону на вкладке «Бой»: он мега-эволюционирует в начале боя. Когда он показан как растущий, покемон-друг или основной, мега-форма видна и на главном экране, и у питомца на экране, и в строке меню.")
+        t("박스에서 이 포켓몬에게 장착하면 배틀 시작 때 메가진화해요. 박스에서는 늘 메가 모습이고, 키우는 포켓몬·친구 포켓몬·대표 포켓몬으로 보일 때는 홈 화면, 플로팅 펫, 메뉴바에서도 메가 모습이에요.",
+          "Equip it to this Pokémon in the Box: it Mega Evolves when a battle starts. The holder shows its Mega form in the Box, and as your raised, friend or representative Pokémon it also appears in its Mega form on the home screen, floating pet and menu bar.",
+          "ボックスでこのポケモンに持たせると、バトル開始時にメガシンカします。ボックスではいつもメガ姿で、育成中・ともだち・代表ポケモンとして表示されるときは、ホーム画面・フローティングペット・メニューバーでもメガ姿になります。",
+          "Equípalo a este Pokémon en la Caja: se megaevoluciona al empezar el combate. El portador se ve en forma Mega en la Caja y, cuando se muestra como tu Pokémon criado, amigo o representativo, también en la pantalla de inicio, la mascota flotante y la barra de menús.",
+          "Équipe-la à ce Pokémon dans la Boîte : il méga-évolue au début du combat. Le porteur prend sa forme Méga dans la Boîte et, affiché comme Pokémon élevé, compagnon ou représentatif, aussi sur l'écran d'accueil, le compagnon flottant et la barre des menus.",
+          "Equipe neste Pokémon na Caixa: ele Mega Evolui no início da batalha. O portador aparece na forma Mega na Caixa e, quando exibido como seu Pokémon criado, amigo ou representativo, também na tela inicial, no mascote flutuante e na barra de menus.",
+          "Rüste sie diesem Pokémon in der Box aus: Es mega-entwickelt sich zu Kampfbeginn. Der Träger zeigt in der Box seine Mega-Form und, als aufgezogenes, Freund- oder repräsentatives Pokémon gezeigt, auch auf dem Startbildschirm, als schwebendes Pokémon und in der Menüleiste.",
+          "Выдайте её этому покемону в Коробке: он мега-эволюционирует в начале боя. Носитель виден в мега-форме в Коробке, а когда он показан как растущий, покемон-друг или основной, — и на главном экране, и у питомца на экране, и в строке меню.")
     }
     var megaStoneYours: String { t("내 포켓몬", "Yours", "手持ち", "Tuyo", "À toi", "Seu", "Deins", "Ваш") }
     func megaStoneWrongHolder(_ stone: String, _ pokemon: String) -> String {

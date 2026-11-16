@@ -9,55 +9,48 @@ final class PopoverNavigationTests: XCTestCase {
         let nav = PopoverNavigation()
         XCTAssertFalse(nav.showSettings)
         XCTAssertEqual(nav.tab, .home)
-        XCTAssertFalse(nav.showingCollectionLog)
+        XCTAssertNil(nav.boxDetailID)
+        XCTAssertNil(nav.boxSpeciesFilter)
     }
 
     func testResetReturnsToHomeFromSettings() {
         let nav = PopoverNavigation()
         nav.showSettings = true
-        nav.tab = .collection
-        nav.showingCollectionLog = true
+        nav.tab = .dex
         nav.reset()
         XCTAssertFalse(nav.showSettings)   // 설정 화면 닫힘
         XCTAssertEqual(nav.tab, .home)     // 탭도 Home 으로
-        XCTAssertTrue(nav.showingCollectionLog, "일반 재진입은 사용자가 보던 컬렉션 세그먼트를 유지")
     }
 
-    func testOpenRepresentativeDexLeavesSettingsForCollection() {
+    func testOpenRepresentativeDexLeavesSettingsForDex() {
         let nav = PopoverNavigation()
         nav.showSettings = true
-        nav.showingCollectionLog = true
 
         nav.openRepresentativeDex()
 
         XCTAssertFalse(nav.showSettings)
-        XCTAssertEqual(nav.tab, .collection)
-        XCTAssertFalse(nav.showingCollectionLog, "포획 로그에서 설정을 열었어도 대표 선택은 도감으로 이동")
+        XCTAssertEqual(nav.tab, .dex)
     }
 
-    /// Clicking a sprite on Home opens that species' Pokédex page, even from Settings. The segment
-    /// is kept so Back lands where the Collection tab would normally reopen.
-    func testOpenDexEntryShowsDetailInCollection() {
+    /// Clicking a sprite on Home opens that species' Pokédex page, even from Settings.
+    func testOpenDexEntryShowsDetailInDex() {
         let nav = PopoverNavigation()
         nav.showSettings = true
-        nav.showingCollectionLog = true
 
         nav.openDexEntry(collectionID: "25")
 
         XCTAssertFalse(nav.showSettings)
-        XCTAssertEqual(nav.tab, .collection)
+        XCTAssertEqual(nav.tab, .dex)
         XCTAssertEqual(nav.dexDetailCollectionID, "25", "set after the tab/settings changes that clear it")
-        XCTAssertTrue(nav.showingCollectionLog, "segment is left as it was")
     }
 
-    /// The detail page used to be `CollectionView` `@State`, dropped whenever the collection
-    /// content left the screen. Each trigger must still drop it.
-    func testDexDetailDroppedWhenCollectionContentLeavesScreen() {
+    /// Each trigger that takes the Pokédex content off screen must drop the open species page.
+    func testDexDetailDroppedWhenDexContentLeavesScreen() {
         let triggers: [(String, (PopoverNavigation) -> Void)] = [
             ("other tab", { $0.tab = .home }),
+            ("box tab", { $0.tab = .box }),
             ("settings", { $0.showSettings = true }),
             ("recap", { $0.showingRecap = true }),
-            ("segment switch", { $0.showingCollectionLog.toggle() }),
             ("popover reopen", { $0.reset() }),
         ]
         for (name, trigger) in triggers {
@@ -68,12 +61,11 @@ final class PopoverNavigationTests: XCTestCase {
         }
     }
 
-    /// Writes that leave the collection content on screen must keep the page — otherwise the
-    /// didSets would clear it on no-op assignments (a re-tapped tab or segment).
-    func testDexDetailKeptWhileCollectionContentStaysOnScreen() {
+    /// Writes that leave the Pokédex content on screen must keep the page — otherwise the
+    /// didSets would clear it on no-op assignments (a re-tapped tab).
+    func testDexDetailKeptWhileDexContentStaysOnScreen() {
         let keepers: [(String, (PopoverNavigation) -> Void)] = [
-            ("same tab", { $0.tab = .collection }),
-            ("same segment", { $0.showingCollectionLog = $0.showingCollectionLog }),
+            ("same tab", { $0.tab = .dex }),
             ("settings closed", { $0.showSettings = false }),
             ("recap closed", { $0.showingRecap = false }),
         ]
@@ -83,6 +75,91 @@ final class PopoverNavigationTests: XCTestCase {
             keep(nav)
             XCTAssertEqual(nav.dexDetailCollectionID, "25", name)
         }
+    }
+
+    func testOpenBoxFiltersToTheSpeciesAndLeavesTheDexPage() {
+        let nav = PopoverNavigation()
+        nav.openDexEntry(collectionID: "25")
+
+        nav.openBox(speciesID: 25)
+
+        XCTAssertEqual(nav.tab, .box)
+        XCTAssertEqual(nav.boxSpeciesFilter, 25, "set after the tab change that clears it")
+        XCTAssertNil(nav.boxDetailID)
+        XCTAssertNil(nav.dexDetailCollectionID)
+    }
+
+    func testOpenBoxDetailOpensThatIndividualFromAnyTab() {
+        let nav = PopoverNavigation()
+        nav.tab = .battle
+        nav.showSettings = true
+
+        nav.openBoxDetail(id: "raised")
+
+        XCTAssertFalse(nav.showSettings)
+        XCTAssertEqual(nav.tab, .box)
+        XCTAssertEqual(nav.boxDetailID, "raised", "set after the tab/settings changes that clear it")
+    }
+
+    func testBoxPageAndFilterDroppedWhenBoxContentLeavesScreen() {
+        let triggers: [(String, (PopoverNavigation) -> Void)] = [
+            ("other tab", { $0.tab = .home }),
+            ("settings", { $0.showSettings = true }),
+            ("popover reopen", { $0.reset() }),
+        ]
+        for (name, trigger) in triggers {
+            let nav = PopoverNavigation()
+            nav.openBox(speciesID: 25)
+            nav.boxDetailID = "raised"
+            trigger(nav)
+            XCTAssertNil(nav.boxDetailID, name)
+            if name != "settings" { XCTAssertNil(nav.boxSpeciesFilter, name) }
+        }
+    }
+
+    func testOpenTradeOfferLandsOnCoworkersFromAnyScreen() {
+        let nav = PopoverNavigation()
+        nav.openBoxDetail(id: "pikachu")
+        nav.showSettings = true
+
+        nav.openTradeOffer(giving: "pikachu")
+
+        XCTAssertFalse(nav.showSettings)
+        XCTAssertEqual(nav.tab, .coworkers)
+        XCTAssertTrue(nav.showingTradeOffer, "set after the tab change that clears it")
+        XCTAssertEqual(nav.tradeGiveID, "pikachu")
+        XCTAssertNil(nav.boxDetailID)
+    }
+
+    func testTradeOfferClosesWhenCoworkersLeavesTheScreen() {
+        for (name, leave) in [("tab", { (n: PopoverNavigation) in n.tab = .battle }),
+                              ("reopen", { (n: PopoverNavigation) in n.reset() })] {
+            let nav = PopoverNavigation()
+            nav.openTradeOffer(giving: nil)
+            leave(nav)
+            XCTAssertFalse(nav.showingTradeOffer, name)
+        }
+        let nav = PopoverNavigation()
+        nav.openTradeOffer(giving: nil)
+        nav.tab = .coworkers
+        XCTAssertTrue(nav.showingTradeOffer, "re-tapping the tab keeps the open offer")
+    }
+
+    func testBattlePickerDoesNotSurviveLeavingBattle() {
+        let nav = PopoverNavigation()
+        nav.tab = .battle
+        nav.battlePicker = .add
+        nav.tab = .coworkers
+        XCTAssertNil(nav.battlePicker)
+    }
+
+    func testBoxPageKeptWhileBoxContentStaysOnScreen() {
+        let nav = PopoverNavigation()
+        nav.openBoxDetail(id: "raised")
+        nav.tab = .box
+        nav.showSettings = false
+        nav.showingRecap = false
+        XCTAssertEqual(nav.boxDetailID, "raised")
     }
 
     /// #301: Hide is a right-click. Show has to live on the popover footer, bound to the same

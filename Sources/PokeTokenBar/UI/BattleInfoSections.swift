@@ -1,30 +1,38 @@
 import SwiftUI
 
-/// Battle tab lists from the bot's last upload reply: the user's recent battles and the coworkers' lead Pokémon.
+/// Lists from the bot's last upload reply: the Battle tab shows the user's recent battles,
+/// the Coworkers tab the coworkers' lead Pokémon.
 @MainActor
 struct BattleInfoSections: View {
+    enum Part { case recent, coworkers }
+
     let info: BattleInfo?
     let l: L
+    var parts: [Part] = [.recent, .coworkers]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            section(l.battleRecentTitle) {
-                if let empty = Self.recentEmptyText(info, l) {
-                    emptyRow(empty)
-                } else {
-                    ForEach(Array((info?.recentBattles ?? []).enumerated()), id: \.offset) { index, battle in
-                        if index > 0 { Divider() }
-                        battleRow(battle)
+            if parts.contains(.recent) {
+                section(l.battleRecentTitle) {
+                    if let empty = Self.recentEmptyText(info, l) {
+                        emptyRow(empty)
+                    } else {
+                        ForEach(Array((info?.recentBattles ?? []).enumerated()), id: \.offset) { index, battle in
+                            if index > 0 { Divider() }
+                            battleRow(battle)
+                        }
                     }
                 }
             }
-            section(l.battleCoworkersTitle) {
-                if let empty = Self.coworkersEmptyText(info, l) {
-                    emptyRow(empty)
-                } else {
-                    ForEach(Array((info?.coworkers ?? []).enumerated()), id: \.offset) { index, coworker in
-                        if index > 0 { Divider() }
-                        coworkerRow(coworker)
+            if parts.contains(.coworkers) {
+                section(l.battleCoworkersTitle) {
+                    if let empty = Self.coworkersEmptyText(info, l) {
+                        emptyRow(empty)
+                    } else {
+                        ForEach(Array((info?.coworkers ?? []).enumerated()), id: \.offset) { index, coworker in
+                            if index > 0 { Divider() }
+                            coworkerRow(coworker)
+                        }
                     }
                 }
             }

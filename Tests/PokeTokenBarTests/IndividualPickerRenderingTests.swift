@@ -16,7 +16,7 @@ private struct PickerRenderProvider: PokeProviding, PokemonDetailProviding {
 }
 @MainActor
 final class IndividualPickerRenderingTests: XCTestCase {
-    func testMountedSingleAndMultipleIndividuals() async throws {
+    func testSpeciesPageHasNoIndividualPickerForOneOrManyOwned() async throws {
         for count in [1, 2] {
             let dir = FileManager.default.temporaryDirectory.appendingPathComponent("individual-picker-\(UUID())")
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -42,17 +42,9 @@ final class IndividualPickerRenderingTests: XCTestCase {
                                             appearance: .aqua)
             try await OffscreenRender.settle(host, for: .milliseconds(100))
             func descendants(_ v: NSView) -> [NSView] { [v] + v.subviews.flatMap(descendants) }
+            XCTAssertGreaterThan(descendants(host).count, 1, "the page mounted nothing")
             let menus = descendants(host).compactMap { $0 as? NSPopUpButton }
-            XCTAssertEqual(menus.count, count == 1 ? 0 : 1)
-            if count == 2 { XCTAssertEqual(menus.first?.numberOfItems, 2) }
-            if let output = ProcessInfo.processInfo.environment["PTB_PICKER_RENDER_DIR"] {
-                // Capture only the selector/profile area; no sprite or user save data is included.
-                let captureBounds = NSRect(x: 0, y: 140, width: PopoverMetrics.contentWidth, height: 370)
-                let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: captureBounds))
-                host.cacheDisplay(in: captureBounds, to: bitmap)
-                try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
-                    URL(fileURLWithPath: output).appendingPathComponent("individual-\(count).png"))
-            }
+            XCTAssertEqual(menus.count, 0, "the species page never picks between individuals (\(count) owned)")
         }
     }
 }

@@ -64,7 +64,8 @@ struct BattleFighterPicker: View {
                             if let species = store.battleSpecies(for: candidate) {
                                 DexSpeciesCell(store: store, species: species,
                                                isSelected: candidate.id == current, isRepresentative: false,
-                                               formCount: nil, level: candidate.member.level) {
+                                               formCount: nil, level: candidate.member.level,
+                                               held: store.heldItemRef(of: candidate.id)) {
                                     onPick(candidate.id)
                                 }
                             }

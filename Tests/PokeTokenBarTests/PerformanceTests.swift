@@ -88,7 +88,7 @@ final class StorePerformanceTests: XCTestCase {
                 sorted[i].caughtAt ?? .distantPast)
         }
         XCTAssertEqual(sorted.first?.caughtAt, pNow.addingTimeInterval(999), "가장 최신 항목이 맨 앞")
-        XCTAssertEqual(s.dexCount(.legendary), 250)
+        XCTAssertEqual(s.dexEntries.filter { $0.rarity == .legendary }.count, 250)
     }
 }
 
