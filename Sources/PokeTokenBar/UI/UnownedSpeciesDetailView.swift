@@ -65,7 +65,7 @@ struct UnownedSpeciesDetailView: View {
         }
         .padding(9)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 9))
+        .ptbPanel()
     }
 
     private var howToGet: String {
@@ -100,7 +100,7 @@ struct UnownedSpeciesDetailView: View {
             }
             .padding(9)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 9))
+            .ptbPanel()
         }
     }
 

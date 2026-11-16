@@ -20,7 +20,7 @@ struct ShopScoutSection: View {
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
     }
 
     private func row(_ pool: ScoutPool, _ l: L) -> some View {
@@ -106,7 +106,7 @@ struct ScoutTicketCard: View {
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
     }
 }
 
@@ -215,7 +215,7 @@ struct ScoutPickerView: View {
             }
             .padding(8)
             .background(Color.secondary.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
         }
     }
 

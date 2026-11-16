@@ -472,7 +472,7 @@ struct EvoLineView: View {
                 }
             } label: {
                 Image(systemName: forward ? "chevron.right" : "chevron.left")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.ptb(.caption, weight: .bold))
                     .foregroundStyle(.secondary)
                     .frame(width: 16, height: 16)
                     .background(.regularMaterial, in: Circle())
@@ -518,7 +518,7 @@ struct EvoLineView: View {
             name = PokemonForm.displayName(raw, speciesID: id, form: form, label: nil)
         }
         return DexEntryLink(target: target, hint: L(language).dexOpenEntryHint,
-                            accessibilityName: name, cornerRadius: 6, open: onOpenDexEntry)
+                            accessibilityName: name, cornerRadius: Radius.chip, open: onOpenDexEntry)
     }
 
     private var row: some View {
@@ -591,7 +591,7 @@ struct LabeledProgressBar: View {
             }
             .overlay {
                 Text(label)
-                    .font(.system(size: 9, weight: .semibold)).monospacedDigit()
+                    .font(.ptb(.caption, weight: .semibold)).monospacedDigit()
                     .foregroundStyle(.primary)
                     .lineLimit(1).minimumScaleFactor(0.7)
                     .padding(.horizontal, 6)
@@ -688,21 +688,13 @@ struct ClickGrowthSprite: ViewModifier {
 
     func body(content: Content) -> some View {
         Button(action: onClick) {
-            content.contentShape(RoundedRectangle(cornerRadius: 12))
+            content.contentShape(RoundedRectangle(cornerRadius: Radius.sheet))
         }
-        .buttonStyle(Press())
+        .buttonStyle(PressButtonStyle())
         .scaleEffect(isHovered ? 1.05 : 1)
         .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isHovered)
         .onHover { isHovered = $0 }
         .accessibilityLabel(accessibilityLabel)
-    }
-
-    private struct Press: ButtonStyle {
-        func makeBody(configuration: Configuration) -> some View {
-            configuration.label
-                .scaleEffect(configuration.isPressed ? 0.9 : 1)
-                .animation(.spring(response: 0.2, dampingFraction: 0.5), value: configuration.isPressed)
-        }
     }
 }
 
@@ -760,17 +752,17 @@ struct CompanionHeader: View {
             .rotationEffect(.degrees(eggImminent && eggWiggle ? 5 : (eggImminent ? -5 : 0)))
             .rotationEffect(.degrees(petTurn))
             .scaleEffect(celebScale)
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.white).opacity(flashOpacity))
+            .overlay(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous).fill(.white).opacity(flashOpacity))
             .overlay(alignment: .topTrailing) {
                 if shinyBurst {
-                    Text("✨").font(.system(size: 22))
+                    Text("✨").font(.ptb(.title))
                         .transition(.scale.combined(with: .opacity))
                         .offset(x: 6, y: -6)
                 }
             }
             .overlay(alignment: .top) {
                 if dittoBurst {
-                    Text("🎭").font(.system(size: 26))
+                    Text("🎭").font(.ptb(.display))
                         .transition(.scale.combined(with: .opacity))
                         .offset(y: -12)
                 }
@@ -788,9 +780,9 @@ struct CompanionHeader: View {
             .overlay {
                 if mintSparkle {
                     ZStack {
-                        Text("✨").font(.system(size: 22)).offset(x: -11, y: -9)
-                        Text("✨").font(.system(size: 15)).offset(x: 13, y: 5)
-                        Text("✨").font(.system(size: 12)).offset(x: 1, y: 13)
+                        Text("✨").font(.ptb(.title)).offset(x: -11, y: -9)
+                        Text("✨").font(.ptb(.lead)).offset(x: 13, y: 5)
+                        Text("✨").font(.ptb(.label)).offset(x: 1, y: 13)
                     }
                     .transition(.scale.combined(with: .opacity))
                 }
@@ -825,7 +817,7 @@ struct CompanionHeader: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(store.displayName).font(.callout.weight(.semibold))
-                        if store.currentIsShiny { Text("✨").font(.system(size: 11)) }
+                        if store.currentIsShiny { Text("✨").font(.ptb(.body)) }
                         if let r = store.rarity {
                             Badge(store.l.rarityLabel(r).uppercased(), tint: .rarity(r))
                         }
@@ -1065,11 +1057,11 @@ struct RarityTally: View {
     var body: some View {
         HStack(spacing: 3) {
             Circle().fill(color).frame(width: 6, height: 6)
-            Text(label).font(.system(size: 11, weight: isSelected ? .semibold : .medium))
-            Text("\(count)").font(.system(size: 11, weight: .bold))
+            Text(label).font(.ptb(.body, weight: isSelected ? .semibold : .medium))
+            Text("\(count)").font(.ptb(.body, weight: .bold))
             if isSelected {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 9, weight: .bold)).foregroundStyle(color)
+                    .font(.ptb(.caption, weight: .bold)).foregroundStyle(color)
             }
         }
         .foregroundStyle(.primary)
@@ -1094,20 +1086,20 @@ struct RegionTally: View {
     var body: some View {
         HStack(spacing: 3) {
             if completion.isShinyComplete {
-                Text("✨").font(.system(size: 10))
+                Text("✨").font(.ptb(.small))
             } else if completion.isComplete {
-                Text("🏅").font(.system(size: 10))
+                Text("🏅").font(.ptb(.small))
             }
-            Text(label).font(.system(size: 11, weight: isSelected ? .semibold : .medium))
+            Text(label).font(.ptb(.body, weight: isSelected ? .semibold : .medium))
             Text("\(completion.owned)/\(completion.total)")
-                .font(.system(size: 11, weight: .bold))
+                .font(.ptb(.body, weight: .bold))
                 .foregroundStyle(completion.isComplete ? accent : .secondary)
             if isRewarded {
-                Image(systemName: "gift.fill").font(.system(size: 8)).foregroundStyle(.orange)
+                Image(systemName: "gift.fill").font(.ptb(.tiny)).foregroundStyle(.orange)
                     .accessibilityHidden(true)
             }
             if isSelected {
-                Image(systemName: "checkmark").font(.system(size: 9, weight: .bold)).foregroundStyle(accent)
+                Image(systemName: "checkmark").font(.ptb(.caption, weight: .bold)).foregroundStyle(accent)
             }
         }
         .foregroundStyle(.primary)
@@ -1127,7 +1119,7 @@ struct DexBadgeMedal: View {
     let help: String
     var body: some View {
         Text(emoji)
-            .font(.system(size: 12))
+            .font(.ptb(.label))
             .padding(.horizontal, 5).padding(.vertical, 2)
             .background(Color.yellow.opacity(0.14))
             .clipShape(Capsule())
@@ -1229,17 +1221,12 @@ struct CollectionView: View {
                 }
             } label: {
                 Image(systemName: includeUnowned ? "circle.dashed.inset.filled" : "circle.dashed")
-                    .font(.system(size: 13, weight: includeUnowned ? .bold : .regular))
+                    .font(.ptb(.control, weight: includeUnowned ? .bold : .regular))
                     .foregroundStyle(includeUnowned ? Color.accentColor : Color.secondary)
                     .frame(width: 16, height: 16)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 4)
-                    .background(includeUnowned ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .strokeBorder(includeUnowned ? Color.accentColor.opacity(0.5) : Color.secondary.opacity(0.2), lineWidth: 0.5)
-                    )
+                    .ptbChip(active: includeUnowned ? .accent : nil)
             }
             .buttonStyle(.plain)
             .help(store.l.filterIncludeUnowned)
@@ -1261,16 +1248,11 @@ struct CollectionView: View {
                 }
             } label: {
                 Image(systemName: "arrow.up.arrow.down")
-                    .font(.system(size: 13))
+                    .font(.ptb(.control))
                     .foregroundStyle(isCustomSortActive ? Color.accentColor : Color.secondary)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 4)
-                    .background(isCustomSortActive ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .strokeBorder(isCustomSortActive ? Color.accentColor.opacity(0.5) : Color.secondary.opacity(0.2), lineWidth: 0.5)
-                    )
+                    .ptbChip(active: isCustomSortActive ? .accent : nil)
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
@@ -1303,17 +1285,17 @@ struct DexSearchField: View {
         HStack(spacing: 4) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-                .font(.system(size: 13))
+                .font(.ptb(.control))
             TextField(l.dexSearchPlaceholder, text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 13))
+                .font(.ptb(.control))
             if !text.isEmpty {
                 Button {
                     text = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
-                        .font(.system(size: 13))
+                        .font(.ptb(.control))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(l.clearFilters)
@@ -1321,12 +1303,7 @@ struct DexSearchField: View {
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 4)
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .strokeBorder(Color.secondary.opacity(0.2), lineWidth: 0.5)
-        )
+        .ptbChip()
     }
 }
 
@@ -1343,17 +1320,12 @@ struct DexShinyToggle: View {
             }
         } label: {
             Image(systemName: isOn ? "sparkles" : "sparkle")
-                .font(.system(size: 13, weight: isOn ? .bold : .regular))
+                .font(.ptb(.control, weight: isOn ? .bold : .regular))
                 .foregroundStyle(isOn ? Color.yellow : Color.secondary)
                 .frame(width: 16, height: 16)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 4)
-                .background(isOn ? Color.yellow.opacity(0.18) : Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .strokeBorder(isOn ? Color.yellow.opacity(0.6) : Color.secondary.opacity(0.2), lineWidth: 0.5)
-                )
+                .ptbChip(active: isOn ? .shiny : nil)
         }
         .buttonStyle(.plain)
         .help(l.filterShinyOnly)
@@ -1602,7 +1574,7 @@ struct DexGridView: View {
         VStack(spacing: 8) {
             Spacer()
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 24))
+                .font(.ptb(.display))
                 .foregroundStyle(.tertiary)
             Text(store.l.noSearchResults)
                 .font(.callout.weight(.medium))
@@ -1743,7 +1715,7 @@ struct DexGridView: View {
             if let sel = slice.first(where: { $0.collectionID == selectedID }) {
                 // 칸은 번호·스프라이트·이름만 보여주므로 희귀도가 선택으로 얻는 정보다.
                 Text("#\(sel.id) \(sel.name) · \(store.l.rarityLabel(sel.rarity))")
-                    .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                    .font(.ptb(.body)).foregroundStyle(.secondary).lineLimit(1)
                 if sel.isOwned, !PokemonForm.hasForms(speciesID: sel.id) {
                     let isRepresentative = store.isRepresentative(sel)
                     RepresentativeFooterButton(localization: store.l,
@@ -1762,7 +1734,7 @@ struct DexGridView: View {
                     }
                     .disabled(current == 0)
                     Text("\(current + 1) / \(pageCount)")
-                        .font(.system(size: 12, weight: .semibold)).monospacedDigit()
+                        .font(.ptb(.label, weight: .semibold)).monospacedDigit()
                         .foregroundStyle(.secondary)
                         .accessibilityLabel(store.l.dexPageLabel(current + 1, pageCount))
                     DexPageButton(forward: true, label: store.l.dexPageNext) {
@@ -1773,7 +1745,7 @@ struct DexGridView: View {
                 .padding(.horizontal, -DexPageButton.edgeInset)
             }
         }
-        .font(.system(size: 13, weight: .semibold))
+        .font(.ptb(.control, weight: .semibold))
         .frame(height: 18)
     }
 }
@@ -1909,10 +1881,10 @@ struct PokemonDetailView: View {
                                        shiny: owned?.isShiny == true, form: form)
                                 .frame(width: 36, height: 36)
                                 .overlay(alignment: .topTrailing) {
-                                    if owned?.isShiny == true { Text("✨").font(.system(size: 11)) }
+                                    if owned?.isShiny == true { Text("✨").font(.ptb(.body)) }
                                 }
                             // Wide grids hold short labels (letters, types); longer names wrap on two lines.
-                            Text(label).font(.system(size: 11, weight: .semibold))
+                            Text(label).font(.ptb(.body, weight: .semibold))
                                 .multilineTextAlignment(.center)
                                 .lineLimit(columns > 4 ? 1 : 2, reservesSpace: columns <= 4)
                                 .minimumScaleFactor(0.6)
@@ -1922,10 +1894,10 @@ struct PokemonDetailView: View {
                         .opacity(owned == nil ? 0.25 : 1)
                         .background(owned.map { store.isRepresentative($0) } == true
                                     ? Color.accentColor.opacity(0.16) : Color.secondary.opacity(0.06),
-                                    in: RoundedRectangle(cornerRadius: 6))
+                                    in: RoundedRectangle(cornerRadius: Radius.chip))
                         .overlay {
                             if selected == form {
-                                RoundedRectangle(cornerRadius: 6)
+                                RoundedRectangle(cornerRadius: Radius.chip)
                                     .strokeBorder(Color.accentColor, lineWidth: 1.5)
                             }
                         }
@@ -2100,7 +2072,7 @@ struct DexSpeciesCell: View {
                         if let held { HeldItemBadge(ref: held, size: 18) }
                     }
                 Text(formCount.map { "\(species.name) \($0)/\(formTotal)" } ?? species.name)
-                    .font(.system(size: 12))
+                    .font(.ptb(.label))
                     .lineLimit(2, reservesSpace: true)
                     .multilineTextAlignment(.center)
             }
@@ -2111,7 +2083,7 @@ struct DexSpeciesCell: View {
                 // ✨ = 이 종의 이로치를 잡은 적이 있다는 표식.
                 if species.isShiny {
                     Text("✨")
-                        .font(.system(size: 10))
+                        .font(.ptb(.small))
                         .padding(.horizontal, 2)
                         .background(.regularMaterial, in: Capsule())
                         .accessibilityLabel(store.l.dexShinyLabel)
@@ -2122,10 +2094,10 @@ struct DexSpeciesCell: View {
             // 서로 다른 카드여도 같은 강조 두 개가 선택된 것처럼 보이지 않는다.
             .background(isRepresentative ? Color.accentColor.opacity(0.16)
                                          : Color.secondary.opacity(isSelected ? 0.16 : 0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
             .overlay {
                 if isSelected {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: Radius.card)
                         .strokeBorder(Color.accentColor, lineWidth: 1.5)
                 }
             }
@@ -2133,9 +2105,9 @@ struct DexSpeciesCell: View {
             // 그림자는 카드 모양에만 — 칸 전체에 `.shadow` 를 걸면 번호·이름·스프라이트 글자마다 그림자가 진다.
             .background {
                 if isHovered {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: Radius.card)
                         .fill(Color(nsColor: .windowBackgroundColor))
-                        .shadow(color: .black.opacity(0.25), radius: 4, y: 2)
+                        .ptbShadow(.lift)
                 }
             }
             .scaleEffect(isHovered ? 1.04 : 1)
@@ -2172,19 +2144,19 @@ struct DexSpeciesCell: View {
             // 현지화된 툴팁·접근성 라벨이 보완한다.
             if level != nil, isSelected {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.ptb(.caption, weight: .bold))
                     .foregroundStyle(Color.accentColor)
                     .accessibilityHidden(true)
             }
             if isRepresentative {
                 Image(systemName: "star.fill")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(.ptb(.tiny, weight: .bold))
                     .foregroundStyle(Color.accentColor)
                     .accessibilityHidden(true)
             }
         }
             // 번호 색 = 희귀도 — "전체" 보기에서도 칸마다 희귀도가 보인다.
-            .font(.system(size: 10, weight: .semibold))
+            .font(.ptb(.small, weight: .semibold))
             .foregroundStyle(rarityColor(species.rarity))
             .padding(.horizontal, 2)
             .background(.regularMaterial, in: Capsule())

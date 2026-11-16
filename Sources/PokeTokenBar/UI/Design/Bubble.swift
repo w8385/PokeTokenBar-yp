@@ -6,11 +6,11 @@ import SwiftUI
 struct BubbleMetrics: Equatable {
     let scale: CGFloat
 
-    var cornerRadius: CGFloat { 12 * scale }
+    var cornerRadius: CGFloat { Radius.sheet * scale }
     var tailWidth: CGFloat { 10 * scale }
     var tailHeight: CGFloat { 6 * scale }
-    var shadowRadius: CGFloat { 4 * scale }
-    var shadowOffsetY: CGFloat { 2 * scale }
+    var shadow: ShadowStyle { ShadowStyle.bubble.scaled(scale) }
+    var shadowRadius: CGFloat { shadow.radius }
 
     /// Limit alerts and agent messages.
     static let standard = BubbleMetrics(scale: 1)
@@ -42,7 +42,7 @@ extension View {
             .background(
                 BubbleShape(metrics: metrics)
                     .fill(Color(nsColor: .windowBackgroundColor))
-                    .shadow(color: .black.opacity(0.15), radius: metrics.shadowRadius, y: metrics.shadowOffsetY)
+                    .ptbShadow(metrics.shadow)
             )
             // A hairline keeps the bubble readable where it sits on the same background color (Home, dark mode).
             .overlay(BubbleShape(metrics: metrics).stroke(Color(nsColor: .separatorColor), lineWidth: 0.75))

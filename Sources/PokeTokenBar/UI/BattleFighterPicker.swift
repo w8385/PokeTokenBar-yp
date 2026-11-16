@@ -101,7 +101,7 @@ struct BattleFighterPicker: View {
     private var emptyResults: some View {
         VStack(spacing: 8) {
             Spacer()
-            Image(systemName: "magnifyingglass").font(.system(size: 24)).foregroundStyle(.tertiary)
+            Image(systemName: "magnifyingglass").font(.ptb(.display)).foregroundStyle(.tertiary)
             Text(store.l.noSearchResults).font(.callout.weight(.medium)).foregroundStyle(.secondary)
             Button(store.l.clearFilters) {
                 query = ""; rarity = nil; shinyOnly = false

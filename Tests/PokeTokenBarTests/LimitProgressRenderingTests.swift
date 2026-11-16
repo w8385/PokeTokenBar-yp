@@ -59,7 +59,7 @@ final class LimitProgressRenderingTests: XCTestCase {
             defer { window.close() }
             host.view.layoutSubtreeIfNeeded()
             window.displayIfNeeded()
-            let rep = try OffscreenRender.bitmap(of: host.view)
+            let rep = try OffscreenRender.bitmap(of: host.view, scale: 2)
 
             // 열별 최소 밝기 — 눈금은 막대 위아래로 돌출하므로 트랙의 둥근 끝보다 깊게 내려간다.
             var darkest = (column: 0, brightness: 1.0)
@@ -111,7 +111,7 @@ final class LimitProgressRenderingTests: XCTestCase {
         defer { window.close() }
         host.view.layoutSubtreeIfNeeded()
         window.displayIfNeeded()
-        let rep = try OffscreenRender.bitmap(of: host.view)
+        let rep = try OffscreenRender.bitmap(of: host.view, scale: 2)
 
         /// 투명은 흰색으로 친다 — 트랙/눈금만 배경보다 어둡다.
         func brightness(x: Int, y: Int) -> Double {

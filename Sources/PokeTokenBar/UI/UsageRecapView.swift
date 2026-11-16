@@ -119,11 +119,11 @@ struct RecapCard: View {
     let content: RecapContent
 
     private static let size = CGSize(width: PopoverMetrics.contentWidth, height: 226)
-    private static let shellTop = Color(red: 0.84, green: 0.21, blue: 0.18)
-    private static let shellBottom = Color(red: 0.66, green: 0.12, blue: 0.11)
-    private static let screenInk = Color(red: 0.05, green: 0.07, blue: 0.08)
-    private static let lcd = Color(red: 0.51, green: 0.98, blue: 0.62)
-    private static let amber = Color(red: 1.0, green: 0.73, blue: 0.28)
+    private static let shellTop = Palette.Recap.shellTop
+    private static let shellBottom = Palette.Recap.shellBottom
+    private static let screenInk = Palette.Recap.screenInk
+    private static let lcd = Palette.Recap.lcd
+    private static let amber = Palette.Recap.amber
     /// Segments per meter. Eight reads as a level gauge; more would turn back into a plain bar.
     private static let meterBlocks = 8
 
@@ -145,7 +145,7 @@ struct RecapCard: View {
                     Spacer(minLength: 0)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
         )
         .environment(\.colorScheme, .light)
         .environment(\.locale, content.language.displayLocale)
@@ -154,9 +154,7 @@ struct RecapCard: View {
     private var header: some View {
         HStack(spacing: 6) {
             lens
-            ForEach([Color(red: 0.95, green: 0.35, blue: 0.35),
-                     Color(red: 0.98, green: 0.82, blue: 0.35),
-                     Color(red: 0.45, green: 0.88, blue: 0.5)], id: \.self) { color in
+            ForEach([Palette.Recap.ledRed, Palette.Recap.ledYellow, Palette.Recap.ledGreen], id: \.self) { color in
                 Circle()
                     .fill(color)
                     .overlay(Circle().strokeBorder(.black.opacity(0.25), lineWidth: 0.5))
@@ -164,7 +162,7 @@ struct RecapCard: View {
             }
             Spacer(minLength: 4)
             Text(content.periodLabel().uppercased())
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(.ptb(.small, weight: .bold, design: .monospaced))
                 .tracking(1.2)
                 .foregroundStyle(.white.opacity(0.95))
                 .lineLimit(1).minimumScaleFactor(0.7)
@@ -174,8 +172,7 @@ struct RecapCard: View {
 
     private var lens: some View {
         Circle()
-            .fill(RadialGradient(colors: [Color(red: 0.72, green: 0.88, blue: 1.0),
-                                          Color(red: 0.15, green: 0.45, blue: 0.85)],
+            .fill(RadialGradient(colors: [Palette.Recap.lensHighlight, Palette.Recap.lensBody],
                                  center: UnitPoint(x: 0.35, y: 0.3), startRadius: 0, endRadius: 11))
             .overlay(Circle().strokeBorder(.white.opacity(0.9), lineWidth: 1.5))
             .overlay(
@@ -191,10 +188,10 @@ struct RecapCard: View {
         return VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .firstTextBaseline, spacing: 5) {
                 Text(TokenFormatter.compact(recap.total))
-                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .font(.ptb(.display, weight: .bold, design: .monospaced))
                     .foregroundStyle(Self.lcd)
                 Text(l.recapTokensUnit.uppercased())
-                    .font(.system(size: 7, weight: .medium, design: .monospaced))
+                    .font(.ptb(.micro, weight: .medium, design: .monospaced))
                     .tracking(0.6)
                     .foregroundStyle(Self.lcd.opacity(0.5))
                     .lineLimit(1)
@@ -216,16 +213,16 @@ struct RecapCard: View {
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: Radius.chip)
                 .fill(Self.screenInk)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: Radius.chip)
                         .fill(RadialGradient(colors: [Self.lcd.opacity(0.07), .clear],
                                              center: UnitPoint(x: 0.15, y: 0.1),
                                              startRadius: 0, endRadius: 180))
                 )
         )
-        .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.black.opacity(0.35), lineWidth: 2))
+        .overlay(RoundedRectangle(cornerRadius: Radius.chip).strokeBorder(.black.opacity(0.35), lineWidth: 2))
         .padding(.horizontal, 2)
     }
 
@@ -237,10 +234,10 @@ struct RecapCard: View {
             let up = delta >= 0
             let color = up ? Self.lcd : Self.amber
             Text("\(up ? "▲" : "▼")\(TokenFormatter.percent(abs(delta) * 100))")
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .font(.ptb(.caption, weight: .bold, design: .monospaced))
                 .foregroundStyle(color)
                 .padding(.horizontal, 5).padding(.vertical, 2)
-                .background(RoundedRectangle(cornerRadius: 2).strokeBorder(color.opacity(0.6), lineWidth: 1))
+                .background(RoundedRectangle(cornerRadius: Radius.bar).strokeBorder(color.opacity(0.6), lineWidth: 1))
         }
     }
 
@@ -260,8 +257,8 @@ struct RecapCard: View {
                     // Zero-width frame: a month's "15" is wider than its column and must not
                     // widen it, or five meters would come out fatter than the rest.
                     Text(labels.indices.contains(index) ? labels[index] : "")
-                        .font(.system(size: content.scope == .week ? 8 : 7,
-                                      weight: bucket.isCurrent ? .bold : .regular, design: .monospaced))
+                        .font(.ptb(content.scope == .week ? .tiny : .micro,
+                                   weight: bucket.isCurrent ? .bold : .regular, design: .monospaced))
                         .foregroundStyle(bucket.isCurrent ? Self.lcd : Self.lcd.opacity(0.45))
                         .fixedSize()
                         .frame(width: 0, height: 10)
@@ -295,12 +292,12 @@ struct RecapCard: View {
     private func readout(_ label: String, _ value: String) -> some View {
         HStack(spacing: 4) {
             Text(label.uppercased())
-                .font(.system(size: 7, weight: .medium, design: .monospaced))
+                .font(.ptb(.micro, weight: .medium, design: .monospaced))
                 .foregroundStyle(Self.lcd.opacity(0.5))
                 .lineLimit(1).minimumScaleFactor(0.7)
             Spacer(minLength: 2)
             Text(value)
-                .font(.system(size: 9.5, weight: .bold, design: .monospaced))
+                .font(.ptb(.caption, weight: .bold, design: .monospaced))
                 .foregroundStyle(Self.lcd)
                 .lineLimit(1).minimumScaleFactor(0.7)
         }
@@ -315,7 +312,7 @@ struct RecapCard: View {
             Rectangle().fill(.white.opacity(0.35)).frame(width: 1, height: 14)
             if content.graduates.isEmpty {
                 Text(content.l.recapNoGraduates)
-                    .font(.system(size: 8, design: .monospaced))
+                    .font(.ptb(.tiny, design: .monospaced))
                     .foregroundStyle(.white.opacity(0.8))
                     .lineLimit(2).fixedSize(horizontal: false, vertical: true)
             } else {
@@ -329,16 +326,16 @@ struct RecapCard: View {
                             // the row, and a trailing sparkle cut "Charizard" to "Chariza…".
                             .overlay(alignment: .topTrailing) {
                                 if graduate.entry.isShiny {
-                                    Text("✨").font(.system(size: 7)).offset(x: 3, y: -2)
+                                    Text("✨").font(.ptb(.micro)).offset(x: 3, y: -2)
                                 }
                             }
                         Text(graduate.name)
-                            .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                            .font(.ptb(.tiny, weight: .semibold, design: .monospaced))
                             .foregroundStyle(.white)
                             .lineLimit(1).minimumScaleFactor(0.7)
                     }
                     .padding(.horizontal, 4).padding(.vertical, 2)
-                    .background(RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.22)))
+                    .background(RoundedRectangle(cornerRadius: Radius.bar).fill(.black.opacity(0.22)))
                 }
             }
             Spacer(minLength: 0)

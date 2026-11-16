@@ -32,6 +32,7 @@ CLASSES=(
   EvolutionRulesTests              # every special evolution step in the fixture has an app rule
   EvolutionMappingDocTests         # docs/reference/evolution-mapping.md matches the rule table
   OffscreenRenderGuardTests        # no test shows a window or activates the app
+  DesignTokenScanTests             # no raw Color(red:, numeric font size or corner radius outside UI/Design
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).

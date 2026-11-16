@@ -30,7 +30,7 @@ struct PopoverTabPicker: View {
                 let selected = tab == selection
                 Button { selection = tab } label: {
                     HStack(spacing: 5) {
-                        Image(systemName: tab.symbol).font(.system(size: 13, weight: .semibold))
+                        Image(systemName: tab.symbol).font(.ptb(.control, weight: .semibold))
                         if selected {
                             Text(l.title(of: tab)).font(.callout.weight(.semibold)).lineLimit(1).fixedSize()
                         }
@@ -38,7 +38,7 @@ struct PopoverTabPicker: View {
                     .padding(.horizontal, selected ? 10 : 0)
                     .frame(maxWidth: selected ? nil : .infinity, minHeight: 26)
                     .background(selected ? Color.accentColor.opacity(0.18) : .clear,
-                                in: RoundedRectangle(cornerRadius: 7))
+                                in: RoundedRectangle(cornerRadius: Radius.chip))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -49,7 +49,7 @@ struct PopoverTabPicker: View {
             }
         }
         .padding(3)
-        .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 9))
+        .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card))
     }
 }
 
@@ -258,7 +258,7 @@ struct PopoverView: View {
             }
             .padding(8)
             .background(Color.accentColor.opacity(0.12))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
         }
     }
 
@@ -326,7 +326,7 @@ struct PopoverView: View {
             }
             HStack(alignment: .firstTextBaseline) {
                 Text(TokenFormatter.compact(store.todayTotalTokens))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.ptb(.hero, weight: .bold))
                     .monospacedDigit()
                 if store.todayTotalTokens >= 1_000 {
                     Text(TokenFormatter.grouped(store.todayTotalTokens))
@@ -728,7 +728,7 @@ struct PopoverView: View {
         }
         .padding(8)
         .background(Color.orange.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.chip))
     }
 
     private var cursorAuthExpiredNotice: some View {
@@ -812,7 +812,7 @@ struct PopoverView: View {
         }
         .padding(8)
         .background(Color.orange.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.chip))
     }
 
 
@@ -963,7 +963,7 @@ struct PopoverView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(8)
-        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: Radius.card))
     }
 
     private var claudeAuthExpiredNotice: some View {
@@ -997,7 +997,7 @@ struct PopoverView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(8)
-        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: Radius.card))
     }
 
     /// Claude 공식 한도 — 최초 로드/만료(stale) 시 사용자가 원탭으로 Keychain 을 읽어 갱신.
@@ -1321,24 +1321,7 @@ struct MonthDailyTrend: View {
     /// provider, so no two of them share a color (a test pins this). A provider registered past
     /// the palette wraps around; the legend and the tooltip still name it. Muted enough to sit next to
     /// the accent-colored today bar of the single-provider row without competing with it.
-    static let providerPalette: [Color] = [
-        Color(red: 0.85, green: 0.47, blue: 0.34),
-        Color(red: 0.36, green: 0.62, blue: 0.95),
-        Color(red: 0.45, green: 0.78, blue: 0.52),
-        Color(red: 0.78, green: 0.55, blue: 0.92),
-        Color(red: 0.95, green: 0.76, blue: 0.32),
-        Color(red: 0.35, green: 0.78, blue: 0.80),
-        Color(red: 0.93, green: 0.51, blue: 0.68),
-        Color(red: 0.62, green: 0.64, blue: 0.70),
-        Color(red: 0.88, green: 0.80, blue: 0.60),
-        Color(red: 0.70, green: 0.82, blue: 0.38),
-        Color(red: 0.60, green: 0.42, blue: 0.30),
-        Color(red: 0.30, green: 0.60, blue: 0.55),
-        Color(red: 0.80, green: 0.35, blue: 0.40),
-        Color(red: 0.40, green: 0.48, blue: 0.80),
-        Color(red: 0.96, green: 0.58, blue: 0.22),
-        Color(red: 0.76, green: 0.58, blue: 0.38),
-    ]
+    static let providerPalette = Palette.providerSeries
 
     var body: some View {
         let columns = DailyTrendMetrics.columns(series: series, today: today, window: activeWindow)
@@ -1448,7 +1431,7 @@ struct MonthDailyTrend: View {
     }
 
     private func swatch(_ providerID: String, _ colors: [String: Int]) -> some View {
-        RoundedRectangle(cornerRadius: 1)
+        RoundedRectangle(cornerRadius: Radius.hairline)
             .fill(color(for: providerID, in: colors))
             .frame(width: 6, height: 6)
     }
@@ -1496,11 +1479,11 @@ struct MonthDailyTrend: View {
         .lineLimit(1)
         .padding(.horizontal, 7)
         .padding(.vertical, 5)
-        .background(RoundedRectangle(cornerRadius: 6, style: .continuous)
+        .background(RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
             .fill(Color(nsColor: .windowBackgroundColor)))
-        .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous)
+        .overlay(RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
             .strokeBorder(Color.secondary.opacity(0.35), lineWidth: 0.5))
-        .shadow(color: .black.opacity(0.25), radius: 4, y: 1)
+        .ptbShadow(.lift)
     }
 
     private func barRow(_ columns: [DailyTrendColumn], peak: Int, stack: [DailyTrendStack.ProviderSeries],
@@ -1521,7 +1504,7 @@ struct MonthDailyTrend: View {
                         ? DailyTrendStack.segments(on: column.date, stack: stack, barHeight: height) : []
                     Group {
                         if segments.isEmpty {
-                            RoundedRectangle(cornerRadius: 1, style: .continuous)
+                            RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
                                 .fill(isToday ? Color.accentColor
                                               : Color.secondary.opacity(hovered == column.date ? 0.8
                                                                         : isEmptyDay ? 0.18 : 0.45))
@@ -1553,7 +1536,7 @@ struct MonthDailyTrend: View {
             }
         }
         .frame(height: height)
-        .clipShape(RoundedRectangle(cornerRadius: 1, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous))
     }
 
     private func color(for providerID: String, in colors: [String: Int]) -> Color {

@@ -124,15 +124,15 @@ struct BoxView: View {
 
     private func toolbarIcon(_ systemImage: String, isActive: Bool) -> some View {
         Image(systemName: systemImage)
-            .font(.system(size: 13, weight: isActive ? .bold : .regular))
+            .font(.ptb(.control, weight: isActive ? .bold : .regular))
             .foregroundStyle(isActive ? Color.accentColor : Color.secondary)
             .frame(width: 16, height: 16)
             .padding(.horizontal, 6)
             .padding(.vertical, 4)
             .background(isActive ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.chip))
             .overlay(
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: Radius.chip)
                     .strokeBorder(isActive ? Color.accentColor.opacity(0.5) : Color.secondary.opacity(0.2), lineWidth: 0.5)
             )
     }
@@ -146,13 +146,13 @@ struct BoxView: View {
                 .buttonStyle(.borderless).font(.caption)
         }
         .padding(.horizontal, 8).padding(.vertical, 4)
-        .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 6))
+        .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.chip))
     }
 
     private var emptyResults: some View {
         VStack(spacing: 8) {
             Spacer()
-            Image(systemName: "magnifyingglass").font(.system(size: 24)).foregroundStyle(.tertiary)
+            Image(systemName: "magnifyingglass").font(.ptb(.display)).foregroundStyle(.tertiary)
             Text(store.l.noSearchResults).font(.callout.weight(.medium)).foregroundStyle(.secondary)
             Button(store.l.clearFilters) {
                 searchText = ""; shinyOnly = false; hasItemOnly = false; sort = .recent
@@ -213,7 +213,7 @@ struct BoxCell: View {
                         else if individual.role == .friend { roleIcon("heart.fill", tint: .pink) }
                     }
                 (Text(displayName) + GenderGlyph.text(entry.profile?.gender, leadingSpace: true))
-                    .font(.system(size: 11))
+                    .font(.ptb(.body))
                     .lineLimit(2, reservesSpace: true)
                     .multilineTextAlignment(.center)
             }
@@ -221,18 +221,18 @@ struct BoxCell: View {
             .overlay(alignment: .topLeading) { levelTag }
             .overlay(alignment: .topTrailing) {
                 if entry.isShiny {
-                    Text("✨").font(.system(size: 10)).padding(.horizontal, 2)
+                    Text("✨").font(.ptb(.small)).padding(.horizontal, 2)
                         .background(.regularMaterial, in: Capsule())
                 }
             }
             .padding(2)
             .background(Color.secondary.opacity(individual.role == .raising ? 0.16 : 0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
             .background {
                 if isHovered {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: Radius.card)
                         .fill(Color(nsColor: .windowBackgroundColor))
-                        .shadow(color: .black.opacity(0.25), radius: 4, y: 2)
+                        .ptbShadow(.lift)
                 }
             }
             .scaleEffect(isHovered ? 1.04 : 1)
@@ -246,7 +246,7 @@ struct BoxCell: View {
 
     private var levelTag: some View {
         Text("Lv\(individual.level)")
-            .font(.system(size: 10, weight: .semibold))
+            .font(.ptb(.small, weight: .semibold))
             .foregroundStyle(rarityColor(entry.rarity))
             .padding(.horizontal, 2)
             .background(.regularMaterial, in: Capsule())
@@ -254,7 +254,7 @@ struct BoxCell: View {
 
     private func roleIcon(_ name: String, tint: Color) -> some View {
         Image(systemName: name)
-            .font(.system(size: 9, weight: .bold))
+            .font(.ptb(.caption, weight: .bold))
             .foregroundStyle(tint)
             .padding(2)
             .background(.regularMaterial, in: Circle())

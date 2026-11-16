@@ -136,7 +136,7 @@ struct HomePetRow<Main: View>: View {
         .frame(width: Self.tileWidth, height: Self.tileHeight, alignment: .bottom)
         .background(alignment: .bottom) {
             ZStack(alignment: .bottom) {
-                RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.secondary.opacity(0.06))
+                RoundedRectangle(cornerRadius: Radius.sheet, style: .continuous).fill(Color.secondary.opacity(0.06))
                 Capsule().fill(Color.secondary.opacity(0.22)).frame(height: 1)
                     .padding(.horizontal, 10).padding(.bottom, Self.floorInset + 2)
             }
@@ -195,7 +195,7 @@ struct HomePetRow<Main: View>: View {
             // Only while the pointer is over the friend, on its outer top corner away from the raised Pokémon.
             Button { store.removeFriend(entryID: friend.entryID) } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 12))
+                    .font(.ptb(.label))
                     .foregroundStyle(.secondary, Color(nsColor: .windowBackgroundColor))
             }
             .buttonStyle(.plain)
@@ -231,9 +231,9 @@ struct FriendPicker: View {
                         } label: {
                             FriendSprite(friend: friend, size: 40, spriteStore: spriteStore)
                                 .frame(width: 48, height: 48)
-                                .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                                .ptbPanel()
                                 .overlay(alignment: .topTrailing) {
-                                    if friend.isShiny { Text("✨").font(.system(size: 10)) }
+                                    if friend.isShiny { Text("✨").font(.ptb(.small)) }
                                 }
                         }
                         .buttonStyle(.plain)

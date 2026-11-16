@@ -28,16 +28,13 @@ enum OffscreenRender {
     }
 
     /// 1x bitmap of `view.bounds`, or 2x with `scale: 2` (what the popover draws on a Retina screen).
+    /// The size is fixed here; `bitmapImageRepForCachingDisplay` follows the main screen, so the same
+    /// test wrote 1x or 2x PNGs depending on whether a display was awake.
     static func bitmap(of view: NSView, scale: CGFloat = 1) throws -> NSBitmapImageRep {
         view.layoutSubtreeIfNeeded()
         let bounds = view.bounds
-        if scale == 1 {
-            let bitmap = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: bounds))
-            view.cacheDisplay(in: bounds, to: bitmap)
-            return bitmap
-        }
         let bitmap = try XCTUnwrap(NSBitmapImageRep(
-            bitmapDataPlanes: nil, pixelsWide: Int(bounds.width * scale), pixelsHigh: Int(bounds.height * scale),
+            bitmapDataPlanes: nil, pixelsWide: Int((bounds.width * scale).rounded(.up)), pixelsHigh: Int((bounds.height * scale).rounded(.up)),
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
             colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
         bitmap.size = bounds.size

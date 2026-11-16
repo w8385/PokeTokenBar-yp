@@ -46,14 +46,14 @@ struct BattleSlotControl: View {
             }
         }
         .frame(width: 34, height: 34)
-        .background(RoundedRectangle(cornerRadius: 7).fill(isMine ? Color.accentColor.opacity(0.18) : Color.clear))
-        .overlay(RoundedRectangle(cornerRadius: 7)
+        .background(RoundedRectangle(cornerRadius: Radius.chip).fill(isMine ? Color.accentColor.opacity(0.18) : Color.clear))
+        .overlay(RoundedRectangle(cornerRadius: Radius.chip)
             .strokeBorder(isMine ? Color.accentColor : Color.secondary.opacity(0.4), lineWidth: isMine ? 1.5 : 1))
         .overlay(alignment: .topLeading) {
-            Text("\(index + 1)").font(.system(size: 9, weight: .bold)).monospacedDigit()
+            Text("\(index + 1)").font(.ptb(.caption, weight: .bold)).monospacedDigit()
                 .foregroundStyle(isMine ? Color.accentColor : Color.secondary)
                 .padding(.leading, 3).padding(.top, 1)
         }
-        .contentShape(RoundedRectangle(cornerRadius: 7))
+        .contentShape(RoundedRectangle(cornerRadius: Radius.chip))
     }
 }
