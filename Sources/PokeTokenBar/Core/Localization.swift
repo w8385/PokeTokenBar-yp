@@ -931,6 +931,26 @@ struct L {
           "Im Tausch: Der Kampfplatz ist gesperrt, bis der Tausch endet oder abgebrochen wird.",
           "Участвует в обмене: место в бою заблокировано, пока обмен не завершится или не будет отменён.")
     }
+    var battleItemClause: String {
+        t("같은 도구를 든 포켓몬이 이미 엔트리에 있어요",
+          "A Pokémon holding the same item is already in the lineup",
+          "同じ道具を持つポケモンがすでにエントリーにいます",
+          "Ya hay un Pokémon con el mismo objeto en el equipo",
+          "Un Pokémon avec le même objet est déjà dans l'équipe",
+          "Já há um Pokémon com o mesmo item na equipe",
+          "Ein Pokémon mit demselben Item ist schon in der Aufstellung",
+          "Покемон с таким же предметом уже в составе")
+    }
+    var battleItemDuplicateWarning: String {
+        t("엔트리에 같은 도구를 든 포켓몬이 있어요. 대결에는 앞 순서만 도구를 들고 나가요.",
+          "Two lineup members hold the same item. In battle only the earlier one keeps it.",
+          "エントリーに同じ道具を持つポケモンがいます。対戦では先の順番だけが道具を持ちます。",
+          "Dos miembros del equipo tienen el mismo objeto. En combate solo el primero lo conserva.",
+          "Deux membres de l'équipe ont le même objet. En combat, seul le premier le garde.",
+          "Dois membros da equipe têm o mesmo item. Na batalha, só o primeiro fica com ele.",
+          "Zwei Aufstellungsmitglieder halten dasselbe Item. Im Kampf behält nur das frühere es.",
+          "Два покемона в составе держат один предмет. В бою предмет останется только у первого.")
+    }
     var battleFighting: String { t("대결 중", "In battle", "対戦中", "En combate", "En combat", "Em batalha", "Im Kampf", "В бою") }
     func battleLevelCap(_ level: Int) -> String {
         t("대결 Lv\(level)", "Battle Lv\(level)", "対戦 Lv\(level)", "Combate Lv\(level)", "Combat Lv\(level)",

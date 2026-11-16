@@ -29,7 +29,7 @@ struct BoxDetailView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     identityHeader
                     HeldItemSlot(store: store, individualID: individual.id, speciesID: individual.speciesID,
-                                 speciesName: name) {
+                                 speciesName: name, lineupSlots: battleEntry?.slots ?? []) {
                         Task { await uploader?.tick() }
                     }
                     moveTraining
@@ -307,6 +307,8 @@ struct HeldItemSlot: View {
     let individualID: String
     let speciesID: Int
     let speciesName: String
+    /// The battle lineup picks; an item another lineup member holds cannot be given to a lineup member.
+    var lineupSlots: [BattleEntrySlot] = []
     /// Called after the item changed, so the bot's copy of the party follows.
     let onChange: () -> Void
 
@@ -334,6 +336,7 @@ struct HeldItemSlot: View {
                                     Button("\(ref.name(l)) ×\(store.bagCount(of: ref))") {
                                         if store.equip(ref, to: individualID) { onChange() }
                                     }
+                                    .disabled(clash(ref))
                                 }
                             }
                             .controlSize(.small).fixedSize()
@@ -348,12 +351,19 @@ struct HeldItemSlot: View {
                 }
             }
             note(held, locked: locked, hasSpare: !spare.isEmpty)
+            if !locked, spare.contains(where: clash) {
+                caption(l.battleItemClause, color: .orange)
+            }
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: Radius.panel))
         .overlay(RoundedRectangle(cornerRadius: Radius.panel).strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1))
         .accessibilityElement(children: .contain)
+    }
+
+    private func clash(_ ref: HeldItemRef) -> Bool {
+        BattleEntry.equipClash(ref.inventoryKey, onto: individualID, state: store.state, slots: lineupSlots)
     }
 
     @ViewBuilder
