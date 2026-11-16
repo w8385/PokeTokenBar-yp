@@ -24,7 +24,7 @@ extension CompanionStore {
             return (candidate, entry)
         }
         .sorted {
-            if ($0.0.dexEntry == nil) != ($1.0.dexEntry == nil) { return $0.0.dexEntry == nil }
+            if $0.0.isRaised != $1.0.isRaised { return $0.0.isRaised }
             if $0.0.member.level != $1.0.member.level { return $0.0.member.level > $1.0.member.level }
             return $0.1.finalID < $1.1.finalID
         }
@@ -35,7 +35,7 @@ extension CompanionStore {
     func battleSpecies(for candidate: BattleCandidate) -> DexSpecies? {
         guard let entry = dexEntry(for: candidate) else { return nil }
         return DexSpecies(id: entry.finalID, name: dexEntryName(entry), rarity: entry.rarity,
-                          isShiny: entry.isShiny, isRaising: candidate.dexEntry == nil,
+                          isShiny: entry.isShiny, isRaising: candidate.isRaised,
                           form: PokemonForm.resolved(speciesID: entry.finalID, form: entry.form),
                           names: entry.names?[entry.finalID], hasNormal: !entry.isShiny,
                           isFemale: entry.profile?.gender == .female)

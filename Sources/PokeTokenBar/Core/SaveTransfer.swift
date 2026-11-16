@@ -145,6 +145,7 @@ enum SaveTransfer {
         var s = state
         s.usedSinceInstall = clampToken(s.usedSinceInstall)
         s.spentTokens = clampToken(s.spentTokens)
+        s.parkedSpentTokens = s.parkedSpentTokens.map(clampToken)
         s.eggUsage = clampToken(s.eggUsage)
         s.clickGrowth = clampToken(s.clickGrowth)
         s.claimedTodayTokensByProvider = s.claimedTodayTokensByProvider?.reduce(into: [:]) { result, entry in
@@ -198,6 +199,7 @@ enum SaveTransfer {
             s.dex[index].profile?.sanitize()
         }
         s.reconcileRepresentativeSelection()
+        s.reconcileRaised()
         s.reconcileFriends()
         s.returnOrphanedHeldItems()
         return s

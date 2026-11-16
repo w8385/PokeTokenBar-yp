@@ -40,6 +40,11 @@ struct PartyPayload: Encodable, Equatable, Sendable {
 enum PartyBuilder {
     /// The Pokémon being raised now, sent when no battle entry is chosen; an egg has none.
     static func party(from state: CompanionState) -> [PartyMember] {
+        if let graduate = state.raisedEntry {
+            let raised = member(speciesID: graduate.finalID, form: graduate.form, shiny: graduate.isShiny,
+                                profile: graduate.profile, nature: graduate.nature)
+            return isAcceptedPokemonID(raised.pokemonID) ? [raised] : []
+        }
         guard let active = state.active else { return [] }
         let raised = member(speciesID: active.currentID, form: active.form,
                             shiny: active.displaysShiny, profile: active.profile, nature: active.nature)

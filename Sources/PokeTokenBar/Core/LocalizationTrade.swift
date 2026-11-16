@@ -88,6 +88,8 @@ extension L {
         switch refusal {
         case .raising:
             return t("키우는 중인 포켓몬은 교환할 수 없어요.", "The Pokémon you are raising can't be traded.", "育成中のポケモンは交換できません。", "El Pokémon que estás criando no se puede intercambiar.", "Le Pokémon que tu élèves ne peut pas être échangé.", "O Pokémon que você está criando não pode ser trocado.", "Das Pokémon, das du aufziehst, kann nicht getauscht werden.", "Выращиваемого покемона нельзя обменять.")
+        case .parked:
+            return t("쉬는 중인 포켓몬은 교환할 수 없어요. 먼저 다시 키워 주세요.", "A resting Pokémon can't be traded. Raise it again first.", "休んでいるポケモンは交換できません。先に育成を再開してください。", "Un Pokémon en descanso no se puede intercambiar. Vuelve a criarlo primero.", "Un Pokémon au repos ne peut pas être échangé. Reprends son élevage d'abord.", "Um Pokémon descansando não pode ser trocado. Volte a criá-lo primeiro.", "Ein ruhendes Pokémon kann nicht getauscht werden. Zieh es zuerst wieder auf.", "Отдыхающего покемона нельзя обменять. Сначала снова начните его выращивать.")
         case .fighting:
             return t("전투 포켓몬은 교환할 수 없어요. 먼저 다른 포켓몬을 전투에 내보내세요.", "The battle Pokémon can't be traded. Pick another for battle first.", "対戦ポケモンは交換できません。先に別のポケモンを対戦に出してください。", "El Pokémon de combate no se puede intercambiar. Elige otro para combatir primero.", "Le Pokémon de combat ne peut pas être échangé. Choisis-en un autre pour le combat d'abord.", "O Pokémon de batalha não pode ser trocado. Escolha outro para a batalha primeiro.", "Das Kampf-Pokémon kann nicht getauscht werden. Wähle zuerst ein anderes für den Kampf.", "Боевого покемона нельзя обменять. Сначала выберите для боя другого.")
         case .arriving:

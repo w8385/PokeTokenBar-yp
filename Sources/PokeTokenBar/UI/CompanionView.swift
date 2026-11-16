@@ -835,7 +835,7 @@ struct CompanionHeader: View {
                             Badge(store.l.rarityLabel(r).uppercased(), tint: .rarity(r))
                         }
                     }
-                    if store.hasActive, let id = store.currentSpeciesID, let details = store.pokemonDetailsByID[id] {
+                    if store.hasRaisedPokemon, let id = store.currentSpeciesID, let details = store.pokemonDetailsByID[id] {
                         TypeBadges(types: details.types, language: store.language)
                         if !PokemonForm.isDefault(store.currentForm, speciesID: id) {
                             Text(store.l.defaultFormDataNote)
@@ -843,7 +843,7 @@ struct CompanionHeader: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
-                    if store.hasActive {
+                    if store.hasRaisedPokemon {
                         // 단계 + 성격(부화 시 확정된 개체 아이덴티티)
                         let nature = store.currentNature.map { " · \($0.name(store.language))" } ?? ""
                         let stage = (Text(store.stageText + nature)
@@ -862,9 +862,11 @@ struct CompanionHeader: View {
                                 DayNightLabel(store: store).frame(maxWidth: .infinity, alignment: .trailing)
                             }
                         }
-                        LabeledProgressBar(value: store.progress,
-                                           label: Self.progressDetail(used: store.state.active?.usedAtStage ?? 0,
-                                                                      total: store.threshold))
+                        if !store.isLineParked {
+                            LabeledProgressBar(value: store.progress,
+                                               label: Self.progressDetail(used: store.state.active?.usedAtStage ?? 0,
+                                                                          total: store.threshold))
+                        }
                         let multiplier = store.growthMultiplier
                         if store.tokensToNext > 0 || multiplier != nil {
                             HStack(spacing: 5) {
@@ -914,10 +916,20 @@ struct CompanionHeader: View {
                         }
                     }
                     Text(statusLine).font(.caption2).foregroundStyle(.secondary)
+                    if let parked = store.parkedLineName {
+                        HStack(spacing: 6) {
+                            Text(store.l.parkedLineNote(parked))
+                                .font(.caption2).foregroundStyle(.secondary)
+                                .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 4)
+                            Button(store.l.resumeLine) { store.resumeLine() }
+                                .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            if store.hasActive, !store.lineNodes.isEmpty {
+            if store.hasRaisedPokemon, !store.lineNodes.isEmpty {
                 // 폭을 안 주면 분기 라인(이브이)이 넘쳐 팝오버 콘텐츠 전체가 좌우로 잘린다.
                 EvoLineView(nodes: store.lineNodes, mysteryLabel: store.l.unknownNextEvolution,
                             language: store.language, thumb: 30, shiny: store.currentIsShiny, female: store.currentIsFemale,
@@ -934,7 +946,7 @@ struct CompanionHeader: View {
         // Types come from PokéAPI details; cached after the first fetch. Same ID as the sprite,
         // so a disguised Ditto shows its disguise's types.
         .task(id: store.currentSpeciesID) {
-            if store.hasActive, let id = store.currentSpeciesID { await store.loadPokemonDetails(speciesID: id) }
+            if store.hasRaisedPokemon, let id = store.currentSpeciesID { await store.loadPokemonDetails(speciesID: id) }
         }
         .onAppear {
             playCelebrationIfNeeded()

@@ -319,7 +319,7 @@ private struct EggCard: View {
                     }
                 }
                 if !store.hasActive {
-                    Text(l.eggShopLockedHint)
+                    Text(store.isLineParked ? l.parkedLockedHint : l.eggShopLockedHint)
                         .font(.caption2).foregroundStyle(.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }

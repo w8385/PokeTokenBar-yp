@@ -15,7 +15,7 @@ final class CompanionStore {
     var alwaysFacesBack = false
     /// The companion shows its back sprite on every surface: while sulking, or always when asked to.
     /// An egg has no back to show.
-    var facesBack: Bool { state.active != nil && (alwaysFacesBack || displayState == .sulk) }
+    var facesBack: Bool { hasRaisedPokemon && (alwaysFacesBack || displayState == .sulk) }
     private(set) var currentLine: EvoLine?
     private(set) var representativeSubject = RepresentativeSubject(speciesID: nil, isShiny: false)
     /// Graduated Pokémon shown beside the active one. Display only: no growth, stats or save effect beyond the pick.
@@ -132,7 +132,7 @@ final class CompanionStore {
         refreshRepresentativeSubject()
         refreshFriendSubjects()
         refreshSnapshots()
-        if state.active != nil { displayState = .idle }
+        if !isEgg { displayState = .idle }
     }
 
     static func defaultURL() -> URL {
@@ -250,9 +250,23 @@ final class CompanionStore {
     /// 앱 전체 UI 문자열 — language 변경 시 자동 재렌더.
     var l: L { L(language) }
 
-    var hasActive: Bool { state.active != nil }
-    var rarity: Rarity? { state.active?.rarity }
-    var currentIsShiny: Bool { state.active?.displaysShiny ?? false }   // 위장 중엔 이로치 숨김(리빌 때 공개)
+    /// A line Pokémon (not an egg) is the one being raised. False while a graduate is raised: the line is parked.
+    var hasActive: Bool { state.active != nil && !isLineParked }
+    /// Something other than an egg is the raised Pokémon — a line Pokémon or the raised graduate.
+    var hasRaisedPokemon: Bool { state.active != nil || raisedGraduate != nil }
+    /// The graduate raised in place of the line. The line (or its egg) waits untouched until it is resumed.
+    var raisedGraduate: DexEntry? { state.raisedEntry }
+    var isLineParked: Bool { raisedGraduate != nil }
+    /// What the Home resume line calls the parked one: its name, or the egg's.
+    var parkedLineName: String? {
+        guard isLineParked else { return nil }
+        return activeDexEntry.map(dexEntryName) ?? l.parkedEggName
+    }
+    var rarity: Rarity? { raisedGraduate?.rarity ?? state.active?.rarity }
+    var currentIsShiny: Bool {   // 위장 중엔 이로치 숨김(리빌 때 공개)
+        if let graduate = raisedGraduate { return graduate.isShiny }
+        return state.active?.displaysShiny ?? false
+    }
     /// 새 알(리롤) 구매 시 실수로 놓아주지 않도록 2단계 확인이 필요한 고가치 개체인지 판정.
     /// 이로치(shiny)이거나 전설(legendary)인 경우에만 2단계 경고를 띄운다.
     /// 희귀(rare)는 고급/희귀 알의 반복 리롤 피로도(alert fatigue)를 방지하기 위해 일반 확인만 거친다.
@@ -261,11 +275,18 @@ final class CompanionStore {
     var isHighValueCompanion: Bool {
         currentIsShiny || rarity == .legendary
     }
-    var currentNature: PokemonNature? { state.active?.nature }
-    var currentGender: PokemonGender? { state.active?.profile?.gender }
+    var currentNature: PokemonNature? {
+        if let graduate = raisedGraduate { return graduate.nature }
+        return state.active?.nature
+    }
+    var currentGender: PokemonGender? {
+        if let graduate = raisedGraduate { return graduate.profile?.gender }
+        return state.active?.profile?.gender
+    }
     var currentIsFemale: Bool { currentGender == .female }
     var growthMultiplier: Int? {
-        state.active?.hasGrowthBoost == true ? PokemonBalance.repeatGrowthMultiplier : nil
+        guard !isLineParked else { return nil }
+        return state.active?.hasGrowthBoost == true ? PokemonBalance.repeatGrowthMultiplier : nil
     }
 
     /// 메뉴바와 플로팅 펫이 그릴 대표 종과 색. nil 선택은 기존 동작(현재 개체/알)을 보존한다.
@@ -337,6 +358,48 @@ final class CompanionStore {
         reevaluateEvolution()
     }
 
+    // MARK: 키우는 포켓몬 지정
+
+    /// A graduate the player may raise: an owned, settled individual that is not already the raised one.
+    func canRaise(entryID: String) -> Bool {
+        guard !isHatching, !isRevealingDitto, entryID != state.raisedEntryID, !isTradeLocked(entryID),
+              let entry = state.dex.first(where: { $0.id == entryID }) else { return false }
+        return !entry.isReleased && entry.profile != nil && entry.tradeEvolutionPending != true
+    }
+
+    /// Raises a graduate. The line in `active` (or the egg) is parked as it stands; a graduate raised before goes
+    /// back to the Box with the level it reached. Returns false and changes nothing when it can't be raised.
+    @discardableResult
+    func raise(entryID: String) -> Bool {
+        guard canRaise(entryID: entryID) else { return false }
+        if state.raisedEntryID == nil { state.parkedSpentTokens = state.spentTokens }
+        state.raisedEntryID = entryID
+        state.reconcileFriends()
+        settleRaisedChange()
+        return true
+    }
+
+    /// Takes the parked line (or egg) back exactly where it stopped; the raised graduate returns to the Box.
+    @discardableResult
+    func resumeLine() -> Bool {
+        guard state.raisedEntryID != nil, !isHatching, !isRevealingDitto else { return false }
+        state.resumeParkedLine(now: clock())
+        settleRaisedChange()
+        return true
+    }
+
+    private func settleRaisedChange() {
+        activeGeneration += 1
+        isHatchRetryDelayed = false
+        prefetchedLineID = nil
+        justGraduated = nil; justEvolvedTo = nil; eventUntil = nil
+        celebration = nil
+        displayState = isEgg ? .egg : .idle
+        reevaluateEvolution()   // saves
+        if state.active != nil, !isLineParked, currentLine == nil { Task { await loadCurrentLine() } }
+        if state.active == nil, !isLineParked { Task { await ensureEggPrefetch() } }
+    }
+
     private func refreshFriendSubjects() {
         let next = state.friendEntryIDs.compactMap { id in
             state.dex.first { $0.id == id }.map {
@@ -359,7 +422,7 @@ final class CompanionStore {
     }
 
     // 알 인큐베이션 (active 없을 때)
-    var isEgg: Bool { state.active == nil }
+    var isEgg: Bool { state.active == nil && raisedGraduate == nil }
     var eggStarted: Bool { state.eggUsage > 0 }
     var eggProgress: Double { min(1, max(0, Double(state.eggUsage) / Double(eggHatchThreshold))) }
     var eggTokensToHatch: Int { max(0, eggHatchThreshold - state.eggUsage) }
@@ -367,32 +430,36 @@ final class CompanionStore {
     private(set) var isHatchRetryDelayed = false
 
     var displayName: String {
+        if let graduate = raisedGraduate { return formDisplayName(dexEntryName(graduate), speciesID: graduate.finalID, form: graduate.form) }
         guard let a = state.active, let line = currentLine else { return "Token Egg" }
         return formDisplayName(line.localizedName(a.currentID, state.language),
                                speciesID: a.currentID, form: currentForm)
     }
-    var currentSpeciesID: Int? { state.active?.currentID }
+    var currentSpeciesID: Int? { raisedGraduate?.finalID ?? state.active?.currentID }
     var currentForm: PokemonForm? {
-        PokemonForm.resolved(speciesID: currentSpeciesID ?? 0, form: state.active?.form)
+        PokemonForm.resolved(speciesID: currentSpeciesID ?? 0, form: raisedGraduate?.form ?? state.active?.form)
     }
     var isFinalStage: Bool {
+        if raisedGraduate != nil { return true }
         guard let a = state.active, let line = currentLine else { return false }
         return line.tree.node(withID: a.currentID)?.children(for: a.profile?.gender).isEmpty ?? true
     }
     var stageText: String {
+        if let graduate = raisedGraduate { return "Lv\(graduate.profile?.level ?? 5) · \(l.finalForm)" }
         guard let a = state.active else { return "" }
         return isFinalStage ? l.finalForm : l.stage(a.stageIndex + 1, a.totalForms)
     }
     var threshold: Int {
-        guard let a = state.active else { return 1 }
+        guard let a = state.active, !isLineParked else { return 1 }
         return stageThreshold(for: a)
     }
     var progress: Double {
-        guard let a = state.active, threshold > 0 else { return 0 }
+        guard let a = state.active, !isLineParked, threshold > 0 else { return 0 }
         return min(1, max(0, Double(a.usedAtStage) / Double(threshold)))
     }
     /// Follow the companion being raised, even when a Pokédex representative is pinned.
     var menuGrowthText: String {
+        if let graduate = raisedGraduate { return "Lv\(graduate.profile?.level ?? 5)" }
         let total = isEgg ? eggHatchThreshold : threshold
         let credits = isEgg ? state.eggUsage : (state.active?.usedAtStage ?? 0)
         let used = min(max(0, credits), total)
@@ -400,12 +467,18 @@ final class CompanionStore {
         let percent = total > 0 ? used * 100 / total : 0
         return l.menuGrowthProgress(percent, isEgg: isEgg)
     }
-    var tokensToNext: Int { guard let a = state.active else { return 0 }; return max(0, threshold - a.usedAtStage) }
+    var tokensToNext: Int {
+        guard let a = state.active, !isLineParked else { return 0 }
+        return max(0, threshold - a.usedAtStage)
+    }
 
     /// 진화 라인 표시용: 실현된 경로 + 다음 단계 미리보기.
     /// 유일하게 이어지는 단계 뒤에 분기가 있으면, 그 확정 접두어와 하나의 미지 항목을 함께 보여 준다.
     /// 분기 후보는 부화 시 계획됐더라도 실제 진화 전까지 하나의 미지 항목으로 숨긴다.
     var lineNodes: [EvoLineItem] {
+        if let graduate = raisedGraduate {
+            return Self.realizedLineItems(pathIDs: graduate.chainOrder, stageIndex: max(0, graduate.chainOrder.count - 1))
+        }
         guard let a = state.active, let line = currentLine else { return [] }
         var out = Self.realizedLineItems(pathIDs: a.pathIDs, stageIndex: a.stageIndex)
         if let current = line.tree.node(withID: a.currentID) {
@@ -444,7 +517,7 @@ final class CompanionStore {
             chainOrder: active.pathIDs,
             rarity: active.rarity,
             caughtAt: nil,
-            isShiny: currentIsShiny,   // 위장 메타몽은 리빌 전까지 이로치를 숨긴다(판정 단일 소스)
+            isShiny: active.displaysShiny,   // 위장 메타몽은 리빌 전까지 이로치를 숨긴다(판정 단일 소스)
             nature: active.nature,
             profile: active.profile,
             names: currentLine.map { line in
@@ -476,7 +549,7 @@ final class CompanionStore {
             chainOrder: chain,
             rarity: a.rarity,
             caughtAt: now,
-            isShiny: currentIsShiny,
+            isShiny: a.displaysShiny,
             nature: a.nature,
             profile: a.profile,
             names: currentLine.map { line in
@@ -715,7 +788,7 @@ final class CompanionStore {
                 let key = DexKey(id, form: active.form, groupForms: groupForms)
                 var a = acc[key] ?? DexAccumulator(rarity: active.rarity)
                 if let n = currentLine?.names[id] { a.names = n }
-                if currentIsShiny { a.isShiny = true } else { a.hasNormal = true }   // 위장 중 숨김 규칙 재사용
+                if active.displaysShiny { a.isShiny = true } else { a.hasNormal = true }   // 위장 중 숨김 규칙 재사용
                 acc[key] = a
             }
         }
@@ -729,7 +802,7 @@ final class CompanionStore {
                 name: groupForms ? formDisplayName(name, speciesID: key.speciesID, form: key.form) : name,
                 rarity: a.rarity,
                 isShiny: a.isShiny,
-                isRaising: key.speciesID == state.active?.currentID && (!groupForms || key.form == currentForm),
+                isRaising: key.speciesID == currentSpeciesID && (!groupForms || key.form == currentForm),
                 form: key.form,
                 names: a.names,
                 hasNormal: a.hasNormal)
@@ -956,7 +1029,7 @@ final class CompanionStore {
                 // 그 경우 개체는 이미 들어와 있으므로 알로 표시하면 안 되고, 진화 라인 로드도 계속 재시도해야
                 // 한다 — 새 Mac 은 AI CLI 를 처음 쓸 때까지 hasUsageData 가 false 라 여기서 막히면 그날 내내
                 // 알로 보인다(재시작해도 동일).
-                displayState = state.active == nil ? .egg : .idle
+                displayState = isEgg ? .egg : .idle
                 kickLineLoadIfNeeded()
                 return
             }
@@ -997,11 +1070,7 @@ final class CompanionStore {
                     let delta = todayTokensByProvider.values.reduce(0, +)
                     if delta > 0 {
                         state.usedSinceInstall += delta
-                        if state.active == nil {
-                            state.eggUsage += delta
-                        } else {
-                            applyUsage(delta)
-                        }
+                        creditUsage(delta)
                     }
                 } else {
                     var ledger = state.claimedTodayTokensByProvider ?? [:]
@@ -1027,11 +1096,7 @@ final class CompanionStore {
                     state.claimedTodayTokensByProvider = ledger
                     if delta > 0 {
                         state.usedSinceInstall += delta
-                        if state.active == nil {
-                            state.eggUsage += delta   // 알 인큐베이션 누적
-                        } else {
-                            applyUsage(delta)
-                        }
+                        creditUsage(delta)
                     }
                 }
             }
@@ -1042,7 +1107,7 @@ final class CompanionStore {
         if let until = eventUntil, clock() > until {
             justGraduated = nil; justEvolvedTo = nil; eventUntil = nil
         }
-        if state.active == nil, state.installBaselineSet, !isHatching {
+        if state.active == nil, state.raisedEntry == nil, state.installBaselineSet, !isHatching {
             if state.eggUsage >= eggHatchThreshold {
                 // ready egg 는 부화를 우선한다. 같은 틱에 프리패치와 별도 Task 로 경쟁시키면
                 // 프리패치 락을 본 부화가 반환하고 실패 상태도 놓칠 수 있다.
@@ -1057,7 +1122,7 @@ final class CompanionStore {
             Task { await loadCurrentLine() }
         }
         // 위장 메타몽이 첫 진화 임계 도달 → 리빌(재시작 등 applyUsage 킥을 못 탄 경우 백업 트리거)
-        if let a = state.active, a.dittoDisguise != nil, !a.dittoRevealed, currentLine != nil,
+        if let a = state.active, !isLineParked, a.dittoDisguise != nil, !a.dittoRevealed, currentLine != nil,
            !isHatching, !isRevealingDitto,
            a.usedAtStage >= stageThreshold(for: a) {
             Task { await revealDitto() }
@@ -1075,7 +1140,7 @@ final class CompanionStore {
     /// A gate that waits on the clock (day/night) opens without any new usage. Called from every usage update and
     /// from the app's 30-second tick; at most one check per 20 seconds.
     func checkEvolutionGate() {
-        guard let a = state.active, currentLine != nil, a.dittoDisguise == nil || a.dittoRevealed,
+        guard let a = state.active, !isLineParked, currentLine != nil, a.dittoDisguise == nil || a.dittoRevealed,
               a.usedAtStage >= stageThreshold(for: a), clock() >= nextEvolutionGateCheck else { return }
         nextEvolutionGateCheck = clock().addingTimeInterval(20)
         applyUsage(0)
@@ -1087,11 +1152,33 @@ final class CompanionStore {
         return (DayPeriod.at(now), DayPeriod.secondsUntilSwitch(from: now), DayPeriod.cycleDegrees(from: now))
     }
 
+    /// Usage goes to exactly one place: the raised graduate, else the line in `active`, else the egg.
+    /// A parked line or egg gets nothing.
+    private func creditUsage(_ delta: Int) {
+        if state.raisedEntry != nil {
+            creditRaisedGraduate(delta)
+        } else if state.active == nil {
+            state.eggUsage += delta   // 알 인큐베이션 누적
+        } else {
+            applyUsage(delta)
+        }
+    }
+
+    /// A graduate grows by level only, on the same curve as the line (`delta` is in the difficulty's units).
+    private func creditRaisedGraduate(_ delta: Int) {
+        guard delta > 0, let index = state.dex.firstIndex(where: { $0.id == state.raisedEntryID }),
+              var profile = state.dex[index].profile else { return }
+        let standard = Int((Double(delta) / PokemonBalance.clampDifficulty(growthDifficulty)).rounded(.down))
+        profile.applyGrowth(standard, rarity: state.dex[index].rarity)
+        if let details = pokemonDetailsByID[state.dex[index].finalID] { profile.enrich(with: details) }
+        state.dex[index].profile = profile
+    }
+
     /// 토큰 증분을 현재 포켓몬에 적용 — 임계 도달 시 진화/졸업.
     /// 라인 미로딩(재시작 직후·오프라인)이어도 사용량은 항상 적립한다 — 여기서 드롭하면
     /// 프로바이더별 ledger 는 이미 전진해 델타가 영구 유실된다. 진화 판정만 라인 로드 후로 미룬다.
     func applyUsage(_ delta: Int) {
-        guard state.active != nil else { return }
+        guard state.active != nil, !isLineParked else { return }
         state.active!.usedAtStage += delta
         reconcileActiveProfileGrowth()
         guard let line = currentLine else { save(); return }
@@ -1267,7 +1354,7 @@ final class CompanionStore {
 
     /// The form the active individual is waiting to take and what it still lacks; nil when nothing special waits.
     func pendingEvolutionGate() -> (rule: EvolutionRule, context: EvolutionContext)? {
-        guard let a = state.active, let node = currentLine?.tree.node(withID: a.currentID) else { return nil }
+        guard let a = state.active, !isLineParked, let node = currentLine?.tree.node(withID: a.currentID) else { return nil }
         let gender = a.profile?.gender
         let options = growthOptions(of: node, gender: gender)
         let traits = evolutionTraits(of: a)
@@ -1283,7 +1370,7 @@ final class CompanionStore {
 
     /// A gate may be waiting for what just happened (a pet, a friend, a gesture): run the stage check again.
     func reevaluateEvolution() {
-        guard let a = state.active, currentLine != nil, a.usedAtStage >= stageThreshold(for: a) else {
+        guard let a = state.active, !isLineParked, currentLine != nil, a.usedAtStage >= stageThreshold(for: a) else {
             save()
             return
         }
@@ -1294,7 +1381,7 @@ final class CompanionStore {
     static let petCooldown: TimeInterval = 10
 
     func recordPet() {
-        guard state.active != nil else { return }
+        guard hasActive else { return }
         let now = clock()
         if let last = lastEvolutionPetAt, now.timeIntervalSince(last) < Self.petCooldown { return }
         lastEvolutionPetAt = now
@@ -1303,38 +1390,38 @@ final class CompanionStore {
     }
 
     func recordFlip() {
-        guard state.active != nil, !state.active!.evolution.flipped else { return }
+        guard hasActive, !state.active!.evolution.flipped else { return }
         state.active!.evolution.flipped = true
         reevaluateEvolution()
     }
 
     func recordSpin() {
-        guard state.active != nil, !state.active!.evolution.spun else { return }
+        guard hasActive, !state.active!.evolution.spun else { return }
         state.active!.evolution.spun = true
         reevaluateEvolution()
     }
 
     func recordTokenRain() {
-        guard state.active != nil, !state.active!.evolution.rained else { return }
+        guard hasActive, !state.active!.evolution.rained else { return }
         state.active!.evolution.rained = true
         reevaluateEvolution()
     }
 
     func chooseTower(_ tower: String) {
-        guard state.active != nil, state.active!.evolution.tower == nil else { return }
+        guard hasActive, state.active!.evolution.tower == nil else { return }
         state.active!.evolution.tower = tower
         reevaluateEvolution()
     }
 
     func recordBattle(key: String, result: EvolutionRequirement.Tally) {
-        guard state.active != nil else { return }
+        guard hasActive else { return }
         state.active!.evolution.record(battle: key, result: result)
         reevaluateEvolution()
     }
 
     /// Reads the bot's recent-battle list. Only battles after the cursor count; the first read just sets it.
     func syncBattles(_ battles: [BattleInfo.RecentBattle]) {
-        guard state.active != nil else { return }
+        guard hasActive else { return }
         guard let cursor = state.active!.evolution.battleCursor else {
             state.active!.evolution.battleCursor = clock()
             save()
@@ -1600,7 +1687,7 @@ final class CompanionStore {
 
     /// 지금 키우는 개체가 메가진화 중으로 보일 때의 스프라이트 id.
     var currentMegaSpriteID: Int? {
-        megaSpriteID(instanceID: state.active?.profile?.instanceID, speciesID: currentSpeciesID)
+        megaSpriteID(instanceID: raisedGraduate?.id ?? state.active?.profile?.instanceID, speciesID: currentSpeciesID)
     }
 
     @discardableResult
@@ -1629,7 +1716,7 @@ final class CompanionStore {
     /// Use the same rounded, difficulty-adjusted thresholds as actual growth.
     /// Preview the apparent evolution path so hidden identities cannot change the picker.
     private var rareCandyStageCosts: [Int] {
-        guard var mon = state.active, currentLine != nil else { return [] }
+        guard var mon = state.active, !isLineParked, currentLine != nil else { return [] }
         if mon.dittoDisguise != nil && !mon.dittoRevealed && mon.usedAtStage >= stageThreshold(for: mon) {
             // The accepted batch is already saved. Wait for the reveal before accepting another.
             return []
@@ -1732,7 +1819,7 @@ final class CompanionStore {
 
     /// 돌을 쓸 수 있는 상태 — 돌 재고 + 활성 포켓몬 + 라인 로딩 완료(위장 중인 메타몽 제외).
     func canUseStone(_ kind: ItemKind) -> Bool {
-        guard kind.isEvolutionStone, itemCount(kind) > 0, let a = state.active, currentLine != nil else { return false }
+        guard kind.isEvolutionStone, itemCount(kind) > 0, let a = state.active, !isLineParked, currentLine != nil else { return false }
         return a.dittoDisguise == nil || a.dittoRevealed
     }
 
@@ -1742,7 +1829,7 @@ final class CompanionStore {
     }
 
     private func stoneTarget(_ kind: ItemKind) -> EvoNode? {
-        guard let item = kind.evolutionItemName, let a = state.active,
+        guard let item = kind.evolutionItemName, let a = state.active, !isLineParked,
               let node = currentLine?.tree.node(withID: a.currentID) else { return nil }
         return node.children(for: a.profile?.gender).first { $0.evolves(withItem: item) }
     }
@@ -1871,7 +1958,7 @@ final class CompanionStore {
     // MARK: 알 (리롤 — 현재 포켓몬 폐기, 도감·확률 무영향)
 
     /// 현재 알이 보증하는 등급 하한(UI 표시용). 활성 포켓몬이 있으면 알이 없으므로 nil.
-    var eggGuarantee: Rarity? { state.active == nil ? state.eggTier : nil }
+    var eggGuarantee: Rarity? { isEgg ? state.eggTier : nil }
 
     /// 알 구매 가능 — 폐기할 활성 포켓몬이 있고 지갑이 그 티어 가격 이상일 때만.
     /// 알 상태에서도 살 수 있게 하는 안은 채택하지 않았다(기존 새 알과 게이트 통일) — 알끼리 교체하는
@@ -2022,7 +2109,10 @@ final class CompanionStore {
         lastCountedClickAt = now
         let xp = ClickGrowth.tokensPerClick
         state.clickGrowth += xp
-        if state.active == nil {
+        if state.raisedEntry != nil {
+            creditRaisedGraduate(xp)
+            save()
+        } else if state.active == nil {
             state.eggUsage += xp
             save()
             if state.eggUsage >= eggHatchThreshold { Task { await hatchIfNeeded() } }
@@ -2036,7 +2126,7 @@ final class CompanionStore {
     /// Pray over the egg. A placebo: it only counts, and never touches an RNG or a roll — the species is
     /// usually already in `pendingHatchID` (prefetched at purchase) long before anyone prays.
     func pray() {
-        guard state.active == nil else { return }
+        guard state.active == nil, state.raisedEntry == nil else { return }
         var record = state.eggPrayers ?? PrayerRecord(count: 0)
         record.count += 1
         state.eggPrayers = record
@@ -2190,7 +2280,7 @@ final class CompanionStore {
     // MARK: 부화
 
     func hatchIfNeeded() async {
-        guard state.active == nil, !isHatching, state.eggUsage >= eggHatchThreshold else { return }
+        guard state.active == nil, state.raisedEntry == nil, !isHatching, state.eggUsage >= eggHatchThreshold else { return }
         // 프리패치가 "종 롤 중"(pending 미확정)일 때만 대기 — 이중 rng 소비 방지.
         // pending 확정 후의 예열(라인/스프라이트)과는 동시 진행해도 안전하다.
         guard state.pendingHatchID != nil || !prefetchInFlight else { return }
@@ -2236,7 +2326,7 @@ final class CompanionStore {
     private var prefetchedLineID: Int?   // 라인·스프라이트 예열 완료한 종(세션 메모리)
 
     private func isCurrentEgg(generation: Int) -> Bool {
-        activeGeneration == generation && state.active == nil
+        activeGeneration == generation && state.active == nil && state.raisedEntry == nil
     }
 
     private func isCurrentReadyEgg(generation: Int) -> Bool {
@@ -2258,7 +2348,7 @@ final class CompanionStore {
     /// fetch(provider 캐시 적재) ③ 스프라이트 예열(정적+애니메이션+shiny 애니메이션).
     /// 전부 성공하면 부화 순간 네트워크 0. 실패 지점부터 다음 update 틱에 이어서 재시도.
     private func ensureEggPrefetch() async {
-        guard state.active == nil, !isHatching, !prefetchInFlight else { return }
+        guard state.active == nil, state.raisedEntry == nil, !isHatching, !prefetchInFlight else { return }
         let generation = activeGeneration
         var shouldHatch = false
         prefetchInFlight = true
@@ -2325,8 +2415,11 @@ final class CompanionStore {
 
     /// The raised Pokémon's form names, for its title and its evolution and graduation messages.
     func loadActiveFormNames() async {
-        guard let active = state.active else { return }
-        await loadFormNames(baseID: active.baseID, form: active.form)
+        if let graduate = raisedGraduate {
+            await loadFormNames(baseID: graduate.baseID, form: graduate.form)
+        } else if let active = state.active {
+            await loadFormNames(baseID: active.baseID, form: active.form)
+        }
     }
 
     func loadFormNames(_ resources: [PokemonNameResource]) async {
@@ -2340,7 +2433,7 @@ final class CompanionStore {
     }
 
     func hatch(baseID: Int) async {
-        guard !isHatching else { return }
+        guard !isHatching, state.raisedEntry == nil else { return }
         let generation = activeGeneration
         isHatching = true
         defer { isHatching = false }
@@ -2620,7 +2713,7 @@ final class CompanionStore {
 
     private func computeState(burnTier: BurnTier, limitWarning: Bool, hasUsageData: Bool, today: Int,
                               timeSinceLastUsage: TimeInterval? = nil) -> CompanionStateKind {
-        if state.active == nil { return .egg }
+        if isEgg { return .egg }
         if justGraduated != nil || (eventUntil != nil && clock() < eventUntil!) { return .levelUp }
         if limitWarning { return .tired }
         if hasUsageData, let idle = timeSinceLastUsage, idle >= PokemonBalance.sulkAfterIdle {
@@ -2673,7 +2766,7 @@ final class CompanionStore {
         // 개체에 대한 "+XP" 가 새 개체 위에 떠오른다.
         candyFeedbackAmount = 0
         mintFeedbackNature = nil
-        displayState = state.active != nil ? .idle : .egg
+        displayState = isEgg ? .egg : .idle
         migrateEconomyIfNeeded(previousGrowth: legacyGrowthForOldSaves)
         migratePokemonProfilesIfNeeded()
         seedDexCompletionsIfNeeded()
@@ -2804,7 +2897,7 @@ final class CompanionStore {
 
     /// Startup/background warmup for the only profile needed before a detail page is opened.
     func preparePokemonProfiles() async {
-        guard let speciesID = state.active?.currentID else { return }
+        guard let speciesID = raisedGraduate?.finalID ?? state.active?.currentID else { return }
         await loadPokemonDetails(speciesID: speciesID)
     }
 
@@ -2963,7 +3056,8 @@ final class CompanionStore {
     }
 
     func tradeRefusal(for entry: DexEntry, fightingIDs: Set<String>) -> TradeRefusal? {
-        TradePool.refusal(for: entry, fightingIDs: fightingIDs, activeID: activeDexEntry?.id)
+        TradePool.refusal(for: entry, fightingIDs: fightingIDs, activeID: activeDexEntry?.id,
+                          raisedID: state.raisedEntryID, lineParked: isLineParked)
     }
 
     /// Newest first, the same order the bot's pool uses.
@@ -3192,6 +3286,7 @@ final class CompanionStore {
         state = SaveTransfer.sanitized(s)
     }
     private func save() {
+        state.reconcileRaised()
         state.reconcileFriends()
         state.returnOrphanedHeldItems()
         refreshRepresentativeSubject()

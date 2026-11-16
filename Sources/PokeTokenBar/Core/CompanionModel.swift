@@ -1067,6 +1067,12 @@ struct CompanionState: Codable, Sendable {
     /// `DexEntry.id` of the graduated Pokémon shown beside the active one (display only, at most `maxFriends`).
     var friendEntryIDs: [String] = []
     static let maxFriends = 2
+    /// `DexEntry.id` of the graduate the player raises in place of the line in `active` / the egg fields. While it
+    /// is set that line is parked untouched: it gets no growth and neither hatches nor evolves. Nil is the plain
+    /// behavior, and every save from before this field.
+    var raisedEntryID: String? = nil
+    /// `spentTokens` when the line was parked; resuming shifts its spend baseline by what was spent meanwhile.
+    var parkedSpentTokens: Int? = nil
     // 도감
     var dex: [DexEntry] = []
     // 소유한 (base,final) 쌍 — 분기 다양성용
@@ -1133,8 +1139,11 @@ struct CompanionState: Codable, Sendable {
         representativeForm = PokemonForm.resolved(speciesID: representativeSpeciesID ?? 0,
             form: PokemonForm.decoded(from: decoder, keys: "representativeForm", "representativeUnownForm"))
         friendEntryIDs     = c.lenient([String].self, forKey: .friendEntryIDs, default: [])
+        raisedEntryID      = c.lenientOptional(String.self, forKey: .raisedEntryID)
+        parkedSpentTokens  = c.lenientOptional(Int.self, forKey: .parkedSpentTokens)
         // 도감은 항목별 격리 — 손상 항목 하나가 도감 전체를 날리지 않게.
         dex                = c.lenient([Lossy<DexEntry>].self, forKey: .dex, default: []).compactMap(\.value)
+        reconcileRaised()
         reconcileFriends()
         collectedFinals    = c.lenient(Set<String>.self, forKey: .collectedFinals, default: [])
         language           = c.lenient(AppLanguage.self, forKey: .language, default: .systemDefault)
@@ -1258,12 +1267,44 @@ struct CompanionState: Codable, Sendable {
 
     /// Graduated individuals that can stand beside the active Pokémon: released records are not friends.
     var friendCandidates: [DexEntry] {
-        dex.filter { !$0.isReleased && !friendEntryIDs.contains($0.id) }
+        dex.filter { !$0.isReleased && !friendEntryIDs.contains($0.id) && $0.id != raisedEntryID }
+    }
+
+    /// The graduate being raised now; nil when the line in `active` (or its egg) is the one raised.
+    var raisedEntry: DexEntry? {
+        guard let id = raisedEntryID else { return nil }
+        return dex.first { $0.id == id && !$0.isReleased }
+    }
+
+    /// The species, shininess and form to show for this save: the raised graduate, else the line Pokémon.
+    var currentPokemonPreview: (speciesID: Int?, isShiny: Bool, form: PokemonForm?) {
+        if let graduate = raisedEntry {
+            return (graduate.finalID, graduate.isShiny, PokemonForm.resolved(speciesID: graduate.finalID, form: graduate.form))
+        }
+        guard let line = active else { return (nil, false, nil) }
+        return (line.currentID, line.displaysShiny, PokemonForm.resolved(speciesID: line.currentID, form: line.form))
+    }
+
+    /// The pointer only means something while its entry is an owned graduate. Call wherever the dex can change.
+    mutating func reconcileRaised() {
+        guard raisedEntryID != nil, raisedEntry == nil else { return }
+        resumeParkedLine()
+    }
+
+    /// Clears the pointer so the parked line is raised again. Its evolution gate resumes where it stood: spending
+    /// and battles that happened while it was parked do not count toward it.
+    mutating func resumeParkedLine(now: Date = Date()) {
+        raisedEntryID = nil
+        defer { parkedSpentTokens = nil }
+        guard active != nil, let parked = parkedSpentTokens else { return }
+        active!.evolution.spentBaseline += max(0, spentTokens - parked)
+        if active!.evolution.battleCursor != nil { active!.evolution.battleCursor = now }
     }
 
     /// Friends are only graduated dex entries, once each, at most `maxFriends`. Call wherever the dex can change.
     mutating func reconcileFriends() {
-        let valid = Set(dex.lazy.filter { !$0.isReleased }.map(\.id))
+        let raised = raisedEntryID
+        let valid = Set(dex.lazy.filter { !$0.isReleased && $0.id != raised }.map(\.id))
         var seen = Set<String>()
         friendEntryIDs = friendEntryIDs.filter { valid.contains($0) && seen.insert($0).inserted }
             .prefix(Self.maxFriends).map { $0 }

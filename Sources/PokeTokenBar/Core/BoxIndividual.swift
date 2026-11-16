@@ -3,10 +3,11 @@ import Foundation
 /// One Pokémon the player owns, as the Box lists it. `id` is the instance ID that held items, trade locks and
 /// battle slots are keyed by — the raised Pokémon's `profile.instanceID`, a graduated one's `DexEntry.id`.
 struct BoxIndividual: Identifiable {
-    enum Role { case raising, friend, graduated }
+    /// `parked` is the line Pokémon set aside while a graduate is raised.
+    enum Role { case raising, parked, friend, graduated }
 
     let id: String
-    /// The raised Pokémon's synthesized entry, or the graduated record.
+    /// The line Pokémon's synthesized entry, or the graduated record.
     let entry: DexEntry
     let role: Role
 
@@ -40,10 +41,12 @@ extension CompanionStore {
         let friends = Set(state.friendEntryIDs)
         var result: [BoxIndividual] = []
         if let entry = raisedDexEntry, let id = entry.profile?.instanceID {
-            result.append(BoxIndividual(id: id, entry: entry, role: .raising))
+            result.append(BoxIndividual(id: id, entry: entry, role: isLineParked ? .parked : .raising))
         }
         for entry in state.dex where entry.releasedAt == nil {
-            result.append(BoxIndividual(id: entry.id, entry: entry, role: friends.contains(entry.id) ? .friend : .graduated))
+            let role: BoxIndividual.Role = entry.id == state.raisedEntryID ? .raising
+                : friends.contains(entry.id) ? .friend : .graduated
+            result.append(BoxIndividual(id: entry.id, entry: entry, role: role))
         }
         return result
     }
@@ -66,8 +69,22 @@ extension CompanionStore {
     }
 
     var currentHeldItemRef: HeldItemRef? {
-        guard let id = state.active?.profile?.instanceID else { return nil }
+        guard let id = raisedGraduate?.id ?? state.active?.profile?.instanceID else { return nil }
         return heldItemRef(of: id)
+    }
+
+    /// A Pokédex row is the representative when it names this individual's species and form.
+    func isRepresentative(_ entry: DexEntry) -> Bool {
+        guard state.representativeSpeciesID == entry.finalID else { return false }
+        let form = PokemonForm.resolved(speciesID: entry.finalID, form: entry.form)
+        return form == nil || state.representativeForm == form
+    }
+
+    /// Sets this individual's species and form as the representative, or clears it when it already is one.
+    @discardableResult
+    func toggleRepresentative(of entry: DexEntry) -> Bool {
+        if isRepresentative(entry) { return setRepresentativeSpeciesID(nil) }
+        return setRepresentativeSpeciesID(entry.finalID, form: PokemonForm.resolved(speciesID: entry.finalID, form: entry.form))
     }
 
     /// The sprite the Box draws for an individual: its Mega form while it holds the matching stone.

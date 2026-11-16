@@ -47,6 +47,10 @@ struct BoxView: View {
             if let speciesID = navigation.boxSpeciesFilter {
                 speciesFilterChip(speciesID, all: all)
             }
+            if store.isLineParked, store.state.active == nil, navigation.boxSpeciesFilter == nil,
+               searchText.isEmpty, !shinyOnly, !hasItemOnly {
+                parkedEggRow
+            }
             if visible.isEmpty {
                 emptyResults
             } else {
@@ -80,6 +84,27 @@ struct BoxView: View {
                 }
             }
         }
+    }
+
+    /// An egg has no Pokémon to put in the grid, so the parked one gets its own row with the resume button.
+    private var parkedEggRow: some View {
+        let l = store.l
+        return HStack(spacing: 8) {
+            SpriteView(speciesID: nil, size: 32, animated: false)
+                .frame(width: 32, height: 32)
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(spacing: 4) {
+                    Text(l.parkedEggName).font(.caption.weight(.semibold))
+                    Text(l.parkedBadge).font(.system(size: 9, weight: .bold)).foregroundStyle(.orange)
+                }
+                Text("\(Int(store.eggProgress * 100))%").font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+            }
+            Spacer(minLength: 4)
+            Button(l.resumeLine) { store.resumeLine() }
+                .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+        }
+        .padding(.horizontal, 8).padding(.vertical, 4)
+        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private func scrollToTop(_ proxy: ScrollViewProxy) {
@@ -209,8 +234,13 @@ struct BoxCell: View {
                         if let held { HeldItemBadge(ref: held, size: 20) }
                     }
                     .overlay(alignment: .bottomLeading) {
-                        if individual.role == .raising { roleIcon("figure.walk", tint: .accentColor) }
-                        else if individual.role == .friend { roleIcon("heart.fill", tint: .pink) }
+                        HStack(spacing: 1) {
+                            if individual.role == .raising { roleIcon("figure.walk", tint: .accentColor) }
+                            else if individual.role == .friend { roleIcon("heart.fill", tint: .pink) }
+                            if individual.role == .parked { textTag(store.l.parkedBadge, tint: .orange) }
+                            if isRepresentative { textTag(store.l.representativeBadge, tint: Color(red: 0.72, green: 0.48, blue: 0)) }
+                        }
+                        .frame(maxWidth: Self.thumb, alignment: .leading)
                     }
                 (Text(displayName) + GenderGlyph.text(entry.profile?.gender, leadingSpace: true))
                     .font(.system(size: 11))
@@ -252,6 +282,18 @@ struct BoxCell: View {
             .background(.regularMaterial, in: Capsule())
     }
 
+    private var isRepresentative: Bool { store.isRepresentative(entry) }
+
+    private func textTag(_ text: String, tint: Color) -> some View {
+        Text(text)
+            .font(.system(size: 8, weight: .bold))
+            .foregroundStyle(tint)
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .padding(.horizontal, 3).padding(.vertical, 1)
+            .background(Color(nsColor: .windowBackgroundColor).opacity(0.9), in: Capsule())
+    }
+
     private func roleIcon(_ name: String, tint: Color) -> some View {
         Image(systemName: name)
             .font(.system(size: 9, weight: .bold))
@@ -261,12 +303,14 @@ struct BoxCell: View {
             .accessibilityHidden(true)
     }
 
-    private var tooltip: String {
+    var tooltip: String {
         let l = store.l
         var parts = ["#\(individual.speciesID) \(displayName)", "Lv\(individual.level)", l.rarityLabel(entry.rarity)]
         if entry.isShiny { parts.append(l.dexShinyLabel) }
         if individual.role == .raising { parts.append(l.dexRaising) }
+        if individual.role == .parked { parts.append(l.parkedBadge) }
         if individual.role == .friend { parts.append(l.friendLabel) }
+        if isRepresentative { parts.append(l.representativeBadge) }
         if let held { parts.append("\(l.heldItemLabel): \(held.name(l))") }
         return parts.joined(separator: " · ")
     }

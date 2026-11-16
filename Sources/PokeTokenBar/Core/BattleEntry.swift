@@ -8,11 +8,13 @@ struct BattleEntrySlot: Codable, Equatable, Sendable {
     var moves: [Int] = []
 }
 
-/// An owned Pokémon that can battle. `dexEntry` is nil for the one being raised now.
+/// An owned Pokémon that can battle. `dexEntry` is nil for the line Pokémon; `isRaised` marks the one being
+/// raised now, which is that line Pokémon or the raised graduate.
 struct BattleCandidate: Sendable, Identifiable {
     let id: String
     let member: PartyMember
     let dexEntry: DexEntry?
+    var isRaised = false
 }
 
 /// What the Battle tab's picker is choosing for.
@@ -35,13 +37,14 @@ enum BattleEntry {
 
     static func candidates(in state: CompanionState) -> [BattleCandidate] {
         var owned: [BattleCandidate] = []
-        if let active = state.active, let id = active.profile?.instanceID {
+        // A parked line sits out: its Pokémon is not on this Mac's roster until it is raised again.
+        if let active = state.active, state.raisedEntry == nil, let id = active.profile?.instanceID {
             owned.append(BattleCandidate(
                 id: id,
                 member: PartyBuilder.member(speciesID: active.currentID, form: active.form,
                                             shiny: active.displaysShiny, profile: active.profile,
                                             nature: active.nature, heldItem: state.heldItemSlug(of: id)),
-                dexEntry: nil))
+                dexEntry: nil, isRaised: true))
         }
         for entry in state.dex where entry.releasedAt == nil {
             owned.append(BattleCandidate(
@@ -49,15 +52,16 @@ enum BattleEntry {
                 member: PartyBuilder.member(speciesID: entry.finalID, form: entry.form,
                                             shiny: entry.isShiny, profile: entry.profile,
                                             nature: entry.nature, heldItem: state.heldItemSlug(of: entry.id)),
-                dexEntry: entry))
+                dexEntry: entry, isRaised: entry.id == state.raisedEntryID))
         }
         return owned.filter { PartyBuilder.isAcceptedPokemonID($0.member.pokemonID) }
     }
 
-    /// The Pokémon being raised, else (during an egg) the highest-level kept catch; nil when nothing is owned.
+    /// The Pokémon being raised (the line Pokémon or the raised graduate), else (during an egg) the highest-level
+    /// kept catch; nil when nothing is owned.
     static func autoFighter(state: CompanionState) -> BattleCandidate? {
         let owned = candidates(in: state)
-        return owned.first { $0.dexEntry == nil } ?? owned.max { $0.member.level < $1.member.level }
+        return owned.first(where: \.isRaised) ?? owned.max { $0.member.level < $1.member.level }
     }
 
     /// The picked Pokémon that are still owned, in slot order. With none of them owned (or none picked)

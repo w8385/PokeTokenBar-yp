@@ -83,6 +83,8 @@ struct TradeSyncReply: Sendable {
 enum TradeRefusal: Equatable, Sendable {
     /// The Pokémon being raised.
     case raising
+    /// The line (or egg) set aside while a graduate is raised: resume it first.
+    case parked
     /// The battle pick: move it first.
     case fighting
     /// Arrived by trade and has not finished evolving.
@@ -102,8 +104,11 @@ enum TradePool {
         Set(BattleEntry.lineup(state: state, slots: slots).map(\.id))
     }
 
-    static func refusal(for entry: DexEntry, fightingIDs: Set<String>, activeID: String?) -> TradeRefusal? {
-        if entry.id == activeID { return .raising }
+    /// `activeID` is the line Pokémon's synthetic Box id (never in the dex); `raisedID` is the raised graduate.
+    static func refusal(for entry: DexEntry, fightingIDs: Set<String>, activeID: String?,
+                        raisedID: String? = nil, lineParked: Bool = false) -> TradeRefusal? {
+        if entry.id == raisedID { return .raising }
+        if entry.id == activeID { return lineParked ? .parked : .raising }
         if entry.releasedAt != nil || entry.profile == nil || !isSendable(entry) { return .unavailable }
         if fightingIDs.contains(entry.id) { return .fighting }
         if entry.tradeEvolutionPending == true { return .arriving }
@@ -115,7 +120,8 @@ enum TradePool {
         var entries: [TradePoolEntry] = []
         var bytes = 2
         let owned = state.dex.sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
-        for entry in owned where refusal(for: entry, fightingIDs: fightingIDs, activeID: nil) == nil {
+        for entry in owned where refusal(for: entry, fightingIDs: fightingIDs, activeID: nil,
+                                         raisedID: state.raisedEntryID) == nil {
             let held = state.heldItems[entry.id].flatMap(ItemKind.init(rawValue:))?.tradeItemKey
             guard entries.count < maxEntries, let item = poolEntry(for: entry, name: name(entry), heldItem: held),
                   let size = try? encoder.encode(item).count, size <= maxEntryBytes,

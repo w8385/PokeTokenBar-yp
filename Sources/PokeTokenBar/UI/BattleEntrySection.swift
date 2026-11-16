@@ -99,7 +99,7 @@ struct BattleEntrySection: View {
                             Text(l.battleLevelCap(BattleEntry.battleLevel))
                                 .font(.caption).foregroundStyle(.secondary)
                         }
-                        if fighter.dexEntry == nil {
+                        if fighter.isRaised {
                             Text(l.battleEntryRaising).font(.caption2).foregroundStyle(Color.accentColor)
                         }
                     }

@@ -84,6 +84,7 @@ struct BoxDetailView: View {
                 }
                 switch individual.role {
                 case .raising: Text(l.dexRaising).font(.callout).foregroundStyle(Color.accentColor)
+                case .parked: Text(l.parkedBadge).font(.callout).foregroundStyle(.orange)
                 case .friend: Text(l.friendLabel).font(.callout).foregroundStyle(.pink)
                 case .graduated: EmptyView()
                 }
@@ -102,6 +103,8 @@ struct BoxDetailView: View {
                         Task { await uploader?.tick() }
                     }
                 }
+                raiseButton
+                representativeButton
                 friendButton
                 tradeButtons
                 if let target = store.dexLinkTargets[individual.speciesID] {
@@ -118,6 +121,34 @@ struct BoxDetailView: View {
     }
 
     @ViewBuilder
+    private var raiseButton: some View {
+        switch individual.role {
+        case .graduated, .friend:
+            Button { store.raise(entryID: individual.id) } label: {
+                Label(l.raiseThis, systemImage: "figure.walk")
+            }
+            .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .disabled(!store.canRaise(entryID: individual.id))
+        case .parked:
+            Button { store.resumeLine() } label: {
+                Label(l.resumeLine, systemImage: "arrow.uturn.backward")
+            }
+            .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+        case .raising:
+            EmptyView()
+        }
+    }
+
+    private var representativeButton: some View {
+        let isRepresentative = store.isRepresentative(entry)
+        return Button { store.toggleRepresentative(of: entry) } label: {
+            Label(isRepresentative ? l.representativeClear : l.representativeSetHere,
+                  systemImage: isRepresentative ? "star.slash" : "star")
+        }
+        .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+    }
+
+    @ViewBuilder
     private var friendButton: some View {
         switch individual.role {
         case .friend:
@@ -131,7 +162,7 @@ struct BoxDetailView: View {
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
             .disabled(store.state.friendEntryIDs.count >= CompanionState.maxFriends)
-        case .raising:
+        case .raising, .parked:
             EmptyView()
         }
     }
@@ -141,8 +172,9 @@ struct BoxDetailView: View {
         return store.tradeRefusal(for: entry, fightingIDs: fightingIDs)
     }
 
-    /// Graduated Pokémon only: the raised one is not tradeable and a Linking Cord needs a settled individual.
-    private var isGraduated: Bool { individual.role != .raising && entry.profile != nil }
+    /// Graduated Pokémon only: the raised and the parked ones are not tradeable and a Linking Cord needs a settled
+    /// individual.
+    private var isGraduated: Bool { individual.role != .raising && individual.role != .parked && entry.profile != nil }
 
     @ViewBuilder
     private var tradeButtons: some View {
@@ -167,7 +199,8 @@ struct BoxDetailView: View {
 
     @ViewBuilder
     private var tradeNotes: some View {
-        if let refusal = tradeRefusal, refusal == .raising || refusal == .fighting, uploader?.hasToken == true {
+        if let refusal = tradeRefusal, refusal == .raising || refusal == .parked || refusal == .fighting,
+           uploader?.hasToken == true {
             Text(l.tradeRefusalText(refusal)).font(.caption2).foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
         }
