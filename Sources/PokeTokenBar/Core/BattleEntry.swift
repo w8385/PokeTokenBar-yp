@@ -1,11 +1,17 @@
 import Foundation
 import Observation
 
-/// One picked battle Pokémon. `moves` belong to `pokemonID`; empty means the bot's defaults.
+/// One picked battle Pokémon.
 struct BattleEntrySlot: Codable, Equatable, Sendable {
     var instanceID: String
-    var pokemonID: Int? = nil
-    var moves: [Int] = []
+}
+
+/// The moves chosen for one owned Pokémon on its Box page. They belong to `pokemonID`, so a species change drops them.
+struct MoveChoice: Codable, Equatable, Sendable {
+    var pokemonID: Int
+    var moves: [Int]
+    /// The entries of `moves` that are TM moves; they only go to the bot while the TM is owned.
+    var machine: [Int] = []
 }
 
 /// An owned Pokémon that can battle. `dexEntry` is nil for the line Pokémon; `isRaised` marks the one being
@@ -76,16 +82,18 @@ enum BattleEntry {
     }
 
     /// The lineup with each member's chosen moves, or the rental starter when nothing is owned yet.
-    static func party(state: CompanionState, slots: [BattleEntrySlot], rentalSpeciesID: Int) -> [PartyMember] {
+    static func party(state: CompanionState, slots: [BattleEntrySlot], moveChoices: [String: MoveChoice],
+                      rentalSpeciesID: Int) -> [PartyMember] {
         let lineup = lineup(state: state, slots: slots)
         guard !lineup.isEmpty else {
             return [PartyMember(pokemonID: rentalSpeciesID, level: rentalLevel, shiny: false, ivs: nil, rental: true)]
         }
+        let ownedMachines = MachineMove.ownedIDs(in: state.inventory)
         return lineup.map { candidate in
             var member = candidate.member
-            if let slot = slots.first(where: { $0.instanceID == candidate.id }),
-               slot.pokemonID == member.pokemonID, !slot.moves.isEmpty {
-                member.moves = slot.moves
+            if let choice = moveChoices[candidate.id], choice.pokemonID == member.pokemonID {
+                let usable = choice.moves.filter { !choice.machine.contains($0) || ownedMachines.contains($0) }
+                if !usable.isEmpty { member.moves = usable }
             }
             return member
         }
@@ -99,6 +107,14 @@ enum BattleEntry {
 final class BattleEntryStore {
     static let defaultsKey = "battleEntrySlots"
     static let rentalDefaultsKey = "battleRentalSpeciesID"
+    static let moveChoicesDefaultsKey = "battleMoveChoices"
+
+    /// A slot as an older build stored it, with the moves it carried.
+    private struct SavedSlot: Decodable {
+        var instanceID: String
+        var pokemonID: Int?
+        var moves: [Int]?
+    }
 
     private(set) var slots: [BattleEntrySlot] {
         didSet { defaults.set(try? JSONEncoder().encode(slots), forKey: Self.defaultsKey) }
@@ -109,15 +125,34 @@ final class BattleEntryStore {
         didSet { defaults.set(rentalSpeciesID, forKey: Self.rentalDefaultsKey) }
     }
 
+    /// Moves chosen per owned Pokémon, whether or not it is in the lineup.
+    private(set) var moveChoices: [String: MoveChoice] {
+        didSet { defaults.set(try? JSONEncoder().encode(moveChoices), forKey: Self.moveChoicesDefaultsKey) }
+    }
+
     @ObservationIgnored private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        let saved = defaults.data(forKey: Self.defaultsKey)
+            .flatMap { try? JSONDecoder().decode([SavedSlot].self, from: $0) } ?? []
         var seen = Set<String>()
-        slots = (defaults.data(forKey: Self.defaultsKey)
-            .flatMap { try? JSONDecoder().decode([BattleEntrySlot].self, from: $0) } ?? [])
-            .filter { seen.insert($0.instanceID).inserted }
-            .prefix(BattleEntry.maxSlots).map { $0 }
+        let kept = saved.filter { seen.insert($0.instanceID).inserted }.prefix(BattleEntry.maxSlots)
+        let keptSlots = kept.map { BattleEntrySlot(instanceID: $0.instanceID) }
+        slots = keptSlots
+        var choices = defaults.data(forKey: Self.moveChoicesDefaultsKey)
+            .flatMap { try? JSONDecoder().decode([String: MoveChoice].self, from: $0) } ?? [:]
+        // Slots saved before moves moved to the Box carry their own moves; adopt them once.
+        for slot in saved where choices[slot.instanceID] == nil {
+            if let pokemonID = slot.pokemonID, let moves = slot.moves, !moves.isEmpty {
+                choices[slot.instanceID] = MoveChoice(pokemonID: pokemonID, moves: moves)
+            }
+        }
+        moveChoices = choices
+        if saved.contains(where: { $0.pokemonID != nil || $0.moves != nil }) {
+            defaults.set(try? JSONEncoder().encode(keptSlots), forKey: Self.defaultsKey)
+            defaults.set(try? JSONEncoder().encode(choices), forKey: Self.moveChoicesDefaultsKey)
+        }
         let stored = defaults.integer(forKey: Self.rentalDefaultsKey)
         rentalSpeciesID = BattleEntry.rentalSpeciesIDs.contains(stored) ? stored : BattleEntry.rentalSpeciesIDs.randomElement()!
         defaults.set(rentalSpeciesID, forKey: Self.rentalDefaultsKey)
@@ -142,7 +177,7 @@ final class BattleEntryStore {
         return true
     }
 
-    /// Puts `instanceID` where `old` stands, dropping the old moves. Does nothing if it is already picked.
+    /// Puts `instanceID` where `old` stands. Does nothing if it is already picked.
     func replace(_ old: String, with instanceID: String) {
         guard old != instanceID, !slots.contains(where: { $0.instanceID == instanceID }) else { return }
         if let index = slots.firstIndex(where: { $0.instanceID == old }) {
@@ -163,38 +198,44 @@ final class BattleEntryStore {
         slots.swapAt(index, index + offset)
     }
 
-    /// Forgets picks that are no longer owned, so the slot order the user sees is the stored one.
+    /// Forgets picks and move choices of Pokémon that are no longer owned.
     func prune(owned: Set<String>) {
         let kept = slots.filter { owned.contains($0.instanceID) }
         if kept != slots { slots = kept }
+        let choices = moveChoices.filter { owned.contains($0.key) }
+        if choices != moveChoices { moveChoices = choices }
     }
 
-    func slot(for instanceID: String) -> BattleEntrySlot? {
-        slots.first { $0.instanceID == instanceID }
+    /// The moves chosen for `instanceID` as `pokemonID`; empty means the bot's defaults.
+    func chosenMoves(for instanceID: String, pokemonID: Int) -> [Int] {
+        guard let choice = moveChoices[instanceID], choice.pokemonID == pokemonID else { return [] }
+        return choice.moves
     }
 
-    /// Adds or drops one move of `instanceID` and picks it; starting from `current` turns the bot's
-    /// defaults into an explicit list.
-    func toggleMove(_ moveID: Int, for instanceID: String, pokemonID: Int, current: [Int]) {
+    /// Puts `moveID` at move position `index` (0-based) of `instanceID`, starting from `current` (what is shown:
+    /// the choice, or the bot's defaults). A move already in the list swaps places with the one it replaces;
+    /// a position past the end appends. Nothing changes at four moves with a position past the end.
+    func chooseMove(_ moveID: Int, at index: Int, for instanceID: String, pokemonID: Int, current: [Int],
+                    isMachine: Bool = false) {
         var moves = current
         if let found = moves.firstIndex(of: moveID) {
-            moves.remove(at: found)
+            guard found != index else { return }
+            if moves.indices.contains(index) { moves.swapAt(found, index) } else { moves.remove(at: found); moves.append(moveID) }
+        } else if moves.indices.contains(index) {
+            moves[index] = moveID
         } else if moves.count < BattleEntry.maxMoves {
             moves.append(moveID)
         } else {
             return
         }
-        let slot = BattleEntrySlot(instanceID: instanceID, pokemonID: pokemonID, moves: moves)
-        if let index = slots.firstIndex(where: { $0.instanceID == instanceID }) {
-            slots[index] = slot
-        } else if slots.count < BattleEntry.maxSlots {
-            slots.append(slot)
-        }
+        var machine = (moveChoices[instanceID].flatMap { $0.pokemonID == pokemonID ? $0.machine : nil } ?? [])
+            .filter(moves.contains)
+        if isMachine, !machine.contains(moveID) { machine.append(moveID) }
+        moveChoices[instanceID] = MoveChoice(pokemonID: pokemonID, moves: moves, machine: machine)
     }
 
     func resetMoves(for instanceID: String) {
-        guard let index = slots.firstIndex(where: { $0.instanceID == instanceID }) else { return }
-        slots[index] = BattleEntrySlot(instanceID: instanceID)
+        moveChoices[instanceID] = nil
     }
 
     /// Puts `entry` in battle slot `index` (0-based) of the lineup the Battle tab shows. Tapping its own slot

@@ -173,6 +173,12 @@ enum PokemonBalance {
         Int((Double(base) * clampDifficulty(difficulty)).rounded())
     }
 
+    /// 기술머신 기본가 — 위력 100 이상이거나 날씨 기술이면 120M, 70~99면 80M, 그 아래는 40M.
+    static func machinePrice(power: Int, isWeather: Bool) -> Int {
+        if isWeather || power >= 100 { return 120_000_000 }
+        return power >= 70 ? 80_000_000 : 40_000_000
+    }
+
     // MARK: 슬라이더 위치 ↔ 배율 (로그 매핑)
     // 같은 비율의 변화가 같은 거리를 차지한다. 기본값은 트랙의 ±1%에서 스냅한다.
     private static let defaultSnapWidth = 0.01

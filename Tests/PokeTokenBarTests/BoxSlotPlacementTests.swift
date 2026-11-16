@@ -47,17 +47,18 @@ final class BoxSlotPlacementTests: XCTestCase {
         XCTAssertEqual(battle.slots.map(\.instanceID), ["raised", "a"])
     }
 
-    func testPlacingIntoAnOccupiedSlotReplacesTheHolderAndResetsItsMoves() throws {
+    func testPlacingIntoAnOccupiedSlotReplacesTheHolderAndKeepsEachPokemonsOwnMoves() throws {
         let store = store()
         let battle = BattleEntryStore(defaults: suite())
         battle.add("raised")
-        battle.toggleMove(85, for: "raised", pokemonID: 5, current: [])
+        battle.chooseMove(85, at: 0, for: "raised", pokemonID: 5, current: [])
         battle.add("a")
 
         XCTAssertTrue(battle.place(try dex(store, "b"), at: 0, in: store))
 
         XCTAssertEqual(battle.slots.map(\.instanceID), ["b", "a"])
-        XCTAssertEqual(battle.slot(for: "b")?.moves, [])
+        XCTAssertEqual(battle.chosenMoves(for: "b", pokemonID: 10), [])
+        XCTAssertEqual(battle.chosenMoves(for: "raised", pokemonID: 5), [85])
     }
 
     func testTappingItsOwnSlotTakesItOutButNeverTheLastMember() throws {
@@ -81,12 +82,12 @@ final class BoxSlotPlacementTests: XCTestCase {
         battle.add("raised")
         battle.add("a")
         battle.add("b")
-        battle.toggleMove(85, for: "a", pokemonID: 10, current: [])
+        battle.chooseMove(85, at: 0, for: "a", pokemonID: 10, current: [])
 
         XCTAssertTrue(battle.place(try dex(store, "a"), at: 2, in: store))
 
         XCTAssertEqual(battle.slots.map(\.instanceID), ["raised", "b", "a"])
-        XCTAssertEqual(battle.slot(for: "a")?.moves, [85])
+        XCTAssertEqual(battle.chosenMoves(for: "a", pokemonID: 10), [85])
     }
 
     func testAnEmptySlotAfterTheLastMovesAMemberToTheEnd() throws {

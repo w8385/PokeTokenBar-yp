@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// One owned Pokémon's page. The held item slot is the only place an item is equipped; everything else the
-/// Pokémon can do on its own (battle, trade, Linking Cord, friend) sits under it.
+/// One owned Pokémon's page. The held item slot is the only place an item is equipped and the move section the
+/// only place its battle moves are chosen; everything else the Pokémon can do on its own (battle, trade,
+/// Linking Cord, friend) sits under them.
 @MainActor
 struct BoxDetailView: View {
     let store: CompanionStore
@@ -31,6 +32,7 @@ struct BoxDetailView: View {
                                  speciesName: name) {
                         Task { await uploader?.tick() }
                     }
+                    moveTraining
                     actions
                     ForEach(store.evolutionCards(for: individual.speciesID, individual: entry)) {
                         EvolutionCardView(store: store, card: $0)
@@ -90,6 +92,19 @@ struct BoxDetailView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    // MARK: Training
+
+    /// Needs the bot: the move list is the bot's, and its answer is the only source for what this Pokémon may use.
+    @ViewBuilder
+    private var moveTraining: some View {
+        if let battleEntry, let uploader, uploader.hasToken, uploader.hasServer,
+           let candidate = store.battleCandidate(for: entry) {
+            MoveTrainingSection(store: store, battleEntry: battleEntry, uploader: uploader, candidate: candidate) {
+                Task { await uploader.tick() }
+            }
         }
     }
 

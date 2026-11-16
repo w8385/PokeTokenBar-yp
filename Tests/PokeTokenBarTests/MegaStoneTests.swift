@@ -152,7 +152,7 @@ final class MegaStoneTests: XCTestCase {
     func testPartyCarriesTheStoneSlug() {
         let state = state(held: ["zard": charizardX.inventoryKey])
 
-        let party = BattleEntry.party(state: state, slots: [BattleEntrySlot(instanceID: "zard")], rentalSpeciesID: 4)
+        let party = BattleEntry.party(state: state, slots: [BattleEntrySlot(instanceID: "zard")], moveChoices: [:], rentalSpeciesID: 4)
 
         XCTAssertEqual(party.first?.heldItem, "charizardite-x")
     }
