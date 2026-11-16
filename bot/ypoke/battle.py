@@ -126,6 +126,7 @@ class Combatant:
     item: str | None = None
     mega: MegaForm | None = None
     pokemon_id: int | None = None
+    can_evolve: bool = False
 
     @property
     def label(self) -> str:
@@ -225,11 +226,26 @@ class SendOut:
 
 @dataclass(frozen=True)
 class ItemHeal:
+    """An item that changed HP at the end of a turn or right after a hit; `hp` is the share left (Black Sludge hurts)."""
+
     turn: int
     side: int
     pokemon: str
     item: str
     hp: int
+    fainted: bool = False
+
+
+@dataclass(frozen=True)
+class ItemEffect:
+    """An item that acted without moving HP: `effect` is "cure" (Lum Berry), "restore" (White Herb), "first"
+    (Quick Claw) or the status a Flame or Toxic Orb inflicted ("burn", "toxic")."""
+
+    turn: int
+    side: int
+    pokemon: str
+    item: str
+    effect: str
 
 
 @dataclass(frozen=True)
@@ -241,7 +257,9 @@ class MegaEvolution:
     form_id: int | None = None
 
 
-Event = Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | MegaEvolution
+Event = (
+    Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | ItemEffect | MegaEvolution
+)
 
 
 @dataclass
@@ -270,6 +288,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     for side in (0, 1):
         _mega_evolve(teams[side], side, 1, events)
     events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng))
+    _item_triggers(1, (teams[0].active, teams[1].active), events)
     turn = 0
     loser: int | None = None
     while loser is None and turn < TURN_LIMIT:
@@ -278,13 +297,15 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
         choices = (
             _best_move(fighters[0], fighters[1], weather.kind), _best_move(fighters[1], fighters[0], weather.kind),
         )
-        for side in _turn_order(fighters, choices, rng, weather.kind):
+        claws = _quick_claws(turn, fighters, choices, weather.kind, rng, events)
+        for side in _turn_order(fighters, choices, rng, weather.kind, claws):
             if fighters[side].hp == 0 or fighters[1 - side].hp == 0:
                 continue
             events.append(_act(turn, side, fighters, choices[side], weather, rng))
             loser = _exhausted(teams, (1 - side, side))
             if loser is not None:
                 break
+            _item_triggers(turn, fighters, events)
         for side in (0, 1):
             fighter = fighters[side]
             if loser is None and fighter.hp > 0 and fighter.status in ("burn", "poison", "toxic"):
@@ -297,13 +318,15 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
             _weather_upkeep(turn, fighters, weather, events)
             loser = _exhausted(teams, (0, 1))
         if loser is None:
-            _leftovers(turn, fighters, events)
+            _item_upkeep(turn, fighters, events, rng)
+            loser = _exhausted(teams, (0, 1))
         entering = tuple(side for side in (0, 1) if loser is None and teams[side].active.hp == 0)
         for side in entering:
             events.append(SendOut(turn, side, teams[side].send_next().combatant.name))
             _mega_evolve(teams[side], side, turn, events)
         if entering:
             events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, entering))
+            _item_triggers(turn, (teams[0].active, teams[1].active), events)
     if loser is None:
         loser = 1 if teams[0].standing() >= teams[1].standing() else 0
     return BattleResult(winner=1 - loser, turns=turn, events=events, remaining=(teams[0].shares(), teams[1].shares()))
@@ -410,7 +433,8 @@ class _Fighter:
 
     def stat(self, key: str, weather: str | None = None) -> float:
         stage = self.stages[key]
-        value = self.stats[key] * ((2 + stage) / 2 if stage >= 0 else 2 / (2 - stage)) * items.stat_multiplier(self.item, key)
+        multiplier = items.stat_multiplier(self.item, key, self.combatant.can_evolve)
+        value = self.stats[key] * ((2 + stage) / 2 if stage >= 0 else 2 / (2 - stage)) * multiplier
         if key == "speed" and self.status == "paralysis":
             value /= 2
         return value * abilities.stat_multiplier(self.ability, key, weather, self.status is not None)
@@ -432,20 +456,39 @@ def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: r
             change = Change(1 - side, foe.combatant.name, "attack", -1)
             triggers.append(AbilityTrigger(side, name, ability, change=change))
         elif ability in abilities.WEATHER_ON_ENTRY and weather.kind != abilities.WEATHER_ON_ENTRY[ability]:
-            weather.kind, weather.turns_left = abilities.WEATHER_ON_ENTRY[ability], WEATHER_TURNS
+            weather.kind = abilities.WEATHER_ON_ENTRY[ability]
+            weather.turns_left = items.weather_turns(fighter.item, weather.kind, WEATHER_TURNS)
             triggers.append(AbilityTrigger(side, name, ability, weather=weather.kind))
     return triggers
 
 
 def _turn_order(fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
-                rng: random.Random, weather: str | None = None) -> tuple[int, int]:
+                rng: random.Random, weather: str | None = None,
+                claws: tuple[bool, bool] = (False, False)) -> tuple[int, int]:
     keys = [
-        (0 if choice is None else fighter.combatant.moves[choice].priority, fighter.stat("speed", weather))
-        for fighter, choice in zip(fighters, choices)
+        (_priority(fighter, choice), claw, fighter.stat("speed", weather))
+        for fighter, choice, claw in zip(fighters, choices, claws)
     ]
     if keys[0] != keys[1]:
         return (0, 1) if keys[0] > keys[1] else (1, 0)
     return (0, 1) if rng.random() < 0.5 else (1, 0)
+
+
+def _priority(fighter: _Fighter, choice: int | None) -> int:
+    return 0 if choice is None else fighter.combatant.moves[choice].priority
+
+
+def _quick_claws(turn: int, fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
+                 weather: str | None, rng: random.Random, events: list[Event]) -> tuple[bool, bool]:
+    """Which Quick Claw holders may move first this turn (20% each; no draw without the item). Only a claw that
+    puts a slower holder ahead of a foe in the same priority bracket is logged."""
+    claws = tuple(fighter.item == items.QUICK_CLAW and rng.random() < items.QUICK_CLAW_CHANCE for fighter in fighters)
+    if claws[0] and claws[1] or _priority(fighters[0], choices[0]) != _priority(fighters[1], choices[1]):
+        return claws
+    for side, fighter in enumerate(fighters):
+        if claws[side] and fighter.stat("speed", weather) <= fighters[1 - side].stat("speed", weather):
+            events.append(ItemEffect(turn, side, fighter.combatant.name, items.QUICK_CLAW, "first"))
+    return claws
 
 
 def _weather_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], weather: _Weather,
@@ -469,11 +512,46 @@ def _weather_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], weather: _We
     return fainted
 
 
-def _leftovers(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[Event]) -> None:
+def _item_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[Event], rng: random.Random) -> None:
+    """End-of-turn items: Leftovers, Black Sludge, then the Flame and Toxic Orbs, then the berries and the herb."""
     for side, fighter in enumerate(fighters):
-        if fighter.item == items.LEFTOVERS and 0 < fighter.hp < fighter.max_hp:
-            fighter.hp = min(fighter.max_hp, fighter.hp + max(1, fighter.max_hp // items.LEFTOVERS_FRACTION))
-            events.append(ItemHeal(turn, side, fighter.combatant.name, items.LEFTOVERS, fighter.hp_percent))
+        if fighter.hp <= 0:
+            continue
+        name, item = fighter.combatant.name, fighter.item
+        if item == items.LEFTOVERS or item == items.BLACK_SLUDGE and "poison" in fighter.combatant.types:
+            if fighter.hp < fighter.max_hp:
+                fighter.hp = min(fighter.max_hp, fighter.hp + max(1, fighter.max_hp // items.LEFTOVERS_FRACTION))
+                events.append(ItemHeal(turn, side, name, item, fighter.hp_percent))
+        elif item == items.BLACK_SLUDGE:
+            fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // items.BLACK_SLUDGE_HURT_FRACTION))
+            events.append(ItemHeal(turn, side, name, item, fighter.hp_percent, fighter.hp == 0))
+        elif item in items.ORB_AILMENTS:
+            ailment = items.ORB_AILMENTS[item]
+            if _open_to(ailment, fighter) and not abilities.blocks_ailment(fighter.ability, ailment):
+                _inflict(ailment, fighter, side, rng)
+                events.append(ItemEffect(turn, side, name, item, ailment))
+    _item_triggers(turn, fighters, events)
+
+
+def _item_triggers(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[Event]) -> None:
+    """One-use items that react to the state a Pokémon is in: Sitrus Berry at half HP, Lum Berry on a status or
+    confusion, White Herb on a lowered stat."""
+    for side, fighter in enumerate(fighters):
+        if fighter.hp <= 0:
+            continue
+        name, item = fighter.combatant.name, fighter.item
+        if item == items.SITRUS_BERRY and fighter.hp * items.SITRUS_THRESHOLD_FRACTION <= fighter.max_hp:
+            fighter.hp = min(fighter.max_hp, fighter.hp + max(1, fighter.max_hp // items.SITRUS_HEAL_FRACTION))
+            events.append(ItemHeal(turn, side, name, item, fighter.hp_percent))
+        elif item == items.LUM_BERRY and (fighter.status is not None or fighter.confusion_left > 0):
+            fighter.status, fighter.confusion_left, fighter.sleep_left = None, 0, 0
+            events.append(ItemEffect(turn, side, name, item, "cure"))
+        elif item == items.WHITE_HERB and any(stage < 0 for stage in fighter.stages.values()):
+            fighter.stages = {key: max(0, stage) for key, stage in fighter.stages.items()}
+            events.append(ItemEffect(turn, side, name, item, "restore"))
+        else:
+            continue
+        fighter.item = None
 
 
 def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:
@@ -502,11 +580,12 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         if weather.kind == move.weather:
             return Action(turn, side, *names, move.name, failed=True, recovered=recovered,
                           defender_hp=defender.hp_percent)
-        weather.kind, weather.turns_left = move.weather, WEATHER_TURNS
+        weather.kind, weather.turns_left = move.weather, items.weather_turns(attacker.item, move.weather, WEATHER_TURNS)
         return Action(turn, side, *names, move.name, weather=move.weather, recovered=recovered,
                       defender_hp=defender.hp_percent)
     multiplier = _multiplier(move, defender)
-    if move.accuracy is not None and weather.kind not in move.always_hits_in and rng.random() * 100 >= move.accuracy:
+    accuracy = (move.accuracy or 0) * items.accuracy_multiplier(attacker.item, defender.item)
+    if move.accuracy is not None and weather.kind not in move.always_hits_in and rng.random() * 100 >= accuracy:
         return Action(turn, side, *names, move.name, missed=True, multiplier=multiplier, recovered=recovered,
                       defender_hp=defender.hp_percent)
     if multiplier == 0:
@@ -515,14 +594,17 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         return Action(turn, side, *names, move.name, multiplier=0, recovered=recovered,
                       defender_hp=defender.hp_percent, ability=defender.ability if granted else None)
     critical, hits, dealt, sturdy, endured = False, 0, 0, False, ""
+    crit_stage = move.crit_stage + items.crit_stage_bonus(attacker.item)
     for _ in range(_hit_count(move, rng)):
-        hit_critical = rng.random() < CRITICAL_CHANCES[min(move.crit_stage, len(CRITICAL_CHANCES) - 1)]
+        hit_critical = rng.random() < CRITICAL_CHANCES[min(crit_stage, len(CRITICAL_CHANCES) - 1)]
         damage = min(defender.hp, _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng))
-        if defender.hp == defender.max_hp > 1 and damage >= defender.hp:
-            if defender.ability == "sturdy":
-                damage, sturdy = defender.hp - 1, True
-            elif defender.item == items.FOCUS_SASH:
-                damage, defender.item, endured = defender.hp - 1, None, items.FOCUS_SASH
+        lethal, from_full = damage >= defender.hp, defender.hp == defender.max_hp > 1
+        if lethal and from_full and defender.ability == "sturdy":
+            damage, sturdy = defender.hp - 1, True
+        elif lethal and from_full and defender.item == items.FOCUS_SASH:
+            damage, defender.item, endured = defender.hp - 1, None, items.FOCUS_SASH
+        elif lethal and defender.item == items.FOCUS_BAND and rng.random() < items.FOCUS_BAND_CHANCE:
+            damage, endured = defender.hp - 1, items.FOCUS_BAND
         defender.hp -= damage
         critical, hits, dealt = critical or hit_critical, hits + 1, dealt + damage
         if defender.hp == 0:
@@ -541,16 +623,45 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         attacker.hp = max(0, attacker.hp - max(1, dealt * -move.drain // 100))
         recoil = True
     elif drained:
-        attacker.hp = min(attacker.max_hp, attacker.hp + max(1, dealt * move.drain // 100))
-    life_orb = attacker.item == items.LIFE_ORB and dealt > 0 and move is not STRUGGLE
-    if life_orb:
-        attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // items.LIFE_ORB_RECOIL_FRACTION))
+        attacker.hp = min(attacker.max_hp, attacker.hp + items.drain_heal(attacker.item, max(1, dealt * move.drain // 100)))
+    attacker_item = _attacker_item_effect(attacker, move, dealt, drained)
+    defender_item = endured or _defender_item_effect(attacker, defender, move, multiplier, dealt, hits)
     return Action(
         turn, side, *names, move.name, multiplier=multiplier, critical=critical, changes=changes, recoil=recoil,
         defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
         recovered=recovered, hits=hits, drained=drained, attacker_hp=attacker.hp_percent, ability=ability,
-        attacker_item=items.LIFE_ORB if life_orb else "", defender_item=endured,
+        attacker_item=attacker_item, defender_item=defender_item,
     )
+
+
+def _attacker_item_effect(attacker: _Fighter, move: Move, dealt: int, drained: bool) -> str:
+    """Applies Life Orb recoil, the Shell Bell heal and the Big Root drain bonus; returns the item that showed."""
+    item = attacker.item
+    if dealt <= 0 or move is STRUGGLE or item is None:
+        return ""
+    if item == items.LIFE_ORB:
+        attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // items.LIFE_ORB_RECOIL_FRACTION))
+    elif item == items.SHELL_BELL and 0 < attacker.hp < attacker.max_hp:
+        attacker.hp = min(attacker.max_hp, attacker.hp + max(1, dealt // items.SHELL_BELL_FRACTION))
+    elif not (item == items.BIG_ROOT and drained and attacker.hp > 0):
+        return ""
+    return item
+
+
+def _defender_item_effect(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float, dealt: int,
+                          hits: int) -> str:
+    """Rocky Helmet hurts a physical (contact) attacker per hit; Weakness Policy is spent on a super-effective hit
+    the holder survives. Returns the item that triggered."""
+    item = defender.item
+    if item == items.ROCKY_HELMET and move.physical and dealt > 0:
+        attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // items.ROCKY_HELMET_FRACTION) * hits)
+        return item
+    if item == items.WEAKNESS_POLICY and multiplier > 1 and dealt > 0 and defender.hp > 0:
+        for key in ("attack", "special_attack"):
+            defender.stages[key] = min(MAX_STAGE, defender.stages[key] + 2)
+        defender.item = None
+        return item
+    return ""
 
 
 def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tuple[tuple[str, ...], str]:
@@ -682,7 +793,7 @@ def _best_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> i
         best is not None and _surely_finishes(attacker, defender, attacker.combatant.moves[best], weather)
     ):
         return best
-    setter = _best_weather_move(attacker, defender, weather)
+    setter = None if attacker.item == items.ASSAULT_VEST else _best_weather_move(attacker, defender, weather)
     return best if setter is None else setter
 
 
@@ -733,7 +844,9 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
 
 
 def _item_boost(attacker: _Fighter, move: Move, multiplier: float) -> float:
-    return 1.0 if move is STRUGGLE else items.damage_multiplier(attacker.item, move.type, multiplier)
+    if move is STRUGGLE or move is CONFUSION_HIT:
+        return 1.0
+    return items.damage_multiplier(attacker.item, move.type, multiplier, move.physical)
 
 
 def _weather_boost(move: Move, weather: str | None) -> float:
