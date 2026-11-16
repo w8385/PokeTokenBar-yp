@@ -532,6 +532,7 @@ enum PokemonAssets {
 
     static func hasAnimatedSprite(speciesID: Int) -> Bool {
         isSupported(speciesID: speciesID) && !missingShowdownIDs.contains(speciesID)
+            || MegaStone.animatedSpriteIDs.contains(speciesID)
     }
 
     /// Species with a `female/` sprite in the PokéAPI sprite set (animated Showdown/Black-White GIFs).

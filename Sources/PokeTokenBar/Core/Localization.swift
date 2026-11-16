@@ -2162,14 +2162,14 @@ struct L {
     // MARK: 메가스톤
     func megaStoneName(_ stone: MegaStone) -> String { stone.name(in: lang) }
     var megaStoneEffect: String {
-        t("배틀 탭에서 이 포켓몬에게 장착하면 배틀 시작 때 메가진화하고, 홈 화면에서도 메가 모습으로 보여요.",
-          "Equip it to this Pokémon in the Battle tab: it Mega Evolves when a battle starts and shows its Mega form on the home screen.",
-          "バトルタブでこのポケモンに持たせると、バトル開始時にメガシンカし、ホーム画面でもメガ姿で表示されます。",
-          "Equípalo a este Pokémon en la pestaña de Combate: se megaevoluciona al empezar el combate y muestra su forma Mega en la pantalla de inicio.",
-          "Équipe-la à ce Pokémon dans l'onglet Combat : il méga-évolue au début du combat et s'affiche en forme Méga sur l'écran d'accueil.",
-          "Equipe neste Pokémon na aba Batalha: ele Mega Evolui no início da batalha e aparece na forma Mega na tela inicial.",
-          "Rüste sie diesem Pokémon im Kampf-Tab aus: Es mega-entwickelt sich zu Kampfbeginn und zeigt auf dem Startbildschirm seine Mega-Form.",
-          "Выдайте её этому покемону на вкладке «Бой»: он мега-эволюционирует в начале боя и показывает мега-форму на главном экране.")
+        t("배틀 탭에서 이 포켓몬에게 장착하면 배틀 시작 때 메가진화해요. 키우는 포켓몬·친구 포켓몬·대표 포켓몬으로 보일 때는 홈 화면, 플로팅 펫, 메뉴바에서도 메가 모습이에요.",
+          "Equip it to this Pokémon in the Battle tab: it Mega Evolves when a battle starts. Shown as your raised, friend or representative Pokémon, it also appears in its Mega form on the home screen, floating pet and menu bar.",
+          "バトルタブでこのポケモンに持たせると、バトル開始時にメガシンカします。育成中・ともだち・代表ポケモンとして表示されるときは、ホーム画面・フローティングペット・メニューバーでもメガ姿になります。",
+          "Equípalo a este Pokémon en la pestaña de Combate: se megaevoluciona al empezar el combate. Cuando se muestra como tu Pokémon criado, amigo o representativo, también aparece en forma Mega en la pantalla de inicio, la mascota flotante y la barra de menús.",
+          "Équipe-la à ce Pokémon dans l'onglet Combat : il méga-évolue au début du combat. Affiché comme Pokémon élevé, compagnon ou représentatif, il prend aussi sa forme Méga sur l'écran d'accueil, le compagnon flottant et la barre des menus.",
+          "Equipe neste Pokémon na aba Batalha: ele Mega Evolui no início da batalha. Quando aparece como seu Pokémon criado, amigo ou representativo, também fica na forma Mega na tela inicial, no mascote flutuante e na barra de menus.",
+          "Rüste sie diesem Pokémon im Kampf-Tab aus: Es mega-entwickelt sich zu Kampfbeginn. Als aufgezogenes, Freund- oder repräsentatives Pokémon gezeigt, erscheint es auch auf dem Startbildschirm, als schwebendes Pokémon und in der Menüleiste in Mega-Form.",
+          "Выдайте её этому покемону на вкладке «Бой»: он мега-эволюционирует в начале боя. Когда он показан как растущий, покемон-друг или основной, мега-форма видна и на главном экране, и у питомца на экране, и в строке меню.")
     }
     var megaStoneYours: String { t("내 포켓몬", "Yours", "手持ち", "Tuyo", "À toi", "Seu", "Deins", "Ваш") }
     func megaStoneWrongHolder(_ stone: String, _ pokemon: String) -> String {

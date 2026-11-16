@@ -48,6 +48,23 @@ read_when:
   보존해 정적 보기로 전환할 때 복원한다. `SpriteAnimationPreviewTests`는 실제 SwiftUI 첫 렌더의
   GIF 픽셀·크기, 캐시 재사용, 프레임 지연, 정적 원본 보존을 검사한다.
 
+- **A display contract must be stated in the copy exactly as far as the code draws it.** A report said "I equipped the
+  Mega Stone and the sprite did not change". The Mega form was drawn everywhere the contract says, but the holder was a
+  graduated Pokémon that was not raised, not a friend and not the representative, and the shop text promised "the home
+  screen". Home and the floating pet draw the raised Pokémon, the friend slots and the representative; only the Battle
+  tab draws any holder. `MegaScreenshotTests` equipped the stone on the raised Pokémon right before capturing Home, and
+  `testAMegaFormWithoutASpriteKeepsTheBaseSprite` only covered Zygardite (10301), so no test held the stone on a Pokémon
+  that was not drawn and none read the copy. Two real gaps surfaced in the sweep: friend slots ignored the stone, and
+  the 56 Megas with a Showdown GIF never animated because `hasAnimatedSprite` only knows species 1...1025 and fell to
+  the static PNG (the Z-A Megas also had no GIF, so they were correct as static). Class sweep of Mega sprite ids: 92 stones,
+  91 with a PNG (front, shiny, back), 56 with a GIF (`MegaStone.animatedSpriteIDs`), 36 without (35 Legends Z-A Megas
+  10287–10325 plus 10301, which has no sprite at all). For species 650–1025, 14 ids lack a GIF and they equal
+  `missingShowdownIDs`. A Mega without a GIF loads its own static sprite; it never falls back to the base species.
+  Tests: `MegaSpriteSurfaceTests` (holder not raised, friend joins before and after equip, hint copy in 8 languages,
+  every Mega id has its own file, GIF-backed vs static Megas on the animated surfaces). Injecting a broken
+  `animatedSpriteIDs` clause fails them (the GIF 404 path made the first run hang, so the test throws from the
+  retry hook instead).
+
 ## 판정·데이터
 
 - **Provider opt-out must also cover independently added official limits.** The provider toggle

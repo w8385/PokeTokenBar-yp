@@ -10,6 +10,10 @@ struct MegaStone: Hashable, Sendable {
     static let keyPrefix = "mega-stone:"
     /// The PokéAPI sprites repo has no image for these Mega forms; they keep the base sprite.
     static let missingSpriteIDs: Set<Int> = [10301]
+    /// Mega forms with a Showdown GIF (front, shiny and back). The other Megas, the Legends Z-A ones,
+    /// only have static PNGs and show those on every surface instead of the base species' GIF.
+    static let animatedSpriteIDs: Set<Int> = Set(10033...10060).union(10062...10076).union(10087...10090)
+        .union(10278...10286)
 
     let slug: String
     let speciesID: Int

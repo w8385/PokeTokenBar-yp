@@ -287,7 +287,9 @@ final class CompanionStore {
 
     private func refreshFriendSubjects() {
         let next = state.friendEntryIDs.compactMap { id in
-            state.dex.first { $0.id == id }.map(FriendSubject.init)
+            state.dex.first { $0.id == id }.map {
+                FriendSubject($0, megaSpriteID: megaSpriteID(instanceID: $0.id, speciesID: $0.finalID))
+            }
         }
         if friendSubjects != next { friendSubjects = next }
     }
