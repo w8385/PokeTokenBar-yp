@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 final class SessionKeySettingsRenderingTests: XCTestCase {
-    func testSessionKeyEntryOpensInsideViewportAndPreservesDifficultyControls() async throws {
+    func testSessionKeyEntryOpensTheAdvancedTabInsideTheViewport() async throws {
         let suite = "SessionKeySettingsRendering-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
@@ -14,37 +14,59 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
         let companion = CompanionStore(fileURL: file, defaults: defaults)
         companion.setLanguage(.en)
-        let navigation = PopoverNavigation()
+        let navigation = PopoverNavigation(defaults: defaults)
         navigation.openSessionKeySettings()
+        let host = renderedSettings(usage, companion, navigation, startExpanded: navigation.expandAdvancedOnOpen)
+        let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
+        defer { window.close() }
+        try await OffscreenRender.settle(host.view, for: .milliseconds(500))
+        let secure = try XCTUnwrap(descendants(of: host.view).compactMap { $0 as? NSSecureTextField }.first)
+        let rect = secure.convert(secure.bounds, to: host.view)
+        XCTAssertTrue(host.view.bounds.contains(rect), "session key entry must be visible after scrolling")
+        XCTAssertEqual(navigation.settingsTab, .advanced)
+        XCTAssertTrue(navigation.showSettings)
+        navigation.reset()
+        XCTAssertFalse(navigation.expandAdvancedOnOpen)
+    }
+
+    func testDifficultyAndWarningSlidersSurviveOnTheirTabs() async throws {
+        let suite = "SettingsTabSliders-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(suite).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let companion = CompanionStore(fileURL: file, defaults: defaults)
+        companion.setLanguage(.en)
+        for tab in [SettingsTab.companion, .notifications] {
+            let navigation = PopoverNavigation(defaults: defaults)
+            navigation.settingsTab = tab
+            let host = renderedSettings(usage, companion, navigation, startExpanded: false)
+            let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
+            defer { window.close() }
+            try await OffscreenRender.settle(host.view, for: .milliseconds(500))
+            let views = descendants(of: host.view)
+            let nativeSliders = views.compactMap { $0 as? NSSlider }
+            if nativeSliders.isEmpty {
+                let scroll = try XCTUnwrap(views.compactMap { $0 as? NSScrollView }.first)
+                let tracks = try await sliderTrackPositions(host: host.view, scroll: scroll)
+                XCTAssertGreaterThanOrEqual(tracks.count, 2, "\(tab) must keep its two slider tracks: \(tracks)")
+            } else {
+                XCTAssertEqual(nativeSliders.count, 2, "\(tab) must keep its two sliders")
+            }
+        }
+    }
+
+    private func renderedSettings(_ usage: UsageStore, _ companion: CompanionStore,
+                                  _ navigation: PopoverNavigation, startExpanded: Bool) -> NSHostingController<some View> {
         let host = NSHostingController(rootView: SettingsView(
-            onClose: {}, onChooseRepresentative: {}, startExpanded: navigation.expandAdvancedOnOpen)
+            onClose: {}, onChooseRepresentative: {}, startExpanded: startExpanded,
+            tab: Binding(get: { navigation.settingsTab }, set: { navigation.settingsTab = $0 }))
             .environment(usage).environment(companion).environment(UpdateChecker())
             .frame(width: PopoverMetrics.width)
             .environment(\.colorScheme, .light))
         host.view.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.width, height: 460)
-        let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
-        defer { window.close() }
-        try await OffscreenRender.settle(host.view, for: .milliseconds(500))
-        let views = descendants(of: host.view)
-        let secure = try XCTUnwrap(views.compactMap { $0 as? NSSecureTextField }.first)
-        let rect = secure.convert(secure.bounds, to: host.view)
-        XCTAssertTrue(host.view.bounds.contains(rect), "session key entry must be visible after scrolling")
-        let nativeSliders = views.compactMap { $0 as? NSSlider }
-        if nativeSliders.isEmpty {
-            // Newer SwiftUI runtimes draw sliders without NSSlider backing views.
-            // Count the drawn tracks themselves; a label alone cannot satisfy this fallback.
-            let scroll = try XCTUnwrap(views.compactMap { $0 as? NSScrollView }.first)
-            let tracks = try await sliderTrackPositions(host: host.view, scroll: scroll)
-            print("SLIDER_TRACKS \(tracks)")
-            XCTAssertGreaterThanOrEqual(tracks.count, 4, "growth, shop, warning and critical tracks: \(tracks)")
-        } else {
-            // Growth, shop prices, warning, and critical controls on AppKit-backed runtimes.
-            XCTAssertEqual(nativeSliders.count, 4,
-                           "growth and shop difficulty controls must survive the Settings merge")
-        }
-        XCTAssertTrue(navigation.showSettings)
-        navigation.reset()
-        XCTAssertFalse(navigation.expandAdvancedOnOpen)
+        return host
     }
 
     /// Distinct vertical positions, in document points, of a slider-track stroke: a horizontal run of

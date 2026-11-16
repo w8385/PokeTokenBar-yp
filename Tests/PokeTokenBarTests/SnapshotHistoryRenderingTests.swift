@@ -104,7 +104,7 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
     }
 
     private func host(_ companion: CompanionStore, _ usage: UsageStore) -> NSView {
-        let host = NSHostingView(rootView: SettingsView(onClose: {}, onChooseRepresentative: {})
+        let host = NSHostingView(rootView: SettingsView(onClose: {}, onChooseRepresentative: {}, tab: .constant(.advanced))
             .environment(companion).environment(usage).environment(UpdateChecker())
             .environment(\.colorScheme, .light)
             .frame(width: PopoverMetrics.width))

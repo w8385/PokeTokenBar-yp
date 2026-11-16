@@ -45,11 +45,11 @@ final class BoxTests: XCTestCase {
         return Link(store: store, uploader: uploader, battle: battle)
     }
 
-    func testBattleTabKeepsConnectionAndRecentBattlesButNoTradeOrCoworkers() async throws {
+    func testBattleTabKeepsRecentBattlesButNoConnectionTradeOrCoworkers() async throws {
         let link = try await link()
         let l = link.store.l
         let view = try sourceFile("Sources/PokeTokenBar/UI/BattleView.swift")
-        XCTAssertTrue(view.contains("l.partyUploadTokenLabel"), "the connection stays on the Battle tab")
+        XCTAssertFalse(view.contains("l.partyUploadTokenLabel"), "the token moved to Settings")
         XCTAssertTrue(view.contains("parts: [.recent]"), "Battle lists recent battles only")
         XCTAssertFalse(view.contains("tradeOfferButton") || view.contains("[.coworkers]"))
         XCTAssertNil(BattleInfoSections.recentEmptyText(link.uploader.battleInfo, l), "recent battles are listed")
@@ -66,12 +66,12 @@ final class BoxTests: XCTestCase {
         XCTAssertFalse(view.contains("partyUploadTokenLabel"), "no token UI here")
     }
 
-    func testDisconnectedCoworkersTabPointsAtTheBattleConnectionInsteadOfDuplicatingIt() async throws {
+    func testDisconnectedCoworkersTabPointsAtTheSettingsConnectionInsteadOfDuplicatingIt() async throws {
         let link = try await link(connected: false)
         let l = link.store.l
         XCTAssertTrue(l.coworkersNotConnected.contains("YPoke"))
         let view = try sourceFile("Sources/PokeTokenBar/UI/CoworkersView.swift")
-        XCTAssertTrue(view.contains("Button(l.coworkersOpenConnection) { navigation.tab = .battle }"))
+        XCTAssertTrue(view.contains("Button(l.coworkersOpenConnection) { navigation.openYPokeSettings() }"))
         XCTAssertFalse(view.contains("partyUploadTokenLabel"))
     }
 

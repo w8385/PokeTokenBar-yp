@@ -23,9 +23,9 @@ extension L {
     }
 
     var coworkersOpenConnection: String {
-        t("대결 탭에서 연결하기", "Connect in the Battle tab", "対戦タブでつなぐ", "Conectar en la pestaña Combate",
-          "Connecter dans l'onglet Combat", "Conectar na aba Batalha", "Im Kampf-Tab verbinden",
-          "Подключить на вкладке «Бой»")
+        t("설정에서 연결하기", "Connect in Settings", "設定でつなぐ", "Conectar en Ajustes",
+          "Connecter dans Réglages", "Conectar nos Ajustes", "In den Einstellungen verbinden",
+          "Подключить в настройках")
     }
 
     var boxTab: String { t("박스", "Box", "ボックス", "Caja", "Boîte", "Caixa", "Box", "Коробка") }
@@ -110,5 +110,33 @@ extension L {
         t("위쪽 지닌 도구 칸에서 장착해요.", "Equip it in the held item slot above.", "上のもちもの欄で持たせます。",
           "Equípalo en la casilla de objeto de arriba.", "Équipe-le dans l'emplacement d'objet ci-dessus.",
           "Equipe no espaço de item acima.", "Rüste es im Item-Feld oben aus.", "Выдайте его в ячейке предмета выше.")
+    }
+}
+
+extension L {
+    func title(of tab: SettingsTab) -> String {
+        switch tab {
+        case .general: generalSectionTitle
+        case .usage: settingsTabUsage
+        case .companion: settingsTabCompanion
+        case .notifications: notificationsSection
+        case .ypoke: "YPoke"
+        case .advanced: advancedSectionTitle
+        }
+    }
+
+    var settingsTabUsage: String {
+        t("사용량", "Usage", "使用量", "Uso", "Utilisation", "Uso", "Nutzung", "Использование")
+    }
+
+    var settingsTabCompanion: String {
+        t("동반자", "Companion", "相棒", "Compañero", "Compagnon", "Companheiro", "Begleiter", "Спутник")
+    }
+
+    var ypokeBattleLinkLine: String {
+        t("YPoke 연결 안 됨 · 설정에서 연결", "YPoke not connected · Connect in Settings",
+          "YPoke未接続 · 設定でつなぐ", "YPoke sin conectar · Conectar en Ajustes",
+          "YPoke non connecté · Connecter dans Réglages", "YPoke não conectado · Conectar nos Ajustes",
+          "YPoke nicht verbunden · In den Einstellungen verbinden", "YPoke не подключён · Подключить в настройках")
     }
 }
