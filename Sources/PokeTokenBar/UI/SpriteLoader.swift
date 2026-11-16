@@ -406,6 +406,23 @@ enum SpriteFit {
     /// The square a sprite is fit into: its box minus the margin on both sides.
     static func contentBox(_ box: CGFloat) -> CGFloat { box * (1 - 2 * margin) }
 
+    /// An animated crop drawn below this share of its static art's height counts as too small.
+    static let wideScaleThreshold: CGFloat = 0.85
+    /// A scaled-up animated crop may grow at most this much wider than its fitted width.
+    static let wideScaleMaxGrowth: CGFloat = 1.4
+
+    /// The fit of an animated crop in `box`, scaled up toward the static art's drawn height when its
+    /// width-limited pose leaves it much smaller. Never shrinks; without a usable reference it is the plain fit.
+    static func animatedSize(for animated: CGSize, reference: CGSize?, box: CGFloat) -> CGSize {
+        let fit = size(for: animated, box: box)
+        guard let reference, reference.width > 0, reference.height > 0,
+              animated.width > 0, animated.height > 0 else { return fit }
+        let target = size(for: reference, box: box).height
+        guard fit.height < target * wideScaleThreshold else { return fit }
+        let scale = min(target / fit.height, wideScaleMaxGrowth)
+        return CGSize(width: fit.width * scale, height: fit.height * scale)
+    }
+
     /// Same fit inside a `width`×`height` box. An empty source falls back to a square on the shorter side.
     static func size(for pixelSize: CGSize, width: CGFloat, height: CGFloat) -> CGSize {
         guard pixelSize.width > 0, pixelSize.height > 0 else {
@@ -430,8 +447,9 @@ enum SpriteVisibleTop {
     /// Distance (pt) from the box top to the first visible row of an image that is aspect-fit
     /// and bottom-anchored in a `box`×`box` slot (`SpriteView.fitted`). `opaqueTopFraction` is the
     /// share of the image height above its first opaque row (0 = the sprite touches the image top).
-    static func inset(box: CGFloat, imageSize: CGSize, opaqueTopFraction: CGFloat) -> CGFloat {
-        let fit = SpriteFit.size(for: imageSize, box: SpriteFit.contentBox(box))
+    static func inset(box: CGFloat, imageSize: CGSize, opaqueTopFraction: CGFloat,
+                      reference: CGSize? = nil) -> CGFloat {
+        let fit = SpriteFit.animatedSize(for: imageSize, reference: reference, box: SpriteFit.contentBox(box))
         return box - SpriteFit.margin * box - fit.height + min(max(opaqueTopFraction, 0), 1) * fit.height
     }
 
