@@ -127,9 +127,9 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Fail if a needed job failed or was cancelled
+      - name: Fail unless every needed job succeeded or was skipped
         env:
           RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
           echo "results: $RESULTS"
-          case " $RESULTS " in *" failure "*|*" cancelled "*) exit 1 ;; esac
+          for r in $RESULTS; do [ "$r" = success ] || [ "$r" = skipped ] || exit 1; done
