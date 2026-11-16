@@ -18,11 +18,17 @@ struct BattleEntrySection: View {
     var body: some View {
         let lineup = BattleEntry.lineup(state: companion.state, slots: entry.slots)
         let megaLead = lineup.firstIndex { companion.megaStone(of: $0.id, speciesID: speciesID(of: $0)) != nil }
+        let duplicates = BattleEntry.duplicateItemHolders(state: companion.state, slots: entry.slots)
         if lineup.isEmpty {
             rentalRow
         } else {
             ForEach(Array(lineup.enumerated()), id: \.element.id) { index, fighter in
                 entryRow(fighter: fighter, index: index, count: lineup.count, megaLead: megaLead)
+                if duplicates.contains(fighter.id) {
+                    Text(l.battleItemDuplicateWarning).font(.caption2).foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 12).padding(.bottom, 4)
+                }
                 if lineup.count == 1 || expanded == fighter.id {
                     heldItemRow(fighter)
                     moveList(fighter)

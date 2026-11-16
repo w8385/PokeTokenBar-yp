@@ -232,7 +232,8 @@ private struct MegaStoneShopCard: View {
                         Button(l.buy) { confirming = true }
                             .buttonStyle(.bordered).controlSize(.small)
                     } else {
-                        Text(l.notEnoughTokens).font(.caption2).foregroundStyle(.tertiary)
+                        Text(store.megaStoneOwnedTotal(stone) > 0 ? l.ownedAlready : l.notEnoughTokens)
+                            .font(.caption2).foregroundStyle(.tertiary)
                     }
                 }
             }

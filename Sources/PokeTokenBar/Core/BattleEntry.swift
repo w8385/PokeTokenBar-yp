@@ -71,14 +71,47 @@ enum BattleEntry {
         return picked.isEmpty ? autoFighter(state: state).map { [$0] } ?? [] : Array(picked)
     }
 
+    /// Lineup members holding an item an earlier member already holds (a save from before the item clause).
+    static func duplicateItemHolders(state: CompanionState, slots: [BattleEntrySlot]) -> Set<String> {
+        var seen = Set<String>()
+        var duplicates = Set<String>()
+        for candidate in lineup(state: state, slots: slots) {
+            guard let key = state.heldItems[candidate.id] else { continue }
+            if !seen.insert(key).inserted { duplicates.insert(candidate.id) }
+        }
+        return duplicates
+    }
+
+    /// Whether `id` joining `ids` (taking over `replacing`'s place) would give two members the same item.
+    /// A member already in `ids` only moves or leaves, so it never clashes.
+    static func itemClash(_ id: String, replacing: String?, among ids: [String], state: CompanionState) -> Bool {
+        guard !ids.contains(id), let key = state.heldItems[id] else { return false }
+        return ids.contains { $0 != replacing && state.heldItems[$0] == key }
+    }
+
+    /// Whether giving `key` to `id` would match another lineup member's item; `id` outside the lineup never clashes.
+    static func equipClash(_ key: String, onto id: String, state: CompanionState, slots: [BattleEntrySlot]) -> Bool {
+        let ids = lineup(state: state, slots: slots).map(\.id)
+        return ids.contains(id) && ids.contains { $0 != id && state.heldItems[$0] == key }
+    }
+
+    /// Candidates the picker must not offer: their item matches a lineup member who stays.
+    static func itemBlockedCandidates(state: CompanionState, slots: [BattleEntrySlot], replacing: String?) -> Set<String> {
+        let ids = lineup(state: state, slots: slots).map(\.id)
+        return Set(candidates(in: state).map(\.id).filter { itemClash($0, replacing: replacing, among: ids, state: state) })
+    }
+
     /// The lineup with each member's chosen moves, or the rental starter when nothing is owned yet.
+    /// A later member holding the same item as an earlier one goes without it.
     static func party(state: CompanionState, slots: [BattleEntrySlot], rentalSpeciesID: Int) -> [PartyMember] {
         let lineup = lineup(state: state, slots: slots)
+        let duplicates = duplicateItemHolders(state: state, slots: slots)
         guard !lineup.isEmpty else {
             return [PartyMember(pokemonID: rentalSpeciesID, level: rentalLevel, shiny: false, ivs: nil, rental: true)]
         }
         return lineup.map { candidate in
             var member = candidate.member
+            if duplicates.contains(candidate.id) { member.heldItem = nil }
             if let slot = slots.first(where: { $0.instanceID == candidate.id }),
                slot.pokemonID == member.pokemonID, !slot.moves.isEmpty {
                 member.moves = slot.moves
@@ -206,6 +239,9 @@ final class BattleEntryStore {
             ? BattleEntry.autoFighter(state: store.state).map { [BattleEntrySlot(instanceID: $0.id)] } ?? []
             : slots
         var next = current
+        let replaced = index < current.count ? current[index].instanceID : nil
+        if BattleEntry.itemClash(candidate.id, replacing: replaced, among: current.map(\.instanceID),
+                                 state: store.state) { return false }
         if let from = current.firstIndex(where: { $0.instanceID == candidate.id }) {
             let to = min(index, current.count - 1)
             if from == to, index == to {

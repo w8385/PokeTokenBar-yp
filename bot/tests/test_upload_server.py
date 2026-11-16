@@ -149,6 +149,25 @@ def test_validate_fills_defaults():
     ]
 
 
+def _items(party):
+    return [member.get("held_item") for member in validate_party({"party": party})]
+
+
+def test_duplicate_held_item_is_kept_on_the_first_member_only():
+    party = [{"pokemon_id": 6, "level": 50, "held_item": "charizardite-x"},
+             {"pokemon_id": 6, "level": 50, "held_item": "Charizardite-X"},
+             {"pokemon_id": 25, "level": 50, "held_item": "light-ball"},
+             {"pokemon_id": 4, "level": 50}]
+    assert _items(party) == ["charizardite-x", None, "light-ball", None]
+
+
+def test_distinct_held_items_are_untouched():
+    party = [{"pokemon_id": 6, "level": 50, "held_item": "charizardite-x"},
+             {"pokemon_id": 25, "level": 50, "held_item": "light-ball"},
+             {"pokemon_id": 4, "level": 50}]
+    assert _items(party) == ["charizardite-x", "light-ball", None]
+
+
 @pytest.mark.parametrize("payload, message", [
     ([], "JSON object"),
     ({"party": []}, "1 to 6"),

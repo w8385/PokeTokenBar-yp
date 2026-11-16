@@ -14,21 +14,26 @@ struct BattleSlotControl: View {
     var body: some View {
         let lineup = BattleEntry.lineup(state: store.state, slots: battleEntry.slots)
         let mine = battleEntry.slotIndex(of: entry, in: store)
-        let locked = store.battleCandidate(for: entry).map { store.isTradeLocked($0.id) } ?? false
+        let candidate = store.battleCandidate(for: entry)
+        let locked = candidate.map { store.isTradeLocked($0.id) } ?? false
         HStack(spacing: 4) {
             Image(systemName: "bolt.fill").font(.caption2).foregroundStyle(.secondary)
             ForEach(0..<BattleEntry.maxSlots, id: \.self) { index in
                 let holder = index < lineup.count ? lineup[index] : nil
                 let isMine = mine == index
                 let last = isMine && lineup.count == 1
+                let clash = !isMine && candidate.map {
+                    BattleEntry.itemClash($0.id, replacing: holder?.id, among: lineup.map(\.id), state: store.state)
+                } == true
                 Button {
                     if battleEntry.place(entry, at: index, in: store) { onChange() }
                 } label: {
                     slotLabel(index: index, holder: holder, isMine: isMine)
                 }
                 .buttonStyle(.plain)
-                .disabled(locked || last)
-                .help(locked ? l.battleSlotLocked : last ? l.battleSlotLast
+                .disabled(locked || last || clash)
+                .opacity(clash ? 0.4 : 1)
+                .help(locked ? l.battleSlotLocked : clash ? l.battleItemClause : last ? l.battleSlotLast
                       : isMine ? l.battleSlotRemove(index + 1) : l.battleSlotPlace(index + 1))
                 .accessibilityLabel(isMine ? l.battleSlotRemove(index + 1) : l.battleSlotPlace(index + 1))
             }

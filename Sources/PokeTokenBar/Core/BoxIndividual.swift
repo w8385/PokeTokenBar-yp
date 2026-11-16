@@ -19,6 +19,13 @@ enum HeldItemRef: Hashable {
     case item(ItemKind)
     case stone(MegaStone)
 
+    var inventoryKey: String {
+        switch self {
+        case .item(let kind): kind.rawValue
+        case .stone(let stone): stone.inventoryKey
+        }
+    }
+
     func name(_ l: L) -> String {
         switch self {
         case .item(let kind): l.itemName(kind)
