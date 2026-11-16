@@ -67,11 +67,31 @@ final class MegaEvolveStageModelTests: XCTestCase {
         model.megaChanged(from: nil, to: 10034, event: event(), now: now, reduceMotion: false)
 
         XCTAssertTrue(model.isRunning)
-        XCTAssertEqual(model.render(at: now.addingTimeInterval(0.1), megaSpriteID: 10034).layers.map(\.megaID), [nil],
-                       "the base sprite shows while it charges")
+        let charging = model.render(at: now.addingTimeInterval(0.1), megaSpriteID: 10034)
+        XCTAssertEqual(charging.layers.map(\.megaID), [nil, 10034], "the Mega layer is mounted from the start")
+        XCTAssertEqual(charging.layers.map(\.opacity), [1, 0], "but only the base sprite shows while it charges")
         let after = model.render(at: now.addingTimeInterval(MegaEvolveFX.swapTime + 0.05), megaSpriteID: 10034)
         XCTAssertEqual(after.layers.map(\.megaID), [10034])
         XCTAssertNotNil(after.fx)
+    }
+
+    func testTheMegaLayerKeepsItsIdentityAcrossTheSwap() {
+        var model = MegaEvolveStageModel()
+        model.megaChanged(from: nil, to: 10034, event: event(), now: now, reduceMotion: false)
+        let before = model.render(at: now.addingTimeInterval(MegaEvolveFX.swapTime - 0.05), megaSpriteID: 10034)
+        let after = model.render(at: now.addingTimeInterval(MegaEvolveFX.swapTime + 0.05), megaSpriteID: 10034)
+        XCTAssertEqual(before.layers.last?.id, after.layers.last?.id,
+                       "a new identity would remount the sprite and restart its image load at the swap")
+    }
+
+    func testSwitchingToAnotherSubjectMidEffectCancelsTheEffect() {
+        var model = MegaEvolveStageModel()
+        model.megaChanged(from: nil, to: 10034, event: event(), now: now, reduceMotion: false)
+        XCTAssertTrue(model.isRunning)
+
+        model.megaChanged(from: 10034, to: nil, event: event(), now: now.addingTimeInterval(0.3), reduceMotion: false)
+        XCTAssertFalse(model.isRunning, "the used event cannot explain this change, so the new subject must not transform")
+        XCTAssertEqual(model.render(at: now.addingTimeInterval(0.4), megaSpriteID: nil).layers.map(\.megaID), [nil])
     }
 
     func testTheEffectEndsIdleAndLeavesJustTheMega() {

@@ -88,14 +88,18 @@ struct MegaEvolveStageModel: Equatable {
     }
 
     mutating func megaChanged(from old: Int?, to new: Int?, event: MegaEvolveEvent?, now: Date, reduceMotion: Bool) {
-        guard old != new, let event = fresh(event, now: now, window: MegaEvolveFX.eventWindow) else { return }
+        guard old != new else { return }
+        guard let event = fresh(event, now: now, window: MegaEvolveFX.eventWindow) else {
+            phase = .idle
+            return
+        }
         switch event.kind {
         case .equip where new == event.megaSpriteID:
             start(event, from: old, to: new, now: now, reduceMotion: reduceMotion)
         case .unequip where old == event.megaSpriteID && new == nil:
             start(event, from: old, to: nil, now: now, reduceMotion: true)
         default:
-            break
+            phase = .idle
         }
     }
 
@@ -116,7 +120,11 @@ struct MegaEvolveStageModel: Equatable {
             let t = now.timeIntervalSince(start)
             guard t < MegaEvolveFX.duration else { return idle }
             let frame = MegaEvolveFX.frame(at: t)
-            return MegaEvolveRender(layers: [.init(megaID: frame.showsMega ? mega : nil, opacity: 1)], fx: frame)
+            // The Mega layer is mounted hidden from the start so its image loads while the base charges.
+            let layers: [MegaEvolveRender.Layer] = frame.showsMega
+                ? [.init(megaID: mega, opacity: 1)]
+                : [.init(megaID: nil, opacity: 1), .init(megaID: mega, opacity: 0)]
+            return MegaEvolveRender(layers: layers, fx: frame)
         case .crossfading(let start, let from, let to):
             let t = now.timeIntervalSince(start)
             guard t < MegaEvolveFX.crossfadeDuration else { return idle }
