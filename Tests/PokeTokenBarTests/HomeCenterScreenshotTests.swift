@@ -75,6 +75,44 @@ final class HomeCenterScreenshotTests: XCTestCase {
         }
     }
 
+    /// Reaction bubbles at Home's slot and tile sizes and the floating pet's smallest, default and a large size.
+    func testCaptureBubbles() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_CENTER_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_CENTER_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: output)
+        let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("bubble-shot-\(UUID())")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let sprites = SpriteStore(directory: scratch)
+        let sizes: [CGFloat] = [28, 76, 48, 96, 192]
+        func oldBubble(_ bubble: PetCrowd.Bubble, size: CGFloat) -> some View {
+            Text(bubble.rawValue)
+                .font(.system(size: max(10, size * 0.26)))
+                .padding(.horizontal, 4).padding(.vertical, 1)
+                .background(.regularMaterial, in: Capsule())
+                .overlay(Capsule().strokeBorder(Color.secondary.opacity(0.35), lineWidth: 0.5))
+        }
+        func row(old: Bool) -> some View {
+            HStack(alignment: .bottom, spacing: 12) {
+                ForEach(Array(sizes.enumerated()), id: \.offset) { index, size in
+                    let bubble: PetCrowd.Bubble = [.heart, .note, .cheer][index % 3]
+                    SpriteView(speciesID: 25, size: size, animated: false, spriteStore: sprites)
+                        .frame(width: size, height: size)
+                        .overlay(alignment: .top) {
+                            if old { oldBubble(bubble, size: size) } else { CrowdBubble(bubble: bubble, size: size) }
+                        }
+                }
+            }
+            .padding(12)
+        }
+        let width = sizes.reduce(0, +) + CGFloat(sizes.count - 1) * 12 + 24
+        for (name, old) in [("before", true), ("after", false)] {
+            try await capture(row(old: old), width: width, height: 216,
+                              to: directory.appendingPathComponent("home-center-\(name)-bubbles.png"))
+        }
+    }
+
     private static func floatingLayout(friends: Int, crowd: PetCrowd) -> PetRowLayout {
         crowd.friendsOnLeft = true
         crowd.friendsFlank = friends == 2

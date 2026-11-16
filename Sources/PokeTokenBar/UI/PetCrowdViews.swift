@@ -37,18 +37,36 @@ extension View {
     }
 }
 
-/// A small emoji bubble drawn inside the sprite's box, so it never grows the floating panel.
+/// A rounded box with a tail at the bottom center, pointing at the Pokémon below it.
+struct MiniBubbleShape: Shape {
+    static let tailHeight: CGFloat = 4
+
+    func path(in rect: CGRect) -> Path {
+        let body = CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height - Self.tailHeight)
+        var path = Path(roundedRect: body, cornerRadius: min(6, body.height / 2), style: .continuous)
+        path.move(to: CGPoint(x: rect.midX - 3, y: body.maxY - 0.5))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.midX + 3, y: body.maxY - 0.5))
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// A small emoji speech bubble in the pet bubbles' colors, drawn inside the sprite's box so it never grows
+/// the floating panel. Shared by Home and the floating pet.
 @MainActor
 struct CrowdBubble: View {
     let bubble: PetCrowd.Bubble
     let size: CGFloat
 
+    static func emojiSize(for size: CGFloat) -> CGFloat { min(24, max(9, (size * 0.16).rounded())) }
+
     var body: some View {
         Text(bubble.rawValue)
-            .font(.system(size: max(10, size * 0.26)))
-            .padding(.horizontal, 4).padding(.vertical, 1)
-            .background(.regularMaterial, in: Capsule())
-            .overlay(Capsule().strokeBorder(Color.secondary.opacity(0.35), lineWidth: 0.5))
+            .font(.system(size: Self.emojiSize(for: size)))
+            .padding(.horizontal, 3).padding(.top, 1).padding(.bottom, 1 + MiniBubbleShape.tailHeight)
+            .background(MiniBubbleShape().fill(Color.white))
+            .overlay(MiniBubbleShape().stroke(Color(red: 0x20 / 255, green: 0x20 / 255, blue: 0x20 / 255), lineWidth: 1))
             .allowsHitTesting(false)
     }
 }

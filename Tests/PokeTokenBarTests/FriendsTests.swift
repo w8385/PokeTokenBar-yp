@@ -307,6 +307,14 @@ final class PetRowLayoutTests: XCTestCase {
                        A(leading: .friend(0), trailing: .friend(1)))
     }
 
+    func testCrowdBubbleEmojiStaysSmallInsideTheSpriteBox() {
+        for size in stride(from: CGFloat(28), through: 384, by: 4) {
+            let emoji = CrowdBubble.emojiSize(for: size)
+            XCTAssertLessThanOrEqual(emoji + 2 + MiniBubbleShape.tailHeight, size, "size \(size)")
+            XCTAssertLessThanOrEqual(emoji, 24, "size \(size)")
+        }
+    }
+
     func testFriendsStayOnScreen() {
         let screen = NSRect(x: 0, y: 0, width: 1000, height: 800)
         XCTAssertTrue(FloatingPetController.friendsFitLeft(petOrigin: NSPoint(x: 400, y: 0), petSize: petSize,
