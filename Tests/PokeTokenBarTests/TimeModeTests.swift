@@ -14,7 +14,7 @@ final class TimeModeTests: XCTestCase {
         rarity: .common,
         names: [1: ["en": "P1"], 2: ["en": "P2"], 3: ["en": "P3"]])
 
-    private var suites: [String] = []
+    nonisolated(unsafe) private var suites: [String] = []
 
     override func tearDown() {
         for suite in suites { UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite) }
