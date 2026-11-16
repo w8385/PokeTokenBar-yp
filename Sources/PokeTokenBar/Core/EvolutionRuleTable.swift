@@ -106,7 +106,7 @@ extension EvolutionRules {
              [.tower, .useItem("scroll-of-darkness"), .useItem("scroll-of-waters")],
              [[.towerChosen], [.bag(.scrollOfDarkness)], [.bag(.scrollOfWaters)]], formNotShown: true),
         make(809, ["meltan-candies"], [.candies(400)], [[.candies(5)]]),
-        make(1000, ["gimmighoul-coins"], [.coins(999)], [[.spent(1_000_000_000)]]),
+        make(1000, ["gimmighoul-coins"], [.coins(999)], [[.spent(200_000_000)]]),
     ]
 
     private static let battles: [EvolutionRule] = [

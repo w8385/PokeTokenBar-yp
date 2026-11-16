@@ -23,6 +23,7 @@ final class DifficultyTests: XCTestCase {
         let suite = UserDefaults(suiteName: "ptb-diff-\(UUID().uuidString)")!
         suite.set(growth, forKey: "growthDifficulty")
         suite.set(shop, forKey: "shopDifficulty")
+        suite.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         return CompanionStore(provider: StubDiffProvider(value: line()),
                               clock: { Date(timeIntervalSince1970: 1_700_000_000) },
                               fileURL: url, rng: SeededDiffRNG(seed: 7),
@@ -128,15 +129,15 @@ final class DifficultyTests: XCTestCase {
         XCTAssertNotNil(easy.state.active, "0.5x: 같은 양으로 부화")
     }
 
-    /// 첫 실행 안내가 실제 부화 임계를 말하는지 — 난이도 10% 에서도 "약 5M" 으로 고정돼 있던 결함.
+    /// 첫 실행 안내가 실제 부화 임계를 말하는지 — 난이도 10% 에서도 기본 임계 값으로 고정돼 있던 결함.
     func testFirstRunEggHintShowsTheScaledHatchPoint() {
         let easy = store(growth: 0.1)
-        XCTAssertEqual(easy.eggHatchThreshold, 500_000)
+        XCTAssertEqual(easy.eggHatchThreshold, 100_000)
         XCTAssertEqual(store(growth: 1.0).eggHatchThreshold, PokemonBalance.eggHatchThreshold)
         for language in AppLanguage.allCases {
             let hint = L(language).eggFirstRunHint(TokenFormatter.compact(easy.eggHatchThreshold))
-            XCTAssertTrue(hint.contains("500K"), "\(language.rawValue): \(hint)")
-            XCTAssertFalse(hint.contains("5M"), "\(language.rawValue): \(hint)")
+            XCTAssertTrue(hint.contains("100K"), "\(language.rawValue): \(hint)")
+            XCTAssertFalse(hint.contains("1M"), "\(language.rawValue): \(hint)")
         }
     }
 
@@ -238,7 +239,7 @@ final class DifficultyTests: XCTestCase {
         XCTAssertGreaterThan(s.eggTokensToHatch, 0)
     }
 
-    /// 가장 낮은 배율에서도 어떤 임계·가격도 0 으로 무너지지 않는다(가장 작은 기준값이 알 5M).
+    /// 가장 낮은 배율에서도 어떤 임계·가격도 0 으로 무너지지 않는다(가장 작은 기준값이 알 1M).
     func testNothingCollapsesToZeroAtMinimumDifficulty() async {
         let lo = PokemonBalance.difficultyRange.lowerBound
         XCTAssertGreaterThan(PokemonBalance.scaled(PokemonBalance.eggHatchThreshold, by: lo), 0)

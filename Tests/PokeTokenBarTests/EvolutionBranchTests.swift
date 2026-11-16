@@ -148,16 +148,16 @@ final class EvolutionBranchTests: XCTestCase {
         XCTAssertEqual(g.currentSpeciesID, 182)
     }
 
-    func testStonesAreSoldInTheirOwnSectionAndCostOneBillion() throws {
-        let s = try store(tree: eevee, tokens: 3_000_000_000)
+    func testStonesAreSoldInTheirOwnSectionAndCostTwoHundredMillion() throws {
+        let s = try store(tree: eevee, tokens: 600_000_000)
         XCTAssertEqual(s.evolutionStoneItems.filter { $0.evolutionItemName?.hasSuffix("-stone") == true }.count, 10)
         XCTAssertEqual(s.shopEvolutionItems.count,
                        s.evolutionStoneItems.count + 1 + ItemKind.allCases.filter(\.isEvolutionHeld).count)
         XCTAssertFalse(s.purchasableItems.contains(.waterStone))
-        XCTAssertEqual(s.price(of: .waterStone), 1_000_000_000)
+        XCTAssertEqual(s.price(of: .waterStone), 200_000_000)
         XCTAssertTrue(s.buy(.waterStone, count: 2))
         XCTAssertEqual(s.itemCount(.waterStone), 2)
-        XCTAssertEqual(s.availableTokens, 1_000_000_000)
+        XCTAssertEqual(s.availableTokens, 200_000_000)
     }
 
     func testChainDetailsParseTriggerItemAndTimeOfDay() throws {

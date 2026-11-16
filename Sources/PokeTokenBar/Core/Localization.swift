@@ -1664,7 +1664,7 @@ struct L {
     }
     var eggImminent: String { t("곧 부화해요!", "About to hatch!", "もうすぐ孵化！", "¡Está a punto de eclosionar!", "Sur le point d'éclore !", "Está quase chocando!", "Schlüpft gleich!", "Вот-вот вылупится!") }
     /// 첫 실행(아직 토큰 적립 0) 안내 — "왜 아무 일도 안 일어나지"를 방지.
-    /// `amount` 는 성장 난이도가 반영된 부화 임계(포맷된 값) — 고정 5M 이 아니다.
+    /// `amount` 는 성장 난이도가 반영된 부화 임계(포맷된 값) — 고정값이 아니다.
     func eggFirstRunHint(_ amount: String) -> String {
         t("로컬 AI 코딩 도구의 사용량으로 자라요. 약 \(amount) 토큰을 쓰면 알이 부화해요.",
           "Grows from your local AI coding usage. Your egg hatches after ~\(amount) tokens.",

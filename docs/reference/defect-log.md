@@ -251,7 +251,7 @@ read_when:
 
 - **Balance numbers in copy come from the runtime value, never a literal.** The shiny hatch
   notification said "(1/64)" in every language after the Shiny Charm made the real odds 1/48, and
-  the first-run egg hint kept "~5M tokens" after the growth slider could move the hatch point
+  the first-run egg hint kept "~5M tokens" (now ~1M) after the growth slider could move the hatch point
   (fixed separately).
   The copy was written before the modifiers existed, and `LocalizationInterpolationTests` only
   checks that placeholders survive, so a number with no placeholder was never compared with the
