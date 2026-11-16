@@ -65,6 +65,15 @@ final class MegaStoneTests: XCTestCase {
         XCTAssertEqual(store.availableTokens, 10_000_000_000 - price)
     }
 
+    func testBuyingAtExactPriceWorksAndOneBelowIsRefused() throws {
+        let exact = try store(state(tokens: MegaStone.price))
+        XCTAssertTrue(exact.buy(charizardX))
+        XCTAssertEqual(exact.availableTokens, 0)
+        let short = try store(state(tokens: MegaStone.price - 1))
+        XCTAssertFalse(short.buy(charizardX))
+        XCTAssertEqual(short.megaStoneCount(charizardX), 0)
+    }
+
     func testBuyingRefusesWhenTheBalanceIsShort() throws {
         let store = try store(state(tokens: 1_000_000))
 

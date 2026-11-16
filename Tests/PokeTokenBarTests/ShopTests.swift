@@ -190,12 +190,32 @@ final class ShopTests: XCTestCase {
         XCTAssertEqual(s2.state.spentTokens, 4 * Mint.price, "지출 영속")
     }
 
+    // MARK: 배틀 도구·스카우트 가격
+
+    func testBattleToolAndScoutPrices() {
+        XCTAssertEqual(ScoutTicket.price, 2_000_000_000)
+        XCTAssertEqual(HeldItem.price, 3_000_000_000)
+        XCTAssertEqual(MegaStone.price, 6_000_000_000)
+    }
+
+    func testEveryHeldItemIsBuyableAtExactPriceAndNotOneBelow() {
+        for kind in ItemKind.allCases.filter(\.isHeldItem) {
+            let exact = store(used: HeldItem.price)
+            XCTAssertTrue(exact.buy(kind), "\(kind)")
+            XCTAssertEqual(exact.availableTokens, 0, "\(kind)")
+            let short = store(used: HeldItem.price - 1)
+            XCTAssertFalse(short.buy(kind), "\(kind)")
+            XCTAssertEqual(short.state.spentTokens, 0, "\(kind)")
+        }
+    }
+
     // MARK: 정렬 (가격 저렴한 순 + 구매 완료 보유형 맨 아래)
 
     /// 상점 목록은 가격 오름차순(민트 100M < 사탕 500M < 이로치 부적 3B).
     func testItemsSortedByPriceAscending() {
         let items = store(used: 0).purchasableItems
-        XCTAssertEqual(items, [.mint, .rareCandy] + ItemKind.allCases.filter(\.isHeldItem) + [.shinyCharm])
+        XCTAssertEqual(Array(items.prefix(2)), [.mint, .rareCandy])
+        XCTAssertEqual(Set(items.dropFirst(2)), Set(ItemKind.allCases.filter(\.isHeldItem) + [.shinyCharm]), "held items and the charm share 3B")
         let prices = items.compactMap(\.shopPrice)
         XCTAssertEqual(prices, prices.sorted(), "shopPrice 오름차순 — 가격 상수가 바뀌어도 정렬 불변식 유지")
     }
@@ -230,11 +250,11 @@ final class ShopTests: XCTestCase {
         XCTAssertEqual(s.shopEntries,
                        [.item(.mint),        // 100M
                         .item(.rareCandy)]   // 500M
-                       + heldItemEntries     // 1B
                        + [.egg(nil),         // 1B
-                          .egg(.uncommon),   // 2.5B
-                          .item(.shinyCharm), // 3B
-                          .egg(.rare)])      // 4B
+                          .egg(.uncommon)]   // 2.5B
+                       + [.item(.shinyCharm)] // 3B, ties keep ItemKind declaration order
+                       + heldItemEntries     // 3B
+                       + [.egg(.rare)])      // 4B
         let prices = s.shopEntries.map(\.price)
         XCTAssertEqual(prices, prices.sorted(), "가격 상수가 바뀌어도 오름차순 불변식 유지")
     }
@@ -248,11 +268,11 @@ final class ShopTests: XCTestCase {
         XCTAssertEqual(s.shopEntries,
                        [.item(.mint),        // 100M
                         .item(.rareCandy)]   // 500M
-                       + heldItemEntries     // 1B
                        + [.egg(nil),         // 1B
-                          .egg(.uncommon),   // 2.5B
-                          .item(.shinyCharm), // 3B
-                          .egg(.rare)])      // 4B
+                          .egg(.uncommon)]   // 2.5B
+                       + [.item(.shinyCharm)] // 3B, ties keep ItemKind declaration order
+                       + heldItemEntries     // 3B
+                       + [.egg(.rare)])      // 4B
         for tier in FreshEgg.shopTiers {
             XCTAssertTrue(s.shopEntries.contains(.egg(tier)), "알 상태에서도 \(tier?.rawValue ?? "기본") 알은 노출 유지")
             XCTAssertFalse(s.canBuyEgg(tier), "노출은 되지만 \(tier?.rawValue ?? "기본") 알 구매는 hasActive 게이트로 차단")

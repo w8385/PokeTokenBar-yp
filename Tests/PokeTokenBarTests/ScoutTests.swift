@@ -197,10 +197,17 @@ final class ScoutTests: XCTestCase {
 
     // MARK: 구매
 
-    func testScoutIsPricedAboveEveryGuaranteedEgg() {
-        for tier in FreshEgg.shopTiers {
-            XCTAssertGreaterThan(ScoutTicket.price, FreshEgg.price(guaranteeing: tier))
+    func testScoutIsPricedAboveThePlainEggAndBelowTheGradedOnes() {
+        XCTAssertGreaterThan(ScoutTicket.price, FreshEgg.price(guaranteeing: nil))
+        for tier in FreshEgg.shopTiers.compactMap({ $0 }) {
+            XCTAssertLessThan(ScoutTicket.price, FreshEgg.price(guaranteeing: tier))
         }
+    }
+
+    func testBuyingAtExactPriceWorks() {
+        let s = store(tickets: [:], used: ScoutTicket.price)
+        XCTAssertTrue(s.buyScoutTicket(.national))
+        XCTAssertEqual(s.availableTokens, 0)
     }
 
     func testBuyingChargesTheWalletAndFillsTheBag() {

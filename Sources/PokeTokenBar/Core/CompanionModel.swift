@@ -349,8 +349,8 @@ enum EvolutionStone {
 
 /// 지닌 도구 상수 — 소모되지 않고 배틀 포켓몬에 달았다 뗄 수 있다.
 enum HeldItem {
-    /// 진화의 돌과 같은 값(1B). 7종 모두 동일.
-    static let price = 1_000_000_000
+    /// 배틀 도구라 진입 장벽을 둔다(진화의 돌 1B의 3배). 7종 모두 동일.
+    static let price = 3_000_000_000
 }
 
 /// 상점·가방의 분류 탭. 빈 분류는 화면에서 숨긴다 — 아이템을 추가하는 쪽이 `ItemKind.category` 한 줄만 채운다.
@@ -459,8 +459,8 @@ enum ScoutPool: Hashable, Sendable {
 enum ScoutTicket {
     /// 한 번에 보여 주는 후보 수.
     static let drawSize = 10
-    /// 모든 지역·전국 공통 가격. 종을 **고르게** 해 주므로 등급 보증 알 중 가장 비싼 희귀 알(4B)보다 비싸다.
-    static let price = 5_000_000_000
+    /// 모든 지역·전국 공통 가격. 종을 고르게 해 주는 대신 보증 알 값(고급 2.5B·희귀 4B)보다 싸게 둔다.
+    static let price = 2_000_000_000
 }
 
 /// 상점 표시 한 줄 — 판매 아이템(ItemKind) 또는 알 리롤(즉시 액션이라 ItemKind 가 아님).

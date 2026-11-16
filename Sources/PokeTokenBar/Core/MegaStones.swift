@@ -6,7 +6,7 @@ import Foundation
 ///
 /// The inventory key is `mega-stone:<slug>`, so the stones live beside `ItemKind` without adding a case each.
 struct MegaStone: Hashable, Sendable {
-    static let price = 3_000_000_000
+    static let price = 6_000_000_000
     static let keyPrefix = "mega-stone:"
     /// The PokéAPI sprites repo has no image for these Mega forms; they keep the base sprite.
     static let missingSpriteIDs: Set<Int> = [10301]
