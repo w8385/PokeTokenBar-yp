@@ -8,14 +8,21 @@ struct FriendSubject: Equatable, Identifiable, Sendable {
     let isShiny: Bool
     let form: PokemonForm?
     let isFemale: Bool
+    /// Mega form drawn while this friend holds its matching Mega Stone; species and form stay the base ones.
+    let megaSpriteID: Int?
     var id: String { entryID }
 
-    init(_ entry: DexEntry) {
+    var spriteSpeciesID: Int { megaSpriteID ?? speciesID }
+    var spriteForm: PokemonForm? { megaSpriteID == nil ? form : nil }
+    var spriteIsFemale: Bool { megaSpriteID == nil && isFemale }
+
+    init(_ entry: DexEntry, megaSpriteID: Int? = nil) {
         entryID = entry.id
         speciesID = entry.finalID
         isShiny = entry.isShiny
         form = PokemonForm.resolved(speciesID: entry.finalID, form: entry.form)
         isFemale = entry.profile?.gender == .female
+        self.megaSpriteID = megaSpriteID
     }
 }
 

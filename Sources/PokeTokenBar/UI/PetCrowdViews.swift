@@ -63,8 +63,9 @@ struct FriendSprite: View {
     var spriteStore: SpriteStore = .shared
 
     var body: some View {
-        SpriteView(speciesID: friend.speciesID, size: size, animated: animated, shiny: friend.isShiny,
-                   minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: friend.form, female: friend.isFemale)
+        SpriteView(speciesID: friend.spriteSpeciesID, size: size, animated: animated, shiny: friend.isShiny,
+                   minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: friend.spriteForm,
+                   female: friend.spriteIsFemale)
             .frame(width: size, height: size)
     }
 }
