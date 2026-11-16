@@ -52,11 +52,25 @@ jobs:
     name: build-test
     needs: changes
     if: needs.changes.outputs.swift == 'true'
-    # macos-15 ships Xcode 16 / Swift 6, which Package.swift requires
-    # (swift-tools-version: 6.0, platform macOS 14).
-    runs-on: macos-15
+    # Pushes to main and PRs from branches of this repo run on the maintainer's self-hosted Mac.
+    # Fork PRs never do: they run on a GitHub-hosted image that has the Xcode in .xcode-version.
+    runs-on: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && fromJSON('["self-hosted","macOS","ptb"]') || 'xcode-27' }}
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
+
+      - name: Check the pinned Xcode (self-hosted)
+        if: runner.environment == 'self-hosted'
+        run: ./scripts/xcode-pin.sh check
+
+      - name: Select the pinned Xcode (GitHub-hosted)
+        if: runner.environment != 'self-hosted'
+        run: ./scripts/xcode-pin.sh select
+
+      # Waits while a local build (build-slot.sh) runs on the same Mac, then holds the slot to the end.
+      - name: Take the local build slot (self-hosted)
+        if: runner.environment == 'self-hosted'
+        run: ./scripts/ci-build-slot.sh acquire
 
       - name: Show Swift version
         run: swift --version
@@ -87,6 +101,10 @@ jobs:
           PTB_SNAPSHOT_SCREENSHOT_DIR: ${{ runner.temp }}/snapshot-history-renders
           PTB_ZERO_USAGE_SCREENSHOT_DIR: ${{ runner.temp }}/snapshot-history-renders/zero-usage
         run: swift test --skip-build --enable-code-coverage --filter "$UI_TESTS_SETTINGS"
+
+      - name: Release the local build slot (self-hosted)
+        if: always() && runner.environment == 'self-hosted'
+        run: ./scripts/ci-build-slot.sh release
 
       - name: Preserve dex renders
         if: always()

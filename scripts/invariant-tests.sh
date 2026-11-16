@@ -32,6 +32,7 @@ CLASSES=(
   ItemLoreTests                    # every item has official text and name in every language
   EvolutionRulesTests              # every special evolution step in the fixture has an app rule
   EvolutionMappingDocTests         # docs/reference/evolution-mapping.md matches the rule table
+  WorkflowInvariantTests           # self-hosted runs-on guard, ci-ok/bot-ok allow-lists, .xcode-version
   OffscreenRenderGuardTests        # no test shows a window or activates the app
   DesignTokenScanTests             # no raw Color(red:, numeric font size or corner radius outside UI/Design
   SpeciesFactsGuardTests           # no test hand-builds species facts; the table matches the games

@@ -753,6 +753,15 @@ read_when:
   확인하는 단계가 없었다. `swift build --arch arm64 --arch x86_64` 는 xcbuild(Xcode)가 필요해 CLT 환경에서
   실패하므로, 아키텍처별 빌드 + `lipo -create` 로 합친다. 회귀 가드: `build-app.sh` 의 `lipo -verify_arch`
   와 release.sh 4/8 의 `lipo -verify_arch arm64 x86_64` 하드 게이트(릴리스는 `PTB_NATIVE_ARCH_ONLY` 금지).
+- **CI 컴파일러는 배포 컴파일러와 같은 Xcode 메이저여야 한다.** 배포는 이 맥의 Xcode 27 로 하는데 CI 는
+  `macos-15` 기본 Xcode 16.4 로 돌아, 로컬 컴파일러가 받아들이는 strict-concurrency 코드를 CI 만 거절했다(#107).
+  핀은 `.xcode-version` 하나다. `scripts/xcode-pin.sh check` 가 self-hosted CI·`release.sh`·`fork-release.sh`
+  에서 메이저가 다르면 멈추고, GitHub 호스트(포크 PR)는 `select` 로 같은 메이저 Xcode 를 고른다.
+- **집계 체크(`ci-ok`·`bot-ok`)는 허용 목록으로 판정한다.** `failure`/`cancelled` 만 거르는 거부 목록은 러너가
+  끝내 잡지 않은 잡을 통과시켜, 테스트 안 된 PR 이 보호 규칙을 넘을 수 있었다(#107 run 43912431651).
+  **왜 못 걸렀나:** 집계 잡은 실패 결과로만 시험했다. → 모든 결과가 `success`·`skipped` 일 때만 통과.
+  회귀 가드: `WorkflowInvariantTests` 가 두 집계 잡의 스크립트를 결과 조합으로 직접 돌리고, self-hosted 로 가는
+  `runs-on` 이 같은 repo 의 push·PR 조건식 하나뿐인지 본다(거부 목록·무조건 `runs-on` 주입 시 실패 확인).
 
 ## 자격증명·Keychain
 
