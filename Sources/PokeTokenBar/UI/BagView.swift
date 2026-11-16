@@ -104,6 +104,7 @@ private struct ItemCard: View {
     @State private var candyCount = 1
     @State private var stoneRejected = false
     @State private var stoneNotReady = false
+    @State private var stoneBlocked = false
 
     private var selectedCandyCount: Int { min(candyCount, max(1, store.maxRareCandyUseCount)) }
 
@@ -153,8 +154,9 @@ private struct ItemCard: View {
             }
             useControls(l)
             if stoneRejected {
-                Text(stoneNotReady ? l.stoneNotReadyHint(store.displayName)
-                                   : l.stoneWrongHint(store.displayName, l.itemName(kind)))
+                Text(stoneBlocked ? l.heldItemEffect(.everstone)
+                     : stoneNotReady ? l.stoneNotReadyHint(store.displayName)
+                     : l.stoneWrongHint(store.displayName, l.itemName(kind)))
                     .font(.caption2).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -193,7 +195,8 @@ private struct ItemCard: View {
         default:
             let result = store.useEvolutionStone(kind)
             stoneNotReady = result == .notReady
-            return result != .wrongStone && result != .notReady
+            stoneBlocked = result == .everstone
+            return result != .wrongStone && result != .notReady && result != .everstone
         }
         return true
     }

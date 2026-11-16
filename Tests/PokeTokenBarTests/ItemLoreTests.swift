@@ -34,9 +34,9 @@ final class ItemLoreTests: XCTestCase {
 
     func testAppOriginalItemsAreFlaggedAndOfficialOnesAreNot() {
         // The Linking Cord is in the games, but PokéAPI has no flavor text for it yet.
-        // Evolution items from games newer than PokéAPI's text have a line written for this app.
+        // Items from games newer than PokéAPI's text (evolution items, the Fairy Feather) have a line written for this app.
         let flaggedKinds: Set<ItemKind> = [
-            .mint, .linkingCord, .syrupyApple, .auspiciousArmor, .maliciousArmor, .unremarkableTeacup,
+            .mint, .linkingCord, .fairyFeather, .syrupyApple, .auspiciousArmor, .maliciousArmor, .unremarkableTeacup,
             .masterpieceTeacup, .metalAlloy, .peatBlock, .blackAugurite, .scrollOfDarkness, .scrollOfWaters,
         ]
         for kind in ItemKind.allCases {

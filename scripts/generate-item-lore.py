@@ -31,6 +31,12 @@ ITEMS = [
     "fire-stone", "water-stone", "thunder-stone", "leaf-stone", "moon-stone",
     "sun-stone", "shiny-stone", "dusk-stone", "dawn-stone", "ice-stone",
     "leftovers", "choice-scarf", "choice-band", "focus-sash", "life-orb", "expert-belt", "charcoal",
+    "everstone", "choice-specs", "assault-vest", "eviolite", "rocky-helmet", "sitrus-berry", "lum-berry",
+    "white-herb", "black-sludge", "shell-bell", "big-root", "muscle-band", "wise-glasses", "scope-lens",
+    "quick-claw", "bright-powder", "wide-lens", "weakness-policy", "focus-band", "flame-orb", "toxic-orb",
+    "mystic-water", "miracle-seed", "magnet", "never-melt-ice", "black-belt", "poison-barb", "soft-sand",
+    "sharp-beak", "twisted-spoon", "silver-powder", "hard-stone", "spell-tag", "dragon-fang", "black-glasses",
+    "silk-scarf", "fairy-feather", "heat-rock", "damp-rock", "smooth-rock", "icy-rock",
     "linking-cord",
     "tart-apple", "sweet-apple", "syrupy-apple", "cracked-pot", "chipped-pot", "auspicious-armor",
     "malicious-armor", "galarica-cuff", "galarica-wreath", "unremarkable-teacup", "masterpiece-teacup",
@@ -105,6 +111,16 @@ NO_TEXT_YET = {
 # Evolution items PokéAPI has names for but no flavor text yet: hand-written in the in-game voice, all eight
 # languages, with the official name from PokéAPI. They are not flagged appOriginal because the item is real.
 ITEM_FALLBACK = {
+    "fairy-feather": {
+        "ko": "지니게 하면 페어리타입 기술의 위력이 올라가는 깃털.",
+        "en": "An item to be held by a Pokémon. It is a feather that boosts the power of Fairy-type moves.",
+        "ja": "もたせると　フェアリータイプの　わざの　いりょくが　あがる　ハネ。",
+        "es": "Una pluma que potencia los movimientos de tipo Hada del Pokémon que la lleve.",
+        "fr": "Une plume qui renforce la puissance des attaques de type Fée du Pokémon qui la tient.",
+        "pt": "Uma pena que aumenta o poder dos golpes do tipo Fada do Pokémon que a segurar.",
+        "de": "Eine Feder, die die Stärke von Feen-Attacken des Trägers erhöht.",
+        "ru": "Перо, повышающее силу атак типа «Фея» у покемона, который его держит.",
+    },
     "syrupy-apple": {
         "ko": "시럽이 가득 배어든 사과. 어떤 포켓몬에게 주면 진화한다.",
         "en": "A very syrupy apple. A certain Pokémon evolves when it is given this apple.",

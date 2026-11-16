@@ -239,6 +239,12 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case sunStone, shinyStone, duskStone, dawnStone, iceStone
     case linkingCord
     case leftovers, choiceScarf, choiceBand, focusSash, lifeOrb, expertBelt, charcoal
+    case everstone
+    case choiceSpecs, assaultVest, eviolite, rockyHelmet, sitrusBerry, lumBerry, whiteHerb, blackSludge, shellBell, bigRoot
+    case muscleBand, wiseGlasses, scopeLens, quickClaw, brightPowder, wideLens, weaknessPolicy, focusBand, flameOrb, toxicOrb
+    case mysticWater, miracleSeed, magnet, neverMeltIce, blackBelt, poisonBarb, softSand, sharpBeak, twistedSpoon
+    case silverPowder, hardStone, spellTag, dragonFang, blackGlasses, silkScarf, fairyFeather
+    case heatRock, dampRock, smoothRock, icyRock
     /// Evolution items the games use up like a stone.
     case tartApple, sweetApple, syrupyApple, crackedPot, chippedPot, auspiciousArmor, maliciousArmor
     case galaricaCuff, galaricaWreath, unremarkableTeacup, masterpieceTeacup, metalAlloy, peatBlock
@@ -259,12 +265,80 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .lifeOrb: return "life-orb"
         case .expertBelt: return "expert-belt"
         case .charcoal: return "charcoal"
+        case .everstone: return "everstone"
+        case .choiceSpecs: return "choice-specs"
+        case .assaultVest: return "assault-vest"
+        case .eviolite: return "eviolite"
+        case .rockyHelmet: return "rocky-helmet"
+        case .sitrusBerry: return "sitrus-berry"
+        case .lumBerry: return "lum-berry"
+        case .whiteHerb: return "white-herb"
+        case .blackSludge: return "black-sludge"
+        case .shellBell: return "shell-bell"
+        case .bigRoot: return "big-root"
+        case .muscleBand: return "muscle-band"
+        case .wiseGlasses: return "wise-glasses"
+        case .scopeLens: return "scope-lens"
+        case .quickClaw: return "quick-claw"
+        case .brightPowder: return "bright-powder"
+        case .wideLens: return "wide-lens"
+        case .weaknessPolicy: return "weakness-policy"
+        case .focusBand: return "focus-band"
+        case .flameOrb: return "flame-orb"
+        case .toxicOrb: return "toxic-orb"
+        case .mysticWater: return "mystic-water"
+        case .miracleSeed: return "miracle-seed"
+        case .magnet: return "magnet"
+        case .neverMeltIce: return "never-melt-ice"
+        case .blackBelt: return "black-belt"
+        case .poisonBarb: return "poison-barb"
+        case .softSand: return "soft-sand"
+        case .sharpBeak: return "sharp-beak"
+        case .twistedSpoon: return "twisted-spoon"
+        case .silverPowder: return "silver-powder"
+        case .hardStone: return "hard-stone"
+        case .spellTag: return "spell-tag"
+        case .dragonFang: return "dragon-fang"
+        case .blackGlasses: return "black-glasses"
+        case .silkScarf: return "silk-scarf"
+        case .fairyFeather: return "fairy-feather"
+        case .heatRock: return "heat-rock"
+        case .dampRock: return "damp-rock"
+        case .smoothRock: return "smooth-rock"
+        case .icyRock: return "icy-rock"
+        case .metalCoat: return "metal-coat"
+        case .razorClaw: return "razor-claw"
         default: return nil
         }
     }
-    var isHeldItem: Bool { heldItemSlug != nil }
+    /// The type whose moves the item boosts ×1.2 in battle.
+    var boostedType: String? {
+        switch self {
+        case .charcoal: return "fire"
+        case .mysticWater: return "water"
+        case .miracleSeed: return "grass"
+        case .magnet: return "electric"
+        case .neverMeltIce: return "ice"
+        case .blackBelt: return "fighting"
+        case .poisonBarb: return "poison"
+        case .softSand: return "ground"
+        case .sharpBeak: return "flying"
+        case .twistedSpoon: return "psychic"
+        case .silverPowder: return "bug"
+        case .hardStone: return "rock"
+        case .spellTag: return "ghost"
+        case .dragonFang: return "dragon"
+        case .blackGlasses: return "dark"
+        case .metalCoat: return "steel"
+        case .silkScarf: return "normal"
+        case .fairyFeather: return "fairy"
+        default: return nil
+        }
+    }
+    /// A battle item sold in the held-item tier. Metal Coat and Razor Claw also act in battle but stay evolution items.
+    var isHeldItem: Bool { heldItemSlug != nil && !isEvolutionHeld }
 
-    /// PokéAPI name of an evolution item that is held, not used up. Never sent to the bot.
+    /// PokéAPI name of an evolution item that is held, not used up. Metal Coat and Razor Claw are also uploaded as battle items.
     var evolutionHeldSlug: String? {
         switch self {
         case .ovalStone: return "oval-stone"
@@ -308,7 +382,13 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     var evolutionItemName: String? {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .linkingCord: return nil
-        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return nil
+        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal, .everstone: return nil
+        case .choiceSpecs, .assaultVest, .eviolite, .rockyHelmet, .sitrusBerry, .lumBerry, .whiteHerb, .blackSludge,
+             .shellBell, .bigRoot, .muscleBand, .wiseGlasses, .scopeLens, .quickClaw, .brightPowder, .wideLens,
+             .weaknessPolicy, .focusBand, .flameOrb, .toxicOrb: return nil
+        case .mysticWater, .miracleSeed, .magnet, .neverMeltIce, .blackBelt, .poisonBarb, .softSand, .sharpBeak,
+             .twistedSpoon, .silverPowder, .hardStone, .spellTag, .dragonFang, .blackGlasses, .silkScarf, .fairyFeather,
+             .heatRock, .dampRock, .smoothRock, .icyRock: return nil
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return nil
         case .metalCoat, .kingsRock, .dragonScale, .upGrade, .dubiousDisc, .electirizer, .magmarizer, .protector,
              .reaperCloth, .deepSeaTooth, .deepSeaScale, .sachet, .whippedDream, .prismScale: return nil
@@ -361,9 +441,8 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .mint: return "🌿"
         case .shinyCharm: return "✨"
         case .linkingCord: return "🔗"
-        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return "🎒"
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return "🎒"
-        case _ where isTradeEvolutionItem: return "🎒"
+        case _ where isHeldItem || isTradeEvolutionItem: return "🎒"
         default: return "💎"
         }
     }
@@ -373,7 +452,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return RareCandy.price
         case .mint: return Mint.price
         case .shinyCharm: return ShinyCharm.price
-        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return HeldItem.price
+        case _ where isHeldItem: return HeldItem.price
         default: return EvolutionStone.price
         }
     }
@@ -394,7 +473,7 @@ enum EvolutionStone {
 
 /// 지닌 도구 상수 — 소모되지 않고 배틀 포켓몬에 달았다 뗄 수 있다.
 enum HeldItem {
-    /// 배틀 도구라 진입 장벽을 둔다(진화의 돌 200M의 3배). 7종 모두 동일.
+    /// 배틀 도구라 진입 장벽을 둔다(진화의 돌 200M의 3배). 모든 지닌 도구 동일.
     static let price = 600_000_000
 }
 
@@ -407,7 +486,7 @@ extension ItemKind {
     var category: ItemCategory {
         switch self {
         case .rareCandy, .mint, .shinyCharm: return .growth
-        case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal: return .heldItem
+        case _ where isHeldItem: return .heldItem
         default: return .evolution
         }
     }
