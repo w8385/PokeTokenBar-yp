@@ -81,28 +81,62 @@ struct FriendSlotsRow: View {
 
     static let slotSize: CGFloat = 28
 
+    enum Slot: Equatable { case friend(Int), add }
+
+    /// What stands under the sprite tile. Friends sit at its bottom corners, so the raised Pokémon is the
+    /// middle of [friend, active, friend]; the add slot takes the corner a missing friend would fill.
+    /// With no friend yet the add slot is centered.
+    struct Arrangement: Equatable {
+        var leading: Slot?
+        var center: Slot?
+        var trailing: Slot?
+    }
+
+    static func arrangement(friendCount: Int, canAdd: Bool) -> Arrangement {
+        guard friendCount > 0 else { return Arrangement(center: canAdd ? .add : nil) }
+        return Arrangement(leading: .friend(0),
+                           trailing: friendCount >= 2 ? .friend(1) : (canAdd ? .add : nil))
+    }
+
     var body: some View {
         let l = store.l
         let friends = store.friendSubjects
-        HStack(spacing: 4) {
-            ForEach(Array(friends.enumerated()), id: \.element.id) { index, friend in
-                friendSlot(friend, slot: index + 1, l: l)
-            }
-            if friends.count < CompanionState.maxFriends, !store.friendCandidates.isEmpty {
-                Button { picking = true } label: {
-                    RoundedRectangle(cornerRadius: 8)
-                        .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
-                        .foregroundStyle(.tertiary)
-                        .overlay { Image(systemName: "plus").font(.caption).foregroundStyle(.secondary) }
-                        .frame(width: Self.slotSize, height: Self.slotSize)
-                }
-                .buttonStyle(.plain)
-                .help(l.friendAdd)
-                .accessibilityLabel(l.friendAdd)
-                .popover(isPresented: $picking, arrowEdge: .bottom) {
-                    FriendPicker(store: store, spriteStore: spriteStore) { picking = false }
-                }
-            }
+        let canAdd = friends.count < CompanionState.maxFriends && !store.friendCandidates.isEmpty
+        let layout = Self.arrangement(friendCount: friends.count, canAdd: canAdd)
+        HStack(spacing: 0) {
+            slotView(layout.leading, friends: friends, l: l)
+            Spacer(minLength: 0)
+            slotView(layout.center, friends: friends, l: l)
+            if layout.center != nil { Spacer(minLength: 0) }
+            slotView(layout.trailing, friends: friends, l: l)
+        }
+    }
+
+    @ViewBuilder
+    private func slotView(_ slot: Slot?, friends: [FriendSubject], l: L) -> some View {
+        switch slot {
+        case .friend(let index):
+            if friends.indices.contains(index) { friendSlot(friends[index], slot: index + 1, l: l) }
+        case .add:
+            addSlot(l: l)
+        case nil:
+            EmptyView()
+        }
+    }
+
+    private func addSlot(l: L) -> some View {
+        Button { picking = true } label: {
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                .foregroundStyle(.tertiary)
+                .overlay { Image(systemName: "plus").font(.caption).foregroundStyle(.secondary) }
+                .frame(width: Self.slotSize, height: Self.slotSize)
+        }
+        .buttonStyle(.plain)
+        .help(l.friendAdd)
+        .accessibilityLabel(l.friendAdd)
+        .popover(isPresented: $picking, arrowEdge: .bottom) {
+            FriendPicker(store: store, spriteStore: spriteStore) { picking = false }
         }
     }
 

@@ -556,6 +556,12 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         return NSPoint(x: panelOrigin.x + xInset, y: panelOrigin.y)
     }
 
+    /// Two friends flank the main pet when both sides stay on screen.
+    static func friendsFitBothSides(petOrigin: NSPoint, petSize: CGFloat, visibleFrame: NSRect) -> Bool {
+        let slot = PetRowLayout.friendSlotWidth(petSize: petSize)
+        return petOrigin.x - slot >= visibleFrame.minX && petOrigin.x + petSize + slot <= visibleFrame.maxX
+    }
+
     /// Friends stand left of the main pet unless that would leave the screen.
     static func friendsFitLeft(petOrigin: NSPoint, petSize: CGFloat, friendCount: Int, visibleFrame: NSRect) -> Bool {
         let width = PetRowLayout(friendCount: friendCount).friendsWidth(petSize: petSize)
@@ -653,7 +659,8 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
 
     /// Friends beside the main pet, with the side picked at the saved home (never while the pet is running).
     private var rowLayout: PetRowLayout {
-        PetRowLayout(friendCount: companion.friendSubjects.count, friendsOnLeft: friendsOnLeft)
+        PetRowLayout(friendCount: companion.friendSubjects.count, friendsOnLeft: friendsOnLeft,
+                     friendsFlank: crowd.friendsFlank)
     }
 
     private func updateFriendSide() {
@@ -669,6 +676,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         }
         let screen = NSScreen.screens.first { $0.frame.contains(origin) } ?? NSScreen.main
         guard let visible = screen?.visibleFrame else { return }
+        crowd.friendsFlank = count == 2 && Self.friendsFitBothSides(petOrigin: origin, petSize: petSize, visibleFrame: visible)
         friendsOnLeft = Self.friendsFitLeft(petOrigin: origin, petSize: petSize, friendCount: count, visibleFrame: visible)
     }
 
@@ -1172,13 +1180,15 @@ struct FloatingPetView: View {
     /// pet without taking row space, so friends stay put when it comes and goes.
     private func friendsRow(size: CGFloat, subject: CompanionStore.RepresentativeSubject,
                             bubble: FloatingPetController.Bubble?, friends: [FriendSubject]) -> some View {
-        let layout = PetRowLayout(friendCount: friends.count, friendsOnLeft: crowd.friendsOnLeft)
+        let layout = PetRowLayout(friendCount: friends.count, friendsOnLeft: crowd.friendsOnLeft,
+                                  friendsFlank: crowd.friendsFlank)
         let showing = FloatingPetController.isShowingBubble(
             alertActive: store.currentBubbleAlert != nil, heartsShowing: hearts.isShowing, agent: agent.summary)
         let margins = layout.margins(petSize: size, bubbleWidth: showing ? FloatingPetController.bubbleMinWidth : nil)
-        let friendsWidth = layout.friendsWidth(petSize: size)
+        let friendsWidth = layout.friendMargins(petSize: size).left
         let friendSize = PetRowLayout.friendSize(petSize: size)
         let slots = layout.slotOrder
+        func friendOnRight(_ slot: Int) -> Bool { layout.isFlanking ? slot == 2 : !layout.friendsOnLeft }
         return HStack(alignment: .bottom, spacing: 0) {
             ForEach(slots, id: \.self) { slot in
                 if slot == 0 {
@@ -1195,11 +1205,11 @@ struct FloatingPetView: View {
                     FriendSprite(friend: friends[slot - 1], size: friendSize, animated: animated,
                                  minFrameDelay: minFrameDelay, spriteStore: spriteStore)
                         .crowdMember(crowd, slot: slot, size: friendSize)
-                        .padding(layout.friendsOnLeft ? .trailing : .leading, PetRowLayout.friendGap)
+                        .padding(friendOnRight(slot) ? .leading : .trailing, PetRowLayout.friendGap)
                 }
             }
         }
-        .padding(.leading, layout.friendsOnLeft ? max(0, margins.left - friendsWidth) : margins.left)
+        .padding(.leading, layout.friendsOnLeft || layout.isFlanking ? max(0, margins.left - friendsWidth) : margins.left)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
     }
 

@@ -46,6 +46,8 @@ final class PetCrowd {
     private(set) var motionAllowed = true
     /// Floating pet only: which side of the main pet the friends stand on.
     var friendsOnLeft = true
+    /// Floating pet only: two friends stand on both sides of the main pet instead of on one.
+    var friendsFlank = false
 
     private var idleTask: Task<Void, Never>?
     private var settleTask: Task<Void, Never>?
