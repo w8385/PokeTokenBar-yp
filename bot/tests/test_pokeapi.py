@@ -245,6 +245,26 @@ def test_warm_caches_every_member_so_a_later_lookup_makes_no_network_call(servic
     assert len(fetched) == warmed
 
 
+@pytest.mark.parametrize("pokemon_id, item", [
+    (1017, "wellspring-mask"), (1017, "hearthflame-mask"), (1017, "cornerstone-mask"), (1017, "teal-mask"),
+    (1024, None), (1024, "stellar-crystal"), (719, "diancite"),
+])
+def test_warm_fetches_the_form_so_building_the_combatant_makes_no_network_call(service, monkeypatch, pokemon_id, item):
+    from ypoke.combatants import combatant
+
+    api, _ = service
+    member = {"pokemon_id": pokemon_id, "level": 36, "held_item": item, "shiny": False, "ivs": {}}
+    served = pokeapi._get_json
+    monkeypatch.setattr(pokeapi, "_get_json", lambda url: {"abilities": [], **served(url)})
+    api.warm([member])
+
+    def cold(url):
+        raise AssertionError(f"cold fetch during the battle: {url}")
+
+    monkeypatch.setattr(pokeapi, "_get_json", cold)
+    assert combatant(api, member).pokemon_id == pokemon_id
+
+
 def test_warm_tries_every_member_and_raises_the_first_network_error(service, monkeypatch):
     api, _ = service
     real = pokeapi._get_json
