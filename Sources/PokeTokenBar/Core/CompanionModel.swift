@@ -57,7 +57,7 @@ enum AppLanguage: String, Codable, Sendable, CaseIterable {
 }
 
 /// 희귀도 — PokéAPI capture_rate / is_legendary 로 판정.
-enum Rarity: String, Codable, Sendable {
+enum Rarity: String, Codable, Sendable, CaseIterable {
     case common, uncommon, rare, legendary
     /// 등급 크기(높을수록 희귀) — 두 `Rarity` 를 비교하기 위한 순위.
     /// **목록 정렬용이 아니다**: 박스는 기록 시각순, 도감은 도감 번호순이고 희귀도는 필터로만 좁힌다.
@@ -136,7 +136,7 @@ enum PokemonBalance {
     // MARK: Time mode
 
     /// Virtual tokens per active hour, before difficulty (which scales thresholds and prices, not this).
-    static let timeTokensPerActiveHour = 5_000_000
+    static let timeTokensPerActiveHour = 40_000_000
 
     static func timeTokens(forActiveSeconds seconds: TimeInterval) -> Int {
         max(0, Int(seconds * Double(timeTokensPerActiveHour) / 3600))

@@ -57,20 +57,32 @@ final class TimeModeTests: XCTestCase {
 
     // MARK: rate
 
-    func testAnActiveDayAtTheCapIsFortyMillionTokens() {
-        XCTAssertEqual(Int(PokemonBalance.timeDailyCap / 3600) * PokemonBalance.timeTokensPerActiveHour, 40_000_000)
+    func testTheLongestEvolutionStepTakesAtMostTenActiveHours() {
+        var longest = 0
+        for rarity in Rarity.allCases {
+            for forms in 1...12 {
+                for stage in 0..<(forms - 1) {
+                    let base = PokemonBalance.phaseThreshold(rarity: rarity, totalForms: forms, stageIndex: stage)
+                    longest = max(longest, PokemonBalance.scaled(base, by: PokemonBalance.defaultDifficulty))
+                }
+            }
+        }
+        XCTAssertGreaterThan(longest, 0)
+        XCTAssertLessThanOrEqual(Double(longest) / Double(PokemonBalance.timeTokensPerActiveHour), 10)
         XCTAssertEqual(PokemonBalance.timeDailyCap, 8 * 3600)
     }
 
     func testRateMathAtDifficultyOne() {
         let perHour = Double(PokemonBalance.timeTokensPerActiveHour)
         func hours(_ tokens: Int) -> Double { Double(tokens) / perHour }
-        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .common, totalForms: 3, stageIndex: 0)), 5, accuracy: 0.01)
-        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .common, totalForms: 2, stageIndex: 0)), 10, accuracy: 0.01)
-        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .rare, totalForms: 3, stageIndex: 0)), 20, accuracy: 0.01)
-        XCTAssertEqual(hours(PokemonBalance.graduationTotal(.common)), 30, accuracy: 0.01)
-        XCTAssertEqual(hours(HeldItem.price), 120, accuracy: 0.01)
-        XCTAssertEqual(hours(RareCandy.price), 20, accuracy: 0.01)
+        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .common, totalForms: 3, stageIndex: 0)), 0.625, accuracy: 0.01)
+        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .common, totalForms: 2, stageIndex: 0)), 1.25, accuracy: 0.01)
+        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .rare, totalForms: 3, stageIndex: 0)), 2.5, accuracy: 0.01)
+        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .rare, totalForms: 2, stageIndex: 0)), 5, accuracy: 0.01)
+        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .legendary, totalForms: 2, stageIndex: 0)), 10, accuracy: 0.01)
+        XCTAssertEqual(hours(PokemonBalance.graduationTotal(.common)), 3.75, accuracy: 0.01)
+        XCTAssertEqual(hours(HeldItem.price), 15, accuracy: 0.01)
+        XCTAssertEqual(hours(RareCandy.price), 2.5, accuracy: 0.01)
     }
 
     // MARK: crediting
@@ -80,7 +92,7 @@ final class TimeModeTests: XCTestCase {
         let s = egg(clock: clock)
         s.creditActiveTime(uptime: up, idle: 1, present: true)   // anchor
         let credited = tick(s, clock, uptime: &up, times: 10)
-        XCTAssertEqual(credited, 10 * 41_666)
+        XCTAssertEqual(credited, 10 * PokemonBalance.timeTokens(forActiveSeconds: 30))
         XCTAssertEqual(s.state.eggUsage, credited)
         XCTAssertEqual(s.state.timeCredit, credited)
         XCTAssertEqual(s.availableTokens, credited)
@@ -89,13 +101,13 @@ final class TimeModeTests: XCTestCase {
     }
 
     func testGrowthDifficultyScalesTheThresholdNotTheCredit() {
-        for (difficulty, expected) in [(1.0, 0.25), (0.5, 0.5)] {
+        for (difficulty, expected) in [(1.0, 1.0 / 3), (0.5, 2.0 / 3)] {
             let clock = Clock(); var up: TimeInterval = 1000
             let s = egg(clock: clock)
             s.setGrowthDifficulty(difficulty)
             s.creditActiveTime(uptime: up, idle: 1, present: true)
-            let credited = tick(s, clock, uptime: &up, times: 6)   // 3 minutes
-            XCTAssertEqual(credited, 6 * 41_666, "credit ignores difficulty")
+            let credited = tick(s, clock, uptime: &up, times: 1)   // 30 s
+            XCTAssertEqual(credited, PokemonBalance.timeTokens(forActiveSeconds: 30), "credit ignores difficulty")
             XCTAssertEqual(s.eggProgress, Double(credited) / Double(PokemonBalance.eggHatchThreshold) / difficulty, accuracy: 1e-9)
             XCTAssertEqual(s.eggProgress, expected, accuracy: 0.01)
         }
@@ -158,8 +170,8 @@ final class TimeModeTests: XCTestCase {
         s.creditActiveTime(uptime: up, idle: 1, present: true)
         let credited = tick(s, clock, uptime: &up, times: 12 * 120)   // 12 hours in 30 s ticks
         XCTAssertEqual(s.state.timeActiveSeconds, PokemonBalance.timeDailyCap, accuracy: 0.001)
-        XCTAssertLessThanOrEqual(credited, 40_000_000)
-        XCTAssertGreaterThan(credited, 39_900_000)
+        XCTAssertLessThanOrEqual(credited, PokemonBalance.timeTokens(forActiveSeconds: PokemonBalance.timeDailyCap))
+        XCTAssertGreaterThan(credited, PokemonBalance.timeTokens(forActiveSeconds: PokemonBalance.timeDailyCap) - 100_000)
         let afterCap = s.state.timeCredit
         clock.now += 86_400
         tick(s, clock, uptime: &up, times: 2)
@@ -189,8 +201,8 @@ final class TimeModeTests: XCTestCase {
             clock.now += jump
             up += 30
             let after = s.creditActiveTime(uptime: up, idle: 1, present: true)
-            XCTAssertEqual(after, 41_666, "a \(jump)s clock change still credits one 30 s interval")
-            XCTAssertEqual(before, 2 * 41_666)
+            XCTAssertEqual(after, PokemonBalance.timeTokens(forActiveSeconds: 30), "a \(jump)s clock change still credits one 30 s interval")
+            XCTAssertEqual(before, 2 * PokemonBalance.timeTokens(forActiveSeconds: 30))
         }
     }
 
