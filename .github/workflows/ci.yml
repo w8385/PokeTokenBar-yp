@@ -18,8 +18,39 @@ env:
   UI_TESTS_SETTINGS: SnapshotHistoryRenderingTests|FormMetadataNoteRenderingTests|ZeroUsageHomeRenderingTests|SessionKeySettingsRenderingTests
 
 jobs:
+  # macOS runners are the scarce resource. A change that touches none of the Swift build/test inputs
+  # skips the macOS jobs; they still report as skipped, so required checks and merge-pr.sh don't hang.
+  # Not inputs: bot/ (bot.yml tests it), assets/landing/, docs/ and *.md, except
+  # docs/reference/evolution-mapping.md, which EvolutionMappingDocTests reads.
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    outputs:
+      swift: ${{ steps.filter.outputs.swift }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Detect Swift-relevant changes
+        id: filter
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          swift=true
+          if files=$(git diff --name-only "$BASE" "$HEAD" 2>/dev/null) && [ -n "$files" ]; then
+            relevant=$(grep -vE '^(bot/|assets/landing/|docs/)|\.md$' <<<"$files" || true)
+            relevant+=$(grep -x 'docs/reference/evolution-mapping.md' <<<"$files" || true)
+            [ -z "$relevant" ] && swift=false
+          fi
+          echo "Swift-relevant changes: $swift"
+          echo "swift=$swift" >> "$GITHUB_OUTPUT"
+
   build-test:
     name: build-test
+    needs: changes
+    if: needs.changes.outputs.swift == 'true'
     # macos-15 ships Xcode 16 / Swift 6, which Package.swift requires
     # (swift-tools-version: 6.0, platform macOS 14).
     runs-on: macos-15
@@ -44,6 +75,8 @@ jobs:
 
   ui-tests:
     name: ui-tests (${{ matrix.shard }})
+    needs: changes
+    if: needs.changes.outputs.swift == 'true'
     runs-on: macos-15
     strategy:
       fail-fast: false
