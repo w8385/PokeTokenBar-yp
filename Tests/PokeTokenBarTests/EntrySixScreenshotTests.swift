@@ -46,7 +46,8 @@ final class EntrySixScreenshotTests: XCTestCase {
                                 rarity: .common, totalForms: 3, profile: raised)
         state.dex = [entry(25, id: "pikachu", ko: "피카츄", level: 62), entry(94, id: "gengar", ko: "팬텀", level: 38),
                      entry(6, id: "zard", ko: "리자몽", level: 50), entry(130, id: "gyarados", ko: "갸라도스", level: 44),
-                     entry(149, id: "dragonite", ko: "망나뇽", level: 55)]
+                     entry(149, id: "dragonite", ko: "망나뇽", level: 55),
+                     entry(5, id: "charmeleon", ko: "리자드", level: 24)]
         let file = scratch.appendingPathComponent("state.json")
         try JSONEncoder().encode(state).write(to: file)
         let store = CompanionStore(provider: EntrySixShotProvider(), fileURL: file)
@@ -54,7 +55,7 @@ final class EntrySixScreenshotTests: XCTestCase {
 
         let defaults = UserDefaults(suiteName: "entry6-shot-\(UUID())")!
         let battle = BattleEntryStore(defaults: defaults)
-        ["raised", "pikachu", "gengar", "zard", "gyarados", "dragonite"].forEach { battle.add($0) }
+        ["charmeleon", "pikachu", "gengar", "zard", "gyarados", "dragonite"].forEach { battle.add($0) }
         let uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,
             appVersion: "shot", send: { _ in 200 }, fetch: { _ in (Data(), 404) }, partySource: { [] })
