@@ -140,6 +140,24 @@ final class PopoverNavigation {
     /// 그냥 설정만 열면 "만료됐다"를 보고 들어온 사용자가 고칠 입력란을 못 찾는다.
     var expandAdvancedOnOpen = false
 
+    /// The selected Settings tab. Kept across openings and launches, like `providerID`, so reset() leaves it.
+    var settingsTab: SettingsTab {
+        didSet { settingsTab.store(in: defaults) }
+    }
+    @ObservationIgnored private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        settingsTab = SettingsTab.stored(in: defaults)
+    }
+
+    /// The YPoke link and upload token live on Settings' YPoke tab.
+    func openYPokeSettings() {
+        showingRecap = false
+        settingsTab = .ypoke
+        showSettings = true
+    }
+
     func reset() {
         showSettings = false
         expandAdvancedOnOpen = false
@@ -151,6 +169,7 @@ final class PopoverNavigation {
 
     /// 세션 키 만료 안내 → 그 키를 고칠 수 있는 유일한 화면으로 바로 보낸다.
     func openSessionKeySettings() {
+        settingsTab = .advanced
         showSettings = true
         expandAdvancedOnOpen = true
     }
@@ -261,7 +280,8 @@ struct PopoverView: View {
                         nav.expandAdvancedOnOpen = false
                     },
                     onChooseRepresentative: { nav.openRepresentativeDex() },
-                    startExpanded: nav.expandAdvancedOnOpen
+                    startExpanded: nav.expandAdvancedOnOpen,
+                    tab: $nav.settingsTab
                 )
                     .environment(store)
                     .environment(companion)

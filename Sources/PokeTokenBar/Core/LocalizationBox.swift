@@ -23,9 +23,9 @@ extension L {
     }
 
     var coworkersOpenConnection: String {
-        t("대결 탭에서 연결하기", "Connect in the Battle tab", "対戦タブでつなぐ", "Conectar en la pestaña Combate",
-          "Connecter dans l'onglet Combat", "Conectar na aba Batalha", "Im Kampf-Tab verbinden",
-          "Подключить на вкладке «Бой»")
+        t("설정에서 연결하기", "Connect in Settings", "設定でつなぐ", "Conectar en Ajustes",
+          "Connecter dans Réglages", "Conectar nos Ajustes", "In den Einstellungen verbinden",
+          "Подключить в настройках")
     }
 
     var boxTab: String { t("박스", "Box", "ボックス", "Caja", "Boîte", "Caixa", "Box", "Коробка") }
