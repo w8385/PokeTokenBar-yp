@@ -9,6 +9,7 @@ NOTES="${2:?release notes file}"
 REPO="w8385/PokeTokenBar-yp"
 ASSET="PokeTokenBar-yp-arm64.zip"
 
+./scripts/xcode-pin.sh check >/dev/null
 PTB_NATIVE_ARCH_ONLY=1 PTB_SKIP_INSTALL=1 ./scripts/build-app.sh
 BUILT=$(/usr/libexec/PlistBuddy -c "Print :PTBForkVersion" build/PokeTokenBar.app/Contents/Info.plist)
 [[ "v$BUILT" == "$TAG" ]] || { echo "PTBForkVersion $BUILT does not match $TAG; bump FORK_VERSION in build-app.sh" >&2; exit 1; }
