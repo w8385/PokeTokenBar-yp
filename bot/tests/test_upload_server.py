@@ -13,10 +13,11 @@ from ypoke.upload_server import PartyError, serve, validate_party
 
 PIKACHU = {"pokemon_id": 25, "level": 42, "name": "피카츄", "shiny": True, "ivs": {"hp": 31}}
 LEARNABLE = [
-    {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100, "weather": None, "level": 1},
-    {"id": 209, "name": "스파크", "type": "electric", "power": 65, "damage_class": "physical", "accuracy": 100, "weather": None, "level": 20},
-    {"id": 85, "name": "10만볼트", "type": "electric", "power": 90, "damage_class": "special", "accuracy": 100, "weather": None, "level": 36},
-    {"id": 87, "name": "번개", "type": "electric", "power": 110, "damage_class": "special", "accuracy": 70, "weather": None, "level": 44},
+    {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100, "weather": None, "level": 1, "source": "level"},
+    {"id": 209, "name": "스파크", "type": "electric", "power": 65, "damage_class": "physical", "accuracy": 100, "weather": None, "level": 20, "source": "level"},
+    {"id": 85, "name": "10만볼트", "type": "electric", "power": 90, "damage_class": "special", "accuracy": 100, "weather": None, "level": 36, "source": "level"},
+    {"id": 87, "name": "번개", "type": "electric", "power": 110, "damage_class": "special", "accuracy": 70, "weather": None, "level": 44, "source": "level"},
+    {"id": 89, "name": "지진", "type": "ground", "power": 100, "damage_class": "physical", "accuracy": 100, "weather": None, "level": 0, "source": "machine"},
 ]
 
 
@@ -26,10 +27,14 @@ NAMES = {"U2": "리자몽 트레이너", "U3": "민수"}
 class FakeMoves:
     offline = False
 
-    def __call__(self, pokemon_id, level):
+    def __call__(self, pokemon_id, level, machine_ids=()):
         if self.offline:
             raise OSError("offline")
-        return [move for move in LEARNABLE if move["level"] <= level]
+        return [
+            move for move in LEARNABLE
+            if move["source"] == "level" and move["level"] <= level
+            or move["source"] == "machine" and (machine_ids is None or move["id"] in machine_ids)
+        ]
 
 
 @pytest.fixture
@@ -202,9 +207,9 @@ def test_moves_check_needs_pokeapi(server, moves_for):
 def test_learnable_moves_with_defaults(server):
     store, base, _ = server
     token = store.issue_token("U1")
-    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=42", token=token)
+    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=42&machine=1", token=token)
     assert status == 200
-    assert [move["id"] for move in body["moves"]] == [84, 209, 85]
+    assert [move["id"] for move in body["moves"]] == [84, 209, 85, 89]
     assert body["moves"][2] == LEARNABLE[2]
     assert body["default"] == [84, 209, 85]
 

@@ -1,0 +1,171 @@
+import json
+import urllib.error
+import urllib.request
+
+import pytest
+
+from ypoke import pokeapi
+from ypoke.moves import battle_moves, default_move_ids
+from ypoke.pokeapi import PokeAPIService
+from ypoke.store import Store
+from ypoke.upload_server import serve
+
+SV, SWSH = ("scarlet-violet", 25), ("sword-shield", 20)
+
+
+def detail(group, method, level=0):
+    name, group_id = group
+    return {"level_learned_at": level, "move_learn_method": {"name": method},
+            "version_group": {"name": name, "url": f"https://pokeapi.co/api/v2/version-group/{group_id}/"}}
+
+
+def entry(move_id, *details):
+    return {"move": {"name": f"m{move_id}", "url": f"https://pokeapi.co/api/v2/move/{move_id}/"},
+            "version_group_details": list(details)}
+
+
+def move_body(move_id, power, damage_class="physical"):
+    return {"id": move_id, "names": [], "name": f"move-{move_id}", "type": {"name": "ground"}, "power": power,
+            "damage_class": {"name": damage_class}, "accuracy": 100, "pp": 10, "priority": 0, "meta": None}
+
+
+MOVES = {
+    84: move_body(84, 40, "special"),      # level-up at 1
+    85: move_body(85, 90, "special"),      # level-up at 36, also a TM
+    87: move_body(87, 110, "special"),     # TM in Sword/Shield only
+    89: move_body(89, 100),                # TM
+    86: move_body(86, None, "status"),     # status-only TM
+    240: move_body(240, None, "status"),   # Rain Dance, a TM
+}
+POKEMON = {
+    "species": {"url": "https://pokeapi.co/api/v2/pokemon-species/25/"},
+    "types": [{"slot": 1, "type": {"name": "ground"}}],
+    "stats": [{"stat": {"name": "hp"}, "base_stat": 35}],
+    "name": "pikachu",
+    "moves": [
+    entry(84, detail(SV, "level-up", 1)),
+    entry(85, detail(SV, "level-up", 36), detail(SV, "machine")),
+    entry(87, detail(SWSH, "machine")),
+    entry(89, detail(SV, "machine")),
+    entry(86, detail(SV, "machine")),
+    entry(240, detail(SV, "machine")),
+]}
+
+
+@pytest.fixture
+def fetched(monkeypatch):
+    urls = []
+
+    def get_json(url):
+        urls.append(url)
+        kind, item = url.rstrip("/").rsplit("/", 2)[-2:]
+        if kind == "pokemon-species":
+            return {"names": []}
+        return POKEMON if kind == "pokemon" else MOVES[int(item)]
+
+    monkeypatch.setattr(pokeapi, "_get_json", get_json)
+    return urls
+
+
+@pytest.fixture
+def api(tmp_path, fetched):
+    return PokeAPIService(Store(str(tmp_path / "bot.sqlite3")))
+
+
+def tagged(moves):
+    return [(move["id"], move["source"], move["level"]) for move in moves]
+
+
+def test_machine_moves_of_the_chosen_group_are_choosable_at_any_level(api):
+    assert tagged(api.attacking_moves(25, 5, None)) == [(84, "level", 1), (85, "machine", 0), (89, "machine", 0), (240, "machine", 0)]
+
+
+def test_the_level_gate_applies_to_level_up_moves_only(api):
+    at_36 = tagged(api.attacking_moves(25, 36, None))
+    assert (85, "level", 36) in at_36 and (85, "machine", 0) not in at_36
+    assert (89, "machine", 0) in at_36
+    assert 85 not in [move["id"] for move in api.attacking_moves(25, 35, ())]
+
+
+def test_status_only_machine_moves_are_filtered_but_weather_ones_stay(api):
+    ids = [move["id"] for move in api.attacking_moves(25, 50, None)]
+    assert 86 not in ids and 240 in ids
+
+
+def test_a_machine_move_taught_only_in_another_version_group_is_not_learnable(api):
+    assert 87 not in [move["id"] for move in api.attacking_moves(25, 100, None)]
+
+
+def test_machine_move_data_is_fetched_only_for_the_ids_asked_for(api, fetched):
+    api.attacking_moves(25, 5, ())
+    assert not any(url.endswith(("/move/89/", "/move/240/")) for url in fetched)
+    assert [move["id"] for move in api.attacking_moves(25, 5, [89])] == [84, 89]
+
+
+def test_defaults_stay_the_latest_level_up_moves(api):
+    moves = api.attacking_moves(25, 40, None)
+    assert default_move_ids(moves) == [84, 85]
+    assert [move.name for move in battle_moves(moves, None)] == ["move-84", "move-85"]
+
+
+def test_a_chosen_machine_move_is_used_in_battle(api):
+    moves = api.attacking_moves(25, 5, [89])
+    assert [move.name for move in battle_moves(moves, [89])] == ["move-89"]
+
+
+def test_warm_caches_the_machine_moves_a_member_chose(api, fetched):
+    api.warm([{"pokemon_id": 25, "level": 5, "moves": [89]}])
+    warmed = len(fetched)
+    api.attacking_moves(25, 5, [89])
+    assert len(fetched) == warmed
+
+
+@pytest.fixture
+def server(tmp_path, api):
+    store = Store(str(tmp_path / "upload.sqlite3"))
+    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, api.attacking_moves)
+    yield store, f"http://127.0.0.1:{http_server.server_address[1]}"
+    http_server.shutdown()
+
+
+def call(url, token, body=None):
+    request = urllib.request.Request(
+        url, data=None if body is None else json.dumps(body).encode(), method="GET" if body is None else "POST",
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"})
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            return response.status, json.load(response)
+    except urllib.error.HTTPError as error:
+        return error.code, json.load(error)
+
+
+def test_the_moves_endpoint_tags_every_move_with_its_source(server):
+    store, base = server
+    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=5&machine=1", store.issue_token("U1"))
+    assert status == 200
+    assert [(move["id"], move["source"]) for move in body["moves"]] == [(84, "level"), (85, "machine"), (89, "machine"), (240, "machine")]
+    assert body["default"] == [84]
+
+
+def test_the_moves_endpoint_hides_machine_moves_from_a_client_that_did_not_ask_for_them(server):
+    store, base = server
+    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=5", store.issue_token("U1"))
+    assert status == 200
+    assert [(move["id"], move["source"]) for move in body["moves"]] == [(84, "level")]
+
+
+def test_an_upload_may_choose_a_machine_move_at_any_level(server):
+    store, base = server
+    token = store.issue_token("U1")
+    party = {"party": [{"pokemon_id": 25, "level": 5, "moves": [89, 85]}]}
+    assert call(f"{base}/v1/party", token, party)[0] == 200
+    assert store.party("U1").party[0]["moves"] == [89, 85]
+
+
+@pytest.mark.parametrize("move_id", [87, 86, 999])
+def test_an_upload_rejects_a_move_of_another_group_a_status_move_or_an_unknown_one(server, move_id):
+    store, base = server
+    status, body = call(f"{base}/v1/party", store.issue_token("U1"),
+                        {"party": [{"pokemon_id": 25, "level": 100, "moves": [move_id]}]})
+    assert status == 400 and f"{move_id} is not an attacking move" in body["error"]
+    assert store.party("U1") is None

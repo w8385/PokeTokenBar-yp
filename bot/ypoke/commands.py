@@ -425,7 +425,7 @@ class CommandHandler:
 
     def _combatant(self, member: dict) -> Combatant:
         data = self._pokeapi.pokemon(member["pokemon_id"])
-        learnable = self._pokeapi.attacking_moves(member["pokemon_id"], member["level"])
+        learnable = self._pokeapi.attacking_moves(member["pokemon_id"], member["level"], member.get("moves") or ())
         ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
         return Combatant(
             name=member.get("name") or data["name_ko"],

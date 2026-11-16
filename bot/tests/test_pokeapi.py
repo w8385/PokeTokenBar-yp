@@ -30,13 +30,22 @@ def test_learnset_uses_the_newest_main_game_and_its_lowest_level():
         learned(85, ("scarlet-violet", "level-up", 36), ("legends-za", "level-up", 20)),
         learned(87, ("sword-shield", "level-up", 30)),
         learned(9, ("scarlet-violet", "machine", 0)),
+        learned(89, ("sword-shield", "machine", 0), ("red-blue", "machine", 0)),
+        learned(14, ("scarlet-violet", "egg", 0), ("scarlet-violet", "tutor", 0)),
     ]}
-    assert learnset_from(body) == [{"move_id": 84, "level": 1}, {"move_id": 85, "level": 36}]
+    assert learnset_from(body) == [
+        {"move_id": 84, "level": 1, "source": "level"},
+        {"move_id": 85, "level": 36, "source": "level"},
+        {"move_id": 9, "level": 0, "source": "machine"},
+    ]
 
 
 def test_learnset_falls_back_to_a_side_game_when_no_main_game_has_it():
-    body = {"moves": [learned(85, ("legends-za", "level-up", 20))]}
-    assert learnset_from(body) == [{"move_id": 85, "level": 20}]
+    body = {"moves": [learned(85, ("legends-za", "level-up", 20)), learned(9, ("legends-za", "machine", 0))]}
+    assert learnset_from(body) == [
+        {"move_id": 85, "level": 20, "source": "level"},
+        {"move_id": 9, "level": 0, "source": "machine"},
+    ]
     assert learnset_from({"moves": []}) == []
 
 
@@ -96,11 +105,11 @@ def test_attacking_moves_keep_weather_moves_skip_other_status_and_powerless_move
         {"id": 84, "name": "전기쇼크", "type": "electric", "power": 40, "damage_class": "special", "accuracy": 100,
          "pp": 30, "priority": 0, "crit_rate": 0, "ailment": "paralysis", "ailment_chance": 10, "stat_changes": [],
          "stat_target": "target", "stat_chance": 0, "drain": 0, "min_hits": 1, "max_hits": 1, "weather": None,
-         "always_hits_in": [], "level": 1},
+         "always_hits_in": [], "level": 1, "source": "level"},
         {"id": 240, "name": "비바라기", "type": "water", "power": 0, "damage_class": "status", "accuracy": None,
          "pp": 5, "priority": 0, "crit_rate": 0, "ailment": None, "ailment_chance": 0, "stat_changes": [],
          "stat_target": "target", "stat_chance": 0, "drain": 0, "min_hits": 1, "max_hits": 1, "weather": "rain",
-         "always_hits_in": [], "level": 20},
+         "always_hits_in": [], "level": 20, "source": "level"},
     ]
     assert [move["name"] for move in api.attacking_moves(25, 36)] == ["전기쇼크", "비바라기", "thunderbolt"]
 
@@ -281,7 +290,7 @@ def test_warming_never_has_more_requests_in_flight_than_the_slot_limit(tmp_path,
 
     monkeypatch.setattr(pokeapi.urllib.request, "urlopen", urlopen)
     monkeypatch.setattr(pokeapi, "move_from", lambda body: {"id": 1, "weather": None, "power": 0, "damage_class": "status"})
-    monkeypatch.setattr(pokeapi, "learnset_from", lambda body: [{"move_id": n, "level": 1} for n in range(1, 13)])
+    monkeypatch.setattr(pokeapi, "learnset_from", lambda body: [{"move_id": n, "level": 1, "source": "level"} for n in range(1, 13)])
     api.warm([{"pokemon_id": species, "level": 50} for species in range(1, 4)])
     assert 1 < peak <= pokeapi.MOVE_FETCH_WORKERS
 
