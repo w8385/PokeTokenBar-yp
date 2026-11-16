@@ -11,7 +11,7 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# The Vision/OCR render tests are about 60% of the test time and need no coverage, so they run
+# The offscreen render tests are about 60% of the test time and need no coverage, so they run
 # in the ui-tests jobs in parallel. Any other test class, including a new one, runs in build-test.
 env:
   UI_TESTS_DEX: DexBackNavigationTests|DexColorRenderingTests|CollectionReadabilityRenderingTests

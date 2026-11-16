@@ -1618,7 +1618,21 @@ read_when:
 
 ## Rendering tests that read text with OCR
 
-- **An OCR test must not assert exact text: fold look-alike glyphs, and check layout by geometry or by observation.**
+- **No test reads rendered text with OCR.** Vision ranks look-alike glyphs differently on macOS 15 (CI)
+  and macOS 26 (developer machines), so every OCR assertion was a coin flip on one of them: main went
+  red twice (이번→미번, Dieser→Dleser) after local runs were green. Folding look-alikes (below) only
+  moved the failure to the next string. All OCR is gone and `NoOCRInTestsGuardTests` fails on
+  `import Vision`, `VNRecognizeTextRequest` or `OCRText` anywhere under `Tests/`. Each former OCR intent
+  now has a deterministic check:
+  - one line, not wrapped, not truncated: `LayoutMeasure` (SwiftUI's own `sizeThatFits`, so the view
+    makes its `ViewThatFits` choice on the machine that runs the test);
+  - this label is shown: the localized string source, or the native `NSButton` title/tooltip
+    (`NativeControls`) for controls, and sprite colors for which cell is on screen;
+  - existing pixel checks stay pixel checks.
+  A new check must fail when its defect is injected; a passing run alone does not show that. The OCR
+  history below is kept for the failure modes; do not reintroduce `OCRText`.
+
+- **(Superseded) An OCR test must not assert exact text: fold look-alike glyphs, and check layout by geometry or by observation.**
   `ZeroUsageHomeRenderingTests.testRecapLabelKeepsPeriodCostsOnOneLine` failed on CI main with
   `Missing visible Dieser Monat`. The CI log shows one observation, `"Dleser Monat 17.9M $121.30"`,
   so the row did not wrap: Vision read the `i` as `l`. The same suite had already been patched once

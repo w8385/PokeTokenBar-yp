@@ -192,6 +192,50 @@ final class PopoverNavigation {
     }
 }
 
+/// This week and this month, each as label + tokens (+ cost). Wide enough, they share one row;
+/// otherwise they stack, and a label is never split from its value.
+@MainActor
+struct PeriodTotalsRow: View {
+    let l: L
+    let weekTokens: Int
+    let monthTokens: Int
+    let weekCost: UsageCost?
+    let monthCost: UsageCost?
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 14) { labels }
+                .fixedSize(horizontal: true, vertical: false)
+            VStack(alignment: .leading, spacing: 4) { labels }
+        }
+    }
+
+    private var labels: some View {
+        Group {
+            Self.label(l.thisWeek, tokens: weekTokens, cost: weekCost, l: l)
+                .fixedSize(horizontal: true, vertical: false)
+            Self.label(l.thisMonth, tokens: monthTokens, cost: monthCost, l: l)
+                .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
+    static func label(_ name: String, tokens: Int, cost: UsageCost?, l: L) -> some View {
+        HStack(spacing: 4) {
+            Text(name)
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+            Text(TokenFormatter.compact(tokens))
+                .font(.caption.weight(.semibold))
+                .monospacedDigit()
+            if let cost {
+                UsageCostText(cost: cost, l: l)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
 @MainActor
 struct PopoverView: View {
     @Environment(UsageStore.self) private var store
@@ -343,7 +387,10 @@ struct PopoverView: View {
             }
 
             // Keep period totals visible on quiet days too.
-            periodTotals.frame(maxWidth: .infinity, alignment: .leading)
+            PeriodTotalsRow(l: l, weekTokens: store.weekTotalTokens, monthTokens: store.monthTotalTokens,
+                            weekCost: store.showsCost ? store.weekUsageCost : nil,
+                            monthCost: store.showsCost ? store.monthUsageCost : nil)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             ActivityPanel(visualization: store.activityVisualization,
                           series: store.dailyTrendTotals,
@@ -375,23 +422,6 @@ struct PopoverView: View {
         store.snapshot(preferring: nav.providerID)
     }
 
-    private var periodTotals: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 14) { periodLabels }
-                .fixedSize(horizontal: true, vertical: false)
-            VStack(alignment: .leading, spacing: 4) { periodLabels }
-        }
-    }
-
-    private var periodLabels: some View {
-        Group {
-            periodLabel(l.thisWeek, tokens: store.weekTotalTokens, cost: store.showsCost ? store.weekUsageCost : nil)
-                .fixedSize(horizontal: true, vertical: false)
-            periodLabel(l.thisMonth, tokens: store.monthTotalTokens, cost: store.showsCost ? store.monthUsageCost : nil)
-                .fixedSize(horizontal: true, vertical: false)
-        }
-    }
-
     private var recapButton: some View {
         Button { nav.showingRecap = true } label: {
             HStack(spacing: 3) {
@@ -416,19 +446,7 @@ struct PopoverView: View {
     }
 
     private func periodLabel(_ name: String, tokens: Int, cost: UsageCost?) -> some View {
-        HStack(spacing: 4) {
-            Text(name)
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-            Text(TokenFormatter.compact(tokens))
-                .font(.caption.weight(.semibold))
-                .monospacedDigit()
-            if let cost {
-                UsageCostText(cost: cost, l: l)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
+        PeriodTotalsRow.label(name, tokens: tokens, cost: cost, l: l)
     }
 
     private func providerRow(snapshot: ProviderSnapshot, today: DailyUsage) -> some View {

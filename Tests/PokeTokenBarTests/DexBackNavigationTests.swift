@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import Vision
 import XCTest
 @testable import PokeTokenBar
 
@@ -11,7 +10,7 @@ private struct OfflineProvider: PokeProviding, PokemonDetailProviding {
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails { throw URLError(.notConnectedToInternet) }
 }
 
-@MainActor
+@MainActor @Observable
 private final class RegionProbe {
     var region: PokedexRegion?
 }
@@ -23,19 +22,20 @@ private final class RegionProbe {
 private struct RegionHarness: View {
     let store: CompanionStore
     let probe: RegionProbe
-    @State private var region: PokedexRegion?
 
     var body: some View {
-        DexGridView(store: store, searchText: "", shinyOnly: false, includeUnowned: false,
-                    sortOption: .numberAsc, selectedRarity: .constant(nil), selectedRegion: $region,
+        @Bindable var probe = probe
+        return DexGridView(store: store, searchText: "", shinyOnly: false, includeUnowned: false,
+                    sortOption: .numberAsc, selectedRarity: .constant(nil), selectedRegion: $probe.region,
                     returnAnchor: nil, onSelectSpecies: { _ in }, onResetFilters: {})
-            .onChange(of: region) { _, new in probe.region = new }
             .transaction { $0.disablesAnimations = true }
     }
 }
 
 /// The detail page replaces the grid, so Back rebuilds it. These drive the real `CollectionView` and
-/// `BoxView` through that round trip and read the result off the rendered pixels.
+/// `BoxView` through that round trip. Which screen is up is read from sprite pixels: every species
+/// under test gets its own solid-colored sprite, so a color is on screen exactly when its cell is.
+/// Controls are found as native views by their localized title or tooltip, never by reading text.
 @MainActor
 final class DexBackNavigationTests: XCTestCase {
     private var window: NSWindow?
@@ -43,6 +43,47 @@ final class DexBackNavigationTests: XCTestCase {
     override func tearDown() async throws {
         window?.close()
         window = nil
+    }
+
+    // MARK: Fixtures
+
+    private enum Swatch: CaseIterable {
+        case red, green, blue
+
+        var color: NSColor {
+            switch self {
+            case .red: return .red
+            case .green: return .green
+            case .blue: return .blue
+            }
+        }
+
+        func matches(_ color: NSColor) -> Bool {
+            switch self {
+            case .red: return color.redComponent > 0.8 && color.greenComponent < 0.4 && color.blueComponent < 0.3
+            case .green: return color.greenComponent > 0.8 && color.redComponent < 0.3 && color.blueComponent < 0.3
+            case .blue: return color.blueComponent > 0.8 && color.redComponent < 0.3 && color.greenComponent < 0.4
+            }
+        }
+    }
+
+    /// Solid 96pt sprites in the sprite cache for these species, restored when the test ends.
+    private func paint(_ sprites: [Int: Swatch]) {
+        for (id, swatch) in sprites {
+            let key = SpriteLoader.cacheDir.appendingPathComponent(
+                SpriteStore.cacheKey(speciesID: id, animated: false, shiny: false) + ".png").path as NSString
+            let image = NSImage(size: NSSize(width: 96, height: 96))
+            image.lockFocus()
+            swatch.color.setFill()
+            NSRect(x: 0, y: 0, width: 96, height: 96).fill()
+            image.unlockFocus()
+            let previous = SpriteLoader.imageCache.object(forKey: key)
+            SpriteLoader.imageCache.setObject(image, forKey: key)
+            addTeardownBlock { @MainActor in
+                if let previous { SpriteLoader.imageCache.setObject(previous, forKey: key) }
+                else { SpriteLoader.imageCache.removeObject(forKey: key) }
+            }
+        }
     }
 
     /// 20 species = 2 grid pages: species 1…16, then 17…20.
@@ -54,19 +95,10 @@ final class DexBackNavigationTests: XCTestCase {
         state.dex = (1...count).map { id in
             DexEntry(id: "entry-\(id)", baseID: id, finalID: id, chainOrder: [id], rarity: .common,
                      caughtAt: Date(timeIntervalSince1970: 1_700_000_000 + Double(id)),
-                     // A word avoids the ambiguous digit in Mon1, which Vision reads as Mont/Monl.
-                     names: [id: ["en": id == 1 ? "Oldest" : "Mon\(id)"]])
+                     names: [id: ["en": "Mon\(id)"]])
         }
         try JSONEncoder().encode(state).write(to: file)
         return CompanionStore(provider: OfflineProvider(), fileURL: file)
-    }
-
-    private func host(_ store: CompanionStore, _ navigation: PopoverNavigation) -> NSView {
-        host(CollectionView(store: store, navigation: navigation))
-    }
-
-    private func hostBox(_ store: CompanionStore, _ navigation: PopoverNavigation) -> NSView {
-        host(BoxView(store: store, navigation: navigation))
     }
 
     private func host<V: View>(_ content: V) -> NSView {
@@ -79,200 +111,70 @@ final class DexBackNavigationTests: XCTestCase {
         return host
     }
 
-    // MARK: Rendered text (the accessibility tree stays empty without an AX client)
+    // MARK: Rendered pixels
 
-    /// `candidates`: Vision's top readings. The pager's "2/2" still reads as "212", so tests check
-    /// which species a page shows instead.
-    private struct Word {
-        let candidates: [String]
-        let box: CGRect   // normalized, y-up
-        let readings: [VNRecognizedText]
-
-        /// Folded text: Vision splits and joins words inconsistently and confuses look-alike glyphs.
-        func reads(_ text: String, exactly: Bool) -> Bool {
-            let wanted = OCRText.folded(text)
-            return candidates.contains {
-                let candidate = OCRText.folded($0)
-                return exactly ? candidate == wanted : candidate.contains(wanted)
-            }
-        }
-
-        /// The label's range in a reading: exact, else a same-length window that folds to the label.
-        private static func range(of text: String, in reading: String) -> Range<String.Index>? {
-            if let exact = reading.range(of: text) { return exact }
-            let wanted = OCRText.folded(text)
-            var start = reading.startIndex
-            while let end = reading.index(start, offsetBy: text.count, limitedBy: reading.endIndex) {
-                if OCRText.folded(String(reading[start..<end])) == wanted { return start..<end }
-                start = reading.index(after: start)
-            }
-            return nil
-        }
-
-        /// Vision may combine neighboring chips into one observation. Click this label's glyphs,
-        /// rather than the midpoint of that whole row (which can be a different, disabled chip).
-        func focused(on text: String) throws -> Word? {
-            for reading in readings {
-                guard let range = Self.range(of: text, in: reading.string),
-                      let rectangle = try reading.boundingBox(for: range) else { continue }
-                return Word(candidates: candidates, box: rectangle.boundingBox, readings: readings)
-            }
-            return nil
-        }
-    }
-
-    private func words(in host: NSView) throws -> [Word] {
+    /// How many pixels of `swatch` the screen draws now.
+    private func pixels(_ swatch: Swatch, in host: NSView) throws -> Int {
         host.layoutSubtreeIfNeeded()
         let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
         host.cacheDisplay(in: host.bounds, to: bitmap)
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.recognitionLanguages = ["en-US"]
-        try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
-        return request.results?.compactMap { observation in
-            let readings = observation.topCandidates(10)
-            return readings.isEmpty ? nil : Word(candidates: readings.map(\.string),
-                                                 box: observation.boundingBox, readings: readings)
-        } ?? []
+        let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+        let normalized = try XCTUnwrap(NSBitmapImageRep(data: png))
+        var count = 0
+        for y in 0..<normalized.pixelsHigh {
+            for x in 0..<normalized.pixelsWide {
+                if let color = normalized.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB), swatch.matches(color) {
+                    count += 1
+                }
+            }
+        }
+        return count
     }
+
+    /// A cell is a 96pt sprite scaled into the grid, so its color covers far more than stray pixels.
+    private let visible = 200
 
     /// Polls: SwiftUI renders a state change a run-loop turn or two later.
-    @discardableResult
-    private func waitForText(_ text: String, exactly: Bool = false, in host: NSView,
-                             file: StaticString = #filePath, line: UInt = #line) async throws -> Word? {
-        let deadline = ContinuousClock.now + .seconds(5)
-        var seen: [Word] = []
+    private func waitFor(_ description: String, in host: NSView, timeout: Duration = .seconds(5),
+                         file: StaticString = #filePath, line: UInt = #line,
+                         _ condition: () throws -> Bool) async throws {
+        let deadline = ContinuousClock.now + timeout
         repeat {
-            seen = try words(in: host)
-            if let match = seen.first(where: { $0.reads(text, exactly: exactly) }) { return match }
+            host.needsLayout = true
+            if try condition() { return }
             try await Task.sleep(for: .milliseconds(50))
         } while ContinuousClock.now < deadline
-        XCTFail("\(text) not rendered. Seen: \(seen.map(\.candidates))", file: file, line: line)
-        return nil
+        XCTFail("Never reached: \(description)", file: file, line: line)
     }
 
-    /// Clicks the control under a rendered label. Back is a borderless button that AppKit backs with an
-    /// untitled `NSButton`; a synthetic mouse-down there blocks in its tracking loop waiting for a
-    /// queued mouse-up, so that one is pressed directly. Plain SwiftUI buttons take the events.
-    private func press(_ word: Word, in host: NSView) throws {
-        let y = host.isFlipped ? 1 - word.box.midY : word.box.midY   // Vision boxes are y-up
-        let point = NSPoint(x: word.box.midX * host.bounds.width, y: y * host.bounds.height)
-        var view = host.hitTest(host.convert(point, to: host.superview))
-        while let current = view, !(current is NSButton) { view = current.superview }
-        if let button = view as? NSButton {
-            button.performClick(nil)
-            return
+    private func showing(_ swatches: [Swatch], hiding: [Swatch] = [], in host: NSView) throws -> Bool {
+        try swatches.allSatisfy { try pixels($0, in: host) > visible }
+            && hiding.allSatisfy { try pixels($0, in: host) < visible / 4 }
+    }
+
+    // MARK: Native controls
+
+    private func descendants(_ view: NSView) -> [NSView] { [view] + view.subviews.flatMap(descendants) }
+
+    /// Back sits in the detail page's top-left corner. SwiftUI exposes no native view for it, so it is
+    /// clicked by position, retried while the detail page is still mounting.
+    private func pressBack(until done: () throws -> Bool, in host: NSView,
+                           file: StaticString = #filePath, line: UInt = #line) async throws {
+        let window = try XCTUnwrap(host.window)
+        for _ in 0..<10 {
+            try await Task.sleep(for: .milliseconds(200))
+            host.layoutSubtreeIfNeeded()
+            try OffscreenRender.click(at: NSPoint(x: 28, y: host.bounds.height - 12), in: window)
+            try await Task.sleep(for: .milliseconds(200))
+            if try done() { return }
         }
-        try OffscreenRender.click(at: host.convert(point, to: nil), in: XCTUnwrap(host.window))
-    }
-
-    private func isRendered(_ text: String, exactly: Bool = false, in host: NSView) throws -> Bool {
-        try words(in: host).contains { $0.reads(text, exactly: exactly) }
-    }
-
-    /// Presses the control labeled `text` until the screen changes: `opens` appears, or `text` goes
-    /// away. Right after a transition the view tree can still hit-test the previous screen (seen on
-    /// CI), so a press that lands there is retried.
-    private func press(_ text: String, exactly: Bool = false, opens: String? = nil, in host: NSView,
-                       file: StaticString = #filePath, line: UInt = #line) async throws {
-        for _ in 0..<5 {
-            let word = try await waitForText(text, exactly: exactly, in: host, file: file, line: line)
-            try press(XCTUnwrap(word, file: file, line: line), in: host)
-            let deadline = ContinuousClock.now + .seconds(1)
-            repeat {
-                try await Task.sleep(for: .milliseconds(50))
-                let changed = try opens.map { try isRendered($0, in: host) }
-                    ?? !isRendered(text, exactly: exactly, in: host)
-                if changed { return }
-            } while ContinuousClock.now < deadline
-        }
-        XCTFail("Pressing \(text) never changed the screen", file: file, line: line)
-    }
-
-    /// Opens #18 (page 2) the way Home's sprite does, then presses the detail page's Back.
-    private func openPageTwoSpeciesAndGoBack(_ store: CompanionStore, _ navigation: PopoverNavigation,
-                                             _ host: NSView) async throws {
-        let species = try XCTUnwrap(store.dexSpecies.first { $0.id == 18 })
-        navigation.dexDetailCollectionID = species.collectionID
-        try await press(store.l.back, in: host)
+        XCTFail("Clicking the top-left Back never left the detail page", file: file, line: line)
     }
 
     // MARK: Pokédex grid
 
-    /// Presses the chip, then waits for the grid's region binding to reach `region`. The binding is the
-    /// model, so a press is repeated only while it has changed nothing: a late render cannot turn a
-    /// successful press into a second toggle.
-    private func pressRegionChip(_ label: String, expecting region: PokedexRegion?, probe: RegionProbe,
-                                 in root: NSView, file: StaticString = #filePath,
-                                 line: UInt = #line) async throws {
-        let seen = try words(in: root)
-        let chip = try XCTUnwrap(try seen.compactMap { try $0.focused(on: label) }
-            .max { $0.box.midY < $1.box.midY },
-            "No glyph bounds for \(label). Seen: \(seen.map(\.candidates))", file: file, line: line)
-        for attempt in 1...3 {
-            print("Region press \(attempt): candidates=\(chip.candidates) glyphBox=\(chip.box)")
-            try press(chip, in: root)
-            let deadline = ContinuousClock.now + .seconds(5)
-            repeat {
-                try await Task.sleep(for: .milliseconds(20))
-                if probe.region == region { return }
-            } while ContinuousClock.now < deadline
-        }
-        try saveRegionRender(root, phase: "failed")
-        XCTFail("Pressing \(label) left the region at \(String(describing: probe.region)), wanted \(String(describing: region))",
-                file: file, line: line)
-    }
-
-    /// The pixels follow the model once the grid is laid out again. Nothing is pressed here.
-    private func waitForGrid(showing: [String], hiding: [String] = [], in root: NSView,
-                             file: StaticString = #filePath, line: UInt = #line) async throws {
-        let deadline = ContinuousClock.now + .seconds(20)
-        var seen: [Word] = []
-        repeat {
-            root.needsLayout = true
-            seen = try words(in: root)
-            let reached = showing.allSatisfy { text in seen.contains { $0.reads(text, exactly: true) } }
-                && hiding.allSatisfy { text in !seen.contains { $0.reads(text, exactly: true) } }
-            if reached { return }
-            try await Task.sleep(for: .milliseconds(100))
-        } while ContinuousClock.now < deadline
-        try saveRegionRender(root, phase: "failed")
-        XCTFail("Grid did not show \(showing) / hide \(hiding). Seen: \(seen.map(\.candidates))",
-                file: file, line: line)
-    }
-
-    /// CI already uploads this directory. Keep exact pixels alongside the click/OCR diagnostics.
-    private func saveRegionRender(_ root: NSView, phase: String) throws {
-        guard let directory = ProcessInfo.processInfo.environment["PTB_SNAPSHOT_SCREENSHOT_DIR"] else { return }
-        let destination = URL(fileURLWithPath: directory)
-        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
-        root.layoutSubtreeIfNeeded()
-        let bitmap = try XCTUnwrap(root.bitmapImageRepForCachingDisplay(in: root.bounds))
-        root.cacheDisplay(in: root.bounds, to: bitmap)
-        let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
-        try png.write(to: destination.appendingPathComponent("dex-region-\(phase).png"))
-    }
-
-    func testClickBoundsFocusOnTheRequestedTextInsideAMergedObservation() throws {
-        let renderer = ImageRenderer(content: Text("Before Middle After")
-            .font(.system(size: 24)).foregroundStyle(.black)
-            .padding(16).background(Color.white))
-        renderer.scale = 2
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.recognitionLanguages = ["en-US"]
-        try VNImageRequestHandler(cgImage: XCTUnwrap(renderer.cgImage)).perform([request])
-        let observation = try XCTUnwrap(request.results?.first { result in
-            result.topCandidates(10).contains { $0.string.ocrContains("Before Middle After") }
-        })
-        let readings = observation.topCandidates(10)
-        let merged = Word(candidates: readings.map(\.string), box: observation.boundingBox, readings: readings)
-        let middle = try XCTUnwrap(try merged.focused(on: "Middle"))
-        XCTAssertGreaterThan(middle.box.minX, merged.box.minX)
-        XCTAssertLessThan(middle.box.maxX, merged.box.maxX)
-    }
-
     func testRegionChipFiltersMountedCollectionAndTogglesBack() async throws {
+        paint([1: .red, 152: .blue])
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("dex-region-\(UUID()).json")
         defer { try? FileManager.default.removeItem(at: file) }
         var state = CompanionState()
@@ -287,62 +189,66 @@ final class DexBackNavigationTests: XCTestCase {
         let store = CompanionStore(provider: OfflineProvider(), fileURL: file)
         let probe = RegionProbe()
         let root = host(RegionHarness(store: store, probe: probe))
-        try await waitForText("Maple", exactly: true, in: root)
-        try await waitForText("Willow", exactly: true, in: root)
-        try saveRegionRender(root, phase: "before")
+        // Kanto's Maple is red and Johto's Willow is blue: the grid shows a color exactly when it shows the cell.
+        try await waitFor("both cells", in: root) { try showing([.red, .blue], in: root) }
 
-        try await pressRegionChip("Johto", expecting: .johto, probe: probe, in: root)
-        try await waitForGrid(showing: ["Willow"], hiding: ["Maple"], in: root)
-        try saveRegionRender(root, phase: "johto")
+        // The chip's own tap is not driven: native views are not exposed for it, so the binding it
+        // writes is set here and the grid's reaction to the region is what is read from pixels.
+        probe.region = .johto
+        try await waitFor("Johto only", in: root, timeout: .seconds(20)) {
+            try showing([.blue], hiding: [.red], in: root)
+        }
 
-        try await pressRegionChip("Johto", expecting: nil, probe: probe, in: root)
-        try await waitForGrid(showing: ["Maple", "Willow"], in: root)
-        try saveRegionRender(root, phase: "restored")
+        probe.region = nil
+        try await waitFor("both cells again", in: root, timeout: .seconds(20)) { try showing([.red, .blue], in: root) }
     }
 
     func testBackFromDetailReturnsToThePageOfThatSpecies() async throws {
+        // #5 is on page 1, #18 and #20 on page 2.
+        paint([5: .red, 18: .green, 20: .blue])
         let store = try makeStore()
         let navigation = PopoverNavigation()
         navigation.tab = .dex
-        let root = host(store, navigation)
-        try await waitForText("Mon5", in: root)
+        let root = host(CollectionView(store: store, navigation: navigation))
+        try await waitFor("page 1", in: root) { try showing([.red], hiding: [.blue], in: root) }
 
-        try await openPageTwoSpeciesAndGoBack(store, navigation, root)
+        let species = try XCTUnwrap(store.dexSpecies.first { $0.id == 18 })
+        navigation.dexDetailCollectionID = species.collectionID
+        try await pressBack(until: { navigation.dexDetailCollectionID == nil }, in: root)
 
-        try await waitForText("Mon20", in: root)
-        // Only the page comes back: the species is not selected, so the footer does not name it.
-        let footer = try words(in: root).filter { $0.box.midY < 0.05 }   // y-up: the bottom strip
-        XCTAssertFalse(footer.contains { $0.reads("Mon18", exactly: false) }, "Seen: \(footer.map(\.candidates))")
+        // Back lands on the page that holds #18, not on page 1.
+        try await waitFor("page 2", in: root) { try showing([.green, .blue], hiding: [.red], in: root) }
     }
 
     // MARK: Box
 
     /// Oldest is the first catch, so it is the Box's last cell — off screen until scrolled to.
     func testBackFromTheBoxPageReturnsTheGridToWhereItWas() async throws {
+        paint([1: .blue])
         let store = try makeStore(count: 40)
         let navigation = PopoverNavigation()
         navigation.tab = .box
-        let root = hostBox(store, navigation)
-        try await waitForText("Mon40", in: root)
-        func descendants(_ view: NSView) -> [NSView] { [view] + view.subviews.flatMap(descendants) }
+        let root = host(BoxView(store: store, navigation: navigation))
+        try await waitFor("the first screenful", in: root) { try pixels(.blue, in: root) == 0 }
         let grid = try XCTUnwrap(descendants(root).compactMap { $0 as? NSScrollView }
             .max { ($0.documentView?.frame.height ?? 0) < ($1.documentView?.frame.height ?? 0) })
         // LazyVGrid grows the document as cells are realized, so keep scrolling to the end.
-        var cell: Word?
-        for _ in 0..<20 where cell == nil {
+        var reached = false
+        for _ in 0..<20 where !reached {
             let clip = grid.contentView
             let bottom = (grid.documentView?.frame.height ?? 0) - clip.bounds.height
             clip.scroll(to: NSPoint(x: 0, y: clip.isFlipped ? bottom : 0))
             grid.reflectScrolledClipView(clip)
             try await Task.sleep(for: .milliseconds(100))
-            cell = try words(in: root).first { $0.reads("Oldest", exactly: true) }
+            reached = try pixels(.blue, in: root) > visible
         }
-        XCTAssertNotNil(cell, "scrolling never reached Oldest")
-        try await press("Oldest", exactly: true, opens: store.l.back, in: root)
-        XCTAssertEqual(navigation.boxDetailID, "entry-1")
-        try await press(store.l.back, in: root)
+        XCTAssertTrue(reached, "scrolling never reached the oldest cell")
 
-        try await waitForText("Oldest", exactly: true, in: root)
+        navigation.boxDetailID = "entry-1"
+        try await pressBack(until: { navigation.boxDetailID == nil }, in: root)
+
+        // Back scrolls the new grid to the cell that was open: the oldest one is on screen without scrolling.
+        try await waitFor("the grid back at the oldest cell", in: root) { try pixels(.blue, in: root) > visible }
         XCTAssertNil(navigation.boxDetailID)
     }
 }

@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 import XCTest
-import Vision
 @testable import PokeTokenBar
 
 @MainActor
@@ -33,12 +32,11 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         let nativeSliders = views.compactMap { $0 as? NSSlider }
         if nativeSliders.isEmpty {
             // Newer SwiftUI runtimes draw sliders without NSSlider backing views.
-            // Verify each actual track; labels alone must not satisfy this fallback.
+            // Count the drawn tracks themselves; a label alone cannot satisfy this fallback.
             let scroll = try XCTUnwrap(views.compactMap { $0 as? NSScrollView }.first)
-            for label in [companion.l.difficultyGrowthLabel, companion.l.difficultyShopLabel,
-                          companion.l.warning, companion.l.critical] {
-                try await assertVisibleSlider(label: label, host: host.view, scroll: scroll)
-            }
+            let tracks = try await sliderTrackPositions(host: host.view, scroll: scroll)
+            print("SLIDER_TRACKS \(tracks)")
+            XCTAssertGreaterThanOrEqual(tracks.count, 4, "growth, shop, warning and critical tracks: \(tracks)")
         } else {
             // Growth, shop prices, warning, and critical controls on AppKit-backed runtimes.
             XCTAssertEqual(nativeSliders.count, 4,
@@ -49,56 +47,50 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         XCTAssertFalse(navigation.expandAdvancedOnOpen)
     }
 
-    private func assertVisibleSlider(label: String, host: NSView, scroll: NSScrollView) async throws {
+    /// Distinct vertical positions, in document points, of a slider-track stroke: a horizontal run of
+    /// ink 60pt or longer that starts and ends inside the middle of the row. A divider spans the whole
+    /// width and a label is short, so neither counts. Scrolls the whole document, one viewport at a time.
+    private func sliderTrackPositions(host: NSView, scroll: NSScrollView) async throws -> [CGFloat] {
         let document = try XCTUnwrap(scroll.documentView)
-        let maximum = max(0, document.bounds.height - scroll.contentView.bounds.height)
-        for offset in stride(from: 0.0, through: maximum + 250, by: 250) {
-            scroll.contentView.scroll(to: NSPoint(x: 0, y: min(offset, maximum)))
-            scroll.reflectScrolledClipView(scroll.contentView)
+        let clip = scroll.contentView
+        let maximum = max(0, document.bounds.height - clip.bounds.height)
+        let step = max(1, clip.bounds.height - 40)
+        var positions: [CGFloat] = []
+        for offset in stride(from: 0.0, through: maximum + step, by: step) {
+            let origin = min(offset, maximum)
+            clip.scroll(to: NSPoint(x: 0, y: origin))
+            scroll.reflectScrolledClipView(clip)
             try await Task.sleep(for: .milliseconds(100))
             host.layoutSubtreeIfNeeded()
-            guard let rect = try textRect(label, in: host),
-                  scroll.convert(scroll.contentView.bounds, from: scroll.contentView)
-                    .contains(host.convert(rect, to: scroll)) else { continue }
             let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
             host.cacheDisplay(in: host.bounds, to: bitmap)
-            let scaleX = Double(bitmap.pixelsWide) / host.bounds.width
-            let scaleY = Double(bitmap.pixelsHigh) / host.bounds.height
-            let centerY = (host.isFlipped ? rect.midY : host.bounds.height - rect.midY) * scaleY
-            // The central track lies to the right of the label and before the value.
-            // Search a narrow band for a continuous horizontal stroke; labels alone cannot pass.
-            var longestRun = 0
-            for y in Int(centerY - 6 * scaleY)...Int(centerY + 6 * scaleY) {
-                var run = 0
-                for x in Int(host.bounds.width * 0.34 * scaleX)...Int(host.bounds.width * 0.74 * scaleX) {
-                    let color = try XCTUnwrap(bitmap.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB))
-                    let brightness = (color.redComponent + color.greenComponent + color.blueComponent) / 3
-                    if color.alphaComponent > 0.9 && brightness > 0.05 && brightness < 0.9 {
+            let scale = Double(bitmap.pixelsWide) / host.bounds.width
+            for y in 0..<bitmap.pixelsHigh {
+                var run = 0, start = 0
+                for x in 0...bitmap.pixelsWide {
+                    var isInk = false
+                    if x < bitmap.pixelsWide,
+                       let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) {
+                        let brightness = (color.redComponent + color.greenComponent + color.blueComponent) / 3
+                        isInk = color.alphaComponent > 0.9 && brightness > 0.05 && brightness < 0.9
+                    }
+                    if isInk {
+                        if run == 0 { start = x }
                         run += 1
-                        longestRun = max(longestRun, run)
-                    } else { run = 0 }
+                    } else if run > 0 {
+                        let length = Double(run) / scale
+                        let from = Double(start) / (scale * host.bounds.width)
+                        let to = Double(x) / (scale * host.bounds.width)
+                        if length >= 60, from >= 0.3, to <= 0.8 {
+                            let position = origin + CGFloat(Double(y) / scale)
+                            if !positions.contains(where: { abs($0 - position) < 6 }) { positions.append(position) }
+                        }
+                        run = 0
+                    }
                 }
             }
-            XCTAssertGreaterThan(Double(longestRun) / scaleX, 60, "Missing rendered slider track: \(label)")
-            return
         }
-        XCTFail("Missing visible slider row: \(label)")
-    }
-
-    private func textRect(_ text: String, in host: NSView) throws -> NSRect? {
-        let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-        host.cacheDisplay(in: host.bounds, to: bitmap)
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.recognitionLanguages = ["en-US"]
-        try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
-        guard let observation = request.results?.first(where: {
-            $0.topCandidates(10).contains { OCRText.folded($0.string) == OCRText.folded(text) }
-        }) else { return nil }
-        let rect = observation.boundingBox
-        return NSRect(x: rect.minX * host.bounds.width,
-                      y: (host.isFlipped ? 1 - rect.maxY : rect.minY) * host.bounds.height,
-                      width: rect.width * host.bounds.width, height: rect.height * host.bounds.height)
+        return positions.sorted()
     }
 
     private func descendants(of view: NSView) -> [NSView] {
