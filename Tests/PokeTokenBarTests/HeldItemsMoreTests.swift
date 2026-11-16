@@ -122,6 +122,41 @@ final class EverstoneTests: XCTestCase {
     }
 }
 
+final class NewItemsClauseTests: XCTestCase {
+    private func state(held: [String: String]) -> CompanionState {
+        var state = CompanionState()
+        state.dex = ["a", "b"].enumerated().map { index, id in
+            var entry = DexEntry(baseID: 10 + index, finalID: 10 + index, chainOrder: [10 + index], rarity: .common,
+                                 caughtAt: nil, profile: PokemonProfile.generate(seed: 7, instanceID: id))
+            entry.id = id
+            return entry
+        }
+        state.heldItems = held
+        return state
+    }
+
+    func testTheItemClauseCoversEveryNewHeldItem() {
+        let slots = [BattleEntrySlot(instanceID: "a"), BattleEntrySlot(instanceID: "b")]
+        for kind in ItemKind.allCases where kind.heldItemSlug != nil {
+            let state = state(held: ["a": kind.rawValue, "b": kind.rawValue])
+
+            XCTAssertEqual(BattleEntry.duplicateItemHolders(state: state, slots: slots), ["b"], "\(kind)")
+            XCTAssertTrue(BattleEntry.equipClash(kind.rawValue, onto: "b", state: self.state(held: ["a": kind.rawValue]),
+                                                 slots: slots), "\(kind)")
+            let party = BattleEntry.party(state: state, slots: slots, moveChoices: [:], rentalSpeciesID: 4)
+            XCTAssertEqual(party.map(\.heldItem), [kind.heldItemSlug, nil], "\(kind)")
+        }
+    }
+
+    func testDifferentNewItemsDoNotClash() {
+        let slots = [BattleEntrySlot(instanceID: "a"), BattleEntrySlot(instanceID: "b")]
+        let state = state(held: ["a": ItemKind.quickClaw.rawValue, "b": ItemKind.everstone.rawValue])
+
+        XCTAssertEqual(BattleEntry.duplicateItemHolders(state: state, slots: slots), [])
+        XCTAssertFalse(BattleEntry.equipClash(ItemKind.sitrusBerry.rawValue, onto: "b", state: state, slots: [slots[1]]))
+    }
+}
+
 final class MoreHeldItemsTests: XCTestCase {
     private var newItems: [ItemKind] {
         ItemKind.allCases.filter(\.isHeldItem)
