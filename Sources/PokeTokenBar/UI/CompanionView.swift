@@ -748,20 +748,19 @@ struct CompanionHeader: View {
     /// Clicking it is a click-growth click, like clicking the floating pet.
     private var bigSprite: some View {
         let mega = store.currentMegaSpriteID
-        return SpriteView(speciesID: mega ?? store.currentSpeciesID, size: 76, bob: true, animated: true,
+        let size = HomePetRow<EmptyView>.mainSize
+        return SpriteView(speciesID: mega ?? store.currentSpeciesID, size: size, bob: true, animated: true,
                    shiny: store.currentIsShiny, spriteStore: spriteStore, form: mega == nil ? store.currentForm : nil,
                    back: store.facesBack, female: mega == nil && store.currentIsFemale)
-            .crowdMember(crowd, slot: 0, size: 76)
-            .frame(width: 76, height: 76)
-            .background(Color.secondary.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .crowdMember(crowd, slot: 0, size: size)
+            .frame(width: size, height: size)
             .overlay(alignment: .bottomTrailing) {
-                if let held = store.currentHeldItemRef { HeldItemBadge(ref: held, size: 22).padding(3) }
+                if let held = store.currentHeldItemRef { HeldItemBadge(ref: held, size: 18) }
             }
             .rotationEffect(.degrees(eggImminent && eggWiggle ? 5 : (eggImminent ? -5 : 0)))
             .rotationEffect(.degrees(petTurn))
             .scaleEffect(celebScale)
-            .overlay(RoundedRectangle(cornerRadius: 12).fill(.white).opacity(flashOpacity))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.white).opacity(flashOpacity))
             .overlay(alignment: .topTrailing) {
                 if shinyBurst {
                     Text("✨").font(.system(size: 22))
@@ -821,7 +820,7 @@ struct CompanionHeader: View {
         // Computed once per render and shared by the evolution line.
         let dexLinks = onOpenDexEntry == nil ? [:] : store.dexLinkTargets
         VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: HomePetRow<EmptyView>.headerGap) {
                 HomePetRow(store: store, crowd: crowd, spriteStore: spriteStore, cryPlayer: cryPlayer) { bigSprite }
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
@@ -842,21 +841,39 @@ struct CompanionHeader: View {
                     if store.hasActive {
                         // 단계 + 성격(부화 시 확정된 개체 아이덴티티)
                         let nature = store.currentNature.map { " · \($0.name(store.language))" } ?? ""
-                        HStack(spacing: 5) {
-                            (Text(store.stageText + nature) + GenderGlyph.text(store.currentGender, leadingSpace: true))
-                                .font(.caption2).foregroundStyle(.secondary)
-                            if let multiplier = store.growthMultiplier {
-                                Badge(store.l.growthBoost(multiplier), tint: .orange, style: .tinted)
-                                    .fixedSize()
+                        let stage = (Text(store.stageText + nature)
+                            + GenderGlyph.text(store.currentGender, leadingSpace: true))
+                            .font(.caption2).foregroundStyle(.secondary)
+                        // The dial sits at the end of the stage line; a stage text too long for that line
+                        // (German) gets its own line with the dial under it.
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 5) {
+                                stage.lineLimit(1).fixedSize()
+                                Spacer(minLength: 4)
+                                DayNightLabel(store: store)
+                            }
+                            VStack(alignment: .leading, spacing: 2) {
+                                stage.lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                                DayNightLabel(store: store).frame(maxWidth: .infinity, alignment: .trailing)
                             }
                         }
                         LabeledProgressBar(value: store.progress,
                                            label: Self.progressDetail(used: store.state.active?.usedAtStage ?? 0,
                                                                       total: store.threshold))
-                        if store.tokensToNext > 0 {
-                            let amount = TokenFormatter.compact(store.tokensToNext)
-                            Text(store.isFinalStage ? store.l.toGraduation(amount) : store.l.toNextEvolution(amount))
-                                .font(.caption2).foregroundStyle(.tertiary)
+                        let multiplier = store.growthMultiplier
+                        if store.tokensToNext > 0 || multiplier != nil {
+                            HStack(spacing: 5) {
+                                if store.tokensToNext > 0 {
+                                    let amount = TokenFormatter.compact(store.tokensToNext)
+                                    Text(store.isFinalStage ? store.l.toGraduation(amount) : store.l.toNextEvolution(amount))
+                                        .font(.caption2).foregroundStyle(.tertiary)
+                                        .lineLimit(1).minimumScaleFactor(0.8)
+                                }
+                                Spacer(minLength: 4)
+                                if let multiplier {
+                                    Badge(store.l.growthBoost(multiplier), tint: .orange, style: .tinted).fixedSize()
+                                }
+                            }
                         }
                     } else {
                         // 알 인큐베이션 — 부화까지 진행 (임박 시 문구·색 전환)
@@ -869,6 +886,8 @@ struct CompanionHeader: View {
                             if let guarantee = store.eggGuarantee {
                                 Badge(store.l.eggGuaranteeHint(guarantee), tint: .rarity(guarantee))
                             }
+                            Spacer(minLength: 4)
+                            DayNightLabel(store: store)
                         }
                         LabeledProgressBar(value: store.eggProgress,
                                            label: Self.progressDetail(used: store.state.eggUsage,
@@ -891,16 +910,16 @@ struct CompanionHeader: View {
                     }
                     Text(statusLine).font(.caption2).foregroundStyle(.secondary)
                 }
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            // Bottom-right of the header's text area, where the lines are short; adds no height.
-            .overlay(alignment: .bottomTrailing) { DayNightLabel(store: store) }
             if store.hasActive, !store.lineNodes.isEmpty {
                 // 폭을 안 주면 분기 라인(이브이)이 넘쳐 팝오버 콘텐츠 전체가 좌우로 잘린다.
                 EvoLineView(nodes: store.lineNodes, mysteryLabel: store.l.unknownNextEvolution,
                             language: store.language, thumb: 30, shiny: store.currentIsShiny, female: store.currentIsFemale,
                             maxWidth: PopoverMetrics.scrollContentWidth, form: store.currentForm,
                             dexLinks: dexLinks, onOpenDexEntry: onOpenDexEntry, spriteStore: spriteStore)
+                    .padding(.leading, max(0, (HomePetRow<EmptyView>.tileWidth
+                        - EvoLineView.rowWidth(count: store.lineNodes.count, thumb: 30, hasNames: false)) / 2))
             }
             if let g = store.justGraduated {
                 Text(store.l.graduated(g))

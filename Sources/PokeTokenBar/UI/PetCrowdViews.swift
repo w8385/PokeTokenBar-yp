@@ -81,7 +81,7 @@ struct FriendSprite: View {
     }
 }
 
-/// Home: the raised Pokémon's tile with friend slots standing beside it on the same ground line,
+/// Home: one wide tile with the raised Pokémon and its friends standing on a shared floor line,
 /// an add slot while a slot is free, and the picker behind it.
 @MainActor
 struct HomePetRow<Main: View>: View {
@@ -91,9 +91,18 @@ struct HomePetRow<Main: View>: View {
     var cryPlayer: CryPlayer = .shared
     @ViewBuilder let main: Main
     @State private var picking = false
+    @State private var hoveredSlot: Int?
+    @State private var hoveringAdd = false
 
-    static var slotSize: CGFloat { 24 }
-    static var gap: CGFloat { 4 }
+    static var mainSize: CGFloat { 58 }
+    static var friendSize: CGFloat { 32 }
+    static var tileWidth: CGFloat { 124 }
+    static var tileHeight: CGFloat { 72 }
+    /// Sprite boxes overlap by this much; the pixel art leaves transparent margins, so the art does not touch.
+    static var slotOverlap: CGFloat { 3 }
+    static var floorInset: CGFloat { 7 }
+    /// Space between the tile and the text column.
+    static var headerGap: CGFloat { 10 }
 
     enum Slot: Equatable { case friend(Int), add }
 
@@ -117,10 +126,20 @@ struct HomePetRow<Main: View>: View {
         let friends = store.friendSubjects
         let canAdd = friends.count < CompanionState.maxFriends && !store.friendCandidates.isEmpty
         let layout = Self.arrangement(friendCount: friends.count, canAdd: canAdd)
-        HStack(alignment: .bottom, spacing: Self.gap) {
+        HStack(alignment: .bottom, spacing: -Self.slotOverlap) {
             slotView(layout.leading, friends: friends, outer: .topLeading, l: l)
-            main
+            main.zIndex(1)
             slotView(layout.trailing, friends: friends, outer: .topTrailing, l: l)
+        }
+        .padding(.horizontal, 4)
+        .padding(.bottom, Self.floorInset)
+        .frame(width: Self.tileWidth, height: Self.tileHeight, alignment: .bottom)
+        .background(alignment: .bottom) {
+            ZStack(alignment: .bottom) {
+                RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.secondary.opacity(0.06))
+                Capsule().fill(Color.secondary.opacity(0.22)).frame(height: 1)
+                    .padding(.horizontal, 10).padding(.bottom, Self.floorInset + 2)
+            }
         }
     }
 
@@ -132,19 +151,25 @@ struct HomePetRow<Main: View>: View {
         case .add:
             addSlot(l: l)
         case nil:
-            EmptyView()
+            Color.clear.frame(width: Self.friendSize, height: Self.friendSize)
         }
     }
 
     private func addSlot(l: L) -> some View {
         Button { picking = true } label: {
-            RoundedRectangle(cornerRadius: 8)
+            Circle()
                 .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
-                .foregroundStyle(.tertiary)
-                .overlay { Image(systemName: "plus").font(.caption).foregroundStyle(.secondary) }
-                .frame(width: Self.slotSize, height: Self.slotSize)
+                .foregroundStyle(hoveringAdd ? Color.secondary : Color.secondary.opacity(0.35))
+                .overlay {
+                    Image(systemName: "plus").font(.caption2.weight(.semibold))
+                        .foregroundStyle(hoveringAdd ? Color.secondary : Color.secondary.opacity(0.35))
+                }
+                .frame(width: Self.friendSize - 6, height: Self.friendSize - 6)
+                .frame(width: Self.friendSize, height: Self.friendSize, alignment: .bottom)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .onHover { hoveringAdd = $0 }
         .help(l.friendAdd)
         .accessibilityLabel(l.friendAdd)
         .popover(isPresented: $picking, arrowEdge: .bottom) {
@@ -157,15 +182,17 @@ struct HomePetRow<Main: View>: View {
             cryPlayer.play(speciesID: friend.speciesID, form: friend.form)
             crowd.clicked(slot: slot)
         } label: {
-            FriendSprite(friend: friend, size: Self.slotSize, spriteStore: spriteStore)
-                .crowdMember(crowd, slot: slot, size: Self.slotSize)
-                .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
-                .contentShape(RoundedRectangle(cornerRadius: 8))
+            FriendSprite(friend: friend, size: Self.friendSize, spriteStore: spriteStore)
+                .crowdMember(crowd, slot: slot, size: Self.friendSize)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(l.friendLabel)
+        .onHover { inside in
+            if inside { hoveredSlot = slot } else if hoveredSlot == slot { hoveredSlot = nil }
+        }
         .overlay(alignment: outer) {
-            // On the outer corner, so the remove button never lands on the raised Pokémon's tile.
+            // Only while the pointer is over the friend, on its outer top corner away from the raised Pokémon.
             Button { store.removeFriend(entryID: friend.entryID) } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 12))
@@ -174,7 +201,9 @@ struct HomePetRow<Main: View>: View {
             .buttonStyle(.plain)
             .help(l.friendRemove)
             .accessibilityLabel(l.friendRemove)
-            .offset(x: outer == .topLeading ? -5 : 5, y: -5)
+            .opacity(hoveredSlot == slot ? 1 : 0)
+            .allowsHitTesting(hoveredSlot == slot)
+            .offset(x: outer == .topLeading ? 1 : -1, y: -2)
         }
     }
 }

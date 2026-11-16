@@ -309,10 +309,14 @@ final class PetRowLayoutTests: XCTestCase {
                        A(leading: .friend(0), trailing: .friend(1)))
     }
 
-    func testFriendsAreSmallerThanTheRaisedPokemonAndTheRowFitsBesideItsTextColumn() {
-        XCTAssertLessThan(HomePetRow<EmptyView>.slotSize, 76)
-        let row = 2 * HomePetRow<EmptyView>.slotSize + 76 + 2 * HomePetRow<EmptyView>.gap
-        XCTAssertGreaterThanOrEqual(PopoverMetrics.contentWidth - row - 12, 180, "the text column keeps its width")
+    func testTheThreeSlotsFitOneTileAndTheTextColumnKeepsItsWidth() {
+        typealias Row = HomePetRow<EmptyView>
+        let ratio = Row.friendSize / Row.mainSize
+        XCTAssertGreaterThanOrEqual(ratio, 0.55)
+        XCTAssertLessThanOrEqual(ratio, 0.6)
+        let slots = 2 * Row.friendSize + Row.mainSize - 2 * Row.slotOverlap
+        XCTAssertLessThanOrEqual(slots + 2 * 4, Row.tileWidth, "friends and the raised Pokémon share one tile")
+        XCTAssertGreaterThanOrEqual(PopoverMetrics.contentWidth - Row.tileWidth - Row.headerGap, 196)
     }
 
     func testCrowdBubbleEmojiStaysSmallInsideTheSpriteBox() {
