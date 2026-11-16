@@ -141,7 +141,8 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
         request.recognitionLevel = .accurate
         try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
         let text = request.results?.compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ") ?? ""
-        let normalizedText = text.replacingOccurrences(of: " ", with: "")
+        // The runner's Vision reads 이 as 미 in the small 이번 주 / 이번 달 captions.
+        let normalizedText = text.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "미번", with: "이번")
         let chartCaptions = [
             companion.l.title(for: store.dailyTrendWindow).replacingOccurrences(of: " ", with: ""),
             companion.l.dailyTrend.replacingOccurrences(of: " ", with: ""),
