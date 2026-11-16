@@ -48,6 +48,7 @@ METHODS=(
   BoxTests/testOnlyTheBoxDetailSlotChangesHeldItemsFromTheUI
   BoxTests/testNoCatchLogViewOrNavigationRemains
   BoxTests/testNoCatchLogStringRemainsInAnyLanguage
+  SettingsTabsTests/testBattleViewNoLongerOwnsTheTokenField
   KiroUsageTests/testSkipStateIsPassedByTheCallerNotHeldByTheReader
   AntigravityUsageTests/testEntriesWithoutRootsGoesThroughResolvedRoots
   CredentialSwitchCacheTests/testAntigravityUserRefreshAlsoBypassesStillValidCache
