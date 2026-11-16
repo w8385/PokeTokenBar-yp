@@ -35,7 +35,7 @@ enum HeldItemRef: Hashable {
     }
 }
 
-enum BoxSortOption: String, CaseIterable, Identifiable, Sendable {
+enum BoxSortOption: String, CaseIterable, Identifiable, Sendable, Codable {
     case recent, level, number, name
 
     var id: String { rawValue }
@@ -120,17 +120,44 @@ extension CompanionStore {
         }
     }
 
+    /// The one place Box filtering lives. A selected type matches when the species has any of them; the other
+    /// filters narrow together. `fightingIDs` is the battle lineup (`TradePool.fightingIDs`).
     func filteredBoxIndividuals(query: String = "", speciesID: Int? = nil, shinyOnly: Bool = false,
-                                hasItemOnly: Bool = false, sort: BoxSortOption = .recent) -> [BoxIndividual] {
+                                hasItemOnly: Bool = false, sort: BoxSortOption = .recent,
+                                types: Set<PokemonType> = [], rarity: Rarity? = nil,
+                                inLineupOnly: Bool = false, tradableOnly: Bool = false,
+                                level: BoxLevelFilter = .any, fightingIDs: Set<String> = []) -> [BoxIndividual] {
         let matcher = DexSearchMatcher(query)
         let result = boxIndividuals.filter { individual in
             if let speciesID, individual.speciesID != speciesID { return false }
             if shinyOnly, !individual.entry.isShiny { return false }
             if hasItemOnly, state.heldItems[individual.id] == nil { return false }
             if let matcher, !matcher.matches(individual.entry) { return false }
+            if let rarity, individual.entry.rarity != rarity { return false }
+            if !level.admits(individual.level) { return false }
+            if inLineupOnly, !fightingIDs.contains(individual.id) { return false }
+            if tradableOnly, !isTradableNow(individual, fightingIDs: fightingIDs) { return false }
+            if !types.isEmpty,
+               !speciesTypes(individual.speciesID).contains(where: { PokemonType(apiName: $0).map(types.contains) ?? false }) {
+                return false
+            }
             return true
         }
         return sortBox(result, by: sort)
+    }
+
+    func filteredBoxIndividuals(query: String = "", speciesID: Int? = nil, filter: BoxFilter,
+                                fightingIDs: Set<String> = []) -> [BoxIndividual] {
+        filteredBoxIndividuals(query: query, speciesID: speciesID, shinyOnly: filter.shinyOnly,
+                               hasItemOnly: filter.hasItemOnly, sort: filter.sort, types: filter.types,
+                               rarity: filter.rarity, inLineupOnly: filter.inLineupOnly,
+                               tradableOnly: filter.tradableOnly, level: filter.level, fightingIDs: fightingIDs)
+    }
+
+    /// Could be offered in a trade right now: not the raised one, not fighting, not already in an open trade.
+    func isTradableNow(_ individual: BoxIndividual, fightingIDs: Set<String>) -> Bool {
+        individual.role != .raising && !isTradeLocked(individual.id)
+            && TradePool.refusal(for: individual.entry, fightingIDs: fightingIDs, activeID: nil) == nil
     }
 
     private func sortBox(_ list: [BoxIndividual], by sort: BoxSortOption) -> [BoxIndividual] {

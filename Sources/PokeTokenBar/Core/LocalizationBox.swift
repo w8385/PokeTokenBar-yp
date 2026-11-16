@@ -56,6 +56,31 @@ extension L {
         t("도구 지님", "Holding an item", "もちもの あり", "Con objeto", "Avec objet", "Com item", "Mit Item", "С предметом")
     }
 
+    var boxFilterMenu: String { t("필터", "Filters", "絞り込み", "Filtros", "Filtres", "Filtros", "Filter", "Фильтры") }
+    var boxFilterType: String { t("타입", "Type", "タイプ", "Tipo", "Type", "Tipo", "Typ", "Тип") }
+    var boxFilterRarity: String { t("등급", "Rarity", "レア度", "Rareza", "Rareté", "Raridade", "Seltenheit", "Редкость") }
+    var boxFilterInLineup: String {
+        t("대결 엔트리", "In battle lineup", "対戦メンバー", "En la alineación", "Dans l'équipe de combat",
+          "Na escalação", "In der Kampfaufstellung", "В боевом составе")
+    }
+    var boxFilterTradable: String {
+        t("교환 가능", "Tradable now", "交換できる", "Intercambiable", "Échangeable", "Pode trocar", "Tauschbar", "Можно обменять")
+    }
+    var boxFilterLevel: String { t("레벨", "Level", "レベル", "Nivel", "Niveau", "Nível", "Level", "Уровень") }
+
+    func label(for level: BoxLevelFilter) -> String {
+        switch level {
+        case .any: t("전체", "All", "すべて", "Todos", "Tous", "Todos", "Alle", "Все")
+        case .fiftyPlus: t("Lv50 이상", "Lv50 and up", "Lv50以上", "Nv. 50 o más", "Niv. 50 et plus", "Nv. 50 ou mais",
+                           "Lv. 50 und höher", "Ур. 50 и выше")
+        case .underFifty: t("Lv50 미만", "Under Lv50", "Lv50未満", "Menos de Nv. 50", "Moins de niv. 50",
+                            "Abaixo do Nv. 50", "Unter Lv. 50", "Ниже ур. 50")
+        }
+    }
+
+    var purchaseDone: String { t("구매함", "Bought", "購入しました", "Comprado", "Acheté", "Comprado", "Gekauft", "Куплено") }
+    var purchaseUndo: String { t("되돌리기", "Undo", "元に戻す", "Deshacer", "Annuler", "Desfazer", "Rückgängig", "Отменить") }
+
     func boxOnlySpecies(_ name: String) -> String {
         t("\(name)만 보는 중", "Showing only \(name)", "\(name)だけ表示中", "Solo \(name)", "\(name) seulement",
           "Só \(name)", "Nur \(name)", "Только \(name)")

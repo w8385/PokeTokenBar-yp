@@ -126,7 +126,6 @@ final class LocalizationInterpolationTests: XCTestCase {
 
             // Bag, shop, eggs / 가방 · 상점 · 알
             expect(lang, "useOnCurrent", l.useOnCurrent(a), a)
-            expect(lang, "buyConfirm", l.buyConfirm(a), a)
             expect(lang, "ownedCount", l.ownedCount(4242), "4242")
             expect(lang, "eggConfirm", l.eggConfirm(a, b), a, b)
             // Constant-derived substitution: hardcode it and the candy blurb drifts

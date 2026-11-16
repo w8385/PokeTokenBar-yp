@@ -5,17 +5,22 @@ import SwiftUI
 struct BoxView: View {
     let store: CompanionStore
     let navigation: PopoverNavigation
-    @State private var searchText = ""
-    @State private var shinyOnly = false
-    @State private var hasItemOnly = false
-    @State private var sort: BoxSortOption = .recent
+    @Environment(BattleEntryStore.self) private var battleEntry: BattleEntryStore?
+    @State private var showFilters: Bool
     /// The individual whose page was just closed; the grid scrolls back to it once, because the page replaces the grid.
     @State private var returnAnchor: String?
+
+    init(store: CompanionStore, navigation: PopoverNavigation, filtersOpen: Bool = false) {
+        self.store = store
+        self.navigation = navigation
+        _showFilters = State(initialValue: filtersOpen)
+    }
 
     static let contentHeight: CGFloat = 520
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 4)
 
-    private var isCustomSortActive: Bool { sort != .recent }
+    private var filters: BoxFilterStore { navigation.boxFilters }
+    private var isCustomSortActive: Bool { filters.filter.sort != .recent }
 
     var body: some View {
         let all = store.boxIndividuals
@@ -35,10 +40,12 @@ struct BoxView: View {
     }
 
     private func grid(_ all: [BoxIndividual]) -> some View {
-        let visible = store.filteredBoxIndividuals(query: searchText, speciesID: navigation.boxSpeciesFilter,
-                                                   shinyOnly: shinyOnly, hasItemOnly: hasItemOnly, sort: sort)
+        let visible = store.filteredBoxIndividuals(
+            query: filters.searchText, speciesID: navigation.boxSpeciesFilter, filter: filters.filter,
+            fightingIDs: TradePool.fightingIDs(state: store.state, slots: battleEntry?.slots ?? []))
         return VStack(alignment: .leading, spacing: 6) {
             toolbar
+            if showFilters { BoxFilterPanel(store: store, filters: filters) }
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(store.l.boxTab).font(.callout.weight(.semibold))
                 Text(store.l.dexTotal(visible.count)).font(.caption).foregroundStyle(.secondary)
@@ -48,7 +55,8 @@ struct BoxView: View {
                 speciesFilterChip(speciesID, all: all)
             }
             if store.isLineParked, store.state.active == nil, navigation.boxSpeciesFilter == nil,
-               searchText.isEmpty, !shinyOnly, !hasItemOnly {
+               filters.searchText.isEmpty, !filters.filter.shinyOnly, !filters.filter.hasItemOnly,
+               filters.filter.menuActiveCount == 0 {
                 parkedEggRow
             }
             if visible.isEmpty {
@@ -77,12 +85,13 @@ struct BoxView: View {
                         try? await Task.sleep(for: .milliseconds(50))
                         proxy.scrollTo(anchor, anchor: .center)
                     }
-                    .onChange(of: searchText) { scrollToTop(proxy) }
-                    .onChange(of: shinyOnly) { scrollToTop(proxy) }
-                    .onChange(of: hasItemOnly) { scrollToTop(proxy) }
-                    .onChange(of: sort) { scrollToTop(proxy) }
+                    .onChange(of: filters.searchText) { scrollToTop(proxy) }
+                    .onChange(of: filters.filter) { scrollToTop(proxy) }
                 }
             }
+        }
+        .task(id: showFilters || !filters.filter.types.isEmpty) {
+            if showFilters || !filters.filter.types.isEmpty { await store.loadSpeciesIndexIfNeeded() }
         }
     }
 
@@ -113,18 +122,22 @@ struct BoxView: View {
 
     private var toolbar: some View {
         HStack(spacing: 6) {
-            DexSearchField(l: store.l, text: $searchText)
-            DexShinyToggle(l: store.l, isOn: $shinyOnly)
-            toolbarButton(systemImage: hasItemOnly ? "bag.fill" : "bag", isActive: hasItemOnly,
-                          title: store.l.boxFilterHasItem) { hasItemOnly.toggle() }
+            DexSearchField(l: store.l, text: Bindable(filters).searchText)
+            DexShinyToggle(l: store.l, isOn: Bindable(filters).filter.shinyOnly)
+            toolbarButton(systemImage: filters.filter.hasItemOnly ? "bag.fill" : "bag", isActive: filters.filter.hasItemOnly,
+                          title: store.l.boxFilterHasItem) { filters.filter.hasItemOnly.toggle() }
+            toolbarButton(systemImage: filters.filter.menuActiveCount > 0 ? "line.3.horizontal.decrease.circle.fill"
+                                                                           : "line.3.horizontal.decrease.circle",
+                          isActive: showFilters || filters.filter.menuActiveCount > 0,
+                          title: store.l.boxFilterMenu) { showFilters.toggle() }
             Menu {
                 ForEach(BoxSortOption.allCases) { option in
                     Button {
-                        sort = option
+                        filters.filter.sort = option
                     } label: {
                         HStack {
                             Text(store.l.label(for: option))
-                            if sort == option { Image(systemName: "checkmark") }
+                            if filters.filter.sort == option { Image(systemName: "checkmark") }
                         }
                     }
                 }
@@ -180,7 +193,7 @@ struct BoxView: View {
             Image(systemName: "magnifyingglass").font(.ptb(.display)).foregroundStyle(.tertiary)
             Text(store.l.noSearchResults).font(.callout.weight(.medium)).foregroundStyle(.secondary)
             Button(store.l.clearFilters) {
-                searchText = ""; shinyOnly = false; hasItemOnly = false; sort = .recent
+                filters.clear()
                 navigation.boxSpeciesFilter = nil
             }
             .buttonStyle(.bordered).controlSize(.small)

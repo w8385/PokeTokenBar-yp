@@ -16,7 +16,6 @@ struct MoveTrainingSection: View {
     @State private var loadedSpecies: Int?
     @State private var unavailable = false
     @State private var editing: Int?
-    @State private var buying: Int?
 
     init(store: CompanionStore, battleEntry: BattleEntryStore, uploader: PartyUploader,
          candidate: BattleCandidate, initialEditing: Int? = nil, onChange: @escaping () -> Void) {
@@ -47,7 +46,6 @@ struct MoveTrainingSection: View {
         .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: Radius.panel))
         .task(id: fetchKey) {
             if learnable != nil { editing = nil }
-            buying = nil
             unavailable = false
             if loadedSpecies != member.pokemonID { learnable = nil }
             if let moves = await uploader.learnableMoves(pokemonID: member.pokemonID, level: member.level) {
@@ -152,32 +150,16 @@ struct MoveTrainingSection: View {
                 Image(systemName: "lock.fill").foregroundStyle(.secondary)
                 moveLabel(move)
             }
-            if buying == move.id {
-                HStack(spacing: 8) {
-                    Text(l.buyConfirm("\(l.moveGroupMachine) \(move.name)"))
-                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-                    Spacer()
-                    Button(l.buy) {
-                        buying = nil
-                        store.buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather)
-                    }
-                    .buttonStyle(.borderedProminent).controlSize(.small)
-                    .help(buyHelp(move))
-                    Button(l.cancel) { buying = nil }
-                        .buttonStyle(.borderless).controlSize(.small)
-                        .help(l.cancel)
-                }
-            } else {
-                HStack {
-                    Text("\(l.shopPriceLabel) \(TokenFormatter.compact(price))")
-                        .font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
-                    Spacer()
-                    if store.canBuyTM(power: move.power, isWeather: move.isWeather) {
-                        Button(l.buy) { buying = move.id }
-                            .buttonStyle(.bordered).controlSize(.small)
-                            .help(buyHelp(move))                    } else {
-                        Text(l.notEnoughTokens).font(.caption2).foregroundStyle(.tertiary)
-                    }
+            HStack {
+                Text("\(l.shopPriceLabel) \(TokenFormatter.compact(price))")
+                    .font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
+                Spacer()
+                if store.canBuyTM(power: move.power, isWeather: move.isWeather) {
+                    Button(l.buy) { store.buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather) }
+                        .buttonStyle(.bordered).controlSize(.small)
+                        .help(buyHelp(move))
+                } else {
+                    Text(l.notEnoughTokens).font(.caption2).foregroundStyle(.tertiary)
                 }
             }
         }
