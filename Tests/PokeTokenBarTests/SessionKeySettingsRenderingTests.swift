@@ -4,11 +4,6 @@ import XCTest
 import Vision
 @testable import PokeTokenBar
 
-/// Used for the optional keyboard-focus check on an interactive desktop.
-private final class SessionKeyTestWindow: NSWindow {
-    override var canBecomeKey: Bool { true }
-}
-
 @MainActor
 final class SessionKeySettingsRenderingTests: XCTestCase {
     func testSessionKeyEntryOpensInsideViewportAndPreservesDifficultyControls() async throws {
@@ -27,29 +22,14 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
             .environment(usage).environment(companion).environment(UpdateChecker())
             .frame(width: PopoverMetrics.width)
             .environment(\.colorScheme, .light))
-        let previousKeyWindow = NSApp.keyWindow
-        let window = SessionKeyTestWindow(contentRect: NSRect(x: -10000, y: -10000, width: PopoverMetrics.width, height: 460),
-                              styleMask: [.borderless], backing: .buffered, defer: false)
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentViewController = host
-        window.makeKeyAndOrderFront(nil)
-        defer {
-            window.orderOut(nil)
-            previousKeyWindow?.makeKey()
-        }
-        host.view.layoutSubtreeIfNeeded()
-        try await Task.sleep(for: .milliseconds(500))
-        host.view.layoutSubtreeIfNeeded()
+        host.view.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.width, height: 460)
+        let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
+        defer { window.close() }
+        try await OffscreenRender.settle(host.view, for: .milliseconds(500))
         let views = descendants(of: host.view)
         let secure = try XCTUnwrap(views.compactMap { $0 as? NSSecureTextField }.first)
         let rect = secure.convert(secure.bounds, to: host.view)
         XCTAssertTrue(host.view.bounds.contains(rect), "session key entry must be visible after scrolling")
-        // Hosted CI renders the layout but does not grant this XCTest window an editor.
-        // Verify keyboard focus on an interactive Mac with PTB_VERIFY_KEYBOARD_FOCUS=1.
-        if ProcessInfo.processInfo.environment["PTB_VERIFY_KEYBOARD_FOCUS"] == "1" {
-            XCTAssertNotNil(secure.currentEditor(), "session key entry must receive keyboard focus")
-            XCTAssertTrue(secure.currentEditor() === window.firstResponder)
-        }
         let nativeSliders = views.compactMap { $0 as? NSSlider }
         if nativeSliders.isEmpty {
             // Newer SwiftUI runtimes draw sliders without NSSlider backing views.

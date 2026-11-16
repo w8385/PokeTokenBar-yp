@@ -48,6 +48,10 @@ PR을 보류하지 않는다. 적절한 생성·첨부 대안을 시도한 뒤�
 Claude Code는 `.claude/skills/prepare-pr`의 symlink를 통해
 동일한 skill을 인식하고, Codex는 `.agents/skills/prepare-pr`를 사용한다.
 
+## 스크린샷·렌더링 테스트
+
+창을 띄우거나 앱을 활성화하는 테스트·캡처는 쓰지 않는다 — 사용자의 포커스를 뺏는다. 뷰는 `OffscreenRender`로 뜨고(`docs/reference/defect-log.md` "Tests and the user's desktop"), 설치된 앱을 띄우거나 누르는 캡처·`scripts/e2e.sh`는 사용자가 자리에 있을 때만 한다.
+
 ## 릴리스 (자연어 트리거)
 
 사용자가 **버전 배포를 자연어로 요청**하면 — 예: "배포해줘", "릴리스 올려줘", "패치 배포",

@@ -69,12 +69,7 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
             .environment(\.colorScheme, .light)
             .environment(\.locale, language.displayLocale))
         host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: 520)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000, width: PopoverMetrics.contentWidth, height: 520),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
+        let window = OffscreenRender.windowHosting(host, appearance: .aqua)
         defer { window.close() }
         XCTAssertEqual(host.bounds.width, 332, accuracy: 0.5)
         XCTAssertEqual(host.bounds.height, 520, accuracy: 0.5)
@@ -104,12 +99,7 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
 
     private func verifyPagination(host: NSView, window: NSWindow, directory: URL) async throws {
         for (x, expected, name) in [(326.0, "2/2", "next"), (273.0, "1/2", "back")] {
-            for type in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
-                let event = try XCTUnwrap(NSEvent.mouseEvent(with: type, location: NSPoint(x: x, y: 9),
-                    modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
-                    windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
-                window.sendEvent(event)
-            }
+            try OffscreenRender.click(at: NSPoint(x: x, y: 9), in: window)
             try await Task.sleep(for: .milliseconds(300))
             host.layoutSubtreeIfNeeded()
             let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))

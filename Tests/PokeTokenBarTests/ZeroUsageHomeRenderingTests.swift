@@ -110,22 +110,16 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
         XCTAssertEqual(store.monthTotalTokens, costs != nil ? 17_900_000 : series.reduce(0) { $0 + $1.totalTokens })
 
         let height = 604.0
-        let host = NSHostingView(rootView: PopoverView()
+        let host = OffscreenRender.host(PopoverView()
             .environment(store).environment(companion).environment(UpdateChecker(defaults: defaults))
             .environment(PopoverNavigation()).environment(\.colorScheme, .dark)
             .environment(\.controlActiveState, .active)
             .frame(width: PopoverMetrics.width, height: height)
-            .background(Color(nsColor: NSColor(calibratedWhite: 0.07, alpha: 1))))
-        host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.width, height: height)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000, width: PopoverMetrics.width, height: height),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .darkAqua)
-        window.contentView = host
-        window.orderFront(nil)
+            .background(Color(nsColor: NSColor(calibratedWhite: 0.07, alpha: 1))),
+            size: CGSize(width: PopoverMetrics.width, height: height))
+        let window = OffscreenRender.windowHosting(host, appearance: .darkAqua)
         defer { window.close() }
-        try await Task.sleep(for: .milliseconds(500))
-        host.layoutSubtreeIfNeeded()
+        try await OffscreenRender.settle(host, for: .milliseconds(500))
         // Keep caption OCR at 2x regardless of the runner's screen backing scale.
         let bounds = host.bounds
         let bitmap = try XCTUnwrap(NSBitmapImageRep(

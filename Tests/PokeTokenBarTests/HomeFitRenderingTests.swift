@@ -151,18 +151,12 @@ final class HomeFitRenderingTests: XCTestCase {
     }
 
     private func settle(_ view: some View, width: CGFloat, height: CGFloat? = nil) async throws -> NSHostingView<AnyView> {
-        let host = NSHostingView(rootView: AnyView(view
-            .background(Color(nsColor: NSColor(calibratedWhite: 0.16, alpha: 1)))))
-        host.frame = NSRect(x: 0, y: 0, width: width, height: height ?? 2000)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000, width: width, height: height ?? 2000),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .darkAqua)
-        window.contentView = host
-        window.orderFront(nil)
+        let host = OffscreenRender.host(AnyView(view
+            .background(Color(nsColor: NSColor(calibratedWhite: 0.16, alpha: 1)))),
+            size: CGSize(width: width, height: height ?? 2000))
+        let window = OffscreenRender.windowHosting(host, appearance: .darkAqua)
         addTeardownBlock { window.close() }
-        try await Task.sleep(for: .milliseconds(400))
-        host.layoutSubtreeIfNeeded()
+        try await OffscreenRender.settle(host, for: .milliseconds(400))
         return host
     }
 

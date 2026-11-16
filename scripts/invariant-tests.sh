@@ -31,6 +31,7 @@ CLASSES=(
   ItemLoreTests                    # every item has official text and name in every language
   EvolutionRulesTests              # every special evolution step in the fixture has an app rule
   EvolutionMappingDocTests         # docs/reference/evolution-mapping.md matches the rule table
+  OffscreenRenderGuardTests        # no test shows a window or activates the app
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).

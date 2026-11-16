@@ -112,22 +112,10 @@ final class BattlePickerScreenshotTests: XCTestCase {
 
     private func capture<V: View>(_ view: V, to file: URL) async throws {
         let size = NSSize(width: PopoverMetrics.contentWidth, height: 520)
-        let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height)
+        try await OffscreenRender.capture(view.frame(width: size.width, height: size.height)
             .background(Color.white)
             .environment(\.colorScheme, .light)
-            .environment(\.locale, AppLanguage.ko.displayLocale))
-        host.frame = NSRect(origin: .zero, size: size)
-        let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -10000, y: -10000), size: size),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
-        defer { window.close() }
-        try await Task.sleep(for: .seconds(5))
-        host.layoutSubtreeIfNeeded()
-        let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-        host.cacheDisplay(in: host.bounds, to: bitmap)
-        try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: file)
+            .environment(\.locale, AppLanguage.ko.displayLocale),
+            size: size, appearance: .aqua, settle: .seconds(5), to: file)
     }
 }

@@ -17,16 +17,8 @@ import SwiftUI
 /// 스크린샷에 넣지 말 것. 헤더처럼 스크롤 없는 부분만 렌더된다.
 ///
 /// 같은 부류: AppKit 컨트롤을 감싼 뷰(`ProgressView` → `NSProgressIndicator`, 즉 한도 막대)는
-/// `ImageRenderer` 에서 "미지원" 플레이스홀더로 그려진다. 그런 뷰를 담으려면
-/// `NSWindow` 에 올려 `cacheDisplay(in:to:)` 로 떠야 실제 모습이 나온다
-/// (`LimitProgressRenderingTests` 가 그 방식으로 페이스 눈금을 검증한다).
-///
-/// 다만 **색까지는 재현되지 않는다.** 테스트 프로세스는 앱으로 활성화되지 않아
-/// (`NSApp.isActive == false`) AppKit 이 컨트롤을 비강조 스타일로 그린다 — 막대 채움이 tint
-/// 대신 회색으로 나온다. 활성화 정책 `.regular`, `NSApp.activate`, key/main 오버라이드,
-/// 화면에 띄운 창의 컴포지터 캡처(`CGWindowListCreateImage`)까지 모두 회색이었다.
-/// 그래서 이 헬퍼의 출력은 **배치·크기 확인용**이고, 색이 중요한 홍보용 이미지는 실행 중인
-/// 앱을 직접 캡처해서 쓴다(`assets/screenshot-quota-alignment.png` 도 그렇게 만들어졌다).
+/// `ImageRenderer` 에서 "미지원" 플레이스홀더로 그려진다. 그런 뷰는 창 없는 `NSHostingView` 를
+/// `OffscreenRender` 로 떠야 실제 모습이 나온다(`LimitProgressRenderingTests` 가 같은 방식으로 페이스 눈금을 검증한다).
 final class ScreenshotGenTests: XCTestCase {
 
     /// 데모용 한 달치 일별 사용량 — 실제 로그처럼 쉬는 날(0)과 몰아친 날이 섞여야 기능이 읽힌다.
@@ -174,26 +166,12 @@ final class ScreenshotGenTests: XCTestCase {
         .environment(\.colorScheme, .dark)
         .environment(\.locale, language.displayLocale)
 
-        // ImageRenderer 로는 막대가 플레이스홀더로 나온다(파일 상단 함정 참조) → 창에 올려 캡처.
-        let host = NSHostingController(rootView: content)
-        host.view.setFrameSize(NSSize(width: PopoverMetrics.width, height: host.view.fittingSize.height))
-        let window = NSWindow(contentRect: host.view.frame, styleMask: [.borderless],
-                              backing: .buffered, defer: false)
-        window.appearance = NSAppearance(named: .darkAqua)
-        window.contentView = host.view
-        host.view.layoutSubtreeIfNeeded()
-        window.displayIfNeeded()
-
-        // 기존 에셋과 같은 2배 해상도(720px 폭). rep 의 픽셀 크기는 2배, 논리 크기는 pt 로 둔다.
-        let bounds = host.view.bounds
-        let rep = try XCTUnwrap(NSBitmapImageRep(
-            bitmapDataPlanes: nil,
-            pixelsWide: Int(bounds.width) * 2, pixelsHigh: Int(bounds.height) * 2,
-            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
-        rep.size = bounds.size
-        host.view.cacheDisplay(in: bounds, to: rep)
-        return try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+        // ImageRenderer 로는 막대가 플레이스홀더로 나온다(파일 상단 함정 참조) → AppKit 호스트로 캡처.
+        let host = OffscreenRender.host(content, size: CGSize(width: PopoverMetrics.width, height: 1),
+                                        appearance: .darkAqua)
+        host.setFrameSize(NSSize(width: PopoverMetrics.width, height: host.fittingSize.height))
+        // 기존 에셋과 같은 2배 해상도(720px 폭).
+        return try OffscreenRender.png(of: host, scale: 2)
     }
 
     @MainActor
@@ -217,25 +195,9 @@ final class ScreenshotGenTests: XCTestCase {
 
     @MainActor
     private func renderWindow<V: View>(_ view: V, width: CGFloat) throws -> Data {
-        let host = NSHostingController(rootView: view)
-        let fitting = host.view.fittingSize
-        host.view.setFrameSize(NSSize(width: width, height: max(fitting.height, 100)))
-        let window = NSWindow(contentRect: host.view.frame, styleMask: [.borderless],
-                              backing: .buffered, defer: false)
-        window.appearance = NSAppearance(named: .darkAqua)
-        window.contentView = host.view
-        host.view.layoutSubtreeIfNeeded()
-        window.displayIfNeeded()
-
-        let bounds = host.view.bounds
-        let rep = try XCTUnwrap(NSBitmapImageRep(
-            bitmapDataPlanes: nil,
-            pixelsWide: Int(bounds.width) * 2, pixelsHigh: Int(bounds.height) * 2,
-            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
-        rep.size = bounds.size
-        host.view.cacheDisplay(in: bounds, to: rep)
-        return try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+        let host = OffscreenRender.host(view, size: CGSize(width: width, height: 1), appearance: .darkAqua)
+        host.setFrameSize(NSSize(width: width, height: max(host.fittingSize.height, 100)))
+        return try OffscreenRender.png(of: host, scale: 2)
     }
 
     @MainActor

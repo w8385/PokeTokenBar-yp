@@ -71,13 +71,7 @@ final class DexBackNavigationTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light))
         host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: 520)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000, width: PopoverMetrics.contentWidth, height: 520),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
-        self.window = window
+        window = OffscreenRender.windowHosting(host, appearance: .aqua)
         return host
     }
 
@@ -153,13 +147,7 @@ final class DexBackNavigationTests: XCTestCase {
             button.performClick(nil)
             return
         }
-        let window = try XCTUnwrap(host.window)
-        for type in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
-            window.sendEvent(try XCTUnwrap(NSEvent.mouseEvent(
-                with: type, location: host.convert(point, to: nil), modifierFlags: [],
-                timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
-                context: nil, eventNumber: 0, clickCount: 1, pressure: 1)))
-        }
+        try OffscreenRender.click(at: host.convert(point, to: nil), in: XCTUnwrap(host.window))
     }
 
     private func isRendered(_ text: String, exactly: Bool = false, in host: NSView) throws -> Bool {

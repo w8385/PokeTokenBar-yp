@@ -13,13 +13,6 @@ import XCTest
 @MainActor
 final class SulkRenderTests: XCTestCase {
     private static let speciesID = 25
-    private var windows: [NSWindow] = []
-
-    override func tearDown() async throws {
-        windows.forEach { $0.close() }
-        windows = []
-    }
-
     private func outputDirectory() throws -> URL {
         guard let path = ProcessInfo.processInfo.environment["PTB_SULK_RENDER_DIR"], !path.isEmpty else {
             throw XCTSkip("PTB_SULK_RENDER_DIR not set — render only when asked")
@@ -99,17 +92,9 @@ final class SulkRenderTests: XCTestCase {
     // MARK: Hosting
 
     private func mount<V: View>(_ view: V, width: CGFloat, height: CGFloat) -> NSHostingView<AnyView> {
-        let host = NSHostingView(rootView: AnyView(
-            view.frame(width: width, height: height).background(Color.white).environment(\.colorScheme, .light)))
-        host.frame = NSRect(x: 0, y: 0, width: width, height: height)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000, width: width, height: height),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
-        windows.append(window)
-        return host
+        OffscreenRender.host(AnyView(
+            view.frame(width: width, height: height).background(Color.white).environment(\.colorScheme, .light)),
+            size: CGSize(width: width, height: height), appearance: .aqua)
     }
 
     /// Lets the sprite `.task` finish (cached file → GIF/PNG decode), then snapshots at 2x.

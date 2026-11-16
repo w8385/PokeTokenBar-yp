@@ -79,22 +79,16 @@ final class UnownSpriteViewTests: XCTestCase {
         XCTAssertTrue(SpriteLoader.cachedImage(speciesID: 201, shiny: true,
                                                directory: directory, form: .b) === normal)
 
-        _ = NSApplication.shared
         let selection = UnownSpriteSelection()
         selection.shiny = startingShiny
-        let host = NSHostingController(rootView: UnownSpriteTogglePreview(selection: selection, store: spriteStore))
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000, width: 64, height: 64),
-                              styleMask: [.borderless], backing: .buffered, defer: false)
-        window.contentViewController = host
-        window.orderFront(nil)
-        defer { window.orderOut(nil) }
-        host.view.layoutSubtreeIfNeeded()
-        try await Task.sleep(for: .milliseconds(100))
+        let host = OffscreenRender.host(UnownSpriteTogglePreview(selection: selection, store: spriteStore),
+                                        size: CGSize(width: 64, height: 64))
+        try await OffscreenRender.settle(host, for: .milliseconds(100))
 
         if !startingShiny { selection.shiny = true }
         let shinyKey = shinyFile.path as NSString
         for _ in 0..<40 {
-            host.view.layoutSubtreeIfNeeded()
+            host.layoutSubtreeIfNeeded()
             if SpriteLoader.imageCache.object(forKey: shinyKey) != nil { break }
             try await Task.sleep(for: .milliseconds(25))
         }

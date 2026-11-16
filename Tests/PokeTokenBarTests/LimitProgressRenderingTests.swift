@@ -55,15 +55,11 @@ final class LimitProgressRenderingTests: XCTestCase {
             let host = NSHostingController(rootView: view)
             host.view.frame = NSRect(x: 0, y: 0, width: width, height: height)
             // 창에 넣고 명시 appearance 를 줘야 .primary 가 결정적으로 해석된다.
-            let window = NSWindow(contentRect: host.view.frame, styleMask: [.borderless],
-                                  backing: .buffered, defer: false)
-            window.appearance = NSAppearance(named: .aqua)
-            window.contentView = host.view
+            let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
+            defer { window.close() }
             host.view.layoutSubtreeIfNeeded()
             window.displayIfNeeded()
-
-            let rep = try XCTUnwrap(host.view.bitmapImageRepForCachingDisplay(in: host.view.bounds))
-            host.view.cacheDisplay(in: host.view.bounds, to: rep)
+            let rep = try OffscreenRender.bitmap(of: host.view)
 
             // 열별 최소 밝기 — 눈금은 막대 위아래로 돌출하므로 트랙의 둥근 끝보다 깊게 내려간다.
             var darkest = (column: 0, brightness: 1.0)
@@ -111,15 +107,11 @@ final class LimitProgressRenderingTests: XCTestCase {
             .environment(store).frame(width: width, height: height)
         let host = NSHostingController(rootView: view)
         host.view.frame = NSRect(x: 0, y: 0, width: width, height: height)
-        let window = NSWindow(contentRect: host.view.frame, styleMask: [.borderless],
-                              backing: .buffered, defer: false)
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host.view
+        let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
+        defer { window.close() }
         host.view.layoutSubtreeIfNeeded()
         window.displayIfNeeded()
-
-        let rep = try XCTUnwrap(host.view.bitmapImageRepForCachingDisplay(in: host.view.bounds))
-        host.view.cacheDisplay(in: host.view.bounds, to: rep)
+        let rep = try OffscreenRender.bitmap(of: host.view)
 
         /// 투명은 흰색으로 친다 — 트랙/눈금만 배경보다 어둡다.
         func brightness(x: Int, y: Int) -> Double {

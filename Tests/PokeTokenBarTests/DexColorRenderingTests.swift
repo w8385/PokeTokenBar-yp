@@ -137,15 +137,8 @@ final class DexColorRenderingTests: XCTestCase {
             .frame(width: PopoverMetrics.contentWidth, height: 520)
             .background(Color.white)
             .environment(\.colorScheme, .light)
-        let host = NSHostingView(rootView: view)
-        host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: 520)
-        let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000,
-            width: PopoverMetrics.contentWidth, height: 520), styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
-        defer { window.close() }
+        let host = OffscreenRender.host(view, size: CGSize(width: PopoverMetrics.contentWidth, height: 520),
+                                        appearance: .aqua)
         func descendants(_ view: NSView) -> [NSView] { [view] + view.subviews.flatMap(descendants) }
         for (step, shiny) in [false, true, false].enumerated() {
             host.layoutSubtreeIfNeeded()
@@ -185,16 +178,8 @@ final class DexColorRenderingTests: XCTestCase {
                         .background(Color.white)
                         .environment(\.colorScheme, .light)
                         .environment(\.locale, store.language.displayLocale)
-                    let host = NSHostingView(rootView: view)
-                    host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: 520)
-                    let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000,
-                        width: PopoverMetrics.contentWidth, height: 520),
-                        styleMask: .borderless, backing: .buffered, defer: false)
-                    window.isReleasedWhenClosed = false
-                    window.appearance = NSAppearance(named: .aqua)
-                    window.contentView = host
-                    window.orderFront(nil)
-                    defer { window.close() }
+                    let host = OffscreenRender.host(view, size: CGSize(width: PopoverMetrics.contentWidth, height: 520),
+                                                    appearance: .aqua)
                     host.layoutSubtreeIfNeeded()
                     RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
                     host.layoutSubtreeIfNeeded()
@@ -230,16 +215,8 @@ final class DexColorRenderingTests: XCTestCase {
                     .background(Color.white)
                     .environment(\.colorScheme, .light)
                     .environment(\.locale, store.language.displayLocale)
-                let host = NSHostingView(rootView: view)
-                host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: 520)
-                let window = NSWindow(contentRect: NSRect(x: -10000, y: -10000,
-                    width: PopoverMetrics.contentWidth, height: 520),
-                    styleMask: .borderless, backing: .buffered, defer: false)
-                window.isReleasedWhenClosed = false
-                window.appearance = NSAppearance(named: .aqua)
-                window.contentView = host
-                window.orderFront(nil)
-                defer { window.close() }
+                let host = OffscreenRender.host(view, size: CGSize(width: PopoverMetrics.contentWidth, height: 520),
+                                                appearance: .aqua)
                 host.layoutSubtreeIfNeeded()
                 RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
                 host.layoutSubtreeIfNeeded()

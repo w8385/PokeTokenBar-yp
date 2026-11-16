@@ -53,20 +53,13 @@ final class EvolutionStoneScreenshotTests: XCTestCase {
     private func capture<V: View>(_ view: V, height: CGFloat = 520, scrollToBottom: Bool = false,
                                   to file: URL) async throws {
         let size = NSSize(width: PopoverMetrics.contentWidth, height: height)
-        let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height)
+        let host = OffscreenRender.host(view.frame(width: size.width, height: size.height)
             .background(Color.white)
             .environment(\.colorScheme, .light)
-            .environment(\.locale, AppLanguage.ko.displayLocale))
-        host.frame = NSRect(origin: .zero, size: size)
-        let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -10000, y: -10000), size: size),
-                              styleMask: .borderless, backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
-        window.contentView = host
-        window.orderFront(nil)
+            .environment(\.locale, AppLanguage.ko.displayLocale), size: size)
+        let window = OffscreenRender.windowHosting(host, appearance: .aqua)
         defer { window.close() }
-        try await Task.sleep(for: .seconds(5))
-        host.layoutSubtreeIfNeeded()
+        try await OffscreenRender.settle(host, for: .seconds(5))
         if scrollToBottom, let scroll = Self.scrollView(in: host), let doc = scroll.documentView {
             doc.scroll(NSPoint(x: 0, y: max(0, doc.bounds.height - 1150)))
             scroll.reflectScrolledClipView(scroll.contentView)
