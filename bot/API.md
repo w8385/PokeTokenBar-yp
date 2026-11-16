@@ -204,6 +204,153 @@ The app polls about every minute and re-sends the pool when it changes or every 
 trade shows up in the app within about a minute. One app per token: a second Mac may pick up the delivery
 first, and the first to acknowledge wins.
 
+## Gyms (PvE)
+
+Nine regions (the app's Pokédex regions, in dex order). Each has eight gyms with a gym leader, the Elite Four and
+a champion, and a villain organization's hideout. Every trainer fields six Pokémon at Lv50. A player's team
+fights one trainer in one automatic battle. It is not a Slack battle: nothing is posted, no record is stored, the
+stored party is never touched, and it counts toward no ranking. Badges and rewards live in the app. All the
+trainers are original characters.
+
+The Elite Four and the champion are one run of five battles in a row, the hideout one run of four (two grunts,
+the admin, the boss). In a run the team's HP and status carry over from one battle to the next and a loss
+starts the run again. The bot keeps no run: see [`carried` and `carry`](#a-run-carried-and-carry).
+
+### `GET /v1/gyms`
+
+Auth as above. The whole catalog; it is the same on every call and changes only when the bot is redeployed.
+
+```json
+{
+  "ok": true,
+  "regions": [
+    {
+      "id": "kanto", "name": "관동", "first": 1, "last": 151,
+      "gyms": [
+        {"id": "kanto-1", "kind": "gym", "index": 1, "types": ["water"], "level": 50,
+         "trainer": {"name": {"ko": "…", "en": "…", "ja": "…"}, "line": {"ko": "…", "en": "…", "ja": "…"}},
+         "team": [99, 80, 141, 55, 91, 131], "run": null}
+      ],
+      "elite": {
+        "run": "kanto-elite", "badges_needed": 8,
+        "battles": [
+          {"id": "kanto-elite-1", "kind": "elite", "index": 1, "types": ["bug"], "level": 50, "trainer": {"...": "..."},
+           "team": [], "run": {"id": "kanto-elite", "step": 1, "steps": 5}},
+          {"id": "kanto-champion", "kind": "champion", "index": 5, "types": [], "level": 50, "trainer": {"...": "..."},
+           "team": [], "run": {"id": "kanto-elite", "step": 5, "steps": 5}}
+        ]
+      },
+      "hideout": {
+        "run": "kanto-hideout", "org": {"name": {"ko": "…", "en": "…", "ja": "…"}, "types": ["electric", "ghost"]},
+        "battles": [
+          {"id": "kanto-hideout-1", "kind": "grunt", "index": 1, "types": ["electric", "ghost"], "level": 50,
+           "trainer": {"...": "..."}, "team": [], "run": {"id": "kanto-hideout", "step": 1, "steps": 4}}
+        ]
+      }
+    }
+  ]
+}
+```
+
+| Field | Rules |
+|---|---|
+| `regions[].id`, `name` | Same ids as `dex.regions` above (`kanto johto hoenn sinnoh unova kalos alola galar paldea`); `name` is Korean. `first`..`last` is the National Dex range the region's species come from |
+| `gyms` | Eight gyms, ids `<region>-1` … `<region>-8`. They stand alone and can be entered in any order. Send an `id` as `gym_id` |
+| `elite.battles` | `<region>-elite-1` … `<region>-elite-4` (`kind` `"elite"`), then `<region>-champion` (`"champion"`): five battles, `run.step` 1..5. `badges_needed` is how many gym badges the app asks for before the run opens; the bot does not check |
+| `hideout.battles` | `<region>-hideout-1` and `-2` (`"grunt"`), `-3` (`"admin"`), `-4` (`"boss"`): `run.step` 1..4. `org` is the organization's name and the types its teams lean to |
+| `kind`, `index` | `gym`, `elite`, `champion`, `grunt`, `admin` or `boss`; `index` counts within its group |
+| `types` | The types the trainer's team leans to (PokéAPI type names): one for a gym leader or Elite Four member, the organization's two for the hideout, none for the champion. The team has as many of them as the region has such species, up to a share of the six |
+| `level` | Always 50 |
+| `trainer` | An original character: `name` and `line` (one short sentence) in `ko`, `en` and `ja`. Both grunts share the organization's name and line |
+| `team` | Six species ids in battle order, strongest last. The battle uses exactly this team, so the preview is the lineup. Grunts lean to low base stats, the champion and the boss to high ones |
+| `run` | `null` for a gym; otherwise `id` (`<region>-elite` or `<region>-hideout`), `step` and `steps` |
+
+Trainer art is the app's own resource named by the battle `id`.
+
+### `POST /v1/gym/battle`
+
+Auth as above, body at most 64 KB.
+
+```json
+{"gym_id": "kanto-3", "team": [{"pokemon_id": 25, "level": 42, "moves": [85, 87]}, {"pokemon_id": 7, "level": 30}]}
+```
+
+`gym_id` is any battle `id` from the catalog: a gym, an Elite Four member, the champion, a grunt, an admin or a boss.
+`team` is 1 to 6 members, in battle order, with the schema and rules of `party` in [`POST /v1/party`](#post-v1party),
+moves included (the same attacking-move check, `503 pokeapi_unavailable` when PokéAPI cannot be reached to check
+them). Errors name the field as `team[i]…`. The fight is the same simulation as `/대결`: Lv50 cap, one at a time in
+order, the next comes in when one faints, no switching. A `rental` member fights at the trainer's level (50).
+The foes use their latest attacking moves and have no nature, ability or held item (IVs 15).
+
+```json
+{
+  "ok": true, "gym_id": "kanto-elite-2", "kind": "elite", "won": true, "turns": 14, "seed": 1894512067,
+  "trainer": {"name": {"ko": "…", "en": "…", "ja": "…"}, "line": {"ko": "…", "en": "…", "ja": "…"}},
+  "player_team": [
+    {"pokemon_id": 25, "name": "피카츄", "level": 50, "types": ["electric"], "shiny": false, "hp": 62},
+    {"pokemon_id": 7, "name": "꼬부기", "level": 50, "types": ["water"], "shiny": false, "hp": null}
+  ],
+  "foe_team": [
+    {"pokemon_id": 27, "name": "모래두지", "level": 50, "types": ["ground"], "shiny": false, "hp": 0}
+  ],
+  "log": [
+    {"turn": 1, "lines": [
+      {"side": 0, "text": "피카츄 › 10만볼트 → 모래두지 효과 없음"},
+      {"side": null, "text": "💥 모래두지 쓰러짐"}
+    ]}
+  ],
+  "run": {"id": "kanto-elite", "step": 2, "steps": 5, "first": "kanto-elite-1", "next": "kanto-elite-3"},
+  "carry": [{"hp": 62, "status": "burn"}, {"hp": 100, "status": null}]
+}
+```
+
+| Field | Rules |
+|---|---|
+| `kind`, `trainer` | The opponent's `kind` and `trainer`, as in the catalog |
+| `won` | `true` when the player's team won. A turn limit counts like in Slack battles: more Pokémon left, then more HP |
+| `turns`, `seed` | Turn count; the seed the battle ran with (a new one every time, so a rematch can end differently) |
+| `player_team`, `foe_team` | Every member in lineup order: `pokemon_id`, `name` (the sent `name`, else the Korean species name), battle `level`, `types`, `shiny`. `hp` is the share of max HP left at the end, `0..100`: `0` fainted (a member that came in down stays `0`), `null` never sent out |
+| `log` | One entry per turn, every turn, none left out. Entries before turn 1 (entry abilities, Mega Evolution) join turn 1 |
+| `log[].lines[]` | The same lines the Slack battle log shows, Korean only. `side` is `0` for the player, `1` for the trainer, `null` for a line that names no side (a faint line, a weather end). A send-out line starts with `↪ `. `text` carries the rest of the Slack line without the 🔵/🔴 side marker |
+| `run` | `null` for a gym. Otherwise `id`, `step`, `steps`, `first` (the run's first battle id) and `next` (the battle to send after a win, `null` after a loss or on the last step) |
+| `carry` | See below. `null` unless the battle was in a run, was won and has a `next` |
+
+#### A run: `carried` and `carry`
+
+The Elite Four run is `<region>-elite-1` … `-4`, then `<region>-champion`; a hideout run is
+`<region>-hideout-1` … `-4`. The bot stores nothing between the battles. The app keeps the run and, after a win,
+sends the next battle with `carried`: one entry per `team` member, in the same order.
+
+```json
+{"gym_id": "kanto-elite-3", "team": [{"pokemon_id": 25, "level": 42}, {"pokemon_id": 7, "level": 30}],
+ "carried": [{"hp": 62, "status": "burn"}, null]}
+```
+
+| Field | Rules |
+|---|---|
+| `carried` | Optional. A list with exactly one entry per `team` member. An entry is `null` (full HP, no status) or `{"hp": 0..100, "status": null | "burn" | "poison" | "toxic" | "paralysis" | "sleep" | "freeze"}`. `hp` is the share of max HP; `0` keeps the member down for this battle. At least one member must have `hp > 0`. Only battles with a non-null `run` take it |
+| `carry` | In a response: the same list shape, ready to send back as the next `carried`. A member that never got sent out keeps the state it came in with |
+
+PP, stat stages, confusion and the progress of a toxic or sleep status (a carried toxic starts at its first tick, a carried sleep lasts one more turn) do not carry. A loss ends the run: the app starts again at `run.first` with nothing
+carried. The app decides what is locked (a gym stands alone; the Elite Four run needs the gym badges
+`badges_needed` asks for) and the bot does not check, nor does it check that `carried` came from the last
+battle, so the app owns the run's integrity.
+
+The wire format has room to grow: a later opponent `kind` (a coworker's ghost party) and another request field
+are added next to the current ones, so a client that ignores unknown fields and unknown `kind`s keeps working.
+
+| Status | Body |
+|---|---|
+| `200` | the body above |
+| `400` | `{"ok": false, "error": "<reason>"}`: a missing `gym_id`, a `team` rule broken, or `carried` not a list of `team`'s length (`carried must be a list with one entry per team member (N)`), an `hp` outside 0..100, an unknown `status`, no member able to fight, or `carried` sent for a gym (`carried is only for Elite Four and hideout battles`) |
+| `401` | unauthorized |
+| `404` | `{"ok": false, "error": "unknown_gym"}`. Also `not_found` from a bot that predates gyms |
+| `429` | `{"ok": false, "error": "rate_limited", "retry_after": 2.1}` and a `Retry-After` header: one battle per user every 3 seconds |
+| `503` | `{"ok": false, "error": "pokeapi_unavailable"}` |
+
+The first battle against a trainer fetches its foes' learnsets from PokéAPI, so allow the request a longer timeout
+(10 seconds) than the others; later ones are cached.
+
 ## `GET /v1/health`
 
 No auth. `200 {"ok": true}`.

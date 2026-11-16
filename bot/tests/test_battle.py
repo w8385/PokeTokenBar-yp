@@ -4,7 +4,7 @@ from dataclasses import replace
 import pytest
 
 from ypoke.battle import (
-    NATURE_MODIFIERS, STRUGGLE, TURN_LIMIT, WEATHER_TURNS, Action, BaseStats, Change, Combatant, Move,
+    NATURE_MODIFIERS, STRUGGLE, TURN_LIMIT, WEATHER_TURNS, Action, BaseStats, Carry, Change, Combatant, MegaForm, Move,
     StatusDamage, WeatherDamage, WeatherEnd, _act, _best_move, _damage, _Fighter, _stats_for, _Weather, _weather_upkeep, simulate,
 )
 from ypoke.type_chart import effectiveness
@@ -160,6 +160,16 @@ def test_a_stalemate_ends_at_the_turn_limit():
     lick = Move("핥기", "ghost", 30, physical=True, accuracy=100, pp=999)
     result = simulate((mon("노말", ["normal"], moves=[replace(TACKLE, pp=999)]), mon("유령", ["ghost"], moves=[lick])), 0)
     assert (result.turns, result.winner) == (TURN_LIMIT, 0)
+
+
+def test_a_turn_limit_counts_a_waiting_member_at_its_carried_hp():
+    lick = Move("핥기", "ghost", 30, physical=True, accuracy=100, pp=999)
+    sides = (
+        (mon("노말", ["normal"], moves=[replace(TACKLE, pp=999)]), mon("후보", ["normal"])),
+        (mon("유령", ["ghost"], moves=[lick]), mon("후보2", ["ghost"])),
+    )
+    assert simulate(sides, 0).winner == 0
+    assert simulate(sides, 0, [None, Carry(10, None)]).winner == 1
 
 
 QUICK_ATTACK = Move("전광석화", "normal", 40, physical=True, accuracy=100, priority=1)
@@ -318,3 +328,39 @@ def test_a_weather_move_is_not_picked_when_an_attack_surely_finishes_the_foe():
     assert _best_move(*fighters, None) == 0
     fighters[1].hp = 1
     assert _best_move(*fighters, None) == 1
+
+
+def test_a_carried_member_enters_with_its_hp_share_and_status():
+    fighter = _Fighter.enter(mon("A", ["normal"]), Carry(40, "burn"))
+    assert (fighter.hp, fighter.status) == (round(fighter.max_hp * 0.4), "burn")
+    assert fighter.hp_percent == 40
+    assert _Fighter.enter(mon("A", ["normal"]), Carry(100)).hp == fighter.max_hp
+    assert _Fighter.enter(mon("A", ["normal"]), Carry(1)).hp == 1
+    assert _Fighter.enter(mon("A", ["normal"]), Carry(50, "sleep")).sleep_left > 0
+
+
+def test_carrying_nothing_changes_nothing():
+    sides = (mon("A", ["fire"], moves=[FLAMETHROWER]), mon("B", ["water"], moves=[SURF]))
+    assert simulate(sides, 7, [None]) == simulate(sides, 7) == simulate(sides, 7, ())
+
+
+def test_a_hurt_team_loses_a_fight_it_would_win_at_full_health():
+    team = (mon("A", ["water"], moves=[SURF]),)
+    foe = mon("B", ["fire"], moves=[EMBER])
+    assert all(simulate((team, foe), seed).winner == 0 for seed in range(10))
+    assert all(simulate((team, foe), seed, [Carry(1, "poison")]).winner == 1 for seed in range(10))
+
+
+def test_the_result_reports_each_members_final_status_and_unsent_members_read_none():
+    first, second = mon("A", ["normal"], moves=[TACKLE]), mon("B", ["normal"])
+    result = simulate(((first, second), mon("C", ["fire"], level=5)), 3, [Carry(60, "paralysis"), Carry(30, "burn")])
+    assert result.statuses[0][0] == "paralysis" and result.statuses[0][1] is None
+    assert result.remaining[0][1] is None and result.remaining[1] == (0,)
+
+
+def test_a_mega_evolution_keeps_the_hp_share_and_status_the_member_came_in_with():
+    form = MegaForm(("fire",), BaseStats(90, 90, 90, 90, 90, 90))
+    holder = replace(mon("A", ["normal"]), mega=form)
+    result = simulate(((holder,), mon("C", ["fire"], level=5)), 1, [Carry(50, "burn")])
+    assert result.statuses[0] == ("burn",)
+    assert next(event for event in result.events if isinstance(event, Action)).attacker_hp <= 50

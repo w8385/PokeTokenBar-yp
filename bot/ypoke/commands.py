@@ -7,20 +7,18 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
+from functools import partial
 from urllib.parse import urlencode
 
-from ypoke import items
-from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm, simulate
+from ypoke.battle import Combatant, simulate
+from ypoke.combatants import combatant
 from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_url
-from ypoke.mega_stones import mega_form_id
 from ypoke.messages import DirectMessage
-from ypoke.moves import battle_moves
 from ypoke.narration import PRACTICE_NOTE, Card, battle_card, battle_header
-from ypoke.pokeapi import PokeAPIService, base_stats
+from ypoke.pokeapi import PokeAPIService
 from ypoke.store import PendingChallenge, Record, Store
-from ypoke.upload_server import IV_KEYS, MAX_ENTRY_SIZE
+from ypoke.upload_server import MAX_ENTRY_SIZE
 
-DEFAULT_IV = 15
 REGISTER_LINK = "poketokenbar://ypoke-register"
 DOWNLOAD_URL = "https://github.com/w8385/PokeTokenBar-yp/releases/latest"
 REGISTER_ACTION_ID = "open_poketokenbar"
@@ -421,46 +419,8 @@ class CommandHandler:
     ) -> tuple[tuple[Combatant, ...], tuple[Combatant, ...]]:
         first, second = rental_levels(challenger, opponent)
         with ThreadPoolExecutor(max_workers=len(first) + len(second)) as pool:
-            combatants = tuple(pool.map(self._combatant, [*first, *second]))
+            combatants = tuple(pool.map(partial(combatant, self._pokeapi), [*first, *second]))
         return combatants[:len(first)], combatants[len(first):]
-
-    def _combatant(self, member: dict) -> Combatant:
-        data = self._pokeapi.pokemon(member["pokemon_id"])
-        learnable = self._pokeapi.attacking_moves(member["pokemon_id"], member["level"], member.get("moves") or ())
-        ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
-        return Combatant(
-            name=member.get("name") or data["name_ko"],
-            level=min(member["level"], BATTLE_LEVEL),
-            types=tuple(data["types"]),
-            base=base_stats(data),
-            ivs=BaseStats(**ivs),
-            shiny=member["shiny"],
-            moves=battle_moves(learnable, member.get("moves")),
-            rental=member.get("rental", False),
-            nature=member.get("nature"),
-            ability=member.get("ability"),
-            item=member.get("held_item"),
-            mega=self._mega(member),
-            pokemon_id=member["pokemon_id"],
-            can_evolve=self._can_evolve(member),
-        )
-
-    def _can_evolve(self, member: dict) -> bool:
-        """Only Eviolite needs it; a failed lookup counts as fully evolved rather than failing the battle."""
-        if member.get("held_item") != items.EVIOLITE:
-            return False
-        try:
-            return self._pokeapi.can_evolve(member["pokemon_id"])
-        except (OSError, ValueError, KeyError, TypeError):
-            return False
-
-    def _mega(self, member: dict) -> MegaForm | None:
-        form_id = mega_form_id(member.get("held_item"), member["pokemon_id"])
-        if form_id is None:
-            return None
-        data = self._pokeapi.mega_form(form_id)
-        return MegaForm(types=tuple(data["types"]), base=base_stats(data), ability=data["ability"],
-                        ability_id=data["ability_id"], form_id=form_id)
 
 
 def rental_levels(challenger: list[dict], opponent: list[dict]) -> tuple[list[dict], list[dict]]:

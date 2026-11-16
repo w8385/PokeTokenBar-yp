@@ -186,6 +186,21 @@ def _log_entries(result: BattleResult, budget: int) -> list[tuple[str, tuple[Ima
         ends -= 1
 
 
+def battle_turns(result: BattleResult) -> list[tuple[int, list[str]]]:
+    """Every turn's log lines in order; unlike `battle_log` no turn is left out."""
+    return [(turn.number, turn.lines) for turn in _turns(result.events)]
+
+
+def split_side(line: str) -> tuple[int | None, str]:
+    """The side a log line is about (0 or 1, None when it names no side) and the line without its marker."""
+    arrow = "↪ " if line.startswith("↪ ") else ""
+    body = line.removeprefix(arrow)
+    for side, marker in enumerate(SIDE_MARKERS):
+        if body.startswith(marker):
+            return side, f"{arrow}{body.removeprefix(marker).lstrip()}"
+    return None, line
+
+
 def _entries(turns: list[_Turn], ends: int) -> list[tuple[str, tuple[Image, ...]]]:
     entries: list[tuple[str, tuple[Image, ...]]] = []
     skipped = 0

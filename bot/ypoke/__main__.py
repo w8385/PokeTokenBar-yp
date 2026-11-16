@@ -10,6 +10,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient
 
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
+from ypoke.gym_battle import GymBattles
 from ypoke.names import DisplayNames
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
@@ -52,6 +53,7 @@ def main() -> None:
         names,
         trades,
         lambda messages: post_direct_messages(app.client, messages),
+        GymBattles(pokeapi),
     )
     threading.Thread(target=_warm_stored_parties, args=(pokeapi, store), daemon=True).start()
     for name in COMMAND_NAMES:
