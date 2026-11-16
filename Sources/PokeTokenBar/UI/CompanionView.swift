@@ -209,12 +209,6 @@ struct SpriteView: View {
         }
     }
 
-    /// The static art is the size reference for a playing GIF; fetch it when it is not cached yet.
-    private func loadReferenceImage(for id: Int) async {
-        guard subject.image == nil else { return }
-        await loadStaticImage(for: id)
-    }
-
     /// 정적 스프라이트를 다시 불러야 하는가 — 종이 바뀌었거나 **이로치 여부가 뒤집혔을 때**.
     /// 순수·테스트용(`GIFDecoder.capFrameRate` 와 같은 이유). 종만 비교하던 과거 판정은 도감의 이로치 토글에서
     /// .task 가 다시 돌아도 "이미 그 종을 로드했다"로 판정해 색이 안 바뀌는 회귀를 낳았다.
@@ -313,7 +307,8 @@ struct SpriteView: View {
                 await loadStaticImage(for: id)
             }
             guard !frames.isEmpty, !Task.isCancelled else { return }
-            async let _: Void = loadReferenceImage(for: id)
+            // The seeded image may be a front or non-shiny fallback; the GIF is sized against the exact variant.
+            async let _: Void = loadStaticImage(for: id)
             // delay 기반 프레임 advance. .task 취소 시(speciesID 변경/뷰 소멸) 루프 종료 — 누수 없음
             while !Task.isCancelled {
                 let delay = frames[frameIndex % frames.count].delay
