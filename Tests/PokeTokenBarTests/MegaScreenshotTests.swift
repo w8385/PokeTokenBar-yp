@@ -12,10 +12,7 @@ private struct MegaShotProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "synthetic", height: 17, weight: 905,
-            baseExperience: 267, genderRate: 1, types: ["fire", "flying"],
-            baseStats: ["hp": 78, "attack": 84, "defense": 78, "special-attack": 109, "special-defense": 85, "speed": 100],
-            abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 

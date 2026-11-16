@@ -8,11 +8,7 @@ private struct GenderShotProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "synthetic", height: 12, weight: 330,
-                       baseExperience: 67, genderRate: 4, types: ["water", "ghost"],
-                       baseStats: ["hp": 55, "attack": 40, "defense": 50,
-                                   "special-attack": 65, "special-defense": 85, "speed": 40],
-                       abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 

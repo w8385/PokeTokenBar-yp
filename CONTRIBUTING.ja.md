@@ -25,8 +25,9 @@ swift build             # アプリターゲットをコンパイル
 
 CI もすべてのプルリクエストで同じコマンドを実行します。テストゲートは
 `swift test --enable-code-coverage` を実行し、デフォルトでロジックコアの行カバレッジ
-75% 以上を要求します。PR を提出する前に、ローカルで両方を実行してください。
-開発中に特定のテストだけを確認する場合は `swift test --filter <TestCase>` を使ってください。
+75% 以上を要求します。全テストとカバレッジゲートは CI が担当します。PR を提出する前に、ローカルで
+`swift build`、`./scripts/invariant-tests.sh`、変更した部分の `swift test --filter <TestCase>` を
+実行してください。`./scripts/test-gate.sh` を自分で実行するのは任意です。
 
 ## 貢献ワークフロー
 

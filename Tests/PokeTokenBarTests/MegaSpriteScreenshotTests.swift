@@ -20,11 +20,7 @@ private struct SurfaceProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        let lucario = speciesID == 447 || speciesID == 448
-        return PokemonDetails(speciesID: speciesID, name: "synthetic", height: 12, weight: 540,
-            baseExperience: 184, genderRate: 1, types: lucario ? ["fighting", "steel"] : ["fire", "flying"],
-            baseStats: ["hp": 70, "attack": 110, "defense": 70, "special-attack": 115, "special-defense": 70, "speed": 90],
-            abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 

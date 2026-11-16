@@ -8,11 +8,7 @@ private struct ClauseShotProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "synthetic", height: 10, weight: 60, baseExperience: 112,
-                       genderRate: 4, types: ["electric"],
-                       baseStats: ["hp": 35, "attack": 55, "defense": 40, "special-attack": 50,
-                                   "special-defense": 50, "speed": 90],
-                       abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 

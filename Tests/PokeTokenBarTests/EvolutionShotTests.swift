@@ -5,12 +5,7 @@ import XCTest
 
 private struct EvolutionShotProvider: PokeProviding, PokemonDetailProviding, SpeciesIndexProviding {
     func speciesIndex() async throws -> SpeciesIndex {
-        let names: [Int: (String, String)] = [686: ("Inkay", "개무소"), 687: ("Malamar", "오케이징"), 95: ("Onix", "롱스톤"),
-                                              208: ("Steelix", "강철톤"), 106: ("Hitmonlee", "시라소몬"), 236: ("Tyrogue", "배리볼")]
-        return SpeciesIndex(entries: names.map { id, n in
-            SpeciesIndexEntry(id: id, names: ["en": n.0, "ko": n.1], types: [], captureRate: 45, isLegendary: false,
-                              isMythical: false, evolvesFromID: nil)
-        })
+        SpeciesIndex(entries: try [686, 687, 95, 208, 106, 236].map { try SpeciesFacts.indexEntry($0) })
     }
     func line(baseSpeciesID: Int) async throws -> EvoLine {
         EvoLine(baseID: 686, tree: EvoNode(speciesID: 686, children: [
@@ -20,10 +15,7 @@ private struct EvolutionShotProvider: PokeProviding, PokemonDetailProviding, Spe
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "synthetic", height: 4, weight: 35,
-            baseExperience: 58, genderRate: 4, types: speciesID == 686 || speciesID == 687 ? ["dark", "psychic"] : speciesID == 106 ? ["fighting"] : ["rock", "ground"],
-            baseStats: ["hp": 53, "attack": 54, "defense": 53, "special-attack": 37, "special-defense": 46, "speed": 45],
-            abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 

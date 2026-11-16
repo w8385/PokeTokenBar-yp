@@ -26,18 +26,10 @@ private struct SyntheticDexProvider: PokeProviding, SpeciesIndexProviding, Pokem
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func speciesIndex() async throws -> SpeciesIndex {
-        SpeciesIndex(entries: [
-            SpeciesIndexEntry(id: 1, names: ["ko": "이상해씨", "en": "Bulbasaur"], types: ["grass", "poison"],
-                              captureRate: 45, isLegendary: false, isMythical: false, evolvesFromID: nil),
-            SpeciesIndexEntry(id: 2, names: ["ko": "이상해풀", "en": "Ivysaur"], types: ["grass", "poison"],
-                              captureRate: 45, isLegendary: false, isMythical: false, evolvesFromID: 1),
-        ])
+        SpeciesIndex(entries: try [1, 2].map { try SpeciesFacts.indexEntry($0) })
     }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "bulbasaur", height: 7, weight: 69,
-            baseExperience: 64, genderRate: 1, types: ["grass", "poison"],
-            baseStats: Dictionary(uniqueKeysWithValues: PokemonStatCalculator.order.map { ($0, 55) }),
-            abilities: [PokemonAbilityOption(name: "overgrow", slot: 1, isHidden: false)], moves: [])
+        try SpeciesFacts.details(speciesID, abilities: [PokemonAbilityOption(name: "overgrow", slot: 1, isHidden: false)])
     }
 }
 

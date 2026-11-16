@@ -15,10 +15,7 @@ private struct TradeShotProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "synthetic", height: 10, weight: 295,
-            baseExperience: 142, genderRate: 4, types: ["ghost", "poison"],
-            baseStats: ["hp": 60, "attack": 65, "defense": 60, "special-attack": 130, "special-defense": 75, "speed": 110],
-            abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 

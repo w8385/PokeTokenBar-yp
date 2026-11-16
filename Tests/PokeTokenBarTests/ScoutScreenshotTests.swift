@@ -4,26 +4,12 @@ import XCTest
 @testable import PokeTokenBar
 
 private struct ScoutShotProvider: PokeProviding, SpeciesIndexProviding {
-    static let picks: [(id: Int, ko: String, en: String, types: [String], capture: Int, legendary: Bool)] = [
-        (4, "파이리", "Charmander", ["fire"], 45, false),
-        (7, "꼬부기", "Squirtle", ["water"], 45, false),
-        (23, "아보", "Ekans", ["poison"], 255, false),
-        (37, "식스테일", "Vulpix", ["fire"], 190, false),
-        (43, "뚜벅쵸", "Oddish", ["grass", "poison"], 255, false),
-        (74, "꼬마돌", "Geodude", ["rock", "ground"], 255, false),
-        (92, "고오스", "Gastly", ["ghost", "poison"], 190, false),
-        (129, "잉어킹", "Magikarp", ["water"], 255, false),
-        (147, "미뇽", "Dratini", ["dragon"], 45, false),
-        (150, "뮤츠", "Mewtwo", ["psychic"], 3, true),
-    ]
+    static let picks: [SpeciesFact] = [4, 7, 23, 37, 43, 74, 92, 129, 147, 150].map { try! SpeciesFacts.fact($0) }
     func line(baseSpeciesID: Int) async throws -> EvoLine { throw URLError(.notConnectedToInternet) }
-    func baseSpeciesIndex() async throws -> [BaseSpecies] { Self.picks.map { BaseSpecies(id: $0.id, captureRate: $0.capture) } }
+    func baseSpeciesIndex() async throws -> [BaseSpecies] { Self.picks.map { BaseSpecies(id: $0.id, captureRate: $0.captureRate) } }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func speciesIndex() async throws -> SpeciesIndex {
-        SpeciesIndex(entries: Self.picks.map {
-            SpeciesIndexEntry(id: $0.id, names: ["ko": $0.ko, "en": $0.en], types: $0.types,
-                              captureRate: $0.capture, isLegendary: $0.legendary, isMythical: false, evolvesFromID: nil)
-        })
+        SpeciesIndex(entries: try Self.picks.map { try SpeciesFacts.indexEntry($0.id) })
     }
 }
 
@@ -61,7 +47,7 @@ final class ScoutScreenshotTests: XCTestCase {
                                 rarity: .common, totalForms: 3)
         // Everything but Dratini is already in the dex, so exactly one pick carries the "not owned" badge.
         state.dex = ScoutShotProvider.picks.filter { $0.id != 147 }.map {
-            owned($0.id, ko: $0.ko, en: $0.en, rarity: Rarity.from(captureRate: $0.capture, isLegendary: $0.legendary, isMythical: false))
+            owned($0.id, ko: $0.ko, en: $0.en, rarity: Rarity.from(captureRate: $0.captureRate, isLegendary: $0.isLegendary, isMythical: $0.isMythical))
         }
         let file = scratch.appendingPathComponent("state.json")
         try JSONEncoder().encode(state).write(to: file)

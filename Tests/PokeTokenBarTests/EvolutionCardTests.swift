@@ -22,8 +22,7 @@ private struct IndexedCardProvider: PokeProviding, SpeciesIndexProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func speciesIndex() async throws -> SpeciesIndex {
-        SpeciesIndex(entries: [SpeciesIndexEntry(id: 208, names: ["en": "Steelix"], types: [], captureRate: 25,
-                                                 isLegendary: false, isMythical: false, evolvesFromID: 95)])
+        SpeciesIndex(entries: [try SpeciesFacts.indexEntry(208)])
     }
 }
 
