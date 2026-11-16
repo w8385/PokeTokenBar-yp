@@ -1298,13 +1298,14 @@ struct CollectionView: View {
 struct DexSearchField: View {
     let l: L
     @Binding var text: String
+    var placeholder: String?
 
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
                 .font(.ptb(.control))
-            TextField(l.dexSearchPlaceholder, text: $text)
+            TextField(placeholder ?? l.dexSearchPlaceholder, text: $text)
                 .textFieldStyle(.plain)
                 .font(.ptb(.control))
             if !text.isEmpty {

@@ -2335,6 +2335,7 @@ struct L {
         case .evolution: return t("진화", "Evolution", "進化", "Evolución", "Évolution", "Evolução", "Entwicklung", "Эволюция")
         case .heldItem: return t("지닌 도구", "Held items", "もちもの", "Objetos", "Objets tenus", "Itens seguráveis", "Items", "Предметы")
         case .megaStone: return t("메가스톤", "Mega Stones", "メガストーン", "Megapiedras", "Méga-Gemmes", "Mega Pedras", "Mega-Steine", "Мега-камни")
+        case .machine: return moveGroupMachine
         }
     }
 

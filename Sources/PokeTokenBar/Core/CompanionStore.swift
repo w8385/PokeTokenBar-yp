@@ -1940,10 +1940,10 @@ final class CompanionStore {
         return shopEntries.filter { $0.category == category }
     }
 
-    /// 상점에 항목이 있는 분류 — 빈 분류는 탭에서 숨긴다. 메가스톤 92개는 전체 목록에 넣지 않고 이 탭에서만 판다.
+    /// 상점에 항목이 있는 분류 — 빈 분류는 탭에서 숨긴다. 메가스톤 92개·기술머신은 전체 목록에 넣지 않고 각자 탭에서만 판다.
     var shopCategories: [ItemCategory] {
         let present = Set(shopEntries.map(\.category)).union(evolutionStoneItems.map(\.category))
-            .union([.scout, .megaStone])
+            .union([.scout, .megaStone, .machine])
         return ItemCategory.allCases.filter(present.contains)
     }
 
