@@ -69,7 +69,20 @@ def validate_party(payload: object) -> list[dict]:
     party = payload.get("party")
     if not isinstance(party, list) or not 1 <= len(party) <= MAX_PARTY_SIZE:
         raise PartyError(f"party must be a list of 1 to {MAX_PARTY_SIZE} entries")
-    return [_validate_member(index, member) for index, member in enumerate(party)]
+    return _drop_duplicate_items([_validate_member(index, member) for index, member in enumerate(party)])
+
+
+def _drop_duplicate_items(party: list[dict]) -> list[dict]:
+    seen: set[str] = set()
+    for member in party:
+        item = member.get("held_item")
+        if item is None:
+            continue
+        if item in seen:
+            del member["held_item"]
+        else:
+            seen.add(item)
+    return party
 
 
 def check_moves(party: list[dict], moves_for: MovesFor) -> None:

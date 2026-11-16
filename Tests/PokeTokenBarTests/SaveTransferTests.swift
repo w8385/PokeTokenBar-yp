@@ -562,8 +562,13 @@ final class SaveTransferTests: XCTestCase {
                                      "collectedFinals", "inventory", "heldItems",
                                      "notifiedDexCompletions", "dexCompletionsSeeded", "clickGrowth",
                                      "friendEntryIDs", "rewardedDexRegions", "scoutDraws", "scoutedEgg",
-                                     "raisedEntryID", "parkedSpentTokens"]
-        let deviceLedger: Set<String> = ["installBaselineSet", "claimedTodayTokensByProvider", "lastDate"]
+                                     "raisedEntryID", "parkedSpentTokens",
+                                     // growthMode·timeCredit = 산 지갑과 같은 진행. tokenModeSince·lastUsageAt·idleHintDismissed 는
+                                     // 안내 문구 타이밍뿐이라 따라가도 해가 없다.
+                                     "growthMode", "timeCredit", "tokenModeSince", "lastUsageAt", "idleHintDismissed"]
+        // timeActiveDay·timeActiveSeconds = 이 Mac 의 하루 8시간 상한 장부라 불러올 때 현재 값을 유지한다.
+        let deviceLedger: Set<String> = ["installBaselineSet", "claimedTodayTokensByProvider", "lastDate",
+                                         "timeActiveDay", "timeActiveSeconds"]
         let accountLedger: Set<String> = ["candyGrantTier", "candyWindowEpoch", "candyFeatureSeeded"]
         let devicePreference: Set<String> = ["language"]
 

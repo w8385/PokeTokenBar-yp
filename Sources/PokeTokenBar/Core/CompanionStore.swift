@@ -71,6 +71,10 @@ final class CompanionStore {
     private var lastEvolutionPetAt: Date?
     private var nextEvolutionGateCheck = Date.distantPast
     private(set) var availableSnapshots: [SaveSnapshot] = []
+    private var timeMeter = ActiveTimeMeter()
+    private var timeActiveNow = false
+    private var rebaseUsageOnNextUpdate = false
+    private var tokenModeSinceUnsaved = false
 
     // MARK: 난이도 배율 (설정 — UserDefaults)
     //
@@ -114,6 +118,10 @@ final class CompanionStore {
             shopDifficulty = PokemonBalance.migratedDifficulty(storedShop)
         }
         load()
+        if state.tokenModeSince == nil {
+            state.tokenModeSince = clock()
+            tokenModeSinceUnsaved = true
+        }
         if difficultyMigrated, previousGrowth != growthDifficulty {
             rescaleBankedGrowth(from: previousGrowth, to: growthDifficulty)
             save()
@@ -1021,6 +1029,10 @@ final class CompanionStore {
         let hasCurrentProviderData = hasUsageData && !todayTokensByProvider.isEmpty
         let idle = effectiveIdle(timeSinceLastUsage: timeSinceLastUsage, todayDate: todayDate,
                                  todayTokens: todayTokens, hasCurrentProviderData: hasCurrentProviderData)
+        if state.growthMode == .time, !state.installBaselineSet, !hasCurrentProviderData {
+            // Time mode must work with no coding agent at all. A nil ledger seeds from the first usage seen later.
+            state.installBaselineSet = true
+        }
         if !state.installBaselineSet {
             // 설치 기준선 — 실제 데이터가 도착한 시점의 today 를 baseline 으로(이전 사용량 미카운트).
             // 데이터 도착 전(기동 직후 빈 새로고침)에는 잡지 않는다.
@@ -1067,11 +1079,7 @@ final class CompanionStore {
                         newLedger[providerID] = current
                     }
                     state.claimedTodayTokensByProvider = newLedger
-                    let delta = todayTokensByProvider.values.reduce(0, +)
-                    if delta > 0 {
-                        state.usedSinceInstall += delta
-                        creditUsage(delta)
-                    }
+                    creditRealUsage(todayTokensByProvider.values.reduce(0, +))
                 } else {
                     var ledger = state.claimedTodayTokensByProvider ?? [:]
                     var delta = 0
@@ -1094,19 +1102,14 @@ final class CompanionStore {
                         ledger[providerID] = current
                     }
                     state.claimedTodayTokensByProvider = ledger
-                    if delta > 0 {
-                        state.usedSinceInstall += delta
-                        creditUsage(delta)
-                    }
+                    creditRealUsage(delta)
                 }
             }
         }
         // 이벤트(진화/졸업/부화) 창 만료 — .levelUp 창이 끝날 때 문구 플래그를 함께 정리한다.
-        // justEvolvedTo 는 여기(창 만료)에서만 지운다: 과거엔 매 update() 초입에 무조건 nil 로 밀어,
+        // justEvolvedTo 는 창 만료(expireEventWindow)에서만 지운다: 과거엔 매 update() 초입에 무조건 nil 로 밀어,
         // 진화 후 4초 창 도중 update 틱이 끼면 "…(으)로 진화했어요"→"성장했어요"로 되돌아갔다(회귀 #4).
-        if let until = eventUntil, clock() > until {
-            justGraduated = nil; justEvolvedTo = nil; eventUntil = nil
-        }
+        expireEventWindow()
         if state.active == nil, state.raisedEntry == nil, state.installBaselineSet, !isHatching {
             if state.eggUsage >= eggHatchThreshold {
                 // ready egg 는 부화를 우선한다. 같은 틱에 프리패치와 별도 Task 로 경쟁시키면
@@ -1133,8 +1136,111 @@ final class CompanionStore {
                                     hasUsageData: hasUsageData, today: todayTokens,
                                     timeSinceLastUsage: idle)
         sulkIdle = displayState == .sulk ? idle ?? 0 : 0
+        rebaseUsageOnNextUpdate = false
         save()
         autoSnapshotIfNeeded()
+    }
+
+    /// Real usage: only token mode turns it into growth and wallet.
+    private func creditRealUsage(_ delta: Int) {
+        guard delta > 0 else { return }
+        state.lastUsageAt = clock()
+        guard state.growthMode == .token, !rebaseUsageOnNextUpdate else { return }
+        state.usedSinceInstall += delta
+        creditUsage(delta)
+    }
+
+    // MARK: Time mode
+
+    var growthMode: GrowthMode { state.growthMode }
+
+    func setGrowthMode(_ mode: GrowthMode) {
+        guard mode != state.growthMode else { return }
+        state.growthMode = mode
+        if mode == .token {
+            state.tokenModeSince = clock()
+            rebaseUsageOnNextUpdate = true
+        }
+        timeMeter.reanchor()
+        timeActiveNow = false
+        save()
+    }
+
+    /// The monitor reports sleep, screen sleep or lock: the next tick only re-anchors.
+    func noteActivityBreak() {
+        timeMeter.reanchor()
+        timeActiveNow = false
+    }
+
+    /// One tick of time mode. `uptime` is monotonic and excludes sleep; `idle` is seconds since the last input.
+    /// Credits active seconds as virtual tokens to growth and the wallet. Returns the tokens credited.
+    @discardableResult
+    func creditActiveTime(uptime: TimeInterval, idle: TimeInterval, present: Bool) -> Int {
+        if tokenModeSinceUnsaved {
+            tokenModeSinceUnsaved = false
+            save()
+        }
+        guard state.growthMode == .time else {
+            timeMeter.reanchor()
+            return 0
+        }
+        var seconds = timeMeter.step(uptime: uptime, idle: idle, present: present)
+        timeActiveNow = present && idle <= PokemonBalance.timeIdleLimit
+        let day = LocalUsageReader.localDayFormatter().string(from: clock())
+        if day > state.timeActiveDay {
+            state.timeActiveDay = day
+            state.timeActiveSeconds = 0
+        }
+        seconds = min(seconds, max(0, PokemonBalance.timeDailyCap - state.timeActiveSeconds))
+        let tokens = PokemonBalance.timeTokens(forActiveSeconds: seconds)
+        guard tokens > 0 else {
+            refreshTimeDisplayState()
+            return 0
+        }
+        state.timeActiveSeconds += seconds
+        state.timeCredit += tokens
+        state.installBaselineSet = true
+        creditUsage(tokens)
+        save()
+        if state.active == nil, state.raisedEntry == nil, !isHatching {
+            if state.eggUsage >= eggHatchThreshold {
+                Task { await hatchIfNeeded() }
+            } else {
+                Task { await ensureEggPrefetch() }
+            }
+        }
+        refreshTimeDisplayState()
+        return tokens
+    }
+
+    var timeActiveSecondsToday: TimeInterval { state.timeActiveSeconds }
+
+    @discardableResult
+    private func expireEventWindow() -> Bool {
+        guard let until = eventUntil, clock() > until else { return false }
+        justGraduated = nil; justEvolvedTo = nil; eventUntil = nil
+        return true
+    }
+
+    private func refreshTimeDisplayState() {
+        guard state.active != nil else { return }
+        if expireEventWindow(), displayState == .levelUp { displayState = timeActiveNow ? .working : .sleep }
+        switch displayState {
+        case .egg, .idle, .working, .sleep, .sulk: displayState = timeActiveNow ? .working : .sleep
+        default: break
+        }
+    }
+
+    /// Token mode with no real usage for `idleTokenHintAfter`: offer time mode once.
+    var showsIdleTokenHint: Bool {
+        guard state.growthMode == .token, !state.idleHintDismissed else { return false }
+        let since = [state.lastUsageAt, state.tokenModeSince].compactMap { $0 }.max() ?? clock()
+        return clock().timeIntervalSince(since) >= PokemonBalance.idleTokenHintAfter
+    }
+
+    func dismissIdleTokenHint() {
+        state.idleHintDismissed = true
+        save()
     }
 
     /// A gate that waits on the clock (day/night) opens without any new usage. Called from every usage update and
@@ -1654,7 +1760,14 @@ final class CompanionStore {
         heldMegaStone(of: instanceID).flatMap { $0.speciesID == speciesID ? $0 : nil }
     }
 
-    func canBuy(_ stone: MegaStone) -> Bool { availableTokens >= price(of: .megaStone(stone)) }
+    /// The bag plus every Pokémon holding it. The shop sells a stone only while this is zero.
+    func megaStoneOwnedTotal(_ stone: MegaStone) -> Int {
+        megaStoneCount(stone) + state.heldItems.values.filter { $0 == stone.inventoryKey }.count
+    }
+
+    func canBuy(_ stone: MegaStone) -> Bool {
+        megaStoneOwnedTotal(stone) == 0 && availableTokens >= price(of: .megaStone(stone))
+    }
 
     @discardableResult
     func buy(_ stone: MegaStone) -> Bool {
@@ -1886,7 +1999,8 @@ final class CompanionStore {
 
     /// 상점에서 쓸 수 있는 토큰(재화) = 실사용 누적 − 상점 지출 누적. 성장 미터(usedSinceInstall)는
     /// 여기선 읽기만 — 구매는 spentTokens 만 올려 잔액을 깎는다(진화 진행·오늘/주/월 통계 무영향).
-    var availableTokens: Int { max(0, state.usedSinceInstall - state.spentTokens) }
+    /// Time-mode credit is wallet income too; it never enters `usedSinceInstall`.
+    var availableTokens: Int { max(0, state.usedSinceInstall + state.timeCredit - state.spentTokens) }
 
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
@@ -2744,6 +2858,7 @@ final class CompanionStore {
         if isEgg { return .egg }
         if justGraduated != nil || (eventUntil != nil && clock() < eventUntil!) { return .levelUp }
         if limitWarning { return .tired }
+        if state.growthMode == .time { return timeActiveNow ? .working : .sleep }
         if hasUsageData, let idle = timeSinceLastUsage, idle >= PokemonBalance.sulkAfterIdle {
             return .sulk
         }
@@ -2783,6 +2898,7 @@ final class CompanionStore {
         // 이전 개체 기준으로 진행 중이던 비동기·연출을 전부 무효화한다. activeGeneration 을 올리지
         // 않으면 먼저 떠 있던 라인 로드가 완료되며 새로 불러온 개체를 덮어쓴다.
         activeGeneration += 1
+        timeMeter.reanchor()
         currentLine = nil
         prefetchedLineID = nil
         justEvolvedTo = nil

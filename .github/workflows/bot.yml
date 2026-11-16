@@ -1,15 +1,39 @@
 name: Bot
 
+# No workflow-level `paths:` filter: the bot-ok check must exist on every PR so it can be required.
 on:
   push:
     branches: [main]
-    paths: ["bot/**", ".github/workflows/bot.yml"]
   pull_request:
     branches: [main]
-    paths: ["bot/**", ".github/workflows/bot.yml"]
 
 jobs:
+  changes:
+    name: bot-changes
+    runs-on: ubuntu-latest
+    outputs:
+      bot: ${{ steps.filter.outputs.bot }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Detect bot changes
+        id: filter
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          bot=true
+          if files=$(git diff --name-only "$BASE" "$HEAD" 2>/dev/null) && [ -n "$files" ]; then
+            grep -qE '^(bot/|\.github/workflows/bot\.yml$)' <<<"$files" || bot=false
+          fi
+          echo "Bot changes: $bot"
+          echo "bot=$bot" >> "$GITHUB_OUTPUT"
+
   test:
+    needs: changes
+    if: needs.changes.outputs.bot == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -19,3 +43,16 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked
       - run: uv run pytest -q
+
+  bot-ok:
+    name: bot-ok
+    needs: [changes, test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if a needed job failed or was cancelled
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          case " $RESULTS " in *" failure "*|*" cancelled "*) exit 1 ;; esac

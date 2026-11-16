@@ -9,6 +9,8 @@ struct BattleFighterPicker: View {
     let current: String?
     /// Candidates already in other slots; they are not offered again.
     let excluding: Set<String>
+    /// Candidates shown but not pickable: their item matches another lineup member's.
+    let blocked: Set<String>
     /// Whether "follow the Pokémon being raised" is offered; only a lone pick can do that.
     let allowsAuto: Bool
     /// A candidate id, or nil for "follow the Pokémon being raised".
@@ -21,11 +23,13 @@ struct BattleFighterPicker: View {
 
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 4)
 
-    init(store: CompanionStore, current: String?, excluding: Set<String> = [], allowsAuto: Bool = true,
-         initialQuery: String = "", onPick: @escaping (String?) -> Void, onBack: @escaping () -> Void) {
+    init(store: CompanionStore, current: String?, excluding: Set<String> = [], blocked: Set<String> = [],
+         allowsAuto: Bool = true, initialQuery: String = "", onPick: @escaping (String?) -> Void,
+         onBack: @escaping () -> Void) {
         self.store = store
         self.current = current
         self.excluding = excluding
+        self.blocked = blocked
         self.allowsAuto = allowsAuto
         self.onPick = onPick
         self.onBack = onBack
@@ -68,6 +72,9 @@ struct BattleFighterPicker: View {
                                                held: store.heldItemRef(of: candidate.id)) {
                                     onPick(candidate.id)
                                 }
+                                .disabled(blocked.contains(candidate.id))
+                                .opacity(blocked.contains(candidate.id) ? 0.4 : 1)
+                                .help(blocked.contains(candidate.id) ? l.battleItemClause : "")
                             }
                         }
                     }
