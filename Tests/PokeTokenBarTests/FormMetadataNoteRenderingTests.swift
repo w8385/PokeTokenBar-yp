@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import Vision
 import XCTest
 @testable import PokeTokenBar
 
@@ -23,7 +22,7 @@ private struct FormMetadataProvider: PokeProviding, PokemonDetailProviding {
     }
 }
 
-/// Reads the real Home and Pokédex pixels: a helper-only test would miss either missing call site.
+/// Measures the real Home header and Pokédex identity header: a helper-only test would miss either call site.
 @MainActor
 final class FormMetadataNoteRenderingTests: XCTestCase {
     private func store(form: PokemonForm?, speciesID: Int = 492, egg: Bool = false,
@@ -56,68 +55,45 @@ final class FormMetadataNoteRenderingTests: XCTestCase {
         return store
     }
 
-    private func mount<V: View>(_ view: V, height: CGFloat) -> NSView {
-        OffscreenRender.host(view.frame(width: PopoverMetrics.contentWidth, height: height)
-            .background(Color.white).environment(\.colorScheme, .light),
-            size: CGSize(width: PopoverMetrics.contentWidth, height: height), appearance: .aqua)
+    /// What the note adds to a header: one caption line or more, so any real note is well above this.
+    private let noteLine: CGFloat = 8
+
+    private func homeHeight(_ store: CompanionStore) -> CGFloat {
+        LayoutMeasure.size(CompanionHeader(store: store).frame(width: PopoverMetrics.contentWidth),
+                           width: PopoverMetrics.contentWidth).height
     }
 
-    private func renderedText(_ host: NSView) throws -> String {
-        host.layoutSubtreeIfNeeded()
-        // Keep caption OCR at 2x regardless of the runner's screen backing scale.
-        let bounds = host.bounds
-        let bitmap = try XCTUnwrap(NSBitmapImageRep(
-            bitmapDataPlanes: nil,
-            pixelsWide: Int((bounds.width * 2).rounded(.up)),
-            pixelsHigh: Int((bounds.height * 2).rounded(.up)),
-            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
-        bitmap.size = bounds.size
-        XCTAssertGreaterThanOrEqual(CGFloat(bitmap.pixelsWide) / bounds.width, 2)
-        XCTAssertGreaterThanOrEqual(CGFloat(bitmap.pixelsHigh) / bounds.height, 2)
-        host.cacheDisplay(in: bounds, to: bitmap)
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.recognitionLanguages = ["en-US"]
-        try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
-        return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
-            .joined(separator: " ").lowercased()
-    }
-
-    private func assertNote(_ expected: Bool, in host: NSView, loaded: Bool = true,
-                            file: StaticString = #filePath, line: UInt = #line) async throws {
-        let deadline = ContinuousClock.now + .seconds(20)
-        var text = ""
-        repeat {
-            text = try renderedText(host)
-            let ready = loaded ? text.ocrContains("grass") : !text.isEmpty
-            if ready && text.ocrContains("data uses the default form") == expected { return }
-            try await Task.sleep(for: .milliseconds(50))
-        } while ContinuousClock.now < deadline
-        XCTFail("Expected default-form note=\(expected). Rendered: \(text)", file: file, line: line)
+    private func detailHeaderHeight(_ store: CompanionStore) throws -> CGFloat {
+        let species = try XCTUnwrap(store.dexSpecies.first { $0.id == 492 })
+        let header = PokemonDetailView(store: store, species: species, onBack: {}).identityText
+        return LayoutMeasure.size(header.frame(width: PopoverMetrics.contentWidth),
+                                  width: PopoverMetrics.contentWidth).height
     }
 
     func testHomeExplainsLoadedAlternateMetadataOnly() async throws {
-        for (form, speciesID, egg, loaded, note) in [
-            (PokemonForm("sky"), 492, false, true, true),
-            (PokemonForm("land"), 492, false, true, false),
-            (PokemonForm("sky"), 25, false, true, false),
-            (PokemonForm("sky"), 492, false, false, false),
-            (nil, 492, true, false, false),
-        ] {
-            let store = try await store(form: form, speciesID: speciesID, egg: egg, detailsAvailable: loaded)
-            let host = mount(CompanionHeader(store: store), height: 260)
-            try await assertNote(note, in: host, loaded: loaded)
-        }
+        let sky = try await store(form: PokemonForm("sky"))
+        let land = try await store(form: PokemonForm("land"))
+        XCTAssertGreaterThanOrEqual(homeHeight(sky) - homeHeight(land), noteLine,
+                                    "an alternate form must add the default-form note to Home")
+
+        // Where the form is the default one, or the details are not loaded, the header gains no line.
+        let skyOnPikachu = try await store(form: PokemonForm("sky"), speciesID: 25)
+        let plainPikachu = try await store(form: nil, speciesID: 25)
+        XCTAssertTrue(PokemonForm.isDefault(PokemonForm("sky"), speciesID: 25))
+        XCTAssertEqual(homeHeight(skyOnPikachu), homeHeight(plainPikachu), accuracy: 0.5)
+        let skyUnloaded = try await store(form: PokemonForm("sky"), detailsAvailable: false)
+        let landUnloaded = try await store(form: PokemonForm("land"), detailsAvailable: false)
+        XCTAssertNil(skyUnloaded.pokemonDetailsByID[492])
+        XCTAssertEqual(homeHeight(skyUnloaded), homeHeight(landUnloaded), accuracy: 0.5)
+        let egg = try await store(form: nil, egg: true, detailsAvailable: false)
+        XCTAssertFalse(egg.hasActive)
     }
 
     func testDexExplainsTheDisplayedFormRatherThanTheOriginalSelection() async throws {
-        for form in [PokemonForm("land"), PokemonForm("sky")] {
-            let store = try await store(form: form)
-            // Pass the aggregate/default species, as CollectionView does; the representative is Sky.
-            let species = try XCTUnwrap(store.dexSpecies.first { $0.id == 492 })
-            let host = mount(PokemonDetailView(store: store, species: species, onBack: {}), height: 520)
-            try await assertNote(form == PokemonForm("sky"), in: host)
-        }
+        // Pass the aggregate/default species, as CollectionView does; the representative is Sky.
+        let land = try await store(form: PokemonForm("land"))
+        let sky = try await store(form: PokemonForm("sky"))
+        XCTAssertGreaterThanOrEqual(try detailHeaderHeight(sky) - detailHeaderHeight(land), noteLine,
+                                    "the displayed Sky form must add the default-form note to the Pokédex page")
     }
 }

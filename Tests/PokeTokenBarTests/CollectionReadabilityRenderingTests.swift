@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 import XCTest
-import Vision
 @testable import PokeTokenBar
 
 private struct ReadabilityProvider: PokeProviding, PokemonDetailProviding {
@@ -63,6 +62,8 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
     }
 
     private func capture<V: View>(_ view: V, language: AppLanguage, expectedTexts: [String], to file: URL) async throws {
+        // The screen draws these strings from the store, so a blank one means a missing translation.
+        XCTAssertFalse(expectedTexts.contains(where: \.isEmpty), "empty label in \(file.lastPathComponent)")
         let host = NSHostingView(rootView: view
             .frame(width: PopoverMetrics.contentWidth, height: 520)
             .background(Color.white)
@@ -73,43 +74,43 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
         defer { window.close() }
         XCTAssertEqual(host.bounds.width, 332, accuracy: 0.5)
         XCTAssertEqual(host.bounds.height, 520, accuracy: 0.5)
+        let first = try await settledBitmap(host)
+        try XCTUnwrap(first.representation(using: .png, properties: [:])).write(to: file)
+        if file.lastPathComponent == "en-grid.png" {
+            try await verifyPagination(host: host, window: window, first: first,
+                                       directory: file.deletingLastPathComponent())
+        }
+    }
+
+    /// Renders until two consecutive frames are identical, so async sprite and detail loads have landed.
+    private func settledBitmap(_ host: NSView) async throws -> NSBitmapImageRep {
         let deadline = ContinuousClock.now + .seconds(5)
-        var recognized = ""
+        var previous: Data?
         repeat {
             try await Task.sleep(for: .milliseconds(100))
             host.layoutSubtreeIfNeeded()
             let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
             host.cacheDisplay(in: host.bounds, to: bitmap)
-            let request = VNRecognizeTextRequest()
-            request.recognitionLevel = .accurate
-            request.recognitionLanguages = [language == .ko ? "ko-KR" : language == .ja ? "ja-JP" : language.rawValue]
-            try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
-            recognized = request.results?.filter { expectedTexts.count == 1 || $0.boundingBox.midY > 0.75 }
-                .compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ") ?? ""
-            if expectedTexts.allSatisfy({ OCRText.contains(recognized, $0) }) {
-                try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: file)
-                if file.lastPathComponent == "en-grid.png" {
-                    try await verifyPagination(host: host, window: window, directory: file.deletingLastPathComponent())
-                }
-                return
-            }
+            let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+            if png == previous { return bitmap }
+            previous = png
         } while ContinuousClock.now < deadline
-        XCTFail("Missing visible content \(expectedTexts) in \(file.lastPathComponent): \(recognized)")
+        XCTFail("The screen never stopped changing")
+        throw URLError(.timedOut)
     }
 
-    private func verifyPagination(host: NSView, window: NSWindow, directory: URL) async throws {
-        for (x, expected, name) in [(326.0, "2/2", "next"), (273.0, "1/2", "back")] {
+    /// The pager is the only thing these clicks can change: Next shows a different page, Back the first again.
+    private func verifyPagination(host: NSView, window: NSWindow, first: NSBitmapImageRep,
+                                  directory: URL) async throws {
+        var shown = [try XCTUnwrap(first.representation(using: .png, properties: [:]))]
+        for (x, name) in [(326.0, "next"), (273.0, "back")] {
             try OffscreenRender.click(at: NSPoint(x: x, y: 9), in: window)
-            try await Task.sleep(for: .milliseconds(300))
-            host.layoutSubtreeIfNeeded()
-            let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-            host.cacheDisplay(in: host.bounds, to: bitmap)
-            let request = VNRecognizeTextRequest()
-            request.recognitionLevel = .accurate
-            try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
-            let text = request.results?.filter { $0.boundingBox.midY < 0.05 }.flatMap { $0.topCandidates(10).map(\.string) }.joined(separator: " | ") ?? ""
-            XCTAssertTrue(OCRText.contains(text, expected), "Pagination \(name) must visibly show \(expected): \(text)")
-            try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: directory.appendingPathComponent("en-grid-\(name).png"))
+            let bitmap = try await settledBitmap(host)
+            let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+            XCTAssertNotEqual(png, shown.last, "Pagination \(name) must change the page")
+            if name == "back" { XCTAssertEqual(png, shown[0], "Back must return to the first page") }
+            shown.append(png)
+            try png.write(to: directory.appendingPathComponent("en-grid-\(name).png"))
         }
     }
 }

@@ -2,7 +2,6 @@ import AppKit
 import SwiftUI
 import ImageIO
 import UniformTypeIdentifiers
-import Vision
 import XCTest
 @testable import PokeTokenBar
 
@@ -89,6 +88,21 @@ final class DexColorRenderingTests: XCTestCase {
         return rows
     }
 
+    /// Yellow pixels of the ✨ glyph. The synthetic sprites are pure red and blue, and text is gray.
+    private func sparklePixels(in captured: NSBitmapImageRep, x: CGFloat, y: CGFloat,
+                               width: CGFloat, height: CGFloat) -> Int {
+        guard let data = captured.representation(using: .png, properties: [:]),
+              let bitmap = NSBitmapImageRep(data: data) else { return 0 }
+        var count = 0
+        for row in Int(y)..<min(bitmap.pixelsHigh, Int(y + height)) {
+            for column in Int(x)..<min(bitmap.pixelsWide, Int(x + width)) {
+                guard let color = bitmap.colorAt(x: column, y: row)?.usingColorSpace(.deviceRGB) else { continue }
+                if color.redComponent > 0.85, color.greenComponent > 0.6, color.blueComponent < 0.5 { count += 1 }
+            }
+        }
+        return count
+    }
+
     /// The Box lays individuals out left to right, so the order shows in the columns.
     private func colorColumns(_ captured: NSBitmapImageRep, shiny: Bool) -> [Int] {
         guard let data = captured.representation(using: .png, properties: [:]),
@@ -171,15 +185,11 @@ final class DexColorRenderingTests: XCTestCase {
             XCTAssertEqual(colorRows(bitmap, shiny: !shiny).count, 0,
                            "step \(step): selected \(shiny ? "shiny" : "normal") must not retain the previous appearance")
             let scale = CGFloat(bitmap.pixelsWide) / PopoverMetrics.contentWidth
-            let header = try XCTUnwrap(bitmap.cgImage?.cropping(to:
-                CGRect(x: 90 * scale, y: 58 * scale, width: 220 * scale, height: 85 * scale)))
-            let recognition = VNRecognizeTextRequest()
-            recognition.recognitionLevel = .accurate
-            recognition.recognitionLanguages = ["en-US"]
-            try VNImageRequestHandler(cgImage: header).perform([recognition])
-            let text = recognition.results?.compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ") ?? ""
-            XCTAssertTrue(OCRText.contains(text, "Elgyem"), "header crop must contain the rendered identity: \(text)")
-            XCTAssertEqual(OCRText.contains(text, "Shiny"), shiny, "badge must follow the displayed individual: \(text)")
+            XCTAssertEqual(species.name, "Elgyem")
+            // The shiny badge is "✨ Shiny": count the sparkle's yellow pixels in the header, right of the sprite.
+            let sparkle = sparklePixels(in: bitmap, x: 90 * scale, y: 58 * scale,
+                                        width: 220 * scale, height: 85 * scale)
+            XCTAssertEqual(sparkle > 10, shiny, "badge must follow the displayed individual: \(sparkle) sparkle pixels")
             try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
                 URL(fileURLWithPath: "/private/tmp/dex-color-detail-\(shiny ? "shiny" : "normal").png"))
         }

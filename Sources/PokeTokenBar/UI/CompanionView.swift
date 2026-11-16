@@ -1945,36 +1945,40 @@ struct PokemonDetailView: View {
     }
 
     private var identityHeader: some View {
-        let species = displayedSpecies
-        return HStack(spacing: 14) {
-            SpriteView(speciesID: species.id, size: 104, animated: true,
-                       shiny: displayedShiny, spriteStore: spriteStore, form: species.form)
+        HStack(spacing: 14) {
+            SpriteView(speciesID: displayedSpecies.id, size: 104, animated: true,
+                       shiny: displayedShiny, spriteStore: spriteStore, form: displayedSpecies.form)
                 .frame(width: 104, height: 104)
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(species.name).font(.title3.weight(.bold))
-                    Spacer(minLength: 8)
-                    Text(store.l.rarityLabel(species.rarity))
-                        .font(.callout.weight(.semibold)).foregroundStyle(.secondary)
-                }
-                if let details = store.pokemonDetailsByID[species.id] {
-                    TypeBadges(types: details.types, language: store.language, size: 11,
-                               horizontalPadding: 7, verticalPadding: 2)
-                    if !PokemonForm.isDefault(species.form, speciesID: species.id) {
-                        Text(store.l.defaultFormDataNote)
-                            .font(.caption2).foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                if displayedShiny { Text("✨ \(store.l.dexShinyLabel)").font(.callout) }
-                let isRepresentative = store.isRepresentative(species)
-                RepresentativeFooterButton(localization: store.l,
-                                           isRepresentative: isRepresentative) {
-                    _ = store.setRepresentativeSpeciesID(isRepresentative ? nil : species.id,
-                                                         form: species.form)
+            identityText
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    var identityText: some View {
+        let species = displayedSpecies
+        return VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(species.name).font(.title3.weight(.bold))
+                Spacer(minLength: 8)
+                Text(store.l.rarityLabel(species.rarity))
+                    .font(.callout.weight(.semibold)).foregroundStyle(.secondary)
+            }
+            if let details = store.pokemonDetailsByID[species.id] {
+                TypeBadges(types: details.types, language: store.language, size: 11,
+                           horizontalPadding: 7, verticalPadding: 2)
+                if !PokemonForm.isDefault(species.form, speciesID: species.id) {
+                    Text(store.l.defaultFormDataNote)
+                        .font(.caption2).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            if displayedShiny { Text("✨ \(store.l.dexShinyLabel)").font(.callout) }
+            let isRepresentative = store.isRepresentative(species)
+            RepresentativeFooterButton(localization: store.l,
+                                       isRepresentative: isRepresentative) {
+                _ = store.setRepresentativeSpeciesID(isRepresentative ? nil : species.id,
+                                                     form: species.form)
+            }
         }
     }
 

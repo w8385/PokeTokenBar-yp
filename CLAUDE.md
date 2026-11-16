@@ -50,6 +50,7 @@ Claude Code는 `.claude/skills/prepare-pr`의 symlink를 통해
 
 ## 스크린샷·렌더링 테스트
 
+테스트는 렌더된 글자를 OCR로 읽지 않는다 — 레이아웃은 `LayoutMeasure`, 문구는 문자열 소스·네이티브 버튼 제목, 색은 픽셀로 본다(`NoOCRInTestsGuardTests`가 막는다).
 창을 띄우거나 앱을 활성화하는 테스트·캡처는 쓰지 않는다 — 사용자의 포커스를 뺏는다. 뷰는 `OffscreenRender`로 뜨고(`docs/reference/defect-log.md` "Tests and the user's desktop"), 설치된 앱을 띄우거나 누르는 캡처·`scripts/e2e.sh`는 사용자가 자리에 있을 때만 한다.
 
 ## 릴리스 (자연어 트리거)

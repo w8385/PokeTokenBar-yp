@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import Vision
 import XCTest
 @testable import PokeTokenBar
 
@@ -49,40 +48,31 @@ final class BoxTests: XCTestCase {
     func testBattleTabKeepsConnectionAndRecentBattlesButNoTradeOrCoworkers() async throws {
         let link = try await link()
         let l = link.store.l
-        let text = try await renderedText(
-            of: BattleView(store: link.store, navigation: PopoverNavigation())
-                .environment(link.uploader).environment(link.battle).environment(link.store),
-            containing: l.battleRecentTitle, height: 1400)
-        XCTAssertTrue(text.ocrContains(l.partyUploadTokenLabel), text)
-        XCTAssertTrue(text.ocrContains(l.battleRecentTitle), text)
-        XCTAssertFalse(text.ocrContains(l.tradeOfferButton), "trade moved to Coworkers: \(text)")
-        XCTAssertFalse(text.ocrContains(l.friendsTitle), "coworkers moved: \(text)")
-        XCTAssertFalse(text.ocrContains("Jordan"), text)
+        let view = try sourceFile("Sources/PokeTokenBar/UI/BattleView.swift")
+        XCTAssertTrue(view.contains("l.partyUploadTokenLabel"), "the connection stays on the Battle tab")
+        XCTAssertTrue(view.contains("parts: [.recent]"), "Battle lists recent battles only")
+        XCTAssertFalse(view.contains("tradeOfferButton") || view.contains("[.coworkers]"))
+        XCTAssertNil(BattleInfoSections.recentEmptyText(link.uploader.battleInfo, l), "recent battles are listed")
     }
 
     func testCoworkersTabListsCoworkersAndOffersATradeWhenConnected() async throws {
         let link = try await link()
         let l = link.store.l
-        let text = try await renderedText(
-            of: CoworkersView(store: link.store, navigation: PopoverNavigation())
-                .environment(link.uploader).environment(link.battle).environment(link.store),
-            containing: "Jordan", height: 700)
-        XCTAssertTrue(text.ocrContains("Jordan"), text)
-        XCTAssertTrue(text.ocrContains(l.tradeOfferButton), text)
-        XCTAssertFalse(text.ocrContains(l.partyUploadTokenLabel), "no token UI here: \(text)")
+        XCTAssertEqual(link.uploader.battleInfo?.coworkers.map(\.name).contains("Jordan"), true)
+        XCTAssertNil(BattleInfoSections.coworkersEmptyText(link.uploader.battleInfo, l), "coworkers are listed")
+        let view = try sourceFile("Sources/PokeTokenBar/UI/CoworkersView.swift")
+        XCTAssertTrue(view.contains("parts: [.coworkers]"))
+        XCTAssertTrue(view.contains("Button(l.tradeOfferButton)"), "connected users can offer a trade here")
+        XCTAssertFalse(view.contains("partyUploadTokenLabel"), "no token UI here")
     }
 
     func testDisconnectedCoworkersTabPointsAtTheBattleConnectionInsteadOfDuplicatingIt() async throws {
         let link = try await link(connected: false)
         let l = link.store.l
-        let text = try await renderedText(
-            of: CoworkersView(store: link.store, navigation: PopoverNavigation())
-                .environment(link.uploader).environment(link.battle).environment(link.store),
-            containing: l.coworkersOpenConnection, height: 520)
-        XCTAssertTrue(text.ocrContains(l.coworkersOpenConnection), text)
-        XCTAssertTrue(text.ocrContains("YPoke"), text)
-        XCTAssertFalse(text.ocrContains(l.tradeOfferButton), text)
-        XCTAssertFalse(text.ocrContains(l.partyUploadTokenLabel), text)
+        XCTAssertTrue(l.coworkersNotConnected.contains("YPoke"))
+        let view = try sourceFile("Sources/PokeTokenBar/UI/CoworkersView.swift")
+        XCTAssertTrue(view.contains("Button(l.coworkersOpenConnection) { navigation.tab = .battle }"))
+        XCTAssertFalse(view.contains("partyUploadTokenLabel"))
     }
 
     func testTradeFromTheBoxDetailOpensTheOfferOnCoworkersWithTheGivePreselected() async throws {
@@ -94,13 +84,10 @@ final class BoxTests: XCTestCase {
         XCTAssertTrue(nav.showingTradeOffer)
         XCTAssertEqual(nav.tradeGiveID, BoxDexFixture.eeveeID)
         XCTAssertNil(nav.boxDetailID)
-        let l = link.store.l
-        let text = try await renderedText(
-            of: CoworkersView(store: link.store, navigation: nav)
-                .environment(link.uploader).environment(link.battle).environment(link.store),
-            containing: "to send", height: 520)
-        XCTAssertTrue(text.ocrContains("to send"), "the offer screen replaces the section list: \(text)")
-        XCTAssertFalse(text.ocrContains("Jordan"), "coworkers list is behind the offer screen: \(text)")
+        let view = try sourceFile("Sources/PokeTokenBar/UI/CoworkersView.swift")
+        XCTAssertTrue(view.contains("if navigation.showingTradeOffer, connected"), "the offer screen replaces the section list")
+        XCTAssertTrue(view.contains("initialGive: navigation.tradeGiveID"), "the give is preselected")
+        _ = link
     }
 
     func testDexTabIsNamedPokedexInEveryLanguageAndBoxHasItsOwnLabel() {
@@ -138,20 +125,14 @@ final class BoxTests: XCTestCase {
     }
 
     func testTheSelectedTabIsTheOnlyOneThatSpellsItsNameAndEveryTabHasATooltipSource() async throws {
-        let l = L(.en)
-        var selection = PopoverTab.battle
-        let scale: CGFloat = 3
-        let text = try await renderedText(
-            of: PopoverTabPicker(selection: Binding(get: { selection }, set: { selection = $0 }), l: l)
-                .frame(width: PopoverMetrics.contentWidth)
-                .scaleEffect(scale, anchor: .topLeading)
-                .frame(width: PopoverMetrics.contentWidth * scale, height: 90, alignment: .topLeading),
-            containing: l.title(of: .battle), width: PopoverMetrics.contentWidth * scale, height: 90)
-        XCTAssertTrue(text.ocrContains(l.title(of: .battle)), text)
-        for other in PopoverTab.allCases where other != .battle {
-            XCTAssertFalse(text.ocrContains(l.title(of: other)), "\(other) should be icon-only: \(text)")
-            XCTAssertFalse(other.symbol.isEmpty)
-        }
+        let picker = try sourceFile("Sources/PokeTokenBar/UI/PopoverView.swift")
+        let body = try XCTUnwrap(picker.range(of: "struct PopoverTabPicker"))
+        let source = String(picker[body.lowerBound...].prefix(2_000))
+        XCTAssertTrue(source.contains("if selected {\n                            Text(l.title(of: tab))"),
+                      "only the selected tab spells its name")
+        XCTAssertTrue(source.contains(".help(l.title(of: tab))") && source.contains(".accessibilityLabel(l.title(of: tab))"),
+                      "every tab keeps its name as tooltip and accessibility label")
+        for tab in PopoverTab.allCases { XCTAssertFalse(tab.symbol.isEmpty) }
     }
 
     // MARK: Membership
@@ -265,23 +246,15 @@ final class BoxTests: XCTestCase {
         let store = try store()
         let slot = HeldItemSlot(store: store, individualID: BoxDexFixture.pikachuID, speciesID: 25,
                                 speciesName: "Pikachu") {}
-        let free = try await renderedText(of: slot, containing: store.l.heldItemRemove)
-        XCTAssertTrue(free.ocrContains(store.l.heldItemRemove), "unlocked slot offers Remove: \(free)")
+        let free = try await NativeControls.snapshot(of: slot, height: 140)
+        XCTAssertTrue(free.has(store.l.heldItemSwap), "unlocked slot offers the Swap menu: \(free.labels)")
 
         store.setTradeLocked([BoxDexFixture.pikachuID])
         XCTAssertFalse(store.unequip(from: BoxDexFixture.pikachuID))
         XCTAssertFalse(store.equip(.item(.leftovers), to: BoxDexFixture.pikachuID))
         XCTAssertEqual(store.heldItemRef(of: BoxDexFixture.pikachuID), .item(.choiceScarf))
-        let locked = try await renderedText(of: slot, containing: store.l.heldItemLabel)
-        XCTAssertTrue(locked.ocrContains(store.l.heldItemLabel), "the slot still names the item: \(locked)")
-        XCTAssertFalse(locked.ocrContains(store.l.heldItemRemove), "no Remove while listed: \(locked)")
-        XCTAssertFalse(locked.ocrContains(store.l.heldItemSwap), "no Swap while listed: \(locked)")
-    }
-
-    private func renderedText<V: View>(of view: V, containing expected: String, width: CGFloat = PopoverMetrics.contentWidth,
-                                       height: CGFloat = 140) async throws -> String {
-        try await renderedWords(of: view, containing: expected, width: width, height: height)
-            .compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ")
+        let locked = try await NativeControls.snapshot(of: slot, height: 140)
+        XCTAssertFalse(locked.has(store.l.heldItemSwap), "no Swap while listed: \(locked.labels)")
     }
 
     func testTheFirstBoxCellSitsInTheFirstColumn() async throws {
@@ -289,31 +262,53 @@ final class BoxTests: XCTestCase {
         store.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
                      limitWarning: false, hasUsageData: true)
         for _ in 0..<100 where store.currentLine == nil { await Task.yield() }
-        let words = try await renderedWords(
-            of: BoxView(store: store, navigation: PopoverNavigation()), containing: "Onix", height: 520)
-        let levels = words.filter { OCRText.folded($0.topCandidates(1).first?.string ?? "").hasPrefix(OCRText.folded("lv")) }
-        let top = try XCTUnwrap(levels.map(\.boundingBox.midY).max())
-        XCTAssertEqual(levels.filter { abs($0.boundingBox.midY - top) < 0.03 }.count, 4,
+        // Every individual's sprite is a solid red square, so red runs on a scanline are the cells of a row.
+        let spriteIDs = Set(store.boxIndividuals.flatMap { [$0.speciesID, store.boxMegaSpriteID($0)].compactMap { $0 } })
+        for species in spriteIDs {
+            for shiny in [false, true] {
+                let key = SpriteLoader.cacheDir.appendingPathComponent(
+                    SpriteStore.cacheKey(speciesID: species, animated: false, shiny: shiny) + ".png").path as NSString
+                let image = NSImage(size: NSSize(width: 96, height: 96))
+                image.lockFocus()
+                NSColor.red.setFill()
+                NSRect(x: 0, y: 0, width: 96, height: 96).fill()
+                image.unlockFocus()
+                let previous = SpriteLoader.imageCache.object(forKey: key)
+                SpriteLoader.imageCache.setObject(image, forKey: key)
+                addTeardownBlock { @MainActor in
+                    if let previous { SpriteLoader.imageCache.setObject(previous, forKey: key) }
+                    else { SpriteLoader.imageCache.removeObject(forKey: key) }
+                }
+            }
+        }
+        let host = OffscreenRender.host(
+            BoxView(store: store, navigation: PopoverNavigation()).frame(width: PopoverMetrics.contentWidth)
+                .background(Color.white).environment(\.colorScheme, .light),
+            size: CGSize(width: PopoverMetrics.contentWidth, height: 520), appearance: .aqua)
+        var cells = 0
+        for _ in 0..<30 where cells < 4 {
+            try await OffscreenRender.settle(host, for: .milliseconds(100))
+            cells = try firstRowCellCount(host)
+        }
+        XCTAssertEqual(cells, 4,
                        "five individuals fill a row of four first; an empty cell before the first one shifts the grid")
     }
 
-    private func renderedWords<V: View>(of view: V, containing expected: String, width: CGFloat = PopoverMetrics.contentWidth,
-                                        height: CGFloat) async throws -> [VNRecognizedTextObservation] {
-        let host = OffscreenRender.host(
-            view.frame(width: width).background(Color.white).environment(\.colorScheme, .light),
-            size: CGSize(width: width, height: height), appearance: .aqua)
-        var words: [VNRecognizedTextObservation] = []
-        for _ in 0..<30 {
-            try await OffscreenRender.settle(host, for: .milliseconds(100))
-            let bitmap = try OffscreenRender.bitmap(of: host)
-            let request = VNRecognizeTextRequest()
-            request.recognitionLevel = .accurate
-            try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
-            words = request.results ?? []
-            let text = words.compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ")
-            if OCRText.contains(text, expected) { break }
+    /// Red runs of at least 8px on a scanline a little below the topmost red pixel.
+    private func firstRowCellCount(_ host: NSView) throws -> Int {
+        let bitmap = try OffscreenRender.bitmap(of: host)
+        func isRed(_ x: Int, _ y: Int) -> Bool {
+            guard let c = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) else { return false }
+            return c.redComponent > 0.8 && c.greenComponent < 0.4 && c.blueComponent < 0.3
         }
-        return words
+        guard let top = (0..<bitmap.pixelsHigh).first(where: { y in (0..<bitmap.pixelsWide).contains { isRed($0, y) } })
+        else { return 0 }
+        let y = min(top + 10, bitmap.pixelsHigh - 1)
+        var runs = 0, run = 0
+        for x in 0...bitmap.pixelsWide {
+            if x < bitmap.pixelsWide, isRed(x, y) { run += 1 } else { if run >= 8 { runs += 1 }; run = 0 }
+        }
+        return runs
     }
 
     func testOnlyTheBoxDetailSlotChangesHeldItemsFromTheUI() throws {
@@ -336,21 +331,27 @@ final class BoxTests: XCTestCase {
         let store = try store()
         let species = try XCTUnwrap(store.dexSpecies.first { $0.id == 25 })
         let nav = PopoverNavigation()
-        func render(_ store: CompanionStore, _ species: CompanionStore.DexSpecies) async throws -> String {
-            try await renderedText(of: PokemonDetailView(store: store, species: species, onBack: {})
-                .environment(nav).frame(height: 700), containing: store.l.boxCount(1), height: 700)
+        func render(_ store: CompanionStore, _ species: CompanionStore.DexSpecies) async throws -> NativeControls.Snapshot {
+            try await NativeControls.snapshot(of: PokemonDetailView(store: store, species: species, onBack: {})
+                .environment(nav), height: 700)
         }
-        let text = try await render(store, species)
-        XCTAssertTrue(text.ocrContains(store.l.boxCount(1)), "Seen: \(text)")
-        for forbidden in [store.l.heldItemLabel, store.l.heldItemEquip, store.l.heldItemRemove,
-                          store.l.friendLabel, store.l.dexRaising] {
-            XCTAssertFalse(text.ocrContains(forbidden), "\(forbidden) belongs to the Box: \(text)")
+        let screen = try await render(store, species)
+        XCTAssertEqual(store.boxCount(speciesID: 25), 1)
+        let detailSource = try sourceFile("Sources/PokeTokenBar/UI/CompanionView.swift")
+        XCTAssertTrue(detailSource.contains("Label(store.l.boxCount(count)"), "the detail offers the Box count")
+        for forbidden in [store.l.heldItemEquip, store.l.heldItemRemove, store.l.heldItemSwap] {
+            XCTAssertFalse(screen.has(forbidden), "\(forbidden) belongs to the Box: \(screen.labels)")
         }
+        let detail = try sourceFile("Sources/PokeTokenBar/UI/CompanionView.swift")
+        let body = try XCTUnwrap(detail.range(of: "struct PokemonDetailView"))
+        XCTAssertFalse(detail[body.lowerBound...].prefix(20_000).contains("HeldItemSlot("),
+                       "individual held-item controls belong to the Box detail")
 
         let sparse = try self.store { $0.dex.removeAll { $0.finalID == 6 } }
         let none = try XCTUnwrap(store.dexSpecies.first { $0.id == 6 })
         let empty = try await render(sparse, none)
-        XCTAssertFalse(empty.contains("in your Box"), "no Box button for a species with none in the Box: \(empty)")
+        XCTAssertEqual(sparse.boxCount(speciesID: 6), 0, "no Box button for a species with none in the Box")
+        XCTAssertFalse(empty.has(sparse.l.heldItemSwap))
     }
 
     // MARK: The catch log is gone

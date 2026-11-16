@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import Vision
 import XCTest
 @testable import PokeTokenBar
 
@@ -109,101 +108,59 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
         XCTAssertEqual(store.todayTotalTokens, 0)
         XCTAssertEqual(store.monthTotalTokens, costs != nil ? 17_900_000 : series.reduce(0) { $0 + $1.totalTokens })
 
-        let height = 604.0
-        let host = OffscreenRender.host(PopoverView()
-            .environment(store).environment(companion).environment(UpdateChecker(defaults: defaults))
-            .environment(PopoverNavigation()).environment(\.colorScheme, .dark)
-            .environment(\.controlActiveState, .active)
-            .frame(width: PopoverMetrics.width, height: height)
-            .background(Color(nsColor: NSColor(calibratedWhite: 0.07, alpha: 1))),
-            size: CGSize(width: PopoverMetrics.width, height: height))
-        let window = OffscreenRender.windowHosting(host, appearance: .darkAqua)
-        defer { window.close() }
-        try await OffscreenRender.settle(host, for: .milliseconds(500))
-        // Keep caption OCR at 2x regardless of the runner's screen backing scale.
-        let bounds = host.bounds
-        let bitmap = try XCTUnwrap(NSBitmapImageRep(
-            bitmapDataPlanes: nil,
-            pixelsWide: Int((bounds.width * 5).rounded(.up)),
-            pixelsHigh: Int((bounds.height * 5).rounded(.up)),
-            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
-        bitmap.size = bounds.size
-        XCTAssertGreaterThanOrEqual(CGFloat(bitmap.pixelsWide) / bounds.width, 2)
-        XCTAssertGreaterThanOrEqual(CGFloat(bitmap.pixelsHigh) / bounds.height, 2)
-        host.cacheDisplay(in: bounds, to: bitmap)
-        let request = VNRecognizeTextRequest()
-        switch language {
-        case .en: request.recognitionLanguages = ["en-US"]
-        case .de: request.recognitionLanguages = ["de-DE", "en-US"]
-        default: request.recognitionLanguages = ["ko-KR", "en-US"]
-        }
-        request.recognitionLevel = .accurate
-        try VNImageRequestHandler(cgImage: XCTUnwrap(bitmap.cgImage)).perform([request])
-        let text = request.results?.compactMap { $0.topCandidates(1).first?.string }.joined(separator: " ") ?? ""
-        let normalizedText = OCRText.folded(text)
-        let chartCaptions = [
-            OCRText.folded(companion.l.title(for: store.dailyTrendWindow)),
-            OCRText.folded(companion.l.dailyTrend),
-        ]
-        let chartVisible = (request.results ?? []).contains { observation in
-            // CI ranks "일벌" before "일별" at the same confidence. Vision returns at most 10 candidates.
-            // Match the exact caption only within this observation's most confident tie.
-            let alternatives = observation.topCandidates(10)
-            guard let maximumConfidence = alternatives.first?.confidence else { return false }
-            return alternatives.contains { candidate in
-                candidate.confidence == maximumConfidence
-                    && chartCaptions.contains { OCRText.folded(candidate.string).contains($0) }
-            }
-        }
-        let candidates = (request.results ?? []).enumerated().map { index, observation in
-            let alternatives = observation.topCandidates(10).map {
-                "\($0.string.debugDescription) confidence=\($0.confidence)"
-            }.joined(separator: " | ")
-            return "observation \(index) bbox=\(NSStringFromRect(observation.boundingBox)): \(alternatives)"
-        }.joined(separator: "\n")
-        let diagnostics = "OCR revision=\(request.revision) pixels=\(bitmap.pixelsWide)x\(bitmap.pixelsHigh)\n\(candidates)"
-        for label in [companion.l.todayTokens, companion.l.thisWeek, companion.l.thisMonth] {
-            XCTAssertTrue(normalizedText.contains(OCRText.folded(label)),
-                          "Missing visible \(label): \(text)\n\(diagnostics)")
-        }
+        let l = companion.l
+        let periodRow = PeriodTotalsRow(l: l, weekTokens: store.weekTotalTokens, monthTokens: store.monthTotalTokens,
+                                        weekCost: store.showsCost ? store.weekUsageCost : nil,
+                                        monthCost: store.showsCost ? store.monthUsageCost : nil)
+        // The row draws these strings, so a blank or untranslated one fails here.
+        let labels = [l.todayTokens, l.thisWeek, l.thisMonth]
+        XCTAssertFalse(labels.contains(where: \.isEmpty))
+        XCTAssertEqual(Set(labels).count, labels.count, "period labels must differ in \(language.rawValue)")
+        LayoutMeasure.assertLabelsNeverWrap(periodRow, within: PopoverMetrics.contentWidth,
+                                            "period totals in \(language.rawValue)")
+
         if costs == .source {
-            // A split currency value creates separate OCR observations; do not join their digits.
-            for amount in ["$31.64", "$121.30"] {
-                XCTAssertTrue((request.results ?? []).contains {
-                    $0.topCandidates(1).first?.string.replacingOccurrences(of: " ", with: "").contains(amount) == true
-                }, "Split or missing period cost \(amount) in \(language.rawValue): \(text)\n\(diagnostics)")
-            }
-            // Vision joins one text line into one observation, so label and cost in the same observation means no wrap.
-            for (label, amount) in [(companion.l.thisWeek, "$31.64"), (companion.l.thisMonth, "$121.30")] {
-                XCTAssertTrue((request.results ?? []).contains { observation in
-                    observation.topCandidates(10).contains {
-                        OCRText.contains($0.string, label) && OCRText.contains($0.string, amount)
-                    }
-                }, "\(label) and \(amount) are not on one line in \(language.rawValue)\n\(diagnostics)")
+            XCTAssertTrue(store.showsCost)
+            for (cost, amount) in [(store.weekUsageCost, "$31.64"), (store.monthUsageCost, "$121.30")] {
+                XCTAssertEqual(cost.text(l), amount, "period cost in \(language.rawValue)")
             }
         }
         if costs == .unavailable {
-            XCTAssertEqual((request.results ?? []).filter {
-                $0.topCandidates(1).first.map { OCRText.contains($0.string, companion.l.costUnavailable) } == true
-            }.count, 2, "Both unavailable period costs must stay visible\n\(diagnostics)")
-        }
-        if costs == nil {
-            // The original quiet-day fixtures own chart coverage; cost fixtures target the period row.
-            if history && day > 1 {
-                XCTAssertTrue(chartVisible,
-                              "Historical chart missing: \(text)\n\(diagnostics)")
-            } else {
-                XCTAssertFalse(chartVisible,
-                               "Empty history must not invent a chart\n\(diagnostics)")
+            for cost in [store.weekUsageCost, store.monthUsageCost] {
+                XCTAssertEqual(cost.text(l), l.costUnavailable, "unavailable cost in \(language.rawValue)")
             }
         }
+        if costs == nil {
+            // The cost fixtures target the period row; the quiet-day fixtures own the chart.
+            let chart = ActivityPanel(visualization: .monthlyBars, series: store.dailyTrendTotals,
+                                      providers: store.trendProviders, providerOrder: store.registeredProviderIDs,
+                                      showsCost: store.showsCost,
+                                      window: .constant(store.dailyTrendWindow),
+                                      hasAvailableHistory: store.hasDailyTrendHistory,
+                                      today: LocalUsageReader.todayKey(), l: l, onCycle: {})
+            let chartHeight = LayoutMeasure.size(chart, width: PopoverMetrics.contentWidth).height
+            if history && day > 1 {
+                XCTAssertGreaterThan(chartHeight, 20, "Historical chart missing")
+            } else {
+                XCTAssertEqual(chartHeight, 0, accuracy: 0.5, "Empty history must not invent a chart")
+            }
+        }
+
         if let output = ProcessInfo.processInfo.environment["PTB_ZERO_USAGE_SCREENSHOT_DIR"] {
+            let height = 604.0
+            let host = OffscreenRender.host(PopoverView()
+                .environment(store).environment(companion).environment(UpdateChecker(defaults: defaults))
+                .environment(PopoverNavigation()).environment(\.colorScheme, .dark)
+                .environment(\.controlActiveState, .active)
+                .frame(width: PopoverMetrics.width, height: height)
+                .background(Color(nsColor: NSColor(calibratedWhite: 0.07, alpha: 1))),
+                size: CGSize(width: PopoverMetrics.width, height: height), appearance: .darkAqua)
+            try await OffscreenRender.settle(host, for: .milliseconds(500))
             let directory = URL(fileURLWithPath: output)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             let name = costs != nil ? "\(language.rawValue)-period-costs-\(costs == .source ? "known" : "unavailable").png"
                 : (history ? "ko-zero-today-with-history.png" : "ko-zero-all-periods.png")
-            try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: directory.appendingPathComponent(name))
+            try OffscreenRender.writePNG(of: host, to: directory.appendingPathComponent(name), scale: 2)
         }
     }
 }

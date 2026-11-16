@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import Vision
 import XCTest
 @testable import PokeTokenBar
 
@@ -23,41 +22,42 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
 
     func testTenSnapshotsStartCollapsedAndExpandAllRowsThenCollapseAndReopen() async throws {
         let (companion, usage) = try makeStores(snapshotCount: 10)
-        let create = companion.l.createSnapshotButton
         let root = host(companion, usage)
         let document = try await settingsDocument(in: root)
-        try await settle(document, rows: 0, present: [create], capture: "snapshots-collapsed")
+        try await settle(document, capture: "snapshots-collapsed")
         let collapsedHeight = document.bounds.height
 
         try await toggleHistory(in: document, l: companion.l, expanded: false)
-        try await settle(document, rows: 10, present: [create], capture: "snapshots-expanded")
+        try await settle(document, capture: "snapshots-expanded")
         XCTAssertGreaterThan(document.bounds.height, collapsedHeight + 200)
         XCTAssertEqual(companion.availableSnapshots.count, 10)
 
         try await toggleHistory(in: document, l: companion.l, expanded: true)
-        try await settle(document, rows: 0, capture: "snapshots-collapsed-again")
+        try await settle(document, capture: "snapshots-collapsed-again")
         XCTAssertEqual(document.bounds.height, collapsedHeight, accuracy: 2)
 
         // Reopening Settings starts a new visit, even after leaving its history expanded.
         try await toggleHistory(in: document, l: companion.l, expanded: false)
-        try await settle(document, rows: 10)
+        try await settle(document)
         window?.close()
         let reopened = host(companion, usage)
         let reopenedDocument = try await settingsDocument(in: reopened)
-        try await settle(reopenedDocument, rows: 0, present: [create], capture: "snapshots-reopened")
+        try await settle(reopenedDocument, capture: "snapshots-reopened")
+        XCTAssertEqual(reopenedDocument.bounds.height, collapsedHeight, accuracy: 2, "a new visit starts collapsed")
         XCTAssertEqual(companion.availableSnapshots.count, 10)
     }
 
     func testEmptyHistoryIsDisclosedAndManualCreationRemainsAvailable() async throws {
         let (companion, usage) = try makeStores(snapshotCount: 0)
-        let create = companion.l.createSnapshotButton
         let document = try await settingsDocument(in: host(companion, usage))
-        let collapsedWords = try await settle(document, present: [create])
-        XCTAssertFalse(collapsedWords.contains { $0.reads(companion.l.noSnapshotsYet) })
+        try await settle(document)
+        let collapsedHeight = document.bounds.height
 
+        // The empty-state line is the only thing expanding an empty history adds.
+        XCTAssertTrue(companion.availableSnapshots.isEmpty)
         try await toggleHistory(in: document, l: companion.l, expanded: false)
-        try await settle(document, rows: 0, present: [companion.l.noSnapshotsYet, create],
-                         capture: "snapshots-empty-expanded")
+        try await settle(document, capture: "snapshots-empty-expanded")
+        XCTAssertGreaterThan(document.bounds.height, collapsedHeight + 8, "expanding must show the empty-state row")
     }
 
     private func makeStores(snapshotCount: Int) throws -> (CompanionStore, UsageStore) {
@@ -122,34 +122,6 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
 
     private func descendants(_ view: NSView) -> [NSView] {
         [view] + view.subviews.flatMap(descendants)
-    }
-
-    private struct Word {
-        let candidates: [String]
-        let confidences: [Float]
-        /// Pixel coordinates in the complete image, with the origin at the top left.
-        let bounds: CGRect
-        static func normalized(_ text: String) -> String {
-            OCRText.folded(text).filter { $0.isLetter || $0.isNumber }
-        }
-        func reads(_ wanted: String, exactly: Bool = false) -> Bool {
-            let normalized = Self.normalized(wanted)
-            return candidates.contains {
-                let text = Self.normalized($0)
-                return exactly ? text == normalized : text.contains(normalized)
-            }
-        }
-        func duplicates(_ other: Word) -> Bool {
-            let overlap = bounds.intersection(other.bounds)
-            let smallerArea = min(bounds.width * bounds.height, other.bounds.width * other.bounds.height)
-            let texts = Set(candidates.map(Self.normalized).filter { !$0.isEmpty })
-            return !overlap.isNull && overlap.width * overlap.height > smallerArea * 0.5
-                && abs(bounds.midY - other.bounds.midY) < min(bounds.height, other.bounds.height) * 0.5
-                && !texts.isDisjoint(with: other.candidates.map(Self.normalized))
-        }
-        var diagnostic: [String: Any] {
-            ["candidates": candidates, "confidences": confidences, "globalPixelBounds": NSStringFromRect(bounds)]
-        }
     }
 
     private func diagnosticDirectory() throws -> URL? {
@@ -238,98 +210,26 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
         return bitmap
     }
 
-    private func recognize(_ image: CGImage, crop: CGRect) throws -> [Word] {
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.recognitionLanguages = ["en-US"]
-        try VNImageRequestHandler(cgImage: image).perform([request])
-        return request.results?.compactMap {
-            let candidates = $0.topCandidates(10)
-            let box = $0.boundingBox
-            // CGImage crops start at the top; Vision boxes start at the bottom of each crop.
-            let global = CGRect(x: crop.minX + box.minX * crop.width,
-                                y: crop.minY + (1 - box.maxY) * crop.height,
-                                width: box.width * crop.width, height: box.height * crop.height)
-            return candidates.isEmpty ? nil : Word(candidates: candidates.map(\.string),
-                confidences: candidates.map(\.confidence), bounds: global)
-        } ?? []
-    }
-
-    /// Top pixel row of the render to recognize: 150pt above the history toggle, which keeps the
-    /// "Create snapshot" button and every row below it. Falls back to the whole page.
-    private func backupSectionPixel(in view: NSView, imageHeight: Int) -> Int {
-        guard let root = view.window?.contentView,
-              let toggle = descendants(root).compactMap({ $0 as? NSButton })
-                  .first(where: { $0.accessibilityIdentifier() == "snapshotHistory" }) else { return 0 }
-        let frame = view.convert(toggle.bounds, from: toggle)
-        let top = view.isFlipped ? frame.minY - view.bounds.minY : view.bounds.maxY - frame.maxY
-        return max(0, min(imageHeight, Int(((top - 150) * 2).rounded(.down))))
-    }
-
-    private struct Render {
-        let words: [Word]
-        let bitmap: NSBitmapImageRep
-        let documentBounds: CGRect
-    }
-
-    private func render(_ view: NSView) async throws -> Render {
-        let rendered = try await bitmap(of: view)
-        let image = try XCTUnwrap(rendered.cgImage)
-        let directory = try diagnosticDirectory()
-        // Use native pixels without resizing. A 48pt overlap keeps row labels intact at crop
-        // boundaries; global geometry merges only observations of the same physical label.
-        let stripHeight = min(image.height, Int((try XCTUnwrap(view.enclosingScrollView).contentView.bounds.height * 2).rounded(.up)))
-        let overlap = min(96, stripHeight / 4)
-        // Everything above the backup section is unrelated Settings; reading it only costs OCR time.
-        let firstPixel = backupSectionPixel(in: view, imageHeight: image.height)
-        var y = firstPixel
-        var result = [Word]()
-        var strips = [[String: Any]]()
-        while y < image.height {
-            let crop = CGRect(x: 0, y: y, width: image.width, height: min(stripHeight, image.height - y))
-            let words = try recognize(try XCTUnwrap(image.cropping(to: crop)), crop: crop)
-            strips.append(["cropPixels": NSStringFromRect(crop), "words": words.map(\.diagnostic)])
-            for word in words {
-                if let index = result.firstIndex(where: { $0.duplicates(word) }) {
-                    if (word.confidences.first ?? 0) > (result[index].confidences.first ?? 0) { result[index] = word }
-                } else { result.append(word) }
-            }
-            if crop.maxY >= CGFloat(image.height) { break }
-            y += stripHeight - overlap
-        }
-        if let directory {
-            let metadata: [String: Any] = ["render": renderNumber, "firstOCRPixel": firstPixel,
-                                         "strips": strips, "merged": result.map(\.diagnostic)]
-            try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys])
-                .write(to: directory.appendingPathComponent("ocr-\(renderNumber).json"))
-        }
-        return Render(words: result, bitmap: rendered, documentBounds: view.bounds)
-    }
-
-    /// Renders the document until `rows` Restore rows (when given) and every `present` text are read
-    /// from the same render, so one OCR pass checks the whole screen. The render that matched is
-    /// saved as `capture`, re-rendered only if the layout moved while it settled.
-    @discardableResult
-    private func settle(_ document: NSView, rows: Int? = nil, present: [String] = [],
-                        capture name: String? = nil) async throws -> [Word] {
+    /// Waits until the document height stops changing, then saves the render as `capture` when the CI
+    /// artifact directory is set. Height is what rows and disclosure state change, and it does not
+    /// depend on how text renders.
+    private func settle(_ document: NSView, capture name: String? = nil) async throws {
+        let root = try XCTUnwrap(document.window?.contentView)
+        var previous: CGFloat = -1
         let deadline = ContinuousClock.now + .seconds(5)
-        var problem = ""
         repeat {
-            document.window?.contentView?.layoutSubtreeIfNeeded()
-            let rendered = try await render(document)
-            let actual = rendered.words.filter { $0.reads("Restore", exactly: true) }.count
-            let missing = present.filter { text in !rendered.words.contains { $0.reads(text) } }
-            problem = "restore rows expected \(rows.map(String.init) ?? "any"), rendered \(actual); missing text \(missing)"
-            if (rows == nil || actual == rows) && missing.isEmpty {
-                try await Task.sleep(for: .milliseconds(300))
-                document.window?.contentView?.layoutSubtreeIfNeeded()
-                let final = document.bounds == rendered.documentBounds ? rendered : try await render(document)
-                if let name { try save(final.bitmap, name: name) }
-                return final.words
+            root.layoutSubtreeIfNeeded()
+            let height = document.bounds.height
+            if abs(height - previous) < 0.5 {
+                if let name, ProcessInfo.processInfo.environment["PTB_SNAPSHOT_SCREENSHOT_DIR"] != nil {
+                    try save(try await bitmap(of: document), name: name)
+                }
+                return
             }
-            try await Task.sleep(for: .milliseconds(100))
+            previous = height
+            try await Task.sleep(for: .milliseconds(300))
         } while ContinuousClock.now < deadline
-        XCTFail("Snapshot history never settled: \(problem)")
+        XCTFail("Settings document height never settled: \(document.bounds.height)")
         throw URLError(.cannotParseResponse)
     }
 
