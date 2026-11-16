@@ -749,9 +749,11 @@ struct CompanionHeader: View {
     private var bigSprite: some View {
         let mega = store.currentMegaSpriteID
         let size = HomePetRow<EmptyView>.mainSize
-        return SpriteView(speciesID: mega ?? store.currentSpeciesID, size: size, bob: true, animated: true,
-                   shiny: store.currentIsShiny, spriteStore: spriteStore, form: mega == nil ? store.currentForm : nil,
-                   back: store.facesBack, female: mega == nil && store.currentIsFemale)
+        return MegaEvolveStage(megaSpriteID: mega, size: size, event: store.megaEvolveEvent) { shown in
+            SpriteView(speciesID: shown ?? store.currentSpeciesID, size: size, bob: true, animated: true,
+                       shiny: store.currentIsShiny, spriteStore: spriteStore, form: shown == nil ? store.currentForm : nil,
+                       back: store.facesBack, female: shown == nil && store.currentIsFemale)
+        }
             .crowdMember(crowd, slot: 0, size: size)
             .frame(width: size, height: size)
             .overlay(alignment: .bottomTrailing) {

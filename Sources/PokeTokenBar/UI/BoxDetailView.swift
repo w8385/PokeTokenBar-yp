@@ -57,10 +57,12 @@ struct BoxDetailView: View {
         let mega = store.boxMegaSpriteID(individual)
         let stone = store.megaStone(of: individual.id, speciesID: individual.speciesID)
         return HStack(spacing: 14) {
-            SpriteView(speciesID: mega ?? individual.speciesID, size: 104, animated: true, shiny: entry.isShiny,
-                       form: mega == nil ? entry.form : nil,
-                       female: mega == nil && entry.profile?.gender == .female)
-                .frame(width: 104, height: 104)
+            MegaEvolveStage(megaSpriteID: mega, size: 104, event: store.megaEvolveEvent) { shown in
+                SpriteView(speciesID: shown ?? individual.speciesID, size: 104, animated: true, shiny: entry.isShiny,
+                           form: shown == nil ? entry.form : nil,
+                           female: shown == nil && entry.profile?.gender == .female)
+            }
+            .frame(width: 104, height: 104)
             VStack(alignment: .leading, spacing: 5) {
                 HStack(alignment: .firstTextBaseline) {
                     (Text(stone.map { l.megaFormName(name, variant: $0.variantSuffix) } ?? name)

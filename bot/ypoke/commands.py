@@ -449,7 +449,7 @@ class CommandHandler:
             return None
         data = self._pokeapi.mega_form(form_id)
         return MegaForm(types=tuple(data["types"]), base=base_stats(data), ability=data["ability"],
-                        ability_id=data["ability_id"])
+                        ability_id=data["ability_id"], form_id=form_id)
 
 
 def rental_levels(challenger: list[dict], opponent: list[dict]) -> tuple[list[dict], list[dict]]:
@@ -538,10 +538,12 @@ def result_blocks(reply: Reply) -> list[dict]:
     }]})
     if card.log:
         blocks.append({"type": "divider"})
-    blocks += [
-        {"type": "context", "elements": [{"type": "mrkdwn", "text": fit(entry, SECTION_TEXT_LIMIT)}]}
-        for entry in card.log
-    ]
+    for index, entry in enumerate(card.log):
+        images = card.log_images[index] if index < len(card.log_images) else ()
+        blocks.append({"type": "context", "elements": [
+            *({"type": "image", "image_url": url, "alt_text": alt} for url, alt in images),
+            {"type": "mrkdwn", "text": fit(entry, SECTION_TEXT_LIMIT)},
+        ]})
     return blocks
 
 
