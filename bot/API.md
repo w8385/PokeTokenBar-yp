@@ -48,7 +48,7 @@ Replaces the caller's stored party.
 | `ability` | string | optional, the individual's PokéAPI ability name, lowercase with dashes (`"huge-power"`, max 40 chars). Missing or malformed names are dropped, never rejected. Battles know 27 abilities (Blaze, Torrent, Overgrow, Swarm, Intimidate, Levitate, Huge Power, Pure Power, Thick Fat, Technician, Sturdy, Adaptability, Guts, Swift Swim, Chlorophyll, Sand Rush, Drizzle, Drought, Sand Stream, Snow Warning, Static, Flame Body, Poison Point, Immunity, Limber, Insomnia, Water Veil); any other name does nothing. A physical move counts as contact for Static, Flame Body and Poison Point (30%) |
 | `held_item` | string | optional, lowercase PokéAPI item slug. Known: `leftovers` (heals 1/16 each turn), `choice-scarf` (Speed ×1.5), `choice-band` (Attack ×1.5), both Choice items lock into the first move, `focus-sash` (survives one KO hit from full HP), `life-orb` (damage ×1.3, 10% max HP recoil), `expert-belt` (super-effective ×1.2), `charcoal` (Fire moves ×1.2). A Mega Stone slug (`venusaurite`, `charizardite-x`, …) on a member whose `pokemon_id` is that stone's Pokémon makes it Mega Evolve before turn 1 with the Mega form's base stats, types and ability name from PokéAPI; on any other member it does nothing. Missing, empty or unknown slugs do nothing and are never rejected |
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
-| `moves` | array | optional, up to 4 distinct PokéAPI move ids, each an attacking move from `GET /v1/moves` at that level. Missing or empty: the 4 most recently learned |
+| `moves` | array | optional, up to 4 distinct PokéAPI move ids, each a move from `GET /v1/moves` at that level, level-up or machine (TM). Missing or empty: the 4 most recently learned level-up moves |
 | `trade_pool` | array | optional, a top-level key beside `party`. The Pokémon the player may trade, see [Trades](#trades). Left out by older apps; a pool that fails validation is ignored and never fails the upload |
 
 ### `dex` (optional)
@@ -123,10 +123,12 @@ that do not know these fields ignore them, and an old bot omits them.
 Returns the stored party with the same shape, plus `"uploaded_at"` (ISO 8601 UTC).
 `404 {"ok": false, "error": "no_party"}` if nothing was uploaded yet. Auth as above.
 
-## `GET /v1/moves?pokemon_id=25&level=42`
+## `GET /v1/moves?pokemon_id=25&level=42&machine=1`
 
-The moves a Pokémon can bring by that level, oldest first: level-up moves from the newest
-main game it is in. Attacking moves only, plus the weather moves (Sunny Day, Rain Dance, Sandstorm,
+The moves a Pokémon can bring by that level: its level-up moves learned at or below `level`, oldest first, then (only
+with `machine=1`, which apps that know TMs send) every move it learns by machine (TM) at any level, by move id.
+Without `machine=1` the list is level-up moves only. Both come from the newest main game that has level-up moves
+for it. Attacking moves only, plus the weather moves (Sunny Day, Rain Dance, Sandstorm,
 Hail, Snowscape), which come with `"power": 0` and `"damage_class": "status"`. Auth as above.
 
 ```json
@@ -138,13 +140,13 @@ Hail, Snowscape), which come with `"power": 0` and `"damage_class": "status"`. A
      "ailment": "paralysis", "ailment_chance": 10, "priority": 0,
      "drain": 0, "min_hits": 1, "max_hits": 1,
      "stat_changes": [], "stat_target": "target", "stat_chance": 0,
-     "weather": null, "always_hits_in": [], "level": 1}
+     "weather": null, "always_hits_in": [], "level": 1, "source": "level"}
   ],
   "default": [84]
 }
 ```
 
-`default` is what the bot uses when the upload sends no `moves`: the latest attacking moves, never a weather move. `accuracy` is `null` for moves that
+`source` is `"level"` for a level-up move (`level` is when it is learned) or `"machine"` for a TM move (`level` is `0`, usable at any level; the app offers it once the player owns the TM). Apps that predate `source` ignore it. `default` is what the bot uses when the upload sends no `moves`: the latest level-up attacking moves, never a weather or machine move. `accuracy` is `null` for moves that
 never miss.
 
 | Field | Meaning in the battle |

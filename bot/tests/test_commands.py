@@ -64,7 +64,7 @@ class FakePokeAPI:
         self.requested.append(pokemon_id)
         return SPECIES.get(pokemon_id, WILD)
 
-    def attacking_moves(self, pokemon_id, level):
+    def attacking_moves(self, pokemon_id, level, machine_ids=()):
         if self.fail:
             raise OSError("offline")
         return [m for m in MOVES.get(pokemon_id, WILD_MOVES) if m["level"] <= level]

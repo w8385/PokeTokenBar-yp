@@ -1665,6 +1665,34 @@ final class CompanionStore {
         return true
     }
 
+    // MARK: 기술머신 (기술마다 한 개 — 키 `tm:<moveID>`, 소모되지 않는다)
+
+    func ownsTM(_ moveID: Int) -> Bool { (state.inventory[MachineMove.inventoryKey(moveID)] ?? 0) > 0 }
+
+    func tmPrice(power: Int, isWeather: Bool) -> Int {
+        PokemonBalance.scaled(PokemonBalance.machinePrice(power: power, isWeather: isWeather), by: shopDifficulty)
+    }
+
+    func canBuyTM(power: Int, isWeather: Bool) -> Bool { availableTokens >= tmPrice(power: power, isWeather: isWeather) }
+
+    @discardableResult
+    func buyTM(moveID: Int, power: Int, isWeather: Bool) -> Bool {
+        guard !ownsTM(moveID), canBuyTM(power: power, isWeather: isWeather) else { return false }
+        state.spentTokens += tmPrice(power: power, isWeather: isWeather)
+        state.inventory[MachineMove.inventoryKey(moveID)] = 1
+        save()
+        return true
+    }
+
+    /// Gives the TM for free (battle rewards). False when it is already owned.
+    @discardableResult
+    func grantTM(moveID: Int) -> Bool {
+        guard !ownsTM(moveID) else { return false }
+        state.inventory[MachineMove.inventoryKey(moveID)] = 1
+        save()
+        return true
+    }
+
     /// 상점 메가스톤 목록 — 가진 포켓몬의 돌이 먼저, 나머지는 도감 번호 순.
     var megaStoneShopEntries: [ShopEntry] {
         let owned = state.ownedSpeciesIDs

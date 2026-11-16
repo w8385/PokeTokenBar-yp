@@ -77,10 +77,33 @@ extension L {
 
     var heldItemSwap: String { t("바꾸기", "Swap", "入れ替える", "Cambiar", "Changer", "Trocar", "Tauschen", "Сменить") }
 
-    /// The Battle tab and the evolution cards only show the held item; the one place to change it is the Box.
-    var heldItemChangeInBox: String {
-        t("박스에서 바꿀 수 있어요", "Change it in the Box", "ボックスで変えられます", "Cámbialo en la caja",
-          "Change-le dans la boîte", "Troque na caixa", "Im Box änderbar", "Меняется в коробке")
+    /// The Battle tab only picks the lineup; each row opens that Pokémon's Box page, where its moves and item are set.
+    var battleTraining: String {
+        t("트레이닝", "Training", "トレーニング", "Entrenar", "Entraîner", "Treinar", "Training", "Тренировка")
+    }
+
+    var moveGroupLevelUp: String {
+        t("레벨업", "Level-up", "レベルアップ", "Por nivel", "Niveau", "Por nível", "Level-up", "По уровню")
+    }
+
+    var moveGroupMachine: String {
+        t("기술머신", "TM", "わざマシン", "MT", "CT", "TM", "TM", "ТМ")
+    }
+
+    var moveSlotEmpty: String {
+        t("기술 추가", "Add a move", "わざを追加", "Añadir movimiento", "Ajouter une capacité", "Adicionar golpe",
+          "Attacke hinzufügen", "Добавить приём")
+    }
+
+    var moveTrainingHint: String {
+        t("기술을 눌러 바꿔요. 기술머신 기술은 레벨과 상관없이 쓸 수 있어요. 대결에 나가는 포켓몬에게만 쓰여요.",
+          "Tap a move to swap it. TM moves work at any level. Only Pokémon in the lineup use them.",
+          "わざをタップして入れ替えます。わざマシンのわざはレベルに関係なく使えます。対戦に出るポケモンだけに使われます。",
+          "Toca un movimiento para cambiarlo. Los de MT valen a cualquier nivel. Solo los usan los Pokémon de la alineación.",
+          "Touche une capacité pour la changer. Celles des CT marchent à tout niveau. Seuls les Pokémon de l'équipe s'en servent.",
+          "Toque num golpe para trocá-lo. Os de TM valem em qualquer nível. Só os Pokémon da formação os usam.",
+          "Tippe eine Attacke an, um sie zu tauschen. TM-Attacken gehen auf jedem Level. Nur Pokémon in der Aufstellung nutzen sie.",
+          "Нажмите на приём, чтобы заменить. Приёмы ТМ доступны на любом уровне. Их используют только покемоны из состава.")
     }
 
     var heldItemEquipAtTop: String {

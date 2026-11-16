@@ -173,6 +173,7 @@ final class PartyUploader {
     @ObservationIgnored private let dexSource: @MainActor () -> DexSummary?
     @ObservationIgnored private let trades: TradeSync?
     @ObservationIgnored private var tradesUnsupported = false
+    @ObservationIgnored private var learnableCache: [String: LearnableMoves] = [:]
     @ObservationIgnored var onBattleInfo: (@MainActor (BattleInfo) -> Void)?
     @ObservationIgnored private var lastAttemptAt: Date?
     @ObservationIgnored private var lastAttemptBody: Data?
@@ -288,13 +289,17 @@ final class PartyUploader {
         }
     }
 
-    /// Nil when there is no token or server, or the bot cannot answer.
+    /// Nil when there is no token or server, or the bot cannot answer. Answers are kept until the app quits.
     func learnableMoves(pokemonID: Int, level: Int) async -> LearnableMoves? {
+        let key = "\(serverURL)|\(pokemonID)-\(level)"
+        if let cached = learnableCache[key] { return cached }
         guard let token = tokenStore.load(),
               let request = Self.movesRequest(serverURL: serverURL, token: token, pokemonID: pokemonID, level: level),
-              let (data, status) = try? await fetch(request), status == 200
+              let (data, status) = try? await fetch(request), status == 200,
+              let moves = try? LearnableMoves.decode(data)
         else { return nil }
-        return try? LearnableMoves.decode(data)
+        learnableCache[key] = moves
+        return moves
     }
 
     /// Applies the trades the bot completed and acknowledges them. A bot without trades answers 404 and
@@ -420,6 +425,7 @@ final class PartyUploader {
         let url = base.appending(path: "v1/moves").appending(queryItems: [
             URLQueryItem(name: "pokemon_id", value: String(pokemonID)),
             URLQueryItem(name: "level", value: String(level)),
+            URLQueryItem(name: "machine", value: "1"),
         ])
         var request = URLRequest(url: url, timeoutInterval: 30)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -445,10 +451,13 @@ final class PartyUploader {
     }
 }
 
-/// `GET /v1/moves`: attacking level-up moves learnable at a level, oldest first.
+/// `GET /v1/moves`: the attacking moves usable at a level, level-up ones oldest first, then machine (TM) ones.
 struct LearnableMoves: Decodable, Equatable, Sendable {
     let moves: [LearnableMove]
     let `default`: [Int]
+
+    var levelUpMoves: [LearnableMove] { moves.filter { !$0.isMachine } }
+    var machineMoves: [LearnableMove] { moves.filter(\.isMachine) }
 
     static func decode(_ data: Data) throws -> LearnableMoves {
         let decoder = JSONDecoder()
@@ -465,6 +474,8 @@ struct LearnableMove: Decodable, Equatable, Sendable, Identifiable {
     let damageClass: String
     let accuracy: Int?
     let level: Int
+    /// `"level"` or `"machine"`; nil from bots that predate TM moves, where every move is a level-up move.
+    var source: String? = nil
     /// The fields below are nil from bots older than yp8.
     var pp: Int? = nil
     var critRate: Int? = nil
@@ -477,6 +488,12 @@ struct LearnableMove: Decodable, Equatable, Sendable, Identifiable {
     var drain: Int? = nil
     var minHits: Int? = nil
     var maxHits: Int? = nil
+
+    /// "sun", "rain", … for the moves that set weather; nil otherwise.
+    var weather: String? = nil
+
+    var isMachine: Bool { source == "machine" }
+    var isWeather: Bool { weather != nil }
 
     struct StatChange: Decodable, Equatable, Sendable {
         let stat: String

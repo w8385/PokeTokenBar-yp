@@ -111,8 +111,8 @@ final class HeldItemTests: XCTestCase {
     func testPartyCarriesTheHeldItemSlugOfTheFighter() {
         let state = state(held: ["pikachu": .choiceScarf])
 
-        let pikachu = BattleEntry.party(state: state, slots: [BattleEntrySlot(instanceID: "pikachu")], rentalSpeciesID: 4)
-        let caterpie = BattleEntry.party(state: state, slots: [BattleEntrySlot(instanceID: "caterpie")], rentalSpeciesID: 4)
+        let pikachu = BattleEntry.party(state: state, slots: [BattleEntrySlot(instanceID: "pikachu")], moveChoices: [:], rentalSpeciesID: 4)
+        let caterpie = BattleEntry.party(state: state, slots: [BattleEntrySlot(instanceID: "caterpie")], moveChoices: [:], rentalSpeciesID: 4)
 
         XCTAssertEqual(pikachu.first?.heldItem, "choice-scarf")
         XCTAssertNil(caterpie.first?.heldItem)
@@ -123,7 +123,7 @@ final class HeldItemTests: XCTestCase {
         state.dex.append(entry(13, id: "weedle"))
         let slots = ["pikachu", "caterpie", "weedle"].map { BattleEntrySlot(instanceID: $0) }
 
-        let party = BattleEntry.party(state: state, slots: slots, rentalSpeciesID: 4)
+        let party = BattleEntry.party(state: state, slots: slots, moveChoices: [:], rentalSpeciesID: 4)
 
         XCTAssertEqual(party.map(\.heldItem), ["choice-scarf", nil, "leftovers"])
     }

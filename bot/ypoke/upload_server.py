@@ -6,6 +6,7 @@ import re
 import threading
 from datetime import UTC, datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from collections.abc import Collection
 from typing import Callable
 from urllib.parse import parse_qs, urlsplit
 
@@ -24,7 +25,7 @@ COWORKER_WINDOW = timedelta(days=30)
 ABILITY_NAME = re.compile(r"[a-z][a-z-]{0,39}")
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
-MovesFor = Callable[[int, int], list[dict]]
+MovesFor = Callable[[int, int, Collection[int] | None], list[dict]]
 OnUpload = Callable[[str, list[dict]], None]
 NameFor = Callable[[str], str | None]
 Notify = Callable[[tuple[DirectMessage, ...]], None]
@@ -45,7 +46,7 @@ def serve(
     """Start the upload server on a daemon thread and return it.
 
     `on_upload(user_id, party)` runs after each stored upload, before the reply.
-    `moves_for(pokemon_id, level)` returns the attacking moves learnable at that level and raises OSError when offline.
+    `moves_for(pokemon_id, level, machine_ids)` returns the attacking moves usable at that level (`machine_ids` is `None` for every machine move) and raises OSError when offline.
     `name_for(user_id)` returns a Slack display name, or None when it cannot be found.
     With `trades`, the trade endpoints are served and `notify` sends the DMs a new offer produces.
     """
@@ -72,11 +73,11 @@ def validate_party(payload: object) -> list[dict]:
 
 
 def check_moves(party: list[dict], moves_for: MovesFor) -> None:
-    """Raise PartyError if a chosen move is not an attacking move learnable at the member's level."""
+    """Raise PartyError if a chosen move is not an attacking move the member can use: learned by level-up at or below its level, or by machine."""
     for index, member in enumerate(party):
         if "moves" not in member:
             continue
-        learnable = {move["id"] for move in moves_for(member["pokemon_id"], member["level"])}
+        learnable = {move["id"] for move in moves_for(member["pokemon_id"], member["level"], member["moves"])}
         for move_id in member["moves"]:
             if move_id not in learnable:
                 raise PartyError(f"party[{index}].moves: {move_id} is not an attacking move learnable at level {member['level']}")
@@ -232,7 +233,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(400, {"ok": False, "error": "pokemon_id or level out of range"})
             return
         try:
-            moves = self.moves_for(pokemon_id, level)
+            moves = self.moves_for(pokemon_id, level, None if query.get("machine") == ["1"] else ())
         except OSError:
             self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
             return

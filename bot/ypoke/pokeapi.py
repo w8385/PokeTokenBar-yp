@@ -5,6 +5,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 
 from ypoke.battle import BaseStats
@@ -68,9 +69,9 @@ class PokeAPIService:
 
         Every member is tried; the first OSError is raised afterwards. Returns the number of distinct Pokémon.
         """
-        needed = sorted({(member["pokemon_id"], member["level"]) for member in members})
+        needed = sorted({(member["pokemon_id"], member["level"], tuple(member.get("moves") or ())) for member in members})
 
-        def fetch(item: tuple[int, int]) -> OSError | None:
+        def fetch(item: tuple[int, int, tuple[int, ...]]) -> OSError | None:
             try:
                 self.pokemon(item[0])
                 self.attacking_moves(*item)
@@ -82,25 +83,32 @@ class PokeAPIService:
             errors = [error for error in pool.map(fetch, needed) if error is not None]
         if errors:
             raise errors[0]
-        return len({pokemon_id for pokemon_id, _ in needed})
+        return len({pokemon_id for pokemon_id, _, _ in needed})
 
-    def attacking_moves(self, pokemon_id: int, level: int) -> list[dict]:
-        """Damaging and weather-setting level-up moves learned at or below `level`, oldest first. Raises on network errors.
+    def attacking_moves(self, pokemon_id: int, level: int, machine_ids: Collection[int] | None = ()) -> list[dict]:
+        """Damaging and weather-setting moves usable at `level`: level-up moves learned at or below it, oldest first,
+        then machine (TM) moves by id. Raises on network errors.
 
-        Each move is `move()` plus `"level"`.
+        Each move is `move()` plus `"level"` (0 for a machine move) and `"source"` (`"level"` or `"machine"`).
+        A TM move's data is fetched only if its id is in `machine_ids`; `None` means all of them.
         """
-        learned = [entry for entry in self.learnset(pokemon_id) if entry["level"] <= level]
+        learnset = self.learnset(pokemon_id)
+        by_id = {entry["move_id"]: entry for entry in learnset if entry["source"] == "level" and entry["level"] <= level}
+        for entry in learnset:
+            if entry["source"] == "machine" and entry["move_id"] not in by_id and (machine_ids is None or entry["move_id"] in machine_ids):
+                by_id[entry["move_id"]] = entry
+        learned = list(by_id.values())
         with ThreadPoolExecutor(max_workers=MOVE_FETCH_WORKERS) as pool:
             moves = list(pool.map(self.move, [entry["move_id"] for entry in learned]))
         return [
-            {**move, "level": entry["level"]}
+            {**move, "level": entry["level"], "source": entry["source"]}
             for entry, move in zip(learned, moves)
             if move["weather"] or (move["power"] and move["damage_class"] != "status")
         ]
 
     def learnset(self, pokemon_id: int) -> list[dict]:
-        """Level-up moves `{"move_id", "level"}` from the newest main game the Pokémon is in, by level."""
-        key = f"learnset/{pokemon_id}"
+        """`{"move_id", "level", "source"}` from the newest main game the Pokémon is in: level-up moves by level, then machine moves by id."""
+        key = f"learnset-v2/{pokemon_id}"
         cached = self._store.cached(key)
         if cached is not None:
             return cached
@@ -140,21 +148,31 @@ class PokeAPIService:
 
 
 def learnset_from(pokemon: dict) -> list[dict]:
-    """Pick one version group's level-up moves out of a `/pokemon/{id}` body; a move learned twice keeps its lowest level."""
-    by_group: dict[tuple[bool, int], dict[int, int]] = {}
+    """Pick one version group out of a `/pokemon/{id}` body: its level-up moves (a move learned twice keeps its lowest level),
+    then the moves it teaches by machine with level 0. The group is the newest one with level-up moves."""
+    levels_by_group: dict[tuple[bool, int], dict[int, int]] = {}
+    machines_by_group: dict[tuple[bool, int], set[int]] = {}
     for entry in pokemon["moves"]:
         move_id = _id_from_url(entry["move"]["url"])
         for detail in entry["version_group_details"]:
-            if detail["move_learn_method"]["name"] != "level-up":
+            method = detail["move_learn_method"]["name"]
+            if method not in ("level-up", "machine"):
                 continue
             group = detail["version_group"]
             rank = (group["name"] not in _SIDE_VERSION_GROUPS, _id_from_url(group["url"]))
-            levels = by_group.setdefault(rank, {})
+            if method == "machine":
+                machines_by_group.setdefault(rank, set()).add(move_id)
+                continue
+            levels = levels_by_group.setdefault(rank, {})
             levels[move_id] = min(levels.get(move_id, detail["level_learned_at"]), detail["level_learned_at"])
-    if not by_group:
+    if not levels_by_group:
         return []
-    levels = by_group[max(by_group)]
-    return [{"move_id": move_id, "level": level} for move_id, level in sorted(levels.items(), key=lambda item: (item[1], item[0]))]
+    rank = max(levels_by_group)
+    by_level = sorted(levels_by_group[rank].items(), key=lambda item: (item[1], item[0]))
+    return [
+        *({"move_id": move_id, "level": level, "source": "level"} for move_id, level in by_level),
+        *({"move_id": move_id, "level": 0, "source": "machine"} for move_id in sorted(machines_by_group.get(rank, ()))),
+    ]
 
 
 def move_from(move: dict) -> dict:

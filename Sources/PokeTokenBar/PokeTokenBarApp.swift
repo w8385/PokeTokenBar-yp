@@ -137,7 +137,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             lock: { [weak companion] id in companion?.lockForTrade(id) })
         partyUploader = PartyUploader(partySource: { [weak companion, battleEntry] in
             companion.map {
-                BattleEntry.party(state: $0.state, slots: battleEntry.slots, rentalSpeciesID: battleEntry.rentalSpeciesID)
+                BattleEntry.party(state: $0.state, slots: battleEntry.slots, moveChoices: battleEntry.moveChoices,
+                                  rentalSpeciesID: battleEntry.rentalSpeciesID)
             } ?? []
         }, dexSource: { [weak companion] in
             companion.map { DexSummary($0) }
