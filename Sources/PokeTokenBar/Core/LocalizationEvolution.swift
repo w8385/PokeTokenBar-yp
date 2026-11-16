@@ -20,6 +20,17 @@ extension L {
           "если покемон держит его, он учитывается в условии эволюции. В бою не действует.")
     }
 
+    var evolutionHeldCondition: String {
+        t("포켓몬에게 지니게 하면 진화 조건에 쓰여요.",
+          "Held by a Pokémon, it counts toward an evolution condition.",
+          "ポケモンに持たせると進化の条件になります。",
+          "Si lo lleva un Pokémon, cuenta para una condición de evolución.",
+          "Tenu par un Pokémon, il compte pour une condition d'évolution.",
+          "Se um Pokémon o segurar, conta para uma condição de evolução.",
+          "Von einem Pokémon getragen, zählt es für eine Entwicklungsbedingung.",
+          "Если покемон держит его, он учитывается в условии эволюции.")
+    }
+
     var evolutionTradeItemNote: String {
         t("지니게 한 채 교환하면 함께 넘어가고, 진화에 쓰여요. 연결의끈으로도 같아요.",
           "held while it is traded, it goes along and is used up by the evolution. A Linking Cord works the same way.",

@@ -242,6 +242,7 @@ struct BoxDetailView: View {
         case .notReady: cordMessage = l.linkingCordNotReady(name)
         case .unavailable: cordMessage = l.linkingCordUnavailable
         case .listed: cordMessage = l.tradeLockedItemText
+        case .everstone: cordMessage = l.heldItemEffect(.everstone)
         }
     }
 

@@ -55,6 +55,18 @@ class PokeAPIService:
         self._store.cache(key, data)
         return data
 
+    def can_evolve(self, pokemon_id: int) -> bool:
+        """Whether the species still has an evolution (Eviolite). Raises on network errors."""
+        key = f"can-evolve/{pokemon_id}"
+        cached = self._store.cached(key)
+        if cached is not None:
+            return bool(cached)
+        species = _get_json(_get_json(f"{API_BASE}/pokemon/{pokemon_id}")["species"]["url"])
+        chain = _get_json(species["evolution_chain"]["url"])["chain"]
+        result = _evolves_further(chain, species["name"])
+        self._store.cache(key, result)
+        return result
+
     def pokemon(self, pokemon_id: int) -> dict:
         """Return `{"name_ko", "types", "base"}` for a PokéAPI `/pokemon/{id}` id. Raises on network errors."""
         cached = self._store.cached_pokemon(pokemon_id)
@@ -212,6 +224,13 @@ def move_from(move: dict) -> dict:
         "min_hits": meta.get("min_hits") or 1,
         "max_hits": meta.get("max_hits") or 1,
     }
+
+
+def _evolves_further(node: dict, species_name: str) -> bool:
+    """Whether `species_name` is in the chain below `node` with at least one evolution of its own."""
+    if node["species"]["name"] == species_name:
+        return bool(node["evolves_to"])
+    return any(_evolves_further(child, species_name) for child in node["evolves_to"])
 
 
 def base_stats(data: dict) -> BaseStats:

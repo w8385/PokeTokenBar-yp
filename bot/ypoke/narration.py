@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    BATTLE_LEVEL, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, ItemHeal, MegaEvolution, SendOut,
-    StatusDamage, WeatherDamage, WeatherEnd,
+    BATTLE_LEVEL, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, ItemEffect, ItemHeal, MegaEvolution,
+    SendOut, StatusDamage, WeatherDamage, WeatherEnd,
 )
 from ypoke.dex import bar, sprite_url
 from ypoke.items import ITEM_NAMES, known
@@ -27,6 +27,7 @@ STATUS_ICON = {
 RESIDUAL_ICON = {"burn": "🔥", "poison": "☠️", "toxic": "☠️"}
 BLOCKED_TAG = {"paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임"}
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
+ITEM_EFFECT_TEXT = {"cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독"}
 STAT_SHORT = {
     "attack": "공격", "defense": "방어", "special_attack": "특공", "special_defense": "특방", "speed": "스피드",
 }
@@ -141,6 +142,8 @@ def _decisive_line(result: BattleResult) -> str | None:
 def _decisive_text(event: Event) -> str:
     if isinstance(event, Action):
         return f"{event.attacker} 💫혼란 자해" if event.blocked == "confusion" else f"{event.attacker} {event.move}"
+    if isinstance(event, ItemHeal):
+        return f"{event.pokemon} @{ITEM_NAMES[event.item]}"
     icon = RESIDUAL_ICON[event.kind] if isinstance(event, StatusDamage) else WEATHER_ICON[event.weather]
     return f"{event.pokemon} {icon}"
 
@@ -151,7 +154,7 @@ def _faint_side(event: Event) -> int | None:
         if event.knockout:
             return 1 - event.side
         return event.side if event.attacker_fainted else None
-    if isinstance(event, (StatusDamage, WeatherDamage)) and event.fainted:
+    if isinstance(event, (StatusDamage, WeatherDamage, ItemHeal)) and event.fainted:
         return event.side
     return None
 
@@ -254,7 +257,10 @@ def _event_lines(event: Event) -> list[str]:
         icon = RESIDUAL_ICON[event.kind] if isinstance(event, StatusDamage) else WEATHER_ICON[event.weather]
         return [f"{marker} {event.pokemon} {icon} {event.hp}%", *([_faint_line(event.pokemon)] if event.fainted else [])]
     if isinstance(event, ItemHeal):
-        return [f"{marker} {event.pokemon} @{ITEM_NAMES[event.item]} {event.hp}%"]
+        return [f"{marker} {event.pokemon} @{ITEM_NAMES[event.item]} {event.hp}%",
+                *([_faint_line(event.pokemon)] if event.fainted else [])]
+    if isinstance(event, ItemEffect):
+        return [f"{marker} {event.pokemon} @{ITEM_NAMES[event.item]} {ITEM_EFFECT_TEXT[event.effect]}"]
     lines = [_action_line(event, marker)]
     if event.attacker_fainted:
         lines.append(_faint_line(event.attacker))
@@ -281,11 +287,12 @@ def _action_line(event: Action, marker: str) -> str:
     if event.multiplier == 0:
         return " ".join(filter(None, [head, "→", event.defender, "무효", _ability_tag(event)]))
     hp = FAINTED if event.knockout else f"{event.defender_hp}%"
-    return " ".join([f"{head} → {event.defender} {hp}", *_hit_tags(event)[:MAX_TAGS]])
+    item_tags = [f"@{ITEM_NAMES[item]}" for item in (event.attacker_item, event.defender_item) if item]
+    return " ".join([f"{head} → {event.defender} {hp}", *_hit_tags(event)[:MAX_TAGS], *item_tags])
 
 
 def _hit_tags(event: Action) -> list[str]:
-    """In the order they are kept when more than `MAX_TAGS` apply."""
+    """In the order they are kept when more than `MAX_TAGS` apply; a held item that triggered is always shown."""
     tags = []
     if event.critical:
         tags.append("급소")
@@ -302,7 +309,6 @@ def _hit_tags(event: Action) -> list[str]:
         tags.append("흡수")
     if event.recoil:
         tags.append("반동")
-    tags += [f"@{ITEM_NAMES[item]}" for item in (event.attacker_item, event.defender_item) if item]
     return tags
 
 

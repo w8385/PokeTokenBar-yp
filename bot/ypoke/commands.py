@@ -9,6 +9,7 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
 from urllib.parse import urlencode
 
+from ypoke import items
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm, simulate
 from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_url
 from ypoke.mega_stones import mega_form_id
@@ -441,7 +442,17 @@ class CommandHandler:
             item=member.get("held_item"),
             mega=self._mega(member),
             pokemon_id=member["pokemon_id"],
+            can_evolve=self._can_evolve(member),
         )
+
+    def _can_evolve(self, member: dict) -> bool:
+        """Only Eviolite needs it; a failed lookup counts as fully evolved rather than failing the battle."""
+        if member.get("held_item") != items.EVIOLITE:
+            return False
+        try:
+            return self._pokeapi.can_evolve(member["pokemon_id"])
+        except (OSError, ValueError, KeyError, TypeError):
+            return False
 
     def _mega(self, member: dict) -> MegaForm | None:
         form_id = mega_form_id(member.get("held_item"), member["pokemon_id"])
