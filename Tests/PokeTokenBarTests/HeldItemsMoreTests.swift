@@ -18,15 +18,6 @@ private struct LineProvider: PokeProviding {
 
 @MainActor
 final class EverstoneTests: XCTestCase {
-    private var paths: [URL] = []
-    private var suites: [String] = []
-
-    override func tearDownWithError() throws {
-        paths.forEach { try? FileManager.default.removeItem(at: $0) }
-        suites.forEach { UserDefaults().removePersistentDomain(forName: $0) }
-        try super.tearDownWithError()
-    }
-
     private func store(tree: EvoNode, state: CompanionState = CompanionState(),
                        inventory: [ItemKind: Int] = [:]) throws -> CompanionStore {
         var state = state
@@ -34,11 +25,11 @@ final class EverstoneTests: XCTestCase {
         for (kind, count) in inventory { state.inventory[kind.rawValue] = count }
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("everstone-\(UUID())")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        paths.append(dir)
+        addTeardownBlock { try? FileManager.default.removeItem(at: dir) }
         let file = dir.appendingPathComponent("state.json")
         try JSONEncoder().encode(state).write(to: file)
         let suite = "everstone-\(UUID())"
-        suites.append(suite)
+        addTeardownBlock { UserDefaults().removePersistentDomain(forName: suite) }
         return CompanionStore(provider: LineProvider(tree: tree), clock: { Date(timeIntervalSince1970: 1_700_000_000) },
                               fileURL: file, rng: SeededRNG(seed: 1), dittoDisguiseRollingEnabled: false,
                               defaults: try XCTUnwrap(UserDefaults(suiteName: suite)))
