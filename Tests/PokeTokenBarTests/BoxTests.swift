@@ -75,7 +75,7 @@ final class BoxTests: XCTestCase {
         XCTAssertFalse(view.contains("partyUploadTokenLabel"))
     }
 
-    func testTradeFromTheBoxDetailOpensTheOfferOnCoworkersWithTheGivePreselected() async throws {
+    func testOpeningTheOfferWithAGivePreselectedLandsOnCoworkersWithTheSummary() async throws {
         let link = try await link()
         let nav = PopoverNavigation()
         nav.openBoxDetail(id: BoxDexFixture.eeveeID)
