@@ -36,8 +36,14 @@ final class TradeBoxShotTests: XCTestCase {
                           opensTradePanel: true, initialTradeTarget: target)
                 .environment(uploader).environment(battle).environment(store)
         }
+        try await capture(BoxDetailView(store: store, individual: eevee, navigation: PopoverNavigation(), onBack: {})
+            .environment(uploader).environment(battle).environment(store),
+                          to: directory.appendingPathComponent("trade-box-detail-closed.png"))
         try await capture(detail(target: nil), to: directory.appendingPathComponent("trade-box-picker-open.png"))
         try await capture(detail(target: "u2"), to: directory.appendingPathComponent("trade-box-picker-confirm.png"))
+        try await capture(TradeOfferView(store: store, uploader: uploader, fightingIDs: [BoxDexFixture.pikachuID], initialCoworkers: nil, onBack: {})
+            .environment(uploader).environment(battle).environment(store),
+                          to: directory.appendingPathComponent("trade-box-friends-grid-first.png"))
         try await capture(TradeOfferView(store: store, uploader: uploader, fightingIDs: [BoxDexFixture.pikachuID],
                                          initialGive: BoxDexFixture.eeveeID, onBack: {})
             .environment(uploader).environment(battle).environment(store),
