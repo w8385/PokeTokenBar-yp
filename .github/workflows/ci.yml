@@ -11,8 +11,9 @@ concurrency:
   group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# The offscreen render tests are about 60% of the test time and need no coverage, so they run
-# in the ui-tests jobs in parallel. Any other test class, including a new one, runs in build-test.
+# One macOS job builds once, then runs the unit tests with the coverage gate and the two offscreen
+# render groups. The render groups are listed here so the gate skips them; any other test class,
+# including a new one, runs in the gate.
 env:
   UI_TESTS_DEX: DexBackNavigationTests|DexColorRenderingTests|CollectionReadabilityRenderingTests
   UI_TESTS_SETTINGS: SnapshotHistoryRenderingTests|FormMetadataNoteRenderingTests|ZeroUsageHomeRenderingTests|SessionKeySettingsRenderingTests
@@ -73,37 +74,34 @@ jobs:
           SWIFT_TEST_SKIP: ${{ env.UI_TESTS_DEX }}|${{ env.UI_TESTS_SETTINGS }}
         run: ./scripts/test-gate.sh
 
-  ui-tests:
-    name: ui-tests (${{ matrix.shard }})
-    needs: changes
-    if: needs.changes.outputs.swift == 'true'
-    runs-on: macos-15
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - shard: dex
-            artifact: dex-renders
-          - shard: settings
-            artifact: snapshot-history-renders
-    steps:
-      - uses: actions/checkout@v5
+      - name: UI render tests (dex)
+        if: ${{ !cancelled() }}
+        env:
+          PTB_SNAPSHOT_SCREENSHOT_DIR: ${{ runner.temp }}/dex-renders
+          PTB_ZERO_USAGE_SCREENSHOT_DIR: ${{ runner.temp }}/dex-renders/zero-usage
+        run: swift test --skip-build --enable-code-coverage --filter "$UI_TESTS_DEX"
 
-      - name: Build tests
-        run: swift build --build-tests
-
-      - name: Run UI render tests
+      - name: UI render tests (settings)
+        if: ${{ !cancelled() }}
         env:
           PTB_SNAPSHOT_SCREENSHOT_DIR: ${{ runner.temp }}/snapshot-history-renders
           PTB_ZERO_USAGE_SCREENSHOT_DIR: ${{ runner.temp }}/snapshot-history-renders/zero-usage
-          TESTS: ${{ matrix.shard == 'dex' && env.UI_TESTS_DEX || env.UI_TESTS_SETTINGS }}
-        run: swift test --skip-build --filter "$TESTS"
+        run: swift test --skip-build --enable-code-coverage --filter "$UI_TESTS_SETTINGS"
+
+      - name: Preserve dex renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dex-renders
+          path: ${{ runner.temp }}/dex-renders
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Preserve native snapshot-history renders
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
+          name: snapshot-history-renders
           path: ${{ runner.temp }}/snapshot-history-renders
           if-no-files-found: ignore
           retention-days: 7
@@ -125,7 +123,7 @@ jobs:
   # Single check to require: it always reports, and passes when every needed job succeeded or was skipped.
   ci-ok:
     name: ci-ok
-    needs: [changes, build-test, ui-tests, secret-scan]
+    needs: [changes, build-test, secret-scan]
     if: always()
     runs-on: ubuntu-latest
     steps:
