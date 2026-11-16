@@ -166,12 +166,14 @@ final class EvoLineLayoutTests: XCTestCase {
         XCTAssertFalse(a.back); XCTAssertFalse(a.forward)
     }
 
-    /// Only species in the dex open a Pokédex page. The `?` placeholder and a species with no dex
-    /// cell (an uncaught future evolution) get no target, so they render without a button or hover.
-    func testDexLinkTargetOnlyForSpeciesInTheDex() {
-        let links = [1: "1", 2: "2"]
+    /// Owned and uncaught species both resolve through the link map; the `?` placeholder and an
+    /// unmapped node (an egg, an unsupported species) get no target.
+    func testDexLinkTargetForOwnedAndUnownedSpecies() {
+        let links = [1: "1", 2: "2", 3: "3"]
         XCTAssertEqual(EvoLineView.dexLinkTarget(for: EvoLineItem(.species(2), .current), links: links), "2")
-        XCTAssertNil(EvoLineView.dexLinkTarget(for: EvoLineItem(.species(3), .future), links: links))
+        XCTAssertEqual(EvoLineView.dexLinkTarget(for: EvoLineItem(.species(3), .future), links: links), "3")
+        XCTAssertNil(EvoLineView.dexLinkTarget(for: EvoLineItem(.species(9), .future), links: links))
         XCTAssertNil(EvoLineView.dexLinkTarget(for: EvoLineItem(.mystery, .future), links: links))
+        XCTAssertNil(EvoLineView.dexLinkTarget(for: EvoLineItem(.mystery, .future), links: [:]))
     }
 }

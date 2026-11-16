@@ -74,6 +74,42 @@ final class DexFlavorScreenshotTests: XCTestCase {
                           to: directory.appendingPathComponent("dexflavor-unowned.png"))
     }
 
+    func testCaptureUnownedRouteNode() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_FLAVOR_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_FLAVOR_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("route-shot-\(UUID()).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        var state = CompanionState()
+        state.language = .ko
+        state.dex = [DexEntry(baseID: 1, finalID: 1, chainOrder: [1], rarity: .common,
+                              caughtAt: Date(timeIntervalSince1970: 1_700_000_000),
+                              names: [1: ["ko": "이상해씨"]])]
+        try JSONEncoder().encode(state).write(to: file)
+        let store = CompanionStore(provider: SyntheticDexProvider(), fileURL: file)
+        XCTAssertEqual(store.dexLinkTargets(including: [1, 2])[2], nil, "index not loaded yet")
+        await store.loadSpeciesIndexIfNeeded()
+        XCTAssertEqual(store.dexLinkTargets(including: [1, 2]), [1: "1", 2: "2"])
+        XCTAssertEqual(store.dexLinkTargets(including: [1, 2, 99999])[99999], nil)
+
+        let route = EvoLineView(nodes: [EvoLineItem(.species(1), .current), EvoLineItem(.species(2), .future),
+                                        EvoLineItem(.mystery, .future)],
+                                mysteryLabel: "?", language: .ko, thumb: 56,
+                                names: [1: "이상해씨", 2: "이상해풀"],
+                                dexLinks: store.dexLinkTargets(including: [1, 2]), onOpenDexEntry: { _ in })
+        let size = NSSize(width: PopoverMetrics.contentWidth, height: 110)
+        try await OffscreenRender.capture(route.padding(8).frame(width: size.width, height: size.height)
+            .background(Color.white).environment(\.colorScheme, .light),
+            size: size, appearance: .aqua, settle: .seconds(4),
+            to: directory.appendingPathComponent("evo-unowned-route.png"))
+        let unowned = try XCTUnwrap(store.unownedDexSpecies.first { $0.id == 2 })
+        try await capture(UnownedSpeciesDetailView(store: store, species: unowned, onOpen: { _ in }, onBack: {},
+                                                   flavorProvider: SyntheticFlavorProvider()),
+                          to: directory.appendingPathComponent("evo-unowned-page.png"))
+    }
+
     private func capture<V: View>(_ view: V, to file: URL) async throws {
         let size = NSSize(width: PopoverMetrics.contentWidth, height: 520)
         try await OffscreenRender.capture(view.frame(width: size.width, height: size.height)

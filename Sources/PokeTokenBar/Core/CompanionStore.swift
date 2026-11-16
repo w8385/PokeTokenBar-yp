@@ -580,6 +580,18 @@ final class CompanionStore {
         dexSpecies.reduce(into: [:]) { links, species in links[species.id] = species.collectionID }
     }
 
+    /// `dexLinkTargets` plus the unowned dex page (`String(id)`) for each listed species the species
+    /// index knows. Empty extras until the index is loaded.
+    func dexLinkTargets(including speciesIDs: [Int]) -> [Int: String] {
+        var links = dexLinkTargets
+        guard let speciesIndex else { return links }
+        for id in speciesIDs where links[id] == nil && PokemonAssets.isSupported(speciesID: id)
+            && speciesIndex.rarity(of: id) != nil {
+            links[id] = String(id)
+        }
+        return links
+    }
+
     /// Collected form summaries for the detail picker; missing forms remain visible but disabled.
     func formSpecies(speciesID: Int) -> [DexSpecies] {
         guard PokemonForm.hasForms(speciesID: speciesID) else { return [] }
