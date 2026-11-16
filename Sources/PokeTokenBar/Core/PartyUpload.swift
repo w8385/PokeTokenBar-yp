@@ -215,6 +215,12 @@ final class PartyUploader {
 
     var hasServer: Bool { Self.baseURL(serverURL) != nil }
 
+    /// The server and token the gym calls need; nil until the bot link is set.
+    var gymLink: GymService.Link? {
+        guard hasServer, let token = tokenStore.load() else { return nil }
+        return GymService.Link(server: serverURL, token: token)
+    }
+
     func register(_ link: PartyRegistrationLink) -> Bool {
         guard saveToken(link.token) else { return false }
         if let server = link.server { serverURL = server }
