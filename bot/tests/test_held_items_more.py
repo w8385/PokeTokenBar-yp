@@ -468,8 +468,8 @@ def test_sitrus_berry_is_eaten_between_the_hits_of_a_multi_hit_move(monkeypatch)
     assert action.defender_item == items.SITRUS_BERRY
 
 
-def test_the_battle_looks_up_evolution_only_for_an_eviolite_holder_and_survives_a_failed_lookup(tmp_path):
-    from ypoke.commands import CommandHandler
+def test_the_battle_looks_up_evolution_only_for_an_eviolite_holder_and_survives_a_failed_lookup():
+    from ypoke.combatants import _can_evolve
 
     class Fake:
         def __init__(self, fail=None):
@@ -481,16 +481,13 @@ def test_the_battle_looks_up_evolution_only_for_an_eviolite_holder_and_survives_
                 raise self.fail
             return True
 
-    store = Store(str(tmp_path / "bot.sqlite3"))
     api = Fake()
-    handler = CommandHandler(store, api, None, lambda: None, bot_user_id="UBOT")
-    assert handler._can_evolve({"pokemon_id": 25, "held_item": "eviolite"}) is True
-    assert handler._can_evolve({"pokemon_id": 26, "held_item": "leftovers"}) is False
-    assert handler._can_evolve({"pokemon_id": 26}) is False
+    assert _can_evolve(api, {"pokemon_id": 25, "held_item": "eviolite"}) is True
+    assert _can_evolve(api, {"pokemon_id": 26, "held_item": "leftovers"}) is False
+    assert _can_evolve(api, {"pokemon_id": 26}) is False
     assert api.asked == [25]
     for failure in (OSError("offline"), ValueError("not json"), KeyError("evolution_chain"), TypeError("null chain")):
-        broken = CommandHandler(store, Fake(fail=failure), None, lambda: None, bot_user_id="UBOT")
-        assert broken._can_evolve({"pokemon_id": 25, "held_item": "eviolite"}) is False
+        assert _can_evolve(Fake(fail=failure), {"pokemon_id": 25, "held_item": "eviolite"}) is False
 
 
 def actions(result):
