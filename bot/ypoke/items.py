@@ -28,6 +28,8 @@ WEAKNESS_POLICY = "weakness-policy"
 FLAME_ORB = "flame-orb"
 TOXIC_ORB = "toxic-orb"
 CHARCOAL = "charcoal"
+STELLAR_CRYSTAL = "stellar-crystal"
+OGERPON_MASKS = ("teal-mask", "wellspring-mask", "hearthflame-mask", "cornerstone-mask")
 
 TYPE_BOOST_ITEMS = {
     CHARCOAL: "fire", "mystic-water": "water", "miracle-seed": "grass", "magnet": "electric",
@@ -53,6 +55,8 @@ ITEM_NAMES = {
     "spell-tag": "저주의부적", "dragon-fang": "용의이빨", "black-glasses": "검은안경", "metal-coat": "금속코트",
     "silk-scarf": "실크스카프", "fairy-feather": "요정의깃털",
     "heat-rock": "뜨거운바위", "damp-rock": "축축한바위", "smooth-rock": "보송보송바위", "icy-rock": "차가운바위",
+    "teal-mask": "벽록의가면", "wellspring-mask": "우물의가면", "hearthflame-mask": "화덕의가면",
+    "cornerstone-mask": "주춧돌의가면", STELLAR_CRYSTAL: "별빛 결정",
 }
 CHOICE_ITEMS = frozenset({CHOICE_SCARF, CHOICE_BAND, CHOICE_SPECS})
 LEFTOVERS_FRACTION = 16
@@ -95,7 +99,7 @@ def damage_multiplier(item: str | None, move_type: str | None, effectiveness: fl
         return LIFE_ORB_MULTIPLIER
     if item == EXPERT_BELT and effectiveness > 1:
         return BOOST_MULTIPLIER
-    if move_type is not None and TYPE_BOOST_ITEMS.get(item) == move_type:
+    if move_type is not None and (TYPE_BOOST_ITEMS.get(item) == move_type or item in OGERPON_MASKS):
         return BOOST_MULTIPLIER
     if move_type is not None and item == (MUSCLE_BAND if physical else WISE_GLASSES):
         return BAND_MULTIPLIER

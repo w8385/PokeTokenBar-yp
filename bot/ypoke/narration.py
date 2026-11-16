@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    BATTLE_LEVEL, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, ItemEffect, ItemHeal, MegaEvolution,
-    SendOut, StatusDamage, WeatherDamage, WeatherEnd,
+    BATTLE_LEVEL, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, FormShift, ItemEffect, ItemHeal,
+    MegaEvolution, SendOut, StatusDamage, WeatherDamage, WeatherEnd,
 )
 from ypoke.dex import bar, sprite_url
 from ypoke.items import ITEM_NAMES, known
@@ -27,6 +27,7 @@ STATUS_ICON = {
 RESIDUAL_ICON = {"burn": "🔥", "poison": "☠️", "toxic": "☠️"}
 BLOCKED_TAG = {"paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임"}
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
+FORM_CAPTION = {"mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼"}
 ITEM_EFFECT_TEXT = {"cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독"}
 STAT_SHORT = {
     "attack": "공격", "defense": "방어", "special_attack": "특공", "special_defense": "특방", "speed": "스피드",
@@ -223,6 +224,12 @@ def _turns(events: list[Event]) -> list[_Turn]:
     opening_images: list[Image] = []
     sent: dict[int, int] = {}
     for event in events:
+        if isinstance(event, FormShift):
+            (turns[-1].lines if turns else opening).append(_form_line(event))
+            if event.form_id is not None:
+                (turns[-1].images if turns else opening_images).append(
+                    (sprite_url(event.form_id, False), f"{event.pokemon} {FORM_CAPTION[event.kind]}"))
+            continue
         if isinstance(event, (AbilityTrigger, MegaEvolution)):
             current = turns[-1].lines if turns else opening
             if event.side in sent:
@@ -247,6 +254,21 @@ def _turns(events: list[Event]) -> list[_Turn]:
             turn.essential = True
         turn.lines += lines
     return turns
+
+
+def _form_line(event: FormShift) -> str:
+    marker = SIDE_MARKERS[event.side]
+    if event.kind == "mask":
+        tag = _change_tag(event.change, event.side)
+        return f"{marker} {event.pokemon}의 가면이 빛났다!{f' {tag}' if tag else ''}"
+    return f"{marker} {event.pokemon}{_topic_particle(event.pokemon)} {FORM_CAPTION[event.kind]}이 되었다!"
+
+
+def _topic_particle(name: str) -> str:
+    last = ord(name[-1])
+    if not 0xAC00 <= last <= 0xD7A3:
+        return "은(는)"
+    return "은" if (last - 0xAC00) % 28 else "는"
 
 
 def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:

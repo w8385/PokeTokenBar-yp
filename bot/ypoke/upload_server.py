@@ -17,6 +17,7 @@ from ypoke.dex import normalize_dex
 from ypoke.moves import MAX_MOVES, default_move_ids
 from ypoke.messages import DirectMessage
 from ypoke.store import Store
+from ypoke.tera_forms import usable_item
 from ypoke.trades import PROPOSE_ERRORS, TradeService
 
 MAX_BODY_BYTES = 64 * 1024
@@ -115,7 +116,7 @@ def _drop_duplicate_items(party: list[dict]) -> list[dict]:
     seen: set[str] = set()
     for member in party:
         item = member.get("held_item")
-        if item is None:
+        if item is None or usable_item(item, member["pokemon_id"]) is None:
             continue
         if item in seen:
             del member["held_item"]

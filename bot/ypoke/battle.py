@@ -9,7 +9,7 @@ import random
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 
-from ypoke import abilities, items
+from ypoke import abilities, items, tera_forms
 from ypoke.type_chart import effectiveness
 
 STAB_MULTIPLIER = 1.5
@@ -109,6 +109,7 @@ class MegaForm:
     ability: str | None = None
     ability_id: str | None = None
     form_id: int | None = None
+    kind: str = "mega"
 
 
 @dataclass(frozen=True)
@@ -127,6 +128,7 @@ class Combatant:
     mega: MegaForm | None = None
     pokemon_id: int | None = None
     can_evolve: bool = False
+    tera: bool = False
 
     @property
     def label(self) -> str:
@@ -257,8 +259,22 @@ class MegaEvolution:
     form_id: int | None = None
 
 
+@dataclass(frozen=True)
+class FormShift:
+    """A Terastal-only form taking hold on entry: `kind` is "mask" (Ogerpon's mask glowed, `change` is its +1),
+    "terastal" or "stellar" (Terapagos). `form_id` is the `/pokemon` id of the form shown, if it has one."""
+
+    turn: int
+    side: int
+    pokemon: str
+    kind: str
+    form_id: int | None = None
+    change: Change | None = None
+
+
 Event = (
     Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | ItemEffect | MegaEvolution
+    | FormShift
 )
 
 
@@ -301,7 +317,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     events: list[Event] = []
     weather = _Weather()
     for side in (0, 1):
-        _mega_evolve(teams[side], side, 1, events)
+        _enter_forms(teams[side], side, 1, events)
     events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng))
     _item_triggers(1, (teams[0].active, teams[1].active), events)
     turn = 0
@@ -338,7 +354,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
         entering = tuple(side for side in (0, 1) if loser is None and teams[side].active.hp == 0)
         for side in entering:
             events.append(SendOut(turn, side, teams[side].send_next().combatant.name))
-            _mega_evolve(teams[side], side, turn, events)
+            _enter_forms(teams[side], side, turn, events)
         if entering:
             events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, entering))
             _item_triggers(turn, (teams[0].active, teams[1].active), events)
@@ -359,6 +375,24 @@ def _exhausted(teams: tuple["_Team", "_Team"], order: tuple[int, ...]) -> int | 
     return next((side for side in order if teams[side].active.hp == 0 and not teams[side].has_next), None)
 
 
+def _enter_forms(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
+    """Everything a Pokémon that just entered changes about itself before the entry abilities: the Mega Evolution
+    (or Stellar form, which shares its once-per-battle slot), Terapagos' Terastal form, Ogerpon's mask boost."""
+    _mega_evolve(team, side, turn, events)
+    fighter = team.active
+    combatant = fighter.combatant
+    if combatant.tera:
+        events.append(FormShift(turn, side, combatant.name, "terastal", tera_forms.TERASTAL_FORM))
+    mask = tera_forms.MASKS.get(fighter.item or "")
+    if mask is not None:
+        form_id, stat = mask
+        change = None
+        if fighter.stages[stat] < MAX_STAGE:
+            fighter.stages[stat] += 1
+            change = Change(side, combatant.name, stat, 1)
+        events.append(FormShift(turn, side, combatant.name, "mask", form_id, change))
+
+
 def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
     """A Pokémon that just entered keeps its HP share and status; its Mega form replaces the base stats and types."""
     fighter = team.active
@@ -368,10 +402,13 @@ def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> No
     ability = fighter.combatant.ability
     if mega.ability_id is not None:
         ability = mega.ability_id if mega.ability_id in abilities.NAMES else None
-    evolved = replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None)
+    evolved = replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None, tera=False)
     team.entered[-1] = _Fighter.enter(evolved, _carry_of(fighter))
     team.mega_used = True
-    events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability, mega.form_id))
+    if mega.kind == "stellar":
+        events.append(FormShift(turn, side, fighter.combatant.name, "stellar", mega.form_id))
+    else:
+        events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability, mega.form_id))
 
 
 @dataclass

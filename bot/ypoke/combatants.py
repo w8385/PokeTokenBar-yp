@@ -1,6 +1,6 @@
 """Turn an uploaded party member into a battle `Combatant`."""
 
-from ypoke import items
+from ypoke import items, tera_forms
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm
 from ypoke.mega_stones import mega_form_id
 from ypoke.moves import battle_moves
@@ -12,8 +12,10 @@ DEFAULT_IV = 15
 
 def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
     """Raises OSError when PokéAPI is down."""
-    data = pokeapi.pokemon(member["pokemon_id"])
-    learnable = pokeapi.attacking_moves(member["pokemon_id"], member["level"], member.get("moves") or ())
+    pokemon_id = member["pokemon_id"]
+    item = tera_forms.usable_item(member.get("held_item"), pokemon_id)
+    data = _form_data(pokeapi, pokemon_id, item)
+    learnable = pokeapi.attacking_moves(pokemon_id, member["level"], member.get("moves") or ())
     ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
     return Combatant(
         name=member.get("name") or data["name_ko"],
@@ -26,11 +28,24 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
         rental=member.get("rental", False),
         nature=member.get("nature"),
         ability=member.get("ability"),
-        item=member.get("held_item"),
-        mega=_mega(pokeapi, member),
-        pokemon_id=member["pokemon_id"],
+        item=item,
+        mega=_mega(pokeapi, pokemon_id, item),
+        pokemon_id=pokemon_id,
         can_evolve=_can_evolve(pokeapi, member),
+        tera=pokemon_id == tera_forms.TERAPAGOS,
     )
+
+
+def _form_data(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> dict:
+    """The `pokemon()` data the Pokémon fights with: its own, Ogerpon's with the mask's form, Terapagos' Terastal
+    form. The name stays the species' own."""
+    data = pokeapi.pokemon(pokemon_id)
+    form_id = tera_forms.TERASTAL_FORM if pokemon_id == tera_forms.TERAPAGOS else None
+    if item in tera_forms.MASKS:
+        form_id = tera_forms.MASKS[item][0]
+    if form_id is None:
+        return data
+    return {**data, **{key: value for key, value in pokeapi.pokemon(form_id).items() if key != "name_ko"}}
 
 
 def _can_evolve(pokeapi: PokeAPIService, member: dict) -> bool:
@@ -43,8 +58,12 @@ def _can_evolve(pokeapi: PokeAPIService, member: dict) -> bool:
         return False
 
 
-def _mega(pokeapi: PokeAPIService, member: dict) -> MegaForm | None:
-    form_id = mega_form_id(member.get("held_item"), member["pokemon_id"])
+def _mega(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> MegaForm | None:
+    if item == items.STELLAR_CRYSTAL:
+        data = pokeapi.pokemon(tera_forms.STELLAR_FORM)
+        return MegaForm(types=tuple(data["types"]), base=base_stats(data), form_id=tera_forms.STELLAR_FORM,
+                        kind="stellar")
+    form_id = mega_form_id(item, pokemon_id)
     if form_id is None:
         return None
     data = pokeapi.mega_form(form_id)
