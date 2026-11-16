@@ -15,10 +15,8 @@ private struct FormMetadataProvider: PokeProviding, PokemonDetailProviding {
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
         guard detailsAvailable else { throw URLError(.notConnectedToInternet) }
         // Default Shaymin types, stats and ability. Alternate forms deliberately keep this data.
-        return PokemonDetails(speciesID: speciesID, name: "shaymin", height: 2, weight: 21,
-            baseExperience: 270, genderRate: -1, types: ["grass"],
-            baseStats: Dictionary(uniqueKeysWithValues: PokemonStatCalculator.order.map { ($0, 100) }),
-            abilities: [PokemonAbilityOption(name: "natural-cure", slot: 1, isHidden: false)], moves: [])
+        let natural = speciesID == 492 ? [PokemonAbilityOption(name: "natural-cure", slot: 1, isHidden: false)] : []
+        return try SpeciesFacts.details(speciesID, abilities: natural)
     }
 }
 

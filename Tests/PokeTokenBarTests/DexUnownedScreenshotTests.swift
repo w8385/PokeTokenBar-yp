@@ -3,31 +3,14 @@ import SwiftUI
 import XCTest
 @testable import PokeTokenBar
 
-private func fixture(_ id: Int, _ ko: String, _ en: String, _ types: [String], capture: Int = 255,
-                     from parent: Int? = nil) -> SpeciesIndexEntry {
-    SpeciesIndexEntry(id: id, names: ["ko": ko, "en": en], types: types, captureRate: capture,
-                      isLegendary: false, isMythical: false, evolvesFromID: parent)
-}
-
 private struct SyntheticIndexProvider: PokeProviding, SpeciesIndexProviding {
     func line(baseSpeciesID: Int) async throws -> EvoLine { throw URLError(.notConnectedToInternet) }
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func speciesIndex() async throws -> SpeciesIndex {
-        SpeciesIndex(entries: [
-            fixture(13, "뿔충이", "Weedle", ["bug", "poison"]),
-            fixture(129, "잉어킹", "Magikarp", ["water"]),
-            fixture(130, "갸라도스", "Gyarados", ["water", "flying"], from: 129),
-            fixture(131, "라프라스", "Lapras", ["water", "ice"], capture: 45),
-            fixture(132, "메타몽", "Ditto", ["normal"], capture: 35),
-            fixture(133, "이브이", "Eevee", ["normal"], capture: 45),
-            fixture(134, "샤미드", "Vaporeon", ["water"], capture: 45, from: 133),
-            fixture(135, "쥬피썬더", "Jolteon", ["electric"], capture: 45, from: 133),
-            fixture(136, "부스터", "Flareon", ["fire"], capture: 45, from: 133),
-            fixture(137, "폴리곤", "Porygon", ["normal"], capture: 45),
-            fixture(138, "암나이트", "Omanyte", ["rock", "water"], capture: 45),
-            fixture(139, "암스타", "Omastar", ["rock", "water"], capture: 45, from: 138),
-        ])
+        SpeciesIndex(entries: try [13, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139].map {
+            try SpeciesFacts.indexEntry($0)
+        })
     }
 }
 

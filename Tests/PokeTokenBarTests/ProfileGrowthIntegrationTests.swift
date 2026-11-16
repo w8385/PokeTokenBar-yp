@@ -14,10 +14,8 @@ private struct GrowthProfileProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "p", height: 1, weight: 1,
-                       baseExperience: nil, genderRate: -1, types: [], baseStats: [:], abilities: [],
-                       moves: [PokemonMoveOption(name: "final-\(speciesID)", learnMethods: [
-                        PokemonMoveLearnMethod(method: "level-up", level: 100)])])
+        try SpeciesFacts.details(speciesID, moves: [PokemonMoveOption(name: "final-\(speciesID)", learnMethods: [
+            PokemonMoveLearnMethod(method: "level-up", level: 100)])])
     }
 }
 

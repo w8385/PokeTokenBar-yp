@@ -34,6 +34,7 @@ CLASSES=(
   EvolutionMappingDocTests         # docs/reference/evolution-mapping.md matches the rule table
   OffscreenRenderGuardTests        # no test shows a window or activates the app
   DesignTokenScanTests             # no raw Color(red:, numeric font size or corner radius outside UI/Design
+  SpeciesFactsGuardTests           # no test hand-builds species facts; the table matches the games
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).

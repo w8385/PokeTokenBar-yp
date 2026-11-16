@@ -25,8 +25,9 @@ swift build             # 앱 타깃 컴파일
 
 CI도 모든 풀 리퀘스트에서 같은 명령을 실행합니다. 테스트 게이트는
 `swift test --enable-code-coverage`를 실행하고, 기본적으로 로직 코어 라인 커버리지
-75% 이상을 요구합니다. PR을 제출하기 전에 로컬에서 두 명령을 실행하세요.
-개발 중 특정 테스트만 확인하려면 `swift test --filter <TestCase>`를 실행하세요.
+75% 이상을 요구합니다. 전체 테스트와 커버리지 게이트는 CI가 맡습니다. PR을 제출하기 전에는 로컬에서
+`swift build`, `./scripts/invariant-tests.sh`, 그리고 변경한 부분의 `swift test --filter <TestCase>`를
+실행하세요. `./scripts/test-gate.sh`를 직접 실행하는 것은 선택 사항입니다.
 
 ## 기여 워크플로우
 

@@ -1,22 +1,17 @@
 import XCTest
 @testable import PokeTokenBar
 
-private func entry(_ id: Int, _ ko: String, _ en: String, rarityCapture: Int = 255, legendary: Bool = false,
-                   from parent: Int? = nil, types: [String] = ["normal"]) -> SpeciesIndexEntry {
-    SpeciesIndexEntry(id: id, names: ["ko": ko, "en": en], types: types, captureRate: rarityCapture,
-                      isLegendary: legendary, isMythical: false, evolvesFromID: parent)
+private func entry(_ id: Int) -> SpeciesIndexEntry { try! SpeciesFacts.indexEntry(id) }
+
+/// A graph shape or id no real species has: an orphan, a cycle, a sweep over every id.
+private func invented(_ id: Int, _ ko: String, _ en: String, from parent: Int? = nil) -> SpeciesIndexEntry {
+    SpeciesFacts.counterfactualIndexEntry(because: "evolution-graph shapes and ids no real species has",
+                                          id: id, names: ["ko": ko, "en": en], evolvesFromID: parent)
 }
 
 private let fixtureEntries = [
-    entry(16, "구구", "Pidgey"),
-    entry(25, "피카츄", "Pikachu", from: 172),
-    entry(26, "라이츄", "Raichu", from: 25),
-    entry(132, "메타몽", "Ditto", rarityCapture: 35),
-    entry(133, "이브이", "Eevee", rarityCapture: 45),
-    entry(134, "샤미드", "Vaporeon", rarityCapture: 45, from: 133),
-    entry(150, "뮤츠", "Mewtwo", rarityCapture: 3, legendary: true),
-    entry(172, "피츄", "Pichu", rarityCapture: 190),
-    entry(900, "고아", "Orphan", from: 5000),
+    entry(16), entry(25), entry(26), entry(132), entry(133), entry(134), entry(150), entry(172),
+    invented(900, "고아", "Orphan", from: 5000),
 ]
 
 private struct UnownedIndexProvider: PokeProviding, SpeciesIndexProviding {
@@ -149,7 +144,7 @@ final class DexUnownedSearchTests: XCTestCase {
     }
 
     func testIncludeUnownedCoversEverySupportedSpeciesInTheFullIndex() async {
-        let all = (1...PokemonAssets.supportedSpeciesIDs.upperBound).map { entry($0, "n\($0)", "N\($0)") }
+        let all = (1...PokemonAssets.supportedSpeciesIDs.upperBound).map { invented($0, "n\($0)", "N\($0)") }
         let s = store(provider: UnownedIndexProvider(entries: all))
         await s.loadSpeciesIndexIfNeeded()
         let shown = s.filteredDexSpecies(includeUnowned: true)
@@ -190,9 +185,7 @@ final class SpeciesIndexTests: XCTestCase {
 
     func testBranchingBaseEndsTheLineWithAMysteryMarker() {
         let branching = SpeciesIndex(entries: [
-            entry(133, "이브이", "Eevee"),
-            entry(134, "샤미드", "Vaporeon", from: 133),
-            entry(135, "쥬피썬더", "Jolteon", from: 133),
+            entry(133), entry(134), entry(135),
         ])
         XCTAssertEqual(branching.lineItems(of: 133), [.species(133), .mystery])
         XCTAssertEqual(branching.lineItems(of: 135), [.species(133), .species(135)])
@@ -200,17 +193,17 @@ final class SpeciesIndexTests: XCTestCase {
 
     func testBranchInTheMiddleOfALineKeepsThePathToTheSpeciesAndMarksTheBranch() {
         let line = SpeciesIndex(entries: [
-            entry(1, "가", "A"),
-            entry(2, "나", "B", from: 1),
-            entry(3, "다", "C", from: 2),
-            entry(4, "라", "D", from: 2),
+            invented(1, "가", "A"),
+            invented(2, "나", "B", from: 1),
+            invented(3, "다", "C", from: 2),
+            invented(4, "라", "D", from: 2),
         ])
         XCTAssertEqual(line.lineItems(of: 2), [.species(1), .species(2), .mystery])
         XCTAssertEqual(line.lineItems(of: 3), [.species(1), .species(2), .species(3)])
     }
 
     func testEvolutionCycleDoesNotHangOrRepeatAnId() {
-        let cyclic = SpeciesIndex(entries: [entry(1, "가", "A", from: 2), entry(2, "나", "B", from: 1)])
+        let cyclic = SpeciesIndex(entries: [invented(1, "가", "A", from: 2), invented(2, "나", "B", from: 1)])
         XCTAssertNil(cyclic.baseID(of: 1))
         XCTAssertEqual(cyclic.acquisition(of: 1), .unavailable)
         XCTAssertEqual(cyclic.lineItems(of: 1), [.species(2), .species(1)])

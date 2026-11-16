@@ -25,8 +25,9 @@ swift build             # compile the app target
 
 CI runs these same commands on every pull request. The test gate runs
 `swift test --enable-code-coverage` and requires at least 75% logic-core line
-coverage by default. Run both commands locally before submitting a PR.
-Use `swift test --filter <TestCase>` for focused checks during development.
+coverage by default. The full suite and the coverage gate are CI's job: before submitting a PR, run
+`swift build`, `./scripts/invariant-tests.sh` and `swift test --filter <TestCase>` for the tests of what
+you changed (below). Running `./scripts/test-gate.sh` yourself is optional.
 
 A focused filter does not run the repo-wide tests: the ones that read every Swift source (every
 SwiftUI `View` is `@MainActor`, no Hangul literals in UI code, every scroll view reserves the

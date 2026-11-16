@@ -8,10 +8,7 @@ private struct PickerRenderProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "parasect", height: 10, weight: 295,
-            baseExperience: 142, genderRate: 4, types: ["bug", "grass"],
-            baseStats: ["hp": 60, "attack": 95, "defense": 80, "special-attack": 60, "special-defense": 80, "speed": 30],
-            abilities: [PokemonAbilityOption(name: "effect-spore", slot: 1, isHidden: false)], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 @MainActor

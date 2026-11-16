@@ -28,8 +28,7 @@ private struct HeavyStatus: ProviderStatusProviding {
 }
 private struct HeavyPokemon: PokeProviding, PokemonDetailProviding {
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "gyarados", height: 65, weight: 2350, baseExperience: 189,
-                       genderRate: 4, types: ["water", "flying"], baseStats: [:], abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
     func line(baseSpeciesID: Int) async throws -> EvoLine {
         EvoLine(baseID: 129, tree: EvoNode(speciesID: 129, children: [EvoNode(speciesID: 130, children: [])]),

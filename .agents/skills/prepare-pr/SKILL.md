@@ -25,7 +25,11 @@ ticket prefix or a personal skill's title convention over repository rules.
 Start the body from the current template. Fill `Summary`, select the actual
 `Type of change`, and retain the template's checklist. Check an item only when
 the performed work supports it; leave tests unchecked if they were not run or
-added, and explain why when relevant. Report actual validation and limitations.
+added, and explain why when relevant. The local-checks item means exactly what it
+says: `./scripts/invariant-tests.sh` and the `swift test --filter …` suites for the
+change passed on this machine, and the full suite is CI's job. Do not tick it for a
+command that was not run, and do not run the full suite locally just to tick it.
+Report actual validation and limitations.
 Keep the body in a UTF-8 file and pass it with `gh ... --body-file`.
 
 ## Mandatory UI images

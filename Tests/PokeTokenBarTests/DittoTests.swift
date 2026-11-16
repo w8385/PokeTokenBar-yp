@@ -22,16 +22,15 @@ private struct DittoTestProvider: PokeProviding, PokemonDetailProviding {
     }
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [BaseSpecies(id: 1, captureRate: 255)] }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        let isDitto = speciesID == PokemonOdds.dittoSpeciesID
-        return PokemonDetails(
-            speciesID: speciesID, name: isDitto ? "ditto" : "bulbasaur",
-            height: isDitto ? 3 : 7, weight: isDitto ? 40 : 69, baseExperience: 64,
-            genderRate: isDitto ? -1 : 1, types: [isDitto ? "normal" : "grass"],
-            baseStats: ["hp": isDitto ? 48 : 45],
-            abilities: [PokemonAbilityOption(name: isDitto ? "limber" : "overgrow",
-                                             slot: 1, isHidden: false)],
-            moves: [PokemonMoveOption(name: isDitto ? "transform" : "tackle",
-                                      learnMethods: [PokemonMoveLearnMethod(method: "level-up", level: 1)])])
+        // Ditto and Bulbasaur are the only species whose ability and level-1 move the tests assert.
+        let known: [Int: (ability: String, move: String)] = [
+            PokemonOdds.dittoSpeciesID: ("limber", "transform"), 1: ("overgrow", "tackle")]
+        let own = known[speciesID]
+        return try SpeciesFacts.details(
+            speciesID,
+            abilities: own.map { [PokemonAbilityOption(name: $0.ability, slot: 1, isHidden: false)] } ?? [],
+            moves: own.map { [PokemonMoveOption(name: $0.move,
+                                                learnMethods: [PokemonMoveLearnMethod(method: "level-up", level: 1)])] } ?? [])
     }
 }
 

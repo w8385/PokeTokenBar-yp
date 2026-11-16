@@ -8,11 +8,7 @@ private struct ShotProvider: PokeProviding, PokemonDetailProviding {
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
-        PokemonDetails(speciesID: speciesID, name: "synthetic", height: 10, weight: 295, baseExperience: 142,
-                       genderRate: 4, types: ["normal"],
-                       baseStats: ["hp": 60, "attack": 95, "defense": 80, "special-attack": 60,
-                                   "special-defense": 80, "speed": 30],
-                       abilities: [], moves: [])
+        try SpeciesFacts.details(speciesID)
     }
 }
 
