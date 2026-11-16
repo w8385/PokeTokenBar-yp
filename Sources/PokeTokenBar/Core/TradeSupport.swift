@@ -99,7 +99,7 @@ enum TradePool {
     static let maxBytes = 48_000
     static let maxEntryBytes = 4_000
 
-    /// Everyone in the battle lineup (up to three), which also covers the auto fighter when nothing is picked.
+    /// Everyone in the battle lineup (up to six), which also covers the auto fighter when nothing is picked.
     static func fightingIDs(state: CompanionState, slots: [BattleEntrySlot]) -> Set<String> {
         Set(BattleEntry.lineup(state: state, slots: slots).map(\.id))
     }
