@@ -184,6 +184,52 @@ final class SpriteAspectRatioTests: XCTestCase {
         XCTAssertLessThan(rendered.width, 76, "a tall sprite must be narrower than its square slot")
     }
 
+    private static let megaCharizardXStatic = CGSize(width: 89, height: 82)
+    private static let megaCharizardXGIF = CGSize(width: 161, height: 107)
+
+    func testAWidePoseIsScaledUpToStandAsTallAsItsStaticArt() {
+        let box = SpriteFit.contentBox(76)
+        let plain = SpriteFit.size(for: Self.megaCharizardXGIF, box: box)
+        let scaled = SpriteFit.animatedSize(for: Self.megaCharizardXGIF, reference: Self.megaCharizardXStatic, box: box)
+        let staticHeight = SpriteFit.size(for: Self.megaCharizardXStatic, box: box).height
+        XCTAssertLessThan(plain.height, staticHeight * 0.85, "the plain fit is the problem being fixed")
+        XCTAssertEqual(scaled.height, staticHeight, accuracy: staticHeight * 0.15)
+        XCTAssertGreaterThan(scaled.height, plain.height)
+    }
+
+    func testAScaledUpWidePoseGrowsAtMost40PercentWider() {
+        let box = SpriteFit.contentBox(96)
+        let gif = CGSize(width: 178, height: 95)
+        let plain = SpriteFit.size(for: gif, box: box)
+        let scaled = SpriteFit.animatedSize(for: gif, reference: CGSize(width: 77, height: 77), box: box)
+        XCTAssertEqual(scaled.width, plain.width * 1.4, accuracy: 0.001)
+        XCTAssertEqual(scaled.width / scaled.height, gif.width / gif.height, accuracy: 0.001, "the pose keeps its proportions")
+    }
+
+    func testAnAnimatedCropIsNeverShrunkOrChangedWhenItIsCloseEnough() {
+        let box = SpriteFit.contentBox(76)
+        let closeEnough = CGSize(width: 98, height: 101)
+        XCTAssertEqual(SpriteFit.animatedSize(for: closeEnough, reference: CGSize(width: 68, height: 70), box: box),
+                       SpriteFit.size(for: closeEnough, box: box))
+        let tall = CGSize(width: 47, height: 64)
+        XCTAssertEqual(SpriteFit.animatedSize(for: tall, reference: CGSize(width: 40, height: 40), box: box),
+                       SpriteFit.size(for: tall, box: box), "a taller animation than its static stays as it is")
+    }
+
+    func testWithoutAUsableReferenceTheAnimatedCropKeepsThePlainFit() {
+        let box = SpriteFit.contentBox(76)
+        let plain = SpriteFit.size(for: Self.megaCharizardXGIF, box: box)
+        XCTAssertEqual(SpriteFit.animatedSize(for: Self.megaCharizardXGIF, reference: nil, box: box), plain)
+        XCTAssertEqual(SpriteFit.animatedSize(for: Self.megaCharizardXGIF, reference: .zero, box: box), plain)
+    }
+
+    func testTheBubbleAnchorFollowsTheScaledUpPose() {
+        let plain = SpriteVisibleTop.inset(box: 76, imageSize: Self.megaCharizardXGIF, opaqueTopFraction: 0)
+        let scaled = SpriteVisibleTop.inset(box: 76, imageSize: Self.megaCharizardXGIF, opaqueTopFraction: 0,
+                                            reference: Self.megaCharizardXStatic)
+        XCTAssertLessThan(scaled, plain, "a taller sprite has its visible top closer to the box top")
+    }
+
     private static func solidImage(size: CGSize) -> NSImage {
         let img = NSImage(size: NSSize(width: size.width, height: size.height))
         img.lockFocus()

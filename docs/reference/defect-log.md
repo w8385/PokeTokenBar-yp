@@ -1405,6 +1405,14 @@ read_when:
   adds a one-time scan: 14ms per GIF on average, 34ms worst (-O), 33 sampled GIFs; frame bytes are
   unchanged for tight GIFs, so `capFrameRate` keeps its savings. `SpriteSizeShotTests` (opt-in with
   `PTB_SPRITE_SIZE_DIR`) re-measures all of this.
+  Follow-up for the wide poses: `SpriteFit.animatedSize` scales a GIF up to its static art's drawn height
+  when the plain fit draws it under 85% of that height, by at most 1.4 times its fitted width, never
+  smaller; `SpriteView` clips the overflow at its own slot and uses the cached static PNG as the
+  reference (no reference, plain fit). A 1.25 cap left Mega Charizard X at 0.79 of the PNG's visible
+  height (frame 0, 76pt), which still read as a size jump; at 1.4 it is within 15%. Tests:
+  `SpriteAspectRatioTests` (rule, cap, never shrink, no reference, bubble anchor) and `SpriteFrameTests`
+  (a Mega Charizard X shaped fixture compares the visible height of frame 0, not the union box; removing
+  the slot clip fails the other view test).
 
 ## 프로세스 제어·업데이트
 

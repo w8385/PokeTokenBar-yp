@@ -209,6 +209,12 @@ struct SpriteView: View {
         }
     }
 
+    /// The static art is the size reference for a playing GIF; fetch it when it is not cached yet.
+    private func loadReferenceImage(for id: Int) async {
+        guard subject.image == nil else { return }
+        await loadStaticImage(for: id)
+    }
+
     /// 정적 스프라이트를 다시 불러야 하는가 — 종이 바뀌었거나 **이로치 여부가 뒤집혔을 때**.
     /// 순수·테스트용(`GIFDecoder.capFrameRate` 와 같은 이유). 종만 비교하던 과거 판정은 도감의 이로치 토글에서
     /// .task 가 다시 돌아도 "이미 그 종을 로드했다"로 판정해 색이 안 바뀌는 회귀를 낳았다.
@@ -224,19 +230,21 @@ struct SpriteView: View {
     /// size×size 슬롯 안에서 이 이미지가 실제로 차지할 크기 — 원본 비율 유지(SpriteFit).
     /// 순수·테스트용. `.resizable()` 은 프레임을 그대로 채우므로(늘어남) 프레임을 미리 재서 넘긴다.
     /// 정사각 원본(정적 96×96·아이템 30×30)은 size×size 그대로라 기존 레이아웃과 동일하다.
-    static func imageSize(for image: NSImage, box: CGFloat) -> CGSize {
-        SpriteFit.size(for: image.size, box: box)
+    static func imageSize(for image: NSImage, box: CGFloat, reference: CGSize? = nil) -> CGSize {
+        SpriteFit.animatedSize(for: image.size, reference: reference, box: box)
     }
 
     /// 비율 유지로 잰 이미지 프레임 + 바깥 size×size 슬롯. 바깥 슬롯을 유지하는 이유: 진화 라인·도감
     /// 그리드의 폭 계산(EvoLineView.rowWidth 등)이 칸을 정사각으로 전제한다 — 안쪽만 줄여야 안 흔들린다.
     @ViewBuilder
-    private func fitted(_ image: NSImage) -> some View {
-        let fit = Self.imageSize(for: image, box: SpriteFit.contentBox(size))
-        Image(nsImage: image).resizable().interpolation(.none)
+    private func fitted(_ image: NSImage, reference: CGSize? = nil) -> some View {
+        let fit = Self.imageSize(for: image, box: SpriteFit.contentBox(size), reference: reference)
+        let slot = Image(nsImage: image).resizable().interpolation(.none)
             .frame(width: fit.width, height: fit.height)
             .padding(.bottom, SpriteFit.margin * size)
             .frame(width: size, height: size, alignment: .bottom)
+        // A scaled-up wide pose overflows sideways; the slot cuts it.
+        if fit.width > size { slot.clipped() } else { slot }
     }
 
     /// One anchor for the whole animation (see `SpriteVisibleTop.anchorFraction`), so it does not jitter per frame.
@@ -245,7 +253,8 @@ struct SpriteView: View {
         let images = frames.isEmpty ? (subject.image.map { [$0] } ?? []) : frames.map(\.image)
         guard let first = images.first else { return nil }
         let fraction = SpriteVisibleTop.anchorFraction(of: images.map(SpriteVisibleTop.opaqueTopFraction))
-        return SpriteVisibleTop.inset(box: size, imageSize: first.size, opaqueTopFraction: fraction)
+        return SpriteVisibleTop.inset(box: size, imageSize: first.size, opaqueTopFraction: fraction,
+                                      reference: frames.isEmpty ? nil : subject.image?.size)
     }
 
     var body: some View {
@@ -253,7 +262,7 @@ struct SpriteView: View {
             if !frames.isEmpty {
                 // GIF 애니메이션 경로 — 현재 프레임만 렌더. Gen-V GIF 캔버스는 종마다 비정사각이라
                 // (잭키 36×66) 정사각으로 늘리면 뚱뚱해진다 → fitted 로 비율 유지.
-                fitted(frames[frameIndex % frames.count].image)
+                fitted(frames[frameIndex % frames.count].image, reference: subject.image?.size)
             } else if let img = subject.image {
                 fitted(img)
             } else {
@@ -304,6 +313,7 @@ struct SpriteView: View {
                 await loadStaticImage(for: id)
             }
             guard !frames.isEmpty, !Task.isCancelled else { return }
+            async let _: Void = loadReferenceImage(for: id)
             // delay 기반 프레임 advance. .task 취소 시(speciesID 변경/뷰 소멸) 루프 종료 — 누수 없음
             while !Task.isCancelled {
                 let delay = frames[frameIndex % frames.count].delay

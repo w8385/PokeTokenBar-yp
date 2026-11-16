@@ -85,6 +85,11 @@ final class SpriteSizeShotTests: XCTestCase {
             let measured = try await renderMeasure(store: store, size: size)
             for (key, value) in measured { rendered[key, default: [:]][value.0, default: [:]][name] = value.1 }
         }
+        let charizardX = try XCTUnwrap(rendered["10034"], "Mega Charizard X was not rendered")
+        let staticHeight = try XCTUnwrap(charizardX[.png]?["home76"]?.h)
+        let gifHeight = try XCTUnwrap(charizardX[.gif]?["home76"]?.h)
+        XCTAssertEqual(Double(gifHeight), Double(staticHeight), accuracy: Double(staticHeight) * 0.15,
+                       "Mega Charizard X GIF frame 0 vs static at 76pt")
         for (label, id) in all {
             for kind in Kind.allCases {
                 let file = samples.appendingPathComponent(

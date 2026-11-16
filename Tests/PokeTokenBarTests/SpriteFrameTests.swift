@@ -104,6 +104,52 @@ final class SpriteFrameTests: XCTestCase {
         XCTAssertEqual(still.bottomGap, moving.bottomGap, "both sit on the same ground line")
     }
 
+    private func wideGIFFixture(withStatic hasStatic: Bool) throws -> SpriteStore {
+        let directory = try fixtureDirectory()
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        if hasStatic {
+            try png(try canvas(96, 96, filling: CGRect(x: 20, y: 10, width: 50, height: 60)))
+                .write(to: directory.appendingPathComponent("25-s.png"))
+        }
+        try gif([try canvas(100, 40, filling: CGRect(x: 5, y: 5, width: 90, height: 30)),
+                 try canvas(100, 40, filling: CGRect(x: 5, y: 5, width: 90, height: 30), color: .green)])
+            .write(to: directory.appendingPathComponent("25-a.gif"))
+        return SpriteStore(directory: directory)
+    }
+
+    func testAWidePoseDrawsTallerThanItsPlainFitAndIsCutAtItsSlot() throws {
+        let scaled = SpriteView(speciesID: 25, size: 80, animated: true,
+                                spriteStore: try wideGIFFixture(withStatic: true))
+        let plain = SpriteView(speciesID: 25, size: 80, animated: true,
+                               spriteStore: try wideGIFFixture(withStatic: false))
+        let scaledRows = try opaqueRows(of: scaled)
+        let plainRows = try opaqueRows(of: plain)
+        XCTAssertEqual(Double(plainRows.height), 80 * 0.96 * 30 / 90, accuracy: 1)
+        XCTAssertEqual(Double(scaledRows.height), Double(plainRows.height) * 1.4, accuracy: 1)
+
+        let roomy = scaled.frame(width: 140, height: 80)
+        let bitmap = NSBitmapImageRep(cgImage: try XCTUnwrap(ImageRenderer(content: roomy).cgImage))
+        let middle = bitmap.pixelsHigh - 1 - scaledRows.bottomGap - scaledRows.height / 2
+        let columns = (0..<bitmap.pixelsWide).filter { (bitmap.colorAt(x: $0, y: middle)?.alphaComponent ?? 0) > 0.07 }
+        XCTAssertEqual(columns.count, 80, "the 96pt-wide pose is cut at its 80pt slot even where there is room")
+    }
+
+    func testTheFirstFrameOfAMegaCharizardXShapedGIFStandsWithin15PercentOfItsStatic() throws {
+        // Mega Charizard X: static 89x82, GIF union 161x107 whose first frame fills 93 of the 107 rows.
+        let directory = try fixtureDirectory()
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        try png(try canvas(96, 96, filling: CGRect(x: 3, y: 7, width: 89, height: 82)))
+            .write(to: directory.appendingPathComponent("25-s.png"))
+        try gif([try canvas(170, 110, filling: CGRect(x: 4, y: 15, width: 161, height: 93)),
+                 try canvas(170, 110, filling: CGRect(x: 4, y: 1, width: 161, height: 107), color: .green)])
+            .write(to: directory.appendingPathComponent("25-a.gif"))
+        let store = SpriteStore(directory: directory)
+        let still = try opaqueRows(of: SpriteView(speciesID: 25, size: 76, spriteStore: store))
+        let moving = try opaqueRows(of: SpriteView(speciesID: 25, size: 76, animated: true, spriteStore: store))
+        XCTAssertEqual(Double(moving.height), Double(still.height), accuracy: Double(still.height) * 0.15,
+                       "frame 0 is \(moving.height)pt against a static of \(still.height)pt")
+    }
+
     func testEveryShapeStandsOnTheBottomOfItsBox() throws {
         let directory = try fixtureDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
