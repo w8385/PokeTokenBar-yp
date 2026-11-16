@@ -8,8 +8,8 @@ on:
 
 # Cancel superseded runs on the same ref (e.g. rapid pushes to a PR).
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # The offscreen render tests are about 60% of the test time and need no coverage, so they run
 # in the ui-tests jobs in parallel. Any other test class, including a new one, runs in build-test.
