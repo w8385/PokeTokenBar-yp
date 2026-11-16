@@ -78,14 +78,13 @@ struct ShopView: View {
     }
 }
 
-/// 상점 아이템 1장 — 아이콘·이름·설명(사탕 XP / 민트 "성격 랜덤 변경")·보유수 + 가격/구매(인라인 확인).
+/// 상점 아이템 1장 — 아이콘·이름·설명(사탕 XP / 민트 "성격 랜덤 변경")·보유수 + 가격/구매(한 번 눌러 바로 구매, 5초 되돌리기).
 /// kind 별 store.canBuy(kind)/buy(kind:count:) 로 일반화 — 판매 목록은 store.purchasableItems.
 /// 소모품은 수량 Stepper(가방의 사탕 일괄 사용과 같은 패턴)로 잔액 한도까지 한 번에 산다.
 @MainActor
 private struct ShopItemCard: View {
     let store: CompanionStore
     let kind: ItemKind
-    @State private var confirming = false
     @State private var quantity = 1
 
     private var price: Int { store.price(of: kind) ?? 0 }
@@ -131,6 +130,7 @@ private struct ShopItemCard: View {
                 // 붙인다(가방 ItemCard 와 같은 구조). 둘 다 두면 남는 폭을 나눠 가져 Stepper 가 가운데에 뜬다.
             }
             buyControls(l)
+            PurchaseUndoLine(store: store, inventoryKey: kind.rawValue)
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))
@@ -138,11 +138,6 @@ private struct ShopItemCard: View {
         .onChange(of: store.maxBuyCount(kind)) { _, _ in
             quantity = selectedQuantity
         }
-    }
-
-    /// 수량이 붙은 표시 이름("이상한 사탕 ×3"). 1개면 기존 문구 그대로.
-    private func quantityName(_ l: L) -> String {
-        selectedQuantity > 1 ? "\(l.itemName(kind)) ×\(selectedQuantity)" : l.itemName(kind)
     }
 
     @ViewBuilder
@@ -154,24 +149,14 @@ private struct ShopItemCard: View {
                 Text(l.ownedAlready).font(.caption2.weight(.semibold)).foregroundStyle(.green)
                 Spacer()
             }
-        } else if confirming {
-            HStack(spacing: 8) {
-                Text(l.buyConfirm(quantityName(l)))
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-                Spacer()
-                Button(selectedQuantity > 1 ? "\(l.buy) ×\(selectedQuantity)" : l.buy) { buyNow() }
-                    .buttonStyle(.borderedProminent).controlSize(.small)
-                Button(l.cancel) { confirming = false }
-                    .buttonStyle(.borderless).controlSize(.small)
-            }
         } else {
             HStack {
-                // 가격은 선택 수량의 합계 — 확인 전에 총 지출을 보여준다.
+                // 가격은 선택 수량의 합계 — 사기 전에 총 지출을 보여준다.
                 Text("\(l.shopPriceLabel) \(TokenFormatter.compact(price * selectedQuantity))")
                     .font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
                 Spacer()
                 if store.canBuy(kind) {
-                    Button(l.buy) { confirming = true }
+                    Button(selectedQuantity > 1 ? "\(l.buy) ×\(selectedQuantity)" : l.buy) { buyNow() }
                         .buttonStyle(.bordered).controlSize(.small)
                 } else {
                     Text(l.notEnoughTokens)
@@ -182,7 +167,6 @@ private struct ShopItemCard: View {
     }
 
     private func buyNow() {
-        confirming = false
         if store.buy(kind, count: selectedQuantity) { quantity = 1 }
     }
 }
@@ -192,7 +176,6 @@ private struct ShopItemCard: View {
 private struct MegaStoneShopCard: View {
     let store: CompanionStore
     let stone: MegaStone
-    @State private var confirming = false
 
     var body: some View {
         let l = store.l
@@ -221,30 +204,19 @@ private struct MegaStoneShopCard: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            if confirming {
-                HStack(spacing: 8) {
-                    Text(l.buyConfirm(l.megaStoneName(stone)))
-                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-                    Spacer()
-                    Button(l.buy) { confirming = false; store.buy(stone) }
-                        .buttonStyle(.borderedProminent).controlSize(.small)
-                    Button(l.cancel) { confirming = false }
-                        .buttonStyle(.borderless).controlSize(.small)
-                }
-            } else {
-                HStack {
-                    Text("\(l.shopPriceLabel) \(TokenFormatter.compact(price))")
-                        .font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
-                    Spacer()
-                    if store.canBuy(stone) {
-                        Button(l.buy) { confirming = true }
-                            .buttonStyle(.bordered).controlSize(.small)
-                    } else {
-                        Text(store.megaStoneOwnedTotal(stone) > 0 ? l.ownedAlready : l.notEnoughTokens)
-                            .font(.caption2).foregroundStyle(.tertiary)
-                    }
+            HStack {
+                Text("\(l.shopPriceLabel) \(TokenFormatter.compact(price))")
+                    .font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
+                Spacer()
+                if store.canBuy(stone) {
+                    Button(l.buy) { store.buy(stone) }
+                        .buttonStyle(.bordered).controlSize(.small)
+                } else {
+                    Text(store.megaStoneOwnedTotal(stone) > 0 ? l.ownedAlready : l.notEnoughTokens)
+                        .font(.caption2).foregroundStyle(.tertiary)
                 }
             }
+            PurchaseUndoLine(store: store, inventoryKey: stone.inventoryKey)
         }
         .padding(10)
         .background(Color.secondary.opacity(0.06))

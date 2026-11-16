@@ -1442,7 +1442,7 @@ final class CompanionStore {
         return context
     }
 
-    private func speciesTypes(_ id: Int) -> [String] {
+    func speciesTypes(_ id: Int) -> [String] {
         speciesIndex?.entry(id)?.types ?? pokemonDetailsByID[id]?.types ?? []
     }
 
@@ -1778,9 +1778,7 @@ final class CompanionStore {
     @discardableResult
     func buy(_ stone: MegaStone) -> Bool {
         guard canBuy(stone) else { return false }
-        state.spentTokens += price(of: .megaStone(stone))
-        state.inventory[stone.inventoryKey, default: 0] += 1
-        save()
+        completePurchase(key: stone.inventoryKey, count: 1, cost: price(of: .megaStone(stone)))
         return true
     }
 
@@ -2093,10 +2091,45 @@ final class CompanionStore {
     @discardableResult
     func buy(_ kind: ItemKind, count: Int = 1) -> Bool {
         guard count >= 1, count <= maxBuyCount(kind), let price = price(of: kind) else { return false }
-        state.spentTokens += price * count
-        state.inventory[kind.rawValue, default: 0] += count
+        completePurchase(key: kind.rawValue, count: count, cost: price * count)
+        return true
+    }
+
+    // MARK: 구매 되돌리기 (확인창 대신 5초 안에 취소)
+
+    /// Purchases that can still be taken back, by inventory key (one per shop row). A row shows its entry for
+    /// `PurchaseReceipt.window` seconds; the view calls `dismissReceipt` when that ends.
+    private(set) var purchaseReceipts: [String: PurchaseReceipt] = [:]
+
+    private func completePurchase(key: String, count: Int, cost: Int) {
+        state.spentTokens += cost
+        state.inventory[key, default: 0] += count
+        purchaseReceipts[key] = PurchaseReceipt(inventoryKey: key, count: count, cost: cost,
+                                                expiresAt: clock().addingTimeInterval(PurchaseReceipt.window))
+        save()
+    }
+
+    /// Undo is open while the window lasts and the bought copies are still in the bag — an item that was
+    /// equipped, used or traded away in the meantime cannot be refunded.
+    func canUndo(_ receipt: PurchaseReceipt) -> Bool {
+        clock() < receipt.expiresAt && purchaseReceipts[receipt.inventoryKey] == receipt
+            && state.inventory[receipt.inventoryKey, default: 0] >= receipt.count
+    }
+
+    /// Gives the exact cost back and takes the copies out of the bag. False (nothing changes) when `canUndo` is false.
+    @discardableResult
+    func undoPurchase(_ receipt: PurchaseReceipt) -> Bool {
+        guard canUndo(receipt) else { return false }
+        state.spentTokens = max(0, state.spentTokens - receipt.cost)
+        let left = state.inventory[receipt.inventoryKey, default: 0] - receipt.count
+        state.inventory[receipt.inventoryKey] = left > 0 ? left : nil
+        purchaseReceipts[receipt.inventoryKey] = nil
         save()
         return true
+    }
+
+    func dismissReceipt(_ receipt: PurchaseReceipt) {
+        if purchaseReceipts[receipt.inventoryKey] == receipt { purchaseReceipts[receipt.inventoryKey] = nil }
     }
 
     // 사탕 전용 래퍼 — 기존 호출부/테스트 호환.
@@ -2182,9 +2215,7 @@ final class CompanionStore {
     @discardableResult
     func buyScoutTicket(_ pool: ScoutPool) -> Bool {
         guard canBuyScoutTicket else { return false }
-        state.spentTokens += scoutPrice
-        state.inventory[pool.inventoryKey, default: 0] += 1
-        save()
+        completePurchase(key: pool.inventoryKey, count: 1, cost: scoutPrice)
         return true
     }
 
