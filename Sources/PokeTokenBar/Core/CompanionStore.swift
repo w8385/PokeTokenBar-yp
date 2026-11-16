@@ -20,6 +20,9 @@ final class CompanionStore {
     private(set) var representativeSubject = RepresentativeSubject(speciesID: nil, isShiny: false)
     /// Graduated Pokémon shown beside the active one. Display only: no growth, stats or save effect beyond the pick.
     private(set) var friendSubjects: [FriendSubject] = []
+    /// The latest stone put on or taken off a matching Pokémon. Surfaces play the Mega Evolution effect from it.
+    private(set) var megaEvolveEvent: MegaEvolveEvent?
+    @ObservationIgnored private var megaEvolveCounter = 0
     /// Bumped when the active Pokémon hatches, evolves, graduates or reveals as Ditto; friends cheer on a change.
     private(set) var cheerSeq = 0
     private(set) var isHatching = false
@@ -1507,11 +1510,27 @@ final class CompanionStore {
         guard !isTradeLocked(instanceID), state.inventory[key, default: 0] > 0,
               state.ownedInstanceIDs.contains(instanceID) else { return false }
         if state.heldItems[instanceID] == key { return true }
+        let megaBefore = megaSpriteID(ofInstance: instanceID)
         if let previous = state.heldItems[instanceID] { state.inventory[previous, default: 0] += 1 }
         state.inventory[key, default: 0] -= 1
         state.heldItems[instanceID] = key
+        announceMegaChange(of: instanceID, from: megaBefore)
         reevaluateEvolution()
         return true
+    }
+
+    private func megaSpriteID(ofInstance instanceID: String) -> Int? {
+        let species = state.dex.first { $0.id == instanceID && $0.releasedAt == nil }?.finalID
+            ?? (state.active?.profile?.instanceID == instanceID ? state.active?.currentID : nil)
+        return megaSpriteID(instanceID: instanceID, speciesID: species)
+    }
+
+    private func announceMegaChange(of instanceID: String, from before: Int?) {
+        let after = megaSpriteID(ofInstance: instanceID)
+        guard before != after, let sprite = after ?? before else { return }
+        megaEvolveCounter += 1
+        megaEvolveEvent = MegaEvolveEvent(id: megaEvolveCounter, kind: after == nil ? .unequip : .equip,
+                                          instanceID: instanceID, megaSpriteID: sprite, at: Date())
     }
 
     // MARK: 메가스톤 (포켓몬마다 한 개 — 키 `mega-stone:<slug>`)
@@ -1575,8 +1594,10 @@ final class CompanionStore {
     @discardableResult
     func unequip(from instanceID: String) -> Bool {
         guard !isTradeLocked(instanceID), let key = state.heldItems[instanceID] else { return false }
+        let megaBefore = megaSpriteID(ofInstance: instanceID)
         state.inventory[key, default: 0] += 1
         state.heldItems[instanceID] = nil
+        announceMegaChange(of: instanceID, from: megaBefore)
         save()
         return true
     }

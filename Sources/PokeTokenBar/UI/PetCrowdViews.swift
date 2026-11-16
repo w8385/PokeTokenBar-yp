@@ -72,12 +72,15 @@ struct FriendSprite: View {
     var animated = true
     var minFrameDelay: TimeInterval = 0
     var spriteStore: SpriteStore = .shared
+    var megaEvent: MegaEvolveEvent?
 
     var body: some View {
-        SpriteView(speciesID: friend.spriteSpeciesID, size: size, animated: animated, shiny: friend.isShiny,
-                   minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: friend.spriteForm,
-                   female: friend.spriteIsFemale)
-            .frame(width: size, height: size)
+        MegaEvolveStage(megaSpriteID: friend.megaSpriteID, size: size, event: megaEvent, animated: animated) { mega in
+            SpriteView(speciesID: mega ?? friend.speciesID, size: size, animated: animated, shiny: friend.isShiny,
+                       minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: mega == nil ? friend.form : nil,
+                       female: mega == nil && friend.isFemale)
+        }
+        .frame(width: size, height: size)
     }
 }
 
@@ -182,7 +185,7 @@ struct HomePetRow<Main: View>: View {
             cryPlayer.play(speciesID: friend.speciesID, form: friend.form)
             crowd.clicked(slot: slot)
         } label: {
-            FriendSprite(friend: friend, size: Self.friendSize, spriteStore: spriteStore)
+            FriendSprite(friend: friend, size: Self.friendSize, spriteStore: spriteStore, megaEvent: store.megaEvolveEvent)
                 .crowdMember(crowd, slot: slot, size: Self.friendSize)
                 .contentShape(Rectangle())
         }

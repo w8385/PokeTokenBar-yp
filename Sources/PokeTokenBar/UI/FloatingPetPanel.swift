@@ -1203,7 +1203,8 @@ struct FloatingPetView: View {
                         .zIndex(1)
                 } else if friends.indices.contains(slot - 1) {
                     FriendSprite(friend: friends[slot - 1], size: friendSize, animated: animated,
-                                 minFrameDelay: minFrameDelay, spriteStore: spriteStore)
+                                 minFrameDelay: minFrameDelay, spriteStore: spriteStore,
+                                 megaEvent: companion.megaEvolveEvent)
                         .crowdMember(crowd, slot: slot, size: friendSize)
                         .padding(friendOnRight(slot) ? .leading : .trailing, PetRowLayout.friendGap)
                 }
@@ -1215,10 +1216,13 @@ struct FloatingPetView: View {
 
     private func mainSprite(size: CGFloat, subject: CompanionStore.RepresentativeSubject,
                             bubble: FloatingPetController.Bubble?) -> some View {
-        SpriteView(speciesID: subject.spriteSpeciesID, size: size, animated: animated,
-                   shiny: subject.isShiny,
-                   minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: subject.spriteForm,
-                   back: companion.facesBack, female: subject.spriteIsFemale, reportsVisibleTop: true)
+        MegaEvolveStage(megaSpriteID: subject.megaSpriteID, size: size, event: companion.megaEvolveEvent,
+                        animated: animated) { mega in
+            SpriteView(speciesID: mega ?? subject.speciesID, size: size, animated: animated,
+                       shiny: subject.isShiny,
+                       minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: mega == nil ? subject.form : nil,
+                       back: companion.facesBack, female: mega == nil && subject.isFemale, reportsVisibleTop: true)
+        }
             .crowdMember(crowd, slot: 0, size: size)
             // One-shot wobble per prayer; keyframes run once per trigger change, never in a loop.
             .keyframeAnimator(initialValue: 0.0, trigger: burst.wobbleCount) { sprite, angle in
