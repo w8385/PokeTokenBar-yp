@@ -55,6 +55,7 @@ METHODS=(
   KiroUsageTests/testSkipStateIsPassedByTheCallerNotHeldByTheReader
   AntigravityUsageTests/testEntriesWithoutRootsGoesThroughResolvedRoots
   CredentialSwitchCacheTests/testAntigravityUserRefreshAlsoBypassesStillValidCache
+  SaveTransferTests/testEveryCompanionStateFieldIsClassifiedForTransfer
 )
 
 # Language sweeps, by method name.

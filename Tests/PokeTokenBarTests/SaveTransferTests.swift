@@ -556,7 +556,8 @@ final class SaveTransferTests: XCTestCase {
         // rewardedDexRegions = 진행 — 보상으로 받은 사탕이 inventory 와 함께 따라가므로 받은 지역도 같이 가야
         // 옮긴 기기에서 같은 지역 보상을 한 번 더 받지 않는다.
         // appliedTradeIDs = 진행 — 적용한 교환 기록은 도감과 함께 가야 옮긴 기기에서 같은 교환이 다시 적용되지 않는다.
-        let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs",
+        // gymBadges = 진행 — 배지와 첫 클리어 보상(기술머신)이 inventory 와 함께 가야 옮긴 기기에서 같은 보상을 다시 받지 않는다.
+        let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs", "gymBadges",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
                                      "collectedFinals", "inventory", "heldItems",
@@ -601,6 +602,23 @@ final class SaveTransferTests: XCTestCase {
 
         XCTAssertEqual(s.language, .en, "불러온 세이브의 언어가 이 기기 설정을 덮으면 안 된다")
         XCTAssertEqual(s.state.dex.count, imported.dex.count, "진행은 그대로 들어와야 한다")
+    }
+
+    func testImportCarriesGymBadges() throws {
+        let today = "2026-08-03"
+        let url = tempURL("gym")
+        var mine = CompanionState()
+        mine.installBaselineSet = true
+        try JSONEncoder().encode(mine).write(to: url)
+        let s = store(at: url)
+
+        var imported = oldMacState(today: today)
+        imported.gymBadges.update("kanto") { $0.gyms = [1, 2, 3]; $0.hallOfFame = true }
+        let data = try SaveTransfer.encode(state: imported, appVersion: "2.5.0", deviceName: "Old Mac", now: transferNow)
+        try s.applySave(try SaveTransfer.decode(data), todayTokensByProvider: ["test": 1],
+                        todayDate: today, hasUsageData: true)
+
+        XCTAssertEqual(s.state.gymBadges, imported.gymBadges)
     }
 
     /// [딥리뷰 M-e] 사탕 지급 원장은 계정 전역(한도 창 key)이라 통째 교체하면 안 된다.
