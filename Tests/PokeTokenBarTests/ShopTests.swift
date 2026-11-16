@@ -13,7 +13,7 @@ private struct ShopNoProvider: PokeProviding {
 @MainActor
 final class ShopTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
-    private let heldItemEntries: [ShopEntry] = ItemKind.allCases.filter(\.isHeldItem).map { .item($0) }
+    private let heldItemEntries: [ShopEntry] = ItemKind.allCases.filter { $0.category == .heldItem }.map { .item($0) }
 
     /// usedSinceInstall/spentTokens 를 직접 지정한 상태 파일을 만들어 로드 — 지갑 잔액을 결정적으로
     /// 세팅(update() 의 delta 적립 경로를 우회). testCannotUseWhileLineUnloaded 와 동일한 JSON 시드 패턴.
@@ -199,7 +199,7 @@ final class ShopTests: XCTestCase {
     }
 
     func testEveryHeldItemIsBuyableAtExactPriceAndNotOneBelow() {
-        for kind in ItemKind.allCases.filter(\.isHeldItem) {
+        for kind in ItemKind.allCases.filter({ $0.category == .heldItem }) {
             let exact = store(used: HeldItem.price)
             XCTAssertTrue(exact.buy(kind), "\(kind)")
             XCTAssertEqual(exact.availableTokens, 0, "\(kind)")
@@ -215,7 +215,7 @@ final class ShopTests: XCTestCase {
     func testItemsSortedByPriceAscending() {
         let items = store(used: 0).purchasableItems
         XCTAssertEqual(Array(items.prefix(2)), [.mint, .rareCandy])
-        XCTAssertEqual(Set(items.dropFirst(2)), Set(ItemKind.allCases.filter(\.isHeldItem) + [.shinyCharm]), "held items and the charm share 600M")
+        XCTAssertEqual(Set(items.dropFirst(2)), Set(ItemKind.allCases.filter { $0.category == .heldItem } + [.shinyCharm]), "held items and the charm share 600M")
         let prices = items.compactMap(\.shopPrice)
         XCTAssertEqual(prices, prices.sorted(), "shopPrice 오름차순 — 가격 상수가 바뀌어도 정렬 불변식 유지")
     }
@@ -287,7 +287,7 @@ final class ShopTests: XCTestCase {
         XCTAssertEqual(s.shopCategories, [.growth, .egg, .scout, .evolution, .heldItem, .megaStone, .machine])
         XCTAssertEqual(s.shopEntries(in: .egg), [.egg(nil), .egg(.uncommon), .egg(.rare)])
         XCTAssertEqual(s.shopEntries(in: .growth), [.item(.mint), .item(.rareCandy), .item(.shinyCharm)])
-        XCTAssertEqual(s.shopEntries(in: .megaStone).count, MegaStone.all.count)
+        XCTAssertEqual(s.shopEntries(in: .megaStone).count, MegaStone.all.count + 1, "the stones plus the Stellar Crystal")
     }
 
     func testAllTabKeepsPriceOrder() {

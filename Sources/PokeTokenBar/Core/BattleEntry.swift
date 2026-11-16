@@ -89,6 +89,7 @@ enum BattleEntry {
         var duplicates = Set<String>()
         for candidate in lineup(state: state, slots: slots) {
             guard let key = state.heldItems[candidate.id] else { continue }
+            if let holder = ItemKind(rawValue: key)?.holderSpeciesID, holder != candidate.member.pokemonID { continue }
             if !seen.insert(key).inserted { duplicates.insert(candidate.id) }
         }
         return duplicates

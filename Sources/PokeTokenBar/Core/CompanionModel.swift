@@ -245,6 +245,8 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case mysticWater, miracleSeed, magnet, neverMeltIce, blackBelt, poisonBarb, softSand, sharpBeak, twistedSpoon
     case silverPowder, hardStone, spellTag, dragonFang, blackGlasses, silkScarf, fairyFeather
     case heatRock, dampRock, smoothRock, icyRock
+    /// Ogerpon's masks and Terapagos' Stellar Crystal; each works only on its own species.
+    case tealMask, wellspringMask, hearthflameMask, cornerstoneMask, stellarCrystal
     /// Evolution items the games use up like a stone.
     case tartApple, sweetApple, syrupyApple, crackedPot, chippedPot, auspiciousArmor, maliciousArmor
     case galaricaCuff, galaricaWreath, unremarkableTeacup, masterpieceTeacup, metalAlloy, peatBlock
@@ -306,6 +308,11 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .dampRock: return "damp-rock"
         case .smoothRock: return "smooth-rock"
         case .icyRock: return "icy-rock"
+        case .tealMask: return "teal-mask"
+        case .wellspringMask: return "wellspring-mask"
+        case .hearthflameMask: return "hearthflame-mask"
+        case .cornerstoneMask: return "cornerstone-mask"
+        case .stellarCrystal: return "stellar-crystal"
         case .metalCoat: return "metal-coat"
         case .razorClaw: return "razor-claw"
         default: return nil
@@ -335,8 +342,40 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         default: return nil
         }
     }
+    /// The only species the item works on; nil for an item anyone can hold.
+    var holderSpeciesID: Int? {
+        switch self {
+        case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask: return TeraForm.ogerpon
+        case .stellarCrystal: return TeraForm.terapagos
+        default: return nil
+        }
+    }
     /// A battle item sold in the held-item tier. Metal Coat and Razor Claw also act in battle but stay evolution items.
     var isHeldItem: Bool { heldItemSlug != nil && !isEvolutionHeld }
+    /// The shop sells one copy at a time, counting the bag and every holder.
+    var isSingleCopy: Bool { self == .stellarCrystal }
+
+    /// The stat an Ogerpon mask raises by one stage when its holder enters a battle (PokéAPI stat key).
+    var maskEntryStat: String? {
+        switch self {
+        case .tealMask: return "speed"
+        case .wellspringMask: return "special_defense"
+        case .hearthflameMask: return "attack"
+        case .cornerstoneMask: return "defense"
+        default: return nil
+        }
+    }
+
+    /// The form the holder is drawn in. Teal Mask is the base form, so it has none.
+    var formSprite: TeraForm.Sprite? {
+        switch self {
+        case .wellspringMask: return .init(id: 10273, types: ["grass", "water"])
+        case .hearthflameMask: return .init(id: 10274, types: ["grass", "fire"])
+        case .cornerstoneMask: return .init(id: 10275, types: ["grass", "rock"])
+        case .stellarCrystal: return .init(id: 10277, types: ["normal"], stats: [160, 105, 110, 130, 110, 85])
+        default: return nil
+        }
+    }
 
     /// PokéAPI name of an evolution item that is held, not used up. Metal Coat and Razor Claw are also uploaded as battle items.
     var evolutionHeldSlug: String? {
@@ -389,6 +428,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .mysticWater, .miracleSeed, .magnet, .neverMeltIce, .blackBelt, .poisonBarb, .softSand, .sharpBeak,
              .twistedSpoon, .silverPowder, .hardStone, .spellTag, .dragonFang, .blackGlasses, .silkScarf, .fairyFeather,
              .heatRock, .dampRock, .smoothRock, .icyRock: return nil
+        case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal: return nil
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return nil
         case .metalCoat, .kingsRock, .dragonScale, .upGrade, .dubiousDisc, .electirizer, .magmarizer, .protector,
              .reaperCloth, .deepSeaTooth, .deepSeaScale, .sachet, .whippedDream, .prismScale: return nil
@@ -431,6 +471,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .mint: return nil   // PokéAPI 에 민트 스프라이트 없음(8세대 아이템) → 이모지 폴백
         case .shinyCharm: return "shiny-charm"
         case .linkingCord: return "linking-cord"
+        case .stellarCrystal: return nil   // drawn in the app (`StellarCrystalArt`)
         default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName
         }
     }
@@ -452,6 +493,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return RareCandy.price
         case .mint: return Mint.price
         case .shinyCharm: return ShinyCharm.price
+        case .stellarCrystal: return MegaStone.price
         case _ where isHeldItem: return HeldItem.price
         default: return EvolutionStone.price
         }
@@ -486,6 +528,7 @@ extension ItemKind {
     var category: ItemCategory {
         switch self {
         case .rareCandy, .mint, .shinyCharm: return .growth
+        case .stellarCrystal: return .megaStone
         case _ where isHeldItem: return .heldItem
         default: return .evolution
         }

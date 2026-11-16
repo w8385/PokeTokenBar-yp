@@ -19,10 +19,12 @@ struct ItemIconView: View {
     let spriteName: String?
     let fallbackEmoji: String
     var size: CGFloat = 30
+    var drawsCrystal = false
     @State private var img: NSImage?
 
     init(kind: ItemKind, size: CGFloat = 30) {
         self.init(spriteName: kind.spriteName, fallbackEmoji: kind.fallbackEmoji, size: size)
+        drawsCrystal = kind == .stellarCrystal
     }
 
     init(stone: MegaStone, size: CGFloat = 30) {
@@ -39,7 +41,9 @@ struct ItemIconView: View {
 
     var body: some View {
         Group {
-            if let img {
+            if drawsCrystal {
+                StellarCrystalArt(size: size)
+            } else if let img {
                 // 아이템 PNG 는 대체로 정사각(30×30)이라 늘려도 티가 안 났지만, 소스가 외부(PokeAPI
                 // items)라 비정사각이 섞이면 그대로 왜곡된다 — 스프라이트와 같은 SpriteFit 규율.
                 let fit = SpriteFit.size(for: img.size, box: size)

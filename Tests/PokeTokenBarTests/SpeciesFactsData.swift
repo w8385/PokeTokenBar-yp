@@ -170,5 +170,7 @@ extension SpeciesFacts {
         SpeciesFact(id: 593, slug: "jellicent-male", en: "Jellicent", ko: "탱탱겔", height: 22, weight: 1350, baseExperience: 168, genderRate: 4, types: ["water", "ghost"], stats: [100, 60, 70, 85, 105, 60], captureRate: 60, isLegendary: false, isMythical: false, evolvesFromID: 592),
         SpeciesFact(id: 686, slug: "inkay", en: "Inkay", ko: "오케이징", height: 4, weight: 35, baseExperience: 58, genderRate: 4, types: ["dark", "psychic"], stats: [53, 54, 53, 37, 46, 45], captureRate: 190, isLegendary: false, isMythical: false, evolvesFromID: nil),
         SpeciesFact(id: 687, slug: "malamar", en: "Malamar", ko: "칼라마네로", height: 15, weight: 470, baseExperience: 169, genderRate: 4, types: ["dark", "psychic"], stats: [86, 92, 88, 68, 75, 73], captureRate: 80, isLegendary: false, isMythical: false, evolvesFromID: 686),
+        SpeciesFact(id: 1017, slug: "ogerpon", en: "Ogerpon", ko: "오거폰", height: 12, weight: 398, baseExperience: 275, genderRate: 8, types: ["grass"], stats: [80, 120, 84, 60, 96, 110], captureRate: 5, isLegendary: true, isMythical: false, evolvesFromID: nil),
+        SpeciesFact(id: 1024, slug: "terapagos", en: "Terapagos", ko: "테라파고스", height: 2, weight: 65, baseExperience: 90, genderRate: 4, types: ["normal"], stats: [90, 65, 85, 65, 85, 60], captureRate: 255, isLegendary: true, isMythical: false, evolvesFromID: nil),
     ]
 }

@@ -156,7 +156,7 @@ final class HeldItemTests: XCTestCase {
     }
 
     func testEveryHeldItemHasASlugAHeldCategoryAndAPrice() {
-        let held = ItemKind.allCases.filter(\.isHeldItem)
+        let held = ItemKind.allCases.filter { $0.isHeldItem && $0 != .stellarCrystal }
 
         XCTAssertTrue(held.allSatisfy { $0.category == .heldItem && $0.shopPrice == HeldItem.price && !$0.isEvolutionStone })
         XCTAssertEqual(Set(held.compactMap(\.heldItemSlug)).count, held.count, "no two items share a slug")
@@ -168,6 +168,6 @@ final class HeldItemTests: XCTestCase {
         XCTAssertTrue(store.shopCategories.contains(.heldItem))
         XCTAssertEqual(Set(store.shopEntries(in: .heldItem).compactMap { entry -> ItemKind? in
             if case .item(let kind) = entry { return kind } else { return nil }
-        }), Set(ItemKind.allCases.filter(\.isHeldItem)))
+        }), Set(ItemKind.allCases.filter { $0.category == .heldItem }))
     }
 }

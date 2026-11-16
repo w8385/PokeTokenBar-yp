@@ -31,6 +31,8 @@ enum Palette {
         Color(red: 0.25, green: 0.82, blue: 1.0), Color(red: 0.36, green: 0.89, blue: 0.49),
         Color(red: 1.0, green: 0.85, blue: 0.29), Color(red: 1.0, green: 0.44, blue: 0.71),
     ]
+    /// The shade over the Stellar Crystal's lower facets.
+    static let stellarNight = Color(red: 0.08, green: 0.07, blue: 0.24)
     /// Gold tag for the Pokémon that stands for the box.
     static let representative = Color(red: 0.72, green: 0.48, blue: 0)
     static let heart = Color(red: 0xE0 / 255, green: 0x30 / 255, blue: 0x3C / 255)

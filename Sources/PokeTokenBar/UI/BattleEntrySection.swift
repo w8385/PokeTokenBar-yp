@@ -13,7 +13,7 @@ struct BattleEntrySection: View {
 
     var body: some View {
         let lineup = BattleEntry.lineup(state: companion.state, slots: entry.slots)
-        let megaLead = lineup.firstIndex { companion.megaStone(of: $0.id, speciesID: speciesID(of: $0)) != nil }
+        let megaLead = lineup.firstIndex { transformsInBattle($0) }
         let duplicates = BattleEntry.duplicateItemHolders(state: companion.state, slots: entry.slots)
         if lineup.isEmpty {
             rentalRow
@@ -66,6 +66,14 @@ struct BattleEntrySection: View {
         }
     }
 
+    /// A Mega Stone or the Stellar Crystal on the right species; the two share the once-per-battle slot.
+    private func transformsInBattle(_ fighter: BattleCandidate) -> Bool {
+        let id = speciesID(of: fighter)
+        return companion.megaStone(of: fighter.id, speciesID: id) != nil
+            || (companion.heldItem(of: fighter.id) == .stellarCrystal
+                && companion.teraForm(of: fighter.id, speciesID: id) != nil)
+    }
+
     private func speciesID(of fighter: BattleCandidate) -> Int {
         companion.dexEntry(for: fighter)?.finalID ?? fighter.member.pokemonID
     }
@@ -75,7 +83,8 @@ struct BattleEntrySection: View {
         let speciesID = speciesID(of: fighter)
         let level = fighter.member.level
         let mega = companion.megaStone(of: fighter.id, speciesID: speciesID)
-        let megaSprite = mega?.spriteID
+        let tera = companion.teraForm(of: fighter.id, speciesID: speciesID)
+        let megaSprite = mega?.spriteID ?? tera?.id
         let name = fighterName(fighter)
         return VStack(alignment: .leading, spacing: 4) {
             row {
@@ -105,8 +114,8 @@ struct BattleEntrySection: View {
                             Text(l.battleEntryRaising).font(.caption2).foregroundStyle(Color.accentColor)
                         }
                     }
-                    if let mega {
-                        TypeBadges(types: mega.types, language: companion.language)
+                    if let types = mega?.types ?? tera?.types {
+                        TypeBadges(types: types, language: companion.language)
                     } else if let details = companion.pokemonDetailsByID[speciesID] {
                         TypeBadges(types: details.types, language: companion.language)
                     }
@@ -134,10 +143,10 @@ struct BattleEntrySection: View {
                     .buttonStyle(.borderless).font(.caption)
                     .help(l.battleTraining)                }
             }
-            if let mega {
+            if let stats = mega?.stats ?? tera?.stats {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(l.megaStatLine(mega.stats)).monospacedDigit()
-                    if let ability = mega.abilityName(in: companion.language) {
+                    Text(l.megaStatLine(stats)).monospacedDigit()
+                    if let ability = mega?.abilityName(in: companion.language) {
                         Text("\(l.megaAbilityLabel): \(ability)")
                     }
                     if let megaLead, megaLead != index {

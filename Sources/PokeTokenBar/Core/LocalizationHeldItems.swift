@@ -35,7 +35,10 @@ extension L {
 
     func moreHeldItemEffect(_ kind: ItemKind) -> String {
         if let type = kind.boostedType { return typeBoostEffect(type) }
+        if kind.maskEntryStat != nil { return maskEffect(kind) }
         switch kind {
+        case .stellarCrystal:
+            return stellarCrystalEffect
         case .everstone:
             let name = itemName(.everstone)
             return t("\(name): 진화하지 않아요", "\(name): won't evolve", "\(name): 進化しません",

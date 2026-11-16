@@ -128,7 +128,7 @@ final class NewItemsClauseTests: XCTestCase {
 
     func testTheItemClauseCoversEveryNewHeldItem() {
         let slots = [BattleEntrySlot(instanceID: "a"), BattleEntrySlot(instanceID: "b")]
-        for kind in ItemKind.allCases where kind.heldItemSlug != nil {
+        for kind in ItemKind.allCases where kind.heldItemSlug != nil && kind.holderSpeciesID == nil {
             let state = state(held: ["a": kind.rawValue, "b": kind.rawValue])
 
             XCTAssertEqual(BattleEntry.duplicateItemHolders(state: state, slots: slots), ["b"], "\(kind)")
