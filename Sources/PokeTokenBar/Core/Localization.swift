@@ -783,14 +783,18 @@ struct L {
     }
     var battleEntryLabel: String { t("대결에 나갈 포켓몬", "Battle Pokémon", "対戦に出すポケモン", "Pokémon de combate", "Pokémon de combat", "Pokémon de batalha", "Kampf-Pokémon", "Покемон для боя") }
     var battleEntryHint: String {
-        t("최대 3마리가 순서대로 나가요. 쓰러지면 다음 포켓몬이 나오고, 중간에 바꿀 수는 없어요. 자동이면 지금 키우는 포켓몬이 나가요.",
-          "Up to 3 Pokémon fight in this order. When one faints the next comes in, and you can't switch mid-battle. Auto sends the Pokémon you're raising.",
-          "最大3匹が順番に出ます。倒れると次のポケモンが出て、途中で交代はできません。自動なら育成中のポケモンが出ます。",
-          "Pelean hasta 3 Pokémon en este orden. Si uno cae, entra el siguiente; no se puede cambiar a mitad del combate. Auto envía el Pokémon que crías.",
-          "Jusqu'à 3 Pokémon combattent dans cet ordre. Quand l'un est K.O., le suivant entre, sans changement possible. Auto envoie le Pokémon que tu élèves.",
-          "Até 3 Pokémon lutam nesta ordem. Quando um cai, entra o próximo, sem trocas no meio da batalha. Auto envia o Pokémon que você cria.",
-          "Bis zu 3 Pokémon kämpfen in dieser Reihenfolge. Fällt eines aus, kommt das nächste, ein Wechsel ist nicht möglich. Automatisch schickt dein aktuelles Pokémon.",
-          "В бою участвуют до 3 покемонов по порядку. Когда один падает, выходит следующий; менять во время боя нельзя. «Авто» отправляет выращиваемого покемона.")
+        t("1~3번 포켓몬이 순서대로 대결(PvP)에 나가요. 4~6번은 도장에서만 써요. 쓰러지면 다음 포켓몬이 나오고, 중간에 바꿀 수는 없어요. 자동이면 지금 키우는 포켓몬이 나가요.",
+          "Slots 1–3 fight in PvP in this order. Slots 4–6 are for gyms only. When one faints the next comes in, and you can't switch mid-battle. Auto sends the Pokémon you're raising.",
+          "1〜3番が順番に対戦(PvP)に出ます。4〜6番はジム専用です。倒れると次のポケモンが出て、途中で交代はできません。自動なら育成中のポケモンが出ます。",
+          "Los puestos 1–3 pelean en PvP en este orden. Los puestos 4–6 son solo para gimnasios. Si uno cae, entra el siguiente; no se puede cambiar a mitad del combate. Auto envía el Pokémon que crías.",
+          "Les positions 1–3 combattent en PvP dans cet ordre. Les positions 4–6 servent uniquement aux arènes. Quand l'un est K.O., le suivant entre, sans changement possible. Auto envoie le Pokémon que tu élèves.",
+          "As vagas 1–3 lutam em PvP nesta ordem. As vagas 4–6 são só para ginásios. Quando um cai, entra o próximo, sem trocas no meio da batalha. Auto envia o Pokémon que você cria.",
+          "Plätze 1–3 kämpfen in dieser Reihenfolge im PvP. Plätze 4–6 gelten nur für Arenen. Fällt eines aus, kommt das nächste, ein Wechsel ist nicht möglich. Automatisch schickt dein aktuelles Pokémon.",
+          "Места 1–3 по порядку участвуют в PvP-боях. Места 4–6 только для залов. Когда один падает, выходит следующий; менять во время боя нельзя. «Авто» отправляет выращиваемого покемона.")
+    }
+    var battleSlotPvP: String { t("대결(PvP)", "PvP", "対戦(PvP)", "PvP", "PvP", "PvP", "PvP", "PvP") }
+    var battleSlotGymOnly: String {
+        t("도장 전용", "Gym only", "ジム専用", "Solo gimnasio", "Arène seulement", "Só ginásio", "Nur Arena", "Только залы")
     }
     var battleAddMember: String {
         t("포켓몬 추가", "Add a Pokémon", "ポケモンを追加", "Añadir un Pokémon", "Ajouter un Pokémon",

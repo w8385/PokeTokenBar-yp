@@ -100,7 +100,7 @@ final class BattleEntryTests: XCTestCase {
         XCTAssertNil(party[2].moves)
     }
 
-    func testAnEntryNeverCarriesMoreThanThreeOrTheSamePokemonTwice() {
+    func testThePartyHoldsAtMostThreeAndNeverTheSamePokemonTwice() {
         var state = state()
         state.dex.append(entry(16, id: "pidgey"))
 
@@ -188,17 +188,17 @@ final class BattleEntryStoreTests: XCTestCase {
 
     private func ids(_ store: BattleEntryStore) -> [String] { store.slots.map(\.instanceID) }
 
-    func testAddingFillsTheFirstFreeSlotUpToThreeAndPersists() {
+    func testAddingFillsTheFirstFreeSlotUpToSixAndPersists() {
         let store = BattleEntryStore(defaults: defaults)
 
         XCTAssertTrue(store.add("a"))
         XCTAssertTrue(store.add("b"))
         XCTAssertFalse(store.add("b"))
-        XCTAssertTrue(store.add("c"))
-        XCTAssertFalse(store.add("d"))
+        for id in ["c", "d", "e", "f"] { XCTAssertTrue(store.add(id)) }
+        XCTAssertFalse(store.add("g"))
 
-        XCTAssertEqual(ids(store), ["a", "b", "c"])
-        XCTAssertEqual(ids(BattleEntryStore(defaults: defaults)), ["a", "b", "c"])
+        XCTAssertEqual(ids(store), ["a", "b", "c", "d", "e", "f"])
+        XCTAssertEqual(ids(BattleEntryStore(defaults: defaults)), ["a", "b", "c", "d", "e", "f"])
     }
 
     func testAddingToAnEmptyEntryKeepsTheAutoFighterInSlotOne() {
@@ -298,11 +298,11 @@ final class BattleEntryStoreTests: XCTestCase {
         XCTAssertEqual(reloaded.chosenMoves(for: "a", pokemonID: 25), [])
     }
 
-    func testALoadedEntryDropsDuplicatesAndKeepsAtMostThree() throws {
-        let saved = ["a", "a", "b", "c", "d"].map { BattleEntrySlot(instanceID: $0) }
+    func testALoadedEntryDropsDuplicatesAndKeepsAtMostSix() throws {
+        let saved = ["a", "a", "b", "c", "d", "e", "f", "g"].map { BattleEntrySlot(instanceID: $0) }
         defaults.set(try JSONEncoder().encode(saved), forKey: BattleEntryStore.defaultsKey)
 
-        XCTAssertEqual(ids(BattleEntryStore(defaults: defaults)), ["a", "b", "c"])
+        XCTAssertEqual(ids(BattleEntryStore(defaults: defaults)), ["a", "b", "c", "d", "e", "f"])
     }
 
     func testChoosingAMoveStartsFromTheShownMovesReplacesOrSwapsAndStopsAtFour() {
