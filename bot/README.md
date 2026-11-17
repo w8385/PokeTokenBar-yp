@@ -42,7 +42,7 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   `poketokenbar://ypoke-register?token=…&server=…`, which saves the upload token and server in the app.
   The token is also in the DM for pasting by hand. Running it again rotates the token. The channel only sees
   "<user>님이 YPoke 연결 링크를 받았어요."; the link and token never leave the DM.
-- Trades: the app's Battle tab offers one graduated Pokémon to a linked coworker. The bot DMs them a picker of
+- Trades: the app's Friends (친구) tab or a Box detail page offers one graduated Pokémon to a linked coworker. The bot DMs them a picker of
   their own Pokémon with Accept/Decline; after they accept, the offerer confirms in a DM. Each app picks its side
   up on its next sync, once. Offers expire after 24 hours. Wire format: [API.md](API.md#trades).
 - Gyms (PvE, [API.md](API.md#gyms-pve)): the app's 체육관 screen calls `GET /v1/gyms` (9 regions, each with 8 gyms,

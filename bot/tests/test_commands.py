@@ -617,6 +617,12 @@ def test_help_points_gyms_to_the_app_without_splitting_entry_slots():
     assert "도장" not in HELP_TEXT
 
 
+def test_help_sends_trades_to_the_friends_tab_not_the_battle_tab():
+    trade_lines = [line for line in HELP_TEXT.splitlines() if "교환" in line]
+    assert any("친구 탭" in line for line in trade_lines)
+    assert not any("대결 탭" in line for line in trade_lines)
+
+
 NOW = datetime(2026, 11, 12, 9, 30, tzinfo=UTC)  # Thursday 18:30 KST
 MONDAY_KST_IN_UTC = datetime(2026, 11, 8, 15, 0, tzinfo=UTC)  # Monday 2026-11-09 00:00 KST
 
