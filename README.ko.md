@@ -58,10 +58,10 @@ PokeTokenBar는 당신이 이미 태우고 있는 AI 코딩 토큰(Claude Code �
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pet-interactions-ko.png" width="300" alt="기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 펫 샘플"><br><small>실제 UI 컴포넌트 · 샘플 상태</small></td>
+<td width="45%" align="center"><img src="assets/screenshot-pet-interactions-ko.png" width="300" alt="기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 펫 샘플"><br><small>실제 UI 컴포넌트 · 샘플 상태</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="플로팅 펫 옆에 선 친구 둘, 그중 하나 위에 뜬 하트"></td>
 <td width="55%" valign="middle">
 <h3>작은 반응이 있는 파트너</h3>
-플로팅 펫 위로 포인터를 움직이거나 클릭해 쓰다듬고, 알을 클릭해 기도해 보세요. 작은 반응, 삐침, 가끔 나타나는 이벤트 말풍선을 볼 수 있어요. 이 상호작용은 연출이며 기도가 부화 확률이나 성장 보상을 바꾸지는 않습니다. 기도 30회마다 한마디와 함께 사용량을 새로고침할 수 있어요. 에이전트의 작업·입력 대기·완료 반응은 <a href="#에이전트-활동">수동 설정</a> 후 사용할 수 있어요.
+플로팅 펫 위로 포인터를 움직이거나 클릭해 쓰다듬고, 알을 클릭해 기도해 보세요. 작은 반응, 삐침, 가끔 나타나는 이벤트 말풍선을 볼 수 있어요. 친구는 펫 바로 옆에 살짝 겹쳐 서고, 친구를 쓰다듬으면 그 친구 위에 하트가 떠요. 이 상호작용은 연출이며 기도가 부화 확률이나 성장 보상을 바꾸지는 않습니다. 기도 30회마다 한마디와 함께 사용량을 새로고침할 수 있어요. 에이전트의 작업·입력 대기·완료 반응은 <a href="#에이전트-활동">수동 설정</a> 후 사용할 수 있어요.
 </td>
 </tr>
 <tr>
@@ -152,11 +152,34 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ko.png" width="300" alt="포켓몬마다 고유한 프로필"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ko.png" width="300" alt="지닌 도구·학습장치 칸·기술이 보이는 박스 포켓몬 프로필"></td>
 <td width="55%" valign="middle">
 <h3>포켓몬마다 고유한 프로필</h3>
-<b>도감</b>에서 종을 열면 개체별 레벨·성별·성격·특성·개체값·계산된 능력치·배운 기술을 확인할 수 있습니다. 종 설명과 특성·기술은 선택 언어로 표시하고, PokéAPI에 번역이 없으면 영어를 사용합니다.
+<b>박스</b>에서 포켓몬을 열면 레벨·성별·성격·특성·개체값·계산된 능력치·지닌 도구·기술을 확인할 수 있습니다. 종 설명과 특성·기술은 선택 언어로 표시하고, PokéAPI에 번역이 없으면 영어를 사용합니다.
 </td>
+</tr>
+<tr>
+<td width="55%" valign="middle">
+<h3>📚 박스 포켓몬을 위한 학습장치</h3>
+가방의 <b>학습장치</b>를 박스 포켓몬 하나의 상세 화면에서 달아 주세요. 그 포켓몬은 지금 키우는 포켓몬이나 알이 얻는 경험치의 50%를 함께 받아서, 다음 포켓몬을 키우는 동안 졸업한 포켓몬도 계속 자랍니다. 떼기도 같은 화면에서 해요. <b>포켓몬 알</b>로 지금 포켓몬을 박스에 보내면 가방의 학습장치 하나가 그 포켓몬에 달려요.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-exp-share-ko.png" width="300" alt="박스의 피카츄에 단 학습장치"></td>
+</tr>
+<tr>
+<td width="45%" align="center"><img src="assets/screenshot-battle-ko.png" width="300" alt="대결 탭 — 나갈 순서대로 선 최대 여섯 마리"><br><br><img src="assets/screenshot-gyms-ko.png" width="300" alt="체육관 관장·사천왕·아지트와 배지 케이스"></td>
+<td width="55%" valign="middle">
+<h3>⚔️ 체육관, 사천왕, 배지 케이스</h3>
+<a href="bot/README.md">YPoke</a> 연결을 마치면 <b>대결</b> 탭에 대결에 나갈 포켓몬을 최대 여섯 마리까지 순서대로 세워요. 쓰러지면 다음 포켓몬이 나오고, 중간에 바꿀 수는 없어요. <b>자동</b>이면 지금 키우는 포켓몬이 나가요.
+<br><br>
+<b>체육관</b>에는 지방마다 타입과 팀이 다른 관장 여덟 명이 있어요. 팀은 Lv50 이하로 맞춰 싸우고, 슬랙에는 아무것도 올라가지 않아요. 이기면 배지를 받고 기술머신을 받을 수도 있어요. 배지 여덟 개를 모으면 <b>사천왕</b> 연전이 열리고, <b>아지트</b>는 연달아 싸우는 연전이에요. 판마다 팀이 모두 회복되고, 지면 처음부터 다시 해요. <b>배지 케이스</b>에서 지방별 배지를 볼 수 있어요.
+</td>
+</tr>
+<tr>
+<td width="55%" valign="middle">
+<h3>▶️ 대결을 다시 보기</h3>
+체육관 대결은 턴마다 다시 재생돼요. 기술·대미지·HP 바·양쪽에 남은 포켓몬을 볼 수 있고, 빨리 감기·다음 턴·건너뛰기로 결과까지 넘길 수 있어요.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-gym-replay-ko.png" width="300" alt="대결 도중에 멈춘 체육관 리플레이"></td>
 </tr>
 <tr>
 <td width="45%" align="center"><img src="assets/screenshot-difficulty-ko.png" width="300" alt="내 페이스에 맞춰 키우기"></td>
@@ -206,7 +229,7 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 
 <img src="assets/screenshot-usage-recap-ko.png" width="360" alt="선택한 기간의 사용량 돌아보기">
 
-<small>위 홈·설정·폼·상점·가방·난이도·활동·지방 도감·펫 상호작용·회고 이미지는 샘플 데이터로 실제 UI를 로컬 렌더링한 이미지입니다. 지방 도감·펫 보드는 별도로 렌더링한 실제 UI 컴포넌트를 조합했습니다. GIF는 설명용 데모이며 이전 배치를 보여줄 수 있습니다.</small>
+<small>위 홈·설정·폼·상점·가방·도감·박스·프로필·학습장치·대결·체육관·리플레이·플로팅 친구·난이도·활동·지방 도감·펫 상호작용·회고 이미지는 샘플 데이터로 실제 UI를 로컬 렌더링한 이미지입니다. 체육관 이미지는 YPoke 봇의 관동 체육관 목록을 씁니다. 지방 도감·펫 보드는 별도로 렌더링한 실제 UI 컴포넌트를 조합했습니다. GIF는 설명용 데모이며 이전 배치를 보여줄 수 있습니다.</small>
 
 ## 에이전트 활동
 

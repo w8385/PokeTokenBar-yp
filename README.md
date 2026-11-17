@@ -57,10 +57,10 @@ Move your companion out of the menu bar and onto the desktop, at any size from 4
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pet-interactions.png" width="300" alt="Separate native pet samples for prayer, petting, sulking, and agent waiting"><br><small>Native UI components · sample states</small></td>
+<td width="45%" align="center"><img src="assets/screenshot-pet-interactions.png" width="300" alt="Separate native pet samples for prayer, petting, sulking, and agent waiting"><br><small>Native UI components · sample states</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="Floating pet with two friends beside it, one wearing a heart"></td>
 <td width="55%" valign="middle">
 <h3>A companion with a little personality</h3>
-Move the pointer over your floating pet, or click it, to pet it; click an egg to pray, and watch for small reactions, sulking, and occasional event bubbles. These interactions are cosmetic: praying does not change hatch odds or growth rewards. Every 30 prayers, a quip can accompany a usage refresh. Agent activity can add working, waiting, and done reactions after <a href="#agent-activity">manual setup</a>.
+Move the pointer over your floating pet, or click it, to pet it; click an egg to pray, and watch for small reactions, sulking, and occasional event bubbles. Friends stand close beside the pet, slightly overlapping, and petting a friend pops a heart over that friend. These interactions are cosmetic: praying does not change hatch odds or growth rewards. Every 30 prayers, a quip can accompany a usage refresh. Agent activity can add working, waiting, and done reactions after <a href="#agent-activity">manual setup</a>.
 </td>
 </tr>
 <tr>
@@ -151,11 +151,34 @@ Pi can route more than one model through a single session log. Usage is now attr
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile.png" width="300" alt="Every Pokémon has its own profile"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile.png" width="300" alt="A Box Pokémon's profile with its held item, Exp. Share slot and moves"></td>
 <td width="55%" valign="middle">
 <h3>Every Pokémon has its own profile</h3>
-Open a species in the <b>Pokédex</b> to inspect each individual: level, gender, nature, ability, IVs, calculated stats, and learned moves. Species descriptions, abilities, and moves use your selected language, with English as the fallback when PokéAPI has no translation.
+Open a Pokémon in the <b>Box</b> to inspect it: level, gender, nature, ability, IVs, calculated stats, held item, and moves. Species descriptions, abilities, and moves use your selected language, with English as the fallback when PokéAPI has no translation.
 </td>
+</tr>
+<tr>
+<td width="55%" valign="middle">
+<h3>📚 Exp. Share for the Pokémon in the Box</h3>
+Attach an <b>Exp. Share</b> from the Bag to one Pokémon in the Box, from its detail page. It then gets 50% of the EXP your current Pokémon or egg earns, so a graduate keeps growing while you raise the next one. Detach it there too. When a <b>Pokémon Egg</b> sends your current Pokémon to the Box, one Exp. Share from your Bag goes on it.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-exp-share.png" width="300" alt="Exp. Share attached to a Pikachu in the Box"></td>
+</tr>
+<tr>
+<td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab — an entry of up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, Elite Four, hideout and the badge case"></td>
+<td width="55%" valign="middle">
+<h3>⚔️ Gyms, the Elite Four, and a badge case</h3>
+With the <a href="bot/README.md">YPoke</a> link set up, the <b>Battle</b> tab holds your entry: up to six Pokémon that fight in order. When one faints the next comes in; nothing switches mid-battle. <b>Auto</b> sends the Pokémon you're raising.
+<br><br>
+Under <b>Gyms</b>, each region has eight leaders with their own type and team. Your entry fights at Lv50 or below, and nothing is posted to Slack. A win earns the badge and can grant a TM. Eight badges open the <b>Elite Four</b> run, and the <b>hideout</b> is a run of battles in a row: your team is fully healed before each one, and a loss starts the run again. The <b>badge case</b> shows each region's badges.
+</td>
+</tr>
+<tr>
+<td width="55%" valign="middle">
+<h3>▶️ Watch the battle play out</h3>
+A gym fight plays back turn by turn: moves, damage, HP bars, and each side's remaining Pokémon. Fast-forward, step to the next turn, or skip to the result.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-gym-replay.png" width="300" alt="A gym battle replay stopped mid-fight"></td>
 </tr>
 <tr>
 <td width="45%" align="center"><img src="assets/screenshot-difficulty.png" width="300" alt="Choose your growth pace"></td>
@@ -205,7 +228,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 
 <img src="assets/screenshot-usage-recap.png" width="360" alt="Usage recap for a selected period">
 
-<small>The Home, Settings, form, Shop, Bag, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
+<small>The Home, Settings, form, Shop, Bag, Pokédex, Box, profile, Exp. Share, Battle, gym, replay, floating-friends, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
 
 ## Agent activity
 
