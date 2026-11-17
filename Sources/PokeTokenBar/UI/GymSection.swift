@@ -162,6 +162,7 @@ struct GymSection: View {
                     }
                 },
                 onClose: { service.dismissResult() })
+            .id("\(outcome.gymId)-\(outcome.seed)")
             if let failure = service.failure { failureLine(failure) }
         }
     }

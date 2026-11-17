@@ -44,6 +44,18 @@ struct GymRunStep: Decodable, Equatable, Sendable {
     let next: String?
 }
 
+/// One step of the battle for the replay: `switch`, `move`, `damage`, `faint` or `status`. `member` indexes that
+/// side's roster; `hp` and `status` come with `switch`, `hp` with `damage`, `status` (nil when it ends) with `status`.
+struct GymBattleEvent: Decodable, Equatable, Sendable {
+    let turn: Int
+    let type: String
+    let side: Int
+    let member: Int
+    var hp: Int?
+    var status: String?
+    var move: String?
+}
+
 /// The reply of `POST /v1/gym/battle`.
 struct GymBattleOutcome: Decodable, Equatable, Sendable {
     let gymId: String
@@ -55,6 +67,8 @@ struct GymBattleOutcome: Decodable, Equatable, Sendable {
     let playerTeam: [GymFighter]
     let foeTeam: [GymFighter]
     let log: [GymTurn]
+    /// Nil from a bot older than the replay.
+    let events: [GymBattleEvent]?
     let run: GymRunStep?
 
     static func decode(_ data: Data) throws -> GymBattleOutcome {

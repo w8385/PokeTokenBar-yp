@@ -64,11 +64,12 @@ enum GymFixtures {
     /// A battle reply; `run` is `(id, step, steps, first, next)`.
     static func outcomeData(gymID: String, kind: String, won: Bool, run: (String, Int, Int, String, String?)? = nil,
                             carry: [[String: Any]?]? = nil, hps: [Int?] = [80, 0, 35, nil, 100, 60],
-                            foeHps: [Int?] = [0, 0, 0, 0, 0, 0]) -> Data {
-        let mine = hps.enumerated().map { fighter(25 + $0.offset, name: "Mine\($0.offset)", hp: $0.element) }
-        let theirs = foeHps.enumerated().map { fighter(1 + $0.offset, name: "Foe\($0.offset)", hp: $0.element) }
+                            foeHps: [Int?] = [0, 0, 0, 0, 0, 0], turns: Int = 12,
+                            events: [[String: Any]]? = nil, teams: ([[String: Any]], [[String: Any]])? = nil) -> Data {
+        let mine = teams?.0 ?? hps.enumerated().map { fighter(25 + $0.offset, name: "Mine\($0.offset)", hp: $0.element) }
+        let theirs = teams?.1 ?? foeHps.enumerated().map { fighter(1 + $0.offset, name: "Foe\($0.offset)", hp: $0.element) }
         var json: [String: Any] = [
-            "ok": true, "gym_id": gymID, "kind": kind, "won": won, "turns": 12, "seed": 42,
+            "ok": true, "gym_id": gymID, "kind": kind, "won": won, "turns": turns, "seed": 42,
             "trainer": trainer("트레이너", "Trainer"), "player_team": mine, "foe_team": theirs,
             "log": [
                 ["turn": 1, "lines": [["side": 0, "text": "Mine0 used Thunderbolt!"], ["side": 1, "text": "Foe0 fainted!"]]],
@@ -77,8 +78,35 @@ enum GymFixtures {
         ]
         json["run"] = run.map { ["id": $0.0, "step": $0.1, "steps": $0.2, "first": $0.3, "next": $0.4 as Any? ?? NSNull()] as [String: Any] } ?? NSNull()
         json["carry"] = carry.map { entries in entries.map { entry -> Any in entry ?? NSNull() } } ?? NSNull()
+        if let events { json["events"] = events }
         return try! JSONSerialization.data(withJSONObject: json)
     }
+
+    static func event(_ turn: Int, _ type: String, side: Int, member: Int, hp: Int? = nil, status: String? = nil,
+                      move: String? = nil) -> [String: Any] {
+        var event: [String: Any] = ["turn": turn, "type": type, "side": side, "member": member]
+        if let hp { event["hp"] = hp }
+        if type == "switch" || type == "status" { event["status"] = status as Any? ?? NSNull() }
+        if let move { event["move"] = move }
+        return event
+    }
+
+    /// Mine0 beats Foe0, takes a burn from Foe1 and faints; Mine1 comes in and finishes Foe1.
+    static var replayEvents: [[String: Any]] { [
+        event(0, "switch", side: 0, member: 0, hp: 100), event(0, "switch", side: 1, member: 0, hp: 100),
+        event(1, "move", side: 0, member: 0, move: "10만볼트"), event(1, "damage", side: 1, member: 0, hp: 45),
+        event(1, "move", side: 1, member: 0, move: "덩굴채찍"), event(1, "damage", side: 0, member: 0, hp: 70),
+        event(2, "move", side: 0, member: 0, move: "10만볼트"), event(2, "damage", side: 1, member: 0, hp: 0),
+        event(2, "faint", side: 1, member: 0), event(2, "switch", side: 1, member: 1, hp: 100),
+        event(3, "move", side: 1, member: 1, move: "화염방사"), event(3, "damage", side: 0, member: 0, hp: 30),
+        event(3, "status", side: 0, member: 0, status: "burn"),
+        event(3, "move", side: 0, member: 0, move: "아이언테일"), event(3, "damage", side: 1, member: 1, hp: 55),
+        event(3, "damage", side: 0, member: 0, hp: 24),
+        event(4, "move", side: 1, member: 1, move: "화염방사"), event(4, "damage", side: 0, member: 0, hp: 0),
+        event(4, "faint", side: 0, member: 0), event(4, "switch", side: 0, member: 1, hp: 100),
+        event(5, "move", side: 0, member: 1, move: "파도타기"), event(5, "damage", side: 1, member: 1, hp: 0),
+        event(5, "faint", side: 1, member: 1),
+    ] }
 
     static func carryJSON(hp: Int, status: String? = nil) -> [String: Any] { ["hp": hp, "status": status as Any? ?? NSNull()] }
 }
