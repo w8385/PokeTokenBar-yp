@@ -43,6 +43,17 @@ extension L {
           "Пока его растят или он отдыхает, доля ему не идёт.")
     }
 
+    var expShareGoesWithEggSwap: String {
+        t("가방의 학습장치 하나를 박스로 가는 포켓몬에 달아 줘요.",
+          "One Exp. Share from your bag goes on the Pokémon heading to the Box.",
+          "バッグのがくしゅうそうちを1つ、ボックスに行くポケモンにつけます。",
+          "Uno de los Repartir Exp de tu mochila se le pone al Pokémon que va a la Caja.",
+          "Un Multi Exp de ton sac est attaché au Pokémon qui part dans la Boîte.",
+          "Um Compart. Exp. da mochila é colocado no Pokémon que vai para a Caixa.",
+          "Ein EP-Teiler aus deinem Beutel kommt an das Pokémon, das in die Box geht.",
+          "Один Общий опыт из сумки прикрепится к покемону, который уходит в Коробку.")
+    }
+
     var expShareNoneInBag: String {
         t("가방에 남은 학습장치가 없어요. 다른 포켓몬에게서 떼면 달 수 있어요.",
           "No Exp. Share left in your bag. Detach one from another Pokémon to attach it here.",

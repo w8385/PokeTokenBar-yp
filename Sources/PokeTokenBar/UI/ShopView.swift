@@ -263,6 +263,11 @@ private struct EggCard: View {
                         Text(l.eggBoxNote)
                             .font(.caption2).foregroundStyle(.tertiary)
                             .fixedSize(horizontal: false, vertical: true)
+                        if store.eggSwapAttachesExpShare {
+                            Text(l.expShareGoesWithEggSwap)
+                                .font(.caption2).foregroundStyle(.tertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
                 Spacer()
