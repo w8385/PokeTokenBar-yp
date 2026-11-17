@@ -84,10 +84,7 @@ final class ExpShareScreenshotTests: XCTestCase {
             view.frame(width: width, height: height, alignment: .top)
                 .background(Color(nsColor: .windowBackgroundColor)),
             size: CGSize(width: width, height: height), appearance: .aqua)
-        for _ in 0..<200 {
-            await Task.yield()
-            host.layoutSubtreeIfNeeded()
-        }
+        try await OffscreenRender.settle(host)
         try OffscreenRender.writePNG(of: host, to: dir.appendingPathComponent("\(name).png"), scale: 2)
     }
 }
