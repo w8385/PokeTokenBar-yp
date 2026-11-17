@@ -40,7 +40,8 @@ extension CompanionStore {
             cards.append(EvolutionCard(rule: pending.rule, context: pending.context, isNextStep: true,
                                        offersSkip: skippable))
         }
-        if let individual, individual.releasedAt == nil, individual.profile != nil, individual.finalID == speciesID,
+        if let individual, individual.releasedAt == nil, state.storedLines[individual.id] == nil,
+           individual.profile != nil, individual.finalID == speciesID,
            !isActiveDexEntry(individual), individual.id != state.raisedEntryID {
             for rule in tradeSteps(from: speciesID) {
                 cards.append(EvolutionCard(rule: rule, context: nil, isNextStep: true, individualID: individual.id))

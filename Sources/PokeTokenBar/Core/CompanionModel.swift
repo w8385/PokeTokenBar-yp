@@ -1061,6 +1061,23 @@ struct MonState: Codable, Sendable {
     }
 }
 
+/// A line Pokémon waiting in the Box, exactly as it stopped. `spentAtStore` is `CompanionState.spentTokens` then.
+struct StoredLine: Codable, Sendable {
+    var mon: MonState
+    var spentAtStore: Int
+
+    init(mon: MonState, spentAtStore: Int) {
+        self.mon = mon
+        self.spentAtStore = spentAtStore
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        mon = try c.decode(MonState.self, forKey: .mon)
+        spentAtStore = c.lenient(Int.self, forKey: .spentAtStore, default: 0)
+    }
+}
+
 /// 도감 항목 — 라인 전체(초기→최종) 순서 보존.
 struct DexEntry: Codable, Sendable, Identifiable {
     /// Version 1 preserves every API language; earlier saves retained only app-supported names.
@@ -1227,6 +1244,8 @@ struct CompanionState: Codable, Sendable {
     /// `DexEntry.id` → evolution progress of a graduate whose form can still evolve (one graduated by skipping
     /// a blocked step). It grows only while that graduate is raised. Kept off `DexEntry`, which travels in trades.
     var graduateEvolution: [String: EvolutionProgress] = [:]
+    /// Instance ID → a line Pokémon sent to the Box before it graduated. Its released `dex` record keeps the species.
+    var storedLines: [String: StoredLine] = [:]
     // 도감
     var dex: [DexEntry] = []
     // 소유한 (base,final) 쌍 — 분기 다양성용
@@ -1305,6 +1324,8 @@ struct CompanionState: Codable, Sendable {
         raisedEntryID      = c.lenientOptional(String.self, forKey: .raisedEntryID)
         parkedSpentTokens  = c.lenientOptional(Int.self, forKey: .parkedSpentTokens)
         graduateEvolution  = c.lenient([String: EvolutionProgress].self, forKey: .graduateEvolution, default: [:])
+        storedLines        = c.lenient([String: Lossy<StoredLine>].self, forKey: .storedLines, default: [:])
+            .compactMapValues(\.value)
         // 도감은 항목별 격리 — 손상 항목 하나가 도감 전체를 날리지 않게.
         dex                = c.lenient([Lossy<DexEntry>].self, forKey: .dex, default: []).compactMap(\.value)
         reconcileRaised()
@@ -1335,7 +1356,7 @@ struct CompanionState: Codable, Sendable {
     var ownedInstanceIDs: Set<String> {
         var ids = Set(dex.filter { $0.releasedAt == nil }.map(\.id))
         if let id = active?.profile?.instanceID { ids.insert(id) }
-        return ids
+        return ids.union(storedLines.keys)
     }
 
     /// 지금 가진 개체의 종 — 키우는 개체의 현재 종과 도감의 최종 종.

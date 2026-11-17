@@ -109,7 +109,7 @@ struct ScoutPickerView: View {
     @State private var ids: [Int]?
     @State private var failed = false
     @State private var stage: Stage = .idle
-    private enum Stage: Equatable { case idle, confirm(Int), preciousConfirm(Int) }
+    private enum Stage: Equatable { case idle, confirm(Int) }
 
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
 
@@ -176,7 +176,7 @@ struct ScoutPickerView: View {
     private var selectedID: Int? {
         switch stage {
         case .idle: return nil
-        case .confirm(let id), .preciousConfirm(let id): return id
+        case .confirm(let id): return id
         }
     }
 
@@ -184,19 +184,11 @@ struct ScoutPickerView: View {
     private func confirmBar(_ l: L) -> some View {
         if let id = selectedID, let pick = store.scoutPicks(ids ?? []).first(where: { $0.id == id }) {
             HStack(spacing: 8) {
-                if case .preciousConfirm = stage {
-                    Text(store.rarity == .legendary ? l.freshEggLegendaryWarning : l.freshEggShinyWarning)
-                        .font(.caption2.weight(.semibold)).foregroundStyle(.orange).lineLimit(2)
-                } else {
-                    Text(l.scoutPickConfirm(store.displayName, pick.species.name))
-                        .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
-                }
+                Text(l.scoutPickConfirm(store.displayName, pick.species.name))
+                    .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
                 Spacer(minLength: 4)
-                Button(l.scoutPick) {
-                    if case .confirm = stage, store.isHighValueCompanion { stage = .preciousConfirm(id) }
-                    else { commit(id) }
-                }
-                .buttonStyle(.borderedProminent).controlSize(.small)
+                Button(l.scoutPick) { commit(id) }
+                    .buttonStyle(.borderedProminent).controlSize(.small)
                 Button(l.cancel) { stage = .idle }
                     .buttonStyle(.borderless).controlSize(.small)
             }

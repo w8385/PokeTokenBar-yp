@@ -15,6 +15,17 @@ extension L {
         t("쉬는 중", "Resting", "休み中", "Descansando", "Au repos", "Descansando", "Ruht", "Отдыхает")
     }
 
+    var storedBadge: String {
+        t("보관 중", "Stored", "預け中", "Guardado", "Rangé", "Guardado", "Verwahrt", "На хранении")
+    }
+
+    var storedRaiseLocked: String {
+        t("알이 부화하면 다시 키울 수 있어요.", "You can raise it again once your egg hatches.",
+          "タマゴが孵ると、また育てられます。", "Podrás volver a criarlo cuando eclosione tu huevo.",
+          "Tu pourras de nouveau l'élever une fois ton œuf éclos.", "Dá para voltar a criá-lo quando seu ovo chocar.",
+          "Du kannst es wieder aufziehen, sobald dein Ei geschlüpft ist.", "Снова растить его можно, когда вылупится яйцо.")
+    }
+
     var parkedEggName: String {
         t("알", "Egg", "タマゴ", "Huevo", "Œuf", "Ovo", "Ei", "Яйцо")
     }
