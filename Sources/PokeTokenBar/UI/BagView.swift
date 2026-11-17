@@ -10,6 +10,12 @@ struct BagView: View {
     /// The ticket whose scout screen is open; it replaces the list while set.
     @State private var scoutPool: ScoutPool?
 
+    init(store: CompanionStore, nav: PopoverNavigation, initialCategory: ItemCategory? = nil) {
+        self.store = store
+        self.nav = nav
+        _category = State(initialValue: initialCategory)
+    }
+
     var body: some View {
         if let pool = scoutPool {
             ScoutPickerView(store: store, pool: pool,
@@ -23,8 +29,13 @@ struct BagView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
                     ItemCategoryChips(categories: store.bagCategories, selection: $category, l: store.l)
-                    ForEach(store.ownedItems(in: category), id: \.kind) { item in
+                    ForEach(store.bagListItems(in: category), id: \.kind) { item in
                         ItemCard(store: store, nav: nav, kind: item.kind, count: item.count)
+                    }
+                    if category == nil || category == .heldItem {
+                        HeldItemSections(sections: store.ownedBattleSections, l: store.l) { kind in
+                            ItemCard(store: store, nav: nav, kind: kind, count: store.itemCount(kind))
+                        }
                     }
                     if category == nil || category == .scout {
                         ForEach(store.ownedScoutTickets, id: \.pool) { ticket in

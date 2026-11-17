@@ -535,6 +535,57 @@ extension ItemKind {
         default: return .evolution
         }
     }
+
+    /// The effect group a battle item is listed under in the shop and the bag; nil for anything without `heldItemSlug`.
+    var battleGroup: BattleItemGroup? {
+        switch self {
+        case .rareCandy, .mint, .shinyCharm, .expShare, .linkingCord: return nil
+        case .fireStone, .waterStone, .thunderStone, .leafStone, .moonStone,
+             .sunStone, .shinyStone, .duskStone, .dawnStone, .iceStone: return nil
+        case .tartApple, .sweetApple, .syrupyApple, .crackedPot, .chippedPot, .auspiciousArmor, .maliciousArmor,
+             .galaricaCuff, .galaricaWreath, .unremarkableTeacup, .masterpieceTeacup, .metalAlloy, .peatBlock,
+             .blackAugurite, .scrollOfDarkness, .scrollOfWaters: return nil
+        case .ovalStone, .razorFang, .strawberrySweet: return nil
+        case .kingsRock, .dragonScale, .upGrade, .dubiousDisc, .electirizer, .magmarizer, .protector,
+             .reaperCloth, .deepSeaTooth, .deepSeaScale, .sachet, .whippedDream, .prismScale: return nil
+        case .choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses: return .attack
+        case .charcoal, .mysticWater, .miracleSeed, .magnet, .neverMeltIce, .blackBelt, .poisonBarb, .softSand,
+             .sharpBeak, .twistedSpoon, .silverPowder, .hardStone, .spellTag, .dragonFang, .blackGlasses,
+             .silkScarf, .fairyFeather, .metalCoat: return .typeBoost
+        case .assaultVest, .eviolite, .leftovers, .blackSludge, .sitrusBerry, .shellBell, .bigRoot,
+             .focusSash, .focusBand: return .bulk
+        case .choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder: return .speed
+        case .lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb: return .status
+        case .heatRock, .dampRock, .smoothRock, .icyRock: return .weather
+        case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal: return .signature
+        case .everstone: return .other
+        }
+    }
+}
+
+/// The section headers inside the held-item tab, in display order.
+enum BattleItemGroup: String, CaseIterable, Sendable {
+    case attack, typeBoost, bulk, speed, status, weather, signature, other
+
+    /// `kinds` split into non-empty groups. Type items follow the type chart order; the rest keep their order in `kinds`.
+    static func sections(of kinds: [ItemKind]) -> [BattleItemSection] {
+        allCases.compactMap { group in
+            var members = kinds.filter { $0.battleGroup == group }
+            if group == .typeBoost {
+                members.sort { typeRank($0) < typeRank($1) }
+            }
+            return members.isEmpty ? nil : BattleItemSection(group: group, kinds: members)
+        }
+    }
+
+    private static func typeRank(_ kind: ItemKind) -> Int {
+        PokemonType.allCases.firstIndex { $0.rawValue == kind.boostedType } ?? PokemonType.allCases.count
+    }
+}
+
+struct BattleItemSection: Hashable, Sendable {
+    let group: BattleItemGroup
+    let kinds: [ItemKind]
 }
 
 /// 이상한 사탕 밸런스 상수.

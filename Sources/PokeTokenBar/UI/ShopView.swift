@@ -27,21 +27,19 @@ struct ShopView: View {
                 // shopEntries = 판매 아이템 + 알 3종(보증 없음·고급 이상·희귀 이상)을 가격 오름차순으로
                 // 병합한 단일 목록. 알은 항상 포함되고(즉시 액션이라 ItemKind 가 아님), 알 상태에선
                 // EggCard 가 구매만 비활성으로 보여준다.
-                ForEach(store.shopEntries(in: category), id: \.self) { entry in
-                    switch entry {
-                    case .item(let kind):
+                let entries = store.shopEntries(in: category)
+                let heldStart = entries.firstIndex { $0.category == .heldItem } ?? entries.endIndex
+                let others = entries.filter { $0.category != .heldItem }
+                entryCards(others[..<heldStart])
+                if category == nil || category == .heldItem {
+                    HeldItemSections(sections: store.shopBattleSections, l: l) { kind in
                         ShopItemCard(store: store, kind: kind)
-                    case .egg(let tier):
-                        EggCard(store: store, nav: nav, tier: tier)
-                    case .megaStone(let stone):
-                        MegaStoneShopCard(store: store, stone: stone)
                     }
                 }
+                entryCards(others[heldStart...])
                 if category == nil || category == .evolution {
                     if category == nil {
-                        Text(l.shopEvolutionSection)
-                            .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                            .padding(.top, 4)
+                        ItemSectionHeader(title: l.shopEvolutionSection)
                     }
                     ForEach(store.shopEvolutionItems, id: \.self) { kind in
                         ShopItemCard(store: store, kind: kind)
@@ -57,6 +55,19 @@ struct ShopView: View {
             .reservesScrollerLane()
         }
         .frame(height: 520)
+    }
+
+    private func entryCards(_ entries: ArraySlice<ShopEntry>) -> some View {
+        ForEach(entries, id: \.self) { entry in
+            switch entry {
+            case .item(let kind):
+                ShopItemCard(store: store, kind: kind)
+            case .egg(let tier):
+                EggCard(store: store, nav: nav, tier: tier)
+            case .megaStone(let stone):
+                MegaStoneShopCard(store: store, stone: stone)
+            }
+        }
     }
 
     private func walletHeader(_ l: L) -> some View {
