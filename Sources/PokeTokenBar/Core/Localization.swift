@@ -814,7 +814,7 @@ struct L {
     }
     var battleEntryLabel: String { t("대결에 나갈 포켓몬", "Battle Pokémon", "対戦に出すポケモン", "Pokémon de combate", "Pokémon de combat", "Pokémon de batalha", "Kampf-Pokémon", "Покемон для боя") }
     var battleEntryHint: String {
-        t("1~3번 포켓몬이 순서대로 대결(PvP)에 나가요. 4~6번은 도장에서만 써요. 쓰러지면 다음 포켓몬이 나오고, 중간에 바꿀 수는 없어요. 자동이면 지금 키우는 포켓몬이 나가요.",
+        t("1~3번 포켓몬이 순서대로 대결(PvP)에 나가요. 4~6번은 체육관에서만 써요. 쓰러지면 다음 포켓몬이 나오고, 중간에 바꿀 수는 없어요. 자동이면 지금 키우는 포켓몬이 나가요.",
           "Slots 1–3 fight in PvP in this order. Slots 4–6 are for gyms only. When one faints the next comes in, and you can't switch mid-battle. Auto sends the Pokémon you're raising.",
           "1〜3番が順番に対戦(PvP)に出ます。4〜6番はジム専用です。倒れると次のポケモンが出て、途中で交代はできません。自動なら育成中のポケモンが出ます。",
           "Los puestos 1–3 pelean en PvP en este orden. Los puestos 4–6 son solo para gimnasios. Si uno cae, entra el siguiente; no se puede cambiar a mitad del combate. Auto envía el Pokémon que crías.",
@@ -825,7 +825,7 @@ struct L {
     }
     var battleSlotPvP: String { t("대결(PvP)", "PvP", "対戦(PvP)", "PvP", "PvP", "PvP", "PvP", "PvP") }
     var battleSlotGymOnly: String {
-        t("도장 전용", "Gym only", "ジム専用", "Solo gimnasio", "Arène seulement", "Só ginásio", "Nur Arena", "Только залы")
+        t("체육관 전용", "Gym only", "ジム専用", "Solo gimnasio", "Arène seulement", "Só ginásio", "Nur Arena", "Только залы")
     }
     var battleAddMember: String {
         t("포켓몬 추가", "Add a Pokémon", "ポケモンを追加", "Añadir un Pokémon", "Ajouter un Pokémon",
