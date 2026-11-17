@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const {spawn} = require('node:child_process');
+const {spawn, execFileSync} = require('node:child_process');
 const {chromium} = require('playwright');
 const {default: AxeBuilder} = require('@axe-core/playwright');
 
@@ -18,6 +18,35 @@ const server = spawn('python3', ['-m','http.server',String(port),'--bind','127.0
 async function test(name, fn) {
   try {await fn();results.push({name,status:'pass'});}
   catch(error) {problems.push({name,error:error.message});results.push({name,status:'fail'});}
+}
+function swiftSource() {
+  try {return execFileSync('git',['show','origin/main:Sources/PokeTokenBar/Core/CompanionModel.swift'],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});}
+  catch {return null;}
+}
+function appBalance(source) {
+  const block=name=>{const start=source.indexOf(`enum ${name}`);assert.ok(start>=0,`enum ${name} not found in CompanionModel.swift`);return source.slice(start,source.indexOf('\n}\n',start)+1);};
+  const constant=(text,name)=>{
+    const match=text.match(new RegExp(`static let ${name}(?::[^=\\n]+)?\\s*=\\s*([\\d_ .*]+)\\n`));
+    assert.ok(match,`static let ${name} not found in CompanionModel.swift`);
+    return match[1].replace(/_/g,'').split('*').reduce((product,part)=>product*Number(part.trim()),1);
+  };
+  const click=block('ClickGrowth'), balance=block('PokemonBalance');
+  const total=rarity=>{const match=balance.match(new RegExp(`case \\.${rarity}:\\s*return\\s*([\\d_]+)`));assert.ok(match,`graduationTotal(.${rarity}) not found`);return Number(match[1].replace(/_/g,''));};
+  const range=balance.match(/static let difficultyRange[^=]*=\s*([\d.]+)\.\.\.([\d.]+)/);
+  assert.ok(range,'difficultyRange not found in CompanionModel.swift');
+  return {
+    graduationTotal:Object.fromEntries(['common','uncommon','rare','legendary'].map(r=>[r,total(r)])),
+    eggHatchThreshold:constant(balance,'eggHatchThreshold'),
+    repeatGrowthMultiplier:constant(balance,'repeatGrowthMultiplier'),
+    difficultyRange:[Number(range[1]),Number(range[2])],
+    timeTokensPerActiveHour:constant(balance,'timeTokensPerActiveHour'),
+    timeWalletTokensPerActiveHour:constant(balance,'timeWalletTokensPerActiveHour'),
+    timeIdleLimitSeconds:constant(balance,'timeIdleLimit'),
+    timeMaxStepSeconds:constant(balance,'timeMaxStep'),
+    idleTokenHintAfterSeconds:constant(balance,'idleTokenHintAfter'),
+    tokensPerClick:constant(click,'tokensPerClick'),
+    clickMinIntervalSeconds:constant(click,'minInterval')
+  };
 }
 async function layout(page) {
   const state=await page.evaluate(()=>({
@@ -57,12 +86,16 @@ async function capture(page,name,full=false) {
       await layout(p);
       if([375,1440].includes(width)) {await capture(p,`${lang}-${width}-light`);await capture(p,`${lang}-${width}-full`,true);}
       assert.equal(await p.locator('#gtab-growth').isVisible(),true);
-      await p.locator('#gPace').selectOption('120');
-      assert.match(await p.locator('#gTimeline .tl-when').last().innerText(),/7/);
+      const lastWhen=()=>p.locator('#gTimeline .tl-when').last().innerText();
+      assert.match(await lastWhen(),/(^|\D)4(\D|$)/);
       await p.locator('#gRarity').selectOption('legendary');
-      assert.match(await p.locator('#gTimeline .tl-when').last().innerText(),/51/);
+      assert.match(await lastWhen(),/(^|\D)28(\D|$)/);
+      await p.locator('#gMode').selectOption('time');
+      assert.equal(await p.locator('#gPaceField').isVisible(),false);
+      assert.match(await lastWhen(),/^30\D+8(\D|$)/);
+      assert.match(await p.locator('#gTimeline .tl-when').first().innerText(),/^2\D+1(\D|$)/);
       await layout(p);
-      await p.locator('.all-features > summary').click();
+      await p.locator('#gMode').selectOption('token');
       await p.locator('.install-more > summary').click();
       await layout(p);
       await p.locator('#themeBtn').click();
@@ -73,7 +106,7 @@ async function capture(page,name,full=false) {
        await p.locator('#themeBtn').click();
        await capture(p,`${lang}-${width}-expanded`,true);
        const native = await p.locator('[data-i18n-image]').evaluateAll(images => images.map(i=>({src:i.getAttribute('src'),loaded:i.complete&&i.naturalWidth>0,width:i.naturalWidth,height:i.naturalHeight,caption:i.closest('figure').querySelector('figcaption').textContent})));
-       assert.equal(native.length,16);
+       assert.equal(native.length,12);
        const suffix=lang==='en'?'':'-'+lang;
        for(const i of native) {assert.ok(i.loaded,JSON.stringify(i));assert.ok(i.src.endsWith(suffix+'.png'),JSON.stringify(i));assert.equal(i.width,720);assert.ok(i.caption.trim());}
        await layout(p);
@@ -198,6 +231,45 @@ async function capture(page,name,full=false) {
      assert.equal(await p.locator('.product-image img').getAttribute('src'),'assets/screenshot-home.png');
     }
     assert.equal(await p.locator('.provider-link').filter({hasText:'Kimi Code'}).getAttribute('href'),'https://www.kimi.com/code');
+   }finally{await p.close();}
+  });
+  const swift=swiftSource();
+  if(swift===null) {
+   console.log('SKIP balance drift check: git or origin/main:Sources/PokeTokenBar/Core/CompanionModel.swift is unavailable');
+   results.push({name:'BALANCE matches CompanionModel.swift on origin/main',status:'skip'});
+  } else await test('BALANCE matches CompanionModel.swift on origin/main',async()=>{
+   const p=await browser.newPage();
+   try {await p.goto(url);assert.deepEqual(await p.evaluate(()=>BALANCE),appBalance(swift));}finally{await p.close();}
+  });
+  await test('cost table and number copy follow BALANCE in every language; no dead keys',async()=>{
+   const p=await browser.newPage();
+   try {
+    await p.goto(url);
+    assert.deepEqual(await p.evaluate(()=>[...document.querySelectorAll('tr[data-rarity]')].flatMap(row=>{
+     const total=BALANCE.graduationTotal[row.dataset.rarity];
+     const want=[1,2,3].map(i=>formatTokens(total*i/6)).concat(formatTokens(total));
+     const got=[...row.querySelectorAll('td.num')].map(td=>td.textContent);
+     return want.join()===got.join()?[]:[{rarity:row.dataset.rarity,want,got}];
+    })),[]);
+    assert.equal(await p.locator('tr[data-rarity]').count(),4);
+    const missing=await p.evaluate(()=>{
+     const b=BALANCE, pct=x=>Math.round(x*100)+'%';
+     const expected={
+      'journey.hatchDesc':[formatTokens(b.eggHatchThreshold)],
+      'modes.timeRate':[formatTokens(b.timeTokensPerActiveHour),formatTokens(b.timeWalletTokensPerActiveHour)],
+      'modes.timeIdle':[String(b.timeIdleLimitSeconds/60),String(b.timeMaxStepSeconds/60)],
+      'modes.hint':[String(b.idleTokenHintAfterSeconds/86400)],
+      'modes.clickD':[formatTokens(b.tokensPerClick),String(b.clickMinIntervalSeconds),(Math.round((b.graduationTotal.common+b.eggHatchThreshold)/b.tokensPerClick/100)*100).toLocaleString('en')],
+      'p1.t':b.difficultyRange.map(pct),
+      'k3.d':[formatTokens(b.graduationTotal.common),formatTokens(b.graduationTotal.legendary)]
+     };
+     return Object.entries(I18N).flatMap(([lang,dict])=>Object.entries(expected).flatMap(([key,parts])=>parts.filter(part=>!dict[key].includes(part)).map(part=>`${lang} ${key}: ${part}`)));
+    });
+    assert.deepEqual(missing,[]);
+    const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+    const programmatic=['theme','nav.menu','copy.pending','copy.ok','copy.error','demo.stop','growth.play','growth.pause'];
+    assert.deepEqual(await p.evaluate(()=>Object.keys(I18N.en)).then(keys=>keys.filter(k=>!programmatic.includes(k)&&!html.includes(`"${k}"`))),[]);
+    assert.deepEqual(await p.evaluate(()=>Object.entries(I18N.ko).filter(([,v])=>v.includes('도장')).map(([k])=>k)),[]);
    }finally{await p.close();}
   });
   await test('growth animation play, pause and reduced motion remain available',async()=>{
