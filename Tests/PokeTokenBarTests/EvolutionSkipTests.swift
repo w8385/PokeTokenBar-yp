@@ -206,7 +206,8 @@ final class EvolutionSkipTests: XCTestCase {
         await s.hatch(baseID: 446)
         s.applyUsage(s.tokensToNext)
         XCTAssertEqual(s.latestEvent?.text, L(s.language).notifEvolveStuckSkippableBody(
-            s.displayName, L(s.language).evolutionRequirementText(.pets(30), speciesName: { "#\($0)" })))
+            s.displayName, L(s.language).evolutionRequirementText(.pets(30), speciesName: { "#\($0)" },
+                                                                  shopDifficulty: s.shopDifficulty)))
     }
 
     func testTheKoreanConfirmPicksTheParticleForTheName() {

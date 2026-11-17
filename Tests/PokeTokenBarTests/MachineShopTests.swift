@@ -109,11 +109,12 @@ final class MachineShopTests: XCTestCase {
         let move = try XCTUnwrap(MachineCatalog.moves.first { $0.id == thunderbolt })
         let before = store.availableTokens
         XCTAssertFalse(store.ownsTM(thunderbolt))
+        let price = store.tmPrice(power: move.power, isWeather: move.isWeather)
         XCTAssertTrue(store.buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather))
-        XCTAssertEqual(before - store.availableTokens, 80_000_000)
+        XCTAssertEqual(before - store.availableTokens, price)
         XCTAssertTrue(store.ownsTM(thunderbolt))
         XCTAssertFalse(store.buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather))
-        XCTAssertEqual(before - store.availableTokens, 80_000_000)
+        XCTAssertEqual(before - store.availableTokens, price)
     }
 
     func testABoughtTMCanBeTakenBackInsideTheUndoWindow() throws {
@@ -132,7 +133,7 @@ final class MachineShopTests: XCTestCase {
         let weather = MachineCatalog.moves.filter(\.isWeather)
         XCTAssertFalse(weather.isEmpty)
         for move in weather {
-            XCTAssertEqual(store.tmPrice(power: move.power, isWeather: true), 120_000_000, move.en)
+            XCTAssertEqual(store.tmPrice(power: move.power, isWeather: true), store.tmPrice(power: 100, isWeather: false), move.en)
         }
     }
 

@@ -27,8 +27,6 @@ final class FreshEggTests: XCTestCase {
         return CompanionStore(provider: FreshEggNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 7))
     }
 
-    func testPriceIsTwoHundredMillion() { XCTAssertEqual(FreshEgg.price, 200_000_000) }
-
     /// [핵심] 리롤 = 놓아줌: active 사라지고 새 알(eggUsage 0).
     /// 도감에는 **놓아줌 기록으로 남고**, 확률 가중(collectedFinals)은 여전히 불변이다 —
     /// 끝까지 키운 게 아니므로 최종체 완성으로 세지 않는다.
@@ -93,7 +91,7 @@ final class FreshEggTests: XCTestCase {
 
     /// 잔액이 가격 미만이면 불가 — 활성 유지.
     func testCannotRerollWithoutFunds() {
-        let s = store(used: 100_000_000)   // 200M 미만
+        let s = store(used: FreshEgg.price - 1)
         XCTAssertFalse(s.canBuyFreshEgg)
         XCTAssertFalse(s.buyFreshEgg())
         XCTAssertNotNil(s.state.active, "활성 유지")

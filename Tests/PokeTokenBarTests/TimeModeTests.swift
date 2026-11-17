@@ -80,21 +80,21 @@ final class TimeModeTests: XCTestCase {
         XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .rare, totalForms: 2, stageIndex: 0)), 5, accuracy: 0.01)
         XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .legendary, totalForms: 2, stageIndex: 0)), 10, accuracy: 0.01)
         XCTAssertEqual(hours(PokemonBalance.graduationTotal(.common)), 3.75, accuracy: 0.01)
-        XCTAssertEqual(hours(HeldItem.price), 15, accuracy: 0.01)
-        XCTAssertEqual(hours(RareCandy.price), 2.5, accuracy: 0.01)
     }
 
     // MARK: crediting
 
-    func testActiveTimeCreditsGrowthAndWalletButNotUsage() {
+    func testActiveTimeCreditsGrowthAndTheWalletAtTheirOwnRatesButNotUsage() {
         let clock = Clock(); var up: TimeInterval = 1000
         let s = egg(clock: clock)
         s.creditActiveTime(uptime: up, idle: 1, present: true)   // anchor
         let credited = tick(s, clock, uptime: &up, times: 10)
+        let wallet = 10 * PokemonBalance.timeTokens(forActiveSeconds: 30, perHour: PokemonBalance.timeWalletTokensPerActiveHour)
         XCTAssertEqual(credited, 10 * PokemonBalance.timeTokens(forActiveSeconds: 30))
         XCTAssertEqual(s.state.eggUsage, credited)
-        XCTAssertEqual(s.state.timeCredit, credited)
-        XCTAssertEqual(s.availableTokens, credited)
+        XCTAssertLessThan(wallet, credited)
+        XCTAssertEqual(s.state.timeCredit, wallet)
+        XCTAssertEqual(s.availableTokens, wallet)
         XCTAssertEqual(s.state.usedSinceInstall, 0)
         XCTAssertNil(s.state.claimedTodayTokensByProvider)
     }
@@ -169,7 +169,8 @@ final class TimeModeTests: XCTestCase {
         s.creditActiveTime(uptime: up, idle: 1, present: true)
         let credited = tick(s, clock, uptime: &up, times: 12 * 120)   // 12 hours in 30 s ticks
         XCTAssertEqual(credited, 12 * 120 * PokemonBalance.timeTokens(forActiveSeconds: 30), "every 30 s tick pays, past hour 8")
-        XCTAssertEqual(s.state.timeCredit, credited)
+        XCTAssertEqual(s.state.timeCredit,
+                       12 * 120 * PokemonBalance.timeTokens(forActiveSeconds: 30, perHour: PokemonBalance.timeWalletTokensPerActiveHour))
     }
 
     func testWallClockJumpsDoNotMintTime() {

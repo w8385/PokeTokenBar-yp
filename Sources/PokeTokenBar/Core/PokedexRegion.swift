@@ -132,6 +132,6 @@ enum DexProgress {
 
 /// One-time reward for completing a regional Pokédex.
 enum DexRegionReward {
-    /// Worth one guaranteed-rare egg at shop prices (800M tokens), paid in Rare Candies (100M each).
+    /// Worth one guaranteed-rare egg at shop prices, paid in Rare Candies.
     static var candyCount: Int { FreshEgg.price(guaranteeing: .rare) / RareCandy.price }
 }
