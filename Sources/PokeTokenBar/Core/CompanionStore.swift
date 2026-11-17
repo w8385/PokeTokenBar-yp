@@ -2040,6 +2040,15 @@ final class CompanionStore {
         return ownedItems.filter { $0.kind.category == category }
     }
 
+    /// The bag's flat list for a chip. In the held tab and the all view, battle items move to `ownedBattleSections`.
+    func bagListItems(in category: ItemCategory?) -> [(kind: ItemKind, count: Int)] {
+        let items = ownedItems(in: category)
+        guard category == nil || category == .heldItem else { return items }
+        return items.filter { $0.kind.battleGroup == nil }
+    }
+
+    var ownedBattleSections: [BattleItemSection] { BattleItemGroup.sections(of: ownedItems.map(\.kind)) }
+
     // MARK: 지닌 도구 (개체에 달았다 뗀다 — 다는 동안 가방에서 빠지고 떼면 돌아온다)
 
     func heldItem(of instanceID: String) -> ItemKind? {
@@ -2216,6 +2225,7 @@ final class CompanionStore {
         var present = Set(ownedItems.map { $0.kind.category })
         if !ownedScoutTickets.isEmpty { present.insert(.scout) }
         if !ownedMegaStones().isEmpty { present.insert(.megaStone) }
+        if !ownedBattleSections.isEmpty { present.insert(.heldItem) }
         return ItemCategory.allCases.filter(present.contains)
     }
 
@@ -2385,6 +2395,9 @@ final class CompanionStore {
                 return (a.shopPrice ?? 0) < (b.shopPrice ?? 0)   // 나머지는 가격 저렴한 순
             }
     }
+
+    /// Every battle item by effect group. Metal Coat, Razor Claw and the Stellar Crystal also stay in their own tab.
+    var shopBattleSections: [BattleItemSection] { BattleItemGroup.sections(of: ItemKind.allCases) }
 
     /// 상점 "진화" 구역의 돌 — 별도 구역이라 `shopEntries` 의 가격순 목록에는 넣지 않는다.
     var evolutionStoneItems: [ItemKind] { ItemKind.allCases.filter(\.isEvolutionStone) }

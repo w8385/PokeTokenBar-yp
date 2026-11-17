@@ -2399,6 +2399,19 @@ struct L {
         }
     }
 
+    func battleItemGroupName(_ group: BattleItemGroup) -> String {
+        switch group {
+        case .attack: return t("공격 강화", "Attack boost", "こうげき強化", "Más ataque", "Attaque +", "Mais ataque", "Angriff +", "Атака +")
+        case .typeBoost: return t("타입 강화", "Type boost", "タイプ強化", "Más tipo", "Type +", "Mais tipo", "Typ +", "Тип +")
+        case .bulk: return t("내구·회복", "Bulk & healing", "耐久・回復", "Aguante y curación", "Résistance et soin", "Resistência e cura", "Ausdauer & Heilung", "Защита и лечение")
+        case .speed: return t("선공·명중·급소", "Speed, aim & crits", "先制・命中・急所", "Velocidad, precisión y críticos", "Vitesse, précision, critiques", "Velocidade, precisão e críticos", "Tempo, Genauigkeit, Volltreffer", "Скорость, точность, криты")
+        case .status: return t("상태·반격", "Status & counters", "状態・反撃", "Estado y contraataque", "Statut et riposte", "Estado e contra-ataque", "Status & Konter", "Статус и контратака")
+        case .weather: return t("날씨", "Weather", "天気", "Clima", "Météo", "Clima", "Wetter", "Погода")
+        case .signature: return t("전용 도구", "Signature", "専用どうぐ", "Exclusivos", "Exclusifs", "Exclusivos", "Exklusiv", "Особые")
+        case .other: return t("기타", "Other", "その他", "Otros", "Autres", "Outros", "Sonstige", "Прочее")
+        }
+    }
+
     // MARK: 상점 (재화 = 사용한 토큰)
     var shop: String { t("상점", "Shop", "ショップ", "Tienda", "Boutique", "Loja", "Laden", "Магазин") }
     var spendableTokens: String { t("쓸 수 있는 토큰", "Spendable tokens", "使えるトークン", "Tokens disponibles", "Tokens disponibles", "Tokens disponíveis", "Verfügbare Tokens", "Доступно токенов") }
