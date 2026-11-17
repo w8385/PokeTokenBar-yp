@@ -140,6 +140,8 @@ rm -f build/PokeTokenBar.zip
 ditto -c -k --keepParent build/PokeTokenBar.app build/PokeTokenBar.zip
 BUILT=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" build/PokeTokenBar.app/Contents/Info.plist)
 [[ "$BUILT" == "$VERSION" ]] || { echo "✗ 빌드 버전 불일치: $BUILT (수동 복구: git checkout scripts/build-app.sh)"; exit 1; }
+BUILT_FORK=$(/usr/libexec/PlistBuddy -c "Print PTBForkVersion" build/PokeTokenBar.app/Contents/Info.plist)
+[[ "$BUILT_FORK" == "$VERSION" ]] || { echo "✗ PTBForkVersion 불일치: $BUILT_FORK (수동 복구: git checkout scripts/build-app.sh)"; exit 1; }
 # v2.5.4 는 arm64 단일 바이너리로 나가 Intel 에서 "bad CPU type" 으로 실행 불가였다(#358).
 lipo build/PokeTokenBar.app/Contents/MacOS/PokeTokenBar -verify_arch arm64 x86_64 \
   || { echo "✗ universal 바이너리 아님: $(lipo -archs build/PokeTokenBar.app/Contents/MacOS/PokeTokenBar) (arm64 + x86_64 필요)"; exit 1; }

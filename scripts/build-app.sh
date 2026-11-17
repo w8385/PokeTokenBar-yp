@@ -3,8 +3,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="2.5.7"
-FORK_VERSION="${PTB_FORK_VERSION:-$VERSION-yp36}"
+VERSION="3.0.0"
+VERSION="${PTB_VERSION:-$VERSION}"
+[[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "   ✗ version must be MAJOR.MINOR.PATCH: $VERSION" >&2; exit 1; }
 APP_NAME="PokeTokenBar"
 BUILD_DIR="build"
 APP="$BUILD_DIR/$APP_NAME.app"
@@ -47,7 +48,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key><string>$VERSION</string>
-    <key>PTBForkVersion</key><string>$FORK_VERSION</string>
+    <key>PTBForkVersion</key><string>$VERSION</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSUIElement</key><true/>

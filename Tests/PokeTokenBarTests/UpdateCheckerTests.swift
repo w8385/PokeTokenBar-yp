@@ -35,6 +35,35 @@ final class UpdateCheckerTests: XCTestCase {
     func testReleasesComeFromTheFork() {
         XCTAssertEqual(UpdateChecker.releaseRepo, "w8385/PokeTokenBar-yp")
     }
+    func testSemverReleasesOutrankEveryForkSuffixRelease() {
+        XCTAssertTrue(UpdateChecker.isNewer("3.0.0", than: "2.5.7-yp41"))
+        XCTAssertTrue(UpdateChecker.isNewer("3.0.0", than: "2.5.7-yp999999999"))
+        XCTAssertFalse(UpdateChecker.isNewer("2.5.7-yp41", than: "3.0.0"))
+        XCTAssertFalse(UpdateChecker.isNewer("2.5.7-yp999999999", than: "3.0.0"))
+        XCTAssertFalse(UpdateChecker.isNewer("3.0.0", than: "3.0.0"))
+        XCTAssertTrue(UpdateChecker.isNewer("3.1.0", than: "3.0.0"))
+        XCTAssertTrue(UpdateChecker.isNewer("3.0.1", than: "3.0.0"))
+        XCTAssertTrue(UpdateChecker.isNewer("3.1.0", than: "3.0.9"))
+        XCTAssertTrue(UpdateChecker.isNewer("4.0.0", than: "3.9.9"))
+        XCTAssertEqual(UpdateChecker.normalizedReleaseVersion("v3.0.0"), "3.0.0")
+        XCTAssertEqual(UpdateChecker.normalizedReleaseVersion("v3.10.2"), "3.10.2")
+    }
+    @MainActor
+    func testForkSuffixInstallIsOfferedTheFirstSemverRelease() async {
+        let checker = UpdateChecker(currentVersion: "2.5.7-yp41", defaults: isolatedDefaults()) {
+            UpdateChecker.LatestRelease(tag: "v3.0.0", url: "https://github.com/w8385/PokeTokenBar-yp/releases/tag/v3.0.0")
+        }
+        await checker.check(minInterval: 0)
+        XCTAssertEqual(checker.available?.version, "3.0.0")
+    }
+    @MainActor
+    func testSemverInstallIsNotOfferedAnOldForkSuffixRelease() async {
+        let checker = UpdateChecker(currentVersion: "3.0.0", defaults: isolatedDefaults()) {
+            UpdateChecker.LatestRelease(tag: "v2.5.7-yp41", url: "https://github.com/w8385/PokeTokenBar-yp/releases/tag/v2.5.7-yp41")
+        }
+        await checker.check(minInterval: 0)
+        XCTAssertNil(checker.available)
+    }
     func testDifferentComponentCounts() {
         XCTAssertTrue(UpdateChecker.isNewer("2.0.1", than: "2.0"))   // 2.0.1 > 2.0.0
         XCTAssertFalse(UpdateChecker.isNewer("2.0", than: "2.0.0"))  // 동일

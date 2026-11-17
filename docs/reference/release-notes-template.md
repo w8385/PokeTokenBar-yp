@@ -1,6 +1,9 @@
 <!-- Follow v2.5.3: https://github.com/chattymin/PokeTokenBar/releases/tag/v2.5.3
 Write in English. Replace every instruction with actual release content.
-Keep all sections; use 'None.' if a change category is empty. -->
+Keep all sections; use 'None.' if a change category is empty.
+Fork releases are tagged vMAJOR.MINOR.PATCH (first v3.0.0; no -ypN suffix). Any feat in the
+range bumps the minor, fixes only bump the patch, major only when the user names a break. -->
+
 ## New
 
 <!-- **Feature title** (#PR, @author) — explain the user-visible behavior. -->
