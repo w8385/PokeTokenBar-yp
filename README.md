@@ -188,6 +188,13 @@ A gym fight plays back turn by turn: moves, damage, HP bars, and each side's rem
 <td width="45%" align="center"><img src="assets/screenshot-gym-replay.png" width="300" alt="A gym battle replay stopped mid-fight"></td>
 </tr>
 <tr>
+<td width="45%" align="center"><img src="assets/screenshot-champion-finale.png" width="300" alt="The Elite Four run with the champion's hidden partner, and the replay as it comes out"></td>
+<td width="55%" valign="middle">
+<h3>👑 The champion's hidden partner</h3>
+Gym leaders field three to six Pokémon of their own type from their region, each with four strong moves and a held item. The champion brings the region's legendaries and keeps one more partner hidden: the run shows <b>+1 ?</b>, and it comes out only after the first six faint, with no healing in between.
+</td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-difficulty.png" width="300" alt="Choose your growth pace"></td>
 <td width="55%" valign="middle">
 <h3>Choose your growth pace</h3>
@@ -235,7 +242,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 
 <img src="assets/screenshot-usage-recap.png" width="360" alt="Usage recap for a selected period">
 
-<small>The Home, Settings, form, Shop, Bag, Pokédex, Box, profile, Exp. Share, Battle, gym, replay, floating-friends, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
+<small>The Home, Settings, form, Shop, Bag, Pokédex, Box, profile, Exp. Share, Battle, gym, replay, champion, floating-friends, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
 
 ## Agent activity
 
