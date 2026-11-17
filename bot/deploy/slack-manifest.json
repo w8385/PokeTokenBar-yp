@@ -17,8 +17,8 @@
     "slash_commands": [
       {
         "command": "/대결",
-        "description": "지금 키우는 포켓몬끼리 1:1 대결",
-        "usage_hint": "@상대",
+        "description": "포켓몬 대결. 1:1, 3을 붙이면 3:3, @YPoke는 연습",
+        "usage_hint": "@상대 [3]",
         "should_escape": true
       },
       {
@@ -39,13 +39,14 @@
       },
       {
         "command": "/도감",
-        "description": "도감 수·이로치·대표 포켓몬 보기",
+        "description": "도감 수·이로치·지역별 진행·대표 포켓몬 보기",
         "usage_hint": "[@누구]",
         "should_escape": true
       },
       {
         "command": "/ypoke",
-        "description": "YPoke 도움말",
+        "description": "YPoke 도움말. 뒤에 명령을 붙여도 돼요",
+        "usage_hint": "[대결 @상대 | 전적 | 랭킹 | 도감 | 연결]",
         "should_escape": true
       }
     ]

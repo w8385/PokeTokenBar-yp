@@ -1,5 +1,7 @@
+import json
 import re
 import sqlite3
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from datetime import UTC, datetime, timedelta
@@ -8,6 +10,7 @@ import pytest
 
 from ypoke.commands import (
     BATTLE_COMMAND,
+    COMMAND_NAMES,
     DOWNLOAD_URL,
     HELP_TEXT,
     LINK_COMMAND,
@@ -549,9 +552,20 @@ def test_record_command_shows_mentioned_or_own_record(store):
 
 
 def test_help_shows_every_command():
-    for command in (BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND):
+    for command in COMMAND_NAMES:
         assert f"`{command}" in HELP_TEXT
     assert "등록" not in HELP_TEXT
+
+
+def test_manifest_registers_exactly_the_handled_commands():
+    manifest = json.loads((Path(__file__).parents[1] / "deploy" / "slack-manifest.json").read_text())
+    assert [entry["command"] for entry in manifest["features"]["slash_commands"]] == list(COMMAND_NAMES)
+
+
+def test_help_explains_the_entry_slots_and_points_gyms_to_the_app():
+    assert "1~3번은 슬랙 대결과 체육관에 나가요. 4~6번은 체육관에만 나가요." in HELP_TEXT
+    assert "체육관·사천왕·아지트 도전은 앱 대결 탭에서 해요." in HELP_TEXT
+    assert "도장" not in HELP_TEXT
 
 
 NOW = datetime(2026, 11, 12, 9, 30, tzinfo=UTC)  # Thursday 18:30 KST
