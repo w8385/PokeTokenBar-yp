@@ -30,6 +30,7 @@ extension ItemKind {
         case .rareCandy: return "rare-candy"
         case .mint: return "app-mint"
         case .shinyCharm: return "shiny-charm"
+        case .expShare: return "exp-share"
         case .linkingCord: return "linking-cord"
         default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName ?? rawValue
         }

@@ -248,7 +248,8 @@ final class CompanionStore {
 
     /// 상점 표시·결제에 쓰는 실제 가격 — 기본가 × 상점 난이도. 미판매면 nil.
     func price(of kind: ItemKind) -> Int? {
-        kind.shopPrice.map { PokemonBalance.scaled($0, by: shopDifficulty) }
+        let base = kind == .expShare ? ExpShare.price(owned: itemOwnedTotal(kind)) : kind.shopPrice
+        return base.map { PokemonBalance.scaled($0, by: shopDifficulty) }
     }
 
     /// 알을 포함한 상점 한 줄의 실제 가격.
@@ -1264,6 +1265,10 @@ final class CompanionStore {
     /// A gate that waits on the clock (day/night) opens without any new usage. Called from every usage update and
     /// from the app's 30-second tick; at most one check per 20 seconds.
     func checkEvolutionGate() {
+        if !state.expShareHolders.isEmpty, clock() >= nextExpShareCheck {
+            nextExpShareCheck = clock().addingTimeInterval(20)
+            Task { await checkExpShareEvolution() }
+        }
         if raisedGraduate != nil {
             guard clock() >= nextEvolutionGateCheck else { return }
             nextEvolutionGateCheck = clock().addingTimeInterval(20)
@@ -1285,23 +1290,31 @@ final class CompanionStore {
     /// Usage goes to exactly one place: the raised graduate, else the line in `active`, else the egg.
     /// A parked line or egg gets nothing.
     private func creditUsage(_ delta: Int) {
-        if state.raisedEntry != nil {
+        let raisedID = state.raisedEntry?.id
+        let raisingIDs = Set([raisedID, state.active?.profile?.instanceID].compactMap { $0 })
+        if raisedID != nil {
             creditRaisedGraduate(delta)
-        } else if state.active == nil {
-            state.eggUsage += delta   // 알 인큐베이션 누적
-        } else {
+        } else if state.active != nil {
             applyUsage(delta)
+        } else {
+            state.eggUsage += delta
         }
+        creditExpShareHolders(delta / ExpShare.shareDivisor, skipping: raisingIDs)
     }
 
     /// A graduate grows by level only, on the same curve as the line (`delta` is in the difficulty's units).
-    private func creditRaisedGraduate(_ delta: Int) {
-        guard delta > 0, let index = state.dex.firstIndex(where: { $0.id == state.raisedEntryID }),
-              var profile = state.dex[index].profile else { return }
+    private func growGraduate(at index: Int, by delta: Int) {
+        guard var profile = state.dex[index].profile else { return }
         let standard = Int((Double(delta) / PokemonBalance.clampDifficulty(growthDifficulty)).rounded(.down))
         profile.applyGrowth(standard, rarity: state.dex[index].rarity)
         if let details = pokemonDetailsByID[state.dex[index].finalID] { profile.enrich(with: details) }
         state.dex[index].profile = profile
+    }
+
+    private func creditRaisedGraduate(_ delta: Int) {
+        guard delta > 0, let index = state.dex.firstIndex(where: { $0.id == state.raisedEntryID }),
+              state.dex[index].profile != nil else { return }
+        growGraduate(at: index, by: delta)
         if var progress = raisedEvolutionProgress {
             progress.graduateXP += delta
             setRaisedEvolutionProgress(progress)
@@ -1601,10 +1614,17 @@ final class CompanionStore {
     /// Takes every step whose conditions hold now. The caller saves. Returns whether it evolved.
     @discardableResult
     private func evolveRaisedGraduateIfReady() -> Bool {
+        guard let id = raisedGraduate?.id, let line = raisedGraduateLine else { return false }
+        return evolveGraduateIfReady(id: id, in: line, celebrate: true)
+    }
+
+    /// A Box holder evolving only notifies; the celebration on the home screen belongs to the raised Pokémon.
+    private func evolveGraduateIfReady(id: String, in line: EvoLine, celebrate: Bool) -> Bool {
         var evolved = false
         for _ in 0..<5 {
-            guard let entry = raisedGraduate, let line = raisedGraduateLine, line.baseID == entry.baseID,
-                  let index = state.dex.firstIndex(where: { $0.id == entry.id }) else { break }
+            guard let index = state.dex.firstIndex(where: { $0.id == id && !$0.isReleased }),
+                  line.baseID == state.dex[index].baseID else { break }
+            let entry = state.dex[index]
             let options = graduateOptions(entry, in: line)
             if options.isEmpty {
                 state.graduateEvolution[entry.id] = nil
@@ -1617,10 +1637,105 @@ final class CompanionStore {
             }.first
             guard let step else { break }
             spendEvolutionRequirements(of: step.path, instanceID: entry.profile?.instanceID)
-            evolveGraduate(at: index, to: step.speciesID, in: line, progress: context.progress)
+            evolveGraduate(at: index, to: step.speciesID, in: line, progress: context.progress, celebrate: celebrate)
             evolved = true
         }
         return evolved
+    }
+
+    // MARK: Exp. Share
+
+    /// Lines of graduated Exp. Share holders, by base species. In memory only.
+    private(set) var expShareLines: [Int: EvoLine] = [:]
+    private var loadingExpShareLines: Set<Int> = []
+    private var nextExpShareCheck = Date.distantPast
+
+    func holdsExpShare(_ instanceID: String) -> Bool { state.expShareHolders.contains(instanceID) }
+
+    func showsExpShareSlot(for individual: BoxIndividual) -> Bool {
+        holdsExpShare(individual.id) || (Self.canHoldExpShare(individual.role) && itemOwnedTotal(.expShare) > 0)
+    }
+
+    /// Graduated, friend and stored individuals can hold one; the Pokémon being raised or resting cannot.
+    func canAttachExpShare(to instanceID: String) -> Bool {
+        guard itemCount(.expShare) > 0, !holdsExpShare(instanceID),
+              let individual = boxIndividual(id: instanceID) else { return false }
+        return Self.canHoldExpShare(individual.role)
+    }
+
+    private static func canHoldExpShare(_ role: BoxIndividual.Role) -> Bool {
+        role == .graduated || role == .friend || role == .stored
+    }
+
+    @discardableResult
+    func attachExpShare(to instanceID: String) -> Bool {
+        guard canAttachExpShare(to: instanceID) else { return false }
+        let left = itemCount(.expShare) - 1
+        state.inventory[ItemKind.expShare.rawValue] = left > 0 ? left : nil
+        state.expShareHolders.append(instanceID)
+        save()
+        Task { await checkExpShareEvolution() }
+        return true
+    }
+
+    @discardableResult
+    func detachExpShare(from instanceID: String) -> Bool {
+        guard let index = state.expShareHolders.firstIndex(of: instanceID) else { return false }
+        state.expShareHolders.remove(at: index)
+        state.inventory[ItemKind.expShare.rawValue, default: 0] += 1
+        save()
+        return true
+    }
+
+    /// A graduate holder levels and builds `graduateXP` like the raised graduate; a stored line banks the share in
+    /// its stage and evolves by the line rules once it is raised again.
+    private func creditExpShareHolders(_ share: Int, skipping raisingIDs: Set<String>) {
+        guard share > 0 else { return }
+        for id in state.expShareHolders where !raisingIDs.contains(id) {
+            if let stored = state.storedLines[id] {
+                var mon = stored.mon
+                mon.usedAtStage = min(SaveTransfer.maxTokenValue, mon.usedAtStage + share)
+                state.storedLines[id]?.mon = reconciledProfileGrowth(mon)
+            } else if let index = state.dex.firstIndex(where: { $0.id == id && !$0.isReleased }) {
+                creditExpShareGraduate(at: index, share)
+            }
+        }
+    }
+
+    private func creditExpShareGraduate(at index: Int, _ share: Int) {
+        growGraduate(at: index, by: share)
+        let entry = state.dex[index]
+        guard let line = expShareLines[entry.baseID] else { return }
+        if var progress = state.graduateEvolution[entry.id] {
+            progress.graduateXP += share
+            state.graduateEvolution[entry.id] = progress
+        } else if !graduateOptions(entry, in: line).isEmpty {
+            var progress = EvolutionProgress(spentBaseline: state.spentTokens)
+            progress.graduateXP = share
+            state.graduateEvolution[entry.id] = progress
+        }
+        _ = evolveGraduateIfReady(id: entry.id, in: line, celebrate: false)
+    }
+
+    private var expShareGraduates: [DexEntry] {
+        let raisingIDs = Set([state.raisedEntry?.id, state.active?.profile?.instanceID].compactMap { $0 })
+        return state.expShareHolders.filter { !raisingIDs.contains($0) && state.storedLines[$0] == nil }
+            .compactMap { id in state.dex.first { $0.id == id && !$0.isReleased } }
+    }
+
+    /// Loads each graduate holder's line once, then takes any step that is open now (a clock gate opens on its own).
+    func checkExpShareEvolution() async {
+        for baseID in Set(expShareGraduates.map(\.baseID)) where expShareLines[baseID] == nil {
+            guard loadingExpShareLines.insert(baseID).inserted else { continue }
+            defer { loadingExpShareLines.remove(baseID) }
+            if let line = try? await dexNameLine(baseID: baseID) { expShareLines[baseID] = line }
+        }
+        var evolved = false
+        for entry in expShareGraduates {
+            guard let line = expShareLines[entry.baseID] else { continue }
+            if evolveGraduateIfReady(id: entry.id, in: line, celebrate: false) { evolved = true }
+        }
+        if evolved { save() }
     }
 
     private static func mergeNames(of line: EvoLine, into entry: inout DexEntry) {
@@ -1637,7 +1752,8 @@ final class CompanionStore {
 
     /// The same individual (id, profile, shininess, held item) becomes the next species; the old one stays in
     /// its chain, so the Pokédex still counts it.
-    private func evolveGraduate(at index: Int, to speciesID: Int, in line: EvoLine, progress: EvolutionProgress) {
+    private func evolveGraduate(at index: Int, to speciesID: Int, in line: EvoLine, progress: EvolutionProgress,
+                                celebrate: Bool) {
         var entry = state.dex[index]
         let fromID = entry.finalID
         if !entry.chainOrder.contains(speciesID) { entry.chainOrder.append(speciesID) }
@@ -1654,9 +1770,11 @@ final class CompanionStore {
         state.reconcileRepresentativeSelection()
         let oldName = formDisplayName(line.localizedName(fromID, state.language), speciesID: fromID, form: entry.form)
         let newName = formDisplayName(line.localizedName(speciesID, state.language), speciesID: speciesID, form: entry.form)
-        justEvolvedTo = newName
-        fireCelebration(.evolve)
-        eventUntil = clock().addingTimeInterval(4)
+        if celebrate {
+            justEvolvedTo = newName
+            fireCelebration(.evolve)
+            eventUntil = clock().addingTimeInterval(4)
+        }
         notifyCompanionEvent(l.notifEvolveTitle, l.notifEvolveBody(from: oldName, to: newName))
     }
 
@@ -2050,12 +2168,14 @@ final class CompanionStore {
 
     /// The bag plus every Pokémon holding it.
     func itemOwnedTotal(_ kind: ItemKind) -> Int {
-        itemCount(kind) + state.heldItems.values.filter { $0 == kind.rawValue }.count
+        if kind == .expShare { return itemCount(kind) + state.expShareHolders.count }
+        return itemCount(kind) + state.heldItems.values.filter { $0 == kind.rawValue }.count
     }
 
     /// An item the shop sells once: a bought passive item, or a single-copy item that is in the bag or on a holder.
     func isSoldOut(_ kind: ItemKind) -> Bool {
         (kind.isPassive && itemCount(kind) > 0) || (kind.isSingleCopy && itemOwnedTotal(kind) > 0)
+            || (kind == .expShare && itemOwnedTotal(kind) >= ExpShare.maxOwned)
     }
 
     /// 그 종의 개체 중 맞는 메가스톤을 든 개체가 있으면 그 메가 스프라이트 id.
@@ -2319,7 +2439,7 @@ final class CompanionStore {
     /// 미판매·잔액 부족이면 0.
     func maxBuyCount(_ kind: ItemKind) -> Int {
         guard canBuy(kind), let price = price(of: kind), price > 0 else { return 0 }
-        return kind.isPassive || kind.isSingleCopy ? 1 : availableTokens / price
+        return kind.isPassive || kind.isSingleCopy || kind == .expShare ? 1 : availableTokens / price
     }
 
     /// 아이템 count 개 구매 — 지갑에서 price × count 차감, 인벤토리 +count. usedSinceInstall(성장·통계)·
@@ -3386,7 +3506,13 @@ final class CompanionStore {
     /// Completed phases retain their earned credit. Only the current raw phase is repriced
     /// by difficulty/repeat boost; its profile high-water mark prevents level loss.
     private func reconcileActiveProfileGrowth() {
-        guard var active = state.active, var profile = active.profile else { return }
+        guard let active = state.active else { return }
+        state.active = reconciledProfileGrowth(active)
+    }
+
+    private func reconciledProfileGrowth(_ mon: MonState) -> MonState {
+        var active = mon
+        guard var profile = active.profile else { return mon }
         let completed = Self.reconstructedGrowthTokens(
             rarity: active.rarity, totalForms: active.totalForms,
             completedStages: active.stageIndex, currentStageUsage: 0)
@@ -3398,7 +3524,7 @@ final class CompanionStore {
         profile.advanceGrowth(to: candidate, rarity: active.rarity)
         if let details = pokemonDetailsByID[active.currentID] { profile.enrich(with: details) }
         active.profile = profile
-        state.active = active
+        return active
     }
 
     static func reconstructedGrowthTokens(rarity: Rarity, totalForms: Int,
@@ -3694,6 +3820,7 @@ final class CompanionStore {
         state.reconcileRaised()
         state.reconcileFriends()
         state.returnOrphanedHeldItems()
+        state.returnOrphanedExpShares()
         state.dropOrphanedGraduateEvolution()
         refreshRepresentativeSubject()
         refreshFriendSubjects()

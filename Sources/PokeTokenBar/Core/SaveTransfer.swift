@@ -208,6 +208,7 @@ enum SaveTransfer {
         s.reconcileRaised()
         s.reconcileFriends()
         s.returnOrphanedHeldItems()
+        s.returnOrphanedExpShares()
         return s
     }
 

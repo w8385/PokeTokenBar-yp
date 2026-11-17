@@ -234,6 +234,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case rareCandy
     case mint
     case shinyCharm
+    case expShare
     case fireStone, waterStone, thunderStone, leafStone, moonStone
     case sunStone, shinyStone, duskStone, dawnStone, iceStone
     case linkingCord
@@ -419,7 +420,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     /// PokéAPI 아이템 이름(`use-item` 진화의 `item`). nil = 진화의 돌 아님.
     var evolutionItemName: String? {
         switch self {
-        case .rareCandy, .mint, .shinyCharm, .linkingCord: return nil
+        case .rareCandy, .mint, .shinyCharm, .expShare, .linkingCord: return nil
         case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal, .everstone: return nil
         case .choiceSpecs, .assaultVest, .eviolite, .rockyHelmet, .sitrusBerry, .lumBerry, .whiteHerb, .blackSludge,
              .shellBell, .bigRoot, .muscleBand, .wiseGlasses, .scopeLens, .quickClaw, .brightPowder, .wideLens,
@@ -469,6 +470,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return "rare-candy"
         case .mint: return nil   // PokéAPI 에 민트 스프라이트 없음(8세대 아이템) → 이모지 폴백
         case .shinyCharm: return "shiny-charm"
+        case .expShare: return "exp-share"
         case .linkingCord: return "linking-cord"
         case .stellarCrystal: return nil   // drawn in the app (`StellarCrystalArt`)
         default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName
@@ -480,6 +482,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return "🍬"
         case .mint: return "🌿"
         case .shinyCharm: return "✨"
+        case .expShare: return "📡"
         case .linkingCord: return "🔗"
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return "🎒"
         case _ where isHeldItem || isTradeEvolutionItem: return "🎒"
@@ -492,6 +495,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .rareCandy: return RareCandy.price
         case .mint: return Mint.price
         case .shinyCharm: return ShinyCharm.price
+        case .expShare: return ExpShare.price(owned: 0)
         case .stellarCrystal: return MegaStone.price
         case _ where isHeldItem: return HeldItem.price
         default: return EvolutionStone.price
@@ -526,7 +530,7 @@ enum ItemCategory: String, CaseIterable, Sendable {
 extension ItemKind {
     var category: ItemCategory {
         switch self {
-        case .rareCandy, .mint, .shinyCharm: return .growth
+        case .rareCandy, .mint, .shinyCharm, .expShare: return .growth
         case .stellarCrystal: return .megaStone
         case _ where isHeldItem: return .heldItem
         default: return .evolution
@@ -564,6 +568,17 @@ enum ShinyCharm {
     /// 보유 시 이로치 부화 확률 분모 — 1/64 → 1/48 (+33%). 본가 '반짝이 부적'(이로치 확률↑) 오마주.
     /// ×2(1/32)는 과해 절제. 이미 부화한 개체엔 소급 없음(이로치는 부화 순간 확정).
     static let shinyDenominator: UInt64 = 48
+}
+
+/// Exp. Share: not used up, attached to one Box individual, which gets a share of the main Pokémon's XP.
+enum ExpShare {
+    /// Base price of the next copy, by how many the player already owns.
+    static let prices = [600_000_000, 1_200_000_000]
+    static var maxOwned: Int { prices.count }
+    static let shareDivisor = 2
+    static var sharePercent: Int { 100 / shareDivisor }
+
+    static func price(owned: Int) -> Int { prices[min(max(owned, 0), prices.count - 1)] }
 }
 
 /// 새 알(리롤) 밸런스 상수 — 상점 구매 시 현재 포켓몬을 폐기하고 새 알로 되돌린다.
@@ -1242,10 +1257,13 @@ struct CompanionState: Codable, Sendable {
     /// `spentTokens` when the line was parked; resuming shifts its spend baseline by what was spent meanwhile.
     var parkedSpentTokens: Int? = nil
     /// `DexEntry.id` → evolution progress of a graduate whose form can still evolve (one graduated by skipping
-    /// a blocked step). It grows only while that graduate is raised. Kept off `DexEntry`, which travels in trades.
+    /// a blocked step). It grows while that graduate is raised or holds an Exp. Share. Kept off `DexEntry`, which
+    /// travels in trades.
     var graduateEvolution: [String: EvolutionProgress] = [:]
     /// Instance ID → a line Pokémon sent to the Box before it graduated. Its released `dex` record keeps the species.
     var storedLines: [String: StoredLine] = [:]
+    /// Instance IDs holding an Exp. Share, oldest first. Attached copies are out of `inventory`.
+    var expShareHolders: [String] = []
     // 도감
     var dex: [DexEntry] = []
     // 소유한 (base,final) 쌍 — 분기 다양성용
@@ -1326,6 +1344,7 @@ struct CompanionState: Codable, Sendable {
         graduateEvolution  = c.lenient([String: EvolutionProgress].self, forKey: .graduateEvolution, default: [:])
         storedLines        = c.lenient([String: Lossy<StoredLine>].self, forKey: .storedLines, default: [:])
             .compactMapValues(\.value)
+        expShareHolders    = c.lenient([String].self, forKey: .expShareHolders, default: [])
         // 도감은 항목별 격리 — 손상 항목 하나가 도감 전체를 날리지 않게.
         dex                = c.lenient([Lossy<DexEntry>].self, forKey: .dex, default: []).compactMap(\.value)
         reconcileRaised()
@@ -1381,6 +1400,18 @@ struct CompanionState: Codable, Sendable {
             if known { inventory[key, default: 0] += 1 }
             heldItems[instanceID] = nil
         }
+    }
+
+    /// A released, traded-away or repeated holder gives its Exp. Share back to the bag.
+    mutating func returnOrphanedExpShares() {
+        guard !expShareHolders.isEmpty else { return }
+        let owned = ownedInstanceIDs
+        var seen = Set<String>()
+        let kept = expShareHolders.filter { owned.contains($0) && seen.insert($0).inserted }
+        let returned = expShareHolders.count - kept.count
+        guard returned > 0 else { return }
+        inventory[ItemKind.expShare.rawValue, default: 0] += returned
+        expShareHolders = kept
     }
 
     /// 졸업 기록 또는 현재 개체가 실제로 도달한 단계에 이 종이 포함되는가.

@@ -2162,6 +2162,7 @@ struct L {
         case .rareCandy: return t("이상한사탕", "Rare Candy", "ふしぎなアメ", "Caramelo Raro", "Super Bonbon", "Doce Raro", "Sonderbonbon", "Редкая конфета")
         case .mint:      return t("민트", "Mint", "ミント", "Menta", "Menthe", "Menta", "Minze", "Мята")
         case .shinyCharm: return t("빛나는부적", "Shiny Charm", "ひかるおまもり", "Amuleto Iris", "Charme Chroma", "Amuleto Shiny", "Schillerpin", "Шайни-талисман")
+        case .expShare: return t("학습장치", "Exp. Share", "がくしゅうそうち", "Repartir Exp", "Multi Exp", "Compart. Exp.", "EP-Teiler", "Общий опыт")
         case .fireStone: return t("불꽃의돌", "Fire Stone", "ほのおのいし", "Piedra Fuego", "Pierre Feu", "Pedra do Fogo", "Feuerstein", "Огненный камень")
         case .waterStone: return t("물의돌", "Water Stone", "みずのいし", "Piedra Agua", "Pierre Eau", "Pedra da Água", "Wasserstein", "Водный камень")
         case .thunderStone: return t("천둥의돌", "Thunder Stone", "かみなりのいし", "Piedra Trueno", "Pierre Foudre", "Pedra do Trovão", "Donnerstein", "Громовой камень")
@@ -2360,6 +2361,16 @@ struct L {
                      "A chance de nascer shiny sobe de 1/\(base) para 1/\(boosted).",
                      "Die Chance auf ein schillerndes Pokémon steigt von 1/\(base) auf 1/\(boosted).",
                      "Шанс вылупления шайни растёт с 1/\(base) до 1/\(boosted).")
+        case .expShare:
+            let p = ExpShare.sharePercent
+            return t("박스의 포켓몬 하나에 달면, 지금 키우는 포켓몬이나 알이 얻는 경험치의 \(p)%를 함께 얻어요.",
+                     "Attach it to one Pokémon in the Box. It gains \(p)% of the EXP your current Pokémon or egg earns.",
+                     "ボックスのポケモン1匹につけると、いま育てているポケモンかタマゴが得る経験値の\(p)%をもらえます。",
+                     "Pónselo a un Pokémon de la Caja. Gana el \(p) % de la EXP que obtiene tu Pokémon actual o tu huevo.",
+                     "Attache-le à un Pokémon de la Boîte. Il gagne \(p) % de l'EXP de ton Pokémon actuel ou de ton œuf.",
+                     "Coloque em um Pokémon da Caixa. Ele ganha \(p)% da EXP que o seu Pokémon atual ou ovo recebe.",
+                     "Gib ihn einem Pokémon in der Box. Es erhält \(p) % der EP deines aktuellen Pokémon oder Eis.",
+                     "Прикрепите к покемону в Боксе. Он получает \(p)% опыта текущего покемона или яйца.")
         case .linkingCord:
             return linkingCordDescription
         default:

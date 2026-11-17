@@ -250,6 +250,7 @@ struct BoxCell: View {
                         HStack(spacing: 1) {
                             if individual.role == .raising { roleIcon("figure.walk", tint: .accentColor) }
                             else if individual.role == .friend { roleIcon("heart.fill", tint: .pink) }
+                            if holdsExpShare { roleIcon("antenna.radiowaves.left.and.right", tint: .teal) }
                             if individual.role == .parked { textTag(store.l.parkedBadge, tint: .orange) }
                             if individual.role == .stored { textTag(store.l.storedBadge, tint: .secondary) }
                             if isRepresentative { textTag(store.l.representativeBadge, tint: Palette.representative) }
@@ -297,6 +298,7 @@ struct BoxCell: View {
     }
 
     private var isRepresentative: Bool { store.isRepresentative(entry) }
+    private var holdsExpShare: Bool { store.holdsExpShare(individual.id) }
 
     private func textTag(_ text: String, tint: Color) -> some View {
         Text(text)
@@ -327,6 +329,7 @@ struct BoxCell: View {
         if individual.role == .friend { parts.append(l.friendLabel) }
         if isRepresentative { parts.append(l.representativeBadge) }
         if let held { parts.append("\(l.heldItemLabel): \(held.name(l))") }
+        if holdsExpShare { parts.append(l.itemName(.expShare)) }
         return parts.joined(separator: " · ")
     }
 }

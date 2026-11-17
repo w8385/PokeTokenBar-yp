@@ -27,7 +27,7 @@ MEGA_SOURCE = ROOT / "Sources/PokeTokenBar/Core/MegaStones.swift"
 LANGS = {"ko": ["ko"], "en": ["en"], "ja": ["ja-hrkt", "ja"], "es": ["es"], "fr": ["fr"], "de": ["de"]}
 
 ITEMS = [
-    "rare-candy", "shiny-charm",
+    "rare-candy", "shiny-charm", "exp-share",
     "fire-stone", "water-stone", "thunder-stone", "leaf-stone", "moon-stone",
     "sun-stone", "shiny-stone", "dusk-stone", "dawn-stone", "ice-stone",
     "leftovers", "choice-scarf", "choice-band", "focus-sash", "life-orb", "expert-belt", "charcoal",
