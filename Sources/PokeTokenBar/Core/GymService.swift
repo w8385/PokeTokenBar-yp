@@ -1,13 +1,12 @@
 import Foundation
 import Observation
 
-/// A run in progress (the Elite Four or a hideout): which battle is next and the team's HP and status going
-/// into it. The bot keeps nothing between battles, so this is the run. It lives until the app quits.
+/// A run in progress (the Elite Four or a hideout): which battle is next. The team is fully healed between
+/// battles. The bot keeps nothing between battles, so this is the run. It lives until the app quits.
 struct GymRunProgress: Equatable, Sendable {
     let team: [String]
     /// 0-based index into the run's battles.
     let nextIndex: Int
-    let carry: [GymCarry?]
 }
 
 /// What outlives a screen: the catalog already fetched and the runs under way.
@@ -33,7 +32,7 @@ struct GymFightRecord: Equatable, Sendable {
     let reward: GymReward?
 }
 
-/// Talks to the bot's gym endpoints and keeps a run's carry-over. Rewards are handed to `applyReward` with the
+/// Talks to the bot's gym endpoints and keeps where a run stands. Rewards are handed to `applyReward` with the
 /// trainer and region; the store behind it owns the save.
 @MainActor
 @Observable
@@ -125,16 +124,16 @@ final class GymService {
 
     /// Fights one gym, which stands alone.
     func fightGym(_ gym: GymOpponent, region: GymRegion, team: GymTeam.Team) async {
-        await fight(gym, region: region, team: team, carried: nil)
+        await fight(gym, region: region, team: team)
     }
 
-    /// Fights the next battle of a run: the first when no run is under way or the team changed since, else the
-    /// one after the last win, carrying the team's HP and status over.
+    /// Fights the next battle of a run at full health: the first when no run is under way or the team changed
+    /// since, else the one after the last win.
     func fightRun(_ run: String, battles: [GymOpponent], region: GymRegion, team: GymTeam.Team) async {
         guard let first = battles.first else { return }
         let state = session.runs[run].flatMap { $0.team == team.ids && battles.indices.contains($0.nextIndex) ? $0 : nil }
         if state == nil { session.setRun(nil, for: run) }
-        await fight(state.map { battles[$0.nextIndex] } ?? first, region: region, team: team, carried: state?.carry)
+        await fight(state.map { battles[$0.nextIndex] } ?? first, region: region, team: team)
     }
 
     /// Where a run stands for this team: the 1-based step it fights next, `1` when it would start over.
@@ -148,9 +147,9 @@ final class GymService {
         failure = nil
     }
 
-    private func fight(_ opponent: GymOpponent, region: GymRegion, team: GymTeam.Team, carried: [GymCarry?]?) async {
+    private func fight(_ opponent: GymOpponent, region: GymRegion, team: GymTeam.Team) async {
         guard inFlight == nil, let link = link(),
-              let request = Self.battleRequest(link, GymBattleRequest(gymId: opponent.id, team: team.members, carried: carried))
+              let request = Self.battleRequest(link, GymBattleRequest(gymId: opponent.id, team: team.members))
         else { return }
         inFlight = opponent.id
         failure = nil
@@ -176,9 +175,8 @@ final class GymService {
 
     private func finish(_ outcome: GymBattleOutcome, opponent: GymOpponent, region: GymRegion, team: GymTeam.Team) {
         if let run = opponent.run {
-            if outcome.won, let next = outcome.run?.next, let carry = outcome.carry, carry.count == team.members.count,
-               let index = Self.index(of: next, in: region, run: run.id) {
-                session.setRun(GymRunProgress(team: team.ids, nextIndex: index, carry: carry), for: run.id)
+            if outcome.won, let next = outcome.run?.next, let index = Self.index(of: next, in: region, run: run.id) {
+                session.setRun(GymRunProgress(team: team.ids, nextIndex: index), for: run.id)
             } else {
                 session.setRun(nil, for: run.id)
             }

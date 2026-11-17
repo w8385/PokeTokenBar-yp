@@ -121,8 +121,7 @@ final class GymScreenshotTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: elite.scratch) }
         let team = GymTeam.team(state: elite.store.state, slots: elite.entry.slots, moveChoices: elite.entry.moveChoices,
                                 rentalSpeciesID: elite.entry.rentalSpeciesID)
-        elite.session.setRun(GymRunProgress(team: team.ids, nextIndex: 2,
-                                            carry: team.ids.map { _ in GymCarry(hp: 55, status: nil) }), for: "kanto-elite")
+        elite.session.setRun(GymRunProgress(team: team.ids, nextIndex: 2), for: "kanto-elite")
         try await shot(elite, height: 960, to: directory.appendingPathComponent("pve-elite-run.png"))
 
         let win = GymFixtures.outcomeData(gymID: "kanto-4", kind: "gym", won: true)
@@ -141,8 +140,7 @@ final class GymScreenshotTests: XCTestCase {
         let loss = try rig(badges: badges(Set(1...8)), reply: { _ in (lossStep, 200) })
         defer { try? FileManager.default.removeItem(at: loss.scratch) }
         let lossRegion = try XCTUnwrap(loss.service.catalog?.region("kanto"))
-        loss.session.setRun(GymRunProgress(team: resultTeam.ids, nextIndex: 2,
-                                           carry: resultTeam.ids.map { _ in GymCarry(hp: 55, status: nil) }), for: "kanto-elite")
+        loss.session.setRun(GymRunProgress(team: resultTeam.ids, nextIndex: 2), for: "kanto-elite")
         await loss.service.fightRun("kanto-elite", battles: lossRegion.elite.battles, region: lossRegion, team: resultTeam)
         try await shot(loss, height: 560, to: directory.appendingPathComponent("pve-battle-loss.png"))
 
