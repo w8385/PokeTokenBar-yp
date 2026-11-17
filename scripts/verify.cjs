@@ -35,6 +35,10 @@ async function capture(page,name,full=false) {
 (async()=>{
  let browser;
  try {
+  await test('index.html links tokens.css, styles.css and app.js with ?v= equal to their content hash (npm run stamp)',async()=>{
+   const {indexPath,staleReferences}=require('./stamp.cjs');
+   assert.deepEqual(staleReferences(fs.readFileSync(indexPath,'utf8')),[]);
+  });
   let ready=false;
   for(let i=0;i<60;i++) {try {const response=await fetch(url);if(response.ok){ready=true;break;}}catch{} await new Promise(r=>setTimeout(r,100));}
   assert.ok(ready,'Local test server did not start');

@@ -9,9 +9,12 @@ npm ci
 npm run preview
 # http://127.0.0.1:8765
 
+npm run stamp
 npm test
 npm run design:check
 ```
+
+`index.html` loads `tokens.css`, `styles.css` and `app.js` with `?v=<first 8 hex of sha256>`, because the CDN in front of the site caches assets for hours. After editing any of them, run `npm run stamp`; `npm test` fails while a `?v=` does not match its file.
 
 `npm test` starts its own local server on port 18765, uses installed Google Chrome on this Mac, and saves screenshots plus results under `test-results/`. Set `CHROME_PATH` for a different local Chrome executable. The suite covers three languages, responsive layouts, light/dark themes, axe accessibility scans, keyboard controls, clipboard errors, no JavaScript and unavailable local storage. There is no website production build step.
 
