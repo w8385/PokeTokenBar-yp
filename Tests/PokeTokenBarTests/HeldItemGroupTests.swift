@@ -51,23 +51,25 @@ final class HeldItemGroupTests: XCTestCase {
         let sections = try store().shopBattleSections
         XCTAssertEqual(sections.map(\.group), BattleItemGroup.allCases)
         let expected: [BattleItemGroup: [ItemKind]] = [
-            .attack: [.choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses],
+            .attack: [.choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses, .punchingGlove],
             .typeBoost: [.silkScarf, .charcoal, .mysticWater, .magnet, .miracleSeed, .neverMeltIce, .blackBelt,
                          .poisonBarb, .softSand, .sharpBeak, .twistedSpoon, .silverPowder, .hardStone, .spellTag,
-                         .dragonFang, .blackGlasses, .metalCoat, .fairyFeather],
+                         .dragonFang, .blackGlasses, .metalCoat, .fairyFeather] + ItemKind.plates,
             .bulk: [.assaultVest, .eviolite, .leftovers, .blackSludge, .sitrusBerry, .shellBell, .bigRoot, .focusSash,
-                    .focusBand],
+                    .focusBand] + ItemKind.resistBerries,
             .speed: [.choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder],
             .status: [.lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb],
             .weather: [.heatRock, .dampRock, .smoothRock, .icyRock],
-            .signature: [.tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal],
+            .signature: [.tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
+                         .redOrb, .blueOrb, .adamantCrystal, .lustrousGlobe, .griseousCore],
             .other: [.everstone],
         ]
         for section in sections {
             XCTAssertEqual(section.kinds, expected[section.group], "\(section.group)")
         }
-        XCTAssertEqual(sections.first { $0.group == .typeBoost }?.kinds.map(\.boostedType),
-                       PokemonType.allCases.map(\.rawValue))
+        let typeBoost = try XCTUnwrap(sections.first { $0.group == .typeBoost }).kinds
+        XCTAssertEqual(typeBoost.compactMap(\.boostedType), PokemonType.allCases.map(\.rawValue))
+        XCTAssertEqual(typeBoost.compactMap(\.plateType), PokemonType.allCases.map(\.rawValue).filter { $0 != "normal" })
     }
 
     func testMetalCoatAndRazorClawSitInTheEvolutionListAndTheirBattleGroup() throws {

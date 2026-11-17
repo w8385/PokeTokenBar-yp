@@ -159,6 +159,11 @@ struct GymResultView: View {
             if let moveID = reward.tmMoveID, let name = tmName(moveID) {
                 Text(l.gymRewardTM(name)).font(.caption)
             }
+            if let prize = reward.prize {
+                ForEach(l.hiddenBossPrizeLines(eggSpeciesID: prize.eggSpeciesID, itemKeys: prize.itemKeys), id: \.self) {
+                    Text($0).font(.caption)
+                }
+            }
         }
         .padding(Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)

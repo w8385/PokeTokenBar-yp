@@ -6,6 +6,7 @@ struct GymReward: Equatable, Sendable {
         case gymBadge(index: Int)
         case hallOfFame
         case orgBadge
+        case hiddenBoss
     }
 
     let region: String
@@ -15,6 +16,8 @@ struct GymReward: Equatable, Sendable {
     let tmMoveID: Int?
     /// The badges after the reward.
     let badges: GymBadges
+
+    var prize: HiddenBossPrize? { kind == .hiddenBoss ? HiddenBossPrize.prize(for: region) : nil }
 }
 
 enum GymRewards {
@@ -42,6 +45,11 @@ enum GymRewards {
             guard !current.orgBeaten else { return nil }
             updated.update(region) { $0.orgBeaten = true }
             return GymReward(region: region, battleID: opponent.id, kind: .orgBadge,
+                             tmMoveID: finaleTM(seed: opponent.id, owned: ownedTMs, catalog: catalog), badges: updated)
+        case "hidden":
+            guard !current.hiddenBeaten else { return nil }
+            updated.update(region) { $0.hiddenBeaten = true }
+            return GymReward(region: region, battleID: opponent.id, kind: .hiddenBoss,
                              tmMoveID: finaleTM(seed: opponent.id, owned: ownedTMs, catalog: catalog), badges: updated)
         default:
             return nil

@@ -556,6 +556,7 @@ final class SaveTransferTests: XCTestCase {
         // rewardedDexRegions = 진행 — 보상으로 받은 사탕이 inventory 와 함께 따라가므로 받은 지역도 같이 가야
         // 옮긴 기기에서 같은 지역 보상을 한 번 더 받지 않는다.
         // appliedTradeIDs = 진행 — 적용한 교환 기록은 도감과 함께 가야 옮긴 기기에서 같은 교환이 다시 적용되지 않는다.
+        // shinyEgg = 진행 — 품고 있는 상품 알에 붙은 값이라 알과 함께 간다.
         // gymBadges = 진행 — 배지와 첫 클리어 보상(기술머신)이 inventory 와 함께 가야 옮긴 기기에서 같은 보상을 다시 받지 않는다.
         // graduateEvolution = 진행 — 진화를 건너뛰고 졸업한 개체의 진화 진행이라 그 개체(dex)와 함께 간다.
         // storedLines = 진행 — 박스에 보관한 키우던 포켓몬이라 그 기록(dex)과 함께 간다.
@@ -567,6 +568,7 @@ final class SaveTransferTests: XCTestCase {
                                      "collectedFinals", "inventory", "heldItems",
                                      "notifiedDexCompletions", "dexCompletionsSeeded", "clickGrowth",
                                      "friendEntryIDs", "rewardedDexRegions", "scoutDraws", "scoutedEgg",
+                                     "shinyEgg",
                                      "raisedEntryID", "parkedSpentTokens",
                                      // growthMode·timeCredit = 산 지갑과 같은 진행. tokenModeSince·lastUsageAt·idleHintDismissed 는
                                      // 안내 문구 타이밍뿐이라 따라가도 해가 없다.

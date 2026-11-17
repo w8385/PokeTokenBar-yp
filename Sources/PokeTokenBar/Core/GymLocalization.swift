@@ -164,7 +164,23 @@ extension L {
             t("명예의 전당에 올랐어요!", "Entered the Hall of Fame!", "殿堂入り!", "¡Entraste en el Salón de la Fama!", "Entré au Panthéon !", "Entrou no Hall da Fama!", "In der Ruhmeshalle verewigt!", "Вы в Зале славы!")
         case .orgBadge:
             t("아지트를 무너뜨렸어요!", "Hideout cleared!", "アジトを壊滅させた!", "¡Guarida despejada!", "Planque nettoyée !", "Esconderijo limpo!", "Versteck ausgehoben!", "Логово зачищено!")
+        case .hiddenBoss:
+            t("숨겨진 강자를 쓰러뜨렸어요!", "Hidden boss defeated!", "隠れた強者を倒した!", "¡Jefe oculto derrotado!", "Boss caché vaincu !", "Chefe oculto derrotado!", "Versteckter Boss besiegt!", "Скрытый босс повержен!")
         }
+    }
+
+    var gymHiddenTitle: String {
+        t("숨겨진 강자", "Hidden boss", "隠れた強者", "Jefe oculto", "Boss caché", "Chefe oculto", "Versteckter Boss", "Скрытый босс")
+    }
+    var gymHiddenLocked: String {
+        t("챔피언을 이기면 나타나요.", "Appears once you beat the champion.", "チャンピオンに勝つと現れます。",
+          "Aparece cuando vences al campeón.", "Apparaît une fois le Maître vaincu.", "Aparece quando você vence o campeão.",
+          "Erscheint, sobald du den Champion besiegt hast.", "Появится после победы над чемпионом.")
+    }
+    var gymHiddenRule: String {
+        t("한 번의 배틀, HP 가득 찬 채로 시작해요.", "One battle, starting at full HP.", "1戦だけ、HP満タンで始まります。",
+          "Un solo combate, con PS al máximo.", "Un seul combat, PV au maximum.", "Uma batalha, com PS cheios.",
+          "Ein Kampf mit vollen KP.", "Один бой с полным HP.")
     }
     func gymRewardTM(_ name: String) -> String {
         t("기술머신 \(name)", "TM \(name)", "わざマシン \(name)", "MT \(name)", "CT \(name)", "TM \(name)", "TM \(name)", "ТМ \(name)")
@@ -175,6 +191,7 @@ extension L {
         case .gymBadge: t("🏅 배지 획득!", "🏅 Badge earned!", "🏅 バッジ獲得!", "🏅 ¡Medalla!", "🏅 Badge obtenu !", "🏅 Insígnia!", "🏅 Orden erhalten!", "🏅 Значок!")
         case .hallOfFame: t("🏆 명예의 전당!", "🏆 Hall of Fame!", "🏆 殿堂入り!", "🏆 ¡Salón de la Fama!", "🏆 Panthéon !", "🏆 Hall da Fama!", "🏆 Ruhmeshalle!", "🏆 Зал славы!")
         case .orgBadge: t("🕶️ 아지트 소탕!", "🕶️ Hideout cleared!", "🕶️ アジト壊滅!", "🕶️ ¡Guarida despejada!", "🕶️ Planque nettoyée !", "🕶️ Esconderijo limpo!", "🕶️ Versteck ausgehoben!", "🕶️ Логово зачищено!")
+        case .hiddenBoss: t("✨ 숨겨진 강자 격파!", "✨ Hidden boss beaten!", "✨ 隠れた強者を撃破!", "✨ ¡Jefe oculto vencido!", "✨ Boss caché vaincu !", "✨ Chefe oculto vencido!", "✨ Versteckter Boss besiegt!", "✨ Скрытый босс повержен!")
         }
     }
 
@@ -193,6 +210,16 @@ extension L {
             return t("\(region) 아지트의 두목 \(trainer)에게 이겼어요.\(extra)", "Beat \(trainer), boss of the \(region) hideout.\(extra)", "\(region)のアジトのボス\(trainer)に勝ちました。\(extra)",
                      "Venciste a \(trainer), jefe de la guarida de \(region).\(extra)", "Tu as battu \(trainer), chef de la planque de \(region).\(extra)", "Você venceu \(trainer), chefe do esconderijo de \(region).\(extra)",
                      "\(trainer), Boss des Verstecks in \(region), besiegt.\(extra)", "Вы победили босса логова \(region): \(trainer).\(extra)")
+        case .hiddenBoss:
+            return t("\(region)의 숨겨진 강자 \(trainer)에게 이겼어요.\(extra)", "Beat \(trainer), the hidden boss of \(region).\(extra)", "\(region)の隠れた強者\(trainer)に勝ちました。\(extra)",
+                     "Venciste a \(trainer), jefe oculto de \(region).\(extra)", "Tu as battu \(trainer), boss caché de \(region).\(extra)", "Você venceu \(trainer), chefe oculto de \(region).\(extra)",
+                     "\(trainer), versteckter Boss von \(region), besiegt.\(extra)", "Вы победили скрытого босса \(region): \(trainer).\(extra)")
         }
+    }
+
+    func gymRewardPrize(_ items: [String]) -> String {
+        let list = items.joined(separator: ", ")
+        return t("보상: \(list)", "Prize: \(list)", "ごほうび: \(list)", "Premio: \(list)", "Récompense : \(list)",
+                 "Prêmio: \(list)", "Belohnung: \(list)", "Награда: \(list)")
     }
 }

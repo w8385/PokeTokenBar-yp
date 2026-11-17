@@ -246,6 +246,12 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case mysticWater, miracleSeed, magnet, neverMeltIce, blackBelt, poisonBarb, softSand, sharpBeak, twistedSpoon
     case silverPowder, hardStone, spellTag, dragonFang, blackGlasses, silkScarf, fairyFeather
     case heatRock, dampRock, smoothRock, icyRock
+    /// Primal orbs, Origin items, Punching Glove, resist berries and plates (`ChampionItems.swift`).
+    case redOrb, blueOrb, adamantCrystal, lustrousGlobe, griseousCore, punchingGlove
+    case occaBerry, passhoBerry, wacanBerry, rindoBerry, yacheBerry, chopleBerry, kebiaBerry, shucaBerry, cobaBerry
+    case payapaBerry, tangaBerry, chartiBerry, kasibBerry, habanBerry, colburBerry, babiriBerry, chilanBerry, roseliBerry
+    case flamePlate, splashPlate, zapPlate, meadowPlate, iciclePlate, fistPlate, toxicPlate, earthPlate, skyPlate
+    case mindPlate, insectPlate, stonePlate, spookyPlate, dracoPlate, dreadPlate, ironPlate, pixiePlate
     /// Ogerpon's masks and Terapagos' Stellar Crystal; each works only on its own species.
     case tealMask, wellspringMask, hearthflameMask, cornerstoneMask, stellarCrystal
     /// Evolution items the games use up like a stone.
@@ -316,7 +322,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .stellarCrystal: return "stellar-crystal"
         case .metalCoat: return "metal-coat"
         case .razorClaw: return "razor-claw"
-        default: return nil
+        default: return championItemSlug
         }
     }
     /// The type whose moves the item boosts ×1.2 in battle.
@@ -348,7 +354,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         switch self {
         case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask: return TeraForm.ogerpon
         case .stellarCrystal: return TeraForm.terapagos
-        default: return nil
+        default: return championHolderSpeciesID
         }
     }
     /// A battle item sold in the held-item tier. Metal Coat and Razor Claw also act in battle but stay evolution items.
@@ -430,6 +436,12 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
              .twistedSpoon, .silverPowder, .hardStone, .spellTag, .dragonFang, .blackGlasses, .silkScarf, .fairyFeather,
              .heatRock, .dampRock, .smoothRock, .icyRock: return nil
         case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal: return nil
+        case .redOrb, .blueOrb, .adamantCrystal, .lustrousGlobe, .griseousCore, .punchingGlove,
+             .occaBerry, .passhoBerry, .wacanBerry, .rindoBerry, .yacheBerry, .chopleBerry, .kebiaBerry, .shucaBerry,
+             .cobaBerry, .payapaBerry, .tangaBerry, .chartiBerry, .kasibBerry, .habanBerry, .colburBerry, .babiriBerry,
+             .chilanBerry, .roseliBerry, .flamePlate, .splashPlate, .zapPlate, .meadowPlate, .iciclePlate, .fistPlate,
+             .toxicPlate, .earthPlate, .skyPlate, .mindPlate, .insectPlate, .stonePlate, .spookyPlate, .dracoPlate,
+             .dreadPlate, .ironPlate, .pixiePlate: return nil
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return nil
         case .metalCoat, .kingsRock, .dragonScale, .upGrade, .dubiousDisc, .electirizer, .magmarizer, .protector,
              .reaperCloth, .deepSeaTooth, .deepSeaScale, .sachet, .whippedDream, .prismScale: return nil
@@ -557,7 +569,15 @@ extension ItemKind {
         case .choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder: return .speed
         case .lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb: return .status
         case .heatRock, .dampRock, .smoothRock, .icyRock: return .weather
-        case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal: return .signature
+        case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
+             .redOrb, .blueOrb, .adamantCrystal, .lustrousGlobe, .griseousCore: return .signature
+        case .punchingGlove: return .attack
+        case .occaBerry, .passhoBerry, .wacanBerry, .rindoBerry, .yacheBerry, .chopleBerry, .kebiaBerry, .shucaBerry,
+             .cobaBerry, .payapaBerry, .tangaBerry, .chartiBerry, .kasibBerry, .habanBerry, .colburBerry, .babiriBerry,
+             .chilanBerry, .roseliBerry: return .bulk
+        case .flamePlate, .splashPlate, .zapPlate, .meadowPlate, .iciclePlate, .fistPlate, .toxicPlate, .earthPlate,
+             .skyPlate, .mindPlate, .insectPlate, .stonePlate, .spookyPlate, .dracoPlate, .dreadPlate, .ironPlate,
+             .pixiePlate: return .typeBoost
         case .everstone: return .other
         }
     }
@@ -576,18 +596,23 @@ enum BattleItemGroup: String, CaseIterable, Sendable {
     }
 
     private static let listedOrder: [ItemKind] = [
-        .choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses,
+        .choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses, .punchingGlove,
         .assaultVest, .eviolite, .leftovers, .blackSludge, .sitrusBerry, .shellBell, .bigRoot, .focusSash, .focusBand,
         .choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder,
+    ] + ItemKind.resistBerries + [
         .lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb,
         .heatRock, .dampRock, .smoothRock, .icyRock,
         .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
+    ] + ItemKind.primalOrbs + ItemKind.originItems + [
         .everstone,
     ]
 
     private static func rank(_ kind: ItemKind) -> Int {
         if let type = kind.boostedType, let index = PokemonType.allCases.firstIndex(where: { $0.rawValue == type }) {
             return index
+        }
+        if let type = kind.plateType, let index = PokemonType.allCases.firstIndex(where: { $0.rawValue == type }) {
+            return PokemonType.allCases.count + index
         }
         return listedOrder.firstIndex(of: kind) ?? listedOrder.count
     }
@@ -1318,6 +1343,8 @@ struct CompanionState: Codable, Sendable {
     var scoutDraws: [String: [Int]] = [:]
     // 지금 품은 알이 스카우트로 고른 종인가 — 메타몽 위장 롤을 건너뛰어 고른 종이 그대로 부화하게 한다.
     var scoutedEgg = false
+    /// The egg being incubated is a hidden boss prize and hatches shiny.
+    var shinyEgg = false
     // 지닌 도구: 개체 instanceID → 인벤토리 키. 단 도구는 인벤토리에서 빠져 있다(뗄 때 돌아온다).
     var heldItems: [String: String] = [:]
     // 사탕 지급 엣지 상태(창 key → 지급한 tier). ★영속 — notifiedTier(인메모리)와 달리 재시작 무한지급 방지.
@@ -1397,6 +1424,7 @@ struct CompanionState: Codable, Sendable {
         inventory          = c.lenient([String: Int].self, forKey: .inventory, default: [:])
         scoutDraws         = c.lenient([String: [Int]].self, forKey: .scoutDraws, default: [:])
         scoutedEgg         = c.lenient(Bool.self, forKey: .scoutedEgg, default: false)
+        shinyEgg           = c.lenient(Bool.self, forKey: .shinyEgg, default: false)
         heldItems          = c.lenient([String: String].self, forKey: .heldItems, default: [:])
         candyGrantTier     = c.lenient([String: Int].self, forKey: .candyGrantTier, default: [:])
         candyWindowEpoch   = c.lenient([String: String].self, forKey: .candyWindowEpoch, default: [:])

@@ -90,3 +90,54 @@ struct GymRunRow: View {
         .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
     }
 }
+
+/// The region's hidden boss: a locked "???" until the champion falls, then a single battle like a gym.
+@MainActor
+struct GymHiddenRow: View {
+    let opponent: GymOpponent
+    let language: AppLanguage
+    let l: L
+    let unlocked: Bool
+    let beaten: Bool
+    let fighting: Bool
+    let disabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        HStack(spacing: Spacing.lg) {
+            if unlocked {
+                TrainerSprite(battleID: opponent.id, size: 44)
+            } else {
+                GymBadgeView(emblem: .hidden, earned: false, size: 44)
+            }
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                HStack(spacing: Spacing.xs) {
+                    Text(unlocked ? opponent.trainer.displayName(language) : "???")
+                        .font(.callout.weight(.semibold)).lineLimit(1)
+                    Text(l.gymHiddenTitle).font(.caption).foregroundStyle(.secondary)
+                    if beaten { GymBadgeView(emblem: .hidden, earned: true, size: 16) }
+                }
+                if unlocked {
+                    HStack(spacing: Spacing.xs) {
+                        Text(l.gymTeamLine(opponent.team.count, level: opponent.level))
+                        if let finale = opponent.finale, finale > 0 {
+                            Text("+\(finale) ?").monospacedDigit()
+                                .help(l.gymFinaleHidden(finale))
+                                .accessibilityLabel(l.gymFinaleHidden(finale))
+                        }
+                    }
+                    .font(.caption2).foregroundStyle(.secondary)
+                }
+                Text(unlocked ? l.gymHiddenRule : l.gymHiddenLocked)
+                    .font(.caption2).foregroundStyle(unlocked ? .secondary : .tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: Spacing.xs)
+            Button(fighting ? l.gymFighting : (beaten ? l.gymRematch : l.gymChallenge), action: action)
+                .controlSize(.small)
+                .disabled(disabled || !unlocked)
+        }
+        .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
+        .help(unlocked ? opponent.trainer.displayLine(language) : l.gymHiddenLocked)
+    }
+}

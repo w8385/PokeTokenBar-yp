@@ -21,10 +21,12 @@ struct GymRegion: Decodable, Equatable, Sendable, Identifiable {
     let gyms: [GymOpponent]
     let elite: GymEliteRun
     let hideout: GymHideoutRun
+    /// The single battle that opens after the champion; nil from a bot without one.
+    let hidden: GymOpponent?
 
-    /// The opponent a battle id names, in any of the region's three groups.
+    /// The opponent a battle id names, in any of the region's groups.
     func opponent(_ battleID: String) -> GymOpponent? {
-        (gyms + elite.battles + hideout.battles).first { $0.id == battleID }
+        (gyms + elite.battles + hideout.battles + [hidden].compactMap { $0 }).first { $0.id == battleID }
     }
 }
 
@@ -74,7 +76,7 @@ struct GymRunPosition: Decodable, Equatable, Sendable {
 
 struct GymOpponent: Decodable, Equatable, Sendable, Identifiable {
     let id: String
-    /// `gym`, `elite`, `champion`, `grunt`, `admin` or `boss`.
+    /// `gym`, `elite`, `champion`, `grunt`, `admin`, `boss` or `hidden`.
     let kind: String
     let index: Int
     let types: [String]
