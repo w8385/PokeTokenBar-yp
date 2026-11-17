@@ -34,7 +34,7 @@ People using supported AI coding tools on a Mac. The installation and feature de
 
 ## Stack
 
-Existing static HTML/CSS/JavaScript on the orphan `gh-pages` branch, served by GitHub Pages at https://w8385.github.io/PokeTokenBar-yp/. No website build step.
+Existing static HTML/CSS/JavaScript on the orphan `gh-pages` branch, served by GitHub Pages at https://w8385.dev/PokeTokenBar-yp/ (the owner's user-site custom domain). No website build step.
 
 ## Evidence on Hand
 

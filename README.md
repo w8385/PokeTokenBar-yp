@@ -1,6 +1,6 @@
 # PokeTokenBar website
 
-Static landing page for https://w8385.github.io/PokeTokenBar-yp/ (fork of chattymin/PokeTokenBar), maintained on the `gh-pages` lineage. App source lives on `main`. This branch does not build or replace the native app.
+Static landing page for https://w8385.dev/PokeTokenBar-yp/ (fork of chattymin/PokeTokenBar), maintained on the `gh-pages` lineage. App source lives on `main`. This branch does not build or replace the native app.
 
 ## Local preview and verification
 
