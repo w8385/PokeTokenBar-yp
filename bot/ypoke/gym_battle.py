@@ -50,7 +50,8 @@ class GymBattles:
         player, foes = fighters[:len(mine)], tuple(fighters[len(mine):])
         seed = self._new_seed()
         finale = len(foes) - opponent.finale if opponent.finale else None
-        result = simulate((tuple(player[index] for index in awake), foes), seed, [starts[index] for index in awake])
+        result = simulate((tuple(player[index] for index in awake), foes), seed, [starts[index] for index in awake],
+                          finale=finale)
         shown, carry = _outcomes(starts, awake, result)
         won = result.winner == 0
         following = gyms.next_in_run(opponent) if won else None

@@ -2,7 +2,7 @@ import json
 import statistics
 from dataclasses import replace
 
-from ypoke import foe_items, foe_moves, gym_data, gyms, items
+from ypoke import foe_items, foe_moves, gym_data, gyms, items, tera_forms
 from ypoke.dex import NATIONAL_TOTAL, REGIONS
 from ypoke.gyms import MIN_TOTAL, TEAM_SIZE, Species, usable_species
 from ypoke.mega_stones import MEGA_STONES
@@ -206,6 +206,10 @@ def test_the_preview_never_shows_a_champions_finale_only_counts_it():
         assert champion["team"] == list(opponent.team[:TEAM_SIZE])
         assert not set(opponent.team[TEAM_SIZE:]) & set(champion["team"])
         assert str(opponent.team[-1]) not in json.dumps(champion["team"])
+        preview = json.dumps(champion)
+        for item in opponent.items[TEAM_SIZE:]:
+            form = MEGA_STONES.get(item, (None, tera_forms.STELLAR_FORM if item == items.STELLAR_CRYSTAL else None))[1]
+            assert item not in preview and (form is None or str(form) not in preview), (region["id"], item)
 
 
 def test_every_foe_brings_its_picked_moves_and_the_champion_its_table_moves():
@@ -236,11 +240,27 @@ def test_every_foe_holds_an_item_that_fires_and_no_team_holds_one_twice():
         assert item_faults(opponent) == [], opponent.id
 
 
-def test_no_pve_team_holds_more_than_one_mega_stone_or_stellar_crystal_counting_the_finale():
-    assert {opponent.id: mega_capable(opponent.items) for opponent in all_opponents()
-            if len(mega_capable(opponent.items)) > 1} == {}
+def test_no_pve_foe_holds_a_focus_band_counting_the_finale():
+    assert {opponent.id: opponent.items for opponent in all_opponents() if items.FOCUS_BAND in opponent.items} == {}
+    frail = dict.fromkeys(("hp", "attack", "defense", "special_attack", "special_defense", "speed"), 40)
+    assert items.FOCUS_BAND not in foe_items.wishes(foe_items.Holder(10, ("bug",), frail, (), False))
+
+
+def test_a_pve_team_holds_at_most_one_mega_stone_or_stellar_crystal_in_its_six_and_one_in_its_finale():
+    assert {opponent.id: mega_budget_faults(opponent) for opponent in all_opponents()
+            if mega_budget_faults(opponent)} == {}
     champion = gyms.find("kanto-champion")
-    assert len(mega_capable(replace(champion, items=(*champion.items[:-1], "mewtwonite-y")).items)) > 1
+    gengar = champion.team.index(94)
+    second_in_six = tuple("gengarite" if index == gengar else item for index, item in enumerate(champion.items))
+    assert mega_budget_faults(replace(champion, items=second_in_six))
+    assert mega_budget_faults(replace(champion, team=(*champion.team, 6), moves=(*champion.moves, champion.moves[3]),
+                                      items=(*champion.items, "charizardite-y"), finale=2))
+
+
+def mega_budget_faults(opponent) -> list[list[str]]:
+    shown = len(opponent.shown)
+    parts = (mega_capable(opponent.items[:shown]), mega_capable(opponent.items[shown:]))
+    return [part for part in parts if len(part) > 1]
 
 
 def mega_capable(items_held: tuple[str, ...]) -> list[str]:

@@ -16,7 +16,7 @@ STRONG_OFFENSE = 100
 
 _ALWAYS = frozenset({
     items.LIFE_ORB, items.EXPERT_BELT, items.ASSAULT_VEST, items.LEFTOVERS, items.SITRUS_BERRY, items.LUM_BERRY,
-    items.FOCUS_SASH, items.FOCUS_BAND, items.ROCKY_HELMET, items.SHELL_BELL, items.SCOPE_LENS, items.RAZOR_CLAW,
+    items.FOCUS_SASH, items.ROCKY_HELMET, items.SHELL_BELL, items.SCOPE_LENS, items.RAZOR_CLAW,
     items.QUICK_CLAW, items.BRIGHT_POWDER, items.WEAKNESS_POLICY, items.CHOICE_SCARF,
 })
 
@@ -58,7 +58,7 @@ def wishes(holder: Holder) -> list[str]:
     if bulk < FRAIL_BULK and offense >= STRONG_OFFENSE:
         wanted += [items.FOCUS_SASH, items.LIFE_ORB, choice, *boosts[:1], items.EXPERT_BELT]
     elif bulk < FRAIL_BULK:
-        wanted += [items.FOCUS_SASH, items.FOCUS_BAND, *boosts[:1], items.SITRUS_BERRY]
+        wanted += [items.FOCUS_SASH, *boosts[:1], items.SITRUS_BERRY]
     elif bulk >= BULKY_BULK and offense < bulk // 2:
         wanted += [leftovers, items.ASSAULT_VEST, items.SITRUS_BERRY, items.ROCKY_HELMET, items.LUM_BERRY]
     elif offense >= STRONG_OFFENSE:
