@@ -3,14 +3,14 @@ from dataclasses import replace
 
 import pytest
 
-from ypoke import foe_items, foe_moves, items, tera_forms
+from ypoke import foe_items, foe_moves, gyms, items, tera_forms
 from ypoke.battle import (
     AbilityTrigger, BaseStats, BattleResult, Carry, Combatant, FormShift, MegaEvolution, Move, StatusDamage,
     WeatherEnd, _act, _Fighter, _unrolled_damage, _Weather, simulate,
 )
 from ypoke.combatants import combatant
 from ypoke.foe_moves import FoeMove
-from ypoke.move_effects import DRAGON_ASCENT, JUDGMENT, PUNCH_MOVES
+from ypoke.move_effects import DRAGON_ASCENT, IVY_CUDGEL, JUDGMENT, PUNCH_MOVES
 from ypoke.narration import battle_turns
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
@@ -34,6 +34,8 @@ FORMS = {
     493: ("아르세우스", ["normal"], PLAIN, None),
     384: ("레쿠쟈", ["dragon", "flying"], PLAIN, None),
     10079: ("레쿠쟈", ["dragon", "flying"], MEGA_RAYQUAZA, "delta-stream"),
+    1017: ("오거폰", ["grass"], PLAIN, None),
+    10274: ("오거폰", ["grass", "fire"], PLAIN, None),
 }
 
 
@@ -94,6 +96,12 @@ def test_a_plate_gives_arceus_and_judgment_its_type_but_no_one_else():
     assert [move.type for move in arceus.moves] == ["fire", "normal"]
     other = build(487, "flame-plate", moves=[JUDGMENT])
     assert other.types == ("ghost", "dragon") and other.moves[0].type == "normal"
+
+
+def test_ivy_cudgel_takes_the_type_of_ogerpons_mask_form():
+    assert [move.type for move in build(1017, "hearthflame-mask", moves=[IVY_CUDGEL, 33]).moves] == ["fire", "normal"]
+    assert build(1017, "teal-mask", moves=[IVY_CUDGEL]).moves[0].type == "grass"
+    assert build(1017, moves=[IVY_CUDGEL]).moves[0].type == "grass"
 
 
 def test_an_origin_item_gives_its_own_species_the_origin_forme_with_an_implemented_ability():
@@ -203,6 +211,14 @@ def result_of(*events):
     return BattleResult(winner=0, turns=1, events=list(events), remaining=((), ()), statuses=((), ()))
 
 
+def test_a_champion_row_brings_sturdy_into_the_battle():
+    gigalith = next(member for member in gyms.foe_members(gyms.find("unova-champion")) if member["pokemon_id"] == 526)
+    holder = fighter(combatant(FakePokeAPI(), gigalith))
+    attacker = fighter(mon("강타", moves=(Move("파괴", "fighting", 250, physical=True, accuracy=100),), attack=255))
+    action = _act(1, 0, (attacker, holder), 0, _Weather(), random.Random(2))
+    assert holder.combatant.ability == "sturdy" and holder.hp == 1 and not action.knockout
+
+
 def hit(move, item, types=("dragon", "flying"), defender=None):
     attacker = fighter(mon("공격", moves=(move,), attack=120))
     target = defender or fighter(mon("과녁", types, hp=250, defense=150, item=item))
@@ -254,7 +270,7 @@ class FakePokeAPI:
         return {"name_ko": name, "types": types, "base": base}
 
     def attacking_moves(self, pokemon_id, level, machine_ids=()):
-        return [move_dict(move_id) for move_id in (JUDGMENT, 33, DRAGON_ASCENT)]
+        return [move_dict(move_id) for move_id in (JUDGMENT, 33, DRAGON_ASCENT, IVY_CUDGEL)]
 
     def can_evolve(self, pokemon_id):
         return False
@@ -262,7 +278,7 @@ class FakePokeAPI:
 
 def move_dict(move_id):
     return {
-        "id": move_id, "name": f"m{move_id}", "type": "normal" if move_id != DRAGON_ASCENT else "flying",
+        "id": move_id, "name": f"m{move_id}", "type": {DRAGON_ASCENT: "flying", IVY_CUDGEL: "grass"}.get(move_id, "normal"),
         "power": 100, "damage_class": "special", "accuracy": 100, "pp": 10, "crit_rate": 0, "ailment": None,
         "ailment_chance": 0, "stat_changes": [], "stat_target": None, "stat_chance": 0, "priority": 0,
         "weather": None, "always_hits_in": [], "drain": 0, "min_hits": 1, "max_hits": 1,

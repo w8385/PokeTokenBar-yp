@@ -16,7 +16,9 @@ from pathlib import Path
 from ypoke import foe_items, foe_moves
 from ypoke.battle import BATTLE_LEVEL
 from ypoke.dex import REGIONS as DEX_REGIONS
-from ypoke.gym_data import CHAMPION_TEAMS, CHAMPIONS, ELITE, ELITE_TYPES, GYM_TYPES, LEADERS, ORG_TYPES, ORGS
+from ypoke.gym_data import (
+    CHAMPION_TEAMS, CHAMPIONS, ELITE, ELITE_TYPES, GYM_TYPES, LEADERS, ORG_TYPES, ORGS, Ace,
+)
 from ypoke.pokeapi import WEATHER_MOVES
 from ypoke.upload_server import IV_KEYS
 
@@ -55,8 +57,8 @@ class Trainer:
 class Opponent:
     """`kind` is gym, elite, champion, grunt, admin or boss. `types` is the team's focus (empty for the champion).
     `run`, `step` and `steps` place the battle in a run of consecutive battles (None for a gym). `moves` and `items`
-    are per member of `team`; the last `finale` members only come out after the others faint and stay hidden in the
-    preview."""
+    are per member of `team`, and so are a champion's `aces` (form, ability, nature); the last `finale` members only
+    come out after the others faint and stay hidden in the preview."""
 
     id: str
     region: str
@@ -71,6 +73,7 @@ class Opponent:
     moves: tuple[tuple[int, ...], ...] = ()
     items: tuple[str, ...] = ()
     finale: int = 0
+    aces: tuple[Ace, ...] = ()
 
     @property
     def shown(self) -> tuple[int, ...]:
@@ -148,11 +151,19 @@ def foe_members(opponent: Opponent) -> list[dict]:
     """The team as party members the battle can build, with their moves and items. `learned_at` lets a foe use
     moves its species learns above the battle level."""
     ivs = dict.fromkeys(IV_KEYS, opponent.iv)
+    aces = opponent.aces or (None,) * len(opponent.team)
     return [
         {"pokemon_id": pokemon_id, "level": opponent.level, "learned_at": LEARN_LEVEL, "shiny": False, "ivs": ivs,
-         "moves": list(moves), "held_item": item, "can_evolve": can_evolve(pokemon_id)}
-        for pokemon_id, moves, item in zip(opponent.team, opponent.moves, opponent.items, strict=True)
+         "moves": list(moves), "held_item": item, "can_evolve": can_evolve(pokemon_id), **_ace_fields(ace)}
+        for pokemon_id, moves, item, ace in zip(opponent.team, opponent.moves, opponent.items, aces, strict=True)
     ]
+
+
+def _ace_fields(ace: Ace | None) -> dict:
+    """A champion member's form, as the `pokemon_id` the battle builds, its ability and its nature."""
+    if ace is None:
+        return {}
+    return {"pokemon_id": ace.form or ace.species, "ability": ace.ability, "nature": ace.nature}
 
 
 @cache
@@ -186,7 +197,7 @@ def _build_region(region_id: str, name: str, first: int, last: int, table: dict[
     elite_run, steps = f"{region_id}-elite", len(ELITE_TYPES[region_id]) + 1
     elite: list[Opponent] = []
     for index, kind in enumerate(ELITE_TYPES[region_id], 1):
-        fielded = {entry[0] for entry in CHAMPION_TEAMS[region_id]} | {s for member in elite for s in member.team}
+        fielded = {ace.species for ace in CHAMPION_TEAMS[region_id]} | {s for member in elite for s in member.team}
         elite.append(_themed(region_id, f"{region_id}-elite-{index}", "elite", index, (kind,),
                              _trainer(ELITE[region_id][index - 1]), pool, elite_run, steps, fielded, gym_pool))
     elite.append(_champion(region_id, steps, _trainer(CHAMPIONS[region_id]), elite_run))
@@ -259,9 +270,9 @@ def _champion(region_id: str, index: int, trainer: Trainer, run: str) -> Opponen
     """The champion (last of the run, `index` is also the run's length) fields the fixed table, finale last."""
     entries = CHAMPION_TEAMS[region_id]
     return Opponent(
-        f"{region_id}-champion", region_id, "champion", index, (), trainer, tuple(entry[0] for entry in entries), run,
-        index, index, tuple(tuple(entry[2]) for entry in entries), tuple(entry[1] for entry in entries),
-        len(entries) - CHAMPION_MAIN,
+        f"{region_id}-champion", region_id, "champion", index, (), trainer, tuple(ace.species for ace in entries), run,
+        index, index, tuple(ace.moves for ace in entries), tuple(ace.item for ace in entries),
+        len(entries) - CHAMPION_MAIN, entries,
     )
 
 

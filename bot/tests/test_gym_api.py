@@ -37,7 +37,7 @@ class FakePokeAPI:
     def mega_form(self, form_id):
         return {"types": ["normal"], "base": STATS, "ability": None, "ability_id": None}
 
-    def attacking_moves(self, pokemon_id, level, machine_ids=()):
+    def attacking_moves(self, pokemon_id, level, machine_ids=(), status=False):
         if self.offline:
             raise OSError("offline")
         return [move for move in (TACKLE, HYPER) if move["level"] <= level]
