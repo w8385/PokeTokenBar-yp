@@ -100,12 +100,12 @@ async function capture(page,name,full=false) {
     await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copiedText=text;}}}));
     await p.locator('[data-copy]').click();
     await p.waitForFunction(()=>document.querySelector('#copy-status').dataset.state==='success');
-    assert.equal(await p.evaluate(()=>window.copiedText),'brew install --cask chattymin/tap/poke-token-bar');
+    assert.equal(await p.evaluate(()=>window.copiedText),'curl -L https://github.com/w8385/PokeTokenBar-yp/releases/latest/download/PokeTokenBar-yp-arm64.zip -o /tmp/PokeTokenBar-yp.zip && ditto -x -k /tmp/PokeTokenBar-yp.zip /Applications && xattr -dr com.apple.quarantine /Applications/PokeTokenBar.app && open /Applications/PokeTokenBar.app');
     await p.locator('#language').selectOption('ko');assert.match(await p.locator('#copy-status').innerText(),/복사했어요/);
     await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied');}}}));
     await p.locator('[data-copy]').click();await p.waitForFunction(()=>document.querySelector('#copy-status').dataset.state==='error');
     assert.match(await p.locator('#copy-status').innerText(),/직접 선택/);
-    assert.match(await p.evaluate(()=>getSelection().toString()),/brew install/);
+    assert.match(await p.evaluate(()=>getSelection().toString()),/curl -L https:\/\/github\.com\/w8385\/PokeTokenBar-yp\//);
     await p.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:undefined}));
     await p.locator('[data-copy]').click();await p.waitForFunction(()=>document.querySelector('#copy-status').dataset.state==='error');
     assert.equal(await p.locator('[data-copy]').isEnabled(),true);
@@ -134,7 +134,7 @@ async function capture(page,name,full=false) {
    try {
     await p.goto(url);assert.equal(await p.locator('#site-nav').isVisible(),true);
     assert.equal(await p.locator('[data-copy]').isVisible(),false);
-    assert.match(await p.locator('#install-command').innerText(),/brew install/);
+    assert.match(await p.locator('#install-command').innerText(),/curl -L https:\/\/github\.com\/w8385\/PokeTokenBar-yp\//);
     assert.equal(await p.locator('#gtab-growth').isVisible(),true);
     for(const k of ['growth','daily','collect'])assert.equal(await p.locator('#gtab-'+k).isVisible(),true);
     await layout(p);
@@ -214,7 +214,7 @@ async function capture(page,name,full=false) {
    try {
     await p.goto(url);
     assert.deepEqual(await p.locator('a[href^="#"]').evaluateAll(as=>as.filter(a=>!document.getElementById(a.hash.slice(1))).map(a=>a.hash)),[]);
-    assert.equal(await p.locator('a[href$="PokeTokenBar.zip"]').getAttribute('href'),'https://github.com/chattymin/PokeTokenBar/releases/latest/download/PokeTokenBar.zip');
+    assert.equal(await p.locator('a[href$="PokeTokenBar-yp-arm64.zip"]').getAttribute('href'),'https://github.com/w8385/PokeTokenBar-yp/releases/latest/download/PokeTokenBar-yp-arm64.zip');
    }finally{await p.close();}
   });
  }catch(error){problems.push({name:'harness',error:error.stack});}

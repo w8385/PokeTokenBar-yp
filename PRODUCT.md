@@ -18,9 +18,9 @@ People using supported AI coding tools on a Mac. The installation and feature de
 
 ## Capabilities and Constraints
 
-- Requires macOS 14 or later; Apple Silicon and Intel are supported.
+- This site is for the w8385/PokeTokenBar-yp fork of chattymin/PokeTokenBar. Fork release builds require macOS 14 or later on Apple Silicon.
 - Free, open-source, unofficial and non-commercial fan project. MIT covers the project's own source code.
-- Install through `brew install --cask chattymin/tap/poke-token-bar` or the `PokeTokenBar.zip` GitHub release asset. Direct installation requires handling macOS Gatekeeper because the app is ad-hoc/self-signed. Homebrew's cask removes the quarantine attribute.
+- Install with the Terminal command from the fork README, or download the `PokeTokenBar-yp-arm64.zip` release asset. The fork has no Homebrew cask; `chattymin/tap/poke-token-bar` installs the upstream app. Direct installation requires handling macOS Gatekeeper because the app is ad-hoc/self-signed; the Terminal command removes the quarantine attribute.
 - Supported providers: Claude Code, Codex, Gemini CLI, Antigravity, OpenCode, Hermes Agent, Cursor, Grok CLI, Copilot CLI, Kiro CLI, Pi Agent, omp, Aside, Kimi Code.
 - Official usage limits are available for Claude, Codex and Antigravity. Do not imply official limits for every provider.
 - Usage logs are not uploaded. The app makes network requests for provider usage/limits, Pokémon data and sprites, service status and updates. Do not claim it is completely offline.
@@ -34,7 +34,7 @@ People using supported AI coding tools on a Mac. The installation and feature de
 
 ## Stack
 
-Existing static HTML/CSS/JavaScript on the orphan `gh-pages` branch, served by GitHub Pages at https://chattymin.github.io/PokeTokenBar/. No website build step.
+Existing static HTML/CSS/JavaScript on the orphan `gh-pages` branch, served by GitHub Pages at https://w8385.github.io/PokeTokenBar-yp/. No website build step.
 
 ## Evidence on Hand
 
