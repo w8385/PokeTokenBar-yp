@@ -38,6 +38,7 @@ CLASSES=(
   DesignTokenScanTests             # no raw Color(red:, numeric font size or corner radius outside UI/Design
   SpeciesFactsGuardTests           # no test hand-builds species facts; the table matches the games
   GymTermGuardTests                # no Korean UI string says 도장
+  RarityNameTests                  # tier names in every language and the READMEs
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).

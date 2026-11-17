@@ -1556,9 +1556,9 @@ struct L {
     var dexPagePrev: String { t("이전 페이지", "Previous page", "前のページ", "Página anterior", "Page précédente", "Página anterior", "Vorherige Seite", "Предыдущая страница") }
     var dexPageNext: String { t("다음 페이지", "Next page", "次のページ", "Página siguiente", "Page suivante", "Próxima página", "Nächste Seite", "Следующая страница") }
     var dexRaising: String { t("키우는 중", "Raising", "育成中", "Criando", "En élevage", "Treinando", "In Aufzucht", "Растёт") }
-    var rarityCommon: String { t("일반", "Common", "ノーマル", "Común", "Commun", "Comum", "Gewöhnlich", "Обычный") }
-    var rarityUncommon: String { t("고급", "Uncommon", "アンコモン", "Poco común", "Peu commun", "Incomum", "Ungewöhnlich", "Необычный") }
-    var rarityRare: String { t("희귀", "Rare", "レア", "Raro", "Rare", "Raro", "Selten", "Редкий") }
+    var rarityCommon: String { t("기본", "Normal", "ノーマル", "Normal", "Normal", "Normal", "Normal", "Обычный") }
+    var rarityUncommon: String { t("희귀", "Rare", "レア", "Raro", "Rare", "Raro", "Selten", "Редкий") }
+    var rarityRare: String { t("고급", "Epic", "エピック", "Épico", "Épique", "Épico", "Episch", "Эпический") }
     var rarityLegendary: String { t("전설", "Legendary", "伝説", "Legendario", "Légendaire", "Lendário", "Legendär", "Легендарный") }
     var dexFilterHint: String { t("탭하면 이 희귀도만 보기 · 다시 탭하면 전체", "Tap to show only this rarity · tap again to clear", "タップでこの希少度のみ表示・再タップで全体", "Toca para ver solo esta rareza · toca de nuevo para ver todo", "Touche pour n'afficher que cette rareté · touche à nouveau pour tout afficher", "Toque para ver só esta raridade · toque de novo para ver tudo", "Tippe, um nur diese Seltenheit zu sehen · tippe erneut für alle", "Нажмите — только эта редкость · ещё раз — сброс") }
     /// 스프라이트 클릭 → 그 종의 도감 상세. 툴팁·접근성 라벨 공용.
@@ -2415,8 +2415,8 @@ struct L {
     func eggName(_ tier: Rarity?) -> String {
         switch tier {
         case nil, .common?: return t("포켓몬 알", "Pokémon Egg", "ポケモンのタマゴ", "Huevo Pokémon", "Œuf Pokémon", "Ovo Pokémon", "Pokémon-Ei", "Яйцо покемона")
-        case .uncommon?:  return t("고급 알", "Uncommon Egg", "アンコモンのタマゴ", "Huevo poco común", "Œuf peu commun", "Ovo incomum", "Ungewöhnliches Ei", "Необычное яйцо")
-        case .rare?:      return t("희귀 알", "Rare Egg", "レアのタマゴ", "Huevo raro", "Œuf rare", "Ovo raro", "Seltenes Ei", "Редкое яйцо")
+        case .uncommon?:  return t("희귀 알", "Rare Egg", "レアのタマゴ", "Huevo raro", "Œuf rare", "Ovo raro", "Seltenes Ei", "Редкое яйцо")
+        case .rare?:      return t("고급 알", "Epic Egg", "エピックのタマゴ", "Huevo épico", "Œuf épique", "Ovo épico", "Episches Ei", "Эпическое яйцо")
         case .legendary?: return t("전설 알", "Legendary Egg", "でんせつのタマゴ", "Huevo legendario", "Œuf légendaire", "Ovo lendário", "Legendäres Ei", "Легендарное яйцо")   // 미판매(FreshEgg.shopTiers)
         }
     }
