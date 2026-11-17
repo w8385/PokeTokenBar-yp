@@ -50,7 +50,8 @@ SCREENS = (
     ("CompanionView.swift", ("screenshot-home", "screenshot-collection-pokedex")),
     ("UnownedSpeciesDetailView.swift", ("screenshot-collection-pokedex", "screenshot-pokemon-forms")),
     ("FloatingPetPanel.swift", ("screenshot-pet-interactions", "floating-pet", "screenshot-floating-friends")),
-    ("PetCrowdViews.swift", ("screenshot-pet-interactions", "floating-pet", "screenshot-floating-friends")),
+    ("PetCrowdViews.swift", ("screenshot-home", "screenshot-pet-interactions", "floating-pet",
+                             "screenshot-floating-friends")),
     ("MenuBarContent.swift", ("menubar", "screenshot-menu-growth")),
 )
 
