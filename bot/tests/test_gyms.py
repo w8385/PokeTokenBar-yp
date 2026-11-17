@@ -5,7 +5,7 @@ from dataclasses import replace
 from ypoke import foe_items, foe_moves, gym_data, gyms, items
 from ypoke.dex import NATIONAL_TOTAL, REGIONS
 from ypoke.gyms import MIN_TOTAL, TEAM_SIZE, Species, usable_species
-from ypoke.mega_stones import mega_form_id
+from ypoke.mega_stones import MEGA_STONES
 
 BORROWED = {
     "brock", "misty", "surge", "erika", "koga", "sabrina", "blaine", "giovanni", "lance", "falkner", "bugsy",
@@ -234,6 +234,17 @@ def test_every_foe_holds_an_item_that_fires_and_no_team_holds_one_twice():
         assert item_faults(opponent) == [], opponent.id
 
 
+def test_no_pve_team_holds_more_than_one_mega_stone_or_stellar_crystal_counting_the_finale():
+    assert {opponent.id: mega_capable(opponent.items) for opponent in all_opponents()
+            if len(mega_capable(opponent.items)) > 1} == {}
+    champion = gyms.find("kanto-champion")
+    assert len(mega_capable(replace(champion, items=(*champion.items[:-1], "mewtwonite-y")).items)) > 1
+
+
+def mega_capable(items_held: tuple[str, ...]) -> list[str]:
+    return [item for item in items_held if item in MEGA_STONES or item == items.STELLAR_CRYSTAL]
+
+
 def test_the_item_check_catches_a_duplicate_and_each_kind_of_no_op():
     gym = gyms.find("kanto-8")
     first = gym.team[0]
@@ -270,8 +281,6 @@ def test_a_champion_fields_its_regions_three_legendaries_and_its_pseudo_legendar
             assert 1 <= len(moves) <= 4 and len(set(moves)) == len(moves), (region.id, species_id)
             assert set(moves) <= foe_moves.species(species_id).learnable, (region.id, species_id)
         assert item_faults(champion) == [], region.id
-        megas = [item for species_id, item, _ in entries if mega_form_id(item, species_id)]
-        assert len(megas) <= 1, region.id
 
 
 def test_a_regions_gyms_use_eight_different_types_and_no_two_regions_share_the_order():
