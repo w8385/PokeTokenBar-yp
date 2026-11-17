@@ -3,10 +3,10 @@
 from dataclasses import replace
 
 from ypoke import abilities, items, tera_forms
-from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm
+from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm, Move
 from ypoke.mega_stones import PRIMAL_ORBS, mega_form_id, move_mega_form_id
 from ypoke.moves import battle_moves
-from ypoke.move_effects import JUDGMENT, wants_status_moves
+from ypoke.move_effects import IVY_CUDGEL, JUDGMENT, wants_status_moves
 from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.upload_server import IV_KEYS
 
@@ -27,7 +27,9 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
     plate = items.PLATES.get(item) if pokemon_id == tera_forms.ARCEUS else None
     if plate is not None:
         types = (plate,)
-        moves = tuple(replace(move, type=plate) if move.id == JUDGMENT else move for move in moves)
+        moves = _retyped(moves, JUDGMENT, plate)
+    if pokemon_id == tera_forms.OGERPON and len(types) > 1:
+        moves = _retyped(moves, IVY_CUDGEL, types[1])
     return Combatant(
         name=member.get("name") or data["name_ko"],
         level=min(member["level"], BATTLE_LEVEL),
@@ -45,6 +47,10 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
         can_evolve=_can_evolve(pokeapi, member),
         tera=pokemon_id == tera_forms.TERAPAGOS,
     )
+
+
+def _retyped(moves: tuple[Move, ...], move_id: int, kind: str) -> tuple[Move, ...]:
+    return tuple(replace(move, type=kind) if move.id == move_id else move for move in moves)
 
 
 def _form_data(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> dict:

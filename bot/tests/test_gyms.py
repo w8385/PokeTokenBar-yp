@@ -1,11 +1,14 @@
 import json
 import statistics
 from dataclasses import replace
+from pathlib import Path
 
 from ypoke import foe_items, foe_moves, gym_data, gyms, items, tera_forms
+from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.dex import NATIONAL_TOTAL, REGIONS
 from ypoke.gyms import MIN_TOTAL, TEAM_SIZE, Species, usable_species
-from ypoke.mega_stones import MEGA_STONES
+from ypoke.mega_stones import MEGA_STONES, move_mega_form_id
+from ypoke.type_chart import effectiveness
 
 BORROWED = {
     "brock", "misty", "surge", "erika", "koga", "sabrina", "blaine", "giovanni", "lance", "falkner", "bugsy",
@@ -23,6 +26,7 @@ BORROWED = {
 SAME_LINE_GYMS = {"kalos-5", "kalos-6", "kalos-7", "alola-8"}
 FACADE = 263
 THIEF = 168
+LEARNSETS = Path(__file__).with_name("champion_learnsets.json")
 
 
 def all_opponents():
@@ -57,8 +61,14 @@ def test_every_trainer_fields_distinct_species_of_the_region_at_level_50():
             if opponent.kind == "champion":
                 size = TEAM_SIZE + opponent.finale
             assert opponent.level == 50 and len(opponent.team) == size, opponent.id
-            assert len(set(opponent.team)) == size, opponent.id
+            assert len(set(members(opponent))) == size, opponent.id
             assert all(region.first <= species <= region.last for species in opponent.team), opponent.id
+
+
+def members(opponent):
+    """The team as (species, form) pairs; a species may repeat only when every copy names its own form."""
+    pairs = [(ace.species, ace.form) for ace in opponent.aces] or [(species_id, None) for species_id in opponent.team]
+    return [(species_id, form if all(f for s, f in pairs if s == species_id) else None) for species_id, form in pairs]
 
 
 def gym_lineup_faults(region, table):
@@ -207,9 +217,10 @@ def test_the_preview_never_shows_a_champions_finale_only_counts_it():
         assert not set(opponent.team[TEAM_SIZE:]) & set(champion["team"])
         assert str(opponent.team[-1]) not in json.dumps(champion["team"])
         preview = json.dumps(champion)
-        for item in opponent.items[TEAM_SIZE:]:
-            form = MEGA_STONES.get(item, (None, tera_forms.STELLAR_FORM if item == items.STELLAR_CRYSTAL else None))[1]
-            assert item not in preview and (form is None or str(form) not in preview), (region["id"], item)
+        for ace in opponent.aces[TEAM_SIZE:]:
+            forms = {ace.form, MEGA_STONES.get(ace.item, (None, None))[1], move_mega_form_id(ace.species, ace.moves, ace.item),
+                     tera_forms.STELLAR_FORM if ace.item == items.STELLAR_CRYSTAL else None} - {None}
+            assert ace.item not in preview and not any(str(form) in preview for form in forms), (region["id"], ace)
 
 
 def test_every_foe_brings_its_picked_moves_and_the_champion_its_table_moves():
@@ -218,7 +229,9 @@ def test_every_foe_brings_its_picked_moves_and_the_champion_its_table_moves():
         assert all(member["learned_at"] == 100 and 1 <= len(member["moves"]) <= 4 for member in members), opponent.id
         if opponent.kind == "champion":
             entries = gym_data.CHAMPION_TEAMS[opponent.region]
-            assert [tuple(member["moves"]) for member in members] == [tuple(entry[2]) for entry in entries]
+            assert [tuple(member["moves"]) for member in members] == [ace.moves for ace in entries]
+            assert [member["pokemon_id"] for member in members] == [ace.form or ace.species for ace in entries]
+            assert [(m["ability"], m["nature"]) for m in members] == [(ace.ability, ace.nature) for ace in entries]
         else:
             assert [tuple(m["moves"]) for m in members] == [foe_moves.species(s).picked for s in opponent.team]
 
@@ -250,8 +263,8 @@ def test_a_pve_team_holds_at_most_one_mega_stone_or_stellar_crystal_in_its_six_a
     assert {opponent.id: mega_budget_faults(opponent) for opponent in all_opponents()
             if mega_budget_faults(opponent)} == {}
     champion = gyms.find("kanto-champion")
-    gengar = champion.team.index(94)
-    second_in_six = tuple("gengarite" if index == gengar else item for index, item in enumerate(champion.items))
+    dragonite = champion.team.index(149)
+    second_in_six = tuple("dragoninite" if index == dragonite else item for index, item in enumerate(champion.items))
     assert mega_budget_faults(replace(champion, items=second_in_six))
     assert mega_budget_faults(replace(champion, team=(*champion.team, 6), moves=(*champion.moves, champion.moves[3]),
                                       items=(*champion.items, "charizardite-y"), finale=2))
@@ -273,20 +286,20 @@ def test_no_pve_foe_carries_facade_without_an_orb_a_filler_move_or_an_off_stab_t
 
 def test_the_pick_check_catches_facade_a_filler_move_and_an_off_stab_type_boost():
     champion = gyms.find("kanto-champion")
-    zapdos_moves = champion.moves[0]
+    lead_moves = champion.moves[0]
 
-    def with_first(moves=zapdos_moves, item=champion.items[0]):
+    def with_first(moves=lead_moves, item=champion.items[0]):
         return replace(champion, moves=(moves, *champion.moves[1:]), items=(item, *champion.items[1:]))
 
-    gengar = champion.team.index(94)
+    articuno = champion.team.index(144)
     cases = [
-        with_first(moves=(*zapdos_moves[:3], FACADE)),
-        with_first(moves=(*zapdos_moves[:3], THIEF)),
-        replace(champion, items=tuple("black-belt" if index == gengar else item
+        with_first(moves=(*lead_moves[:3], FACADE)),
+        with_first(moves=(*lead_moves[:3], THIEF)),
+        replace(champion, items=tuple("black-belt" if index == articuno else item
                                       for index, item in enumerate(champion.items))),
     ]
     assert all(pick_faults(case) for case in cases)
-    assert pick_faults(with_first(moves=(*zapdos_moves[:3], FACADE), item=items.FLAME_ORB)) == []
+    assert pick_faults(with_first(moves=(*lead_moves[:3], FACADE), item=items.FLAME_ORB)) == []
 
 
 def pick_faults(opponent) -> list[tuple]:
@@ -315,6 +328,7 @@ def test_the_item_check_catches_a_duplicate_and_each_kind_of_no_op():
     first = gym.team[0]
     fully_evolved = next(s for s in gym.team if not gyms.can_evolve(s))
     not_poison = next(s for s in gym.team if "poison" not in gyms.species_table()[s].types)
+    lead_types = {foe_moves.move(m).type for m in gym.moves[0]}
     cases = [
         replace(gym, items=(gym.items[1], *gym.items[1:])),
         replace(gym, team=(fully_evolved, *gym.team[1:]), items=(items.EVIOLITE, *gym.items[1:])),
@@ -322,30 +336,46 @@ def test_the_item_check_catches_a_duplicate_and_each_kind_of_no_op():
         replace(gym, items=(items.FLAME_ORB, *gym.items[1:])),
         replace(gym, items=("heat-rock", *gym.items[1:])),
         replace(gym, items=("charizardite-x" if first != 6 else "gengarite", *gym.items[1:])),
+        replace(gym, items=("griseous-core", *gym.items[1:])),
+        replace(gym, items=("flame-plate" if "fire" not in lead_types else "splash-plate", *gym.items[1:])),
+        replace(gym, items=(items.PUNCHING_GLOVE, *gym.items[1:])),
+        replace(gym, items=(next(berry for berry, kind in items.RESIST_BERRIES.items()
+                                 if effectiveness(kind, gyms.species_table()[first].types) <= 1), *gym.items[1:])),
         replace(gym, items=(next(i for i, t in items.TYPE_BOOST_ITEMS.items()
                                  if t not in {foe_moves.move(m).type for m in gym.moves[0]}), *gym.items[1:])),
     ]
     assert all(item_faults(case) for case in cases)
 
 
-def test_a_champion_fields_its_regions_three_legendaries_and_its_pseudo_legendary_from_a_valid_table():
+def test_a_champion_fields_its_regions_listed_legendaries_and_its_pseudo_legendary_from_a_valid_table():
     table = gyms.species_table()
+    learnsets = json.loads(LEARNSETS.read_text())
     for region in gyms.regions():
         entries = gym_data.CHAMPION_TEAMS[region.id]
+        listed = gym_data.CHAMPION_LEGENDARIES[region.id]
         champion = region.elite[-1]
         assert champion.types == () and champion.iv == 31
         assert 7 <= len(entries) <= 9 and champion.finale == len(entries) - TEAM_SIZE, region.id
-        ids = [entry[0] for entry in entries]
-        assert len(set(ids)) == len(ids) and all(region.first <= i <= region.last for i in ids), region.id
-        legendaries = [i for i in ids if i in gym_data.CHAMPION_LEGENDARIES[region.id]]
-        assert sorted(legendaries) == sorted(gym_data.CHAMPION_LEGENDARIES[region.id]), region.id
-        assert ids[-1] == gym_data.CHAMPION_LEGENDARIES[region.id][0], region.id
+        ids = [ace.species for ace in entries]
+        assert all(region.first <= i <= region.last for i in ids), region.id
+        assert set(listed) <= set(ids) and ids[-1] == listed[0], region.id
+        assert not any(table[i].excluded for i in ids if i not in listed), region.id
         assert set(gym_data.PSEUDO_LEGENDARIES[region.id]) <= set(ids[:TEAM_SIZE]), region.id
-        assert not any(table[i].excluded for i in ids if i not in legendaries), region.id
-        for species_id, item, moves in entries:
-            assert 1 <= len(moves) <= 4 and len(set(moves)) == len(moves), (region.id, species_id)
-            assert set(moves) <= foe_moves.species(species_id).learnable, (region.id, species_id)
+        for ace in entries:
+            learnset = learnsets[str(ace.form or ace.species)]
+            assert 1 <= len(ace.moves) <= 4 and len(set(ace.moves)) == len(ace.moves), (region.id, ace)
+            assert set(ace.moves) <= set(learnset["moves"]), (region.id, ace)
+            if ace.form is None:
+                attacking = {move_id for move_id in ace.moves if foe_moves.move(move_id)}
+                assert attacking <= foe_moves.species(ace.species).learnable, (region.id, ace)
+            assert ace.ability is None or (ace.ability in learnset["abilities"] and ace.ability in ABILITY_NAMES), ace
         assert item_faults(champion) == [], region.id
+
+
+def test_the_champion_learnset_table_covers_every_member():
+    learnsets = json.loads(LEARNSETS.read_text())
+    wanted = {str(ace.form or ace.species) for team in gym_data.CHAMPION_TEAMS.values() for ace in team}
+    assert set(learnsets) == wanted
 
 
 def test_a_regions_gyms_use_eight_different_types_and_no_two_regions_share_the_order():
