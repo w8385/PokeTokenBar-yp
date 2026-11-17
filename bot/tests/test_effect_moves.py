@@ -5,9 +5,12 @@ import pytest
 
 from ypoke import gym_battle
 from ypoke.battle import (
-    Action, BaseStats, Carry, Combatant, HazardDamage, MegaEvolution, MegaForm, Move, SendOut, TrickRoomEnd,
+    AbilityTrigger, Action, BaseStats, Carry, Change, Combatant, HazardDamage, MegaEvolution, MegaForm, Move, SendOut,
+    TrickRoomEnd,
     YawnSleep, _act, _chipped_by, _Fighter, _Team, _turn_order, _unrolled_damage, _Weather, _yawnable, simulate,
 )
+from ypoke.move_effects import wants_status_moves
+from ypoke.moves import battle_moves
 from ypoke.narration import battle_turns
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
@@ -18,6 +21,7 @@ TRICK_ROOM = Move("트릭룸", "psychic", 0, physical=False, effect="trick-room"
 STEALTH_ROCK = Move("스텔스록", "rock", 0, physical=False, effect="stealth-rock")
 YAWN = Move("하품", "normal", 0, physical=False, effect="yawn")
 THUNDER_WAVE = Move("전기자석파", "electric", 0, physical=False, accuracy=100, effect="thunder-wave")
+SWORDS_DANCE = Move("칼춤", "normal", 0, physical=False, effect="swords-dance")
 U_TURN = Move("유턴", "bug", 70, physical=True, accuracy=100, pp=60, effect="pivot")
 EXPLOSION = Move("대폭발", "normal", 250, physical=True, accuracy=100, pp=5, effect="self-ko")
 EARTHQUAKE = Move("지진", "ground", 100, physical=True, accuracy=100)
@@ -191,11 +195,70 @@ def test_a_primal_orb_reverts_on_entry_takes_the_mega_slot_and_brings_its_weathe
     assert any("끝의대지" in line for line in lines)
 
 
+def test_a_hidden_boss_side_mega_evolves_every_holder_while_the_first_side_still_gets_one():
+    stone = MegaForm(types=("normal",), base=BaseStats(80, 80, 80, 80, 80, 80), ability=None, kind="mega")
+    holders = (mon("첫째", hp=1, mega=stone), mon("둘째", hp=1, mega=stone), mon("셋째", hp=1, mega=stone))
+    striker = mon("강자", hp=250, attack=250, defense=250, speed=200)
+    for side, unlimited, expected in ((1, True, 3), (1, False, 1), (0, True, 1)):
+        result = simulate(sides(holders, (striker,), side), seed=3, unlimited_megas=unlimited)
+        evolved = [event.pokemon for event in result.events if isinstance(event, MegaEvolution) and event.side == side]
+        assert len(evolved) == expected, (side, unlimited)
+
+
+def test_two_primals_in_a_row_leave_the_last_ones_weather_and_the_log_says_so():
+    kyogre = MegaForm(types=("water",), base=BaseStats(100, 150, 90, 180, 160, 90), ability="시작의바다",
+                      ability_id="primordial-sea", form_id=10077, kind="primal")
+    groudon = MegaForm(types=("ground", "fire"), base=BaseStats(100, 180, 160, 150, 90, 90), ability="끝의대지",
+                       ability_id="desolate-land", form_id=10078, kind="primal")
+    team = (mon("가이오가", ["water"], hp=1, mega=kyogre), mon("그란돈", ["ground"], mega=groudon))
+    striker = mon("강자", hp=250, attack=250, defense=250, speed=200)
+    result = simulate(((striker,), team), seed=4, unlimited_megas=True)
+    weathers = [event.weather for event in result.events if isinstance(event, AbilityTrigger) and event.weather]
+    assert weathers[:2] == ["rain", "sun"]
+    lines = [line for _, turn_lines in battle_turns(result) for line in turn_lines]
+    sea = next(index for index, line in enumerate(lines) if "시작의바다" in line)
+    land = next(index for index, line in enumerate(lines) if "끝의대지" in line)
+    assert sea < land and "☀" in lines[land]
+
+
+def test_swords_dance_raises_attack_two_stages_once_per_entry_above_half_hp():
+    dancer = mon("검무", moves=(SWORDS_DANCE, TACKLE), hp=250, defense=250)
+    for side in (0, 1):
+        result = simulate(sides((dancer,), (wall("과녁"),), side), seed=5)
+        moves = [(event.effect, event.changes) for event in actions(result) if event.side == side][:3]
+        assert moves[0] == ("swords-dance", (Change(side, "검무", "attack", 2),))
+        assert [effect for effect, _ in moves[1:]] == ["", ""]
+    hurt = simulate(((dancer,), (wall("과녁"),)), seed=5, carried=[Carry(50, None)])
+    assert next(event for event in actions(hurt) if event.side == 0).effect == ""
+
+
+def test_swords_dance_by_its_pokeapi_id_is_a_status_move_the_battle_brings():
+    data = {"id": 14, "name": "칼춤", "type": "normal", "power": None, "damage_class": "status", "accuracy": None,
+            "pp": 20, "crit_rate": 0, "ailment": None, "ailment_chance": 0, "stat_changes": [], "stat_target": None,
+            "stat_chance": 0, "priority": 0, "weather": None, "always_hits_in": [], "drain": 0, "min_hits": 1,
+            "max_hits": 1}
+    assert wants_status_moves([14]) and battle_moves([data], [14])[0].effect == "swords-dance"
+
+
+def test_swords_dance_stops_at_plus_six_and_switching_out_clears_it():
+    dancer = _Fighter.enter(mon("검무", moves=(SWORDS_DANCE,)))
+    target = _Fighter.enter(wall("과녁"))
+    dancer.stages["attack"] = 5
+    action = _act(1, 0, (dancer, target), 0, _Weather(), random.Random(0))
+    assert action.changes == (Change(0, "검무", "attack", 1),) and dancer.stages["attack"] == 6
+    again = _act(2, 0, (dancer, target), 0, _Weather(), random.Random(0))
+    assert again.failed and dancer.stages["attack"] == 6
+    dancer.leave()
+    assert dancer.stages["attack"] == 0 and not dancer.danced
+
+
 def test_the_log_narrates_each_effect():
     setter = wall("느림보", ["psychic"], (TRICK_ROOM, STEALTH_ROCK, YAWN, TACKLE), speed=20)
     result = simulate(((setter,), (wall("날쌘돌이", speed=150), wall("후발", ["fire", "flying"]))), seed=1)
     text = "\n".join(line for _, turn_lines in battle_turns(result) for line in turn_lines)
     assert "공간이 뒤틀렸다" in text and "돌이 떠 있다" in text and "졸음" in text
+    dance = simulate(((mon("검무", moves=(SWORDS_DANCE, TACKLE), hp=250),), (wall("과녁"),)), seed=1)
+    assert any("칼춤" in line and "공격이 크게 올랐다" in line for _, lines in battle_turns(dance) for line in lines)
 
 
 @pytest.mark.parametrize("target_types, accuracy", [(("normal",), 100), (("ghost",), 100), (("normal",), 1)])

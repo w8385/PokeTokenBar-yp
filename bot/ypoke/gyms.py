@@ -1,10 +1,11 @@
-"""The PvE trainers of nine regions: eight gym leaders, the Elite Four and a champion, and a villain organization.
+"""The PvE trainers of nine regions: eight gym leaders, the Elite Four and a champion, a villain organization and a
+hidden boss.
 
 Everything here is pure data. A team comes from the committed species table (`species.json`, made by
 `tools/generate_species.py`) and a seed made of the region and the trainer; its moves and items come from
 `foe_moves.json` (`tools/generate_foe_moves.py`). So `GET /v1/gyms` shows the team the battle will use without asking
-PokéAPI. A gym leader fields only its type, 3 to 6 by gym number; the champion's team is the fixed table in
-`gym_data.CHAMPION_TEAMS`. Everyone fights at Lv50. Contract: bot/API.md.
+PokéAPI. A gym leader fields only its type, 3 to 6 by gym number; the champion's and the hidden boss's teams are the
+fixed tables in `gym_data.CHAMPION_TEAMS` and `gym_data.HIDDEN_TEAMS`. Everyone fights at Lv50. Contract: bot/API.md.
 """
 
 import json
@@ -17,7 +18,8 @@ from ypoke import foe_items, foe_moves
 from ypoke.battle import BATTLE_LEVEL
 from ypoke.dex import REGIONS as DEX_REGIONS
 from ypoke.gym_data import (
-    CHAMPION_TEAMS, CHAMPIONS, ELITE, ELITE_TYPES, GYM_TYPES, LEADERS, ORG_TYPES, ORGS, Ace,
+    CHAMPION_TEAMS, CHAMPIONS, ELITE, ELITE_TYPES, GYM_TYPES, HIDDEN_TEAMS, HIDDEN_TRAINERS, LEADERS, ORG_TYPES, ORGS,
+    Ace,
 )
 from ypoke.pokeapi import WEATHER_MOVES
 from ypoke.upload_server import IV_KEYS
@@ -32,7 +34,8 @@ SPECIES_TABLE = Path(__file__).with_name("species.json")
 # (base-stat total the species are picked around, IVs of every stat): per gym number, then per other kind. Absolute,
 # not ranked within a region, so every region climbs the same curve. The Elite Four and the champion stand above gym 8.
 GYM_STRENGTH = ((420, 12), (435, 14), (450, 16), (465, 17), (480, 18), (495, 19), (495, 18), (520, 21))
-STRENGTH = {"elite": (555, 28), "champion": (600, 31), "grunt": (430, 12), "admin": (480, 20), "boss": (530, 26)}
+STRENGTH = {"elite": (555, 28), "champion": (600, 31), "hidden": (600, 31), "grunt": (430, 12), "admin": (480, 20),
+            "boss": (530, 26)}
 # How far from the target a pick may stray at random, in base-stat total.
 SPREAD = 30
 # How many of a team's six are of the trainer's focus types: `MIN_FOCUS` always (fewer where the region has fewer
@@ -55,10 +58,10 @@ class Trainer:
 
 @dataclass(frozen=True)
 class Opponent:
-    """`kind` is gym, elite, champion, grunt, admin or boss. `types` is the team's focus (empty for the champion).
-    `run`, `step` and `steps` place the battle in a run of consecutive battles (None for a gym). `moves` and `items`
-    are per member of `team`, and so are a champion's `aces` (form, ability, nature); the last `finale` members only
-    come out after the others faint and stay hidden in the preview."""
+    """`kind` is gym, elite, champion, grunt, admin, boss or hidden. `types` is the team's focus (empty for the
+    champion and the hidden boss). `run`, `step` and `steps` place the battle in a run of consecutive battles (None for
+    a gym and the hidden boss). `moves` and `items` are per member of `team`, and so are a fixed table's `aces` (form,
+    ability, nature); the last `finale` members only come out after the others faint and stay hidden in the preview."""
 
     id: str
     region: str
@@ -104,6 +107,7 @@ class Region:
     elite: tuple[Opponent, ...]
     org: Org
     hideout: tuple[Opponent, ...]
+    hidden: Opponent
 
     @property
     def elite_run(self) -> str:
@@ -209,7 +213,9 @@ def _build_region(region_id: str, name: str, first: int, last: int, table: dict[
         fielded = {species_id for member in hideout for species_id in member.team}
         hideout.append(_themed(region_id, f"{region_id}-hideout-{index}", role, index, org.types, trainer, pool,
                                f"{region_id}-hideout", len(members), fielded))
-    return Region(region_id, name, first, last, tuple(gyms), tuple(elite), org, tuple(hideout))
+    hidden = _fixed(f"{region_id}-hidden", region_id, "hidden", 1, _trainer(HIDDEN_TRAINERS[region_id]),
+                    HIDDEN_TEAMS[region_id])
+    return Region(region_id, name, first, last, tuple(gyms), tuple(elite), org, tuple(hideout), hidden)
 
 
 def usable_species(table: dict[int, Species], first: int, last: int, final_only: bool = True) -> list[Species]:
@@ -268,11 +274,16 @@ def _gym(region_id: str, index: int, kind: str, trainer: Trainer, pool: list[Spe
 
 def _champion(region_id: str, index: int, trainer: Trainer, run: str) -> Opponent:
     """The champion (last of the run, `index` is also the run's length) fields the fixed table, finale last."""
-    entries = CHAMPION_TEAMS[region_id]
+    return _fixed(f"{region_id}-champion", region_id, "champion", index, trainer, CHAMPION_TEAMS[region_id], run)
+
+
+def _fixed(battle_id: str, region_id: str, kind: str, index: int, trainer: Trainer, entries: tuple[Ace, ...],
+           run: str | None = None) -> Opponent:
+    """A trainer with a fixed table; the members after the first `CHAMPION_MAIN` are its finale."""
+    step = index if run else 0
     return Opponent(
-        f"{region_id}-champion", region_id, "champion", index, (), trainer, tuple(ace.species for ace in entries), run,
-        index, index, tuple(ace.moves for ace in entries), tuple(ace.item for ace in entries),
-        len(entries) - CHAMPION_MAIN, entries,
+        battle_id, region_id, kind, index, (), trainer, tuple(ace.species for ace in entries), run, step, step,
+        tuple(ace.moves for ace in entries), tuple(ace.item for ace in entries), len(entries) - CHAMPION_MAIN, entries,
     )
 
 
@@ -346,7 +357,8 @@ def _languages(values: tuple[str, ...]) -> dict[str, str]:
 @cache
 def _by_id() -> dict[str, Opponent]:
     return {
-        opponent.id: opponent for region in regions() for opponent in (*region.gyms, *region.elite, *region.hideout)
+        opponent.id: opponent
+        for region in regions() for opponent in (*region.gyms, *region.elite, *region.hideout, region.hidden)
     }
 
 
@@ -369,6 +381,7 @@ def _region_json(region: Region) -> dict:
             "run": region.hideout_run, "org": {"name": region.org.name, "types": list(region.org.types)},
             "battles": [_opponent_json(opponent) for opponent in region.hideout],
         },
+        "hidden": _opponent_json(region.hidden),
     }
 
 

@@ -299,6 +299,18 @@ def test_a_champions_finale_comes_out_only_after_the_first_six_faint_and_the_log
     assert lines.count(gym_data.FINALE_LINE["ko"]) == 1
 
 
+def test_the_hidden_boss_is_one_full_hp_battle_whose_every_stone_holder_mega_evolves(server):
+    store, base, _, _ = server
+    token = store.issue_token("U1")
+    status, body, _ = battle(base, token, "kanto-hidden", strong_team(6))
+    assert status == 200 and body["kind"] == "hidden" and body["run"] is None and body["carry"] is None
+    assert len(body["foe_team"]) == len(gym_data.HIDDEN_TEAMS["kanto"])
+    lines = [line["text"] for turn in body["log"] for line in turn["lines"]]
+    assert sum("메가진화" in line for line in lines) == 3
+    status, reply, _ = battle(base, store.issue_token("U2"), "kanto-hidden", strong_team(6), [None] * 6)
+    assert status == 400 and reply["error"] == "carried is only for Elite Four and hideout battles"
+
+
 def test_a_member_that_was_down_stays_down_and_one_that_is_not_sent_out_keeps_its_state(server):
     store, base, _, _ = server
     carried = [{"hp": 0, "status": None}, None, {"hp": 40, "status": "burn"}]

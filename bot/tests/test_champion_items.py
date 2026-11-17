@@ -25,6 +25,7 @@ ROCK_SLIDE = Move("스톤샤워", "rock", 75, physical=True, accuracy=100)
 RAIN_DANCE = Move("비바라기", "water", 0, physical=False, weather="rain")
 PLAIN = {"hp": 80, "attack": 80, "defense": 80, "special_attack": 80, "special_defense": 80, "speed": 80}
 ORIGIN = {"hp": 150, "attack": 120, "defense": 100, "special_attack": 120, "special_defense": 100, "speed": 90}
+CROWNED = {"hp": 92, "attack": 150, "defense": 115, "special_attack": 80, "special_defense": 115, "speed": 148}
 MEGA_RAYQUAZA = {"hp": 105, "attack": 180, "defense": 100, "special_attack": 180, "special_defense": 100, "speed": 115}
 FORMS = {
     487: ("기라티나", ["ghost", "dragon"], PLAIN, None),
@@ -36,6 +37,12 @@ FORMS = {
     10079: ("레쿠쟈", ["dragon", "flying"], MEGA_RAYQUAZA, "delta-stream"),
     1017: ("오거폰", ["grass"], PLAIN, None),
     10274: ("오거폰", ["grass", "fire"], PLAIN, None),
+    888: ("자시안", ["fairy"], PLAIN, None),
+    10188: ("자시안", ["fairy", "steel"], CROWNED, "intrepid-sword"),
+    889: ("자마젠타", ["fighting"], PLAIN, None),
+    10189: ("자마젠타", ["fighting", "steel"], CROWNED, "dauntless-shield"),
+    800: ("네크로즈마", ["psychic"], PLAIN, None),
+    10157: ("네크로즈마", ["psychic", "dragon"], ORIGIN, "neuroforce"),
 }
 
 
@@ -158,6 +165,44 @@ def test_mega_rayquaza_takes_its_sides_one_mega_slot(side):
     assert [event.pokemon for event in result.events if isinstance(event, MegaEvolution)] == ["첫째"]
 
 
+@pytest.mark.parametrize("item, species, form, caption", [
+    ("rusted-sword", 888, 10188, "검왕의모습"), ("rusted-shield", 889, 10189, "방패왕의모습")])
+@pytest.mark.parametrize("side", [0, 1])
+def test_a_rusted_item_crowns_its_own_species_on_entry_on_either_side(side, item, species, form, caption):
+    crowned = build(species, item)
+    assert crowned.base.hp == CROWNED["hp"] and list(crowned.types) == FORMS[form][1] and crowned.item == item
+    result = simulate(sides((crowned,), (wall("과녁"),), side), seed=1)
+    assert [(event.side, event.kind, event.form_id) for event in result.events if isinstance(event, FormShift)] == [
+        (side, f"crowned-{item.split('-')[1]}", form)]
+    assert caption in "\n".join(line for _, lines in battle_turns(result) for line in lines)
+
+
+def test_a_rusted_item_does_nothing_on_another_species():
+    for species, item in ((889, "rusted-sword"), (888, "rusted-shield"), (800, "rusted-sword")):
+        other = build(species, item)
+        assert other.item is None and other.base.hp == PLAIN["hp"] and other.mega is None
+        assert not foe_items.fires(item, foe_items.Holder(species, ("normal",), PLAIN, (), False, ()))
+    assert foe_items.fires("rusted-sword", foe_items.Holder(888, ("fairy",), PLAIN, (), False, ()))
+
+
+def test_ultranecrozium_z_ultra_bursts_only_necrozma():
+    necrozma = build(800, "ultranecrozium-z")
+    assert (necrozma.mega.kind, necrozma.mega.form_id, necrozma.mega.types) == ("ultra", 10157, ("psychic", "dragon"))
+    assert build(791, "ultranecrozium-z").mega is None
+    assert foe_items.fires("ultranecrozium-z", foe_items.Holder(800, ("psychic",), PLAIN, (), False, ()))
+    assert not foe_items.fires("ultranecrozium-z", foe_items.Holder(791, ("psychic",), PLAIN, (), False, ()))
+
+
+@pytest.mark.parametrize("side", [0, 1])
+def test_ultra_burst_takes_its_sides_one_mega_slot_and_the_log_names_it(side):
+    necrozma = replace(build(800, "ultranecrozium-z"), name="첫째")
+    second = replace(build(384, "leftovers", moves=[DRAGON_ASCENT]), name="둘째")
+    result = simulate(sides((necrozma, second), (mon("상대", hp=250),), side), seed=3)
+    bursts = [(event.pokemon, event.kind) for event in result.events if isinstance(event, MegaEvolution)]
+    assert bursts == [("첫째", "ultra")]
+    assert "울트라버스트" in "\n".join(line for _, lines in battle_turns(result) for line in lines)
+
+
 @pytest.mark.parametrize("side", [0, 1])
 def test_delta_stream_replaces_the_weather_that_is_up_with_strong_winds(side):
     kyogre = replace(mon("가이오가", ("water",)), ability="drizzle")
@@ -211,8 +256,8 @@ def result_of(*events):
     return BattleResult(winner=0, turns=1, events=list(events), remaining=((), ()), statuses=((), ()))
 
 
-def test_a_champion_row_brings_sturdy_into_the_battle():
-    gigalith = next(member for member in gyms.foe_members(gyms.find("unova-champion")) if member["pokemon_id"] == 526)
+def test_a_hidden_boss_row_brings_sturdy_into_the_battle():
+    gigalith = next(member for member in gyms.foe_members(gyms.find("unova-hidden")) if member["pokemon_id"] == 526)
     holder = fighter(combatant(FakePokeAPI(), gigalith))
     attacker = fighter(mon("강타", moves=(Move("파괴", "fighting", 250, physical=True, accuracy=100),), attack=255))
     action = _act(1, 0, (attacker, holder), 0, _Weather(), random.Random(2))

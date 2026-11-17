@@ -27,15 +27,18 @@ STATUS_ICON = {
 RESIDUAL_ICON = {"burn": "🔥", "poison": "☠️", "toxic": "☠️"}
 BLOCKED_TAG = {"paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임"}
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
-FORM_CAPTION = {"mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼", "origin": "오리진폼"}
+FORM_CAPTION = {
+    "mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼", "origin": "오리진폼", "crowned-sword": "검왕의모습",
+    "crowned-shield": "방패왕의모습",
+}
 ITEM_EFFECT_TEXT = {"cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독"}
 TRICK_ROOM_ICON = "🔀"
 ROCK_ICON = "🪨"
 EFFECT_TEXT = {
     "trick-room": f"{TRICK_ROOM_ICON}공간이 뒤틀렸다", "trick-room-off": f"{TRICK_ROOM_ICON}공간이 돌아왔다",
-    "stealth-rock": f"{ROCK_ICON}상대 쪽에 돌이 떠 있다",
+    "stealth-rock": f"{ROCK_ICON}상대 쪽에 돌이 떠 있다", "swords-dance": "⚔️공격이 크게 올랐다",
 }
-FORM_CHANGE = {"mega": ("메가진화", "메가"), "primal": ("원시회귀", "원시")}
+FORM_CHANGE = {"mega": ("메가진화", "메가"), "primal": ("원시회귀", "원시"), "ultra": ("울트라버스트", "울트라")}
 STAT_SHORT = {
     "attack": "공격", "defense": "방어", "special_attack": "특공", "special_defense": "특방", "speed": "스피드",
 }

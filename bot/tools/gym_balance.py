@@ -1,4 +1,4 @@
-"""Win rates of fixed parties against every gym, Elite Four member and champion, through `GymBattles`.
+"""Win rates of fixed parties against every gym, Elite Four member, champion and hidden boss, through `GymBattles`.
 Run from `bot/`: `python3 tools/gym_balance.py <cache.db> [seeds] [party,party,...]`. Every battle starts at full HP
 (the app heals between battles of a run). The champion is fought with its finale (6+n) and without it (6+0);
 `e4run` counts seeds where all four Elite Four battles were won, `finale` how often the champion's hidden member
@@ -21,7 +21,7 @@ from ypoke.store import Store  # noqa: E402
 from ypoke.upload_server import IV_KEYS, validate_members  # noqa: E402
 
 CHAMPION_MAIN_ONLY = "-champion6"
-COLUMNS = (*(f"gym{index}" for index in range(1, 9)), "elite", "e4run", "champ6", "champ", "finale")
+COLUMNS = (*(f"gym{index}" for index in range(1, 9)), "elite", "e4run", "champ6", "champ", "finale", "hidden")
 
 
 def main() -> None:
@@ -43,7 +43,8 @@ def _fight_region(job: tuple[str, str, str, int]) -> tuple[str, str, list[tuple[
     region = next(region for region in gyms.regions() if region.id == region_id)
     champion = region.elite[-1]
     main_only = replace(champion, id=champion.id + CHAMPION_MAIN_ONLY, team=champion.shown,
-                        moves=champion.moves[:len(champion.shown)], items=champion.items[:len(champion.shown)], finale=0)
+                        moves=champion.moves[:len(champion.shown)], items=champion.items[:len(champion.shown)],
+                        aces=champion.aces[:len(champion.shown)], finale=0)
     original = gyms.find
     gyms.find = lambda battle_id: main_only if battle_id == main_only.id else original(battle_id)
     ordinal = [0]
@@ -55,7 +56,7 @@ def _fight_region(job: tuple[str, str, str, int]) -> tuple[str, str, list[tuple[
     engine = GymBattles(PokeAPIService(Store(cache_path)), new_seed)
     team = validate_members([dict(member) for member in PARTIES[party]], "team")
     results: list[tuple[str, bool]] = []
-    for opponent in (*region.gyms, *region.elite, main_only):
+    for opponent in (*region.gyms, *region.elite, main_only, region.hidden):
         body = engine.battle(opponent.id, team)
         results.append((_column(opponent), body["won"]))
         if opponent.kind == "champion" and opponent.finale:
@@ -70,6 +71,8 @@ def _column(opponent: gyms.Opponent) -> str:
         return f"gym{opponent.index}"
     if opponent.kind == "elite":
         return "elite"
+    if opponent.kind == "hidden":
+        return "hidden"
     return "champ6" if opponent.id.endswith(CHAMPION_MAIN_ONLY) else "champ"
 
 
