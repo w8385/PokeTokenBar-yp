@@ -557,7 +557,9 @@ final class SaveTransferTests: XCTestCase {
         // 옮긴 기기에서 같은 지역 보상을 한 번 더 받지 않는다.
         // appliedTradeIDs = 진행 — 적용한 교환 기록은 도감과 함께 가야 옮긴 기기에서 같은 교환이 다시 적용되지 않는다.
         // gymBadges = 진행 — 배지와 첫 클리어 보상(기술머신)이 inventory 와 함께 가야 옮긴 기기에서 같은 보상을 다시 받지 않는다.
+        // graduateEvolution = 진행 — 진화를 건너뛰고 졸업한 개체의 진화 진행이라 그 개체(dex)와 함께 간다.
         let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs", "gymBadges",
+                                     "graduateEvolution",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
                                      "collectedFinals", "inventory", "heldItems",
@@ -577,6 +579,27 @@ final class SaveTransferTests: XCTestCase {
             CompanionState 필드가 바뀌었다. 세이브 이전에서 이 필드가 무엇인지 정하고 목록을 갱신하라 —
             진행(그대로) / 로컬 장부(새 기기 기준 재설정) / 계정 원장(병합) / 기기 환경설정(현재 값 유지).
             """)
+    }
+
+    func testGraduateEvolutionIsEmptyInAnOldSaveAndACorruptValueKeepsTheRest() throws {
+        var state = CompanionState()
+        state.dex = [DexEntry(id: "g", baseID: 446, finalID: 446, chainOrder: [446], rarity: .common, caughtAt: nil)]
+        state.graduateEvolution = ["g": EvolutionProgress(spentBaseline: 3)]
+        let data = try JSONEncoder().encode(state)
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertNotNil(json["graduateEvolution"])
+        let roundTrip = try JSONDecoder().decode(CompanionState.self, from: data)
+        XCTAssertEqual(roundTrip.graduateEvolution["g"]?.spentBaseline, 3)
+
+        json["graduateEvolution"] = nil
+        let old = try JSONDecoder().decode(CompanionState.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertTrue(old.graduateEvolution.isEmpty)
+        XCTAssertEqual(old.dex.map(\.id), ["g"])
+
+        json["graduateEvolution"] = 5
+        let corrupt = try JSONDecoder().decode(CompanionState.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertTrue(corrupt.graduateEvolution.isEmpty)
+        XCTAssertEqual(corrupt.dex.map(\.id), ["g"])
     }
 
     /// [딥리뷰 M-c] `language` 는 진행이 아니라 이 기기에서 보는 방식이다. 일본어 Mac 의 세이브가

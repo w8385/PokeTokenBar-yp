@@ -5,6 +5,8 @@ import SwiftUI
 struct EvolutionCardView: View {
     let store: CompanionStore
     let card: CompanionStore.EvolutionCard
+    /// Capture hook: open with the skip confirmation already showing.
+    var confirmingSkip = false
 
     private var l: L { store.l }
 
@@ -33,6 +35,10 @@ struct EvolutionCardView: View {
                     if !card.rule.paths.isEmpty { Text(l.evolutionOr).foregroundStyle(.secondary) }
                     tradeRows(trade)
                 }
+            }
+            if card.offersSkip {
+                Divider()
+                SkipEvolutionControl(store: store, confirming: confirmingSkip)
             }
         }
         .padding(10)
@@ -124,6 +130,45 @@ struct EvolutionCardView: View {
                 .buttonStyle(.borderless).controlSize(.small)
         default:
             EmptyView()
+        }
+    }
+}
+
+/// Graduates the raised Pokémon in its current form, after one inline confirmation.
+@MainActor
+struct SkipEvolutionControl: View {
+    let store: CompanionStore
+    @State private var confirming: Bool
+
+    init(store: CompanionStore, confirming: Bool = false) {
+        self.store = store
+        _confirming = State(initialValue: confirming)
+    }
+
+    private var l: L { store.l }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            if confirming {
+                Text(l.skipEvolutionConfirm(store.displayName))
+                    .font(.callout).fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: Spacing.sm) {
+                    Button(l.skipEvolutionConfirmAction) {
+                        confirming = false
+                        store.skipEvolutionAndGraduate()
+                    }
+                    .buttonStyle(.borderedProminent).controlSize(.small)
+                    Button(l.cancel) { confirming = false }
+                        .buttonStyle(.bordered).controlSize(.small)
+                }
+            } else {
+                Button { confirming = true } label: {
+                    Label(l.skipEvolutionAction, systemImage: "graduationcap")
+                }
+                .buttonStyle(.bordered).controlSize(.small)
+                Text(l.skipEvolutionHint).font(.caption2).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 }

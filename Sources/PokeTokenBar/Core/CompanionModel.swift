@@ -1224,6 +1224,9 @@ struct CompanionState: Codable, Sendable {
     var raisedEntryID: String? = nil
     /// `spentTokens` when the line was parked; resuming shifts its spend baseline by what was spent meanwhile.
     var parkedSpentTokens: Int? = nil
+    /// `DexEntry.id` → evolution progress of a graduate whose form can still evolve (one graduated by skipping
+    /// a blocked step). It grows only while that graduate is raised. Kept off `DexEntry`, which travels in trades.
+    var graduateEvolution: [String: EvolutionProgress] = [:]
     // 도감
     var dex: [DexEntry] = []
     // 소유한 (base,final) 쌍 — 분기 다양성용
@@ -1301,6 +1304,7 @@ struct CompanionState: Codable, Sendable {
         friendEntryIDs     = c.lenient([String].self, forKey: .friendEntryIDs, default: [])
         raisedEntryID      = c.lenientOptional(String.self, forKey: .raisedEntryID)
         parkedSpentTokens  = c.lenientOptional(Int.self, forKey: .parkedSpentTokens)
+        graduateEvolution  = c.lenient([String: EvolutionProgress].self, forKey: .graduateEvolution, default: [:])
         // 도감은 항목별 격리 — 손상 항목 하나가 도감 전체를 날리지 않게.
         dex                = c.lenient([Lossy<DexEntry>].self, forKey: .dex, default: []).compactMap(\.value)
         reconcileRaised()
@@ -1465,6 +1469,13 @@ struct CompanionState: Codable, Sendable {
         guard active != nil, let parked = parkedSpentTokens else { return }
         active!.evolution.spentBaseline += max(0, spentTokens - parked)
         if active!.evolution.battleCursor != nil { active!.evolution.battleCursor = now }
+    }
+
+    /// A released or traded-away graduate takes its evolution progress with it.
+    mutating func dropOrphanedGraduateEvolution() {
+        guard !graduateEvolution.isEmpty else { return }
+        let owned = Set(dex.lazy.filter { !$0.isReleased }.map(\.id))
+        graduateEvolution = graduateEvolution.filter { owned.contains($0.key) }
     }
 
     /// Friends are only graduated dex entries, once each, at most `maxFriends`. Call wherever the dex can change.

@@ -76,6 +76,48 @@ extension L {
           "\(name): \(what) — проверьте условие эволюции в Покедексе")
     }
 
+    func notifEvolveStuckSkippableBody(_ name: String, _ what: String) -> String {
+        t("\(name): \(what) — 박스의 진화 카드에서 조건을 보거나 진화를 건너뛰고 졸업할 수 있어요",
+          "\(name): \(what) — see the evolution card in the Box, or skip the evolution and graduate",
+          "\(name): \(what) — ボックスの進化カードで条件を確認するか、進化をスキップして卒業できます",
+          "\(name): \(what) — mira la tarjeta de evolución en la Caja o salta la evolución y gradúalo",
+          "\(name) : \(what) — vois la carte Évolution dans la Boîte, ou saute l'évolution et diplôme-le",
+          "\(name): \(what) — veja o cartão de evolução na Caixa ou pule a evolução e forme-o",
+          "\(name): \(what) — sieh dir die Entwicklungskarte in der Box an oder überspringe die Entwicklung und lass es abschließen",
+          "\(name): \(what) — посмотрите карточку эволюции в Коробке или пропустите эволюцию и выпустите его")
+    }
+
+    var skipEvolutionAction: String {
+        t("진화 건너뛰고 졸업", "Skip and graduate", "進化せずに卒業", "Saltar y graduar", "Sauter et diplômer",
+          "Pular e formar", "Überspringen und abschließen", "Пропустить и выпустить")
+    }
+
+    var skipEvolutionHint: String {
+        t("지금 모습으로 졸업해요. 나중에 다시 키우면 조건을 채웠을 때 진화할 수 있어요.",
+          "It graduates as it is now. Raise it again later and it can still evolve once the condition is met.",
+          "今の姿で卒業します。あとでまた育てれば、条件を満たしたときに進化できます。",
+          "Se gradúa tal como está. Si lo vuelves a criar, aún puede evolucionar cuando cumpla la condición.",
+          "Il est diplômé tel quel. Élève-le à nouveau plus tard : il pourra évoluer une fois la condition remplie.",
+          "Ele se forma como está. Crie-o de novo depois e ele ainda pode evoluir quando cumprir a condição.",
+          "Es schließt in seiner jetzigen Form ab. Zieh es später wieder groß, dann kann es sich noch entwickeln.",
+          "Он выпускается в нынешнем виде. Вырастите его снова позже — он сможет эволюционировать, когда условие будет выполнено.")
+    }
+
+    func skipEvolutionConfirm(_ name: String) -> String {
+        t("\(KoreanParticle.object.attach(to: name)) 지금 모습으로 졸업할까요? 새 알이 와요.",
+          "Graduate \(name) as it is now? A new egg arrives.",
+          "\(name)を今の姿で卒業させますか? 新しいタマゴが届きます。",
+          "¿Graduar a \(name) tal como está? Llegará un huevo nuevo.",
+          "Diplômer \(name) tel quel ? Un nouvel œuf arrivera.",
+          "Formar \(name) como está agora? Um novo ovo chegará.",
+          "\(name) in der jetzigen Form abschließen lassen? Ein neues Ei kommt.",
+          "Выпустить \(name) в нынешнем виде? Появится новое яйцо.")
+    }
+
+    var skipEvolutionConfirmAction: String {
+        t("졸업", "Graduate", "卒業", "Graduar", "Diplômer", "Formar", "Abschließen", "Выпустить")
+    }
+
     func notifEvolveStuckWaitsFor(_ period: DayPeriod, minutes m: Int) -> String {
         switch period {
         case .day:
