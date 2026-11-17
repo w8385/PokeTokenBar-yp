@@ -72,7 +72,7 @@ def test_dex_of_a_target_lists_counts_regions_and_the_representative(store):
         "대표 포켓몬: 피카츄 ✨",
     ]
     assert reply.image_url == sprite_url(25, True)
-    assert not reply.in_channel
+    assert reply.in_channel
 
 
 def test_dex_without_a_target_is_your_own(store):
@@ -116,13 +116,14 @@ def test_a_mention_answers_visibly_in_the_thread_with_the_sprite(store):
     assert client.ephemerals == []
 
 
-def test_a_slash_answers_privately_with_the_sprite(store):
+def test_a_slash_posts_the_dex_in_the_channel_under_the_echo_with_the_sprite(store):
     with_dex(store, "UB")
     respond = FakeRespond()
     slash(handler(store), FakeClient(), respond, command=DEX_COMMAND, text="<@UB>")
-    call = respond.calls[0]
-    assert call["response_type"] == "ephemeral"
-    assert call["text"].startswith("📖 <@UB>님의 도감")
+    [call] = respond.calls
+    assert call["response_type"] == "in_channel"
+    assert call["text"].startswith("<@UA> 님이 `/도감` <@UB> 을(를) 썼어요\n📖 <@UB>님의 도감")
+    assert call["blocks"][0]["text"]["text"].startswith("<@UA> 님이 `/도감` <@UB> 을(를) 썼어요\n📖")
     assert call["blocks"][0]["accessory"]["image_url"] == sprite_url(25, True)
 
 
@@ -179,7 +180,7 @@ def test_a_dex_without_a_representative_still_gets_the_grid(store):
     slash(handler(store), FakeClient(), respond, command=DEX_COMMAND, text="<@UB>")
     blocks = respond.calls[0]["blocks"]
     assert "accessory" not in blocks[0] and len(blocks[1]["fields"]) == 10
-    assert respond.calls[0]["response_type"] == "ephemeral"
+    assert respond.calls[0]["response_type"] == "in_channel"
 
 
 def test_a_mention_reply_carries_the_grid_in_the_thread(store):

@@ -81,6 +81,7 @@ def test_echo_cannot_ping_or_break_out_of_the_code_span():
 
 
 def test_in_channel_slash_replies_carry_the_echo_and_ephemeral_ones_do_not(store):
+    assert handler(store).handle("UA", "help", BATTLE_COMMAND, echo=True).echo is None
     ready_pair(store)
     bot = handler(store)
     battle = bot.handle("UA", "<@UB>", BATTLE_COMMAND, echo=True)
@@ -89,7 +90,7 @@ def test_in_channel_slash_replies_carry_the_echo_and_ephemeral_ones_do_not(store
     ranking = bot.handle("UA", "", RANKING_COMMAND, echo=True)
     assert ranking.in_channel and ranking.echo == "<@UA> 님이 `/랭킹` 을(를) 썼어요"
     record = bot.handle("UA", "", RECORD_COMMAND, echo=True)
-    assert not record.in_channel and record.echo is None
+    assert record.in_channel and record.echo == "<@UA> 님이 `/전적` 을(를) 썼어요"
 
 
 def test_mention_replies_have_no_echo(store):
@@ -439,7 +440,7 @@ def test_a_pending_battle_with_no_other_way_arrives_in_the_challengers_dm_as_the
     assert_one_blocks_only_message(message)
 
 
-def test_slash_ranking_is_echoed_and_record_is_ephemeral_without_it(store):
+def test_slash_ranking_and_record_are_both_echoed_in_the_channel(store):
     store.record_battle("UA", "UB", "UA", 1, at=NOW)
     client, respond = FakeClient(), FakeRespond()
     bot = handler(store, now=lambda: NOW)
@@ -448,7 +449,8 @@ def test_slash_ranking_is_echoed_and_record_is_ephemeral_without_it(store):
     ranking, record = respond.calls
     assert ranking["response_type"] == "in_channel"
     assert ranking["text"].startswith("<@UA> 님이 `/랭킹` 을(를) 썼어요\n🏆")
-    assert record["response_type"] == "ephemeral" and "님이" not in record["text"]
+    assert record["response_type"] == "in_channel"
+    assert record["text"] == "<@UA> 님이 `/전적` 을(를) 썼어요\n<@UA> 전적: 1승 0패"
 
 
 def test_slash_with_an_unready_challenger_shows_a_public_line_after_the_echo(store):

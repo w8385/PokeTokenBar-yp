@@ -15,8 +15,11 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   messages through the response URL instead. Each Pokémon uses its
   move with the highest expected damage every turn. Only win/loss is recorded. With no mention it shows
   help.
-- Every in-channel slash reply starts with that context line; ephemeral ones do not. A mention reply stays in
-  the mention's thread (card, then the log) and needs no echo line.
+- Every slash command's result is public where it ran, headed by that context line: battles, `/전적`, `/랭킹`,
+  `/도감`, and a one-line notice for `/포켓몬연결` and `/ypoke` help. Only the caller sees mistakes (bad
+  arguments, no mention), a target that is not linked or has no dex yet, the help text itself, and anything with
+  a token or link; those replies are ephemeral and carry no context line. A mention reply stays in the mention's
+  thread (card, then the log) with the same public/private split and needs no echo line.
 - "다시 붙기" reruns the same matchup and format (the same size) with the current uploads and posts in the same thread. Only the two who
   fought can press it (others get a private notice); a practice battle reruns as practice, and a side with no
   upload goes through the pending flow below.
@@ -37,7 +40,8 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   level of your Pokémon in the same slot. Nothing is recorded.
 - `/포켓몬연결` DMs the caller a "PokeTokenBar 연결" button. It opens
   `poketokenbar://ypoke-register?token=…&server=…`, which saves the upload token and server in the app.
-  The token is also in the DM for pasting by hand. Running it again rotates the token.
+  The token is also in the DM for pasting by hand. Running it again rotates the token. The channel only sees
+  "<user>님이 YPoke 연결 링크를 받았어요."; the link and token never leave the DM.
 - Trades: the app's Battle tab offers one graduated Pokémon to a linked coworker. The bot DMs them a picker of
   their own Pokémon with Accept/Decline; after they accept, the offerer confirms in a DM. Each app picks its side
   up on its next sync, once. Offers expire after 24 hours. Wire format: [API.md](API.md#trades).
@@ -47,12 +51,14 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   automatic battle; the Elite Four and hideout runs carry HP and status in a `carried`/`carry` pair the app keeps).
   Nothing is stored or posted. The species table behind the teams is `ypoke/species.json`, made by
   `tools/generate_species.py`; the trainers' text is in `ypoke/gym_data.py`.
-- `/전적 [@누구]` shows win/loss.
+- `/전적 [@누구]` posts win/loss in the channel.
 - `/랭킹` posts this week's top 10 (since Monday 00:00 KST) by wins, then win rate, then fewer battles.
-- `/도감 [@누구]` shows the target's (default: your own) dex summary the app uploaded: owned species, shiny count,
-  progress per region and the representative Pokémon with its sprite. Private for a slash command. An unlinked
-  target, or one whose app has not sent a dex yet, gets one short line.
-- `/ypoke` shows help. `/ypoke 도감 @누구` (or any command word after `/ypoke`) runs that command.
+- `/도감 [@누구]` posts the target's (default: your own) dex summary the app uploaded in the channel: owned species,
+  shiny count, progress per region and the representative Pokémon with its sprite. An unlinked target, or one
+  whose app has not sent a dex yet, gets one short private line.
+- `/ypoke` (or `/ypoke help`, `/ypoke 도움말`) shows the help privately and posts one public line pointing at
+  `/ypoke`. `/ypoke 도감 @누구` (or any command word after `/ypoke`) runs that command; an unknown word gets the
+  help privately with nothing public.
 - The upload response carries the app's "최근 대결" and "동료" lists ([API.md](API.md)). Display names come from Slack
   `users.info` (scope `users:read`, cached an hour); without the scope the names are `null` and the app shows a generic label.
 - Slack runs no slash commands in threads, so mentions cover them all and answer in the thread:
