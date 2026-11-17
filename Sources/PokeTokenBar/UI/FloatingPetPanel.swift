@@ -1206,7 +1206,9 @@ struct FloatingPetView: View {
                                  minFrameDelay: minFrameDelay, spriteStore: spriteStore,
                                  megaEvent: companion.megaEvolveEvent)
                         .crowdMember(crowd, slot: slot, size: friendSize)
-                        .padding(friendOnRight(slot) ? .leading : .trailing, PetRowLayout.friendGap)
+                        .frame(width: PetRowLayout.friendSlotWidth(petSize: size),
+                               alignment: friendOnRight(slot) ? .trailing : .leading)
+                        .zIndex(1 - 0.1 * Double(slot))
                 }
             }
         }

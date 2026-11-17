@@ -233,10 +233,21 @@ final class PetRowLayoutTests: XCTestCase {
         XCTAssertEqual(PetRowLayout(friendCount: 2, friendsOnLeft: false).slotOrder, [0, 1, 2])
     }
 
+    func testFriendBoxesOverlapTheirNeighbours() {
+        let friend = PetRowLayout.friendSize(petSize: petSize)
+        let slot = PetRowLayout.friendSlotWidth(petSize: petSize)
+        XCTAssertLessThan(slot, friend)
+        XCTAssertGreaterThanOrEqual(friend - slot, friend * 0.15)
+        XCTAssertLessThanOrEqual(friend - slot, friend * 0.35)
+        let layout = PetRowLayout(friendCount: 2, friendsOnLeft: true)
+        XCTAssertEqual(layout.friendsWidth(petSize: petSize), 2 * slot)
+        XCTAssertLessThan(layout.friendsWidth(petSize: petSize), 2 * friend)
+    }
+
     func testHitTestFindsTheFriendUnderTheCursor() {
         let layout = PetRowLayout(friendCount: 2, friendsOnLeft: true)
         let mainX = layout.mainXOffset(petSize: petSize, bubbleWidth: nil)
-        let slot = PetRowLayout.friendSize(petSize: petSize) + PetRowLayout.friendGap
+        let slot = PetRowLayout.friendSlotWidth(petSize: petSize)
         XCTAssertEqual(layout.hit(x: mainX + 10, petSize: petSize, bubbleWidth: nil), .main)
         XCTAssertEqual(layout.hit(x: mainX - 2, petSize: petSize, bubbleWidth: nil), .friend(0))
         XCTAssertEqual(layout.hit(x: mainX - slot - 2, petSize: petSize, bubbleWidth: nil), .friend(1))
