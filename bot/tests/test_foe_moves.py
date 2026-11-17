@@ -25,6 +25,11 @@ def test_a_recharge_move_fills_only_a_slot_nothing_else_can():
     assert pick([EMBER, HYPER], ("fire",), attack=50, special_attack=50) == [EMBER.id, HYPER_BEAM]
 
 
+def test_a_filler_move_comes_after_even_a_recharge_move():
+    facade = FoeMove(263, "normal", True, 70, 100, 1.0)
+    assert pick([facade, EMBER, HYPER], ("normal",), attack=100, special_attack=50) == [EMBER.id, HYPER_BEAM, 263]
+
+
 def test_three_species_carry_the_committed_pick():
     assert foe_moves.species(6).picked == (315, 542, 89, 200)
     assert foe_moves.species(445).picked == (200, 89, 398, 38)

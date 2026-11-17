@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from ypoke import items, tera_forms
-from ypoke.foe_moves import FoeMove
+from ypoke.foe_moves import FoeMove, score
 from ypoke.mega_stones import mega_form_id
 
 FRAIL_BULK = 190
@@ -51,8 +51,8 @@ def wishes(holder: Holder) -> list[str]:
     bulk = stats["hp"] + (stats["defense"] + stats["special_defense"]) // 2
     choice = items.CHOICE_BAND if physical else items.CHOICE_SPECS
     band = items.MUSCLE_BAND if physical else items.WISE_GLASSES
-    boosts = [item for move in _strongest_first(holder) for item, kind in items.TYPE_BOOST_ITEMS.items()
-              if kind == move.type]
+    boosts = [item for kind in boosted_types(holder) for item, boosted in items.TYPE_BOOST_ITEMS.items()
+              if boosted == kind]
     leftovers = items.BLACK_SLUDGE if "poison" in holder.types else items.LEFTOVERS
     wanted: list[str] = [items.EVIOLITE] if holder.can_evolve else []
     if bulk < FRAIL_BULK and offense >= STRONG_OFFENSE:
@@ -93,5 +93,9 @@ def fires(item: str, holder: Holder) -> bool:
     return attacking and item in _ALWAYS
 
 
-def _strongest_first(holder: Holder) -> list[FoeMove]:
-    return sorted(holder.moves, key=lambda move: (-move.power * move.hits, move.id))
+def boosted_types(holder: Holder) -> list[str]:
+    """The move types a type-boost item may serve, best first: the holder's strongest move, then its own types."""
+    ranked = sorted(holder.moves, key=lambda move: (-score(move, holder.types, holder.stats["attack"],
+                                                          holder.stats["special_attack"]), move.id))
+    kinds = [move.type for index, move in enumerate(ranked) if index == 0 or move.type in holder.types]
+    return list(dict.fromkeys(kinds))

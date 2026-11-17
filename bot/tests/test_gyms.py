@@ -21,6 +21,8 @@ BORROWED = {
 }
 # Gyms whose region has too few unrelated species of the type, so an evolution line fills the rest.
 SAME_LINE_GYMS = {"kalos-5", "kalos-6", "kalos-7", "alola-8"}
+FACADE = 263
+THIEF = 168
 
 
 def all_opponents():
@@ -243,6 +245,49 @@ def test_no_pve_team_holds_more_than_one_mega_stone_or_stellar_crystal_counting_
 
 def mega_capable(items_held: tuple[str, ...]) -> list[str]:
     return [item for item in items_held if item in MEGA_STONES or item == items.STELLAR_CRYSTAL]
+
+
+def test_no_pve_foe_carries_facade_without_an_orb_a_filler_move_or_an_off_stab_type_boost():
+    assert {opponent.id: pick_faults(opponent) for opponent in all_opponents() if pick_faults(opponent)} == {}
+
+
+def test_the_pick_check_catches_facade_a_filler_move_and_an_off_stab_type_boost():
+    champion = gyms.find("kanto-champion")
+    zapdos_moves = champion.moves[0]
+
+    def with_first(moves=zapdos_moves, item=champion.items[0]):
+        return replace(champion, moves=(moves, *champion.moves[1:]), items=(item, *champion.items[1:]))
+
+    gengar = champion.team.index(94)
+    cases = [
+        with_first(moves=(*zapdos_moves[:3], FACADE)),
+        with_first(moves=(*zapdos_moves[:3], THIEF)),
+        replace(champion, items=tuple("black-belt" if index == gengar else item
+                                      for index, item in enumerate(champion.items))),
+    ]
+    assert all(pick_faults(case) for case in cases)
+    assert pick_faults(with_first(moves=(*zapdos_moves[:3], FACADE), item=items.FLAME_ORB)) == []
+
+
+def pick_faults(opponent) -> list[tuple]:
+    faults = []
+    for species_id, moves, item in zip(opponent.team, opponent.moves, opponent.items, strict=True):
+        learnable_left = foe_moves.species(species_id).learnable - set(moves) - foe_moves.FILLER
+        for move_id in set(moves) & foe_moves.FILLER:
+            orb_facade = move_id == FACADE and item in (items.FLAME_ORB, items.TOXIC_ORB)
+            if learnable_left and not orb_facade:
+                faults.append((species_id, "filler", move_id))
+        if item in items.TYPE_BOOST_ITEMS and items.TYPE_BOOST_ITEMS[item] not in stab_or_strongest(species_id, moves):
+            faults.append((species_id, "off-stab boost", item))
+    return faults
+
+
+def stab_or_strongest(species_id: int, move_ids: tuple[int, ...]) -> set[str]:
+    holder = gyms.holder(species_id, move_ids)
+    scores = {move: foe_moves.score(move, holder.types, holder.stats["attack"], holder.stats["special_attack"])
+              for move in holder.moves}
+    top = max(scores.values())
+    return {move.type for move, value in scores.items() if move.type in holder.types or value == top}
 
 
 def test_the_item_check_catches_a_duplicate_and_each_kind_of_no_op():

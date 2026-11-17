@@ -285,8 +285,10 @@ moves included (the same attacking-move check, `503 pokeapi_unavailable` when Po
 them). Errors name the field as `team[i]…`. The fight is the same simulation as `/대결`: Lv50 cap, one at a time in
 order, the next comes in when one faints, no switching. A `rental` member fights at the trainer's level (50).
 Each foe knows four moves picked from everything its species learns (level-up at any level and machines): the
-best same-type hits first, then coverage. The champion's moves are hand-picked. Each foe holds an item that works
-for it (no two alike on a team), and a champion's Mega Stone Mega Evolves its holder. Foes have no nature or
+best same-type hits first, then coverage. Field and item-stealing moves (Cut, Strength, Rock Smash, Thief, Covet)
+and Facade come only when nothing else is left. The champion's moves are hand-picked. Each foe holds an item that works
+for it (no two alike on a team), and a type-boost item only for its own type or its strongest move. A champion's
+Mega Stone Mega Evolves its holder. Foes have no nature or
 ability. Their IVs rise with the trainer: 12 at gym 1 up to 21 at gym 8 (gym 7 has 18, one below gym 6), 28 for the Elite Four, 31 for the
 champion, 12 / 20 / 26 for grunts, the admin and the boss.
 
