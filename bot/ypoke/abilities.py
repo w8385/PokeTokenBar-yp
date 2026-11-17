@@ -14,7 +14,7 @@ WEATHER_CHIP_IMMUNE = {"sand-force": "sandstorm"}
 WEATHER_DOUBLES_SPEED = {"swift-swim": "rain", "chlorophyll": "sun", "sand-rush": "sandstorm"}
 WEATHER_ON_ENTRY = {
     "drizzle": "rain", "drought": "sun", "sand-stream": "sandstorm", "snow-warning": "snow",
-    "desolate-land": "sun", "primordial-sea": "rain",
+    "desolate-land": "sun", "primordial-sea": "rain", "delta-stream": "strong-winds",
 }
 RESISTED_TYPES = {"thick-fat": ("fire", "ice")}
 IMMUNE_TYPE = {"levitate": "ground"}
@@ -32,7 +32,7 @@ NAMES = {
     "drought": "가뭄", "sand-stream": "모래날림", "snow-warning": "눈퍼뜨리기", "static": "정전기",
     "flame-body": "불꽃몸", "poison-point": "독가시", "immunity": "면역", "limber": "유연", "insomnia": "불면",
     "water-veil": "수의베일", "desolate-land": "끝의대지", "primordial-sea": "시작의바다", "sand-force": "모래의힘",
-    "gale-wings": "질풍날개",
+    "gale-wings": "질풍날개", "delta-stream": "델타스트림",
 }
 
 

@@ -1,10 +1,12 @@
 """Turn an uploaded party member into a battle `Combatant`."""
 
-from ypoke import items, tera_forms
+from dataclasses import replace
+
+from ypoke import abilities, items, tera_forms
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm
-from ypoke.mega_stones import PRIMAL_ORBS, mega_form_id
+from ypoke.mega_stones import PRIMAL_ORBS, mega_form_id, move_mega_form_id
 from ypoke.moves import battle_moves
-from ypoke.move_effects import wants_status_moves
+from ypoke.move_effects import JUDGMENT, wants_status_moves
 from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.upload_server import IV_KEYS
 
@@ -20,19 +22,25 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
     learnable = pokeapi.attacking_moves(pokemon_id, member.get("learned_at", member["level"]), chosen,
                                         **({"status": True} if wants_status_moves(chosen) else {}))
     ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
+    moves = battle_moves(learnable, member.get("moves"))
+    types = tuple(data["types"])
+    plate = items.PLATES.get(item) if pokemon_id == tera_forms.ARCEUS else None
+    if plate is not None:
+        types = (plate,)
+        moves = tuple(replace(move, type=plate) if move.id == JUDGMENT else move for move in moves)
     return Combatant(
         name=member.get("name") or data["name_ko"],
         level=min(member["level"], BATTLE_LEVEL),
-        types=tuple(data["types"]),
+        types=types,
         base=base_stats(data),
         ivs=BaseStats(**ivs),
         shiny=member["shiny"],
-        moves=battle_moves(learnable, member.get("moves")),
+        moves=moves,
         rental=member.get("rental", False),
         nature=member.get("nature"),
-        ability=member.get("ability"),
+        ability=data.get("ability_id") if data.get("ability_id") in abilities.NAMES else member.get("ability"),
         item=item,
-        mega=_mega(pokeapi, pokemon_id, item),
+        mega=_mega(pokeapi, pokemon_id, item, tuple(move.id for move in moves)),
         pokemon_id=pokemon_id,
         can_evolve=_can_evolve(pokeapi, member),
         tera=pokemon_id == tera_forms.TERAPAGOS,
@@ -41,8 +49,11 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
 
 def _form_data(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> dict:
     """The `pokemon()` data the Pokémon fights with: its own, Ogerpon's with the mask's form, Terapagos' Terastal
-    form. The name stays the species' own."""
+    form, an origin item's Origin Forme (with its first ability as `"ability_id"`). The name stays the species' own."""
     data = pokeapi.pokemon(pokemon_id)
+    if item in tera_forms.ORIGIN_FORMS:
+        return {**data, **{key: value for key, value in pokeapi.mega_form(tera_forms.ORIGIN_FORMS[item][1]).items()
+                           if key != "name_ko"}}
     form_id = tera_forms.TERASTAL_FORM if pokemon_id == tera_forms.TERAPAGOS else None
     if item in tera_forms.MASKS:
         form_id = tera_forms.MASKS[item][0]
@@ -64,12 +75,12 @@ def _can_evolve(pokeapi: PokeAPIService, member: dict) -> bool:
         return False
 
 
-def _mega(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> MegaForm | None:
+def _mega(pokeapi: PokeAPIService, pokemon_id: int, item: str | None, move_ids: tuple[int, ...]) -> MegaForm | None:
     if item == items.STELLAR_CRYSTAL:
         data = pokeapi.pokemon(tera_forms.STELLAR_FORM)
         return MegaForm(types=tuple(data["types"]), base=base_stats(data), form_id=tera_forms.STELLAR_FORM,
                         kind="stellar")
-    form_id = mega_form_id(item, pokemon_id)
+    form_id = mega_form_id(item, pokemon_id) or move_mega_form_id(pokemon_id, move_ids, item)
     if form_id is None:
         return None
     data = pokeapi.mega_form(form_id)

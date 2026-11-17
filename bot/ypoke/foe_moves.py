@@ -15,8 +15,8 @@ from ypoke.moves import MAX_MOVES
 from ypoke.type_chart import TYPE_NAMES_KO, effectiveness
 
 FOE_TABLE = Path(__file__).with_name("foe_moves.json")
-# The simulation gives these their power with none of their cost or condition, so a foe takes one only when it has
-# fewer than four other attacking moves.
+# Moves with a cost or condition the simulation skips (it does faint the user of Self-Destruct and Explosion); a foe
+# takes one only when it has fewer than four other attacking moves.
 RECHARGE = frozenset({63, 307, 308, 338, 416, 439, 459, 711, 794, 795})
 CHARGE_TURN = frozenset({13, 19, 76, 91, 130, 143, 291, 340, 467, 507, 553, 554, 566, 669, 800, 905})
 SELF_FAINT = frozenset({120, 153, 720, 796, 802})

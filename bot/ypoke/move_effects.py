@@ -9,6 +9,10 @@ VOLT_SWITCH = 521
 FLIP_TURN = 812
 SELF_DESTRUCT = 120
 EXPLOSION = 153
+JUDGMENT = 449
+DRAGON_ASCENT = 620
+# Punching Glove boosts these.
+PUNCH_MOVES = frozenset({5, 7, 8, 9, 183, 223, 264, 309, 325, 359, 409, 418, 612, 665, 721, 742, 817, 838, 857, 889})
 
 STATUS_MOVES = {TRICK_ROOM: "trick-room", STEALTH_ROCK: "stealth-rock", YAWN: "yawn", THUNDER_WAVE: "thunder-wave"}
 EFFECTS = {

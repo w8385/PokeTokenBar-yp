@@ -17,6 +17,7 @@ from ypoke import foe_items, foe_moves
 from ypoke.battle import BATTLE_LEVEL
 from ypoke.dex import REGIONS as DEX_REGIONS
 from ypoke.gym_data import CHAMPION_TEAMS, CHAMPIONS, ELITE, ELITE_TYPES, GYM_TYPES, LEADERS, ORG_TYPES, ORGS
+from ypoke.pokeapi import WEATHER_MOVES
 from ypoke.upload_server import IV_KEYS
 
 TEAM_SIZE = 6
@@ -272,9 +273,11 @@ def _armed(opponent: Opponent) -> Opponent:
 
 
 def holder(species_id: int, move_ids: tuple[int, ...]) -> foe_items.Holder:
+    """Status and weather moves are not in `foe_moves`; a weather move still lets a weather rock fire."""
     data = foe_moves.species(species_id)
-    return foe_items.Holder(species_id, data.types, data.stats, tuple(foe_moves.move(move_id) for move_id in move_ids),
-                            can_evolve(species_id))
+    moves = tuple(move for move in map(foe_moves.move, move_ids) if move is not None)
+    weathers = tuple(WEATHER_MOVES[move_id] for move_id in move_ids if move_id in WEATHER_MOVES)
+    return foe_items.Holder(species_id, data.types, data.stats, moves, can_evolve(species_id), weathers)
 
 
 def can_evolve(species_id: int) -> bool:

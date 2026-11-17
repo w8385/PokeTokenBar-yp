@@ -1,6 +1,7 @@
 """The held items of a PvE team: one per member, none twice in a team, each one whose effect fires for its holder.
 
-Foes have no ability, so an item that only pays off with one (Flame Orb, Toxic Orb) is never given.
+Only champion rows have abilities, so the picker never gives an item that pays off only with one (Flame Orb, Toxic
+Orb).
 """
 
 from collections.abc import Sequence
@@ -8,6 +9,8 @@ from dataclasses import dataclass
 
 from ypoke import items, tera_forms
 from ypoke.foe_moves import FoeMove, score
+from ypoke.move_effects import PUNCH_MOVES
+from ypoke.type_chart import effectiveness
 from ypoke.mega_stones import mega_form_id
 
 FRAIL_BULK = 190
@@ -28,6 +31,7 @@ class Holder:
     stats: dict[str, int]
     moves: tuple[FoeMove, ...]
     can_evolve: bool
+    weathers: tuple[str, ...] = ()
 
 
 def assign(holders: Sequence[Holder]) -> list[str]:
@@ -86,8 +90,17 @@ def fires(item: str, holder: Holder) -> bool:
         return any(not move.physical for move in holder.moves)
     if item == items.WIDE_LENS:
         return any(move.accuracy is not None and move.accuracy < 100 for move in holder.moves)
-    if item in items.OGERPON_MASKS or item == items.STELLAR_CRYSTAL:
+    if item in items.OGERPON_MASKS or item == items.STELLAR_CRYSTAL or item in tera_forms.ORIGIN_FORMS:
         return tera_forms.usable_item(item, holder.species_id) is not None
+    if item in items.PLATES:
+        return holder.species_id == tera_forms.ARCEUS or any(move.type == items.PLATES[item] for move in holder.moves)
+    if item in items.RESIST_BERRIES:
+        kind = items.RESIST_BERRIES[item]
+        return effectiveness(kind, holder.types) > 1 or (kind == "normal" and effectiveness(kind, holder.types) > 0)
+    if item == items.PUNCHING_GLOVE:
+        return any(move.id in PUNCH_MOVES for move in holder.moves)
+    if item in items.WEATHER_ROCKS:
+        return bool(set(items.WEATHER_ROCKS[item]) & set(holder.weathers))
     if mega_form_id(item, holder.species_id) is not None:
         return True
     return attacking and item in _ALWAYS
