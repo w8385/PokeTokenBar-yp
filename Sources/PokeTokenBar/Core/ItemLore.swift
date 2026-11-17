@@ -32,6 +32,7 @@ extension ItemKind {
         case .shinyCharm: return "shiny-charm"
         case .expShare: return "exp-share"
         case .linkingCord: return "linking-cord"
+        case .ultranecroziumZ: return "ultranecrozium-z--held"
         default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName ?? rawValue
         }
     }
