@@ -51,14 +51,14 @@ final class HeldItemGroupTests: XCTestCase {
         let sections = try store().shopBattleSections
         XCTAssertEqual(sections.map(\.group), BattleItemGroup.allCases)
         let expected: [BattleItemGroup: [ItemKind]] = [
-            .attack: [.choiceBand, .lifeOrb, .expertBelt, .choiceSpecs, .muscleBand, .wiseGlasses],
+            .attack: [.choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses],
             .typeBoost: [.silkScarf, .charcoal, .mysticWater, .magnet, .miracleSeed, .neverMeltIce, .blackBelt,
                          .poisonBarb, .softSand, .sharpBeak, .twistedSpoon, .silverPowder, .hardStone, .spellTag,
                          .dragonFang, .blackGlasses, .metalCoat, .fairyFeather],
-            .bulk: [.leftovers, .focusSash, .assaultVest, .eviolite, .sitrusBerry, .blackSludge, .shellBell, .bigRoot,
+            .bulk: [.assaultVest, .eviolite, .leftovers, .blackSludge, .sitrusBerry, .shellBell, .bigRoot, .focusSash,
                     .focusBand],
-            .speed: [.choiceScarf, .scopeLens, .quickClaw, .brightPowder, .wideLens, .razorClaw],
-            .status: [.rockyHelmet, .lumBerry, .whiteHerb, .weaknessPolicy, .flameOrb, .toxicOrb],
+            .speed: [.choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder],
+            .status: [.lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb],
             .weather: [.heatRock, .dampRock, .smoothRock, .icyRock],
             .signature: [.tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal],
             .other: [.everstone],
@@ -89,6 +89,20 @@ final class HeldItemGroupTests: XCTestCase {
         let allView = bag.bagListItems(in: nil).map(\.kind) + bag.ownedBattleSections.flatMap(\.kinds)
         XCTAssertEqual(allView, [.metalCoat, .razorClaw], "the all view lists each once")
         XCTAssertEqual(allView.map(bag.itemCount).reduce(0, +), 3)
+    }
+
+    func testTheShopAllViewListsEveryItemOnce() throws {
+        let shop = try store()
+        let flat: [ItemKind] = shop.shopEntries(in: nil).compactMap {
+            guard case .item(let kind) = $0, kind.category != .heldItem else { return nil }
+            return kind
+        }
+        let grouped = shop.shopBattleSections.flatMap(\.kinds)
+        let allView = flat + grouped + shop.shopAllViewEvolutionItems
+        XCTAssertEqual(allView.count, Set(allView).count, "no item is listed twice")
+        XCTAssertFalse(shop.shopAllViewEvolutionItems.contains(.metalCoat))
+        XCTAssertFalse(shop.shopAllViewEvolutionItems.contains(.razorClaw))
+        XCTAssertEqual(Set(shop.shopEvolutionItems).subtracting(shop.shopAllViewEvolutionItems), [.metalCoat, .razorClaw])
     }
 
     func testTheBagAllViewListsEveryOwnedItemOnceWithBattleItemsGrouped() throws {
