@@ -123,6 +123,9 @@ class ReleaseMetadataTests(unittest.TestCase):
         for name in ("release.sh", "release-metadata.py"):
             (scripts / name).write_text((ROOT / "scripts" / name).read_text())
         (scripts / "build-app.sh").write_text('VERSION="2.5.3"\n')
+        pin = scripts / "xcode-pin.sh"
+        pin.write_text('#!/bin/sh\nexit 0\n')
+        pin.chmod(0o755)
         marker = self.root / "test-gate-reached"
         gate = scripts / "test-gate.sh"
         gate.write_text('#!/bin/sh\ntouch test-gate-reached\nexit 1\n')
