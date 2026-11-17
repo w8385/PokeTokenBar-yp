@@ -24,11 +24,12 @@ REMOVED_TOOLS = ("ccusage",)
 # at least one of its families had every language variant changed in range. Unlisted files fall back to
 # "some README image changed".
 SCREENS = (
-    ("ShopView.swift", ("screenshot-shop",)),
+    ("ShopView.swift", ("screenshot-shop", "screenshot-held-items")),
     ("ScoutView.swift", ("screenshot-shop",)),
     ("MachineShopSection.swift", ("screenshot-shop",)),
     ("ItemCategoryChips.swift", ("screenshot-shop", "screenshot-bag")),
-    ("BagView.swift", ("screenshot-bag",)),
+    ("BagView.swift", ("screenshot-bag", "screenshot-held-items")),
+    ("HeldItemSections.swift", ("screenshot-held-items",)),
     ("BoxView.swift", ("screenshot-collection-box",)),
     ("BoxFilterPanel.swift", ("screenshot-collection-box",)),
     ("BoxDetailView.swift", ("screenshot-pokemon-profile", "screenshot-exp-share")),
