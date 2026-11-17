@@ -255,10 +255,12 @@ enum SpriteLoader {
 
     /// Keep the caller's static fallback visible while a transient GIF failure recovers.
     /// The caller owns this await: cancelling its view/load task also cancels requests and backoff.
+    static let retryBackoff: @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+
     static func recoveringAnimationFrames(
         speciesID: Int, shiny: Bool, store: SpriteStore = .shared, form: PokemonForm? = nil,
         back: Bool = false, female: Bool = false,
-        waitBeforeRetry: (Duration) async throws -> Void = { try await Task.sleep(for: $0) },
+        waitBeforeRetry: (Duration) async throws -> Void = retryBackoff,
         onUnavailable: () async -> Void
     ) async -> [(image: NSImage, delay: TimeInterval)] {
         guard !Task.isCancelled else { return [] }

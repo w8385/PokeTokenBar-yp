@@ -1731,13 +1731,19 @@ read_when:
   and nothing waits for it. `OffscreenRender.host` and `.controller` turn animations off.
   Guard: `OffscreenRenderGuardTests.testNoTestWaitsForAFixedTime` fails on `Task.sleep`,
   `Thread.sleep`, `usleep`, `RunLoop.run(until:/before:)`, `asyncAfter`, `settle(..., for:)` and a
-  numeric expectation timeout anywhere under `Tests/` outside `OffscreenRender.swift`. Two fakes keep
+  numeric expectation timeout, and on `ContinuousClock.now` / `.duration(to:)` elapsed-time
+  assertions, anywhere under `Tests/` outside `OffscreenRender.swift`. Two fakes keep
   a sleep by count: the slow log sink in `AppLogTests` and the RSS sampler in
   `CodexLargeRolloutPerformanceTests`. Injecting one `Task.sleep` into a new test file fails it.
   Found while converting: the `HomeFitRendering` fixture graduates its Gyarados as soon as the line
   loads, which the old 300 ms sleep hid; an `NSHostingView` does not paint a `ProgressView` track
   while an `NSHostingController` does, so `LimitProgressRendering` stays on a controller.
-  Not covered: `SpriteAnimationRecoveryTests` still asserts that cancellation returns within 1 s.
+  `SpriteAnimationRecoveryTests` asserted that cancellation returned within 1 s and that the first
+  retry took at least 2 s. It now records the backoff durations and checks that the production
+  backoff (`SpriteLoader.retryBackoff`) ends with `CancellationError` and the retry never fires; a
+  backoff that swallows cancellation fails it.
+  Not covered: `Date().timeIntervalSince(` stays allowed because only print-only parity probes and
+  the opt-in 512 MiB performance budget use it.
 
 ## Repo-wide tests outside a leaf's filter
 
