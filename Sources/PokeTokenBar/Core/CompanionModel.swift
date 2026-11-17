@@ -623,7 +623,7 @@ enum ScoutTicket {
     /// 한 번에 보여 주는 후보 수.
     static let drawSize = 10
     /// 모든 지역·전국 공통 가격.
-    static let price = 400_000_000
+    static let price = 600_000_000
 }
 
 /// 상점 표시 한 줄 — 판매 아이템(ItemKind) 또는 알 리롤(즉시 액션이라 ItemKind 가 아님).
