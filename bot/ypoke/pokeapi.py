@@ -5,12 +5,13 @@ import threading
 import time
 import urllib.error
 import urllib.request
-from collections.abc import Collection
+from collections.abc import Collection, Sequence
 from concurrent.futures import ThreadPoolExecutor
 
 from ypoke import items, tera_forms
 from ypoke.battle import BaseStats
 from ypoke.mega_stones import mega_form_id
+from ypoke.move_effects import STATUS_MOVES, wants_status_moves
 from ypoke.store import Store
 
 API_BASE = "https://pokeapi.co/api/v2"
@@ -89,7 +90,7 @@ class PokeAPIService:
         def fetch(item: tuple[int, int, tuple[int, ...]]) -> OSError | None:
             try:
                 self.pokemon(item[0])
-                self.attacking_moves(*item)
+                self.attacking_moves(*item, status=wants_status_moves(item[2]))
             except OSError as error:
                 return error
             return None
@@ -108,26 +109,40 @@ class PokeAPIService:
             raise errors[0]
         return len({pokemon_id for pokemon_id, _, _ in needed})
 
-    def attacking_moves(self, pokemon_id: int, level: int, machine_ids: Collection[int] | None = ()) -> list[dict]:
+    def attacking_moves(self, pokemon_id: int, level: int, machine_ids: Collection[int] | None = (),
+                        status: bool = False) -> list[dict]:
         """Damaging and weather-setting moves usable at `level`: level-up moves learned at or below it, oldest first,
         then machine (TM) moves by id. Raises on network errors.
 
         Each move is `move()` plus `"level"` (0 for a machine move) and `"source"` (`"level"` or `"machine"`).
         A TM move's data is fetched only if its id is in `machine_ids`; `None` means all of them.
+        With `status`, the status moves the battle implements follow (`status_move_entries`).
         """
         learnset = self.learnset(pokemon_id)
         by_id = {entry["move_id"]: entry for entry in learnset if entry["source"] == "level" and entry["level"] <= level}
         for entry in learnset:
             if entry["source"] == "machine" and entry["move_id"] not in by_id and (machine_ids is None or entry["move_id"] in machine_ids):
                 by_id[entry["move_id"]] = entry
-        learned = list(by_id.values())
+        learned = [entry for entry in by_id.values() if entry["move_id"] not in STATUS_MOVES]
+        if status:
+            eggs = [self.egg_moves(member) for member in (pokemon_id, *_ancestors(pokemon_id))]
+            learned += status_move_entries(learnset, level, machine_ids, eggs)
         with ThreadPoolExecutor(max_workers=MOVE_FETCH_WORKERS) as pool:
             moves = list(pool.map(self.move, [entry["move_id"] for entry in learned]))
         return [
             {**move, "level": entry["level"], "source": entry["source"]}
             for entry, move in zip(learned, moves)
-            if move["weather"] or (move["power"] and move["damage_class"] != "status")
+            if move["weather"] or (move["power"] and move["damage_class"] != "status") or move["id"] in STATUS_MOVES
         ]
+
+    def egg_moves(self, pokemon_id: int) -> list[int]:
+        key = f"egg-moves-v1/{pokemon_id}"
+        cached = self._store.cached(key)
+        if cached is not None:
+            return cached
+        data = egg_moves_from(_get_json(f"{API_BASE}/pokemon/{pokemon_id}"))
+        self._store.cache(key, data)
+        return data
 
     def learnset(self, pokemon_id: int) -> list[dict]:
         """`{"move_id", "level", "source"}` from the newest main game the Pokémon is in: level-up moves by level, then machine moves by id."""
@@ -213,6 +228,53 @@ def learnset_from(pokemon: dict) -> list[dict]:
         *({"move_id": move_id, "level": level, "source": "level"} for move_id, level in by_level),
         *({"move_id": move_id, "level": 0, "source": "machine"} for move_id in sorted(machines_by_group.get(rank, ()))),
     ]
+
+
+def egg_moves_from(pokemon: dict) -> list[int]:
+    """The egg move ids of the version group `learnset_from` picks, by id."""
+    groups: dict[tuple[bool, int], set[str]] = {}
+    for entry in pokemon["moves"]:
+        for detail in entry["version_group_details"]:
+            group = detail["version_group"]
+            rank = (group["name"] not in _SIDE_VERSION_GROUPS, _id_from_url(group["url"]))
+            groups.setdefault(rank, set()).add(detail["move_learn_method"]["name"])
+    ranked = [rank for rank, methods in groups.items() if "level-up" in methods]
+    if not ranked:
+        return []
+    newest = max(ranked)
+    return sorted({
+        _id_from_url(entry["move"]["url"]) for entry in pokemon["moves"] for detail in entry["version_group_details"]
+        if detail["move_learn_method"]["name"] == "egg"
+        and (detail["version_group"]["name"] not in _SIDE_VERSION_GROUPS, _id_from_url(detail["version_group"]["url"])) == newest
+    })
+
+
+def status_move_entries(learnset: list[dict], level: int, machine_ids: Collection[int] | None,
+                        eggs: Sequence[Collection[int]]) -> list[dict]:
+    """The battle's status moves a Pokémon may use: by level-up at or below `level` or by machine (as for attacking
+    moves), or as an egg move of the Pokémon or any species it evolved from (`eggs`). Learnset entries, by id."""
+    found: dict[int, dict] = {}
+    for entry in learnset:
+        move_id = entry["move_id"]
+        if move_id in STATUS_MOVES and (
+            entry["source"] == "level" and entry["level"] <= level
+            or entry["source"] == "machine" and (machine_ids is None or move_id in machine_ids)
+        ):
+            found.setdefault(move_id, entry)
+    for move_id in sorted({move_id for listed in eggs for move_id in listed if move_id in STATUS_MOVES}):
+        found.setdefault(move_id, {"move_id": move_id, "level": 0, "source": "egg"})
+    return [found[move_id] for move_id in sorted(found)]
+
+
+def _ancestors(pokemon_id: int) -> list[int]:
+    from ypoke.gyms import species_table
+
+    table = species_table()
+    found = []
+    while pokemon_id in table and table[pokemon_id].parent:
+        pokemon_id = table[pokemon_id].parent
+        found.append(pokemon_id)
+    return found
 
 
 def move_from(move: dict) -> dict:

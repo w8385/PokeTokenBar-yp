@@ -2,8 +2,10 @@
 (capped at 50), IVs, natures, type effectiveness and level-up moves with PP, priority, critical-hit stages,
 multi-hit, drain and recoil, the major statuses (burn, paralysis, poison, toxic, sleep, freeze), confusion, stat
 stages, five-turn weather, about twenty abilities (`ypoke.abilities`) and one held item per Pokémon
-(`ypoke.items`). The next member comes in when one faints; no other switching. The first member of a side
-holding its Mega Stone Mega Evolves as it enters."""
+(`ypoke.items`), and the effect moves of `ypoke.move_effects`: Trick Room, Stealth Rock, Yawn, Thunder Wave and
+the pivot moves.
+The next member comes in when one faints; the only other switch is a pivot move's. The first member of a side
+holding its Mega Stone (or Primal orb) Mega Evolves as it enters."""
 
 import random
 from collections.abc import Sequence
@@ -46,6 +48,9 @@ AILMENT_IMMUNE_TYPES = {
     "freeze": ("ice",), "sleep": (), "confusion": (),
 }
 RESIDUAL_FRACTIONS = {"burn": BURN_DAMAGE_FRACTION, "poison": POISON_DAMAGE_FRACTION}
+TRICK_ROOM_TURNS = 5
+STEALTH_ROCK_FRACTION = 8
+STATUS_EFFECTS = ("trick-room", "stealth-rock", "yawn", "thunder-wave")
 _NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
 _NATURE_NAMES = (
     "hardy lonely brave adamant naughty bold docile relaxed impish lax timid hasty serious jolly naive "
@@ -87,6 +92,7 @@ class Move:
     drain: int = 0
     min_hits: int = 1
     max_hits: int = 1
+    effect: str | None = None
 
     @property
     def expected_hits(self) -> float:
@@ -151,7 +157,9 @@ class Action:
     or "confusion", the last one meaning it hurt itself). `attacker_hp` / `defender_hp` are HP shares after it.
     `recovered` lists what ended before it acted ("sleep", "freeze", "confusion"). `hits` counts a multi-hit
     move's hits; `drained` means the user healed from the damage. `attacker_item` / `defender_item` name the
-    held item that triggered on that side during this action (Life Orb recoil, Focus Sash)."""
+    held item that triggered on that side during this action (Life Orb recoil, Focus Sash). `effect` is what an
+    effect move did ("trick-room", "trick-room-off", "stealth-rock", "yawn", "thunder-wave"); `pivoted` means the user
+    switched out."""
 
     turn: int
     side: int
@@ -176,6 +184,8 @@ class Action:
     ability: str | None = None
     attacker_item: str = ""
     defender_item: str = ""
+    effect: str = ""
+    pivoted: bool = False
 
 
 @dataclass(frozen=True)
@@ -218,12 +228,39 @@ class WeatherEnd:
 
 
 @dataclass(frozen=True)
-class SendOut:
-    """The next member of `side` replaces a fainted one at the end of `turn`."""
+class TrickRoomEnd:
+    turn: int
+
+
+@dataclass(frozen=True)
+class HazardDamage:
+    """Stealth Rock hurt a Pokémon as it entered; `hp` is the share left."""
 
     turn: int
     side: int
     pokemon: str
+    hp: int
+    fainted: bool
+
+
+@dataclass(frozen=True)
+class YawnSleep:
+    """The Pokémon Yawn made drowsy last turn fell asleep at the end of `turn`."""
+
+    turn: int
+    side: int
+    pokemon: str
+
+
+@dataclass(frozen=True)
+class SendOut:
+    """A member of `side` comes in during `turn`: after a faint at the end of the turn, or right after a pivot move.
+    `member` is its index in the side's roster (-1: not given)."""
+
+    turn: int
+    side: int
+    pokemon: str
+    member: int = -1
 
 
 @dataclass(frozen=True)
@@ -257,6 +294,7 @@ class MegaEvolution:
     pokemon: str
     ability: str | None
     form_id: int | None = None
+    kind: str = "mega"
 
 
 @dataclass(frozen=True)
@@ -274,7 +312,7 @@ class FormShift:
 
 Event = (
     Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | ItemEffect | MegaEvolution
-    | FormShift
+    | FormShift | TrickRoomEnd | HazardDamage | YawnSleep
 )
 
 
@@ -312,11 +350,13 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     A fainted Pokémon is replaced after the end-of-turn effects, so its successor takes no chip damage that turn.
     `carried` (per member of the first side, in order) starts a member hurt or with a status.
     `finale` is the second side's member index from which a second Mega Evolution is allowed.
+    Both sides follow the same rules and the same move choice (`_choose`).
     """
     rng = random.Random(seed)
     teams = (_Team(_roster(sides[0]), carried), _Team(_roster(sides[1]), finale=finale))
     events: list[Event] = []
     weather = _Weather()
+    arena = _Arena()
     for side in (0, 1):
         _enter_forms(teams[side], side, 1, events)
     events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng))
@@ -326,18 +366,28 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     while loser is None and turn < TURN_LIMIT:
         turn += 1
         fighters = (teams[0].active, teams[1].active)
-        choices = (
-            _best_move(fighters[0], fighters[1], weather.kind), _best_move(fighters[1], fighters[0], weather.kind),
-        )
-        claws = _quick_claws(turn, fighters, choices, weather.kind, rng, events)
-        for side in _turn_order(fighters, choices, rng, weather.kind, claws):
+        choices = (_choose(teams, 0, arena, weather.kind), _choose(teams, 1, arena, weather.kind))
+        trick_room = arena.trick_room > 0
+        claws = _quick_claws(turn, fighters, choices, weather.kind, rng, events, trick_room)
+        for side in _turn_order(fighters, choices, rng, weather.kind, claws, trick_room):
+            fighters = (teams[0].active, teams[1].active)
             if fighters[side].hp == 0 or fighters[1 - side].hp == 0:
                 continue
-            events.append(_act(turn, side, fighters, choices[side], weather, rng))
+            fighters[side].fresh = False
+            action = _act(turn, side, fighters, choices[side], weather, rng, arena)
+            _note_effect(teams[side], action)
+            if action.move and _pivots(teams[side], action, choices[side]):
+                action = replace(action, pivoted=True)
+            events.append(action)
             loser = _exhausted(teams, (1 - side, side))
             if loser is not None:
                 break
-            _item_triggers(turn, fighters, events)
+            if action.pivoted:
+                loser = _pivot(teams, side, turn, arena, weather, rng, events)
+                if loser is not None:
+                    break
+            _item_triggers(turn, (teams[0].active, teams[1].active), events)
+        fighters = (teams[0].active, teams[1].active)
         for side in (0, 1):
             fighter = fighters[side]
             if loser is None and fighter.hp > 0 and fighter.status in ("burn", "poison", "toxic"):
@@ -352,13 +402,11 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
         if loser is None:
             _item_upkeep(turn, fighters, events, rng)
             loser = _exhausted(teams, (0, 1))
-        entering = tuple(side for side in (0, 1) if loser is None and teams[side].active.hp == 0)
-        for side in entering:
-            events.append(SendOut(turn, side, teams[side].send_next().combatant.name))
-            _enter_forms(teams[side], side, turn, events)
-        if entering:
-            events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, entering))
-            _item_triggers(turn, (teams[0].active, teams[1].active), events)
+        if loser is None:
+            _yawn_upkeep(turn, fighters, events, rng)
+            _trick_room_upkeep(turn, arena, events)
+        if loser is None:
+            loser = _replace_fainted(teams, turn, arena, weather, rng, events)
     if loser is None:
         loser = 1 if teams[0].standing() >= teams[1].standing() else 0
     return BattleResult(
@@ -374,6 +422,85 @@ def _roster(side: Combatant | Sequence[Combatant]) -> tuple[Combatant, ...]:
 def _exhausted(teams: tuple["_Team", "_Team"], order: tuple[int, ...]) -> int | None:
     """The first side in `order` whose active Pokémon fainted with nobody left to send out."""
     return next((side for side in order if teams[side].active.hp == 0 and not teams[side].has_next), None)
+
+
+def _replace_fainted(teams: tuple["_Team", "_Team"], turn: int, arena: "_Arena", weather: "_Weather",
+                     rng: random.Random, events: list[Event]) -> int | None:
+    """End of turn: each side whose active Pokémon fainted sends the next one, again while Stealth Rock knocks out
+    the newcomer. Returns the side that ran out, if any."""
+    while True:
+        entering = tuple(side for side in (0, 1) if teams[side].active.hp == 0)
+        if not entering:
+            return None
+        loser = _exhausted(teams, entering)
+        if loser is not None:
+            return loser
+        standing = tuple(side for side in entering if _send_in(teams[side], side, turn, arena, events))
+        if standing:
+            events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, standing))
+            _item_triggers(turn, (teams[0].active, teams[1].active), events)
+
+
+def _send_in(team: "_Team", side: int, turn: int, arena: "_Arena", events: list[Event],
+             member: int | None = None) -> bool:
+    """Brings in the next member (or `member`): Stealth Rock first, then its forms. False if the rocks knocked it out."""
+    returning = team.send_next(member)
+    fighter = team.active
+    events.append(SendOut(turn, side, fighter.combatant.name, team.current))
+    if arena.rocks[side]:
+        ratio = effectiveness("rock", fighter.combatant.types)
+        if ratio > 0:
+            fighter.hp = max(0, fighter.hp - max(1, int(fighter.max_hp * ratio / STEALTH_ROCK_FRACTION)))
+            events.append(HazardDamage(turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0))
+    if fighter.hp == 0:
+        return False
+    if not returning:
+        _enter_forms(team, side, turn, events)
+    return True
+
+
+def _pivot(teams: tuple["_Team", "_Team"], side: int, turn: int, arena: "_Arena", weather: "_Weather",
+           rng: random.Random, events: list[Event]) -> int | None:
+    """The pivot move's user goes to the back of its group and the next healthy member of the group comes in."""
+    team = teams[side]
+    target = team.pivot_target()
+    team.bench_active()
+    if _send_in(team, side, turn, arena, events, target):
+        events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, (side,)))
+        return None
+    return _exhausted(teams, (side,))
+
+
+def _pivots(team: "_Team", action: Action, index: int | None) -> bool:
+    """A pivot move that hit switches its user out when a healthy member of its group is waiting."""
+    if index is None or action.missed or action.failed or action.multiplier == 0 or action.attacker_fainted:
+        return False
+    return team.active.combatant.moves[index].effect == "pivot" and team.pivot_target() is not None
+
+
+def _note_effect(team: "_Team", action: Action) -> None:
+    if action.effect == "trick-room":
+        team.trick_room_used = True
+    elif action.effect == "stealth-rock":
+        team.rocks_used = True
+
+
+def _yawn_upkeep(turn: int, fighters: tuple["_Fighter", "_Fighter"], events: list[Event], rng: random.Random) -> None:
+    for side, fighter in enumerate(fighters):
+        if fighter.drowsy_at != turn:
+            continue
+        fighter.drowsy_at = 0
+        if fighter.hp > 0 and fighter.status is None and not abilities.blocks_ailment(fighter.ability, "sleep"):
+            _inflict("sleep", fighter, side, rng)
+            events.append(YawnSleep(turn, side, fighter.combatant.name))
+
+
+def _trick_room_upkeep(turn: int, arena: "_Arena", events: list[Event]) -> None:
+    if arena.trick_room == 0:
+        return
+    arena.trick_room -= 1
+    if arena.trick_room == 0:
+        events.append(TrickRoomEnd(turn))
 
 
 def _enter_forms(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
@@ -404,12 +531,12 @@ def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> No
     if mega.ability_id is not None:
         ability = mega.ability_id if mega.ability_id in abilities.NAMES else None
     evolved = replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None, tera=False)
-    team.entered[-1] = _Fighter.enter(evolved, _carry_of(fighter))
+    team.fighters[team.current] = _Fighter.enter(evolved, _carry_of(fighter))
     team.mega_used = True
     if mega.kind == "stellar":
         events.append(FormShift(turn, side, fighter.combatant.name, "stellar", mega.form_id))
     else:
-        events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability, mega.form_id))
+        events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability, mega.form_id, mega.kind))
 
 
 @dataclass
@@ -418,42 +545,77 @@ class _Weather:
     turns_left: int = 0
 
 
+@dataclass
+class _Arena:
+    """`trick_room` is the turns it has left; `rocks[side]` means Stealth Rock lies on that side."""
+
+    trick_room: int = 0
+    rocks: list[bool] = field(default_factory=lambda: [False, False])
+
+
 class _Team:
     """A roster fought in order: `active` is the member in the field, entered fresh when its turn comes.
-    The member at `finale` gets its own Mega Evolution slot, whether or not one before it used the team's."""
+    `queue` holds the members still to come in, in order; a pivoting member goes back to the end of its group
+    (the members before `finale`, or the finale). The member at `finale` gets its own Mega Evolution slot, whether
+    or not one before it used the team's."""
 
     def __init__(self, roster: tuple[Combatant, ...], carried: Sequence[Carry | None] = (), finale: int | None = None):
         self.roster = roster
         self.carried = tuple(carried) + (None,) * (len(roster) - len(carried))
-        self.entered = [_Fighter.enter(roster[0], self.carried[0])]
+        self.fighters = {0: _Fighter.enter(roster[0], self.carried[0])}
+        self.current = 0
+        self.queue = list(range(1, len(roster)))
         self.mega_used = False
         self.finale = finale
+        self.trick_room_used = False
+        self.rocks_used = False
 
     @property
     def active(self) -> "_Fighter":
-        return self.entered[-1]
+        return self.fighters[self.current]
 
     @property
     def has_next(self) -> bool:
-        return len(self.entered) < len(self.roster)
+        return bool(self.queue)
 
-    def send_next(self) -> "_Fighter":
-        index = len(self.entered)
+    def send_next(self, member: int | None = None) -> bool:
+        """Brings in `member` (default: the next in the queue). True when it had been out before."""
+        index = self.queue[0] if member is None else member
+        self.queue.remove(index)
+        self.current = index
+        if index in self.fighters:
+            return True
         if index == self.finale:
             self.mega_used = False
-        self.entered.append(_Fighter.enter(self.roster[index], self.carried[index]))
-        return self.active
+        self.fighters[index] = _Fighter.enter(self.roster[index], self.carried[index])
+        return False
+
+    def pivot_target(self) -> int | None:
+        return next((index for index in self.queue if self._group(index) == self._group(self.current)), None)
+
+    def bench_active(self) -> None:
+        """The active member leaves the field healthy: back of its group's queue, volatile state cleared."""
+        self.active.leave()
+        group = self._group(self.current)
+        at = next((position for position, index in enumerate(self.queue) if self._group(index) > group), len(self.queue))
+        self.queue.insert(at, self.current)
+
+    def _group(self, index: int) -> int:
+        return int(self.finale is not None and index >= self.finale)
 
     def shares(self) -> tuple[int | None, ...]:
-        return (*(fighter.hp_percent for fighter in self.entered), *(None,) * (len(self.roster) - len(self.entered)))
+        return tuple(self.fighters[index].hp_percent if index in self.fighters else None
+                     for index in range(len(self.roster)))
 
     def statuses(self) -> tuple[str | None, ...]:
-        return (*(fighter.status for fighter in self.entered), *(None,) * (len(self.roster) - len(self.entered)))
+        return tuple(self.fighters[index].status if index in self.fighters else None
+                     for index in range(len(self.roster)))
 
     def standing(self) -> tuple[int, float]:
         """Members not yet fainted, then the sum of their HP shares; an unentered member counts at its carried HP."""
-        waiting = [carry.hp / 100 if carry else 1.0 for carry in self.carried[len(self.entered):]]
-        alive = [fighter for fighter in self.entered if fighter.hp > 0]
+        waiting = [carry.hp / 100 if carry else 1.0
+                   for index, carry in enumerate(self.carried) if index not in self.fighters]
+        alive = [fighter for fighter in self.fighters.values() if fighter.hp > 0]
         return len(waiting) + len(alive), sum(waiting) + sum(fighter.hp / fighter.max_hp for fighter in alive)
 
 
@@ -471,6 +633,15 @@ class _Fighter:
     confusion_left: int = 0
     item: str | None = None
     locked: int | None = None
+    drowsy_at: int = 0
+    fresh: bool = True
+
+    def leave(self) -> None:
+        """Switching out clears stat stages, the Choice lock, confusion, the toxic count and drowsiness."""
+        self.stages = dict.fromkeys(BATTLE_STATS, 0)
+        self.locked = None
+        self.confusion_left = self.toxic_ticks = self.drowsy_at = 0
+        self.fresh = True
 
     @classmethod
     def enter(cls, combatant: Combatant, carry: Carry | None = None) -> "_Fighter":
@@ -542,9 +713,10 @@ def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: r
 
 def _turn_order(fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
                 rng: random.Random, weather: str | None = None,
-                claws: tuple[bool, bool] = (False, False)) -> tuple[int, int]:
+                claws: tuple[bool, bool] = (False, False), trick_room: bool = False) -> tuple[int, int]:
+    """Higher priority first, then a Quick Claw, then the faster Pokémon (the slower one under Trick Room)."""
     keys = [
-        (_priority(fighter, choice), claw, fighter.stat("speed", weather))
+        (_priority(fighter, choice), claw, fighter.stat("speed", weather) * (-1 if trick_room else 1))
         for fighter, choice, claw in zip(fighters, choices, claws)
     ]
     if keys[0] != keys[1]:
@@ -557,14 +729,16 @@ def _priority(fighter: _Fighter, choice: int | None) -> int:
 
 
 def _quick_claws(turn: int, fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
-                 weather: str | None, rng: random.Random, events: list[Event]) -> tuple[bool, bool]:
+                 weather: str | None, rng: random.Random, events: list[Event],
+                 trick_room: bool = False) -> tuple[bool, bool]:
     """Which Quick Claw holders may move first this turn (20% each; no draw without the item). Only a claw that
-    puts a slower holder ahead of a foe in the same priority bracket is logged."""
+    puts a holder that would move second ahead of a foe in the same priority bracket is logged."""
     claws = tuple(fighter.item == items.QUICK_CLAW and rng.random() < items.QUICK_CLAW_CHANCE for fighter in fighters)
     if claws[0] and claws[1] or _priority(fighters[0], choices[0]) != _priority(fighters[1], choices[1]):
         return claws
     for side, fighter in enumerate(fighters):
-        if claws[side] and fighter.stat("speed", weather) <= fighters[1 - side].stat("speed", weather):
+        mine, theirs = fighter.stat("speed", weather), fighters[1 - side].stat("speed", weather)
+        if claws[side] and (mine >= theirs if trick_room else mine <= theirs):
             events.append(ItemEffect(turn, side, fighter.combatant.name, items.QUICK_CLAW, "first"))
     return claws
 
@@ -648,7 +822,7 @@ def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:
 
 
 def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, weather: _Weather,
-         rng: random.Random) -> Action:
+         rng: random.Random, arena: _Arena | None = None) -> Action:
     attacker, defender = fighters[side], fighters[1 - side]
     names = (attacker.combatant.name, defender.combatant.name)
     move = STRUGGLE if index is None else attacker.combatant.moves[index]
@@ -671,6 +845,13 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         weather.kind, weather.turns_left = move.weather, items.weather_turns(attacker.item, move.weather, WEATHER_TURNS)
         return Action(turn, side, *names, move.name, weather=move.weather, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
+    if move.effect in STATUS_EFFECTS:
+        if move.accuracy is not None and rng.random() * 100 >= move.accuracy:
+            return Action(turn, side, *names, move.name, missed=True, recovered=recovered,
+                          defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
+        effect, changes = _status_effect(turn, side, move, defender, arena if arena is not None else _Arena(), rng)
+        return Action(turn, side, *names, move.name, failed=not effect, effect=effect, recovered=recovered,
+                      changes=changes, defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     multiplier = _multiplier(move, defender)
     accuracy = (move.accuracy or 0) * items.accuracy_multiplier(attacker.item, defender.item)
     if move.accuracy is not None and weather.kind not in move.always_hits_in and rng.random() * 100 >= accuracy:
@@ -728,6 +909,40 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         recovered=recovered, hits=hits, drained=drained, attacker_hp=attacker.hp_percent, ability=ability,
         attacker_item=attacker_item, defender_item=defender_item,
     )
+
+
+def _status_effect(turn: int, side: int, move: Move, defender: _Fighter, arena: _Arena,
+                   rng: random.Random) -> tuple[str, tuple[Change, ...]]:
+    """Applies Trick Room (a second use ends it), Stealth Rock on the foe's side, Yawn or Thunder Wave. Returns what
+    it did ("" when it failed) and the status it landed."""
+    if move.effect == "trick-room":
+        arena.trick_room = 0 if arena.trick_room else TRICK_ROOM_TURNS
+        return ("trick-room" if arena.trick_room else "trick-room-off"), ()
+    if move.effect == "stealth-rock":
+        if arena.rocks[1 - side]:
+            return "", ()
+        arena.rocks[1 - side] = True
+        return "stealth-rock", ()
+    if move.effect == "thunder-wave":
+        if not _paralyzable(move, defender):
+            return "", ()
+        return "thunder-wave", (_inflict("paralysis", defender, 1 - side, rng),)
+    if not _yawnable(defender):
+        return "", ()
+    defender.drowsy_at = turn + 1
+    return "yawn", ()
+
+
+def _paralyzable(move: Move, fighter: _Fighter) -> bool:
+    """Thunder Wave fails on a Pokémon with a status, an Electric type, one its type cannot touch (Ground) or an
+    ability that blocks paralysis."""
+    return (fighter.status is None and "electric" not in fighter.combatant.types
+            and effectiveness(move.type, fighter.combatant.types) > 0
+            and not abilities.blocks_ailment(fighter.ability, "paralysis"))
+
+
+def _yawnable(fighter: _Fighter) -> bool:
+    return fighter.status is None and not fighter.drowsy_at and not abilities.blocks_ailment(fighter.ability, "sleep")
 
 
 def _attacker_item_effect(attacker: _Fighter, move: Move, dealt: int, drained: bool) -> str:
@@ -867,6 +1082,56 @@ def _inflict(ailment: str, defender: _Fighter, side: int, rng: random.Random) ->
     return Change(side, defender.combatant.name, ailment)
 
 
+def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: str | None) -> int | None:
+    """The move `side`'s active Pokémon uses this turn, by one rule for both sides. First an effect move whose moment
+    has come: Trick Room on its first turn in when its team is slower than the foe and none has been set, Stealth Rock
+    once while the foe has members to come, Yawn on a foe with no status, Thunder Wave on a faster foe it can
+    paralyze. Then a pivot move when the foe has a
+    super-effective hit on it and a member of its group can come in. Otherwise `_best_move`."""
+    team, foes = teams[side], teams[1 - side]
+    attacker, defender = team.active, foes.active
+    best = _best_move(attacker, defender, weather)
+    if attacker.locked is not None or attacker.item in items.CHOICE_ITEMS or attacker.item == items.ASSAULT_VEST:
+        return best
+    if best is not None and _surely_finishes(attacker, defender, attacker.combatant.moves[best], weather):
+        return best
+    wanted = {
+        "trick-room": attacker.fresh and not team.trick_room_used and not arena.trick_room
+        and _team_speed(team) < defender.stat("speed", weather),
+        "stealth-rock": not team.rocks_used and not arena.rocks[1 - side] and foes.has_next,
+        "yawn": _yawnable(defender),
+        "thunder-wave": defender.stat("speed", weather) > attacker.stat("speed", weather),
+    }
+    for effect in STATUS_EFFECTS:
+        index = _usable(attacker, effect)
+        if index is not None and wanted[effect] and (
+            effect != "thunder-wave" or _paralyzable(attacker.combatant.moves[index], defender)
+        ):
+            return index
+    pivot = _usable(attacker, "pivot")
+    if pivot is not None and team.pivot_target() is not None and _threatened(attacker, defender, weather):
+        return pivot
+    return best
+
+
+def _usable(fighter: _Fighter, effect: str) -> int | None:
+    return next((index for index, move in enumerate(fighter.combatant.moves)
+                 if move.effect == effect and fighter.pp[index] > 0), None)
+
+
+def _threatened(fighter: _Fighter, foe: _Fighter, weather: str | None) -> bool:
+    """Whether `foe` has a super-effective damaging move with PP against `fighter`."""
+    return any(_multiplier(move, fighter) > 1 for index, move in enumerate(foe.combatant.moves)
+               if foe.pp[index] > 0 and move.power and not move.weather and move.effect not in STATUS_EFFECTS)
+
+
+def _team_speed(team: "_Team") -> float:
+    """The mean Speed of the team's members still able to fight, counting the ones not yet in at their full stat."""
+    speeds = [fighter.stat("speed") for fighter in team.fighters.values() if fighter.hp > 0]
+    speeds += [_Fighter.enter(team.roster[index]).stat("speed") for index in team.queue if index not in team.fighters]
+    return sum(speeds) / len(speeds)
+
+
 def _best_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> int | None:
     """Index of the move to use; None means Struggle.
 
@@ -878,7 +1143,7 @@ def _best_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> i
         return attacker.locked if attacker.pp[attacker.locked] > 0 else None
     best, best_score = None, -1.0
     for index, move in enumerate(attacker.combatant.moves):
-        if attacker.pp[index] <= 0 or move.weather:
+        if attacker.pp[index] <= 0 or move.weather or move.effect in STATUS_EFFECTS:
             continue
         score = _move_score(attacker, defender, move, weather)
         if score > best_score:
@@ -920,7 +1185,7 @@ def _best_score(attacker: _Fighter, defender: _Fighter, weather: str | None) -> 
     scores = [
         _move_score(attacker, defender, move, weather)
         for index, move in enumerate(attacker.combatant.moves)
-        if attacker.pp[index] > 0 and not move.weather
+        if attacker.pp[index] > 0 and not move.weather and move.effect not in STATUS_EFFECTS
     ]
     return max(scores, default=0.0)
 

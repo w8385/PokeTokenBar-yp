@@ -11,8 +11,8 @@ from functools import partial
 
 from ypoke import gyms
 from ypoke.battle import (
-    CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, ItemEffect, ItemHeal, SendOut, StatusDamage, WeatherDamage,
-    simulate,
+    CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, HazardDamage, ItemEffect, ItemHeal, SendOut, StatusDamage,
+    WeatherDamage, YawnSleep, simulate,
 )
 from ypoke.combatants import combatant
 from ypoke.gym_data import FINALE_LINE
@@ -124,21 +124,26 @@ def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: 
     for event in result.events:
         turn = getattr(event, "turn", turn)
         if isinstance(event, SendOut):
-            position = replay.send_next(event.side)
-            if event.side == 1 and position == finale:
+            position = event.member
+            replay.active[event.side] = position
+            if event.side == 1 and position == finale and not replay.seen(1):
                 replay.events.append({"turn": turn, "type": "finale", "side": 1, "member": position,
                                       "text": dict(FINALE_LINE)})
             replay.switch(turn, event.side, starts[position] if event.side == 0 else None)
         elif isinstance(event, Action):
             replay.action(event)
-        elif isinstance(event, (StatusDamage, WeatherDamage, ItemHeal)):
+        elif isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage)):
             replay.hp(turn, event.side, event.hp)
         elif isinstance(event, ItemEffect) and event.effect in ("cure", *CARRIED_STATUSES):
             replay.status(turn, event.side, None if event.effect == "cure" else event.effect)
+        elif isinstance(event, YawnSleep):
+            replay.status(turn, event.side, "sleep")
     return replay.events
 
 
 class _Replay:
+    """`active[side]` is the fighting position (index into `members[side]`) of the member out on that side."""
+
     def __init__(self, members: tuple[list[int], list[int]]):
         self.members = members
         self.active = [0, 0]
@@ -146,14 +151,15 @@ class _Replay:
         self._hp: dict[tuple[int, int], int] = {}
         self._status: dict[tuple[int, int], str | None] = {}
 
-    def send_next(self, side: int) -> int:
-        self.active[side] += 1
-        return self.active[side]
+    def seen(self, side: int) -> bool:
+        return self._key(side) in self._hp
 
     def switch(self, turn: int, side: int, start: Carry | None) -> None:
+        """A member coming back after a pivot comes out with the HP and status it left with."""
         key = self._key(side)
-        self._hp[key] = 100 if start is None else start.hp
-        self._status[key] = None if start is None else start.status
+        if key not in self._hp:
+            self._hp[key] = 100 if start is None else start.hp
+            self._status[key] = None if start is None else start.status
         self._emit(turn, "switch", side, hp=self._hp[key], status=self._status[key])
 
     def action(self, action: Action) -> None:
@@ -200,10 +206,10 @@ def _log(result: BattleResult, finale: int | None = None) -> list[dict]:
         {"turn": number, "lines": [dict(zip(("side", "text"), split_side(line))) for line in lines]}
         for number, lines in battle_turns(result)
     ]
-    sent = [event for event in result.events if isinstance(event, SendOut) and event.side == 1]
-    if finale is None or len(sent) < finale:
+    entrance = next((event for event in result.events
+                     if isinstance(event, SendOut) and event.side == 1 and event.member == finale), None)
+    if finale is None or entrance is None:
         return turns
-    entrance = sent[finale - 1]
     for turn in turns:
         if turn["turn"] != entrance.turn:
             continue

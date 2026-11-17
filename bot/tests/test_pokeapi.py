@@ -7,6 +7,7 @@ import pytest
 
 from ypoke import pokeapi
 from ypoke.commands import CommandHandler
+from ypoke.move_effects import STATUS_MOVES
 from ypoke.pokeapi import PokeAPIService, learnset_from, move_from
 from ypoke.store import Store
 
@@ -193,7 +194,7 @@ def test_learnsets_and_moves_are_cached(service):
     api.attacking_moves(25, 50)
     count = len(fetched)
     api.attacking_moves(25, 50)
-    assert len(fetched) == count == 1 + len(MOVES)
+    assert len(fetched) == count == 1 + len(MOVES.keys() - STATUS_MOVES.keys())
 
 
 def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chance=0, crit_rate=0, priority=0,

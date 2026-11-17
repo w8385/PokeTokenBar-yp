@@ -96,7 +96,14 @@ MEGA_STONES: dict[str, tuple[int, int]] = {
 }
 
 
+# Primal Reversion works like a Mega Evolution here and takes the same once-per-battle slot.
+PRIMAL_ORBS: dict[str, tuple[int, int]] = {
+    "red-orb": (383, 10078),
+    "blue-orb": (382, 10077),
+}
+
+
 def mega_form_id(item: str | None, pokemon_id: int) -> int | None:
-    """The Mega form `/pokemon` id when `item` is the stone of `pokemon_id`, else None."""
-    entry = MEGA_STONES.get(item or "")
+    """The Mega (or Primal) form `/pokemon` id when `item` is the stone or orb of `pokemon_id`, else None."""
+    entry = MEGA_STONES.get(item or "") or PRIMAL_ORBS.get(item or "")
     return entry[1] if entry and entry[0] == pokemon_id else None
