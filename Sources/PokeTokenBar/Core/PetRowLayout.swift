@@ -4,7 +4,8 @@ import CoreGraphics
 /// (the main pet's origin) survives friends coming and going.
 struct PetRowLayout: Equatable {
     static let friendScale: CGFloat = 0.7
-    static let friendGap: CGFloat = 4
+    /// How far a friend's box reaches into its neighbour's, as a share of the friend's size.
+    static let friendOverlapScale: CGFloat = 0.28
 
     var friendCount = 0
     /// One friend, or two that do not fit on both sides of the screen, stand to the left of the main pet
@@ -17,7 +18,9 @@ struct PetRowLayout: Equatable {
 
     static func friendSize(petSize: CGFloat) -> CGFloat { (petSize * friendScale).rounded() }
 
-    static func friendSlotWidth(petSize: CGFloat) -> CGFloat { friendSize(petSize: petSize) + friendGap }
+    static func friendOverlap(petSize: CGFloat) -> CGFloat { (friendSize(petSize: petSize) * friendOverlapScale).rounded() }
+
+    static func friendSlotWidth(petSize: CGFloat) -> CGFloat { friendSize(petSize: petSize) - friendOverlap(petSize: petSize) }
 
     var isFlanking: Bool { friendsFlank && friendCount == 2 }
 
