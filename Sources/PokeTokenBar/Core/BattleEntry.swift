@@ -32,8 +32,6 @@ enum BattlePickerTarget: Equatable {
 enum BattleEntry {
     static let maxMoves = 4
     static let maxSlots = 6
-    /// Slots 1–3 fight in PvP and are the only ones uploaded to the bot; 4–6 are for the gym.
-    static let pvpSlots = 3
     /// The bot fights every Pokémon at this level or below; the app's growth is not capped.
     static let battleLevel = 50
 
@@ -126,7 +124,7 @@ enum BattleEntry {
         return Set(candidates(in: state).map(\.id).filter { itemClash($0, replacing: replacing, among: ids, state: state) })
     }
 
-    /// The PvP party (the first `pvpSlots` of the lineup) with each member's chosen moves, or the rental starter
+    /// The party uploaded for Slack battles: the whole lineup with each member's chosen moves, or the rental starter
     /// when nothing is owned yet. A later member holding the same item as an earlier one goes without it.
     static func party(state: CompanionState, slots: [BattleEntrySlot], moveChoices: [String: MoveChoice],
                       rentalSpeciesID: Int) -> [PartyMember] {
@@ -136,7 +134,7 @@ enum BattleEntry {
             return [PartyMember(pokemonID: rentalSpeciesID, level: rentalLevel, shiny: false, ivs: nil, rental: true)]
         }
         let ownedMachines = MachineMove.ownedIDs(in: state.inventory)
-        return lineup.prefix(pvpSlots).map { candidate in
+        return lineup.map { candidate in
             var member = candidate.member
             if duplicates.contains(candidate.id) { member.heldItem = nil }
             if let choice = moveChoices[candidate.id], choice.pokemonID == member.pokemonID {
