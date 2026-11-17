@@ -148,7 +148,7 @@ class Change:
 @dataclass(frozen=True)
 class Action:
     """One Pokémon's turn. `move` is "" when it could not act; `blocked` says why ("paralysis", "sleep", "freeze"
-    or "confusion", the last one meaning it hurt itself and `attacker_hp` is its HP share).
+    or "confusion", the last one meaning it hurt itself). `attacker_hp` / `defender_hp` are HP shares after it.
     `recovered` lists what ended before it acted ("sleep", "freeze", "confusion"). `hits` counts a multi-hit
     move's hits; `drained` means the user healed from the damage. `attacker_item` / `defender_item` name the
     held item that triggered on that side during this action (Life Orb recoil, Focus Sash)."""
@@ -662,20 +662,21 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
     if move.weather:
         if weather.kind == move.weather:
             return Action(turn, side, *names, move.name, failed=True, recovered=recovered,
-                          defender_hp=defender.hp_percent)
+                          defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
         weather.kind, weather.turns_left = move.weather, items.weather_turns(attacker.item, move.weather, WEATHER_TURNS)
         return Action(turn, side, *names, move.name, weather=move.weather, recovered=recovered,
-                      defender_hp=defender.hp_percent)
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     multiplier = _multiplier(move, defender)
     accuracy = (move.accuracy or 0) * items.accuracy_multiplier(attacker.item, defender.item)
     if move.accuracy is not None and weather.kind not in move.always_hits_in and rng.random() * 100 >= accuracy:
         return Action(turn, side, *names, move.name, missed=True, multiplier=multiplier, recovered=recovered,
-                      defender_hp=defender.hp_percent)
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     if multiplier == 0:
         granted = abilities.grants_immunity(defender.ability, move.type) and effectiveness(
             move.type, defender.combatant.types) > 0
         return Action(turn, side, *names, move.name, multiplier=0, recovered=recovered,
-                      defender_hp=defender.hp_percent, ability=defender.ability if granted else None)
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent,
+                      ability=defender.ability if granted else None)
     critical, hits, dealt, sturdy, endured, berry = False, 0, 0, False, "", ""
     crit_stage = move.crit_stage + items.crit_stage_bonus(attacker.item)
     helmet = defender.item == items.ROCKY_HELMET and move.physical
