@@ -7,7 +7,8 @@ in `/대결 @상대 N` battles; a shorter upload sends what it has. When one fai
 - Base URL: the bot's `YPOKE_PUBLIC_URL`, for example `http://<bot-host>:8790`
 - Auth: `Authorization: Bearer <token>`. Users get the token from `/포켓몬연결`:
   the bot DMs a button that opens `poketokenbar://ypoke-register?token=<token>&server=<base URL>`,
-  and the app saves both. The DM also shows the token for pasting by hand.
+  and the app saves both. The DM also shows the token for pasting by hand. The channel only sees a one-line
+  notice that the user got a link; the token and link stay in the DM.
   Running `/포켓몬연결` again issues a new token and revokes the old one.
 - Body: JSON, UTF-8, at most 64 KB.
 

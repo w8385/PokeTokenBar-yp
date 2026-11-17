@@ -58,6 +58,8 @@ MENTION_WORDS = {
     "연결": LINK_COMMAND,
     "도감": DEX_COMMAND,
 }
+HELP_WORDS = frozenset({"", "help", "도움말"})
+HELP_PUBLIC_LINE = f"YPoke 명령 목록은 `{UMBRELLA_COMMAND}`로 누구나 볼 수 있어요."
 
 HELP_TEXT = (
     "*YPoke 대결*\n"
@@ -66,10 +68,11 @@ HELP_TEXT = (
     "고른 포켓몬이 그보다 적으면 있는 만큼 나가요. 쓰러지면 다음 포켓몬이 나와요. 교체는 없어요.\n"
     "알만 있으면 대여 포켓몬이 상대 레벨로 나가요. 상대가 아직 준비 전이면 연결 안내를 보내요. 준비되면 결과가 이 채널에 올라가요.\n"
     f"`{BATTLE_COMMAND} @YPoke [1-6]` 또는 `@YPoke 대결 [1-6]` 봇이 무작위 포켓몬으로 연습 대결을 해요. 전적에 안 남아요.\n"
-    f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
-    f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
+    f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 채널에는 링크를 받았다는 한 줄만 올라가요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
+    f"`{RECORD_COMMAND} [@누구]` 승패를 이 채널에 올려요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
-    f"`{DEX_COMMAND} [@누구]` 도감 수·이로치 수·지역별 진행·대표 포켓몬을 보여줘요. 앱을 켜 둬야 도감이 올라가요.\n"
+    f"`{DEX_COMMAND} [@누구]` 도감 수·이로치 수·지역별 진행·대표 포켓몬을 이 채널에 올려요. 앱을 켜 둬야 도감이 올라가요.\n"
+    "명령 결과는 누가 어떤 명령을 썼는지와 함께 채널에 올라가요. 연결 링크·토큰과 잘못 쓴 명령의 안내는 나만 봐요.\n"
     f"`{UMBRELLA_COMMAND}` 이 도움말이에요. `{UMBRELLA_COMMAND} 도감`처럼 뒤에 명령을 붙여도 돼요.\n"
     "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`도 돼요.\n"
     "*앱 대결 탭*\n"
@@ -159,8 +162,7 @@ class CommandHandler:
             return Reply(self._help)
         if command == BATTLE_COMMAND and not _MENTION.search(rest):
             return self._start(user_id, self._bot_user_id, where, size=battle_size(rest))
-        reply = self.handle(user_id, rest, command, where)
-        return replace(reply, in_channel=True) if command == DEX_COMMAND else reply
+        return self.handle(user_id, rest, command, where)
 
     @property
     def bot_user_id(self) -> str | None:
@@ -213,6 +215,8 @@ class CommandHandler:
 
     def _dispatch(self, user_id: str, text: str, command: str, where: Where | None, echo: str | None) -> Reply:
         if command == UMBRELLA_COMMAND:
+            if text.strip().lower() in HELP_WORDS:
+                return Reply(self._help, public=HELP_PUBLIC_LINE)
             command, text = parse_mention(text, self._bot_user_id)
         mention = _MENTION.search(text)
         if command == LINK_COMMAND:
@@ -234,6 +238,7 @@ class CommandHandler:
         return Reply(
             "DM으로 연결 링크를 보냈어요.",
             direct_messages=(DirectMessage(user_id, "PokeTokenBar를 YPoke에 연결하세요.", self._link_blocks(token)),),
+            public=f"<@{user_id}>님이 YPoke 연결 링크를 받았어요.",
         )
 
     def _link_blocks(self, token: str) -> list[dict]:
@@ -259,10 +264,10 @@ class CommandHandler:
 
     def _record(self, user_id: str) -> Reply:
         record = self._store.record(user_id)
-        return Reply(f"<@{user_id}> 전적: {record.wins}승 {record.losses}패")
+        return Reply(f"<@{user_id}> 전적: {record.wins}승 {record.losses}패", in_channel=True)
 
     def _dex(self, user_id: str, target_id: str) -> Reply:
-        """The target's uploaded dex summary. In a thread the mention listener makes it visible; a slash reply is private."""
+        """The target's uploaded dex summary, visible where it was asked for; the not-ready lines stay private."""
         who = f"<@{target_id}>"
         if target_id == self._bot_user_id:
             return Reply("YPoke는 도감이 없어요.")
@@ -284,7 +289,7 @@ class CommandHandler:
             tail = [f"대표 포켓몬: {name}{' ✨' if representative['shiny'] else ''}"]
             image_url = sprite_url(representative["pokemon_id"], representative["shiny"])
         return Reply(
-            "\n".join(head + progress_lines(summary) + tail), image_url=image_url,
+            "\n".join(head + progress_lines(summary) + tail), in_channel=True, image_url=image_url,
             fields=tuple(progress_fields(summary)), lead="\n".join(head + tail),
         )
 
