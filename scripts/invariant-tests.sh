@@ -176,4 +176,4 @@ for c in "${CLASSES[@]}"; do regex+="|^PokeTokenBarTests\\.$c/"; done
 for m in "${METHODS[@]}"; do regex+="|^PokeTokenBarTests\\.${m%%/*}/${m##*/}\$"; done
 
 echo "▶ swift test --filter (repo-wide invariants)"
-exec swift test --filter "$regex"
+exec ./scripts/swift-test-filter.py --filter "$regex"

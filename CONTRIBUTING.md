@@ -35,9 +35,13 @@ scroller lane, ...) or sweep every language. Adding a view, a string or a provid
 them from a suite that looks unrelated. Run them together with your own filter before every push:
 
 ```bash
-./scripts/invariant-tests.sh            # the repo-wide tests, one `swift test --filter` call
-swift test --filter <TestCase>          # the tests for what you changed
+./scripts/invariant-tests.sh                        # the repo-wide tests, one filtered run
+./scripts/swift-test-filter.py --filter <TestCase>  # the tests for what you changed
 ```
+
+Run every filtered test through `./scripts/swift-test-filter.py` (it takes `swift test`'s arguments):
+a `--filter` part that names a file or a deleted class runs nothing and `swift test` still passes,
+so the wrapper fails when any part matched no test that ran.
 
 The script lists the classes and methods it runs. A test method named `...InEveryLanguage`,
 `...EveryLanguage` or `...AllLanguages` joins it automatically, and the script fails if a test method

@@ -1827,3 +1827,22 @@ read_when:
   A branch whose macOS CI was cancelled or abandoned has not been compiled by CI. Treat it as
   untested until a run where `build-test` actually ran is green.
   Class sweep: the train's added test lines contained no other `setUp`/`tearDown` override.
+
+## Filtered test runs that ran nothing
+
+- **A `swift test --filter` part that matches no test runs nothing, and the run still passes.** In
+  train 10 (2026-11-17) leaves passed file names (`PartyUploadTests`, `HeldItemsMoreTests`,
+  `CompanionTests`, `BagTests`) as filter parts. None is an XCTest class, so four parts ran 0 tests,
+  and one row's filter named `GymSlotTagScreenshotTests`, which another row had deleted. Every run
+  said "passed". Why it was missed: the check was a doc line ("each part appears as
+  `Test Suite '<Name>' started`") that people had to read the log for, and `swift test` exits 0 when a
+  part matches nothing. `scripts/swift-test-filter.py` now wraps every filtered run (invariant-tests.sh,
+  ui-shots.sh, the perf script, CI's UI render steps). It matches each top-level `|` part against the
+  `Module.Class/method` of every test that started, and exits non-zero naming each part that matched
+  none, or when no test ran. A regex part matches the way SwiftPM does (a search); a plain `Class` or
+  `Class/method` part must name the class exactly, so `ShopTests` is not met by `MachineShopTests`. CI runs `scripts/tests` in the `scripts-test` job,
+  where `test_swift_test_filter.py` drives the wrapper with a fake `swift`. Class sweep: every class
+  named in the CI render groups, ui-shots.sh, the perf script and invariant-tests.sh exists in `Tests/`.
+  `scripts/tests` had never run in CI either, and its first run found
+  `test_release_stops_before_side_effects_when_notes_are_missing` red: release.sh began calling
+  `xcode-pin.sh` and the fixture had no stub for it.
