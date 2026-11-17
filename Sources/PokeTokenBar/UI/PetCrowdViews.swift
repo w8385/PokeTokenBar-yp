@@ -73,12 +73,13 @@ struct FriendSprite: View {
     var minFrameDelay: TimeInterval = 0
     var spriteStore: SpriteStore = .shared
     var megaEvent: MegaEvolveEvent?
+    var reportsVisibleTop = false
 
     var body: some View {
         MegaEvolveStage(megaSpriteID: friend.megaSpriteID, size: size, event: megaEvent, animated: animated) { mega in
             SpriteView(speciesID: mega ?? friend.speciesID, size: size, animated: animated, shiny: friend.isShiny,
                        minFrameDelay: minFrameDelay, spriteStore: spriteStore, form: mega == nil ? friend.form : nil,
-                       female: mega == nil && friend.isFemale)
+                       female: mega == nil && friend.isFemale, reportsVisibleTop: reportsVisibleTop)
         }
         .frame(width: size, height: size)
     }

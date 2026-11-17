@@ -644,11 +644,12 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         crowd.configure(order: rowLayout.slotOrder, motionAllowed: motionAllowed, active: active)
     }
 
-    /// A click on friend `index`: it reacts and cries. No growth, and the main pet's click interval is untouched.
+    /// A click on friend `index`: it reacts, cries and wears hearts. No growth, and the main pet's click interval is untouched.
     func friendClicked(_ index: Int) {
         guard companion.friendSubjects.indices.contains(index) else { return }
         let friend = companion.friendSubjects[index]
         CryPlayer.shared.play(speciesID: friend.speciesID, form: friend.form)
+        friendWasStroked(index)
         crowd.clicked(slot: index + 1)
     }
 
@@ -681,7 +682,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     }
 
     private var showingBubble: Bool {
-        Self.isShowingBubble(alertActive: store.currentBubbleAlert != nil, heartsShowing: hearts.isShowing,
+        Self.isShowingBubble(alertActive: store.currentBubbleAlert != nil, heartsShowing: hearts.isShowingAny,
                              agent: tracker.summary)
     }
 
@@ -695,7 +696,12 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         hosting.onFriendClick = { [weak self] index in self?.friendClicked(index) }
         hosting.hitAtX = { [weak self] x in self?.hit(atX: x) ?? .main }
         hosting.onDragEnd = { [weak self] in self?.sync() }
-        hosting.onStroke = { [weak self] in self?.petWasStroked() }
+        hosting.onStroke = { [weak self] hit in
+            switch hit {
+            case .main: self?.petWasStroked()
+            case .friend(let index): self?.friendWasStroked(index)
+            }
+        }
         hosting.onHide = onHide
         hosting.onToggleBackView = { [weak self] in self?.store.alwaysFacesBack.toggle() }
         hosting.isBackViewOn = { [weak self] in self?.store.alwaysFacesBack ?? false }
@@ -716,7 +722,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
             builtAnimated = wantAnimated
         }
         if let hosting = p.contentView as? PetHostingView {
-            hosting.toolTip = Self.nativeToolTip(currentHoverText(), heartsShowing: hearts.isShowing)
+            hosting.toolTip = Self.nativeToolTip(currentHoverText(), heartsShowing: hearts.isShowingAny)
             hosting.strokeDistance = max(10, CGFloat(store.floatingPetSize) * 0.15)
         }
         agentModel.bobs = Self.shouldBob(working: tracker.summary.working, motionAllowed: motionAllowed)
@@ -729,9 +735,24 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     }
 
     private func petWasStroked() {
+        hearts.friendIndex = nil
         hearts.isShowing = Self.heartsShowing(afterStrokeWithAlertActive: store.currentBubbleAlert != nil,
                                              agent: tracker.summary)
         guard hearts.isShowing else { return }
+        startHeartExpiry()
+    }
+
+    /// Hearts over friend `index`. Visual only: nothing is saved and the main pet's stroke state is untouched.
+    private func friendWasStroked(_ index: Int) {
+        guard companion.friendSubjects.indices.contains(index) else { return }
+        hearts.isShowing = false
+        let show = Self.heartsShowing(afterStrokeWithAlertActive: store.currentBubbleAlert != nil, agent: tracker.summary)
+        hearts.friendIndex = show ? index : nil
+        guard show else { return }
+        startHeartExpiry()
+    }
+
+    private func startHeartExpiry() {
         hideHoverCallout()
         sync()
         // One-shot expiry, restarted by every stroke; no standing timer.
@@ -740,6 +761,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
             try? await Task.sleep(for: Self.heartDuration)
             guard !Task.isCancelled, let self else { return }
             self.hearts.isShowing = false
+            self.hearts.friendIndex = nil
             self.sync()
             if self.isHovering { self.showHoverCallout() }
         }
@@ -775,6 +797,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         eventPopText = nil
         heartExpiry?.cancel()
         hearts.isShowing = false
+        hearts.friendIndex = nil
         hideHoverCallout()
         crowd.stop()
         // A hidden pet comes back at home, not where it last ran to.
@@ -804,7 +827,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     private func refreshHoverAfterPrayer() {
         if let hosting = panel?.contentView as? PetHostingView {
             hosting.toolTip = nil
-            hosting.toolTip = Self.nativeToolTip(currentHoverText(), heartsShowing: hearts.isShowing)
+            hosting.toolTip = Self.nativeToolTip(currentHoverText(), heartsShowing: hearts.isShowingAny)
         }
         if hoverPanel?.isVisible == true { showHoverCallout() }
     }
@@ -1001,7 +1024,8 @@ final class PetHostingView: NSHostingView<AnyView> {
     var onOpenPopover: (() -> Void)?
     /// A click on the pet, however rapid. The controller decides between praying and petting; it never opens the popover.
     var onClick: (() -> Void)?
-    var onStroke: (() -> Void)?
+    /// A stroke over the main pet or a friend.
+    var onStroke: ((PetRowLayout.Hit) -> Void)?
     /// A click that lands on friend `index` (0-based) instead of the main pet.
     var onFriendClick: ((Int) -> Void)?
     /// Which pet sits at a panel x; the main pet when unset.
@@ -1010,6 +1034,7 @@ final class PetHostingView: NSHostingView<AnyView> {
     /// Minimum horizontal travel (pt) for one stroke; scales with the pet size.
     var strokeDistance: CGFloat = 14
     private var petting = PettingDetector()
+    private var strokeTarget: PetRowLayout.Hit = .main
     var onHide: (() -> Void)?
     var onToggleBackView: (() -> Void)?
     var isBackViewOn: () -> Bool = { false }
@@ -1050,9 +1075,10 @@ final class PetHostingView: NSHostingView<AnyView> {
     override func mouseMoved(with event: NSEvent) {
         // Screen coordinates: the panel widens and re-centres when the bubble appears, which would
         // shift view-local x mid-gesture and fake or break a stroke.
-        guard hitAtX(convert(event.locationInWindow, from: nil).x) == .main else { petting.reset(); return }
+        let target = hitAtX(convert(event.locationInWindow, from: nil).x)
+        if target != strokeTarget { petting.reset(); strokeTarget = target }
         if petting.feed(x: NSEvent.mouseLocation.x, at: event.timestamp, minStroke: strokeDistance) {
-            onStroke?()
+            onStroke?(target)
         }
     }
 
@@ -1164,7 +1190,7 @@ struct FloatingPetView: View {
         .animation(animated ? .spring(response: 0.3, dampingFraction: 0.7) : nil,
                    value: bubble)
         .animation(animated ? .spring(response: 0.3, dampingFraction: 0.7) : nil,
-                   value: hearts.isShowing)
+                   value: hearts.isShowingAny)
     }
 
     private func speechBubble(_ bubble: FloatingPetController.Bubble) -> some View {
@@ -1183,7 +1209,7 @@ struct FloatingPetView: View {
         let layout = PetRowLayout(friendCount: friends.count, friendsOnLeft: crowd.friendsOnLeft,
                                   friendsFlank: crowd.friendsFlank)
         let showing = FloatingPetController.isShowingBubble(
-            alertActive: store.currentBubbleAlert != nil, heartsShowing: hearts.isShowing, agent: agent.summary)
+            alertActive: store.currentBubbleAlert != nil, heartsShowing: hearts.isShowingAny, agent: agent.summary)
         let margins = layout.margins(petSize: size, bubbleWidth: showing ? FloatingPetController.bubbleMinWidth : nil)
         let friendsWidth = layout.friendMargins(petSize: size).left
         let friendSize = PetRowLayout.friendSize(petSize: size)
@@ -1204,8 +1230,13 @@ struct FloatingPetView: View {
                 } else if friends.indices.contains(slot - 1) {
                     FriendSprite(friend: friends[slot - 1], size: friendSize, animated: animated,
                                  minFrameDelay: minFrameDelay, spriteStore: spriteStore,
-                                 megaEvent: companion.megaEvolveEvent)
+                                 megaEvent: companion.megaEvolveEvent, reportsVisibleTop: true)
                         .crowdMember(crowd, slot: slot, size: friendSize)
+                        .overlayPreferenceValue(SpriteVisibleTopKey.self, alignment: .top) { visibleTop in
+                            if hearts.friendIndex == slot - 1, bubble == nil {
+                                FriendHeartBubble(friendSize: friendSize, visibleTop: visibleTop, l: L(companion.language))
+                            }
+                        }
                         .frame(width: PetRowLayout.friendSlotWidth(petSize: size),
                                alignment: friendOnRight(slot) ? .trailing : .leading)
                         .zIndex(1 - 0.1 * Double(slot))
@@ -1466,6 +1497,9 @@ struct PettingDetector {
 @MainActor @Observable
 final class PetHeartState {
     var isShowing = false
+    /// Friend (0-based) wearing the hearts instead of the main pet.
+    var friendIndex: Int?
+    var isShowingAny: Bool { isShowing || friendIndex != nil }
 }
 
 /// Size of the stroke heart's bubble, which `SpriteVisibleTop` anchors above the sprite.
@@ -1488,5 +1522,25 @@ struct HeartBubbleView: View {
             .frame(width: HeartBubbleArt.width, height: HeartBubbleArt.height - BubbleMetrics.standard.tailHeight)
             .speechBubbleSurface()
             .accessibilityLabel(l.floatingPetHeartsLabel)
+    }
+}
+
+/// The stroke heart over a friend: the main pet's bubble scaled to the friend, hugging its visible top.
+@MainActor
+struct FriendHeartBubble: View {
+    let friendSize: CGFloat
+    let visibleTop: CGFloat?
+    let l: L
+
+    var body: some View {
+        HeartBubbleView(l: l)
+            .scaleEffect(PetRowLayout.friendScale, anchor: .bottom)
+            .offset(y: SpriteVisibleTop.bubbleTopOffset(
+                visibleTop: visibleTop ?? 0,
+                bubbleHeight: HeartBubbleArt.height * PetRowLayout.friendScale,
+                overlap: HeartBubbleArt.tailOverlap * PetRowLayout.friendScale))
+            .transition(.asymmetric(insertion: .scale(scale: 0.8, anchor: .bottom).combined(with: .opacity),
+                                    removal: .identity))
+            .allowsHitTesting(false)
     }
 }

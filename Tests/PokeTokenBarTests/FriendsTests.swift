@@ -257,6 +257,23 @@ final class PetRowLayoutTests: XCTestCase {
         XCTAssertEqual(right.hit(x: petSize + slot + 2, petSize: petSize, bubbleWidth: nil), .friend(1))
     }
 
+    func testTheSpriteDrawnInFrontGetsTheClickInTheOverlap() {
+        let overlap = PetRowLayout.friendOverlap(petSize: petSize)
+        let slot = PetRowLayout.friendSlotWidth(petSize: petSize)
+        XCTAssertGreaterThan(overlap, 2)
+        for left in [true, false] {
+            let layout = PetRowLayout(friendCount: 2, friendsOnLeft: left)
+            let mainX = layout.mainXOffset(petSize: petSize, bubbleWidth: nil)
+            func x(fromMainEdge distance: CGFloat) -> CGFloat { left ? mainX - distance : mainX + petSize + distance }
+            let insideMain = left ? mainX + 1 : mainX + petSize - 1
+            XCTAssertEqual(layout.hit(x: insideMain, petSize: petSize, bubbleWidth: nil), .main, "main over friend 0")
+            XCTAssertEqual(layout.hit(x: x(fromMainEdge: 1), petSize: petSize, bubbleWidth: nil), .friend(0))
+            XCTAssertEqual(layout.hit(x: x(fromMainEdge: slot - 1), petSize: petSize, bubbleWidth: nil), .friend(0),
+                           "friend 0 over friend 1 up to where its slot ends")
+            XCTAssertEqual(layout.hit(x: x(fromMainEdge: slot + 1), petSize: petSize, bubbleWidth: nil), .friend(1))
+        }
+    }
+
     func testTwoFriendsFlankTheMainPet() {
         let layout = PetRowLayout(friendCount: 2, friendsOnLeft: true, friendsFlank: true)
         let slot = PetRowLayout.friendSlotWidth(petSize: petSize)
