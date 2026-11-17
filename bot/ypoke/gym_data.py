@@ -7,14 +7,14 @@ trainer's team; the champion has none.
 
 GYM_TYPES = {
     "kanto": ("water", "poison", "normal", "flying", "ground", "grass", "fire", "psychic"),
-    "johto": ("water", "flying", "bug", "grass", "normal", "psychic", "rock", "ground"),
+    "johto": ("water", "flying", "bug", "grass", "rock", "psychic", "normal", "ground"),
     "hoenn": ("water", "normal", "psychic", "grass", "dark", "bug", "flying", "rock"),
-    "sinnoh": ("flying", "grass", "normal", "ground", "steel", "ghost", "water", "bug"),
+    "sinnoh": ("flying", "grass", "normal", "ground", "steel", "water", "ghost", "bug"),
     "unova": ("grass", "normal", "flying", "bug", "water", "dark", "fire", "fighting"),
-    "kalos": ("fairy", "grass", "normal", "rock", "dragon", "fire", "water", "flying"),
-    "alola": ("grass", "water", "normal", "bug", "fighting", "ghost", "fire", "fairy"),
-    "galar": ("water", "normal", "electric", "psychic", "dark", "dragon", "ghost", "ice"),
-    "paldea": ("grass", "psychic", "dragon", "ghost", "water", "fighting", "normal", "dark"),
+    "kalos": ("fire", "grass", "normal", "rock", "dragon", "flying", "water", "fairy"),
+    "alola": ("fighting", "fire", "ghost", "bug", "grass", "water", "normal", "fairy"),
+    "galar": ("water", "normal", "ghost", "psychic", "dark", "ice", "electric", "dragon"),
+    "paldea": ("dark", "psychic", "dragon", "fighting", "water", "ghost", "normal", "grass"),
 }
 
 ELITE_TYPES = {
@@ -57,9 +57,9 @@ LEADERS = {
         ("제비", "Pike", "パイク", "바람을 읽는 자가 이긴다.", "Whoever reads the wind wins.", "風を読む者が勝つ。"),
         ("반딧불", "Lumo", "ルーモ", "밤길은 내가 밝혀 주지.", "I light the night road.", "夜道は僕が照らすよ。"),
         ("대숲", "Cane", "ケイン", "휘어질지언정 꺾이지 않아.", "I bend but never break.", "しなっても折れない。"),
-        ("동백", "Winnow", "ウィノー", "기본기가 다 이긴다.", "Fundamentals win it all.", "基本がすべてに勝つ。"),
-        ("달무리", "Selva", "セルヴァ", "점괘가 네 패배를 말하네.", "The omens say you lose.", "占いは君の負けと出ている。"),
         ("돌탑", "Cairn", "ケルン", "쌓은 만큼 무너지지 않는다.", "What I stack does not fall.", "積んだ分だけ崩れない。"),
+        ("달무리", "Selva", "セルヴァ", "점괘가 네 패배를 말하네.", "The omens say you lose.", "占いは君の負けと出ている。"),
+        ("동백", "Winnow", "ウィノー", "기본기가 다 이긴다.", "Fundamentals win it all.", "基本がすべてに勝つ。"),
         ("두렁", "Furrow", "ファロー", "땅은 거짓말을 안 해.", "The earth doesn't lie.", "大地は嘘をつかない。"),
     ),
     "hoenn": (
@@ -78,8 +78,8 @@ LEADERS = {
         ("마을지기", "Dell", "デル", "우리 동네는 내가 지켜.", "I look after this town.", "この町は私が守る。"),
         ("광부", "Hobb", "ホブ", "파 내려가면 다 드러나지.", "Dig deep enough and it all shows.", "掘り下げれば全部見える。"),
         ("무쇠", "Tuck", "タック", "쇠는 불평 안 해. 너도 그래.", "Steel doesn't complain. Neither should you.", "鉄は文句を言わない。君もな。"),
-        ("넋", "Lorn", "ローン", "여긴 오래된 이야기가 많아.", "This place has many old stories.", "ここには古い話がたくさんある。"),
         ("호숫가", "Lakeley", "レイクリー", "잔잔할 때가 제일 깊어.", "Still water runs deepest.", "静かな時こそ深い。"),
+        ("넋", "Lorn", "ローン", "여긴 오래된 이야기가 많아.", "This place has many old stories.", "ここには古い話がたくさんある。"),
         ("나방", "Mothe", "モース", "빛을 따라오면 길을 잃지.", "Follow the light and you get lost.", "光を追えば道に迷う。"),
     ),
     "unova": (
@@ -93,44 +93,44 @@ LEADERS = {
         ("격투장", "Dax", "ダックス", "링 위에선 다 평등해.", "Everyone's equal in the ring.", "リングの上では皆平等だ。"),
     ),
     "kalos": (
-        ("리본", "Frill", "フリル", "예쁜 건 강해. 증명해 줄게.", "Pretty things are strong. Watch.", "かわいいものは強いの。見せてあげる。"),
+        ("화덕", "Sear", "シア", "센 불에 빨리 끝내자.", "High heat, finish fast.", "強火で手早く終わらせよう。"),
         ("허브", "Sorrel", "ソレル", "향기에 취하면 늦어.", "Drunk on the scent, too late.", "香りに酔ったら手遅れよ。"),
         ("제빵사", "Lune", "リュンヌ", "갓 구운 승부, 어때?", "A fresh-baked match, how's that?", "焼きたての勝負はどう？"),
         ("조각가", "Ardent", "アーデント", "깎아낼수록 본모습이 나오지.", "Chip away and the truth appears.", "削るほど本当の姿が現れる。"),
         ("비룡", "Solenne", "ソレンヌ", "용의 춤은 우아하고 잔혹해.", "The dragon's dance is graceful and cruel.", "竜の舞は優雅で残酷よ。"),
-        ("화덕", "Sear", "シア", "센 불에 빨리 끝내자.", "High heat, finish fast.", "強火で手早く終わらせよう。"),
-        ("화가", "Aquarelle", "アクアレル", "번지는 색처럼 스며들어.", "I seep in like spreading color.", "にじむ色のように染み込むわ。"),
         ("연", "Valmont", "ヴァルモン", "구름 위 풍경을 보여 줄게.", "Let me show you the view above the clouds.", "雲の上の景色を見せてあげる。"),
+        ("화가", "Aquarelle", "アクアレル", "번지는 색처럼 스며들어.", "I seep in like spreading color.", "にじむ色のように染み込むわ。"),
+        ("리본", "Frill", "フリル", "예쁜 건 강해. 증명해 줄게.", "Pretty things are strong. Watch.", "かわいいものは強いの。見せてあげる。"),
     ),
     "alola": (
+        ("씨름꾼", "Koa", "コア", "정정당당히 한판 붙자!", "Let's have a fair fight!", "正々堂々一本勝負だ！"),
+        ("횃불", "Makana", "マカナ", "불춤을 구경하고 가.", "Stay and watch the fire dance.", "ファイアダンスを見ていきな。"),
+        ("등불", "Pua", "プア", "축제의 밤엔 누가 따라올지 몰라.", "On festival night, who knows who follows you.", "祭りの夜は誰がついてくるかわからないよ。"),
+        ("나비", "Nohea", "ノヘア", "꽃 사이를 날아다니는 게 내 일.", "Fluttering between flowers is my job.", "花から花へ舞うのが私の仕事。"),
         ("고사리", "Frond", "フロンド", "숲은 우리 둘을 다 품어.", "The forest holds us both.", "森は私たち二人を包む。"),
         ("파도타기", "Swell", "スウェル", "큰 파도를 기다렸어!", "I've been waiting for a big wave!", "大きな波を待ってたんだ！"),
         ("모래사장", "Tamarind", "タマリンド", "느긋하게, 근데 방심은 금물.", "Take it easy, but don't let your guard down.", "のんびりいこう、でも油断は禁物。"),
-        ("나비", "Nohea", "ノヘア", "꽃 사이를 날아다니는 게 내 일.", "Fluttering between flowers is my job.", "花から花へ舞うのが私の仕事。"),
-        ("씨름꾼", "Koa", "コア", "정정당당히 한판 붙자!", "Let's have a fair fight!", "正々堂々一本勝負だ！"),
-        ("등불", "Pua", "プア", "축제의 밤엔 누가 따라올지 몰라.", "On festival night, who knows who follows you.", "祭りの夜は誰がついてくるかわからないよ。"),
-        ("횃불", "Makana", "マカナ", "불춤을 구경하고 가.", "Stay and watch the fire dance.", "ファイアダンスを見ていきな。"),
         ("꽃목걸이", "Anuenue", "アヌエヌエ", "환영해요, 그리고 잘 가요.", "Welcome. And goodbye.", "ようこそ。そして、さようなら。"),
     ),
     "galar": (
         ("수영선수", "Lane", "レーン", "기록은 깨라고 있는 거야.", "Records are made to be broken.", "記録は破るためにある。"),
         ("골키퍼", "Dobbs", "ドブス", "한 골도 못 넣게 해 주마.", "You won't score a single goal.", "一点も入れさせない。"),
-        ("전광판", "Lumen", "ルーメン", "점수판이 켜졌다, 시작이야!", "The scoreboard's lit. Let's go!", "スコアボードが点いた、始めよう！"),
+        ("빈 경기장", "Hollis", "ホリス", "텅 빈 관중석에서 박수가 들려.", "I hear applause from empty stands.", "空っぽの客席から拍手が聞こえる。"),
         ("감독", "Quist", "クイスト", "작전은 이미 짜 놨어.", "The tactics are already set.", "作戦はもう組んである。"),
         ("반칙왕", "Rook", "ルーク", "심판이 안 보면 반칙 아니야.", "If the ref doesn't see it, it's no foul.", "審判が見てなきゃ反則じゃない。"),
-        ("마스코트", "Roar", "ロア", "관중석이 다 내 편이야!", "The whole stand is on my side!", "客席は全部私の味方だ！"),
-        ("빈 경기장", "Hollis", "ホリス", "텅 빈 관중석에서 박수가 들려.", "I hear applause from empty stands.", "空っぽの客席から拍手が聞こえる。"),
         ("빙판", "Rink", "リンク", "미끄러지지 않게 조심해.", "Careful not to slip.", "滑らないように気をつけてね。"),
+        ("전광판", "Lumen", "ルーメン", "점수판이 켜졌다, 시작이야!", "The scoreboard's lit. Let's go!", "スコアボードが点いた、始めよう！"),
+        ("마스코트", "Roar", "ロア", "관중석이 다 내 편이야!", "The whole stand is on my side!", "客席は全部私の味方だ！"),
     ),
     "paldea": (
-        ("식물학", "Ilex", "アイレックス", "교과서에 없는 걸 가르쳐 줄게.", "I'll teach you what's not in the textbook.", "教科書にないことを教えてあげる。"),
+        ("문제아", "Vik", "ヴィク", "교칙? 그게 뭐였더라.", "School rules? What were those.", "校則？何だっけそれ。"),
         ("수학자", "Sigma", "シグマ", "정답은 이미 나와 있어.", "The answer's already worked out.", "答えはもう出ている。"),
         ("산맥", "Rhodri", "ロドリ", "내 용은 다루기 까다로워.", "My dragon is hard to handle.", "私の竜は扱いが難しいわよ。"),
-        ("도서관", "Maud", "モード", "금서는 읽는 순간 널 읽어.", "A forbidden book reads you as you read it.", "禁書は読んだ瞬間に君を読む。"),
-        ("뱃사공", "Ferrule", "フェルール", "물길은 내가 제일 잘 알지.", "I know the waterways best.", "水路は私が一番よく知ってる。"),
         ("체육", "Rally", "ラリー", "수업 시작, 엎드려!", "Class begins—get down!", "授業開始、伏せ！"),
+        ("뱃사공", "Ferrule", "フェルール", "물길은 내가 제일 잘 알지.", "I know the waterways best.", "水路は私が一番よく知ってる。"),
+        ("도서관", "Maud", "モード", "금서는 읽는 순간 널 읽어.", "A forbidden book reads you as you read it.", "禁書は読んだ瞬間に君を読む。"),
         ("매점 주인", "Biscuit", "ビスケット", "배불리 먹고 싸우자고!", "Eat up, then fight!", "たらふく食べて戦おう！"),
-        ("문제아", "Vik", "ヴィク", "교칙? 그게 뭐였더라.", "School rules? What were those.", "校則？何だっけそれ。"),
+        ("식물학", "Ilex", "アイレックス", "교과서에 없는 걸 가르쳐 줄게.", "I'll teach you what's not in the textbook.", "教科書にないことを教えてあげる。"),
     ),
 }
 
@@ -201,6 +201,114 @@ CHAMPIONS = {
     "alola": ("한낮", "Meridian", "メリディアン", "이 섬의 해가 가장 높이 뜬 곳에서 보자.", "Meet me where this island's sun is highest.", "この島の太陽が一番高い場所で会おう。"),
     "galar": ("트로피", "Laurel", "ローレル", "결승전에서 최고의 상대를 기다렸어.", "I waited in the final for the best opponent.", "決勝で最高の相手を待っていた。"),
     "paldea": ("졸업생", "Thessaly", "テッサリー", "마지막 시험이야. 만점을 노려 봐.", "Final exam. Go for a perfect score.", "最後の試験よ。満点を狙ってみて。"),
+}
+
+# The legendaries a region's champion fields, the first one as its finale.
+CHAMPION_LEGENDARIES = {
+    "kanto": (150, 145, 146),
+    "johto": (250, 249, 245),
+    "hoenn": (383, 382, 384),
+    "sinnoh": (483, 484, 487),
+    "unova": (643, 644, 646),
+    "kalos": (716, 717, 718),
+    "alola": (791, 792, 800),
+    "galar": (888, 889, 890),
+    "paldea": (1007, 1008, 1024),
+}
+PSEUDO_LEGENDARIES = {
+    "kanto": (149,), "johto": (248,), "hoenn": (373, 376), "sinnoh": (445,), "unova": (635,), "kalos": (706,),
+    "alola": (784,), "galar": (887,), "paldea": (998,),
+}
+FINALE_LINE = {
+    "ko": "챔피언이 끝까지 숨겨 둔 마지막 파트너를 부른다!",
+    "en": "The champion calls the last partner they kept hidden!",
+    "ja": "チャンピオンが 最後まで 隠していた パートナーを 呼んだ！",
+}
+
+# (species id, held item, move ids) in battle order. Entries after the sixth are the finale: hidden from the preview,
+# sent out once the first six have fainted.
+CHAMPION_TEAMS = {
+    "kanto": (
+        (145, "focus-sash", (85, 413, 257, 851)),  # 썬더: 10만볼트, 브레이브버드, 열풍, 테라버스트
+        (146, "life-orb", (315, 413, 815, 38)),  # 파이어: 오버히트, 브레이브버드, 열사의대지, 이판사판태클
+        (149, "dragoninite", (200, 245, 89, 442)),  # 망나뇽: 역린, 신속, 지진, 아이언헤드
+        (6, "charcoal", (315, 542, 89, 200)),  # 리자몽: 오버히트, 폭풍, 지진, 역린
+        (94, "black-belt", (247, 482, 411, 412)),  # 팬텀: 섀도볼, 오물웨이브, 기합구슬, 에너지볼
+        (130, "choice-band", (127, 242, 89, 200)),  # 갸라도스: 폭포오르기, 깨물어부수기, 지진, 역린
+        (150, "choice-specs", (540, 126, 411, 58)),  # 뮤츠: 사이코브레이크, 불대문자, 기합구슬, 냉동빔
+    ),
+    "johto": (
+        (249, "assault-vest", (94, 413, 89, 38)),  # 루기아: 사이코키네시스, 브레이브버드, 지진, 이판사판태클
+        (245, "sitrus-berry", (57, 58, 247, 326)),  # 스이쿤: 파도타기, 냉동빔, 섀도볼, 신통력
+        (248, "tyranitarite", (444, 492, 89, 200)),  # 마기라스: 스톤에지, 속임수, 지진, 역린
+        (157, "focus-sash", (315, 89, 528, 583)),  # 블레이범: 오버히트, 지진, 와일드볼트, 치근거리기
+        (212, "black-belt", (404, 442, 370, 814)),  # 핫삼: 시저크로스, 아이언헤드, 인파이트, 더블윙
+        (181, "life-orb", (85, 411, 605, 408)),  # 전룡: 10만볼트, 기합구슬, 매지컬샤인, 파워젬
+        (250, "choice-band", (221, 413, 89, 38)),  # 칠색조: 성스러운불꽃, 브레이브버드, 지진, 이판사판태클
+    ),
+    "hoenn": (
+        (382, "choice-specs", (618, 58, 85, 38)),  # 가이오가: 근원의파동, 냉동빔, 10만볼트, 이판사판태클
+        (384, "choice-band", (200, 620, 245, 89)),  # 레쿠쟈: 역린, 화룡점정, 신속, 지진
+        (373, "salamencite", (200, 814, 89, 442)),  # 보만다: 역린, 더블윙, 지진, 아이언헤드
+        (376, "soft-sand", (309, 706, 89, 359)),  # 메타그로스: 코멧펀치, 사이코팽, 지진, 암해머
+        (257, "focus-sash", (394, 370, 413, 89)),  # 번치코: 플레어드라이브, 인파이트, 브레이브버드, 지진
+        (282, "black-belt", (94, 585, 411, 412)),  # 가디안: 사이코키네시스, 문포스, 기합구슬, 에너지볼
+        (383, "life-orb", (619, 444, 359, 315)),  # 그란돈: 단애의칼, 스톤에지, 암해머, 오버히트
+    ),
+    "sinnoh": (
+        (484, "choice-specs", (57, 434, 126, 85)),  # 펄기아: 파도타기, 용성군, 불대문자, 10만볼트
+        (487, "leftovers", (247, 200, 89, 442)),  # 기라티나: 섀도볼, 역린, 지진, 아이언헤드
+        (445, "garchompite", (200, 89, 398, 38)),  # 한카리아스: 역린, 지진, 독찌르기, 이판사판태클
+        (448, "black-belt", (370, 430, 89, 247)),  # 루카리오: 인파이트, 러스터캐논, 지진, 섀도볼
+        (392, "focus-sash", (394, 370, 89, 441)),  # 초염몽: 플레어드라이브, 인파이트, 지진, 더스트슈트
+        (468, "spell-tag", (605, 403, 396, 247)),  # 토게키스: 매지컬샤인, 에어슬래시, 파동탄, 섀도볼
+        (483, "life-orb", (430, 434, 315, 414)),  # 디아루가: 러스터캐논, 용성군, 오버히트, 대지의힘
+    ),
+    "unova": (
+        (644, "choice-band", (200, 550, 38, 242)),  # 제크로무: 역린, 뇌격, 이판사판태클, 깨물어부수기
+        (646, "life-orb", (200, 58, 414, 430)),  # 큐레무: 역린, 냉동빔, 대지의힘, 러스터캐논
+        (635, "focus-sash", (399, 434, 126, 430)),  # 삼삼드래: 악의파동, 용성군, 불대문자, 러스터캐논
+        (609, "chandelurite", (247, 315, 412, 94)),  # 샹델라: 섀도볼, 오버히트, 에너지볼, 사이코키네시스
+        (637, "charcoal", (405, 315, 202, 94)),  # 불카모스: 벌레의야단법석, 오버히트, 기가드레인, 사이코키네시스
+        (530, "soft-sand", (89, 442, 404, 350)),  # 몰드류: 지진, 아이언헤드, 시저크로스, 록블라스트
+        (643, "choice-specs", (434, 315, 414, 94)),  # 레시라무: 용성군, 오버히트, 대지의힘, 사이코키네시스
+    ),
+    "kalos": (
+        (717, "choice-band", (492, 613, 411, 94)),  # 이벨타르: 속임수, 데스윙, 기합구슬, 사이코키네시스
+        (718, "dragon-fang", (200, 89, 276, 482)),  # 지가르데: 역린, 지진, 엄청난힘, 오물웨이브
+        (706, "choice-specs", (434, 126, 482, 438)),  # 미끄래곤: 용성군, 불대문자, 오물웨이브, 파워휩
+        (658, "greninjite", (57, 399, 58, 482)),  # 개굴닌자: 파도타기, 악의파동, 냉동빔, 오물웨이브
+        (663, "focus-sash", (394, 413, 211, 38)),  # 파이어로: 플레어드라이브, 브레이브버드, 강철날개, 이판사판태클
+        (681, "assault-vest", (430, 247, 370, 457)),  # 킬가르도: 러스터캐논, 섀도볼, 인파이트, 양날박치기
+        (716, "life-orb", (585, 370, 224, 94)),  # 제르네아스: 문포스, 인파이트, 메가혼, 사이코키네시스
+    ),
+    "alola": (
+        (792, "choice-specs", (94, 714, 411, 58)),  # 루나아라: 사이코키네시스, 섀도레이, 기합구슬, 냉동빔
+        (800, "life-orb", (722, 414, 404, 257)),  # 네크로즈마: 포톤가이저, 대지의힘, 시저크로스, 열풍
+        (784, "dragon-fang", (200, 370, 89, 398)),  # 짜랑고우거: 역린, 인파이트, 지진, 독찌르기
+        (727, "focus-sash", (394, 663, 370, 200)),  # 어흥염: 플레어드라이브, DD래리어트, 인파이트, 역린
+        (730, "fairy-feather", (57, 585, 58, 94)),  # 누리레느: 파도타기, 문포스, 냉동빔, 사이코키네시스
+        (778, "focus-band", (421, 583, 452, 409)),  # 따라큐: 섀도클로, 치근거리기, 우드해머, 드레인펀치
+        (791, "choice-band", (706, 713, 370, 394)),  # 솔가레오: 사이코팽, 메테오드라이브, 인파이트, 플레어드라이브
+    ),
+    "galar": (
+        (889, "choice-band", (370, 242, 444, 706)),  # 자마젠타: 인파이트, 깨물어부수기, 스톤에지, 사이코팽
+        (890, "choice-specs", (482, 434, 126, 247)),  # 무한다이노: 오물웨이브, 용성군, 불대문자, 섀도볼
+        (887, "focus-sash", (200, 247, 126, 38)),  # 드래펄트: 역린, 섀도볼, 불대문자, 이판사판태클
+        (815, "silk-scarf", (394, 38, 442, 441)),  # 에이스번: 플레어드라이브, 이판사판태클, 아이언헤드, 더스트슈트
+        (823, "assault-vest", (413, 442, 776, 38)),  # 아머까오: 브레이브버드, 아이언헤드, 바디프레스, 이판사판태클
+        (849, "expert-belt", (85, 482, 586, 917)),  # 스트린더: 10만볼트, 오물웨이브, 폭음파, 사이코노이즈
+        (888, "life-orb", (583, 370, 528, 706)),  # 자시안: 치근거리기, 인파이트, 와일드볼트, 사이코팽
+    ),
+    "paldea": (
+        (1008, "choice-specs", (879, 434, 315, 430)),  # 미라이돈: 라이트닝드라이브, 용성군, 오버히트, 러스터캐논
+        (1024, "focus-band", (906, 394, 89, 242)),  # 테라파고스: 테라클러스터, 플레어드라이브, 지진, 깨물어부수기
+        (998, "baxcalibrite", (200, 333, 89, 442)),  # 드닐레이브: 역린, 고드름침, 지진, 아이언헤드
+        (908, "life-orb", (572, 492, 583, 280)),  # 마스카나: 꽃보라, 속임수, 치근거리기, 깨뜨리다
+        (911, "charcoal", (315, 247, 414, 200)),  # 라우드본: 오버히트, 섀도볼, 대지의힘, 역린
+        (1000, "focus-sash", (874, 247, 85, 411)),  # 타부자고: 골드러시, 섀도볼, 10만볼트, 기합구슬
+        (1007, "choice-band", (878, 200, 394, 442)),  # 코라이돈: 엑셀브레이크, 역린, 플레어드라이브, 아이언헤드
+    ),
 }
 
 ORGS = {

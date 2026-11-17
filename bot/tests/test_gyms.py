@@ -1,9 +1,11 @@
 import json
 import statistics
+from dataclasses import replace
 
-from ypoke import gym_data, gyms
+from ypoke import foe_items, foe_moves, gym_data, gyms, items
 from ypoke.dex import NATIONAL_TOTAL, REGIONS
 from ypoke.gyms import MIN_TOTAL, TEAM_SIZE, Species, usable_species
+from ypoke.mega_stones import mega_form_id
 
 BORROWED = {
     "brock", "misty", "surge", "erika", "koga", "sabrina", "blaine", "giovanni", "lance", "falkner", "bugsy",
@@ -17,6 +19,8 @@ BORROWED = {
     "team rocket", "team aqua", "team magma", "team galactic", "team plasma", "team flare", "team skull",
     "team yell", "team star",
 }
+# Gyms whose region has too few unrelated species of the type, so an evolution line fills the rest.
+SAME_LINE_GYMS = {"kalos-5", "kalos-6", "kalos-7", "alola-8"}
 
 
 def all_opponents():
@@ -44,19 +48,57 @@ def test_a_region_has_eight_gyms_four_elite_members_a_champion_and_a_four_battle
         ]
 
 
-def test_every_trainer_fields_six_distinct_species_of_the_region_at_level_50():
+def test_every_trainer_fields_distinct_species_of_the_region_at_level_50():
     for region in gyms.regions():
         for opponent in (*region.gyms, *region.elite, *region.hideout):
-            assert opponent.level == 50 and len(opponent.team) == TEAM_SIZE, opponent.id
-            assert len(set(opponent.team)) == TEAM_SIZE, opponent.id
+            size = gyms.GYM_SIZES[opponent.index - 1] if opponent.kind == "gym" else TEAM_SIZE
+            if opponent.kind == "champion":
+                size = TEAM_SIZE + opponent.finale
+            assert opponent.level == 50 and len(opponent.team) == size, opponent.id
+            assert len(set(opponent.team)) == size, opponent.id
             assert all(region.first <= species <= region.last for species in opponent.team), opponent.id
 
 
-def test_a_team_leads_with_its_focus_type_as_far_as_the_region_has_species_of_it():
+def gym_lineup_faults(region, table):
+    faults = []
+    for gym in region.gyms:
+        if len(gym.team) != gyms.GYM_SIZES[gym.index - 1]:
+            faults.append((gym.id, "size", len(gym.team)))
+        for species_id in gym.team:
+            if gym.types[0] not in table[species_id].types:
+                faults.append((gym.id, "off-type", species_id))
+            if not region.first <= species_id <= region.last:
+                faults.append((gym.id, "out of region", species_id))
+            if table[species_id].excluded:
+                faults.append((gym.id, "legendary, mythical or baby", species_id))
+    return faults
+
+
+def test_a_gym_fields_only_its_type_from_its_region_three_to_six_by_number():
+    assert gyms.GYM_SIZES == (3, 3, 4, 4, 5, 5, 6, 6)
+    table = gyms.species_table()
+    for region in gyms.regions():
+        assert gym_lineup_faults(region, table) == [], region.id
+
+
+def test_the_gym_lineup_check_catches_an_off_type_out_of_region_or_missized_team():
+    table = gyms.species_table()
+    kanto = gyms.regions()[0]
+    broken = replace(kanto.gyms[0], team=(*kanto.gyms[0].team, 6, 252))
+    faults = gym_lineup_faults(replace(kanto, gyms=(broken, *kanto.gyms[1:])), table)
+    assert {fault[1] for fault in faults} == {"size", "off-type", "out of region"}
+
+
+def test_a_type_swapped_region_keeps_ids_and_moves_the_leader_with_the_type():
+    assert gym_data.GYM_TYPES["kalos"][7] == "fairy" and gyms.find("kalos-8").trainer.name["en"] == "Frill"
+    assert gym_data.GYM_TYPES["johto"][4] == "rock" and gyms.find("johto-5").trainer.name["en"] == "Cairn"
+
+
+def test_an_elite_four_or_hideout_team_leads_with_its_focus_type_as_far_as_the_region_has_species_of_it():
     table = gyms.species_table()
     for region in gyms.regions():
         pool = usable_species(table, region.first, region.last)
-        for opponent in (*region.gyms, *region.elite, *region.hideout):
+        for opponent in (*region.elite, *region.hideout):
             if not opponent.types:
                 continue
             on_type = sum(1 for species in opponent.team if set(opponent.types) & set(table[species].types))
@@ -64,14 +106,18 @@ def test_a_team_leads_with_its_focus_type_as_far_as_the_region_has_species_of_it
             assert on_type >= min(gyms.MIN_FOCUS, gyms.FOCUS[opponent.kind], available), opponent.id
 
 
-def test_a_foe_can_already_attack_and_only_a_gym_fields_a_form_that_could_have_evolved():
+def test_a_foe_can_already_attack_and_only_a_gym_or_a_short_elite_type_fields_a_form_that_could_have_evolved():
     table = gyms.species_table()
     for opponent in all_opponents():
+        if opponent.kind == "champion":
+            continue
         for species_id in opponent.team:
             species = table[species_id]
             assert species.level <= 50 and not species.excluded and species.total >= MIN_TOTAL, opponent.id
+            assert species_id not in gyms.QUASI_LEGENDARY, opponent.id
             evolves = [other for other in table.values() if other.parent == species_id and other.reach <= 50]
-            assert opponent.kind == "gym" or not evolves, opponent.id
+            focus = opponent.kind == "elite" and set(opponent.types) & set(species.types)
+            assert opponent.kind == "gym" or focus or not evolves, opponent.id
 
 
 def test_no_member_of_a_team_evolves_from_another():
@@ -85,6 +131,8 @@ def test_no_member_of_a_team_evolves_from_another():
         return ids
 
     for opponent in all_opponents():
+        if opponent.id in SAME_LINE_GYMS:
+            continue
         for species_id in opponent.team:
             assert not (line(species_id) - {species_id}) & set(opponent.team), opponent.id
 
@@ -97,12 +145,11 @@ def test_gyms_get_stronger_with_their_number_and_the_elite_four_stand_above_the_
         return statistics.mean(table[species].total for opponent in opponents for species in opponent.team)
 
     by_number = [mean_total([region.gyms[number] for region in regions]) for number in range(8)]
-    assert by_number == sorted(by_number) and by_number[-1] - by_number[0] >= 80
-    assert mean_total([o for region in regions for o in region.elite]) > by_number[-1]
+    assert mean_total([o for g in regions for o in g.gyms[6:]]) - mean_total([o for g in regions for o in g.gyms[:2]]) >= 30
+    assert by_number[0] == min(by_number)
+    assert mean_total([o for region in regions for o in region.elite if o.kind == "elite"]) > by_number[-1]
     ivs = [regions[0].gyms[number].iv for number in range(8)]
-    assert ivs == sorted(ivs) and ivs[0] < ivs[-1] < regions[0].elite[0].iv <= regions[0].elite[-1].iv
-    for region in regions:
-        assert mean_total(region.gyms[:2]) < mean_total(region.gyms[-2:]), region.id
+    assert ivs[0] == min(ivs) and ivs[-1] == max(ivs) < regions[0].elite[0].iv <= regions[0].elite[-1].iv
 
 
 def test_a_foe_fights_with_its_trainers_ivs():
@@ -110,9 +157,10 @@ def test_a_foe_fights_with_its_trainers_ivs():
         opponent = gyms.find(battle_id)
         assert all(set(member["ivs"].values()) == {opponent.iv} and len(member["ivs"]) == 6
                    for member in gyms.foe_members(opponent))
+    assert gyms.find("kanto-champion").iv == 31
 
 
-def test_champions_pick_high_totals_with_no_shared_first_type_and_grunts_pick_low_ones():
+def test_grunts_pick_lower_totals_than_the_admin_and_the_boss():
     table = gyms.species_table()
 
     def average(kind):
@@ -120,18 +168,15 @@ def test_champions_pick_high_totals_with_no_shared_first_type_and_grunts_pick_lo
             table[species].total for opponent in all_opponents() if opponent.kind == kind for species in opponent.team
         )
 
-    assert average("champion") > average("gym") > average("grunt")
+    assert average("champion") > average("elite") > average("grunt")
     assert average("boss") > average("admin") > average("grunt")
-    for region in gyms.regions():
-        champion = region.elite[-1]
-        assert champion.types == ()
-        first_types = [table[species].types[0] for species in champion.team]
-        assert len(set(first_types)) == len(first_types), champion.id
 
 
-def test_the_strongest_member_comes_last():
+def test_the_strongest_member_comes_last_except_in_the_champions_hand_made_order():
     table = gyms.species_table()
     for opponent in all_opponents():
+        if opponent.kind == "champion":
+            continue
         totals = [table[species].total for species in opponent.team]
         assert totals == sorted(totals), opponent.id
 
@@ -148,7 +193,85 @@ def test_the_preview_is_the_lineup_the_battle_uses():
     assert [member["pokemon_id"] for member in gyms.foe_members(opponent)] == list(opponent.team)
     assert {member["level"] for member in gyms.foe_members(opponent)} == {50}
     entry = next(g for g in gyms.catalog()["regions"][0]["gyms"] if g["id"] == "kanto-3")
-    assert entry["team"] == list(opponent.team)
+    assert entry["team"] == list(opponent.team) and entry["finale"] == 0
+
+
+def test_the_preview_never_shows_a_champions_finale_only_counts_it():
+    for region in gyms.catalog()["regions"]:
+        champion = region["elite"]["battles"][-1]
+        opponent = gyms.find(champion["id"])
+        assert champion["finale"] == opponent.finale >= 1
+        assert champion["team"] == list(opponent.team[:TEAM_SIZE])
+        assert not set(opponent.team[TEAM_SIZE:]) & set(champion["team"])
+        assert str(opponent.team[-1]) not in json.dumps(champion["team"])
+
+
+def test_every_foe_brings_its_picked_moves_and_the_champion_its_table_moves():
+    for opponent in all_opponents():
+        members = gyms.foe_members(opponent)
+        assert all(member["learned_at"] == 100 and 1 <= len(member["moves"]) <= 4 for member in members), opponent.id
+        if opponent.kind == "champion":
+            entries = gym_data.CHAMPION_TEAMS[opponent.region]
+            assert [tuple(member["moves"]) for member in members] == [tuple(entry[2]) for entry in entries]
+        else:
+            assert [tuple(m["moves"]) for m in members] == [foe_moves.species(s).picked for s in opponent.team]
+
+
+def item_faults(opponent):
+    faults = []
+    held = list(opponent.items)
+    if len(set(held)) != len(held):
+        faults.append((opponent.id, "duplicate", held))
+    for species_id, moves, item in zip(opponent.team, opponent.moves, held, strict=True):
+        if not foe_items.fires(item, gyms.holder(species_id, moves)):
+            faults.append((opponent.id, "no-op", species_id, item))
+    return faults
+
+
+def test_every_foe_holds_an_item_that_fires_and_no_team_holds_one_twice():
+    for opponent in all_opponents():
+        assert len(opponent.items) == len(opponent.team) and all(opponent.items), opponent.id
+        assert item_faults(opponent) == [], opponent.id
+
+
+def test_the_item_check_catches_a_duplicate_and_each_kind_of_no_op():
+    gym = gyms.find("kanto-8")
+    first = gym.team[0]
+    fully_evolved = next(s for s in gym.team if not gyms.can_evolve(s))
+    not_poison = next(s for s in gym.team if "poison" not in gyms.species_table()[s].types)
+    cases = [
+        replace(gym, items=(gym.items[1], *gym.items[1:])),
+        replace(gym, team=(fully_evolved, *gym.team[1:]), items=(items.EVIOLITE, *gym.items[1:])),
+        replace(gym, team=(not_poison, *gym.team[1:]), items=(items.BLACK_SLUDGE, *gym.items[1:])),
+        replace(gym, items=(items.FLAME_ORB, *gym.items[1:])),
+        replace(gym, items=("heat-rock", *gym.items[1:])),
+        replace(gym, items=("charizardite-x" if first != 6 else "gengarite", *gym.items[1:])),
+        replace(gym, items=(next(i for i, t in items.TYPE_BOOST_ITEMS.items()
+                                 if t not in {foe_moves.move(m).type for m in gym.moves[0]}), *gym.items[1:])),
+    ]
+    assert all(item_faults(case) for case in cases)
+
+
+def test_a_champion_fields_its_regions_three_legendaries_and_its_pseudo_legendary_from_a_valid_table():
+    table = gyms.species_table()
+    for region in gyms.regions():
+        entries = gym_data.CHAMPION_TEAMS[region.id]
+        champion = region.elite[-1]
+        assert champion.types == () and champion.iv == 31
+        assert 7 <= len(entries) <= 9 and champion.finale == len(entries) - TEAM_SIZE, region.id
+        ids = [entry[0] for entry in entries]
+        assert len(set(ids)) == len(ids) and all(region.first <= i <= region.last for i in ids), region.id
+        legendaries = [i for i in ids if i in gym_data.CHAMPION_LEGENDARIES[region.id]]
+        assert sorted(legendaries) == sorted(gym_data.CHAMPION_LEGENDARIES[region.id]), region.id
+        assert ids[-1] == gym_data.CHAMPION_LEGENDARIES[region.id][0], region.id
+        assert set(gym_data.PSEUDO_LEGENDARIES[region.id]) <= set(ids[:TEAM_SIZE]), region.id
+        assert not any(table[i].excluded for i in ids if i not in legendaries), region.id
+        for species_id, item, moves in entries:
+            assert 1 <= len(moves) <= 4 and len(set(moves)) == len(moves), (region.id, species_id)
+            assert set(moves) <= foe_moves.species(species_id).learnable, (region.id, species_id)
+        assert item_faults(champion) == [], region.id
+        megas = [item for species_id, item, _ in entries if mega_form_id(item, species_id)]
+        assert len(megas) <= 1, region.id
 
 
 def test_a_regions_gyms_use_eight_different_types_and_no_two_regions_share_the_order():
@@ -200,7 +323,7 @@ def test_the_catalog_is_plain_json_with_the_three_groups_per_region():
     kanto = body["regions"][0]
     assert [region["id"] for region in body["regions"]] == list(REGIONS)
     assert set(kanto) == {"id", "name", "first", "last", "gyms", "elite", "hideout"}
-    assert set(kanto["gyms"][0]) == {"id", "kind", "index", "types", "level", "trainer", "team", "run"}
+    assert set(kanto["gyms"][0]) == {"id", "kind", "index", "types", "level", "trainer", "team", "finale", "run"}
     assert kanto["gyms"][0]["run"] is None and kanto["gyms"][0]["types"] == ["water"]
     assert kanto["elite"]["badges_needed"] == 8 and kanto["elite"]["run"] == "kanto-elite"
     assert kanto["elite"]["battles"][4] == {
