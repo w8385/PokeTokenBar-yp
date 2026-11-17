@@ -1,9 +1,13 @@
 import Foundation
 
-/// Battle items the bot engine knows: Primal orbs, Origin items, Punching Glove, resist berries and plates.
+/// Battle items NPC teams hold: Primal orbs, Ultranecrozium Z, Origin items, the rusted weapons, Punching Glove,
+/// resist berries and plates.
 extension ItemKind {
     static let primalOrbs: [ItemKind] = [.redOrb, .blueOrb]
+    /// Signature items that transform their holder in battle and take the one Mega slot.
+    static let megaSlotItems: [ItemKind] = primalOrbs + [.ultranecroziumZ]
     static let originItems: [ItemKind] = [.adamantCrystal, .lustrousGlobe, .griseousCore]
+    static let crownedItems: [ItemKind] = [.rustedSword, .rustedShield]
     static let resistBerries: [ItemKind] = [
         .occaBerry, .passhoBerry, .wacanBerry, .rindoBerry, .yacheBerry, .chopleBerry, .kebiaBerry, .shucaBerry, .cobaBerry,
         .payapaBerry, .tangaBerry, .chartiBerry, .kasibBerry, .habanBerry, .colburBerry, .babiriBerry, .chilanBerry, .roseliBerry,
@@ -12,11 +16,15 @@ extension ItemKind {
         .flamePlate, .splashPlate, .zapPlate, .meadowPlate, .iciclePlate, .fistPlate, .toxicPlate, .earthPlate, .skyPlate,
         .mindPlate, .insectPlate, .stonePlate, .spookyPlate, .dracoPlate, .dreadPlate, .ironPlate, .pixiePlate,
     ]
-    static let championBattleItems: [ItemKind] = primalOrbs + originItems + [.punchingGlove] + resistBerries + plates
+    static let championBattleItems: [ItemKind] = megaSlotItems + originItems + crownedItems + [.punchingGlove]
+        + resistBerries + plates
 
     /// The PokéAPI slug the bot knows; nil for every item outside `championBattleItems`.
     var championItemSlug: String? {
         switch self {
+        case .rustedSword: "rusted-sword"
+        case .rustedShield: "rusted-shield"
+        case .ultranecroziumZ: "ultranecrozium-z"
         case .redOrb: "red-orb"
         case .blueOrb: "blue-orb"
         case .adamantCrystal: "adamant-crystal"
@@ -118,6 +126,9 @@ extension ItemKind {
         case .adamantCrystal: 483
         case .lustrousGlobe: 484
         case .griseousCore: 487
+        case .rustedSword: 888
+        case .rustedShield: 889
+        case .ultranecroziumZ: 800
         default: nil
         }
     }

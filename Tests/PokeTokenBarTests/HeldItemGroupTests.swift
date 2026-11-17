@@ -61,7 +61,8 @@ final class HeldItemGroupTests: XCTestCase {
             .status: [.lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb],
             .weather: [.heatRock, .dampRock, .smoothRock, .icyRock],
             .signature: [.tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
-                         .redOrb, .blueOrb, .adamantCrystal, .lustrousGlobe, .griseousCore],
+                         .redOrb, .blueOrb, .ultranecroziumZ, .adamantCrystal, .lustrousGlobe, .griseousCore,
+                         .rustedSword, .rustedShield],
             .other: [.everstone],
         ]
         for section in sections {

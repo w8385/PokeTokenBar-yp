@@ -246,8 +246,9 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case mysticWater, miracleSeed, magnet, neverMeltIce, blackBelt, poisonBarb, softSand, sharpBeak, twistedSpoon
     case silverPowder, hardStone, spellTag, dragonFang, blackGlasses, silkScarf, fairyFeather
     case heatRock, dampRock, smoothRock, icyRock
-    /// Primal orbs, Origin items, Punching Glove, resist berries and plates (`ChampionItems.swift`).
+    /// NPC battle items: signature forms, Punching Glove, resist berries and plates (`ChampionItems.swift`).
     case redOrb, blueOrb, adamantCrystal, lustrousGlobe, griseousCore, punchingGlove
+    case rustedSword, rustedShield, ultranecroziumZ
     case occaBerry, passhoBerry, wacanBerry, rindoBerry, yacheBerry, chopleBerry, kebiaBerry, shucaBerry, cobaBerry
     case payapaBerry, tangaBerry, chartiBerry, kasibBerry, habanBerry, colburBerry, babiriBerry, chilanBerry, roseliBerry
     case flamePlate, splashPlate, zapPlate, meadowPlate, iciclePlate, fistPlate, toxicPlate, earthPlate, skyPlate
@@ -437,6 +438,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
              .heatRock, .dampRock, .smoothRock, .icyRock: return nil
         case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal: return nil
         case .redOrb, .blueOrb, .adamantCrystal, .lustrousGlobe, .griseousCore, .punchingGlove,
+             .rustedSword, .rustedShield, .ultranecroziumZ,
              .occaBerry, .passhoBerry, .wacanBerry, .rindoBerry, .yacheBerry, .chopleBerry, .kebiaBerry, .shucaBerry,
              .cobaBerry, .payapaBerry, .tangaBerry, .chartiBerry, .kasibBerry, .habanBerry, .colburBerry, .babiriBerry,
              .chilanBerry, .roseliBerry, .flamePlate, .splashPlate, .zapPlate, .meadowPlate, .iciclePlate, .fistPlate,
@@ -486,6 +488,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .expShare: return "exp-share"
         case .linkingCord: return "linking-cord"
         case .stellarCrystal: return nil   // drawn in the app (`StellarCrystalArt`)
+        case .ultranecroziumZ: return loreSlug
         default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName
         }
     }
@@ -570,7 +573,8 @@ extension ItemKind {
         case .lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb: return .status
         case .heatRock, .dampRock, .smoothRock, .icyRock: return .weather
         case .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
-             .redOrb, .blueOrb, .adamantCrystal, .lustrousGlobe, .griseousCore: return .signature
+             .redOrb, .blueOrb, .adamantCrystal, .lustrousGlobe, .griseousCore,
+             .rustedSword, .rustedShield, .ultranecroziumZ: return .signature
         case .punchingGlove: return .attack
         case .occaBerry, .passhoBerry, .wacanBerry, .rindoBerry, .yacheBerry, .chopleBerry, .kebiaBerry, .shucaBerry,
              .cobaBerry, .payapaBerry, .tangaBerry, .chartiBerry, .kasibBerry, .habanBerry, .colburBerry, .babiriBerry,
@@ -603,7 +607,7 @@ enum BattleItemGroup: String, CaseIterable, Sendable {
         .lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb,
         .heatRock, .dampRock, .smoothRock, .icyRock,
         .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
-    ] + ItemKind.primalOrbs + ItemKind.originItems + [
+    ] + ItemKind.primalOrbs + [.ultranecroziumZ] + ItemKind.originItems + ItemKind.crownedItems + [
         .everstone,
     ]
 

@@ -46,6 +46,7 @@ ITEMS = [
     "metal-coat", "kings-rock", "dragon-scale", "up-grade", "dubious-disc", "electirizer", "magmarizer",
     "protector", "reaper-cloth", "deep-sea-tooth", "deep-sea-scale", "sachet", "whipped-dream", "prism-scale",
     "red-orb", "blue-orb", "adamant-crystal", "lustrous-globe", "griseous-core", "punching-glove",
+    "rusted-sword", "rusted-shield", "ultranecrozium-z--held",
     "occa-berry", "passho-berry", "wacan-berry", "rindo-berry", "yache-berry", "chople-berry", "kebia-berry",
     "shuca-berry", "coba-berry", "payapa-berry", "tanga-berry", "charti-berry", "kasib-berry", "haban-berry",
     "colbur-berry", "babiri-berry", "chilan-berry", "roseli-berry",

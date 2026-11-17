@@ -72,7 +72,7 @@ struct BattleEntrySection: View {
         let held = companion.heldItem(of: fighter.id)
         return companion.megaStone(of: fighter.id, speciesID: id) != nil
             || (held == .stellarCrystal && companion.teraForm(of: fighter.id, speciesID: id) != nil)
-            || (held.map(ItemKind.primalOrbs.contains) == true && held?.holderSpeciesID == id)
+            || (held.map(ItemKind.megaSlotItems.contains) == true && held?.holderSpeciesID == id)
     }
 
     private func speciesID(of fighter: BattleCandidate) -> Int {

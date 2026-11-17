@@ -1,6 +1,6 @@
 import Foundation
 
-/// Effect text of the Primal orbs, Origin items, Punching Glove, resist berries and plates.
+/// Effect text of the NPC battle items: signature forms, Punching Glove, resist berries and plates.
 extension L {
     func championItemEffect(_ kind: ItemKind) -> String? {
         if let type = kind.plateType { return plateEffect(type) }
@@ -17,8 +17,34 @@ extension L {
         case .adamantCrystal: return originItemEffect(dialgaName, second: "steel")
         case .lustrousGlobe: return originItemEffect(palkiaName, second: "water")
         case .griseousCore: return originItemEffect(giratinaName, second: "ghost")
+        case .rustedSword: return crownedEffect(zacianName)
+        case .rustedShield: return crownedEffect(zamazentaName)
+        case .ultranecroziumZ: return ultraBurstEffect
         default: return nil
         }
+    }
+
+    private func crownedEffect(_ species: String) -> String {
+        t("\(species)만 쓸 수 있어요. 배틀을 시작하면 왕의 모습으로 싸워요. 메가진화 자리는 쓰지 않아요.",
+          "Only \(species) can use it. It fights in its Crowned form from the start of a battle. It doesn't use the Mega Evolution slot.",
+          "使えるのは\(species)だけ。バトル開始時からけんのおう・たてのおうのすがたで戦います。メガシンカの枠は使いません。",
+          "Solo \(species) puede usarlo. Lucha en su forma Coronada desde el inicio del combate. No ocupa el hueco de la megaevolución.",
+          "Seul \(species) peut l'utiliser. Il combat sous sa forme Couronnée dès le début du combat. N'utilise pas la place de la méga-évolution.",
+          "Só \(species) pode usá-lo. Luta na forma Coroada desde o início da batalha. Não ocupa a vaga da Mega Evolução.",
+          "Nur \(species) kann ihn nutzen. Es kämpft ab Kampfbeginn in seiner König-Form. Belegt nicht den Platz der Mega-Entwicklung.",
+          "Только \(species) может его использовать. С начала боя сражается в Коронованной форме. Не занимает место мега-эволюции.")
+    }
+
+    private var ultraBurstEffect: String {
+        let species = t("네크로즈마", "Necrozma", "ネクロズマ", "Necrozma", "Necrozma", "Necrozma", "Necrozma", "Некрозма")
+        return t("\(species)만 쓸 수 있어요. 배틀을 시작하면 울트라버스트해요. 메가진화와 합쳐 한 배틀에 한 마리만 변하고, 앞선 포켓몬이 먼저 해요.",
+                 "Only \(species) can use it. It Ultra Bursts when a battle starts. It shares the one-per-battle limit with Mega Evolution, and an earlier Pokémon goes first.",
+                 "使えるのは\(species)だけ。バトル開始時にウルトラバーストします。メガシンカと合わせて1バトルに1匹だけで、先に出たポケモンが優先です。",
+                 "Solo \(species) puede usarlo. Usa el Ultraestallido al empezar el combate. Comparte con la megaevolución el límite de uno por combate, y va primero el de delante.",
+                 "Seul \(species) peut l'utiliser. Il déclenche l'Ultra-Explosion au début du combat. Il partage avec la méga-évolution la limite d'un seul par combat, et le premier en ligne passe devant.",
+                 "Só \(species) pode usá-lo. Ele usa a Ultra Explosão no início da batalha. Divide com a Mega Evolução o limite de um por batalha, e o da frente vai primeiro.",
+                 "Nur \(species) kann ihn nutzen. Es löst zu Kampfbeginn den Ultra-Burst aus. Mit der Mega-Entwicklung teilt er sich das Limit von einem pro Kampf, das vordere Pokémon zuerst.",
+                 "Только \(species) может его использовать. В начале боя происходит Ультравзрыв. Делит с мега-эволюцией лимит «один за бой», сначала тот, кто впереди.")
     }
 
     private func resistBerryEffect(_ type: String) -> String {
@@ -85,4 +111,6 @@ extension L {
     private var dialgaName: String { t("디아루가", "Dialga", "ディアルガ", "Dialga", "Dialga", "Dialga", "Dialga", "Диалга") }
     private var palkiaName: String { t("펄기아", "Palkia", "パルキア", "Palkia", "Palkia", "Palkia", "Palkia", "Палкия") }
     private var giratinaName: String { t("기라티나", "Giratina", "ギラティナ", "Giratina", "Giratina", "Giratina", "Giratina", "Гиратина") }
+    private var zacianName: String { t("자시안", "Zacian", "ザシアン", "Zacian", "Zacian", "Zacian", "Zacian", "Засиан") }
+    private var zamazentaName: String { t("자마젠타", "Zamazenta", "ザマゼンタ", "Zamazenta", "Zamazenta", "Zamazenta", "Zamazenta", "Замазента") }
 }

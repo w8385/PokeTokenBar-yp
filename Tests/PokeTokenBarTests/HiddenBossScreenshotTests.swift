@@ -122,6 +122,53 @@ final class HiddenBossScreenshotTests: XCTestCase {
                               height: 540, to: directory.appendingPathComponent("hidden-bag-egg-\(language.rawValue).png"))
             try await capture(BagView(store: store, nav: nav, initialCategory: .heldItem).environment(store), language: language,
                               height: 540, to: directory.appendingPathComponent("hidden-bag-items-\(language.rawValue).png"))        }
+        try await captureTheSignatureItems(to: directory, scratch: scratch)
+        try await captureTheShopSignatureCards(to: directory, scratch: scratch)
+    }
+
+    /// The Shop's signature section past the masks, cut out so the long held-item tab need not scroll.
+    private func captureTheShopSignatureCards(to directory: URL, scratch: URL) async throws {
+        let added = Set(ItemKind.megaSlotItems + ItemKind.crownedItems).subtracting(ItemKind.primalOrbs)
+        let shown = ItemKind.megaSlotItems + ItemKind.originItems + ItemKind.crownedItems
+        for language in [AppLanguage.ko, .en] {
+            var state = CompanionState()
+            state.language = language
+            state.installBaselineSet = true
+            state.usedSinceInstall = 9_000_000_000
+            let file = scratch.appendingPathComponent("shop-\(language.rawValue).json")
+            try JSONEncoder().encode(state).write(to: file)
+            let store = CompanionStore(provider: PrizeShotProvider(), fileURL: file)
+            for (name, kinds) in [("before", shown.filter { !added.contains($0) }), ("after", shown)] {
+                let cards = VStack(alignment: .leading, spacing: 10) {
+                    HeldItemSections(sections: [BattleItemSection(group: .signature, kinds: kinds)], l: store.l) { kind in
+                        ShopItemCard(store: store, kind: kind)
+                    }
+                }
+                .padding(.horizontal, 12)
+                try await capture(cards.environment(store), language: language, height: CGFloat(kinds.count) * 180 + 40,
+                                  to: directory.appendingPathComponent("npc-items-shop-\(name)-\(language.rawValue).png"))
+            }
+        }
+    }
+
+    /// "before" holds signature items the Shop already sold; "after" holds the three NPC items it now sells.
+    private func captureTheSignatureItems(to directory: URL, scratch: URL) async throws {
+        let shots = [("before", "\"redOrb\":1,\"adamantCrystal\":1"),
+                     ("after", "\"ultranecroziumZ\":1,\"rustedSword\":1,\"rustedShield\":1")]
+        for language in [AppLanguage.ko, .en] {
+            for (name, inventory) in shots {
+                let file = scratch.appendingPathComponent("signature-\(name)-\(language.rawValue).json")
+                let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,"
+                    + "\"lastDate\":\"d\",\"language\":\"\(language.rawValue)\",\"dex\":[],\"collectedFinals\":[],"
+                    + "\"active\":{\"baseID\":10,\"pathIDs\":[10],\"stageIndex\":0,\"usedAtStage\":0,\"rarity\":\"common\","
+                    + "\"totalForms\":3,\"isShiny\":false},\"inventory\":{\(inventory)}}"
+                try Data(json.utf8).write(to: file)
+                let store = CompanionStore(provider: PrizeShotProvider(), fileURL: file)
+                try await capture(BagView(store: store, nav: PopoverNavigation(), initialCategory: .heldItem).environment(store),
+                                  language: language, height: 540,
+                                  to: directory.appendingPathComponent("npc-items-bag-\(name)-\(language.rawValue).png"))
+            }
+        }
     }
 
     private func fighters(_ team: [(Int, String)], hp: [Int?]) -> [[String: Any]] {
