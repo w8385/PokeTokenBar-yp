@@ -403,12 +403,15 @@ final class CompanionStore {
     }
 
     /// Moves the line in `active` to the Box as it stands. Its released record keeps the species in the Pokédex.
-    private func storeActiveInBox() {
-        guard let a = state.active else { return }
+    /// Returns the stored individual's ID.
+    @discardableResult
+    private func storeActiveInBox() -> String? {
+        guard let a = state.active else { return nil }
         let record = releasedDexEntry(from: a)
         state.dex.append(record)
         state.storedLines[record.id] = StoredLine(mon: a, spentAtStore: state.spentTokens)
         state.active = nil
+        return record.id
     }
 
     /// Takes the parked line (or egg) back exactly where it stopped; the raised graduate returns to the Box.
@@ -1682,6 +1685,9 @@ final class CompanionStore {
         return true
     }
 
+    /// A shop or scout egg puts one copy from the bag on the Pokémon it sends to the Box.
+    var eggSwapAttachesExpShare: Bool { itemCount(.expShare) > 0 }
+
     @discardableResult
     func detachExpShare(from instanceID: String) -> Bool {
         guard let index = state.expShareHolders.firstIndex(of: instanceID) else { return false }
@@ -2530,7 +2536,7 @@ final class CompanionStore {
     /// 활성 포켓몬을 박스로 보내고 처음부터 인큐베이션하는 새 알로 — 상점 알과 스카우트가 같이 쓴다.
     /// `pendingHatchID` 가 있으면(스카우트) 그 종으로 미리 정해 두고 메타몽 위장도 끈다.
     private func storeActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?) {
-        storeActiveInBox()
+        if let storedID = storeActiveInBox() { attachExpShare(to: storedID) }
         state.reconcileRepresentativeSelection()
         activeGeneration += 1
         currentLine = nil
