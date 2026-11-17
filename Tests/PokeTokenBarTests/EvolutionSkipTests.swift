@@ -259,8 +259,7 @@ final class EvolutionSkipTests: XCTestCase {
         XCTAssertEqual(s.currentSpeciesID, 433, "pets met, but not night")
         clock.now = Calendar.current.date(bySettingHour: 13, minute: 15, second: 30, of: Date())!
         s.checkEvolutionGate()
-        for _ in 0..<100 where s.currentSpeciesID != 358 { try await Task.sleep(for: .milliseconds(10)) }
-        XCTAssertEqual(s.currentSpeciesID, 358, "the gate tick reaches a raised graduate")
+        try await waitUntil("the gate tick to evolve the raised graduate") { s.currentSpeciesID == 358 }
     }
 
     func testProgressSavedBeforeARelaunchKeepsCountingBeforeTheLineLoads() async throws {

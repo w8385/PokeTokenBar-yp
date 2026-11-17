@@ -70,7 +70,6 @@ final class BattlePickerScreenshotTests: XCTestCase {
         try JSONEncoder().encode(state).write(to: file)
         let store = CompanionStore(provider: ShotProvider(), fileURL: file)
         await store.loadPokemonDetails(speciesID: 25)
-        try await Task.sleep(for: .seconds(1))
 
         let defaults = UserDefaults(suiteName: "battlepicker-shot-\(UUID())")!
         let battle = BattleEntryStore(defaults: defaults)
@@ -111,6 +110,6 @@ final class BattlePickerScreenshotTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light)
             .environment(\.locale, AppLanguage.ko.displayLocale),
-            size: size, appearance: .aqua, settle: .seconds(5), to: file)
+            size: size, appearance: .aqua, to: file)
     }
 }

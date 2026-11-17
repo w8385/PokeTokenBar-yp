@@ -19,10 +19,12 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         let host = renderedSettings(usage, companion, navigation, startExpanded: navigation.expandAdvancedOnOpen)
         let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
         defer { window.close() }
-        try await OffscreenRender.settle(host.view, for: .milliseconds(500))
-        let secure = try XCTUnwrap(descendants(of: host.view).compactMap { $0 as? NSSecureTextField }.first)
-        let rect = secure.convert(secure.bounds, to: host.view)
-        XCTAssertTrue(host.view.bounds.contains(rect), "session key entry must be visible after scrolling")
+        func secureFieldIsVisible() -> Bool {
+            guard let secure = descendants(of: host.view).compactMap({ $0 as? NSSecureTextField }).first else { return false }
+            return host.view.bounds.contains(secure.convert(secure.bounds, to: host.view))
+        }
+        try await OffscreenRender.settle(host.view, until: secureFieldIsVisible)
+        XCTAssertTrue(secureFieldIsVisible(), "session key entry must be visible after scrolling")
         XCTAssertEqual(navigation.settingsTab, .advanced)
         XCTAssertTrue(navigation.showSettings)
         navigation.reset()
@@ -44,7 +46,7 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
             let host = renderedSettings(usage, companion, navigation, startExpanded: false)
             let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
             defer { window.close() }
-            try await OffscreenRender.settle(host.view, for: .milliseconds(500))
+            try await OffscreenRender.settle(host.view)
             let views = descendants(of: host.view)
             let nativeSliders = views.compactMap { $0 as? NSSlider }
             if nativeSliders.isEmpty {
@@ -58,8 +60,8 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
     }
 
     private func renderedSettings(_ usage: UsageStore, _ companion: CompanionStore,
-                                  _ navigation: PopoverNavigation, startExpanded: Bool) -> NSHostingController<some View> {
-        let host = NSHostingController(rootView: SettingsView(
+                                  _ navigation: PopoverNavigation, startExpanded: Bool) -> NSHostingController<AnyView> {
+        let host = OffscreenRender.controller(SettingsView(
             onClose: {}, onChooseRepresentative: {}, startExpanded: startExpanded,
             tab: Binding(get: { navigation.settingsTab }, set: { navigation.settingsTab = $0 }))
             .environment(usage).environment(companion).environment(UpdateChecker())
@@ -82,7 +84,7 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
             let origin = min(offset, maximum)
             clip.scroll(to: NSPoint(x: 0, y: origin))
             scroll.reflectScrolledClipView(clip)
-            try await Task.sleep(for: .milliseconds(100))
+            try await OffscreenRender.settle(host)
             let bitmap = try OffscreenRender.bitmap(of: host)
             let scale = Double(bitmap.pixelsWide) / host.bounds.width
             for y in 0..<bitmap.pixelsHigh {

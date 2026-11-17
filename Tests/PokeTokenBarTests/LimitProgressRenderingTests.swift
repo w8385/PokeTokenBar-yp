@@ -39,7 +39,7 @@ final class LimitProgressRenderingTests: XCTestCase {
     /// 페이스 눈금은 SwiftUI 도형이라 NSView 로 내려오지 않는다 → 실제로 칠해진 픽셀을 본다.
     /// 위치 계산만 순수 함수로 검증하면 "뷰가 그 함수를 정말 `limitDisplayMode` 로 호출하는가"는
     /// 무검증으로 남고, 채움만 뒤집히고 눈금은 그대로였던 #286 부류가 그 틈으로 다시 들어온다.
-    func testPaceMarkerRendersAtElapsedPositionAndMirrorsInRemainingMode() throws {
+    func testPaceMarkerRendersAtElapsedPositionAndMirrorsInRemainingMode() async throws {
         let suite = "LimitPaceRendering-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
@@ -49,17 +49,17 @@ final class LimitProgressRenderingTests: XCTestCase {
 
         /// 가장 어두운 세로 열의 x — 눈금이 없으면 nil.
         /// tint 를 .clear 로 둬 채움이 칠하지 않게 하므로 눈금만 트랙보다 뚜렷이 어둡다.
-        func markerColumn(pace: Double?) throws -> Double? {
+        func markerColumn(pace: Double?) async throws -> Double? {
             let view = LimitProgressBar(usedPercent: 0, tint: .clear, pace: pace)
                 .environment(store).frame(width: width, height: height)
-            let host = NSHostingController(rootView: view)
-            host.view.frame = NSRect(x: 0, y: 0, width: width, height: height)
+            let controller = OffscreenRender.controller(view)
+            controller.view.frame = NSRect(x: 0, y: 0, width: width, height: height)
+            let host = controller.view
             // 창에 넣고 명시 appearance 를 줘야 .primary 가 결정적으로 해석된다.
-            let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
+            let window = OffscreenRender.windowHosting(host, appearance: .aqua)
             defer { window.close() }
-            host.view.layoutSubtreeIfNeeded()
-            window.displayIfNeeded()
-            let rep = try OffscreenRender.bitmap(of: host.view)
+            try await OffscreenRender.settle(host)
+            let rep = try await OffscreenRender.stableBitmap(of: host)
 
             // 열별 최소 밝기 — 눈금은 막대 위아래로 돌출하므로 트랙의 둥근 끝보다 깊게 내려간다.
             var darkest = (column: 0, brightness: 1.0)
@@ -79,23 +79,28 @@ final class LimitProgressRenderingTests: XCTestCase {
 
         // 트랙만 있는 상태는 눈금 판정 밝기(0.6)에 닿지 않아야 한다 — 아래 단언들의 전제.
         store.limitDisplayMode = .used
-        XCTAssertNil(try markerColumn(pace: nil), "pace 가 없으면 눈금을 그리지 않는다")
+        let none = try await markerColumn(pace: nil)
+        XCTAssertNil(none, "pace 가 없으면 눈금을 그리지 않는다")
 
         // 창이 1/4 지난 시점: 사용량 모드는 왼쪽에서 25%, 잔량 모드는 75% 지점.
-        XCTAssertEqual(try XCTUnwrap(markerColumn(pace: 0.25)), width * 0.25, accuracy: 3)
+        let usedQuarter = try await markerColumn(pace: 0.25)
+        XCTAssertEqual(try XCTUnwrap(usedQuarter), width * 0.25, accuracy: 3)
         store.limitDisplayMode = .remaining
-        XCTAssertEqual(try XCTUnwrap(markerColumn(pace: 0.25)), width * 0.75, accuracy: 3)
+        let remainingQuarter = try await markerColumn(pace: 0.25)
+        XCTAssertEqual(try XCTUnwrap(remainingQuarter), width * 0.75, accuracy: 3)
 
         // 양 끝에서도 눈금이 막대 밖으로 반쯤 걸치지 않는다.
         store.limitDisplayMode = .used
-        XCTAssertEqual(try XCTUnwrap(markerColumn(pace: 0)), 0, accuracy: 3)
-        XCTAssertEqual(try XCTUnwrap(markerColumn(pace: 1)), width - 1, accuracy: 3)
+        let start = try await markerColumn(pace: 0)
+        XCTAssertEqual(try XCTUnwrap(start), 0, accuracy: 3)
+        let end = try await markerColumn(pace: 1)
+        XCTAssertEqual(try XCTUnwrap(end), width - 1, accuracy: 3)
     }
 
     /// 눈금 길이는 오버레이 칸이 아니라 **칠해진 트랙**을 따라야 한다. `ProgressView` 의 칸은
     /// 트랙보다 두 배 높아서, 칸을 기준으로 잡으면 6pt 막대에 16pt 눈금이 붙어 눈금이 막대보다
     /// 커 보였다. 위치 테스트는 어느 쪽이든 통과하므로(가장 어두운 *열*만 본다) 길이를 따로 잰다.
-    func testPaceMarkerStaysCloseToPaintedTrackHeight() throws {
+    func testPaceMarkerStaysCloseToPaintedTrackHeight() async throws {
         let suite = "LimitPaceHeight-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
@@ -105,13 +110,13 @@ final class LimitProgressRenderingTests: XCTestCase {
 
         let view = LimitProgressBar(usedPercent: 0, tint: .clear, pace: 0.5)
             .environment(store).frame(width: width, height: height)
-        let host = NSHostingController(rootView: view)
-        host.view.frame = NSRect(x: 0, y: 0, width: width, height: height)
-        let window = OffscreenRender.windowHosting(host.view, appearance: .aqua)
+        let controller = OffscreenRender.controller(view)
+        controller.view.frame = NSRect(x: 0, y: 0, width: width, height: height)
+        let host = controller.view
+        let window = OffscreenRender.windowHosting(host, appearance: .aqua)
         defer { window.close() }
-        host.view.layoutSubtreeIfNeeded()
-        window.displayIfNeeded()
-        let rep = try OffscreenRender.bitmap(of: host.view)
+        try await OffscreenRender.settle(host)
+        let rep = try await OffscreenRender.stableBitmap(of: host)
 
         /// 투명은 흰색으로 친다 — 트랙/눈금만 배경보다 어둡다.
         func brightness(x: Int, y: Int) -> Double {

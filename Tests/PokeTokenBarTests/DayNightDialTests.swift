@@ -119,7 +119,7 @@ final class DayNightLabelTests: XCTestCase {
                 strip.frame(width: size.width, height: size.height)
                     .background(scheme == "light" ? Color.white : Color(white: 0.16))
                     .environment(\.colorScheme, scheme == "light" ? .light : .dark),
-                size: size, appearance: appearance, settle: .seconds(1),
+                size: size, appearance: appearance,
                 to: directory.appendingPathComponent("day-night-dial-strip-\(scheme).png"))
         }
 
@@ -145,7 +145,7 @@ final class DayNightLabelTests: XCTestCase {
                     .background(Color.white)
                     .environment(\.colorScheme, .light)
                     .environment(\.locale, AppLanguage.ko.displayLocale),
-                size: size, appearance: .aqua, settle: .seconds(2),
+                size: size, appearance: .aqua,
                 to: directory.appendingPathComponent("day-night-dial-home-\(name).png"))
         }
     }

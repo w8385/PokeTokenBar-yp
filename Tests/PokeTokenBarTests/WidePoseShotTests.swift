@@ -74,7 +74,7 @@ final class WidePoseShotTests: XCTestCase {
         try await OffscreenRender.capture(VStack(alignment: .leading, spacing: 0) { legend.padding(.horizontal, 10); grid }
             .frame(width: width, height: height + 16, alignment: .topLeading)
             .background(Color.white).environment(\.colorScheme, .light),
-            size: CGSize(width: width, height: height + 16), appearance: .aqua, scale: 2, settle: .seconds(1),
+            size: CGSize(width: width, height: height + 16), appearance: .aqua, scale: 2,
             to: directory.appendingPathComponent("wide-pose-grid-\(tag).png"))
     }
 }

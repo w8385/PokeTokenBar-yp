@@ -120,7 +120,8 @@ struct HeavyHome {
         await store.refresh(scheduleEmptyRetry: false)
         companion.update(todayTokensByProvider: [:], todayDate: todayKey, monthTotal: 0, burnTier: .idle,
                          limitWarning: false, hasUsageData: true)
-        try await Task.sleep(for: .milliseconds(300))
+        // The saved Gyarados is past its graduation total, so the loaded line graduates it at once.
+        try await waitUntil("the loaded line to graduate Gyarados") { companion.justGraduated != nil }
 
         var fetched: UpdateChecker.LatestRelease?
         if withUpdate {
@@ -155,7 +156,7 @@ final class HomeFitRenderingTests: XCTestCase {
             size: CGSize(width: width, height: height ?? 2000))
         let window = OffscreenRender.windowHosting(host, appearance: .darkAqua)
         addTeardownBlock { window.close() }
-        try await OffscreenRender.settle(host, for: .milliseconds(400))
+        try await OffscreenRender.settle(host)
         return host
     }
 

@@ -58,12 +58,11 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
     private func capture<V: View>(_ view: V, language: AppLanguage, expectedTexts: [String], to file: URL) async throws {
         // The screen draws these strings from the store, so a blank one means a missing translation.
         XCTAssertFalse(expectedTexts.contains(where: \.isEmpty), "empty label in \(file.lastPathComponent)")
-        let host = NSHostingView(rootView: view
+        let host = OffscreenRender.host(view
             .frame(width: PopoverMetrics.contentWidth, height: 520)
             .background(Color.white)
             .environment(\.colorScheme, .light)
-            .environment(\.locale, language.displayLocale))
-        host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: 520)
+            .environment(\.locale, language.displayLocale), size: CGSize(width: PopoverMetrics.contentWidth, height: 520))
         let window = OffscreenRender.windowHosting(host, appearance: .aqua)
         defer { window.close() }
         XCTAssertEqual(host.bounds.width, 332, accuracy: 0.5)
@@ -76,19 +75,10 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
         }
     }
 
-    /// Renders until two consecutive frames are identical, so async sprite and detail loads have landed.
+    /// Once the tree has settled, renders until two consecutive frames are identical.
     private func settledBitmap(_ host: NSView) async throws -> NSBitmapImageRep {
-        let deadline = ContinuousClock.now + .seconds(5)
-        var previous: Data?
-        repeat {
-            try await Task.sleep(for: .milliseconds(100))
-            let bitmap = try OffscreenRender.bitmap(of: host)
-            let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
-            if png == previous { return bitmap }
-            previous = png
-        } while ContinuousClock.now < deadline
-        XCTFail("The screen never stopped changing")
-        throw URLError(.timedOut)
+        try await OffscreenRender.settle(host)
+        return try await OffscreenRender.stableBitmap(of: host)
     }
 
     /// The pager is the only thing these clicks can change: Next shows a different page, Back the first again.
@@ -97,6 +87,10 @@ final class CollectionReadabilityRenderingTests: XCTestCase {
         var shown = [try XCTUnwrap(first.representation(using: .png, properties: [:]))]
         for (x, name) in [(326.0, "next"), (273.0, "back")] {
             try OffscreenRender.click(at: NSPoint(x: x, y: 9), in: window)
+            try await OffscreenRender.waitUntil("pagination \(name) to change the page", in: host) {
+                let now = try OffscreenRender.bitmap(of: host).representation(using: .png, properties: [:])
+                return name == "back" ? now == shown[0] : now != shown.last
+            }
             let bitmap = try await settledBitmap(host)
             let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
             XCTAssertNotEqual(png, shown.last, "Pagination \(name) must change the page")

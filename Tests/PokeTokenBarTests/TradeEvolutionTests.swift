@@ -91,12 +91,12 @@ final class TradeEvolutionTests: XCTestCase {
     }
 
     private func waitForLine(_ store: CompanionStore) async throws {
-        for _ in 0..<200 where store.currentLine == nil {
+        try await waitUntil("the line to load") {
+            if store.currentLine != nil { return true }
             store.update(todayTokensByProvider: [:], todayDate: "d1", monthTotal: 0, burnTier: .idle,
                          limitWarning: false, hasUsageData: false)
-            try await Task.sleep(nanoseconds: 10_000_000)
+            return false
         }
-        XCTAssertNotNil(store.currentLine)
     }
 
     private func growToEnd(_ store: CompanionStore) {

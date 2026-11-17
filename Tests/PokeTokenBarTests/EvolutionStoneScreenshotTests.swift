@@ -59,11 +59,11 @@ final class EvolutionStoneScreenshotTests: XCTestCase {
             .environment(\.locale, AppLanguage.ko.displayLocale), size: size)
         let window = OffscreenRender.windowHosting(host, appearance: .aqua)
         defer { window.close() }
-        try await OffscreenRender.settle(host, for: .seconds(5))
+        try await OffscreenRender.settle(host)
         if scrollToBottom, let scroll = Self.scrollView(in: host), let doc = scroll.documentView {
             doc.scroll(NSPoint(x: 0, y: max(0, doc.bounds.height - 1150)))
             scroll.reflectScrolledClipView(scroll.contentView)
-            try await Task.sleep(for: .seconds(1))
+            try await OffscreenRender.settle(host)
         }
         let bitmap = try OffscreenRender.bitmap(of: host)
         try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: file)

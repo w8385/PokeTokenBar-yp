@@ -99,18 +99,8 @@ final class SulkRenderTests: XCTestCase {
 
     /// Lets the sprite `.task` finish (cached file → GIF/PNG decode), then snapshots at 2x.
     private func snapshot(_ host: NSView) async throws -> Data {
-        for _ in 0..<40 {
-            host.layoutSubtreeIfNeeded()
-            try await Task.sleep(for: .milliseconds(50))
-        }
-        let bounds = host.bounds
-        let rep = try XCTUnwrap(NSBitmapImageRep(
-            bitmapDataPlanes: nil, pixelsWide: Int(bounds.width * 2), pixelsHigh: Int(bounds.height * 2),
-            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
-        rep.size = bounds.size
-        host.cacheDisplay(in: bounds, to: rep)
-        return try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+        try await OffscreenRender.settle(host)
+        return try OffscreenRender.png(of: host, scale: 2)
     }
 
     // MARK: Renders

@@ -102,11 +102,10 @@ final class DexBackNavigationTests: XCTestCase {
     }
 
     private func host<V: View>(_ content: V) -> NSView {
-        let host = NSHostingView(rootView: content
+        let host = OffscreenRender.host(content
             .frame(width: PopoverMetrics.contentWidth, height: 520)
             .background(Color.white)
-            .environment(\.colorScheme, .light))
-        host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.contentWidth, height: 520)
+            .environment(\.colorScheme, .light), size: CGSize(width: PopoverMetrics.contentWidth, height: 520))
         window = OffscreenRender.windowHosting(host, appearance: .aqua)
         return host
     }
@@ -133,17 +132,11 @@ final class DexBackNavigationTests: XCTestCase {
     /// A cell is a 96pt sprite scaled into the grid, so its color covers far more than stray pixels.
     private let visible = 200
 
-    /// Polls: SwiftUI renders a state change a run-loop turn or two later.
-    private func waitFor(_ description: String, in host: NSView, timeout: Duration = .seconds(5),
+    /// SwiftUI renders a state change a run-loop turn or two later.
+    private func waitFor(_ description: String, in host: NSView,
                          file: StaticString = #filePath, line: UInt = #line,
                          _ condition: () throws -> Bool) async throws {
-        let deadline = ContinuousClock.now + timeout
-        repeat {
-            host.needsLayout = true
-            if try condition() { return }
-            try await Task.sleep(for: .milliseconds(50))
-        } while ContinuousClock.now < deadline
-        XCTFail("Never reached: \(description)", file: file, line: line)
+        try await OffscreenRender.waitUntil(description, in: host, file: file, line: line, condition)
     }
 
     private func showing(_ swatches: [Swatch], hiding: [Swatch] = [], in host: NSView) throws -> Bool {
@@ -160,14 +153,12 @@ final class DexBackNavigationTests: XCTestCase {
     private func pressBack(until done: () throws -> Bool, in host: NSView,
                            file: StaticString = #filePath, line: UInt = #line) async throws {
         let window = try XCTUnwrap(host.window)
-        for _ in 0..<10 {
-            try await Task.sleep(for: .milliseconds(200))
-            host.layoutSubtreeIfNeeded()
+        try await OffscreenRender.waitUntil("clicking the top-left Back to leave the detail page", in: host,
+                                            file: file, line: line) {
+            if try done() { return true }
             try OffscreenRender.click(at: NSPoint(x: 28, y: host.bounds.height - 12), in: window)
-            try await Task.sleep(for: .milliseconds(200))
-            if try done() { return }
+            return false
         }
-        XCTFail("Clicking the top-left Back never left the detail page", file: file, line: line)
     }
 
     // MARK: Pokédex grid
@@ -194,12 +185,12 @@ final class DexBackNavigationTests: XCTestCase {
         // The chip's own tap is not driven: native views are not exposed for it, so the binding it
         // writes is set here and the grid's reaction to the region is what is read from pixels.
         probe.region = .johto
-        try await waitFor("Johto only", in: root, timeout: .seconds(20)) {
+        try await waitFor("Johto only", in: root) {
             try showing([.blue], hiding: [.red], in: root)
         }
 
         probe.region = nil
-        try await waitFor("both cells again", in: root, timeout: .seconds(20)) { try showing([.red, .blue], in: root) }
+        try await waitFor("both cells again", in: root) { try showing([.red, .blue], in: root) }
     }
 
     func testBackFromDetailReturnsToThePageOfThatSpecies() async throws {
@@ -232,16 +223,14 @@ final class DexBackNavigationTests: XCTestCase {
         let grid = try XCTUnwrap(descendants(root).compactMap { $0 as? NSScrollView }
             .max { ($0.documentView?.frame.height ?? 0) < ($1.documentView?.frame.height ?? 0) })
         // LazyVGrid grows the document as cells are realized, so keep scrolling to the end.
-        var reached = false
-        for _ in 0..<20 where !reached {
+        try await waitFor("scrolling to reach the oldest cell", in: root) {
+            if try pixels(.blue, in: root) > visible { return true }
             let clip = grid.contentView
             let bottom = (grid.documentView?.frame.height ?? 0) - clip.bounds.height
             clip.scroll(to: NSPoint(x: 0, y: clip.isFlipped ? bottom : 0))
             grid.reflectScrolledClipView(clip)
-            try await Task.sleep(for: .milliseconds(100))
-            reached = try pixels(.blue, in: root) > visible
+            return false
         }
-        XCTAssertTrue(reached, "scrolling never reached the oldest cell")
 
         navigation.boxDetailID = "entry-1"
         try await pressBack(until: { navigation.boxDetailID == nil }, in: root)

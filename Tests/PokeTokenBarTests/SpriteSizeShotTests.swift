@@ -214,7 +214,7 @@ final class SpriteSizeShotTests: XCTestCase {
         let height = (size + gap) * CGFloat(rows.count + 1) + 20
         try await OffscreenRender.capture(grid.frame(width: width, height: height, alignment: .topLeading)
             .background(Color.white).environment(\.colorScheme, .light),
-            size: CGSize(width: width, height: height), appearance: .aqua, scale: 2, settle: .seconds(2), to: file)
+            size: CGSize(width: width, height: height), appearance: .aqua, scale: 2, to: file)
     }
 
     private func shootHomeAndBattle(directory: URL, tag: String) async throws {
@@ -259,7 +259,7 @@ final class SpriteSizeShotTests: XCTestCase {
             try await OffscreenRender.capture(view.frame(width: size.width, height: size.height)
                 .background(Color.white).environment(\.colorScheme, .light)
                 .environment(\.locale, AppLanguage.ko.displayLocale),
-                size: size, appearance: .aqua, scale: 2, settle: .seconds(5),
+                size: size, appearance: .aqua, scale: 2,
                 to: directory.appendingPathComponent("sprite-size-\(name)-\(tag).png"))
         }
         try await capture(CompanionHeader(store: store), height: 300, name: "home")

@@ -1712,6 +1712,48 @@ read_when:
   Not covered: `ImageRenderer` without an explicit `scale`, and tests that read colors from an
   `NSAppearance` or font the host overrides.
 
+## Waiting in tests
+
+- **A test waits for the condition it asserts, never for a duration.** Render and store suites went
+  red on CI almost daily and were patched by raising a duration or rerunning. They waited a fixed
+  time (`settle(host, for: .seconds(N))` in 43 captures, `Task.sleep` after building a store,
+  `RunLoop.run(until: +0.1)`, 1–6 s polling deadlines, 1–2 s expectation timeouts) and then read
+  frames or pixels. The self-hosted Mac also runs leaf builds, so under load the `.task`, the
+  observation hop or the line fetch had not finished when the time ran out. Some waited for
+  animations that never finish offscreen (no display link ticks), and the pace-marker test read
+  pixels with no wait at all. Why tests and review missed it: every one passed on an idle Mac, a
+  duration reads like a wait in a diff, and the fix for each flake was a longer duration. Three
+  suites had their own private settle loops, so there was no single place to fix.
+  `OffscreenRender.settle` now waits until a fingerprint of the view tree (frames, control state,
+  the accessibility tree) is the same on three reads in a row, after an optional `until:` condition.
+  `waitUntil` / `OffscreenRender.waitUntil` poll a condition. `stableBitmap` waits for two identical
+  frames, for views without animation. `waitCeiling` (60 s) is only a hang guard: it fails the test,
+  and nothing waits for it. `OffscreenRender.host` and `.controller` turn animations off.
+  Guard: `OffscreenRenderGuardTests.testNoTestWaitsForAFixedTime` fails on `Task.sleep`,
+  `Thread.sleep`, `usleep`, `RunLoop.run(until:/before:)`, `asyncAfter`, `settle(..., for:)` and a
+  numeric expectation timeout anywhere under `Tests/` outside `OffscreenRender.swift`. Two fakes keep
+  a sleep by count: the slow log sink in `AppLogTests` and the RSS sampler in
+  `CodexLargeRolloutPerformanceTests`. Injecting one `Task.sleep` into a new test file fails it.
+  Found while converting: the `HomeFitRendering` fixture graduates its Gyarados as soon as the line
+  loads, which the old 300 ms sleep hid; an `NSHostingView` does not paint a `ProgressView` track
+  while an `NSHostingController` does, so `LimitProgressRendering` stays on a controller.
+  Not covered: `SpriteAnimationRecoveryTests` still asserts that cancellation returns within 1 s.
+
+## Repo-wide tests outside a leaf's filter
+
+- **Every test that reads `Sources/` or `Tests/`, reflects over a model or sweeps languages is in
+  `scripts/invariant-tests.sh`, method by method.** `SwiftUIIsolationTests`, `ScrollerLaneTests`,
+  `DesignTokenScanTests`, the `SaveTransferTests` field classification and the `BoxTests` source
+  scans first failed on CI. They were listed, but leaves ran only their own filter, and the drift
+  check could not see gaps: it worked per file and only on the literal `Sources/PokeTokenBar`.
+  It missed `GymTermGuardTests` (builds the path from `"Sources"`), any method dropped from a file
+  that still had another listed method (`BoxTests`, `SaveTransferTests` via `Mirror`), and 31
+  language sweeps without a matching name. The drift check now works per test method and triggers
+  on `"Sources`, `repositoryFile(`, `Mirror(reflecting:`, `AppLanguage.allCases` and
+  `enumerator(at:`; a fixture-only match goes in `NOT_INVARIANT` with its reason. Delisting each of
+  the five classes above, or `GymTermGuardTests`, fails the drift check; the old check missed three
+  of those six. The scan fails loudly if it finds nothing.
+
 ## Rendering tests that read text with OCR
 
 - **No test reads rendered text with OCR.** Vision ranks look-alike glyphs differently on macOS 15 (CI)

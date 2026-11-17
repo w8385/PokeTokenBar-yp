@@ -57,7 +57,7 @@ enum MegaSurfaceFixture {
         let store = CompanionStore(provider: SurfaceProvider(), fileURL: file)
         store.update(todayTokensByProvider: ["test": 0], todayDate: "d", monthTotal: 0,
                      burnTier: .idle, limitWarning: false, hasUsageData: true)
-        try await Task.sleep(for: .seconds(1))
+        try await waitUntil("the raised Pokémon's line to load") { store.currentLine != nil }
         await store.loadPokemonDetails(speciesID: 448)
         await store.loadPokemonDetails(speciesID: 6)
         return store
@@ -100,9 +100,9 @@ final class MegaSpriteScreenshotTests: XCTestCase {
         uploader.serverURL = "http://bot-host:8790"
         let battleHost = open(BattleView(store: store, navigation: PopoverNavigation(), initialPickerQuery: "")
             .environment(uploader).environment(battle).environment(store), height: 520)
-        try await Task.sleep(for: .seconds(5))
+        try await OffscreenRender.settle(battleHost)
         XCTAssertTrue(store.equip(lucarioZ, to: "lucario"))
-        try await Task.sleep(for: .seconds(6))
+        try await OffscreenRender.settle(battleHost)
         try snapshot(battleHost, to: file("battle-tab"))
 
         // Holder is not the raised Pokémon: Home keeps showing the raised one, until the holder is a friend.
@@ -114,9 +114,11 @@ final class MegaSpriteScreenshotTests: XCTestCase {
         let raised = try await MegaSurfaceFixture.makeStore(activeIsLucario: true, scratch: scratch)
         let homeHost = open(CompanionHeader(store: raised), height: 230)
         let petHost = open(PetShot(store: raised), height: 180)
-        try await Task.sleep(for: .seconds(5))
+        try await OffscreenRender.settle(homeHost)
+        try await OffscreenRender.settle(petHost)
         XCTAssertTrue(raised.equip(lucarioZ, to: "raised"))
-        try await Task.sleep(for: .seconds(6))
+        try await OffscreenRender.settle(homeHost)
+        try await OffscreenRender.settle(petHost)
         try snapshot(homeHost, to: file("home-holder-raised"))
         try snapshot(petHost, to: file("floating-pet"))
     }
@@ -132,7 +134,7 @@ final class MegaSpriteScreenshotTests: XCTestCase {
 
     private func capture<V: View>(_ view: V, to file: URL, height: CGFloat) async throws {
         let opened = open(view, height: height)
-        try await Task.sleep(for: .seconds(6))
+        try await OffscreenRender.settle(opened)
         try snapshot(opened, to: file)
     }
 

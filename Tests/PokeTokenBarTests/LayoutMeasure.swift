@@ -59,7 +59,7 @@ enum NativeControls {
         let host = OffscreenRender.host(
             view.frame(width: width).environment(\.colorScheme, .light),
             size: CGSize(width: width, height: height), appearance: .aqua)
-        try await OffscreenRender.settle(host, for: .milliseconds(400))
+        try await OffscreenRender.settle(host)
         return Snapshot(host: host, buttons: descendants(host).compactMap { $0 as? NSButton })
     }
 }

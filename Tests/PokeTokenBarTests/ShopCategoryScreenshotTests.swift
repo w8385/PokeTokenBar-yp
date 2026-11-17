@@ -54,6 +54,6 @@ final class ShopCategoryScreenshotTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light)
             .environment(\.locale, AppLanguage.ko.displayLocale),
-            size: size, appearance: .aqua, settle: .seconds(3), to: file)
+            size: size, appearance: .aqua, to: file)
     }
 }

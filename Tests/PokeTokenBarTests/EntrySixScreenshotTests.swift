@@ -51,7 +51,6 @@ final class EntrySixScreenshotTests: XCTestCase {
         let file = scratch.appendingPathComponent("state.json")
         try JSONEncoder().encode(state).write(to: file)
         let store = CompanionStore(provider: EntrySixShotProvider(), fileURL: file)
-        try await Task.sleep(for: .seconds(1))
 
         let defaults = UserDefaults(suiteName: "entry6-shot-\(UUID())")!
         let battle = BattleEntryStore(defaults: defaults)
@@ -79,6 +78,6 @@ final class EntrySixScreenshotTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light)
             .environment(\.locale, AppLanguage.ko.displayLocale),
-            size: size, appearance: .aqua, settle: .seconds(3), to: file)
+            size: size, appearance: .aqua, to: file)
     }
 }

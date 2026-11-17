@@ -11,7 +11,7 @@ private actor NameServer {
     func setFailure(_ value: Bool) { fails = value }
     func fetch(_ url: URL) async throws -> Data {
         calls += 1
-        try await Task.sleep(nanoseconds: 20_000_000)
+        await Task.yield()
         if fails { throw URLError(.notConnectedToInternet) }
         return response
     }
@@ -159,23 +159,17 @@ final class PokemonNameLocalizationTests: XCTestCase {
         func snapshot(_ view: NSView) throws -> Data {
             try OffscreenRender.png(of: view)
         }
-        for _ in 0..<200 {
-            if await provider.started { break }
-            try await Task.sleep(for: .milliseconds(5))
-        }
-        let started = await provider.started
-        XCTAssertTrue(started, "The mounted label must execute its own task")
+        try await waitUntil("the mounted label to run its own task") { await provider.started }
+        try await OffscreenRender.settle(host)
         let pending = try snapshot(host)
         XCTAssertTrue(store.names.isEmpty)
         await provider.finish()
         var translated = pending
-        for _ in 0..<200 {
-            try await Task.sleep(for: .milliseconds(5))
+        try await OffscreenRender.waitUntil("the mounted label to show the translation", in: host) {
             translated = try snapshot(host)
-            if translated != pending { break }
+            return translated != pending
         }
         XCTAssertEqual(store.names[resource]?["ko"], "몸통박치기")
-        XCTAssertNotEqual(translated, pending, "Observable snapshot must update the mounted label")
         let reopened = OffscreenRender.host(root, size: host.frame.size)
         // Snapshot synchronously, before the new view's task can load anything.
         XCTAssertEqual(try snapshot(reopened), translated)
@@ -191,10 +185,7 @@ final class PokemonNameLocalizationTests: XCTestCase {
         let store = PokemonNameDisplayStore()
         let resource = self.resource
         let task = Task { await store.load(resource, provider: provider) }
-        for _ in 0..<200 {
-            if await provider.started { break }
-            try await Task.sleep(for: .milliseconds(5))
-        }
+        try await waitUntil("the load to reach the provider") { await provider.started }
         task.cancel()
         await provider.finish()
         let loaded = await task.value

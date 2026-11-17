@@ -62,6 +62,6 @@ final class ConvenienceScreenshotTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light)
             .environment(\.locale, AppLanguage.ko.displayLocale),
-            size: size, appearance: .aqua, scale: 2, settle: .seconds(2), to: file)
+            size: size, appearance: .aqua, scale: 2, to: file)
     }
 }

@@ -405,9 +405,8 @@ final class PetCrowdTests: XCTestCase {
     func testReactionsSettleBackWithoutATimerLoop() async throws {
         let c = crowd()
         c.cheer()
-        try await Task.sleep(for: .milliseconds(200))
-        XCTAssertNil(c.bubble(1))
-        XCTAssertFalse(c.isFacingRight(1))
+        XCTAssertNotNil(c.bubble(1))
+        try await waitUntil("the cheer to settle back") { c.bubble(1) == nil && !c.isFacingRight(1) }
     }
 
     func testIdlePairsTwoDifferentPokemon() {

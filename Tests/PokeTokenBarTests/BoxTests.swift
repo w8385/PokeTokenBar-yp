@@ -286,9 +286,9 @@ final class BoxTests: XCTestCase {
                 .background(Color.white).environment(\.colorScheme, .light),
             size: CGSize(width: PopoverMetrics.contentWidth, height: 520), appearance: .aqua)
         var cells = 0
-        for _ in 0..<30 where cells < 4 {
-            try await OffscreenRender.settle(host, for: .milliseconds(100))
+        try await OffscreenRender.settle(host) {
             cells = try firstRowCellCount(host)
+            return cells >= 4
         }
         XCTAssertEqual(cells, 4,
                        "five individuals fill a row of four first; an empty cell before the first one shifts the grid")
