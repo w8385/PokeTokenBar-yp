@@ -1110,7 +1110,8 @@ read_when:
 - **메뉴바(상태아이템) stale dim 금지.** 시간 기반 stale(=`isStale`)로 `appearsDisabled` 를 켜면
   슬립/런치 직후 refresh 완료 전 몇 초간 메뉴바가 회색이 돼 '고장/비활성'으로 오인된다(사용자 반복 지적,
   `&& lastUpdated != nil` 로 런치만 막는 건 슬립-후 stale 을 못 막음). '오래됨' 신호는 팝오버에서만.
-- **UI 변경 → 스크린샷 stale** 은 `release.sh` 가 자동 경고(`CLAUDE.md` §릴리스) — 통과의례화 방지.
+- **UI 변경 → 스크린샷 stale** 은 `scripts/release-asset-gate.py` 가 잡는다. `release.sh` 는 경고로, 포크·train 의
+  `fork-release.sh` 는 중단으로 받는다("Release paths that skipped the README asset gate").
 - **번역 가드는 "이미 표에 있는 문구"만 본다 — 표에 *못 들어간* 문구는 구조상 안 보인다.**
   `LocalizationInterpolationTests` 는 `L(lang)` 을 거친 문자열의 `\(...)` 보간이 언어마다 살아남는지
   검사한다. 그래서 `Text("Antigravity 세션 갱신 필요")` 처럼 애초에 `L` 을 안 거친 리터럴은 통과한다 —
@@ -1846,3 +1847,29 @@ read_when:
   `scripts/tests` had never run in CI either, and its first run found
   `test_release_stops_before_side_effects_when_notes_are_missing` red: release.sh began calling
   `xcode-pin.sh` and the fixture had no stub for it.
+
+## Release paths that skipped the README asset gate
+
+- **v3.0.0 to v3.5.0 shipped with stale README images.** The Shop image still showed an "Uncommon
+  Egg", a 1B egg price and the 2.5.6 tab bar; Home showed four text tabs; the Pokédex was a light
+  render with the old rarity names; gyms, replays and Exp. Share had no image at all.
+  Why: the docs and asset checks (stale-screen warning, "UI feat needs a new asset" hard gate) lived
+  inside `release.sh`. Fork releases go `train_release.py` → `fork-release.sh`, a script written for
+  fork SemVer that never called them. Why no test caught it: nothing ran either release script's
+  doc check. The Swift tests read `fork-release.sh` as text for signing and the asset name, and
+  `train_release.py` only dry-runs `fork-release.sh`, which had no gate to fail. Two more holes sat
+  in the old check: any changed image in `assets/` cleared every changed screen, and any new file
+  under `assets/` (153 trainer sprites) satisfied the hard gate.
+  Fix: `scripts/release-asset-gate.py` holds the check and both scripts call it. `fork-release.sh`
+  runs it before building, against the previous *release* tag from `gh release view` (train pushes
+  the new tag first, so `git describe` would give an empty range), and stops on warnings and on the
+  hard gate. `PTB_ASSET_GATE_SKIP="<reason>"` lets a reviewed exception through and appends the
+  reason to the published notes. Staleness is per screen (`SCREENS`: UI file → image family, every
+  `-ko`/`-ja` variant redrawn), and a new asset counts only as a README image shown in all three
+  READMEs. Guards: `scripts/tests/test_release_asset_gate.py` builds a temp repo and drives the gate
+  and `fork-release.sh` with stubbed `gh` and build steps; removing the `asset_gate` call or the
+  hard-gate branch turns it red. `ScreenMapTests` fails when a `SCREENS` glob or image goes missing.
+  `ReadmeScreenshotTests` redraws the popover images offscreen in one run.
+  Class sweep: `fork-release.sh` also skips `test-gate.sh` and `release-metadata.py check-notes`,
+  which `release.sh` runs before publishing. Train runs CI on the train PR, which covers the tests,
+  but nothing checks fork release notes yet.

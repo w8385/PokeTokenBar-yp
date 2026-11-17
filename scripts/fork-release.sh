@@ -1,8 +1,28 @@
 #!/bin/bash
 # Publishes a fork release with the asset and checksum the in-app updater expects.
 # Usage: scripts/fork-release.sh v3.1.0 notes.md   (PTB_DRY_RUN=1 builds and checks, then stops before publishing)
+#        scripts/fork-release.sh --check-only v3.0.0   (only the README asset gate against that base)
+# A failed asset gate stops the release. PTB_ASSET_GATE_SKIP="<reviewed reason>" lets it through and
+# prints the reason in the published notes.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+
+asset_gate() {
+    local rc=0
+    python3 scripts/release-asset-gate.py "$1" || rc=$?
+    (( rc == 0 )) && return 0
+    if [[ -n "${PTB_ASSET_GATE_SKIP:-}" ]]; then
+        echo "asset gate failed (exit $rc) and is skipped: $PTB_ASSET_GATE_SKIP" >&2
+        return 0
+    fi
+    echo "asset gate failed (exit $rc): redraw the screens above and commit them, or set PTB_ASSET_GATE_SKIP=\"<reviewed reason>\"" >&2
+    return 1
+}
+
+if [[ "${1:-}" == "--check-only" ]]; then
+    asset_gate "${2:?base tag, e.g. v3.0.0}"
+    exit
+fi
 
 TAG="${1:?tag, e.g. v3.1.0}"
 NOTES="${2:?release notes file}"
@@ -26,6 +46,15 @@ LATEST_BASE="${LATEST#v}"
 LATEST_BASE="${LATEST_BASE%%-*}"
 [[ "$LATEST_BASE" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "cannot read the latest release tag: $LATEST" >&2; exit 1; }
 newer "$VERSION" "$LATEST_BASE" || { echo "$TAG is not newer than the latest release $LATEST" >&2; exit 1; }
+git rev-parse -q --verify "$LATEST^{commit}" >/dev/null || { echo "tag $LATEST is not local; git fetch --tags first" >&2; exit 1; }
+asset_gate "$LATEST" || exit 1
+PUBLISHED_NOTES="build/release-notes-$TAG.md"
+mkdir -p build
+cp "$NOTES" "$PUBLISHED_NOTES"
+if [[ -n "${PTB_ASSET_GATE_SKIP:-}" ]]; then
+    printf '\n> README asset gate skipped: %s\n' "$PTB_ASSET_GATE_SKIP" >> "$PUBLISHED_NOTES"
+    echo "notes end with: README asset gate skipped: $PTB_ASSET_GATE_SKIP"
+fi
 
 ./scripts/sign-with-key.sh available || {
     echo "no fork signing key: an ad-hoc release resets every user's Keychain 'always allow'." >&2
@@ -57,4 +86,4 @@ if [[ "${PTB_DRY_RUN:-0}" == "1" ]]; then
     exit 0
 fi
 gh release create "$TAG" "build/$ASSET" "build/$ASSET.sha256" "build/$VERSIONED" --repo "$REPO" \
-    --title "PokeTokenBar-yp $TAG" --notes-file "$NOTES"
+    --title "PokeTokenBar-yp $TAG" --notes-file "$PUBLISHED_NOTES"
