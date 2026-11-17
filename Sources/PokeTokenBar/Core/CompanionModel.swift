@@ -567,19 +567,29 @@ extension ItemKind {
 enum BattleItemGroup: String, CaseIterable, Sendable {
     case attack, typeBoost, bulk, speed, status, weather, signature, other
 
-    /// `kinds` split into non-empty groups. Type items follow the type chart order; the rest keep their order in `kinds`.
+    /// `kinds` split into non-empty groups. Type items follow the type chart; the rest follow `listedOrder`.
     static func sections(of kinds: [ItemKind]) -> [BattleItemSection] {
         allCases.compactMap { group in
-            var members = kinds.filter { $0.battleGroup == group }
-            if group == .typeBoost {
-                members.sort { typeRank($0) < typeRank($1) }
-            }
+            let members = kinds.filter { $0.battleGroup == group }.sorted { rank($0) < rank($1) }
             return members.isEmpty ? nil : BattleItemSection(group: group, kinds: members)
         }
     }
 
-    private static func typeRank(_ kind: ItemKind) -> Int {
-        PokemonType.allCases.firstIndex { $0.rawValue == kind.boostedType } ?? PokemonType.allCases.count
+    private static let listedOrder: [ItemKind] = [
+        .choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses,
+        .assaultVest, .eviolite, .leftovers, .blackSludge, .sitrusBerry, .shellBell, .bigRoot, .focusSash, .focusBand,
+        .choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder,
+        .lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb,
+        .heatRock, .dampRock, .smoothRock, .icyRock,
+        .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
+        .everstone,
+    ]
+
+    private static func rank(_ kind: ItemKind) -> Int {
+        if let type = kind.boostedType, let index = PokemonType.allCases.firstIndex(where: { $0.rawValue == type }) {
+            return index
+        }
+        return listedOrder.firstIndex(of: kind) ?? listedOrder.count
     }
 }
 

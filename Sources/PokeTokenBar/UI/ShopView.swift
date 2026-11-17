@@ -41,7 +41,7 @@ struct ShopView: View {
                     if category == nil {
                         ItemSectionHeader(title: l.shopEvolutionSection)
                     }
-                    ForEach(store.shopEvolutionItems, id: \.self) { kind in
+                    ForEach(category == nil ? store.shopAllViewEvolutionItems : store.shopEvolutionItems, id: \.self) { kind in
                         ShopItemCard(store: store, kind: kind)
                     }
                 }

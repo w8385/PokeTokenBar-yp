@@ -53,7 +53,7 @@ final class TeraItemsTests: XCTestCase {
         }
         XCTAssertFalse(held.contains(.item(.stellarCrystal)))
         XCTAssertTrue(s.shopEntries(in: .megaStone).contains(.item(.stellarCrystal)))
-        XCTAssertFalse(s.shopEntries(in: nil).contains(.item(.stellarCrystal)), "the crystal sits in the Mega tab only")
+        XCTAssertFalse(s.shopEntries(in: nil).contains(.item(.stellarCrystal)), "the crystal is not in the price list; it sells in the Mega tab and shows under Signature with the battle items")
         XCTAssertEqual(s.price(of: .item(.stellarCrystal)), MegaStone.price)
         XCTAssertEqual(ItemKind.stellarCrystal.category, .megaStone)
     }

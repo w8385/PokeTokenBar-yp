@@ -2407,6 +2407,9 @@ final class CompanionStore {
         evolutionStoneItems + [.linkingCord] + ItemKind.allCases.filter(\.isEvolutionHeld)
     }
 
+    /// The evolution section of the all view; battle items are already listed in `shopBattleSections` there.
+    var shopAllViewEvolutionItems: [ItemKind] { shopEvolutionItems.filter { $0.battleGroup == nil } }
+
     /// 상점 표시 순서 — 판매 아이템 + 알 3종을 하나의 가격 오름차순 목록으로 병합.
     /// 정렬 규칙은 purchasableItems 와 동일: 구매 완료한 보유형은 맨 아래, 나머지는 가격 저렴한 순.
     /// 알은 즉시 액션이라 '보유' 개념이 없어 가격 순서에만 참여한다.
