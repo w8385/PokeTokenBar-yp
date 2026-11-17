@@ -124,6 +124,13 @@ The tokens you've already used are your currency. Buy several consumables at onc
 </tr>
 <tr>
 <td width="55%" valign="middle">
+<h3>⚔️ Battle items, grouped by what they do</h3>
+The <b>Held items</b> tab in the Shop and the Bag sorts battle items under short headers: attack boost, type boost, bulk &amp; healing, speed, aim &amp; crits, status &amp; counters, weather and signature items.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-held-items.png" width="300" alt="Held items in the Shop and the Bag, under Attack boost and Type boost headers"></td>
+</tr>
+<tr>
+<td width="55%" valign="middle">
 <h3>📊 Official limits, now for Antigravity too</h3>
 Antigravity 2.0 and the IDE report real quota, not an estimate. Gemini models and Claude &amp; GPT models each get their own <b>5-hour</b> and <b>weekly</b> buckets with reset countdowns, alongside Claude Code and Codex. Background reads use the token file and can refresh OAuth credentials automatically; a manual refresh may still access the Keychain.
 </td>
