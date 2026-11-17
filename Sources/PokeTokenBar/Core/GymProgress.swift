@@ -8,6 +8,8 @@ struct GymRegionBadges: Codable, Equatable, Sendable {
     var hallOfFame = false
     /// The villain hideout run was cleared and its boss beaten.
     var orgBeaten = false
+    /// The hidden boss after the champion was beaten.
+    var hiddenBeaten = false
 
     init() {}
 
@@ -16,9 +18,10 @@ struct GymRegionBadges: Codable, Equatable, Sendable {
         gyms = (try? c.decode(Set<Int>.self, forKey: .gyms)) ?? []
         hallOfFame = (try? c.decode(Bool.self, forKey: .hallOfFame)) ?? false
         orgBeaten = (try? c.decode(Bool.self, forKey: .orgBeaten)) ?? false
+        hiddenBeaten = (try? c.decode(Bool.self, forKey: .hiddenBeaten)) ?? false
     }
 
-    private enum CodingKeys: String, CodingKey { case gyms, hallOfFame, orgBeaten }
+    private enum CodingKeys: String, CodingKey { case gyms, hallOfFame, orgBeaten, hiddenBeaten }
 }
 
 /// Every region's badges, keyed by region id (`kanto`…`paldea`). A save from before gyms has none.

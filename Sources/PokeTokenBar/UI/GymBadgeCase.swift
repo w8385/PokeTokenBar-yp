@@ -40,6 +40,12 @@ struct GymBadgeCase: View {
                             .help(region.hideout.org.displayName(language))
                             .accessibilityElement()
                             .accessibilityLabel("\(region.hideout.org.displayName(language)): \(owned.orgBeaten ? l.gymBadgeEarned : l.gymBadgeLocked)")
+                        if owned.hiddenBeaten, let hidden = region.hidden {
+                            GymBadgeView(emblem: .hidden, earned: true, size: 24)
+                                .help(hidden.trainer.displayName(language))
+                                .accessibilityElement()
+                                .accessibilityLabel("\(hidden.trainer.displayName(language)): \(l.gymBadgeEarned)")
+                        }
                     }
                 }
             }

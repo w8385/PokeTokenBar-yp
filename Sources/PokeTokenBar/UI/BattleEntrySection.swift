@@ -66,12 +66,13 @@ struct BattleEntrySection: View {
         }
     }
 
-    /// A Mega Stone or the Stellar Crystal on the right species; the two share the once-per-battle slot.
+    /// A Mega Stone, the Stellar Crystal or a Primal orb on the right species; they share the once-per-battle slot.
     private func transformsInBattle(_ fighter: BattleCandidate) -> Bool {
         let id = speciesID(of: fighter)
+        let held = companion.heldItem(of: fighter.id)
         return companion.megaStone(of: fighter.id, speciesID: id) != nil
-            || (companion.heldItem(of: fighter.id) == .stellarCrystal
-                && companion.teraForm(of: fighter.id, speciesID: id) != nil)
+            || (held == .stellarCrystal && companion.teraForm(of: fighter.id, speciesID: id) != nil)
+            || (held.map(ItemKind.primalOrbs.contains) == true && held?.holderSpeciesID == id)
     }
 
     private func speciesID(of fighter: BattleCandidate) -> Int {

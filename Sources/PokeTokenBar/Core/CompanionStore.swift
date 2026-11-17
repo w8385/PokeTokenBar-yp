@@ -2224,6 +2224,7 @@ final class CompanionStore {
     var bagCategories: [ItemCategory] {
         var present = Set(ownedItems.map { $0.kind.category })
         if !ownedScoutTickets.isEmpty { present.insert(.scout) }
+        if !ownedPrizeEggs.isEmpty { present.insert(.egg) }
         if !ownedMegaStones().isEmpty { present.insert(.megaStone) }
         if !ownedBattleSections.isEmpty { present.insert(.heldItem) }
         return ItemCategory.allCases.filter(present.contains)
@@ -2551,7 +2552,7 @@ final class CompanionStore {
 
     /// 활성 포켓몬을 박스로 보내고 처음부터 인큐베이션하는 새 알로 — 상점 알과 스카우트가 같이 쓴다.
     /// `pendingHatchID` 가 있으면(스카우트) 그 종으로 미리 정해 두고 메타몽 위장도 끈다.
-    private func storeActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?) {
+    private func storeActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?, shiny: Bool = false) {
         if let storedID = storeActiveInBox() { attachExpShare(to: storedID) }
         state.reconcileRepresentativeSelection()
         activeGeneration += 1
@@ -2561,8 +2562,9 @@ final class CompanionStore {
         isHatchRetryDelayed = false
         state.eggTier = tier          // 등급 보증(nil = 보증 없음)
         state.pendingHatchID = pendingHatchID   // nil 이면 새 보증으로 처음부터 롤(활성 포켓몬이 있는 동안엔 원래 비어 있다)
-        state.pendingForm = pendingHatchID.flatMap { rollLineForm(baseID: $0) }
+        state.pendingForm = pendingHatchID.flatMap { shiny ? PokemonForm.lineForms(baseID: $0).first : rollLineForm(baseID: $0) }
         state.scoutedEgg = pendingHatchID != nil
+        state.shinyEgg = shiny
         prefetchedLineID = nil
         justGraduated = nil; justEvolvedTo = nil; eventUntil = nil
         AppLog.write("egg purchased: active stored in the Box, tier=\(tier?.rawValue ?? "none") scouted=\(pendingHatchID.map(String.init) ?? "no")")
@@ -2626,6 +2628,31 @@ final class CompanionStore {
         state.inventory[pool.inventoryKey] = scoutTicketCount(pool) - 1
         state.scoutDraws[pool.key] = nil
         storeActiveForNewEgg(tier: nil, pendingHatchID: speciesID)
+        return true
+    }
+
+    // MARK: Hidden boss prize eggs
+
+    func prizeEggCount(speciesID: Int) -> Int {
+        max(0, state.inventory[HiddenBossPrize.eggKey(speciesID)] ?? 0)
+    }
+
+    /// Prize eggs in the bag, in prize-table order.
+    var ownedPrizeEggs: [(speciesID: Int, count: Int)] {
+        HiddenBossPrize.all.compactMap { prize in
+            let count = prizeEggCount(speciesID: prize.eggSpeciesID)
+            return count > 0 ? (prize.eggSpeciesID, count) : nil
+        }
+    }
+
+    /// Same gate as a scout pick: the active Pokémon goes to the Box to make room for the egg.
+    var canHatchPrizeEgg: Bool { hasActive }
+
+    @discardableResult
+    func hatchPrizeEgg(speciesID: Int) -> Bool {
+        guard canHatchPrizeEgg, prizeEggCount(speciesID: speciesID) > 0 else { return false }
+        state.inventory[HiddenBossPrize.eggKey(speciesID)] = prizeEggCount(speciesID: speciesID) - 1
+        storeActiveForNewEgg(tier: nil, pendingHatchID: speciesID, shiny: true)
         return true
     }
 
@@ -3056,12 +3083,14 @@ final class CompanionStore {
         state.eggTier = nil   // 보증은 이 부화로 소비된다(다음 알은 다시 무보증)
         let scouted = state.scoutedEgg
         state.scoutedEgg = false
+        let prizeShiny = state.shinyEgg
+        state.shinyEgg = false
         let prayers = state.eggPrayers   // 부화체에 옮기고 알 쪽은 비운다
         state.resetEggPrayers()
         // 개체 롤 — shiny(1/64, 부적 1/48)·성격(25종)은 부화 순간 확정, 진화해도 유지.
         // 알림 문구는 이 판정과 같은 분모를 보여준다.
         let shinyOdds = shinyDenominator
-        let isShiny = Self.rollsShiny(roll: rng.next(), charmOwned: ownsShinyCharm)
+        let isShiny = Self.rollsShiny(roll: rng.next(), charmOwned: ownsShinyCharm) || prizeShiny
         let nature = PokemonNature.allCases[Int(rng.next() % UInt64(PokemonNature.allCases.count))]
         // 메타몽 위장 롤 — common·≥2형태에 한해 1/128. .app 게이트(&& 단락 → 비앱에선 rng 미소비로
         // 기존 테스트 RNG 시퀀스 무영향). 위장/리빌 로직은 상태 기반으로 별도 테스트한다.
@@ -3859,8 +3888,24 @@ final class CompanionStore {
     func applyGymReward(_ reward: GymReward, trainer: String, region: String) {
         state.gymBadges = reward.badges
         if let moveID = reward.tmMoveID { grantTM(moveID: moveID) }
+        let prizeLines = reward.prize.map(grantPrize)
         save()
         let tm = reward.tmMoveID.flatMap { id in MachineCatalog.moves.first { $0.id == id }?.name(language) }
-        notifyCompanionEvent(l.gymRewardTitle(reward.kind), l.gymRewardBody(reward.kind, trainer: trainer, region: region, tm: tm))
+        var body = l.gymRewardBody(reward.kind, trainer: trainer, region: region, tm: tm)
+        if let prizeLines { body += " " + l.gymRewardPrize(prizeLines) }
+        notifyCompanionEvent(l.gymRewardTitle(reward.kind), body)
+    }
+
+    /// Adds the prize to the bag and returns what it paid as display lines. A single-copy item already owned
+    /// is skipped. Mutates state only; the caller saves.
+    private func grantPrize(_ prize: HiddenBossPrize) -> [String] {
+        state.inventory[prize.eggKey, default: 0] += 1
+        state.inventory[ItemKind.rareCandy.rawValue, default: 0] += HiddenBossPrize.candyCount
+        let granted = prize.itemKeys.filter { key in
+            if let kind = ItemKind(rawValue: key), kind.isSingleCopy, itemOwnedTotal(kind) > 0 { return false }
+            state.inventory[key, default: 0] += 1
+            return true
+        }
+        return l.hiddenBossPrizeLines(eggSpeciesID: prize.eggSpeciesID, itemKeys: granted)
     }
 }

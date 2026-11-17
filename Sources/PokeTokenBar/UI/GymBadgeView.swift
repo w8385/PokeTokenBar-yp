@@ -5,6 +5,7 @@ enum GymEmblem: Equatable {
     case type(PokemonType)
     case hallOfFame
     case org
+    case hidden
 }
 
 /// Simple original badge shapes drawn in SwiftUI: a type picks one of six outlines and its color and glyph.
@@ -31,6 +32,7 @@ struct GymBadgeView: View {
         case .type(let type): Self.shape(for: type)
         case .hallOfFame: AnyShape(GymStarShape(points: 5))
         case .org: AnyShape(GymPolygonShape(sides: 8))
+        case .hidden: AnyShape(GymStarShape(points: 8))
         }
     }
 
@@ -39,6 +41,7 @@ struct GymBadgeView: View {
         case .type(let type): type.color
         case .hallOfFame: Color.yellow
         case .org: Color.indigo
+        case .hidden: Color.purple
         }
     }
 
@@ -58,6 +61,7 @@ struct GymBadgeView: View {
         switch emblem {
         case .hallOfFame: "trophy.fill"
         case .org: "theatermasks.fill"
+        case .hidden: "sparkles"
         case .type(let type):
             switch type {
             case .normal: "circle.circle.fill"

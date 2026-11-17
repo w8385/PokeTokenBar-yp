@@ -76,6 +76,15 @@ struct GymSection: View {
             }
             eliteRow(region, badges: badges, team: team)
             Divider()
+            if let hidden = region.hidden {
+                let progress = badges.region(region.id)
+                GymHiddenRow(opponent: hidden, language: language, l: l, unlocked: progress.hallOfFame,
+                             beaten: progress.hiddenBeaten, fighting: service.inFlight == hidden.id,
+                             disabled: service.inFlight != nil) {
+                    Task { await service.fightGym(hidden, region: region, team: team) }
+                }
+                Divider()
+            }
             hideoutRow(region, badges: badges, team: team)
             if let failure = service.failure { failureLine(failure) }
         }

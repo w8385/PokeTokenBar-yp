@@ -36,6 +36,7 @@ extension L {
     func moreHeldItemEffect(_ kind: ItemKind) -> String {
         if let type = kind.boostedType { return typeBoostEffect(type) }
         if kind.maskEntryStat != nil { return maskEffect(kind) }
+        if let effect = championItemEffect(kind) { return effect }
         switch kind {
         case .stellarCrystal:
             return stellarCrystalEffect

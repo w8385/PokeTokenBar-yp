@@ -22,7 +22,8 @@ struct BagView: View {
                             onPicked: { scoutPool = nil; nav.tab = .home },
                             onBack: { scoutPool = nil })
                 .frame(height: 520)
-        } else if store.ownedItems.isEmpty && store.ownedScoutTickets.isEmpty && store.ownedMegaStones().isEmpty {
+        } else if store.ownedItems.isEmpty && store.ownedScoutTickets.isEmpty && store.ownedMegaStones().isEmpty
+                    && store.ownedPrizeEggs.isEmpty {
             emptyState
         } else {
             // 고정 높이 — 컬렉션과 동일(팝오버 재오픈 시 fitting size 축소 방지).
@@ -35,6 +36,11 @@ struct BagView: View {
                     if category == nil || category == .heldItem {
                         HeldItemSections(sections: store.ownedBattleSections, l: store.l) { kind in
                             ItemCard(store: store, nav: nav, kind: kind, count: store.itemCount(kind))
+                        }
+                    }
+                    if category == nil || category == .egg {
+                        ForEach(store.ownedPrizeEggs, id: \.speciesID) { egg in
+                            PrizeEggCard(store: store, speciesID: egg.speciesID, count: egg.count) { nav.tab = .home }
                         }
                     }
                     if category == nil || category == .scout {
@@ -66,6 +72,51 @@ struct BagView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 28)
+    }
+}
+
+/// A hidden boss prize egg; incubating it sends the current Pokémon to the Box, like a scout pick.
+@MainActor
+struct PrizeEggCard: View {
+    let store: CompanionStore
+    let speciesID: Int
+    let count: Int
+    let onIncubated: () -> Void
+
+    var body: some View {
+        let l = store.l
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 10) {
+                SpriteView(speciesID: speciesID, size: 30, animated: false, shiny: true)
+                    .frame(width: 30, height: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(l.prizeEggName(speciesID)).font(.callout.weight(.semibold))
+                        Text("×\(count)").font(.caption.weight(.bold))
+                            .foregroundStyle(.secondary).monospacedDigit()
+                    }
+                    Text(l.prizeEggDescription)
+                        .font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if !store.canHatchPrizeEgg {
+                        Text(store.isLineParked ? l.parkedLockedHint : l.scoutPickLocked)
+                            .font(.caption2).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+            HStack {
+                Spacer()
+                Button(l.prizeEggIncubate) {
+                    if store.hatchPrizeEgg(speciesID: speciesID) { onIncubated() }
+                }
+                .buttonStyle(.bordered).controlSize(.small)
+                .disabled(!store.canHatchPrizeEgg)
+            }
+        }
+        .padding(10)
+        .background(Color.secondary.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel))
     }
 }
 

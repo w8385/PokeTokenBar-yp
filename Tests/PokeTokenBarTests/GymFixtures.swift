@@ -22,7 +22,7 @@ enum GymFixtures {
         return json
     }
 
-    static func region(_ id: String, name: String = "Kanto") -> [String: Any] {
+    static func region(_ id: String, name: String = "Kanto", hidden: Bool = false) -> [String: Any] {
         let gyms = (1...8).map {
             opponent("\(id)-\($0)", kind: "gym", index: $0, types: [gymTypes[$0 - 1]], trainer: ("관장\($0)", "Leader \($0)"))
         }
@@ -42,20 +42,26 @@ enum GymFixtures {
             opponent("\(id)-hideout-4", kind: "boss", index: 4, types: ["poison", "dark"], trainer: ("두목", "Boss"),
                      run: ("\(id)-hideout", 4, 4)),
         ]
-        return [
+        var json: [String: Any] = [
             "id": id, "name": name, "first": 1, "last": 151, "gyms": gyms,
             "elite": ["run": "\(id)-elite", "badges_needed": 8, "battles": elite] as [String: Any],
             "hideout": ["run": "\(id)-hideout", "org": ["name": text("로켓단", "Rocket"), "types": ["poison", "dark"]],
                         "battles": hideout] as [String: Any],
         ]
+        if hidden {
+            var boss = opponent("\(id)-hidden", kind: "hidden", index: 1, types: [], trainer: ("숨은강자", "Hidden"))
+            boss["finale"] = 1
+            json["hidden"] = boss
+        }
+        return json
     }
 
-    static func catalogData(regions: [(String, String)] = [("kanto", "Kanto"), ("johto", "Johto")]) -> Data {
-        let json: [String: Any] = ["ok": true, "regions": regions.map { region($0.0, name: $0.1) }]
+    static func catalogData(regions: [(String, String)] = [("kanto", "Kanto"), ("johto", "Johto")], hidden: Bool = false) -> Data {
+        let json: [String: Any] = ["ok": true, "regions": regions.map { region($0.0, name: $0.1, hidden: hidden) }]
         return try! JSONSerialization.data(withJSONObject: json)
     }
 
-    static func catalog() -> GymCatalog { try! GymCatalog.decode(catalogData()) }
+    static func catalog(hidden: Bool = false) -> GymCatalog { try! GymCatalog.decode(catalogData(hidden: hidden)) }
 
     static func fighter(_ id: Int, name: String, level: Int = 50, hp: Int?, shiny: Bool = false) -> [String: Any] {
         ["pokemon_id": id, "name": name, "level": level, "types": ["normal"], "shiny": shiny, "hp": hp as Any? ?? NSNull()]
