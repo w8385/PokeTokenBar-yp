@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Box page's battle slots, 1–3 for PvP and 4–6 for the gym: each shows who holds it, this Pokémon's own slot is highlighted.
+/// The Box page's six battle slots: each shows who holds it, this Pokémon's own slot is highlighted.
 @MainActor
 struct BattleSlotControl: View {
     let store: CompanionStore
@@ -16,20 +16,8 @@ struct BattleSlotControl: View {
         let mine = battleEntry.slotIndex(of: entry, in: store)
         let candidate = store.battleCandidate(for: entry)
         let locked = candidate.map { store.isTradeLocked($0.id) } ?? false
-        VStack(alignment: .leading, spacing: 4) {
-            slotRow(0..<BattleEntry.pvpSlots, caption: l.battleSlotPvP, symbol: "bolt.fill",
-                    lineup: lineup, mine: mine, candidate: candidate, locked: locked)
-            slotRow(BattleEntry.pvpSlots..<BattleEntry.maxSlots, caption: l.battleSlotGymOnly, symbol: "building.columns",
-                    lineup: lineup, mine: mine, candidate: candidate, locked: locked)
-        }
-        .opacity(locked ? 0.5 : 1)
-    }
-
-    private func slotRow(_ range: Range<Int>, caption: String, symbol: String, lineup: [BattleCandidate], mine: Int?,
-                         candidate: BattleCandidate?, locked: Bool) -> some View {
         HStack(spacing: 4) {
-            Image(systemName: symbol).font(.caption2).foregroundStyle(.secondary).frame(width: 14)
-            ForEach(range, id: \.self) { index in
+            ForEach(0..<BattleEntry.maxSlots, id: \.self) { index in
                 let holder = index < lineup.count ? lineup[index] : nil
                 let isMine = mine == index
                 let last = isMine && lineup.count == 1
@@ -48,8 +36,8 @@ struct BattleSlotControl: View {
                       : isMine ? l.battleSlotRemove(index + 1) : l.battleSlotPlace(index + 1))
                 .accessibilityLabel(isMine ? l.battleSlotRemove(index + 1) : l.battleSlotPlace(index + 1))
             }
-            Text(caption).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
         }
+        .opacity(locked ? 0.5 : 1)
     }
 
     private func slotLabel(index: Int, holder: BattleCandidate?, isMine: Bool) -> some View {

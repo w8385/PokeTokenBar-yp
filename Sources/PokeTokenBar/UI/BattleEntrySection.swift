@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Battle tab rows for picking up to six battle Pokémon (the first three fight in PvP) and their order; moves and item are set in the Box.
+/// Battle tab rows for picking up to six battle Pokémon and their order; moves and item are set in the Box.
 @MainActor
 struct BattleEntrySection: View {
     @Environment(CompanionStore.self) private var companion
@@ -96,12 +96,8 @@ struct BattleEntrySection: View {
                         if let held = companion.heldItemRef(of: fighter.id) { HeldItemBadge(ref: held, size: 22) }
                     }
                 VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 4) {
-                        Text(count > 1 ? "\(index + 1) · \(l.battleEntryLabel)" : l.battleEntryLabel)
-                        Text(index < BattleEntry.pvpSlots ? l.battleSlotPvP : l.battleSlotGymOnly)
-                            .foregroundStyle(index < BattleEntry.pvpSlots ? Color.accentColor : .orange)
-                    }
-                    .font(.caption2).foregroundStyle(.secondary)
+                    Text(count > 1 ? "\(index + 1) · \(l.battleEntryLabel)" : l.battleEntryLabel)
+                        .font(.caption2).foregroundStyle(.secondary)
                     Text("\(mega.map { l.megaFormName(name, variant: $0.variantSuffix) } ?? name)\(fighter.member.shiny ? " ✨" : "")")
                         .font(.headline).lineLimit(1)
                     HStack(spacing: 6) {

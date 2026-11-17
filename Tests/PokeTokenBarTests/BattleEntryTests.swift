@@ -100,13 +100,13 @@ final class BattleEntryTests: XCTestCase {
         XCTAssertNil(party[2].moves)
     }
 
-    func testThePartyHoldsAtMostThreeAndNeverTheSamePokemonTwice() {
+    func testThePartyHoldsEveryPickOnceAndNeverTheSamePokemonTwice() {
         var state = state()
         state.dex.append(entry(16, id: "pidgey"))
 
         let party = self.party(state, slots: ids("caterpie", "caterpie", "pikachu", "raised", "pidgey"))
 
-        XCTAssertEqual(party.map(\.pokemonID), [10, 25, 5])
+        XCTAssertEqual(party.map(\.pokemonID), [10, 25, 5, 16])
     }
 
     func testReleasedPicksAreSkippedAndTheRestKeepTheirOrder() {
