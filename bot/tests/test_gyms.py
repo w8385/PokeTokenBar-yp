@@ -61,16 +61,55 @@ def test_a_team_leads_with_its_focus_type_as_far_as_the_region_has_species_of_it
                 continue
             on_type = sum(1 for species in opponent.team if set(opponent.types) & set(table[species].types))
             available = sum(1 for species in pool if set(opponent.types) & set(species.types))
-            assert on_type >= min(gyms.FOCUS[opponent.kind], available), opponent.id
+            assert on_type >= min(gyms.MIN_FOCUS, gyms.FOCUS[opponent.kind], available), opponent.id
 
 
-def test_a_foe_is_never_a_form_it_could_already_have_evolved_from_and_can_already_attack():
+def test_a_foe_can_already_attack_and_only_a_gym_fields_a_form_that_could_have_evolved():
     table = gyms.species_table()
     for opponent in all_opponents():
         for species_id in opponent.team:
             species = table[species_id]
             assert species.level <= 50 and not species.excluded and species.total >= MIN_TOTAL, opponent.id
-            assert not [other for other in table.values() if other.parent == species_id and other.reach <= 50], opponent.id
+            evolves = [other for other in table.values() if other.parent == species_id and other.reach <= 50]
+            assert opponent.kind == "gym" or not evolves, opponent.id
+
+
+def test_no_member_of_a_team_evolves_from_another():
+    table = gyms.species_table()
+
+    def line(species_id):
+        ids = set()
+        while species_id:
+            ids.add(species_id)
+            species_id = table[species_id].parent if species_id in table else 0
+        return ids
+
+    for opponent in all_opponents():
+        for species_id in opponent.team:
+            assert not (line(species_id) - {species_id}) & set(opponent.team), opponent.id
+
+
+def test_gyms_get_stronger_with_their_number_and_the_elite_four_stand_above_the_eighth():
+    table = gyms.species_table()
+    regions = gyms.regions()
+
+    def mean_total(opponents):
+        return statistics.mean(table[species].total for opponent in opponents for species in opponent.team)
+
+    by_number = [mean_total([region.gyms[number] for region in regions]) for number in range(8)]
+    assert by_number == sorted(by_number) and by_number[-1] - by_number[0] >= 80
+    assert mean_total([o for region in regions for o in region.elite]) > by_number[-1]
+    ivs = [regions[0].gyms[number].iv for number in range(8)]
+    assert ivs == sorted(ivs) and ivs[0] < ivs[-1] < regions[0].elite[0].iv <= regions[0].elite[-1].iv
+    for region in regions:
+        assert mean_total(region.gyms[:2]) < mean_total(region.gyms[-2:]), region.id
+
+
+def test_a_foe_fights_with_its_trainers_ivs():
+    for battle_id in ("kanto-1", "kanto-8", "kanto-champion"):
+        opponent = gyms.find(battle_id)
+        assert all(set(member["ivs"].values()) == {opponent.iv} and len(member["ivs"]) == 6
+                   for member in gyms.foe_members(opponent))
 
 
 def test_champions_pick_high_totals_with_no_shared_first_type_and_grunts_pick_low_ones():
