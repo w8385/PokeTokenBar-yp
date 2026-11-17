@@ -162,13 +162,7 @@ struct HomePetRow<Main: View>: View {
 
     private func addSlot(l: L) -> some View {
         Button { picking = true } label: {
-            Circle()
-                .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
-                .foregroundStyle(hoveringAdd ? Color.secondary : Color.secondary.opacity(0.35))
-                .overlay {
-                    Image(systemName: "plus").font(.caption2.weight(.semibold))
-                        .foregroundStyle(hoveringAdd ? Color.secondary : Color.secondary.opacity(0.35))
-                }
+            FriendAddDisc(hovering: hoveringAdd)
                 .frame(width: Self.friendSize - 6, height: Self.friendSize - 6)
                 .frame(width: Self.friendSize, height: Self.friendSize, alignment: .bottom)
                 .contentShape(Rectangle())
@@ -210,6 +204,18 @@ struct HomePetRow<Main: View>: View {
             .allowsHitTesting(hoveredSlot == slot)
             .offset(x: outer == .topLeading ? 1 : -1, y: -2)
         }
+    }
+}
+
+/// The add-friend button face: an accent-tinted disc with a primary plus, a little stronger on hover.
+@MainActor
+struct FriendAddDisc: View {
+    var hovering = false
+
+    var body: some View {
+        Circle()
+            .fill(Color.accentColor.opacity(hovering ? 0.34 : 0.22))
+            .overlay { Image(systemName: "plus").font(.caption2.weight(.bold)).foregroundStyle(.primary) }
     }
 }
 
