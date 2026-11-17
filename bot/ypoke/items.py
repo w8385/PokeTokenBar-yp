@@ -79,6 +79,7 @@ ITEM_NAMES = {
     "teal-mask": "벽록의가면", "wellspring-mask": "우물의가면", "hearthflame-mask": "화덕의가면",
     "cornerstone-mask": "주춧돌의가면", STELLAR_CRYSTAL: "별빛 결정", "red-orb": "주홍구슬", "blue-orb": "쪽빛구슬",
     PUNCHING_GLOVE: "펀치글러브", "adamant-crystal": "큰금강옥", "lustrous-globe": "큰백옥", "griseous-core": "큰백금옥",
+    "rusted-sword": "녹슨검", "rusted-shield": "녹슨방패", "ultranecrozium-z": "울트라네크로Z",
     "occa-berry": "오카열매", "passho-berry": "꼬시개열매", "wacan-berry": "초나열매", "rindo-berry": "린드열매",
     "yache-berry": "플카열매", "chople-berry": "로플열매", "kebia-berry": "으름열매", "shuca-berry": "슈캐열매",
     "coba-berry": "바코열매", "payapa-berry": "야파열매", "tanga-berry": "리체열매", "charti-berry": "루미열매",

@@ -51,7 +51,7 @@ class GymBattles:
         seed = self._new_seed()
         finale = len(foes) - opponent.finale if opponent.finale else None
         result = simulate((tuple(player[index] for index in awake), foes), seed, [starts[index] for index in awake],
-                          finale=finale)
+                          finale=finale, unlimited_megas=opponent.kind == "hidden")
         shown, carry = _outcomes(starts, awake, result)
         won = result.winner == 0
         following = gyms.next_in_run(opponent) if won else None

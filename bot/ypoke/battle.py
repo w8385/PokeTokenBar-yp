@@ -52,7 +52,8 @@ AILMENT_IMMUNE_TYPES = {
 RESIDUAL_FRACTIONS = {"burn": BURN_DAMAGE_FRACTION, "poison": POISON_DAMAGE_FRACTION}
 TRICK_ROOM_TURNS = 5
 STEALTH_ROCK_FRACTION = 8
-STATUS_EFFECTS = ("trick-room", "stealth-rock", "yawn", "thunder-wave")
+STATUS_EFFECTS = ("trick-room", "stealth-rock", "swords-dance", "yawn", "thunder-wave")
+SWORDS_DANCE_STAGES = 2
 _NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
 _NATURE_NAMES = (
     "hardy lonely brave adamant naughty bold docile relaxed impish lax timid hasty serious jolly naive "
@@ -161,7 +162,7 @@ class Action:
     `recovered` lists what ended before it acted ("sleep", "freeze", "confusion"). `hits` counts a multi-hit
     move's hits; `drained` means the user healed from the damage. `attacker_item` / `defender_item` name the
     held item that triggered on that side during this action (Life Orb recoil, Focus Sash). `effect` is what an
-    effect move did ("trick-room", "trick-room-off", "stealth-rock", "yawn", "thunder-wave"); `pivoted` means the user
+    effect move did ("trick-room", "trick-room-off", "stealth-rock", "swords-dance", "yawn", "thunder-wave"); `pivoted` means the user
     switched out."""
 
     turn: int
@@ -303,8 +304,8 @@ class MegaEvolution:
 @dataclass(frozen=True)
 class FormShift:
     """A held-item form taking hold on entry: `kind` is "mask" (Ogerpon's mask glowed, `change` is its +1),
-    "terastal" or "stellar" (Terapagos) or "origin" (an origin item's Origin Forme). `form_id` is the `/pokemon` id
-    of the form shown, if it has one."""
+    "terastal" or "stellar" (Terapagos) or an `ITEM_FORMS` kind ("origin", "crowned-sword", "crowned-shield").
+    `form_id` is the `/pokemon` id of the form shown, if it has one."""
 
     turn: int
     side: int
@@ -344,7 +345,8 @@ class BattleResult:
 
 
 def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[Combatant]], seed: int,
-             carried: Sequence[Carry | None] = (), finale: int | None = None) -> BattleResult:
+             carried: Sequence[Carry | None] = (), finale: int | None = None,
+             unlimited_megas: bool = False) -> BattleResult:
     """Fight until one side has no Pokémon left or `TURN_LIMIT` turns pass.
 
     At the limit the side with more Pokémon left wins, then the one with the higher HP share.
@@ -353,11 +355,12 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     A weather move is picked when it swings the exchange by `WEATHER_SWING_MIN`; the weather lasts `WEATHER_TURNS` turns.
     A fainted Pokémon is replaced after the end-of-turn effects, so its successor takes no chip damage that turn.
     `carried` (per member of the first side, in order) starts a member hurt or with a status.
-    `finale` is the second side's member index from which a second Mega Evolution is allowed.
+    `finale` is the second side's member index from which a second Mega Evolution is allowed; with `unlimited_megas`
+    every member of the second side that can Mega Evolve does.
     Both sides follow the same rules and the same move choice (`_choose`).
     """
     rng = random.Random(seed)
-    teams = (_Team(_roster(sides[0]), carried), _Team(_roster(sides[1]), finale=finale))
+    teams = (_Team(_roster(sides[0]), carried), _Team(_roster(sides[1]), finale=finale, unlimited_megas=unlimited_megas))
     events: list[Event] = []
     weather = _Weather()
     arena = _Arena()
@@ -526,9 +529,9 @@ def _enter_forms(team: "_Team", side: int, turn: int, events: list[Event]) -> No
     combatant = fighter.combatant
     if combatant.tera:
         events.append(FormShift(turn, side, combatant.name, "terastal", tera_forms.TERASTAL_FORM))
-    origin = tera_forms.ORIGIN_FORMS.get(fighter.item or "")
-    if origin is not None:
-        events.append(FormShift(turn, side, combatant.name, "origin", origin[1]))
+    item_form = tera_forms.ITEM_FORMS.get(fighter.item or "")
+    if item_form is not None:
+        events.append(FormShift(turn, side, combatant.name, item_form[2], item_form[1]))
     mask = tera_forms.MASKS.get(fighter.item or "")
     if mask is not None:
         form_id, stat = mask
@@ -543,7 +546,7 @@ def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> No
     """A Pokémon that just entered keeps its HP share and status; its Mega form replaces the base stats and types."""
     fighter = team.active
     mega = fighter.combatant.mega
-    if mega is None or team.mega_used:
+    if mega is None or (team.mega_used and not team.unlimited_megas):
         return
     ability = fighter.combatant.ability
     if mega.ability_id is not None:
@@ -577,13 +580,15 @@ class _Team:
     (the members before `finale`, or the finale). The member at `finale` gets its own Mega Evolution slot, whether
     or not one before it used the team's."""
 
-    def __init__(self, roster: tuple[Combatant, ...], carried: Sequence[Carry | None] = (), finale: int | None = None):
+    def __init__(self, roster: tuple[Combatant, ...], carried: Sequence[Carry | None] = (), finale: int | None = None,
+                 unlimited_megas: bool = False):
         self.roster = roster
         self.carried = tuple(carried) + (None,) * (len(roster) - len(carried))
         self.fighters = {0: _Fighter.enter(roster[0], self.carried[0])}
         self.current = 0
         self.queue = list(range(1, len(roster)))
         self.mega_used = False
+        self.unlimited_megas = unlimited_megas
         self.finale = finale
         self.trick_room_used = False
         self.rocks_used = False
@@ -653,6 +658,7 @@ class _Fighter:
     locked: int | None = None
     drowsy_at: int = 0
     fresh: bool = True
+    danced: bool = False
 
     def leave(self) -> None:
         """Switching out clears stat stages, the Choice lock, confusion, the toxic count and drowsiness."""
@@ -660,6 +666,7 @@ class _Fighter:
         self.locked = None
         self.confusion_left = self.toxic_ticks = self.drowsy_at = 0
         self.fresh = True
+        self.danced = False
 
     @classmethod
     def enter(cls, combatant: Combatant, carry: Carry | None = None) -> "_Fighter":
@@ -889,7 +896,8 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
         if move.accuracy is not None and rng.random() * 100 >= move.accuracy:
             return Action(turn, side, *names, move.name, missed=True, recovered=recovered,
                           defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
-        effect, changes = _status_effect(turn, side, move, defender, arena if arena is not None else _Arena(), rng)
+        effect, changes = _status_effect(turn, side, move, (attacker, defender), arena if arena is not None else _Arena(),
+                                         rng)
         return Action(turn, side, *names, move.name, failed=not effect, effect=effect, recovered=recovered,
                       changes=changes, defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     multiplier = _multiplier(move, defender, weather.kind)
@@ -955,10 +963,18 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
     )
 
 
-def _status_effect(turn: int, side: int, move: Move, defender: _Fighter, arena: _Arena,
+def _status_effect(turn: int, side: int, move: Move, fighters: tuple[_Fighter, _Fighter], arena: _Arena,
                    rng: random.Random) -> tuple[str, tuple[Change, ...]]:
-    """Applies Trick Room (a second use ends it), Stealth Rock on the foe's side, Yawn or Thunder Wave. Returns what
-    it did ("" when it failed) and the status it landed."""
+    """Applies Trick Room (a second use ends it), Stealth Rock on the foe's side, Swords Dance, Yawn or Thunder Wave.
+    Returns what it did ("" when it failed) and the stage or status change it made."""
+    attacker, defender = fighters
+    if move.effect == "swords-dance":
+        attacker.danced = True
+        stages = min(SWORDS_DANCE_STAGES, MAX_STAGE - attacker.stages["attack"])
+        if stages <= 0:
+            return "", ()
+        attacker.stages["attack"] += stages
+        return "swords-dance", (Change(side, attacker.combatant.name, "attack", stages),)
     if move.effect == "trick-room":
         arena.trick_room = 0 if arena.trick_room else TRICK_ROOM_TURNS
         return ("trick-room" if arena.trick_room else "trick-room-off"), ()
@@ -1129,7 +1145,8 @@ def _inflict(ailment: str, defender: _Fighter, side: int, rng: random.Random) ->
 def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: str | None) -> int | None:
     """The move `side`'s active Pokémon uses this turn, by one rule for both sides. First an effect move whose moment
     has come: Trick Room on its first turn in when its team is slower than the foe and none has been set, Stealth Rock
-    once while the foe has members to come, Yawn on a foe with no status, Thunder Wave on a faster foe it can
+    once while the foe has members to come, Swords Dance once per entry above half HP and below +6 Attack, Yawn on a
+    foe with no status, Thunder Wave on a faster foe it can
     paralyze. A self-KO move only when it surely knocks the foe out (and no other move does) or the user is at 1/3 HP
     or less, never by the side's last member. Then a pivot move when the foe has a
     super-effective hit on it and a member of its group can come in. Otherwise `_best_move`."""
@@ -1152,6 +1169,8 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
         "trick-room": attacker.fresh and not team.trick_room_used and not arena.trick_room
         and _team_speed(team) < defender.stat("speed", weather),
         "stealth-rock": not team.rocks_used and not arena.rocks[1 - side] and foes.has_next,
+        "swords-dance": not attacker.danced and attacker.hp * 2 > attacker.max_hp
+        and attacker.stages["attack"] < MAX_STAGE,
         "yawn": _yawnable(defender),
         "thunder-wave": defender.stat("speed", weather) > attacker.stat("speed", weather),
     }

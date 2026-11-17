@@ -103,6 +103,10 @@ PRIMAL_ORBS: dict[str, tuple[int, int]] = {
 }
 
 
+# Ultra Burst also takes the Mega Evolution slot.
+ULTRA_BURSTS: dict[str, tuple[int, int]] = {"ultranecrozium-z": (800, 10157)}
+
+
 # species -> (the move that lets it Mega Evolve with no stone, its Mega form `/pokemon` id)
 MOVE_MEGAS = {384: (620, 10079)}
 
@@ -116,6 +120,6 @@ def move_mega_form_id(pokemon_id: int, move_ids: tuple[int, ...], item: str | No
 
 
 def mega_form_id(item: str | None, pokemon_id: int) -> int | None:
-    """The Mega (or Primal) form `/pokemon` id when `item` is the stone or orb of `pokemon_id`, else None."""
-    entry = MEGA_STONES.get(item or "") or PRIMAL_ORBS.get(item or "")
+    """The Mega (Primal, Ultra) form `/pokemon` id when `item` is the stone, orb or crystal of `pokemon_id`, else None."""
+    entry = MEGA_STONES.get(item or "") or PRIMAL_ORBS.get(item or "") or ULTRA_BURSTS.get(item or "")
     return entry[1] if entry and entry[0] == pokemon_id else None

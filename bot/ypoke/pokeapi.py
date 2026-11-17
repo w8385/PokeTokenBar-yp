@@ -196,8 +196,8 @@ def _forms_of(member: dict) -> list[tuple[str, int]]:
         forms.append(("pokemon", tera_forms.MASKS[item][0]))
     if item == items.STELLAR_CRYSTAL:
         forms.append(("pokemon", tera_forms.STELLAR_FORM))
-    if item in tera_forms.ORIGIN_FORMS:
-        forms.append(("mega", tera_forms.ORIGIN_FORMS[item][1]))
+    if item in tera_forms.ITEM_FORMS:
+        forms.append(("mega", tera_forms.ITEM_FORMS[item][1]))
     mega = mega_form_id(item, pokemon_id) or move_mega_form_id(pokemon_id, tuple(member.get("moves") or ()), item)
     if mega is not None:
         forms.append(("mega", mega))

@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from ypoke import abilities, items, tera_forms
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm, Move
-from ypoke.mega_stones import PRIMAL_ORBS, mega_form_id, move_mega_form_id
+from ypoke.mega_stones import PRIMAL_ORBS, ULTRA_BURSTS, mega_form_id, move_mega_form_id
 from ypoke.moves import battle_moves
 from ypoke.move_effects import IVY_CUDGEL, JUDGMENT, wants_status_moves
 from ypoke.pokeapi import PokeAPIService, base_stats
@@ -55,10 +55,10 @@ def _retyped(moves: tuple[Move, ...], move_id: int, kind: str) -> tuple[Move, ..
 
 def _form_data(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> dict:
     """The `pokemon()` data the Pokémon fights with: its own, Ogerpon's with the mask's form, Terapagos' Terastal
-    form, an origin item's Origin Forme (with its first ability as `"ability_id"`). The name stays the species' own."""
+    form, an origin or rusted item's form (with its first ability as `"ability_id"`). The name stays the species' own."""
     data = pokeapi.pokemon(pokemon_id)
-    if item in tera_forms.ORIGIN_FORMS:
-        return {**data, **{key: value for key, value in pokeapi.mega_form(tera_forms.ORIGIN_FORMS[item][1]).items()
+    if item in tera_forms.ITEM_FORMS:
+        return {**data, **{key: value for key, value in pokeapi.mega_form(tera_forms.ITEM_FORMS[item][1]).items()
                            if key != "name_ko"}}
     form_id = tera_forms.TERASTAL_FORM if pokemon_id == tera_forms.TERAPAGOS else None
     if item in tera_forms.MASKS:
@@ -91,4 +91,10 @@ def _mega(pokeapi: PokeAPIService, pokemon_id: int, item: str | None, move_ids: 
         return None
     data = pokeapi.mega_form(form_id)
     return MegaForm(types=tuple(data["types"]), base=base_stats(data), ability=data["ability"],
-                    ability_id=data["ability_id"], form_id=form_id, kind="primal" if item in PRIMAL_ORBS else "mega")
+                    ability_id=data["ability_id"], form_id=form_id, kind=_mega_kind(item))
+
+
+def _mega_kind(item: str | None) -> str:
+    if item in PRIMAL_ORBS:
+        return "primal"
+    return "ultra" if item in ULTRA_BURSTS else "mega"

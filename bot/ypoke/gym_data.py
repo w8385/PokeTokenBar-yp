@@ -205,8 +205,25 @@ CHAMPIONS = {
     "paldea": ("졸업생", "Thessaly", "テッサリー", "마지막 시험이야. 만점을 노려 봐.", "Final exam. Go for a perfect score.", "最後の試験よ。満点を狙ってみて。"),
 }
 
-# The legendaries and mythicals a region's champion fields, its last member first; no other may appear on its team.
+HIDDEN_TRAINERS = {
+    "kanto": ("잿빛", "Cinder", "シンダー", "챔피언 뒤에 아무도 없다고 생각했어?", "Thought no one stood behind the champion?", "チャンピオンの後ろに誰もいないと思った？"),
+    "johto": ("종지기", "Bellward", "ベルワード", "탑 꼭대기에서 종을 지켜 왔다.", "I have kept the bell at the top of the tower.", "塔の頂で鐘を守ってきた。"),
+    "hoenn": ("심연", "Abyssa", "アビッサ", "바다와 하늘이 함께 너를 본다.", "The sea and the sky are both watching you.", "海と空が君を見ている。"),
+    "sinnoh": ("시공", "Chronis", "クロニス", "시간도 공간도 내 편이다.", "Time and space are both on my side.", "時間も空間も私の味方だ。"),
+    "unova": ("모래바람", "Dunmar", "ダンマー", "모래가 걷히면 이미 끝나 있을 거다.", "When the sand clears, it will be over.", "砂が晴れたら、もう終わっている。"),
+    "kalos": ("생명나무", "Arboreth", "アルボレス", "삶과 죽음의 끝에서 기다렸다.", "I waited where life and death end.", "生と死の果てで待っていた。"),
+    "alola": ("일식", "Umbra", "アンブラ", "해와 달이 겹치는 순간을 보여 주지.", "Let me show you the moment the sun and moon meet.", "太陽と月が重なる瞬間を見せよう。"),
+    "galar": ("왕관", "Regalia", "レガリア", "왕좌를 원한다면 증명해 봐.", "If you want the throne, prove it.", "王座が欲しいなら証明してみせて。"),
+    "paldea": ("결정", "Prism", "プリズム", "이 땅 가장 깊은 곳에 온 걸 환영해.", "Welcome to the deepest place in this land.", "この地の一番深い場所へようこそ。"),
+}
+
+# The legendaries and mythicals a region's champion and its hidden boss field, the last member first; no other may
+# appear on their teams.
 CHAMPION_LEGENDARIES = {
+    "kanto": (150, 145), "johto": (250, 245), "hoenn": (383, 381), "sinnoh": (483, 485), "unova": (643, 639),
+    "kalos": (716,), "alola": (791, 785), "galar": (888,), "paldea": (1008, 1002),
+}
+HIDDEN_LEGENDARIES = {
     "kanto": (150, 145, 144, 146),
     "johto": (249, 250, 245, 244, 243),
     "hoenn": (384, 383, 382),
@@ -222,15 +239,15 @@ PSEUDO_LEGENDARIES = {
     "alola": (784,), "galar": (887,), "paldea": (998,),
 }
 FINALE_LINE = {
-    "ko": "챔피언이 끝까지 숨겨 둔 마지막 파트너를 부른다!",
-    "en": "The champion calls the last partner they kept hidden!",
-    "ja": "チャンピオンが 最後まで 隠していた パートナーを 呼んだ！",
+    "ko": "트레이너가 끝까지 숨겨 둔 마지막 파트너를 부른다!",
+    "en": "The trainer calls the last partner they kept hidden!",
+    "ja": "トレーナーが 最後まで 隠していた パートナーを 呼んだ！",
 }
 
 
 class Ace(NamedTuple):
-    """A champion's member: an `ability` (PokéAPI slug) one the species can have and the battle implements, or None;
-    `form` is the `/pokemon` id of a form it fights as."""
+    """A champion's or hidden boss's member: an `ability` (PokéAPI slug) one the species can have and the battle
+    implements, or None; `form` is the `/pokemon` id of a form it fights as."""
 
     species: int
     item: str
@@ -240,13 +257,98 @@ class Ace(NamedTuple):
     form: int | None = None
 
 
-# Champion members in battle order. Entries after the sixth are the finale: hidden from the preview, sent out once the
-# first six have fainted.
+# Members in battle order. Entries after the sixth are the finale: hidden from the preview, sent out once the first six
+# have fainted.
 CHAMPION_TEAMS = {
+    "kanto": (
+        Ace(65, "alakazite", (94, 411, 412, 247), nature="modest"),  # 후딘: 사이코키네시스, 기합구슬, 에너지볼, 섀도볼
+        Ace(130, "mystic-water", (401, 542, 89, 200), nature="adamant"),  # 갸라도스: 아쿠아테일, 폭풍, 지진, 역린
+        Ace(59, "choice-band", (394, 370, 200, 528), nature="adamant"),  # 윈디: 플레어드라이브, 인파이트, 역린, 와일드볼트
+        Ace(143, "silk-scarf", (38, 89, 200, 242), nature="adamant"),  # 잠만보: 이판사판태클, 지진, 역린, 깨물어부수기
+        Ace(149, "focus-sash", (200, 17, 89, 442), nature="adamant"),  # 망나뇽: 역린, 날개치기, 지진, 아이언헤드
+        Ace(145, "life-orb", (85, 542, 257, 87), nature="modest"),  # 썬더: 10만볼트, 폭풍, 열풍, 번개
+        Ace(150, "choice-specs", (540, 126, 411, 58), nature="modest"),  # 뮤츠: 사이코브레이크, 불대문자, 기합구슬, 냉동빔
+    ),
+    "johto": (
+        Ace(181, "ampharosite", (85, 411, 605, 408), nature="modest"),  # 전룡: 10만볼트, 기합구슬, 매지컬샤인, 파워젬
+        Ace(248, "life-orb", (444, 492, 89, 200), nature="adamant"),  # 마기라스: 스톤에지, 속임수, 지진, 역린
+        Ace(230, "focus-sash", (834, 200, 38, 58), nature="adamant"),  # 킹드라: 웨이브태클, 역린, 이판사판태클, 냉동빔
+        Ace(169, "poison-barb", (188, 332, 141, 202), nature="adamant"),  # 크로뱃: 오물폭탄, 제비반환, 흡혈, 기가드레인
+        Ace(214, "black-belt", (224, 370, 89, 444), nature="adamant"),  # 헤라크로스: 메가혼, 인파이트, 지진, 스톤에지
+        Ace(245, "assault-vest", (57, 58, 247, 326), nature="modest"),  # 스이쿤: 파도타기, 냉동빔, 섀도볼, 신통력
+        Ace(250, "choice-band", (394, 413, 89, 38), nature="adamant"),  # 칠색조: 플레어드라이브, 브레이브버드, 지진, 이판사판태클
+    ),
+    "hoenn": (
+        Ace(282, "gardevoirite", (94, 585, 411, 412), nature="modest"),  # 가디안: 사이코키네시스, 문포스, 기합구슬, 에너지볼
+        Ace(373, "focus-sash", (200, 814, 89, 442), nature="adamant"),  # 보만다: 역린, 더블윙, 지진, 아이언헤드
+        Ace(376, "life-orb", (309, 706, 89, 359), nature="adamant"),  # 메타그로스: 코멧펀치, 사이코팽, 지진, 암해머
+        Ace(350, "mystic-water", (57, 58, 914, 406), nature="modest"),  # 밀로틱: 파도타기, 냉동빔, 매혹의보이스, 용의파동
+        Ace(286, "black-belt", (402, 370, 444, 441), nature="adamant"),  # 버섯모: 씨폭탄, 인파이트, 스톤에지, 더스트슈트
+        Ace(381, "choice-specs", (434, 295, 396, 57), nature="modest"),  # 라티오스: 용성군, 러스터퍼지, 파동탄, 파도타기
+        Ace(383, "choice-band", (619, 444, 359, 315), nature="adamant"),  # 그란돈: 단애의칼, 스톤에지, 암해머, 오버히트
+    ),
+    "sinnoh": (
+        Ace(448, "lucarionite", (370, 430, 89, 247), nature="modest"),  # 루카리오: 인파이트, 러스터캐논, 지진, 섀도볼
+        Ace(445, "choice-band", (200, 89, 398, 38), nature="adamant"),  # 한카리아스: 역린, 지진, 독찌르기, 이판사판태클
+        Ace(468, "fairy-feather", (605, 403, 396, 247), nature="modest"),  # 토게키스: 매지컬샤인, 에어슬래시, 파동탄, 섀도볼
+        Ace(392, "focus-sash", (394, 370, 89, 441), nature="adamant"),  # 초염몽: 플레어드라이브, 인파이트, 지진, 더스트슈트
+        Ace(407, "miracle-seed", (80, 188, 605, 247), nature="modest"),  # 로즈레이드: 꽃잎댄스, 오물폭탄, 매지컬샤인, 섀도볼
+        Ace(485, "life-orb", (315, 430, 414, 406), nature="modest"),  # 히드런: 오버히트, 러스터캐논, 대지의힘, 용의파동
+        Ace(483, "choice-specs", (430, 434, 315, 414), nature="modest"),  # 디아루가: 러스터캐논, 용성군, 오버히트, 대지의힘
+    ),
+    "unova": (
+        Ace(530, "excadrite", (89, 442, 404, 350), nature="adamant"),  # 몰드류: 지진, 아이언헤드, 시저크로스, 록블라스트
+        Ace(635, "focus-sash", (399, 434, 126, 430), nature="modest"),  # 삼삼드래: 악의파동, 용성군, 불대문자, 러스터캐논
+        Ace(609, "expert-belt", (247, 315, 412, 94), nature="modest"),  # 샹델라: 섀도볼, 오버히트, 에너지볼, 사이코키네시스
+        Ace(637, "charcoal", (405, 315, 202, 94), nature="modest"),  # 불카모스: 벌레의야단법석, 오버히트, 기가드레인, 사이코키네시스
+        Ace(534, "choice-band", (276, 89, 444, 398), nature="adamant"),  # 노보청: 엄청난힘, 지진, 스톤에지, 독찌르기
+        Ace(639, "life-orb", (444, 370, 89, 398), nature="adamant"),  # 테라키온: 스톤에지, 인파이트, 지진, 독찌르기
+        Ace(643, "choice-specs", (434, 315, 414, 94), nature="modest"),  # 레시라무: 용성군, 오버히트, 대지의힘, 사이코키네시스
+    ),
+    "kalos": (
+        Ace(701, "hawluchanite", (370, 413, 34, 398), nature="adamant"),  # 루차불: 인파이트, 브레이브버드, 누르기, 독찌르기
+        Ace(706, "choice-specs", (434, 126, 482, 438), nature="modest"),  # 미끄래곤: 용성군, 불대문자, 오물웨이브, 파워휩
+        Ace(663, "charcoal", (394, 413, 211, 38), nature="adamant"),  # 파이어로: 플레어드라이브, 브레이브버드, 강철날개, 이판사판태클
+        Ace(681, "assault-vest", (430, 247, 370, 457), nature="adamant"),  # 킬가르도: 러스터캐논, 섀도볼, 인파이트, 양날박치기
+        Ace(700, "life-orb", (585, 94, 247, 304), nature="modest"),  # 님피아: 문포스, 사이코키네시스, 섀도볼, 하이퍼보이스
+        Ace(697, "focus-sash", (457, 200, 276, 89), nature="adamant"),  # 견고라스: 양날박치기, 역린, 엄청난힘, 지진
+        Ace(716, "choice-band", (585, 370, 224, 94), nature="adamant"),  # 제르네아스: 문포스, 인파이트, 메가혼, 사이코키네시스
+    ),
+    "alola": (
+        Ace(768, "golisopite", (141, 710, 370, 529), nature="adamant"),  # 갑주무사: 흡혈, 아쿠아브레이크, 인파이트, 드릴라이너
+        Ace(784, "life-orb", (200, 370, 89, 398), nature="adamant"),  # 짜랑고우거: 역린, 인파이트, 지진, 독찌르기
+        Ace(778, "fairy-feather", (421, 583, 452, 409), nature="adamant"),  # 따라큐: 섀도클로, 치근거리기, 우드해머, 드레인펀치
+        Ace(727, "charcoal", (394, 663, 370, 200), nature="adamant"),  # 어흥염: 플레어드라이브, DD래리어트, 인파이트, 역린
+        Ace(785, "focus-sash", (528, 605, 413, 442), nature="adamant"),  # 카푸꼬꼬꼭: 와일드볼트, 매지컬샤인, 브레이브버드, 아이언헤드
+        Ace(733, "sharp-beak", (36, 413, 280, 441), nature="adamant"),  # 왕큰부리: 돌진, 브레이브버드, 깨뜨리다, 더스트슈트
+        Ace(791, "choice-band", (706, 713, 370, 394), nature="adamant"),  # 솔가레오: 사이코팽, 메테오드라이브, 인파이트, 플레어드라이브
+    ),
+    "galar": (
+        Ace(870, "falinksite", (370, 675, 667, 157), nature="adamant"),  # 대여르: 인파이트, 지옥찌르기, 10만마력, 스톤샤워
+        Ace(887, "focus-sash", (200, 247, 126, 38), nature="adamant"),  # 드래펄트: 역린, 섀도볼, 불대문자, 이판사판태클
+        Ace(823, "assault-vest", (413, 442, 776, 38), nature="adamant"),  # 아머까오: 브레이브버드, 아이언헤드, 바디프레스, 이판사판태클
+        Ace(849, "choice-specs", (85, 482, 586, 917), nature="modest"),  # 스트린더: 10만볼트, 오물웨이브, 폭음파, 사이코노이즈
+        Ace(861, "black-glasses", (492, 583, 359, 8), nature="adamant"),  # 오롱털: 속임수, 치근거리기, 암해머, 냉동펀치
+        Ace(812, "life-orb", (452, 89, 38, 369), nature="adamant"),  # 고릴타: 우드해머, 지진, 이판사판태클, 유턴
+        Ace(888, "choice-band", (583, 370, 528, 706), nature="adamant"),  # 자시안: 치근거리기, 인파이트, 와일드볼트, 사이코팽
+    ),
+    "paldea": (
+        Ace(970, "glimmoranite", (408, 482, 414, 412), nature="modest"),  # 킬라플로르: 파워젬, 오물웨이브, 대지의힘, 에너지볼
+        Ace(998, "choice-band", (200, 333, 89, 442), nature="adamant"),  # 드닐레이브: 역린, 고드름침, 지진, 아이언헤드
+        Ace(983, "life-orb", (492, 442, 404, 444), nature="adamant"),  # 대도각참: 속임수, 아이언헤드, 시저크로스, 스톤에지
+        Ace(1000, "metal-coat", (874, 247, 85, 411), nature="modest"),  # 타부자고: 골드러시, 섀도볼, 10만볼트, 기합구슬
+        Ace(908, "black-glasses", (572, 492, 583, 280), nature="adamant"),  # 마스카나: 꽃보라, 속임수, 치근거리기, 깨뜨리다
+        Ace(1002, "focus-sash", (242, 861, 533, 706), nature="adamant"),  # 파오젠: 깨물어부수기, 아이스스피너, 성스러운칼, 사이코팽
+        Ace(1008, "choice-specs", (879, 434, 315, 430), nature="modest"),  # 미라이돈: 라이트닝드라이브, 용성군, 오버히트, 러스터캐논
+    ),
+}
+
+# Same shape as `CHAMPION_TEAMS`; the finale may be one to three members.
+HIDDEN_TEAMS = {
     "kanto": (
         Ace(6, "charizardite-y", (126, 76, 403, 411), nature="timid"),  # 리자몽: 불대문자, 솔라빔, 에어슬래시, 기합구슬
         Ace(3, "miracle-seed", (76, 188, 414, 437), "chlorophyll", "modest"),  # 이상해꽃: 솔라빔, 오물폭탄, 대지의힘, 리프스톰
-        Ace(149, "choice-band", (245, 200, 89, 7), nature="adamant"),  # 망나뇽: 신속, 역린, 지진, 불꽃펀치
+        Ace(149, "dragoninite", (245, 200, 89, 7), nature="adamant"),  # 망나뇽: 신속, 역린, 지진, 불꽃펀치
         Ace(145, "magnet", (85, 542, 257, 86), nature="timid"),  # 썬더: 10만볼트, 폭풍, 열풍, 전기자석파
         Ace(144, "never-melt-ice", (58, 573, 542, 59), nature="modest"),  # 프리저: 냉동빔, 프리즈드라이, 폭풍, 눈보라
         Ace(146, "charcoal", (53, 542, 76, 815), nature="modest"),  # 파이어: 화염방사, 폭풍, 솔라빔, 열사의대지
@@ -254,7 +356,7 @@ CHAMPION_TEAMS = {
     ),
     "johto": (
         Ace(233, "eviolite", (433, 161, 58, 85), nature="quiet"),  # 폴리곤2: 트릭룸, 트라이어택, 냉동빔, 10만볼트
-        Ace(248, "assault-vest", (444, 242, 89, 7), nature="adamant"),  # 마기라스: 스톤에지, 깨물어부수기, 지진, 불꽃펀치
+        Ace(248, "tyranitarite", (444, 242, 89, 7), nature="adamant"),  # 마기라스: 스톤에지, 깨물어부수기, 지진, 불꽃펀치
         Ace(212, "scizorite", (418, 369, 370, 404), nature="adamant"),  # 핫삼: 불릿펀치, 유턴, 인파이트, 시저크로스
         Ace(245, "leftovers", (57, 58, 326, 247), nature="modest"),  # 스이쿤: 파도타기, 냉동빔, 신통력, 섀도볼
         Ace(244, "charcoal", (394, 444, 242, 707), nature="adamant"),  # 앤테이: 플레어드라이브, 스톤에지, 깨물어부수기, 땅고르기
@@ -264,31 +366,32 @@ CHAMPION_TEAMS = {
     ),
     "hoenn": (
         Ace(260, "leftovers", (446, 281, 812, 89), nature="relaxed"),  # 대짱이: 스텔스록, 하품, 퀵턴, 지진
-        Ace(382, "choice-specs", (618, 58, 85, 87), "drizzle", "modest"),  # 가이오가: 근원의파동, 냉동빔, 10만볼트, 번개
-        Ace(373, "dragon-fang", (200, 814, 89, 424), "intimidate", "adamant"),  # 보만다: 역린, 더블윙, 지진, 불꽃엄니
-        Ace(376, "metal-coat", (309, 428, 89, 418), nature="adamant"),  # 메타그로스: 코멧펀치, 사념의박치기, 지진, 불릿펀치
-        Ace(383, "soft-sand", (619, 7, 444, 9), nature="adamant"),  # 그란돈: 단애의칼, 불꽃펀치, 스톤에지, 번개펀치
+        Ace(382, "blue-orb", (618, 58, 85, 87), nature="modest"),  # 가이오가: 근원의파동, 냉동빔, 10만볼트, 번개
+        Ace(373, "salamencite", (200, 814, 89, 424), nature="adamant"),  # 보만다: 역린, 더블윙, 지진, 불꽃엄니
+        Ace(376, "metagrossite", (309, 428, 89, 418), nature="adamant"),  # 메타그로스: 코멧펀치, 사념의박치기, 지진, 불릿펀치
+        Ace(383, "red-orb", (619, 7, 444, 9), nature="adamant"),  # 그란돈: 단애의칼, 불꽃펀치, 스톤에지, 번개펀치
         Ace(257, "blazikenite", (394, 370, 413, 9), nature="adamant"),  # 번치코: 플레어드라이브, 인파이트, 브레이브버드, 번개펀치
         Ace(384, "life-orb", (620, 200, 245, 89), nature="adamant"),  # 레쿠쟈: 화룡점정, 역린, 신속, 지진
     ),
     "sinnoh": (
-        Ace(442, "spell-tag", (247, 399, 425, 389), nature="quiet"),  # 화강돌: 섀도볼, 악의파동, 야습, 기습
-        Ace(445, "yache-berry", (89, 200, 444, 424), nature="brave"),  # 한카리아스: 지진, 역린, 스톤에지, 불꽃엄니
+        Ace(448, "lucarionite", (370, 309, 245, 89), nature="adamant"),  # 루카리오: 인파이트, 코멧펀치, 신속, 지진
+        Ace(445, "garchompite-z", (406, 414, 126, 434), nature="modest"),  # 한카리아스: 용의파동, 대지의힘, 불대문자, 용성군
         Ace(488, "leftovers", (433, 94, 585, 58), nature="quiet"),  # 크레세리아: 트릭룸, 사이코키네시스, 문포스, 냉동빔
         Ace(484, "lustrous-globe", (460, 56, 85, 126), nature="quiet"),  # 펄기아: 공간절단, 하이드로펌프, 10만볼트, 불대문자
         Ace(483, "adamant-crystal", (434, 430, 414, 126), nature="quiet"),  # 디아루가: 용성군, 러스터캐논, 대지의힘, 불대문자
         Ace(487, "griseous-core", (421, 337, 89, 442), nature="brave"),  # 기라티나: 섀도클로, 드래곤크루, 지진, 아이언헤드
         Ace(491, "darkranite", (399, 188, 411, 58), nature="modest"),  # 다크라이: 악의파동, 오물폭탄, 기합구슬, 냉동빔
-        Ace(493, "earth-plate", (449, 58, 85, 126), nature="modest"),  # 아르세우스: 심판의뭉치, 냉동빔, 10만볼트, 불대문자
+        Ace(493, "life-orb", (245, 89, 421, 14), nature="adamant"),  # 아르세우스: 신속, 지진, 섀도클로, 칼춤
     ),
     "unova": (
-        Ace(645, "soft-sand", (89, 444, 369, 157), "sand-force", "adamant"),  # 랜드로스: 지진, 스톤에지, 유턴, 스톤샤워
+        Ace(645, "soft-sand", (89, 444, 369, 157), "intimidate", "adamant", 10021),  # 영물폼 랜드로스: 지진, 스톤에지, 유턴, 스톤샤워
         Ace(526, "smooth-rock", (201, 153, 444), "sturdy", "adamant"),  # 기가이어스: 모래바람, 대폭발, 스톤에지
-        Ace(530, "choice-scarf", (89, 442, 157, 404), "sand-rush", "jolly"),  # 몰드류: 지진, 아이언헤드, 스톤샤워, 시저크로스
-        Ace(635, "life-orb", (399, 434, 53, 414), "levitate", "modest"),  # 삼삼드래: 악의파동, 용성군, 화염방사, 대지의힘
+        Ace(530, "life-orb", (89, 442, 157, 404), "sand-rush", "jolly"),  # 몰드류: 지진, 아이언헤드, 스톤샤워, 시저크로스
+        Ace(635, "choice-specs", (399, 434, 53, 414), "levitate", "modest"),  # 삼삼드래: 악의파동, 용성군, 화염방사, 대지의힘
         Ace(644, "magnet", (550, 200, 444, 242), nature="adamant"),  # 제크로무: 뇌격, 역린, 스톤에지, 깨물어부수기
-        Ace(643, "charcoal", (551, 434, 414, 411), nature="modest"),  # 레시라무: 크로스플레임, 용성군, 대지의힘, 기합구슬
-        Ace(646, "never-melt-ice", (58, 434, 414, 573), nature="modest"),  # 큐레무: 냉동빔, 용성군, 대지의힘, 프리즈드라이
+        Ace(643, "charcoal", (551, 434, 414, 411), nature="modest"),  # 레시라무: 푸른불꽃, 용성군, 대지의힘, 기합구슬
+        Ace(646, "choice-band", (559, 333, 200, 444), nature="adamant", form=10022),  # 블랙큐레무: 크로스썬더, 고드름침, 역린, 스톤에지
+        Ace(646, "never-melt-ice", (58, 434, 558, 414), nature="modest", form=10023),  # 화이트큐레무: 냉동빔, 용성군, 크로스플레임, 대지의힘
     ),
     "kalos": (
         Ace(658, "focus-sash", (57, 399, 58, 369), nature="timid"),  # 개굴닌자: 파도타기, 악의파동, 냉동빔, 유턴
@@ -297,6 +400,7 @@ CHAMPION_TEAMS = {
         Ace(706, "assault-vest", (434, 126, 85, 188), nature="modest"),  # 미끄래곤: 용성군, 불대문자, 10만볼트, 오물폭탄
         Ace(717, "life-orb", (613, 399, 411, 542), nature="modest"),  # 이벨타르: 데스윙, 악의파동, 기합구슬, 폭풍
         Ace(716, "fairy-feather", (585, 411, 85, 473), nature="modest"),  # 제르네아스: 문포스, 기합구슬, 10만볼트, 사이코쇼크
+        Ace(670, "floettite", (585, 94, 412, 605), nature="modest"),  # 플라엣테: 문포스, 사이코키네시스, 에너지볼, 매지컬샤인
         Ace(718, "zygardite", (614, 200, 444, 276), nature="adamant"),  # 지가르데: 사우전드애로, 역린, 스톤에지, 엄청난힘
     ),
     "alola": (
@@ -306,14 +410,14 @@ CHAMPION_TEAMS = {
         Ace(784, "dragon-fang", (691, 396, 53, 430), nature="modest"),  # 짜랑고우거: 스케일노이즈, 파동탄, 화염방사, 러스터캐논
         Ace(792, "spell-tag", (714, 585, 473, 411), nature="modest"),  # 루나아라: 섀도레이, 문포스, 사이코쇼크, 기합구슬
         Ace(791, "metal-coat", (713, 428, 370, 394), nature="adamant"),  # 솔가레오: 메테오드라이브, 사념의박치기, 인파이트, 플레어드라이브
-        Ace(800, "twisted-spoon", (722, 414, 408, 257), nature="modest"),  # 네크로즈마: 포톤가이저, 대지의힘, 파워젬, 열풍
+        Ace(800, "ultranecrozium-z", (722, 414, 408, 257), nature="modest"),  # 네크로즈마: 포톤가이저, 대지의힘, 파워젬, 열풍
     ),
     "galar": (
         Ace(815, "focus-sash", (780, 441, 369, 442), nature="jolly"),  # 에이스번: 화염볼, 더스트슈트, 유턴, 아이언헤드
         Ace(892, "punching-glove", (817, 370, 8, 9), nature="jolly"),  # 우라오스: 암흑강타, 인파이트, 냉동펀치, 번개펀치
         Ace(887, "life-orb", (434, 247, 53, 85), nature="timid"),  # 드래펄트: 용성군, 섀도볼, 화염방사, 10만볼트
-        Ace(888, "fairy-feather", (583, 533, 528, 706), nature="jolly"),  # 자시안: 치근거리기, 성스러운칼, 와일드볼트, 사이코팽
-        Ace(889, "black-belt", (370, 242, 442, 706), nature="jolly"),  # 자마젠타: 인파이트, 깨물어부수기, 아이언헤드, 사이코팽
+        Ace(888, "rusted-sword", (583, 533, 528, 706), nature="jolly"),  # 자시안: 치근거리기, 성스러운칼, 와일드볼트, 사이코팽
+        Ace(889, "rusted-shield", (370, 242, 442, 706), nature="jolly"),  # 자마젠타: 인파이트, 깨물어부수기, 아이언헤드, 사이코팽
         Ace(890, "black-sludge", (188, 406, 53, 430), nature="modest"),  # 무한다이노: 오물폭탄, 용의파동, 화염방사, 러스터캐논
         Ace(898, "choice-band", (824, 428, 370, 667), nature="adamant", form=10193),  # 백마 버드렉스: 블리자드랜스, 사념의박치기, 인파이트, 10만마력
         Ace(898, "choice-specs", (825, 94, 412, 399), nature="timid", form=10194),  # 흑마 버드렉스: 아스트랄비트, 사이코키네시스, 에너지볼, 악의파동

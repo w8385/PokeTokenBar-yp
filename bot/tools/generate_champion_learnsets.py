@@ -1,7 +1,7 @@
-"""Regenerate `tests/champion_learnsets.json`: per champion member's `/pokemon` id (its form's, if it names one) the
-abilities it can have (hidden included) and every move it learns by the rule the battle builds foes with, egg moves
-included. `foe_moves.json` holds species' attacking moves only, so the champion tests read forms and status moves from
-here. Run from `bot/` after changing `CHAMPION_TEAMS`: `python3 tools/generate_champion_learnsets.py <cache.db>`.
+"""Regenerate `tests/champion_learnsets.json`: per champion and hidden boss member's `/pokemon` id (its form's, if it
+names one) the abilities it can have (hidden included) and every move it learns by the rule the battle builds foes
+with, egg moves included. `foe_moves.json` holds species' attacking moves only, so the champion tests read forms and status moves from
+here. Run from `bot/` after changing `CHAMPION_TEAMS` or `HIDDEN_TEAMS`: `python3 tools/generate_champion_learnsets.py <cache.db>`.
 """
 
 import json
@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ypoke import pokeapi as pokeapi_module  # noqa: E402
-from ypoke.gym_data import CHAMPION_TEAMS  # noqa: E402
+from ypoke.gym_data import CHAMPION_TEAMS, HIDDEN_TEAMS  # noqa: E402
 from ypoke.pokeapi import API_BASE, PokeAPIService  # noqa: E402
 from ypoke.store import Store  # noqa: E402
 
@@ -21,7 +21,8 @@ LEARN_LEVEL = 100
 
 def main() -> None:
     pokeapi = PokeAPIService(Store(sys.argv[1]))
-    members = sorted({ace.form or ace.species for team in CHAMPION_TEAMS.values() for ace in team})
+    teams = (*CHAMPION_TEAMS.values(), *HIDDEN_TEAMS.values())
+    members = sorted({ace.form or ace.species for team in teams for ace in team})
     rows = {str(pokemon_id): _learnset(pokeapi, pokemon_id) for pokemon_id in members}
     TABLE.write_text("{\n" + ",\n".join(f'"{key}": {json.dumps(row)}' for key, row in rows.items()) + "\n}\n")
     print(f"wrote {len(rows)} members to {TABLE}")

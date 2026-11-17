@@ -7,7 +7,7 @@ from ypoke import foe_items, foe_moves, gym_data, gyms, items, tera_forms
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.dex import NATIONAL_TOTAL, REGIONS
 from ypoke.gyms import MIN_TOTAL, TEAM_SIZE, Species, usable_species
-from ypoke.mega_stones import MEGA_STONES, move_mega_form_id
+from ypoke.mega_stones import MEGA_STONES, PRIMAL_ORBS, mega_form_id, move_mega_form_id
 from ypoke.type_chart import effectiveness
 
 BORROWED = {
@@ -31,8 +31,13 @@ LEARNSETS = Path(__file__).with_name("champion_learnsets.json")
 
 def all_opponents():
     return [
-        opponent for region in gyms.regions() for opponent in (*region.gyms, *region.elite, *region.hideout)
+        opponent for region in gyms.regions()
+        for opponent in (*region.gyms, *region.elite, *region.hideout, region.hidden)
     ]
+
+
+FIXED_TABLES = {"champion": (gym_data.CHAMPION_TEAMS, gym_data.CHAMPION_LEGENDARIES),
+                "hidden": (gym_data.HIDDEN_TEAMS, gym_data.HIDDEN_LEGENDARIES)}
 
 
 def test_nine_regions_cover_the_national_dex_in_order():
@@ -42,7 +47,7 @@ def test_nine_regions_cover_the_national_dex_in_order():
     assert all(later.first == earlier.last + 1 for earlier, later in zip(regions, regions[1:]))
 
 
-def test_a_region_has_eight_gyms_four_elite_members_a_champion_and_a_four_battle_hideout():
+def test_a_region_has_eight_gyms_four_elite_members_a_champion_a_four_battle_hideout_and_a_hidden_boss():
     for region in gyms.regions():
         assert [gym.id for gym in region.gyms] == [f"{region.id}-{index}" for index in range(1, 9)]
         assert [(o.id, o.kind) for o in region.elite] == [
@@ -52,13 +57,16 @@ def test_a_region_has_eight_gyms_four_elite_members_a_champion_and_a_four_battle
             (f"{region.id}-hideout-1", "grunt"), (f"{region.id}-hideout-2", "grunt"),
             (f"{region.id}-hideout-3", "admin"), (f"{region.id}-hideout-4", "boss"),
         ]
+        hidden = region.hidden
+        assert (hidden.id, hidden.kind, hidden.run, hidden.types) == (f"{region.id}-hidden", "hidden", None, ())
+        assert gyms.find(hidden.id) is hidden and gyms.next_in_run(hidden) is None
 
 
 def test_every_trainer_fields_distinct_species_of_the_region_at_level_50():
     for region in gyms.regions():
-        for opponent in (*region.gyms, *region.elite, *region.hideout):
+        for opponent in (*region.gyms, *region.elite, *region.hideout, region.hidden):
             size = gyms.GYM_SIZES[opponent.index - 1] if opponent.kind == "gym" else TEAM_SIZE
-            if opponent.kind == "champion":
+            if opponent.kind in FIXED_TABLES:
                 size = TEAM_SIZE + opponent.finale
             assert opponent.level == 50 and len(opponent.team) == size, opponent.id
             assert len(set(members(opponent))) == size, opponent.id
@@ -121,7 +129,7 @@ def test_an_elite_four_or_hideout_team_leads_with_its_focus_type_as_far_as_the_r
 def test_a_foe_can_already_attack_and_only_a_gym_or_a_short_elite_type_fields_a_form_that_could_have_evolved():
     table = gyms.species_table()
     for opponent in all_opponents():
-        if opponent.kind == "champion":
+        if opponent.kind in FIXED_TABLES:
             continue
         for species_id in opponent.team:
             species = table[species_id]
@@ -184,10 +192,10 @@ def test_grunts_pick_lower_totals_than_the_admin_and_the_boss():
     assert average("boss") > average("admin") > average("grunt")
 
 
-def test_the_strongest_member_comes_last_except_in_the_champions_hand_made_order():
+def test_the_strongest_member_comes_last_except_in_a_hand_made_order():
     table = gyms.species_table()
     for opponent in all_opponents():
-        if opponent.kind == "champion":
+        if opponent.kind in FIXED_TABLES:
             continue
         totals = [table[species].total for species in opponent.team]
         assert totals == sorted(totals), opponent.id
@@ -208,27 +216,27 @@ def test_the_preview_is_the_lineup_the_battle_uses():
     assert entry["team"] == list(opponent.team) and entry["finale"] == 0
 
 
-def test_the_preview_never_shows_a_champions_finale_only_counts_it():
+def test_the_preview_never_shows_a_champions_or_hidden_bosss_finale_only_counts_it():
     for region in gyms.catalog()["regions"]:
-        champion = region["elite"]["battles"][-1]
-        opponent = gyms.find(champion["id"])
-        assert champion["finale"] == opponent.finale >= 1
-        assert champion["team"] == list(opponent.team[:TEAM_SIZE])
-        assert not set(opponent.team[TEAM_SIZE:]) & set(champion["team"])
-        assert str(opponent.team[-1]) not in json.dumps(champion["team"])
-        preview = json.dumps(champion)
-        for ace in opponent.aces[TEAM_SIZE:]:
-            forms = {ace.form, MEGA_STONES.get(ace.item, (None, None))[1], move_mega_form_id(ace.species, ace.moves, ace.item),
-                     tera_forms.STELLAR_FORM if ace.item == items.STELLAR_CRYSTAL else None} - {None}
-            assert ace.item not in preview and not any(str(form) in preview for form in forms), (region["id"], ace)
+        for entry in (region["elite"]["battles"][-1], region["hidden"]):
+            opponent = gyms.find(entry["id"])
+            assert entry["finale"] == opponent.finale >= 1
+            assert entry["team"] == list(opponent.team[:TEAM_SIZE])
+            assert not set(opponent.team[TEAM_SIZE:]) & set(entry["team"])
+            assert str(opponent.team[-1]) not in json.dumps(entry["team"])
+            preview = json.dumps(entry)
+            for ace in opponent.aces[TEAM_SIZE:]:
+                forms = {ace.form, mega_form_id(ace.item, ace.species), move_mega_form_id(ace.species, ace.moves, ace.item),
+                         tera_forms.STELLAR_FORM if ace.item == items.STELLAR_CRYSTAL else None} - {None}
+                assert ace.item not in preview and not any(str(form) in preview for form in forms), (entry["id"], ace)
 
 
 def test_every_foe_brings_its_picked_moves_and_the_champion_its_table_moves():
     for opponent in all_opponents():
         members = gyms.foe_members(opponent)
         assert all(member["learned_at"] == 100 and 1 <= len(member["moves"]) <= 4 for member in members), opponent.id
-        if opponent.kind == "champion":
-            entries = gym_data.CHAMPION_TEAMS[opponent.region]
+        if opponent.kind in FIXED_TABLES:
+            entries = FIXED_TABLES[opponent.kind][0][opponent.region]
             assert [tuple(member["moves"]) for member in members] == [ace.moves for ace in entries]
             assert [member["pokemon_id"] for member in members] == [ace.form or ace.species for ace in entries]
             assert [(m["ability"], m["nature"]) for m in members] == [(ace.ability, ace.nature) for ace in entries]
@@ -259,15 +267,15 @@ def test_no_pve_foe_holds_a_focus_band_counting_the_finale():
     assert items.FOCUS_BAND not in foe_items.wishes(foe_items.Holder(10, ("bug",), frail, (), False))
 
 
-def test_a_pve_team_holds_at_most_one_mega_stone_or_stellar_crystal_in_its_six_and_one_in_its_finale():
+def test_a_pve_team_but_a_hidden_boss_holds_at_most_one_mega_stone_or_stellar_crystal_in_its_six_and_one_in_its_finale():
     assert {opponent.id: mega_budget_faults(opponent) for opponent in all_opponents()
-            if mega_budget_faults(opponent)} == {}
+            if opponent.kind != "hidden" and mega_budget_faults(opponent)} == {}
     champion = gyms.find("kanto-champion")
     dragonite = champion.team.index(149)
     second_in_six = tuple("dragoninite" if index == dragonite else item for index, item in enumerate(champion.items))
     assert mega_budget_faults(replace(champion, items=second_in_six))
     assert mega_budget_faults(replace(champion, team=(*champion.team, 6), moves=(*champion.moves, champion.moves[3]),
-                                      items=(*champion.items, "charizardite-y"), finale=2))
+                                      items=(*champion.items[:-1], "mewtwonite-y", "charizardite-y"), finale=2))
 
 
 def mega_budget_faults(opponent) -> list[list[str]]:
@@ -277,7 +285,7 @@ def mega_budget_faults(opponent) -> list[list[str]]:
 
 
 def mega_capable(items_held: tuple[str, ...]) -> list[str]:
-    return [item for item in items_held if item in MEGA_STONES or item == items.STELLAR_CRYSTAL]
+    return [item for item in items_held if item in MEGA_STONES or item in PRIMAL_ORBS or item == items.STELLAR_CRYSTAL]
 
 
 def test_no_pve_foe_carries_facade_without_an_orb_a_filler_move_or_an_off_stab_type_boost():
@@ -285,7 +293,7 @@ def test_no_pve_foe_carries_facade_without_an_orb_a_filler_move_or_an_off_stab_t
 
 
 def test_the_pick_check_catches_facade_a_filler_move_and_an_off_stab_type_boost():
-    champion = gyms.find("kanto-champion")
+    champion = gyms.find("kanto-hidden")
     lead_moves = champion.moves[0]
 
     def with_first(moves=lead_moves, item=champion.items[0]):
@@ -347,34 +355,44 @@ def test_the_item_check_catches_a_duplicate_and_each_kind_of_no_op():
     assert all(item_faults(case) for case in cases)
 
 
-def test_a_champion_fields_its_regions_listed_legendaries_and_its_pseudo_legendary_from_a_valid_table():
+def test_a_champion_and_a_hidden_boss_field_their_listed_legendaries_and_the_pseudo_legendary_from_a_valid_table():
+    for region in gyms.regions():
+        assert_fixed_table(region.elite[-1])
+        assert_fixed_table(region.hidden)
+        champion = gym_data.CHAMPION_TEAMS[region.id]
+        assert len(champion) == TEAM_SIZE + 1, region.id
+        assert len([ace for ace in champion[:TEAM_SIZE] if mega_form_id(ace.item, ace.species)]) == 1, region.id
+        assert 1 <= region.hidden.finale <= 3, region.id
+
+
+def assert_fixed_table(opponent):
     table = gyms.species_table()
     learnsets = json.loads(LEARNSETS.read_text())
-    for region in gyms.regions():
-        entries = gym_data.CHAMPION_TEAMS[region.id]
-        listed = gym_data.CHAMPION_LEGENDARIES[region.id]
-        champion = region.elite[-1]
-        assert champion.types == () and champion.iv == 31
-        assert 7 <= len(entries) <= 9 and champion.finale == len(entries) - TEAM_SIZE, region.id
-        ids = [ace.species for ace in entries]
-        assert all(region.first <= i <= region.last for i in ids), region.id
-        assert set(listed) <= set(ids) and ids[-1] == listed[0], region.id
-        assert not any(table[i].excluded for i in ids if i not in listed), region.id
-        assert set(gym_data.PSEUDO_LEGENDARIES[region.id]) <= set(ids[:TEAM_SIZE]), region.id
-        for ace in entries:
-            learnset = learnsets[str(ace.form or ace.species)]
-            assert 1 <= len(ace.moves) <= 4 and len(set(ace.moves)) == len(ace.moves), (region.id, ace)
-            assert set(ace.moves) <= set(learnset["moves"]), (region.id, ace)
-            if ace.form is None:
-                attacking = {move_id for move_id in ace.moves if foe_moves.move(move_id)}
-                assert attacking <= foe_moves.species(ace.species).learnable, (region.id, ace)
-            assert ace.ability is None or (ace.ability in learnset["abilities"] and ace.ability in ABILITY_NAMES), ace
-        assert item_faults(champion) == [], region.id
+    region = next(region for region in gyms.regions() if region.id == opponent.region)
+    teams, legendaries = FIXED_TABLES[opponent.kind]
+    entries, listed = teams[region.id], legendaries[region.id]
+    assert opponent.types == () and opponent.iv == 31
+    assert 7 <= len(entries) <= 9 and opponent.finale == len(entries) - TEAM_SIZE, region.id
+    ids = [ace.species for ace in entries]
+    assert all(region.first <= i <= region.last for i in ids), region.id
+    assert set(listed) <= set(ids) and ids[-1] == listed[0], region.id
+    assert not any(table[i].excluded for i in ids if i not in listed), region.id
+    assert set(gym_data.PSEUDO_LEGENDARIES[region.id]) <= set(ids[:TEAM_SIZE]), region.id
+    for ace in entries:
+        learnset = learnsets[str(ace.form or ace.species)]
+        assert 1 <= len(ace.moves) <= 4 and len(set(ace.moves)) == len(ace.moves), (region.id, ace)
+        assert set(ace.moves) <= set(learnset["moves"]), (region.id, ace)
+        if ace.form is None:
+            attacking = {move_id for move_id in ace.moves if foe_moves.move(move_id)}
+            assert attacking <= foe_moves.species(ace.species).learnable, (region.id, ace)
+        assert ace.ability is None or (ace.ability in learnset["abilities"] and ace.ability in ABILITY_NAMES), ace
+    assert item_faults(opponent) == [], region.id
 
 
 def test_the_champion_learnset_table_covers_every_member():
     learnsets = json.loads(LEARNSETS.read_text())
-    wanted = {str(ace.form or ace.species) for team in gym_data.CHAMPION_TEAMS.values() for ace in team}
+    teams = (*gym_data.CHAMPION_TEAMS.values(), *gym_data.HIDDEN_TEAMS.values())
+    wanted = {str(ace.form or ace.species) for team in teams for ace in team}
     assert set(learnsets) == wanted
 
 
@@ -391,8 +409,9 @@ def test_every_trainer_is_an_original_character_with_a_short_line_in_three_langu
     rows = [
         *(row for rows in gym_data.LEADERS.values() for row in rows), *(row for rows in gym_data.ELITE.values() for row in rows),
         *gym_data.CHAMPIONS.values(), *(row for org in gym_data.ORGS.values() for row in org),
+        *gym_data.HIDDEN_TRAINERS.values(),
     ]
-    assert len(rows) == 72 + 36 + 9 + 27
+    assert len(rows) == 72 + 36 + 9 + 27 + 9
     for row in rows:
         assert len(row) == 6 and all(text.strip() for text in row)
         assert all(len(line) <= 60 for line in row[3:])
@@ -422,11 +441,13 @@ def test_runs_are_linked_in_order_and_gyms_stand_alone():
     assert len(gyms.regions()[0].elite) == 5
 
 
-def test_the_catalog_is_plain_json_with_the_three_groups_per_region():
+def test_the_catalog_is_plain_json_with_the_three_groups_and_the_hidden_boss_per_region():
     body = json.loads(json.dumps(gyms.catalog(), ensure_ascii=False))
     kanto = body["regions"][0]
     assert [region["id"] for region in body["regions"]] == list(REGIONS)
-    assert set(kanto) == {"id", "name", "first", "last", "gyms", "elite", "hideout"}
+    assert set(kanto) == {"id", "name", "first", "last", "gyms", "elite", "hideout", "hidden"}
+    assert kanto["hidden"] == {**kanto["hidden"], "id": "kanto-hidden", "kind": "hidden", "types": [], "run": None,
+                               "level": 50}
     assert set(kanto["gyms"][0]) == {"id", "kind", "index", "types", "level", "trainer", "team", "finale", "run"}
     assert kanto["gyms"][0]["run"] is None and kanto["gyms"][0]["types"] == ["water"]
     assert kanto["elite"]["badges_needed"] == 8 and kanto["elite"]["run"] == "kanto-elite"

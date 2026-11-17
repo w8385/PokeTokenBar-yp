@@ -2,7 +2,7 @@ from dataclasses import replace
 
 import pytest
 
-from ypoke import gym_battle, items, tera_forms
+from ypoke import gym_battle, gym_data, items, tera_forms
 from ypoke.battle import (
     Action, BaseStats, Change, Combatant, FormShift, MegaEvolution, MegaForm, Move, SendOut, simulate,
 )
@@ -119,7 +119,7 @@ def test_the_gym_path_builds_masks_and_the_crystal_the_same_way(monkeypatch):
     class Reached(Exception):
         pass
 
-    def capture(sides, seed, starts, finale):
+    def capture(sides, seed, starts, finale, unlimited_megas):
         seen.extend(sides[0])
         raise Reached
 
@@ -132,22 +132,22 @@ def test_the_gym_path_builds_masks_and_the_crystal_the_same_way(monkeypatch):
     assert seen[1].mega == STELLAR
 
 
-def test_only_a_champion_battle_gives_its_finale_a_second_mega_slot(monkeypatch):
+def test_a_champion_gives_its_finale_a_second_mega_slot_and_only_a_hidden_boss_has_no_limit(monkeypatch):
     seen = {}
 
     class Reached(Exception):
         pass
 
-    def capture(sides, seed, starts, finale):
-        seen[len(sides[1])] = finale
+    def capture(sides, seed, starts, finale, unlimited_megas):
+        seen[len(seen)] = (len(sides[1]), finale, unlimited_megas)
         raise Reached
 
     monkeypatch.setattr(gym_battle, "simulate", capture)
     monkeypatch.setattr(gym_battle, "combatant", lambda pokeapi, member: member["pokemon_id"])
-    for battle_id in ("kanto-1", "kanto-champion"):
+    for battle_id in ("kanto-1", "kanto-champion", "kanto-hidden"):
         with pytest.raises(Reached):
             GymBattles(FakePokeAPI()).battle(battle_id, [member(1)])
-    assert seen == {3: None, 7: 6}
+    assert seen == {0: (3, None, False), 1: (7, 6, False), 2: (len(gym_data.HIDDEN_TEAMS["kanto"]), 6, True)}
 
 
 def test_a_mask_raises_every_move_by_a_fifth_but_not_a_confusion_hit():
