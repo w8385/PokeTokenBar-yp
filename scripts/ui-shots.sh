@@ -38,6 +38,7 @@ SUITES=(
   "PTB_MEGA_SPRITE_SHOT_DIR:MegaSpriteScreenshotTests"
   "PTB_PETTING_RENDER_DIR:FloatingPetPettingRenderingTests"
   "PTB_PRAYER_RENDER_DIR:EggPrayerRenderTests"
+  "PTB_README_SHOT_DIR:ReadmeScreenshotTests"
   "PTB_REGION_REWARD_SHOT_DIR:DexRegionRewardScreenshotTests"
   "PTB_SCOUT_SCREENSHOT_DIR:ScoutScreenshotTests"
   "PTB_SCREENSHOT_DIR:GenerationDexScreenshotTests|ScreenshotGenTests"
