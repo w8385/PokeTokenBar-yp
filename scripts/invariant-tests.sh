@@ -9,10 +9,11 @@
 #
 #   ./scripts/invariant-tests.sh
 #
-# Add a test here when it reads files under Sources/ or sweeps AppLanguage.allCases. A test method
-# whose name ends in ...InEveryLanguage / ...InEverySupportedLanguage / ...EveryLanguage is picked up
-# by the name rule below with no edit. The drift check at the end fails when a test file reads
-# Sources/PokeTokenBar but none of its classes is listed.
+# Add a test here when it reads files under Sources/ or Tests/, reflects over a model's fields, or
+# sweeps AppLanguage.allCases. A test method whose name ends in ...InEveryLanguage /
+# ...InEverySupportedLanguage / ...EveryLanguage is picked up by the name rule below with no edit.
+# The drift check fails when a test method does one of those things and neither it nor its class is
+# listed; a class-level helper that does it needs the class or one of its methods listed.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -36,6 +37,7 @@ CLASSES=(
   OffscreenRenderGuardTests        # no test shows a window or activates the app
   DesignTokenScanTests             # no raw Color(red:, numeric font size or corner radius outside UI/Design
   SpeciesFactsGuardTests           # no test hand-builds species facts; the table matches the games
+  GymTermGuardTests                # no Korean UI string says 도장
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).
@@ -56,25 +58,107 @@ METHODS=(
   AntigravityUsageTests/testEntriesWithoutRootsGoesThroughResolvedRoots
   CredentialSwitchCacheTests/testAntigravityUserRefreshAlsoBypassesStillValidCache
   SaveTransferTests/testEveryCompanionStateFieldIsClassifiedForTransfer
+  # Language sweeps the name rule does not catch.
+  ActivityVisualizationTests/testTitleStatesTheWindowLength
+  AdditionalClaudeAccountsStoreTests/testTheBubbleDropsAnAccountThatDoesNotFit
+  BoxTests/testBattleTabKeepsRecentBattlesButNoConnectionTradeOrCoworkers
+  BoxTests/testCoworkersTabListsCoworkersAndOffersATradeWhenConnected
+  BoxTests/testDexDetailOffersTheBoxCountAndNoIndividualControls
+  BoxTests/testDisconnectedCoworkersTabPointsAtTheSettingsConnectionInsteadOfDuplicatingIt
+  BoxTests/testOpeningTheOfferWithAGivePreselectedLandsOnCoworkersWithTheSummary
+  BoxTests/testTheSelectedTabIsTheOnlyOneThatSpellsItsNameAndEveryTabHasATooltipSource
+  CompanionIdentityTests/testLocalizationIncludesDelayedHatchRetry
+  CompanionIdentityTests/testNatureNamesComplete
+  CompanionIdentityTests/testSystemDefaultLanguageResolves
+  DailyTrendStackTests/testTheLegendWrapsWithinThePopoverWidth
+  DifficultyTests/testFirstRunEggHintShowsTheScaledHatchPoint
+  EggPrayerTests/testDetailCopy
+  EvolutionCardTests/testEveryRuleIsTranslatedNotCopiedFromEnglish
+  FloatingPetAgentTests/testAgentBubbleTextNeverTruncates
+  FloatingPetAgentTests/testLimitBubbleContentIsUnchanged
+  FloatingPetEnergyTests/testLocalizedAlertBubbleFitsDefaultPanel
+  MegaSpriteSurfaceTests/testTheStoneHintNamesWhereTheMegaFormShows
+  PaceTierTests/testDeltaTextCarriesNoSignAndSkipsZero
+  PetEventLineTests/testEvolutionLineNamesBothWithTheRightKoreanParticles
+  PokeAPILanguageTests/testFetchedLanguageCodesMatchAppLanguageAPICodesWithoutDuplicates
+  PokemonNameLocalizationTests/testRenderedNamesResolveLanguageAndEnglishFallbackWithoutChangingKeys
+  PokemonNameLocalizationTests/testSelectedLanguageThenEnglishWithCurrentAndLegacyCodes
+  PreciousCompanionGuardTests/testLocalizationStringsCoverAllSevenLanguages
+  RepresentativeFooterLayoutTests/testRepresentativeActionStaysIconWidthInEveryLocaleAndState
+  SaveTransferTests/testImportErrorMessagesAreLocalizedNotRawSwiftText
+  ShinyCharmTests/testShinyDittoRevealDoesNotClaimFixedOdds
+  ShinyCharmTests/testShinyNotificationShowsTheOddsTheHatchUsed
+  UsageCostTests/testNativeCostRenderingAndAllLocalizedStates
+  UsageCostTests/testPlainDollarFormattingAcrossCoverageAndLanguages
 )
 
 # Language sweeps, by method name.
 NAME_RULE='/test\w*(InEvery(Supported)?Language|EveryLanguage|AllLanguages)\w*$'
 
-listed() { printf '%s\n' "${CLASSES[@]}" "${METHODS[@]}"; }
+# Methods the drift check flags that only touch their own fixtures (Class/method).
+NOT_INVARIANT=(
+  ClaudeSessionIDTests/testParsedAndCachedEntriesCarryTheirSession   # walks its own temporary folder
+  # Opt-in PR captures: they skip unless their screenshot directory is set.
+  BoxDexScreenshotTests/testCaptureBoxDexScreens
+  CollectionReadabilityRenderingTests/testGenerateCollectionReadabilityEvidence
+  HomeHeaderScreenshotTests/testCaptureHomeHeader
+  TabBarScreenshotTests/testCaptureFriendsTabSelected
+)
 
+# What makes a test repo-wide: reading Sources/ or Tests/, reflecting over a model, sweeping languages.
+TRIGGER='"Sources|repositoryFile\(|Mirror\(reflecting:|AppLanguage\.allCases|enumerator\(at:'
+
+# Prints "<scope> <Class> <method> <file:line>" per trigger; scope is method, class (a helper) or file.
+scan_triggers() {
+  TRIGGER="$TRIGGER" awk '
+    BEGIN { trigger = ENVIRON["TRIGGER"] }
+    FNR == 1 { cls = ""; fn = "-"; scope = "file" }
+    /^[A-Za-z@]/ { cls = ""; fn = "-"; scope = "file" }
+    /^(@MainActor )?(final )?class [A-Za-z0-9_]+: XCTestCase/ {
+      match($0, /class [A-Za-z0-9_]+/); cls = substr($0, RSTART + 6, RLENGTH - 6); scope = "class"
+    }
+    /^(@MainActor )?extension [A-Za-z0-9_]+Tests[ {]/ {
+      match($0, /extension [A-Za-z0-9_]+/); cls = substr($0, RSTART + 10, RLENGTH - 10); scope = "class"
+    }
+    /^    [^ ]/ && cls != "" {
+      if (match($0, /func test[A-Za-z0-9_]*/)) { fn = substr($0, RSTART + 5, RLENGTH - 5); scope = "method" }
+      else { fn = "-"; scope = "class" }
+    }
+    { code = $0; sub(/\/\/.*$/, "", code) }
+    code ~ trigger { printf "%s %s %s %s:%d\n", scope, (cls == "" ? "-" : cls), fn, FILENAME, FNR }
+  ' Tests/PokeTokenBarTests/*.swift
+}
+
+covered() {
+  local scope=$1 class=$2 method=$3
+  case "$scope" in
+    method)
+      printf '%s\n' "${CLASSES[@]}" "${METHODS[@]}" "${NOT_INVARIANT[@]}" | grep -qxE "$class|$class/$method" ||
+        printf '/%s\n' "$method" | grep -qE "$NAME_RULE" ;;
+    class) printf '%s\n' "${CLASSES[@]}" "${METHODS[@]}" | grep -qE "^$class(/|$)" ;;
+    *) return 1 ;;
+  esac
+}
+
+triggers=$(scan_triggers | sort -u -k1,3)
+[ -n "$triggers" ] || { echo "invariant-tests.sh: the drift scan found nothing; it is broken" >&2; exit 2; }
 drift=0
-for file in $(grep -l 'Sources/PokeTokenBar' Tests/PokeTokenBarTests/*.swift); do
-  classes=$(grep -oE 'class [A-Za-z0-9_]+: XCTestCase' "$file" | awk '{print $2}' | tr -d ':')
-  found=0
-  for c in $classes; do
-    if listed | grep -qE "^$c(/|$)"; then found=1; fi
-  done
-  if [ "$found" = 0 ]; then
-    echo "invariant-tests.sh: $file reads Sources/PokeTokenBar but none of its classes ($(echo $classes)) is listed" >&2
+while read -r scope class method where; do
+  file=${where%%:*}
+  if [ "$scope" = file ]; then
+    classes=$(grep -oE 'class [A-Za-z0-9_]+: XCTestCase' "$file" | awk '{print $2}' | tr -d ':')
+    for c in $classes; do covered class "$c" - && continue 2; done
+    echo "invariant-tests.sh: $where is repo-wide file-level code and no class in its file is listed" >&2
+    drift=1
+  elif ! covered "$scope" "$class" "$method"; then
+    if [ "$scope" = method ]; then
+      echo "invariant-tests.sh: $where — $class/$method is repo-wide but not listed" >&2
+    else
+      echo "invariant-tests.sh: $where — a helper in $class is repo-wide but nothing in $class is listed" >&2
+    fi
     drift=1
   fi
-done
+done <<< "$triggers"
 [ "$drift" = 0 ] || { echo "Add the class or method to scripts/invariant-tests.sh." >&2; exit 2; }
 
 regex="$NAME_RULE"
