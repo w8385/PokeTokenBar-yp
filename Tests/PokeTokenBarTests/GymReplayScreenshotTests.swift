@@ -47,6 +47,35 @@ final class GymReplayScreenshotTests: XCTestCase {
                       language: language, height: 470,
                       to: directory.appendingPathComponent("gym-replay-screen-\(language.rawValue).png"))
         }
+        try await captureTheBotsKantoLineups(to: directory)
+    }
+
+    /// The bot's gym 1 (three foes) as a result, and a champion loss with the hidden partner unseen.
+    private func captureTheBotsKantoLineups(to directory: URL) async throws {
+        let kanto = try XCTUnwrap(try GymCatalog.decode(Data(contentsOf: GymRepo.kantoCatalog)).region("kanto"))
+        let gym = kanto.gyms[0]
+        let champion = try XCTUnwrap(kanto.elite.battles.last)
+        let three = [(8, "어니부기"), (117, "시드라"), (119, "왕콘치")]
+        let six = zip(champion.team, ["썬더", "파이어", "망나뇽", "리자몽", "팬텀", "갸라도스"]).map { ($0, $1) }
+        for species in three.map(\.0) + champion.team { _ = await SpriteLoader.image(speciesID: species) }
+        let small = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+            gymID: gym.id, kind: "gym", won: true, turns: 7,
+            teams: (fighters(mine, hp: [0, 100, nil]), fighters(three, hp: [0, 0, 0]))))
+        let lost = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+            gymID: champion.id, kind: "champion", won: false, turns: 9,
+            teams: (fighters(mine, hp: [0, 0, 0]),
+                    fighters(six + [(150, "뮤츠")], hp: [0, 0, 64, 100, 100, 100, nil]))))
+        for language in [AppLanguage.ko, .en] {
+            let l = L(language)
+            for (name, opponent, outcome) in [("gym-1-result", gym, small), ("champion-result", champion, lost)] {
+                try write(GymResultView(record: GymFightRecord(opponent: opponent, outcome: outcome, reward: nil),
+                                        language: language, l: l, regionName: l.gymRegionName(kanto),
+                                        tmName: { _ in nil }, primaryTitle: l.gymRematch, busy: false,
+                                        onPrimary: {}, onClose: {}),
+                          language: language, height: 330,
+                          to: directory.appendingPathComponent("\(name)-\(language.rawValue).png"))
+            }
+        }
     }
 
     private func fighters(_ team: [(Int, String)], hp: [Int?]) -> [[String: Any]] {

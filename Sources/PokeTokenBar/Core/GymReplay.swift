@@ -19,6 +19,8 @@ struct GymReplay: Equatable, Sendable {
         var hp: [[Int?]]
         var status: [[String?]]
         var lastMove: Move?
+        /// The champion's hidden member came out this turn.
+        var finale = false
     }
 
     let events: [GymBattleEvent]
@@ -39,14 +41,17 @@ struct GymReplay: Equatable, Sendable {
         eventsPerTurn = Dictionary(known.map { ($0.turn, 1) }, uniquingKeysWith: +)
     }
 
-    private static let types: Set<String> = ["switch", "move", "damage", "faint", "status"]
+    private static let types: Set<String> = ["switch", "move", "damage", "faint", "status", GymBattleEvent.finale]
 
     func frame(after count: Int) -> Frame {
         var frame = Frame(hp: sizes.map { Array(repeating: nil, count: $0) },
                           status: sizes.map { Array(repeating: nil, count: $0) })
         for event in events.prefix(count) {
+            if event.turn != frame.turn { frame.finale = false }
             frame.turn = event.turn
             switch event.type {
+            case GymBattleEvent.finale:
+                frame.finale = true
             case "switch":
                 frame.active[event.side] = event.member
                 frame.hp[event.side][event.member] = event.hp ?? 100

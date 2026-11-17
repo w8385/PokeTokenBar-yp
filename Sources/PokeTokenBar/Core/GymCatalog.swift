@@ -82,6 +82,8 @@ struct GymOpponent: Decodable, Equatable, Sendable, Identifiable {
     let trainer: GymTrainer
     let team: [Int]
     let run: GymRunPosition?
+    /// Members the champion keeps hidden after `team`; nil from a bot older than the finale.
+    var finale: Int? = nil
 
     var isRunFinale: Bool { kind == "champion" || kind == "boss" }
 }

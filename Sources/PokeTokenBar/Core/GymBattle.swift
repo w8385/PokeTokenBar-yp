@@ -56,6 +56,11 @@ struct GymBattleEvent: Decodable, Equatable, Sendable {
     var move: String?
 }
 
+extension GymBattleEvent {
+    /// The champion's hidden member is about to come out (`member` is the one that will).
+    static let finale = "finale"
+}
+
 /// The reply of `POST /v1/gym/battle`.
 struct GymBattleOutcome: Decodable, Equatable, Sendable {
     let gymId: String

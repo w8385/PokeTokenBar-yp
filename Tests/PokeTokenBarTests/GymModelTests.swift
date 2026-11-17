@@ -18,6 +18,45 @@ final class GymModelTests: XCTestCase {
         XCTAssertEqual(kanto.opponent("kanto-champion")?.kind, "champion")
     }
 
+    func testTheBotsCatalogDecodesSmallGymsAndTheChampionsHiddenFinale() throws {
+        let kanto = try XCTUnwrap(try GymCatalog.decode(Data(contentsOf: GymRepo.kantoCatalog)).region("kanto"))
+        let champion = try XCTUnwrap(kanto.elite.battles.last)
+
+        XCTAssertEqual(kanto.gyms.map(\.team.count), [3, 3, 4, 4, 5, 5, 6, 6])
+        XCTAssertEqual(champion.team.count, 6)
+        XCTAssertEqual(champion.finale, 1)
+        XCTAssertEqual(kanto.gyms[0].finale, 0)
+        XCTAssertNil(GymFixtures.catalog().region("kanto")?.elite.battles.last?.finale)
+    }
+
+    func testRegionNamesFollowTheAppLanguageNotTheBotsKoreanName() throws {
+        let catalog = try GymCatalog.decode(Data(contentsOf: GymRepo.kantoCatalog))
+        let kanto = try XCTUnwrap(catalog.region("kanto"))
+        let isHangul: (Unicode.Scalar) -> Bool = { (0xAC00...0xD7A3).contains($0.value) }
+
+        XCTAssertEqual(kanto.name, "관동")
+        XCTAssertEqual(L(.ko).gymRegionName(kanto), "관동")
+        for language in AppLanguage.allCases where language != .ko {
+            let name = L(language).gymRegionName(kanto)
+            XCTAssertFalse(name.unicodeScalars.contains(where: isHangul), "\(language): \(name)")
+        }
+        XCTAssertEqual(L(.en).gymRegionName(kanto), "Kanto")
+        XCTAssertEqual(L(.ja).gymRegionName(kanto), "カントー")
+    }
+
+    func testGymViewsNeverShowTheBotsRegionName() throws {
+        let ui = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Sources/PokeTokenBar/UI")
+        let files = try FileManager.default.contentsOfDirectory(atPath: ui.path).filter { $0.hasPrefix("Gym") }
+        let offenders = try files.filter { file in
+            let text = try String(contentsOf: ui.appendingPathComponent(file), encoding: .utf8)
+            return text.contains("region.name") || text.contains("Text($0.name)")
+        }
+
+        XCTAssertFalse(files.isEmpty)
+        XCTAssertEqual(offenders, [])
+    }
+
     func testTrainerTextFollowsTheLanguageAndFallsBackToEnglish() throws {
         let gym = try XCTUnwrap(GymFixtures.catalog().region("kanto")?.gyms.first)
 

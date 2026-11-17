@@ -18,7 +18,7 @@ struct GymBadgeCase: View {
                 let owned = badges.region(region.id)
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     HStack {
-                        Text(region.name).font(.caption.weight(.semibold))
+                        Text(l.gymRegionName(region)).font(.caption.weight(.semibold))
                         Spacer()
                         Text(l.gymBadgeProgress(owned.gyms.count, of: GymBadges.gymsPerRegion))
                             .font(.caption2).foregroundStyle(.secondary).monospacedDigit()

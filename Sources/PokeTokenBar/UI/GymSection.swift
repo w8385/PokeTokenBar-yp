@@ -19,7 +19,8 @@ struct GymSection: View {
             badges: { store.state.gymBadges },
             ownedTMs: { MachineMove.ownedIDs(in: store.state.inventory) },
             applyReward: { reward, opponent, region in
-                store.applyGymReward(reward, trainer: opponent.trainer.displayName(store.language), region: region.name)
+                store.applyGymReward(reward, trainer: opponent.trainer.displayName(store.language),
+                                     region: store.l.gymRegionName(region))
             }))
     }
 
@@ -87,7 +88,7 @@ struct GymSection: View {
                     Text(l.gymBadgeCaseTitle).font(.callout.weight(.semibold))
                 } else {
                     Picker(l.gymRegionLabel, selection: Bindable(service.session).regionID) {
-                        ForEach(catalog.regions) { Text($0.name).tag($0.id) }
+                        ForEach(catalog.regions) { Text(l.gymRegionName($0)).tag($0.id) }
                     }
                     .labelsHidden().fixedSize().disabled(service.inFlight != nil)
                     Text(l.gymBadgeProgress(badges.badgeCount(region.id), of: GymBadges.gymsPerRegion))
@@ -148,7 +149,7 @@ struct GymSection: View {
         }()
         return VStack(alignment: .leading, spacing: 0) {
             GymResultView(
-                record: record, language: language, l: l, regionName: region.name,
+                record: record, language: language, l: l, regionName: l.gymRegionName(region),
                 tmName: { id in MachineCatalog.moves.first { $0.id == id }?.name(language) },
                 primaryTitle: primary, busy: service.inFlight != nil,
                 onPrimary: {

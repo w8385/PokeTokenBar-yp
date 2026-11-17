@@ -99,6 +99,28 @@ final class GymReplayTests: XCTestCase {
         XCTAssertFalse(player.fast)
     }
 
+    func testTheFinaleEventFlagsOnlyTheTurnTheHiddenMemberComesOut() throws {
+        let events = GymFixtures.replayEvents.dropLast() + [
+            GymFixtures.event(5, "faint", side: 1, member: 1),
+            GymFixtures.event(5, GymBattleEvent.finale, side: 1, member: 2),
+            GymFixtures.event(5, "switch", side: 1, member: 2, hp: 100),
+            GymFixtures.event(6, "move", side: 0, member: 1, move: "파도타기"),
+            GymFixtures.event(6, "damage", side: 1, member: 2, hp: 0),
+            GymFixtures.event(6, "faint", side: 1, member: 2),
+        ]
+        let outcome = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+            gymID: "kanto-champion", kind: "champion", won: true, hps: [0, 100, nil], foeHps: [0, 0, 0], turns: 6,
+            events: Array(events)))
+        let replay = try XCTUnwrap(GymReplay(outcome))
+        let entrance = try XCTUnwrap(replay.events.firstIndex { $0.type == GymBattleEvent.finale })
+
+        XCTAssertFalse(replay.frame(after: entrance).finale)
+        XCTAssertTrue(replay.frame(after: entrance + 1).finale)
+        XCTAssertTrue(replay.frame(after: entrance + 2).finale)
+        XCTAssertEqual(replay.frame(after: entrance + 2).active[1], 2)
+        XCTAssertFalse(replay.frame(after: entrance + 3).finale)
+    }
+
     private func total(_ replay: GymReplay) -> Double {
         replay.events.indices.map { replay.delay(before: $0) / .seconds(1) }.reduce(0, +)
     }
