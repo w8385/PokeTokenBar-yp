@@ -208,7 +208,8 @@ first, and the first to acknowledge wins.
 ## Gyms (PvE)
 
 Nine regions (the app's Pokédex regions, in dex order). Each has eight gyms with a gym leader, the Elite Four and
-a champion, and a villain organization's hideout. Every trainer fields six Pokémon at Lv50. A player's team
+a champion, and a villain organization's hideout. Gym leaders field three to six Pokémon, the others six (the
+champion one or more besides, kept hidden), all at Lv50. A player's team
 fights one trainer in one automatic battle. It is not a Slack battle: nothing is posted, no record is stored, the
 stored party is never touched, and it counts toward no ranking. Badges and rewards live in the app. All the
 trainers are original characters.
@@ -231,22 +232,22 @@ Auth as above. The whole catalog; it is the same on every call and changes only 
       "gyms": [
         {"id": "kanto-1", "kind": "gym", "index": 1, "types": ["water"], "level": 50,
          "trainer": {"name": {"ko": "…", "en": "…", "ja": "…"}, "line": {"ko": "…", "en": "…", "ja": "…"}},
-         "team": [99, 80, 141, 55, 91, 131], "run": null}
+         "team": [8, 117, 119], "finale": 0, "run": null}
       ],
       "elite": {
         "run": "kanto-elite", "badges_needed": 8,
         "battles": [
           {"id": "kanto-elite-1", "kind": "elite", "index": 1, "types": ["bug"], "level": 50, "trainer": {"...": "..."},
-           "team": [], "run": {"id": "kanto-elite", "step": 1, "steps": 5}},
+           "team": [], "finale": 0, "run": {"id": "kanto-elite", "step": 1, "steps": 5}},
           {"id": "kanto-champion", "kind": "champion", "index": 5, "types": [], "level": 50, "trainer": {"...": "..."},
-           "team": [], "run": {"id": "kanto-elite", "step": 5, "steps": 5}}
+           "team": [145, 146, 149, 6, 94, 130], "finale": 1, "run": {"id": "kanto-elite", "step": 5, "steps": 5}}
         ]
       },
       "hideout": {
         "run": "kanto-hideout", "org": {"name": {"ko": "…", "en": "…", "ja": "…"}, "types": ["electric", "ghost"]},
         "battles": [
           {"id": "kanto-hideout-1", "kind": "grunt", "index": 1, "types": ["electric", "ghost"], "level": 50,
-           "trainer": {"...": "..."}, "team": [], "run": {"id": "kanto-hideout", "step": 1, "steps": 4}}
+           "trainer": {"...": "..."}, "team": [], "finale": 0, "run": {"id": "kanto-hideout", "step": 1, "steps": 4}}
         ]
       }
     }
@@ -261,10 +262,11 @@ Auth as above. The whole catalog; it is the same on every call and changes only 
 | `elite.battles` | `<region>-elite-1` … `<region>-elite-4` (`kind` `"elite"`), then `<region>-champion` (`"champion"`): five battles, `run.step` 1..5. `badges_needed` is how many gym badges the app asks for before the run opens; the bot does not check |
 | `hideout.battles` | `<region>-hideout-1` and `-2` (`"grunt"`), `-3` (`"admin"`), `-4` (`"boss"`): `run.step` 1..4. `org` is the organization's name and the types its teams lean to |
 | `kind`, `index` | `gym`, `elite`, `champion`, `grunt`, `admin` or `boss`; `index` counts within its group |
-| `types` | The types the trainer's team leans to (PokéAPI type names): one for a gym leader or Elite Four member, the organization's two for the hideout, none for the champion. The team has as many of them as the region has such species, up to a share of the six |
+| `types` | The trainer's type (PokéAPI type names). A gym leader has one and fields only that type, from the region's own species (`first`..`last`), with no legendary, mythical or baby Pokémon. An Elite Four member has one and fields at least three of it among six. The hideout has the organization's two; the champion none. Where a region has too few of a type, gyms swap type slots, so the same `index` can carry a different type than in older bots |
 | `level` | Always 50 |
 | `trainer` | An original character: `name` and `line` (one short sentence) in `ko`, `en` and `ja`. Both grunts share the organization's name and line |
-| `team` | Six species ids in battle order, strongest last. The battle uses exactly this team, so the preview is the lineup. Species are picked around a base-stat total that rises with the gym number (gym 1 about 420, gym 8 about 545; early gyms may field a form that could still evolve); the Elite Four and the champion sit above gym 8, grunts low, the boss high. The total is the same in every region, so every region climbs the same curve |
+| `team` | Species ids in battle order. Gyms 1–8 field 3, 3, 4, 4, 5, 5, 6 and 6; everyone else six. Species are picked around a base-stat total that rises with the gym number (gym 1 about 420, gym 8 about 520; early gyms may field a form that could still evolve); the Elite Four sit above gym 8, grunts low, the boss high. The champion fields a fixed table: the region's legendaries, its pseudo-legendary and showy partners. The battle uses exactly this team, then the hidden `finale` members |
+| `finale` | How many members come out after `team` has fainted, with no healing in between; their species stay hidden. `0` for everyone but the champion. Older bots leave it out |
 | `run` | `null` for a gym; otherwise `id` (`<region>-elite` or `<region>-hideout`), `step` and `steps` |
 
 Trainer art is the app's own resource named by the battle `id`.
@@ -282,9 +284,11 @@ Auth as above, body at most 64 KB.
 moves included (the same attacking-move check, `503 pokeapi_unavailable` when PokéAPI cannot be reached to check
 them). Errors name the field as `team[i]…`. The fight is the same simulation as `/대결`: Lv50 cap, one at a time in
 order, the next comes in when one faints, no switching. A `rental` member fights at the trainer's level (50).
-The foes use their latest attacking moves and have no nature, ability or held item. Their IVs rise with the
-trainer: 12 at gym 1 up to 26 at gym 8, 28 for the Elite Four, 31 for the champion, 12 / 20 / 26 for grunts, the
-admin and the boss.
+Each foe knows four moves picked from everything its species learns (level-up at any level and machines): the
+best same-type hits first, then coverage. The champion's moves are hand-picked. Each foe holds an item that works
+for it (no two alike on a team), and a champion's Mega Stone Mega Evolves its holder. Foes have no nature or
+ability. Their IVs rise with the trainer: 12 at gym 1 up to 21 at gym 8, 28 for the Elite Four, 31 for the
+champion, 12 / 20 / 26 for grunts, the admin and the boss.
 
 ```json
 {
@@ -330,7 +334,7 @@ admin and the boss.
 | `player_team`, `foe_team` | Every member in lineup order: `pokemon_id`, `name` (the sent `name`, else the Korean species name), battle `level`, `types`, `shiny`. `hp` is the share of max HP left at the end, `0..100`: `0` fainted (a member that came in down stays `0`), `null` never sent out |
 | `log` | One entry per turn, every turn, none left out. Entries before turn 1 (entry abilities, Mega Evolution) join turn 1 |
 | `log[].lines[]` | The same lines the Slack battle log shows, Korean only. `side` is `0` for the player, `1` for the trainer, `null` for a line that names no side (a faint line, a weather end). A send-out line starts with `↪ `. `text` carries the rest of the Slack line without the 🔵/🔴 side marker |
-| `events` | The battle in order, for the app to replay. Every event has `turn` (`0` before turn 1), `type`, `side` (`0` the player, `1` the trainer) and `member` (the index in `player_team` / `foe_team`). The `type`s: `switch` (the member comes out with `hp` and `status`; both sides' first members come out at turn `0`), `move` (the member uses `move`, its Korean name as in `log`; a turn it cannot act has no `move` event), `damage` (the member's HP share is now `hp`, up or down: hits, recoil, drain, burn and poison, weather, items), `faint` (right after a `damage` to `0`) and `status` (`status` is now one of `burn`, `poison`, `toxic`, `paralysis`, `sleep`, `freeze`, or `null` when it ends). Replaying every `switch` and `damage` ends at each member's `hp` in the rosters. Stat changes, weather and forms are only in `log`. New `type`s may be added: skip one you do not know |
+| `events` | The battle in order, for the app to replay. Every event has `turn` (`0` before turn 1), `type`, `side` (`0` the player, `1` the trainer) and `member` (the index in `player_team` / `foe_team`). The `type`s: `switch` (the member comes out with `hp` and `status`; both sides' first members come out at turn `0`), `move` (the member uses `move`, its Korean name as in `log`; a turn it cannot act has no `move` event), `damage` (the member's HP share is now `hp`, up or down: hits, recoil, drain, burn and poison, weather, items), `faint` (right after a `damage` to `0`), `status` (`status` is now one of `burn`, `poison`, `toxic`, `paralysis`, `sleep`, `freeze`, or `null` when it ends) and `finale` (right before the `switch` of the champion's first hidden member; `side` `1`, `member` that member, `text` the announcement in `ko`, `en` and `ja`; `log` has the Korean line). Replaying every `switch` and `damage` ends at each member's `hp` in the rosters. Stat changes, weather and forms are only in `log`. New `type`s may be added: skip one you do not know |
 | `run` | `null` for a gym. Otherwise `id`, `step`, `steps`, `first` (the run's first battle id) and `next` (the battle to send after a win, `null` after a loss or on the last step) |
 | `carry` | See below. `null` unless the battle was in a run, was won and has a `next` |
 
