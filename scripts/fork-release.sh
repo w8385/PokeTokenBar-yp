@@ -27,8 +27,20 @@ LATEST_BASE="${LATEST_BASE%%-*}"
 [[ "$LATEST_BASE" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "cannot read the latest release tag: $LATEST" >&2; exit 1; }
 newer "$VERSION" "$LATEST_BASE" || { echo "$TAG is not newer than the latest release $LATEST" >&2; exit 1; }
 
+./scripts/sign-with-key.sh available || {
+    echo "no fork signing key: an ad-hoc release resets every user's Keychain 'always allow'." >&2
+    echo "Run ./scripts/create-fork-signing-key.sh once (see RELEASE.md \"포크 릴리스\")." >&2
+    exit 1
+}
+
 ./scripts/xcode-pin.sh check >/dev/null
-PTB_VERSION="$VERSION" PTB_NATIVE_ARCH_ONLY=1 PTB_SKIP_INSTALL=1 ./scripts/build-app.sh
+PTB_SIGN_WITH_KEY=1 PTB_REQUIRE_STABLE_SIGN=1 PTB_ALLOW_NATIVE_ARCH_RELEASE=1 PTB_VERSION="$VERSION" PTB_NATIVE_ARCH_ONLY=1 PTB_SKIP_INSTALL=1 ./scripts/build-app.sh
+REQUIREMENT=$(codesign -dr - build/PokeTokenBar.app 2>&1)
+[[ "$REQUIREMENT" == *"certificate"* && "$REQUIREMENT" != *cdhash* ]] || {
+    echo "designated requirement is not certificate-based; not releasing: $REQUIREMENT" >&2
+    exit 1
+}
+codesign --verify --deep --strict build/PokeTokenBar.app || { echo "built app fails codesign --verify; not releasing" >&2; exit 1; }
 PLIST=build/PokeTokenBar.app/Contents/Info.plist
 for key in CFBundleShortVersionString PTBForkVersion; do
     BUILT=$(/usr/libexec/PlistBuddy -c "Print :$key" "$PLIST")

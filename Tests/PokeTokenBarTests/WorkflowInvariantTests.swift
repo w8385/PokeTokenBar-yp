@@ -33,6 +33,17 @@ final class WorkflowInvariantTests: XCTestCase {
                         ".xcode-version must hold one Xcode major such as 27, got \(raw.debugDescription)")
     }
 
+    func testForkReleaseNeverShipsAnAdHocSignedBuild() throws {
+        let script = try String(contentsOf: repositoryFile("scripts/fork-release.sh"), encoding: .utf8)
+        let build = script.components(separatedBy: "\n").filter { $0.contains("./scripts/build-app.sh") }
+        XCTAssertEqual(build.count, 1, "fork-release.sh must call build-app.sh exactly once")
+        for flag in ["PTB_REQUIRE_STABLE_SIGN=1", "PTB_SIGN_WITH_KEY=1"] {
+            XCTAssertTrue(build.first?.contains(flag) ?? false, "fork-release.sh must build with \(flag)")
+        }
+        XCTAssertTrue(script.contains("codesign -dr -") && script.contains("!= *cdhash*"),
+                      "fork-release.sh must reject a built app whose designated requirement is a cdhash")
+    }
+
     func testOnlyPushesAndSameRepositoryPRsReachTheSelfHostedRunner() throws {
         let guardLine = "runs-on: " + String(format: Self.selfHostedGuard, try pinnedXcodeMajor())
         var guarded = 0
