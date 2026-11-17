@@ -379,7 +379,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
             if action.move and _pivots(teams[side], action, choices[side]):
                 action = replace(action, pivoted=True)
             events.append(action)
-            loser = _exhausted(teams, (1 - side, side))
+            loser = _exhausted(teams, (side, 1 - side) if _self_ko(teams[side].active, choices[side]) else (1 - side, side))
             if loser is not None:
                 break
             if action.pivoted:
@@ -725,7 +725,10 @@ def _turn_order(fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, 
 
 
 def _priority(fighter: _Fighter, choice: int | None) -> int:
-    return 0 if choice is None else fighter.combatant.moves[choice].priority
+    if choice is None:
+        return 0
+    move = fighter.combatant.moves[choice]
+    return move.priority + abilities.priority_bonus(fighter.ability, move.type, fighter.hp == fighter.max_hp)
 
 
 def _quick_claws(turn: int, fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
@@ -818,11 +821,26 @@ def _eat_sitrus(fighter: _Fighter) -> None:
 
 def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:
     immune = WEATHER_CHIP_IMMUNE_TYPES.get(weather)
-    return immune is not None and not immune.intersection(fighter.combatant.types)
+    return (immune is not None and not immune.intersection(fighter.combatant.types)
+            and not abilities.ignores_weather_chip(fighter.ability, weather))
 
 
 def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, weather: _Weather,
          rng: random.Random, arena: _Arena | None = None) -> Action:
+    """One Pokémon's turn. A self-KO move (Explosion) faints its user once used, hit, miss or immune target."""
+    action = _resolve(turn, side, fighters, index, weather, rng, arena)
+    if action.move and _self_ko(fighters[side], index):
+        fighters[side].hp = 0
+        return replace(action, attacker_hp=0, attacker_fainted=True)
+    return action
+
+
+def _self_ko(fighter: _Fighter, index: int | None) -> bool:
+    return index is not None and fighter.combatant.moves[index].effect == "self-ko"
+
+
+def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, weather: _Weather,
+             rng: random.Random, arena: _Arena | None = None) -> Action:
     attacker, defender = fighters[side], fighters[1 - side]
     names = (attacker.combatant.name, defender.combatant.name)
     move = STRUGGLE if index is None else attacker.combatant.moves[index]
@@ -1018,7 +1036,7 @@ def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multipl
                      weather: str | None) -> float:
     attack, defense = _stats_for(attacker, defender, move.physical, weather)
     level = attacker.combatant.level
-    damage = ((2 * level // 5 + 2) * _power(attacker, move) * attack / max(1, defense)) // 50 + 2
+    damage = ((2 * level // 5 + 2) * _power(attacker, move, weather) * attack / max(1, defense)) // 50 + 2
     return (
         damage * _stab(attacker, move) * multiplier * _weather_boost(move, weather)
         * abilities.damage_taken_multiplier(defender.ability, move.type) * _item_boost(attacker, move, multiplier)
@@ -1086,11 +1104,20 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
     """The move `side`'s active Pokémon uses this turn, by one rule for both sides. First an effect move whose moment
     has come: Trick Room on its first turn in when its team is slower than the foe and none has been set, Stealth Rock
     once while the foe has members to come, Yawn on a foe with no status, Thunder Wave on a faster foe it can
-    paralyze. Then a pivot move when the foe has a
+    paralyze. A self-KO move only when it surely knocks the foe out (and no other move does) or the user is at 1/3 HP
+    or less, never by the side's last member. Then a pivot move when the foe has a
     super-effective hit on it and a member of its group can come in. Otherwise `_best_move`."""
     team, foes = teams[side], teams[1 - side]
     attacker, defender = team.active, foes.active
     best = _best_move(attacker, defender, weather)
+    self_ko = _usable(attacker, "self-ko")
+    if best is None and attacker.locked is None and self_ko is not None:
+        return self_ko
+    if self_ko is not None and team.has_next and attacker.locked is None and (
+        _surely_finishes(attacker, defender, attacker.combatant.moves[self_ko], weather)
+        or attacker.hp * abilities.LOW_HP_FRACTION <= attacker.max_hp
+    ) and not (best is not None and _surely_finishes(attacker, defender, attacker.combatant.moves[best], weather)):
+        return self_ko
     if attacker.locked is not None or attacker.item in items.CHOICE_ITEMS or attacker.item == items.ASSAULT_VEST:
         return best
     if best is not None and _surely_finishes(attacker, defender, attacker.combatant.moves[best], weather):
@@ -1111,6 +1138,8 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
     pivot = _usable(attacker, "pivot")
     if pivot is not None and team.pivot_target() is not None and _threatened(attacker, defender, weather):
         return pivot
+    if best is None:
+        return next((index for index in range(len(attacker.combatant.moves)) if attacker.pp[index] > 0), None)
     return best
 
 
@@ -1143,7 +1172,7 @@ def _best_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> i
         return attacker.locked if attacker.pp[attacker.locked] > 0 else None
     best, best_score = None, -1.0
     for index, move in enumerate(attacker.combatant.moves):
-        if attacker.pp[index] <= 0 or move.weather or move.effect in STATUS_EFFECTS:
+        if attacker.pp[index] <= 0 or move.weather or move.effect in STATUS_EFFECTS or move.effect == "self-ko":
             continue
         score = _move_score(attacker, defender, move, weather)
         if score > best_score:
@@ -1185,7 +1214,7 @@ def _best_score(attacker: _Fighter, defender: _Fighter, weather: str | None) -> 
     scores = [
         _move_score(attacker, defender, move, weather)
         for index, move in enumerate(attacker.combatant.moves)
-        if attacker.pp[index] > 0 and not move.weather and move.effect not in STATUS_EFFECTS
+        if attacker.pp[index] > 0 and not move.weather and move.effect not in (*STATUS_EFFECTS, "self-ko")
     ]
     return max(scores, default=0.0)
 
@@ -1195,7 +1224,7 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
     attack, defense = _stats_for(attacker, defender, move.physical, weather)
     accuracy = 100 if move.accuracy is None or weather in move.always_hits_in else move.accuracy
     return (
-        _power(attacker, move) * move.expected_hits * _stab(attacker, move) * _multiplier(move, defender)
+        _power(attacker, move, weather) * move.expected_hits * _stab(attacker, move) * _multiplier(move, defender)
         * _weather_boost(move, weather) * abilities.damage_taken_multiplier(defender.ability, move.type)
         * _item_boost(attacker, move, _multiplier(move, defender))
         * accuracy * attack / max(1, defense)
@@ -1212,11 +1241,11 @@ def _weather_boost(move: Move, weather: str | None) -> float:
     return WEATHER_MOVE_BOOST.get(weather, {}).get(move.type, 1.0)
 
 
-def _power(attacker: _Fighter, move: Move) -> float:
+def _power(attacker: _Fighter, move: Move, weather: str | None = None) -> float:
     if move is STRUGGLE or move is CONFUSION_HIT:
         return move.power
     low_hp = attacker.hp * abilities.LOW_HP_FRACTION <= attacker.max_hp
-    return move.power * abilities.power_multiplier(attacker.ability, move.type, move.power, low_hp)
+    return move.power * abilities.power_multiplier(attacker.ability, move.type, move.power, low_hp, weather)
 
 
 def _stab(attacker: _Fighter, move: Move) -> float:

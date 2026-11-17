@@ -1,11 +1,12 @@
 import random
+from dataclasses import replace
 
 import pytest
 
 from ypoke import gym_battle
 from ypoke.battle import (
     Action, BaseStats, Carry, Combatant, HazardDamage, MegaEvolution, MegaForm, Move, SendOut, TrickRoomEnd,
-    YawnSleep, _act, _Fighter, _Team, _Weather, _yawnable, simulate,
+    YawnSleep, _act, _chipped_by, _Fighter, _Team, _turn_order, _unrolled_damage, _Weather, _yawnable, simulate,
 )
 from ypoke.narration import battle_turns
 
@@ -18,6 +19,9 @@ STEALTH_ROCK = Move("스텔스록", "rock", 0, physical=False, effect="stealth-r
 YAWN = Move("하품", "normal", 0, physical=False, effect="yawn")
 THUNDER_WAVE = Move("전기자석파", "electric", 0, physical=False, accuracy=100, effect="thunder-wave")
 U_TURN = Move("유턴", "bug", 70, physical=True, accuracy=100, pp=60, effect="pivot")
+EXPLOSION = Move("대폭발", "normal", 250, physical=True, accuracy=100, pp=5, effect="self-ko")
+EARTHQUAKE = Move("지진", "ground", 100, physical=True, accuracy=100)
+BRAVE_BIRD = Move("브레이브버드", "flying", 120, physical=True, accuracy=100)
 
 
 @pytest.mark.parametrize("side", [0, 1])
@@ -154,7 +158,7 @@ def test_thunder_wave_paralyzes_a_faster_foe(side):
 
 def test_thunder_wave_is_not_used_on_a_slower_foe():
     result = simulate((wall("피카", ["electric"], (THUNDER_WAVE, TACKLE), speed=150), wall("느림보", speed=20)), seed=7)
-    assert not any(event.effect for event in actions(result))
+    assert not any(event.effect for event in actions(result) if event.turn <= 20)
 
 
 @pytest.mark.parametrize("types", [("ground",), ("electric",)])
@@ -192,6 +196,65 @@ def test_the_log_narrates_each_effect():
     result = simulate(((setter,), (wall("날쌘돌이", speed=150), wall("후발", ["fire", "flying"]))), seed=1)
     text = "\n".join(line for _, turn_lines in battle_turns(result) for line in turn_lines)
     assert "공간이 뒤틀렸다" in text and "돌이 떠 있다" in text and "졸음" in text
+
+
+@pytest.mark.parametrize("target_types, accuracy", [(("normal",), 100), (("ghost",), 100), (("normal",), 1)])
+def test_a_self_ko_move_faints_its_user_on_a_hit_a_miss_or_an_immune_target(target_types, accuracy):
+    user = _Fighter.enter(mon("폭탄", moves=(replace(EXPLOSION, accuracy=accuracy),)))
+    target = _Fighter.enter(wall("과녁", target_types))
+    action = _act(1, 0, (user, target), 0, _Weather(), random.Random(1))
+    assert action.attacker_fainted and action.attacker_hp == 0 and user.hp == 0
+
+
+def test_a_players_explosion_faints_the_user_and_brings_in_the_next_member():
+    team = (mon("폭탄", moves=(EXPLOSION,), speed=150), wall("후발"))
+    result = simulate((team, (wall("상대"),)), seed=9)
+    first = actions(result)[0]
+    assert (first.side, first.move, first.attacker_fainted) == (0, "대폭발", True)
+    assert SendOut(1, 0, "후발", 1) in result.events
+
+
+@pytest.mark.parametrize("side", [0, 1])
+def test_the_ai_explodes_for_a_sure_knockout_but_never_as_its_sides_last_member(side):
+    bomber = mon("폭탄", moves=(TACKLE, EXPLOSION), attack=150, speed=150)
+    frail = mon("과녁", hp=60, defense=60)
+    with_partner = simulate(sides((bomber, wall("후발")), (frail, wall("다음")), side), seed=10)
+    assert next(event for event in actions(with_partner) if event.side == side).move == "대폭발"
+    alone = simulate(sides((bomber,), (frail, wall("다음")), side), seed=10)
+    assert not any(event.move == "대폭발" for event in actions(alone))
+
+
+def test_the_ai_explodes_at_a_third_of_its_hp_or_less():
+    bomber = mon("폭탄", moves=(TACKLE, EXPLOSION), speed=150)
+    healthy = simulate(((bomber, wall("후발")), (wall("상대"), wall("다음"))), seed=11)
+    assert actions(healthy)[0].move == "몸통박치기"
+    hurt = simulate(((bomber, wall("후발")), (wall("상대"), wall("다음"))), seed=11, carried=[Carry(30, None), None])
+    assert actions(hurt)[0].move == "대폭발"
+
+
+def test_when_explosion_takes_out_both_last_members_its_user_loses():
+    result = simulate((mon("폭탄", moves=(EXPLOSION,), attack=200, speed=150), mon("과녁", hp=30, defense=30)), seed=12)
+    assert actions(result)[0].knockout and actions(result)[0].attacker_fainted
+    assert result.winner == 1
+
+
+def test_sand_force_powers_rock_ground_and_steel_moves_in_sand_and_ignores_the_chip():
+    user = _Fighter.enter(replace(mon("랜드로스", moves=(EARTHQUAKE, TACKLE)), ability="sand-force"))
+    target = _Fighter.enter(mon("과녁"))
+    sand, clear = (_unrolled_damage(user, target, EARTHQUAKE, 1.0, weather) for weather in ("sandstorm", None))
+    assert 1.25 < sand / clear < 1.35
+    assert _unrolled_damage(user, target, TACKLE, 1.0, "sandstorm") == _unrolled_damage(user, target, TACKLE, 1.0, None)
+    assert not _chipped_by(user, "sandstorm") and _chipped_by(_Fighter.enter(mon("과녁")), "sandstorm")
+
+
+@pytest.mark.parametrize("side", [0, 1])
+def test_gale_wings_gives_flying_moves_priority_at_full_hp_only(side):
+    bird = _Fighter.enter(replace(mon("파이어로", ["fire", "flying"], (BRAVE_BIRD,), speed=20), ability="gale-wings"))
+    foe = _Fighter.enter(mon("날쌘돌이", speed=150))
+    pair = sides(bird, foe, side)
+    assert _turn_order(pair, (0, 0), random.Random(0))[0] == side
+    bird.hp -= 1
+    assert _turn_order(pair, (0, 0), random.Random(0))[0] == 1 - side
 
 
 def mon(name, types=("normal",), moves=(TACKLE,), level=50, hp=80, attack=80, defense=80, speed=80, mega=None):

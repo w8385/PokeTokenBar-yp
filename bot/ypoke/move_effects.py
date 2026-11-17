@@ -7,9 +7,14 @@ THUNDER_WAVE = 86
 U_TURN = 369
 VOLT_SWITCH = 521
 FLIP_TURN = 812
+SELF_DESTRUCT = 120
+EXPLOSION = 153
 
 STATUS_MOVES = {TRICK_ROOM: "trick-room", STEALTH_ROCK: "stealth-rock", YAWN: "yawn", THUNDER_WAVE: "thunder-wave"}
-EFFECTS = {**STATUS_MOVES, U_TURN: "pivot", VOLT_SWITCH: "pivot", FLIP_TURN: "pivot"}
+EFFECTS = {
+    **STATUS_MOVES, U_TURN: "pivot", VOLT_SWITCH: "pivot", FLIP_TURN: "pivot", SELF_DESTRUCT: "self-ko",
+    EXPLOSION: "self-ko",
+}
 
 
 def wants_status_moves(move_ids) -> bool:

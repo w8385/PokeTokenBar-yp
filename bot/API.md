@@ -2,7 +2,7 @@
 
 The app posts the user's battle Pokémon to the YPoke bot. The bot keeps only the latest
 upload per user and sends out its first Pokémon in `/대결` battles, or its first N (1–6), in order,
-in `/대결 @상대 N` battles; a shorter upload sends what it has. When one faints the next comes in; the only other switch is a pivot move's (U-turn, Volt Switch, Flip Turn). Battles never change the party.
+in `/대결 @상대 N` battles; a shorter upload sends what it has. When one faints the next comes in; the only other switch is a pivot move's (U-turn, Volt Switch, Flip Turn). Explosion and Self-Destruct faint their user whether they hit or not; when that takes out both sides' last members, the user's side loses. Battles never change the party.
 
 - Base URL: the bot's `YPOKE_PUBLIC_URL`, for example `http://<bot-host>:8790`
 - Auth: `Authorization: Bearer <token>`. Users get the token from `/포켓몬연결`:
