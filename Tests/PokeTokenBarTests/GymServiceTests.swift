@@ -157,25 +157,23 @@ final class GymServiceTests: XCTestCase {
 
     // MARK: Runs
 
-    func testEliteRunCarriesHpAndStatusIntoTheNextBattle() async throws {
+    func testEliteRunGoesOnFullyHealedAndIgnoresTheBotsCarry() async throws {
         let script = ExchangeScript([
             eliteStep(1, won: true, next: "kanto-elite-2", carry: carry),
-            eliteStep(2, won: true, next: "kanto-elite-3", carry: carry),
+            eliteStep(2, won: true, next: "kanto-elite-3", carry: nil),
+            eliteStep(3, won: true, next: "kanto-elite-4", carry: carry),
         ])
         let service = service(script)
         let battles = kanto.elite.battles
 
         XCTAssertEqual(service.nextStep(of: "kanto-elite", battles: battles, team: team), 1)
-        await service.fightRun("kanto-elite", battles: battles, region: kanto, team: team)
-        XCTAssertNil(try script.body(0)["carried"])
-        XCTAssertEqual(service.nextStep(of: "kanto-elite", battles: battles, team: team), 2)
-
-        await service.fightRun("kanto-elite", battles: battles, region: kanto, team: team)
-        let second = try script.body(1)
-        XCTAssertEqual(second["gym_id"] as? String, "kanto-elite-2")
-        let carried = try XCTUnwrap(second["carried"] as? [[String: Any]])
-        XCTAssertEqual(carried.map { $0["hp"] as? Int }, [60, 20])
-        XCTAssertEqual(carried[1]["status"] as? String, "psn")
+        for step in 1...3 {
+            await service.fightRun("kanto-elite", battles: battles, region: kanto, team: team)
+            let body = try script.body(step - 1)
+            XCTAssertEqual(body["gym_id"] as? String, "kanto-elite-\(step)")
+            XCTAssertNil(body["carried"])
+            XCTAssertEqual(service.nextStep(of: "kanto-elite", battles: battles, team: team), step + 1)
+        }
         XCTAssertTrue(applied.isEmpty)
     }
 

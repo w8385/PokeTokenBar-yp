@@ -1,32 +1,9 @@
 import Foundation
 
-/// HP and status one team member keeps from one battle of a run into the next.
-struct GymCarry: Codable, Equatable, Sendable {
-    /// Share of max HP, 0...100.
-    let hp: Int
-    let status: String?
-
-    init(hp: Int, status: String?) {
-        self.hp = hp
-        self.status = status
-    }
-
-    /// The bot wants an explicit `null` status, not a missing key.
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(hp, forKey: .hp)
-        try container.encode(status, forKey: .status)
-    }
-
-    private enum CodingKeys: String, CodingKey { case hp, status }
-}
-
-/// The body of `POST /v1/gym/battle`.
+/// The body of `POST /v1/gym/battle`. It never sends `carried`, so every battle of a run starts fully healed.
 struct GymBattleRequest: Encodable, Equatable, Sendable {
     let gymId: String
     let team: [PartyMember]
-    /// One entry per `team` member (nil is full HP, no status); only for a battle in a run.
-    var carried: [GymCarry?]? = nil
 
     func encoded() throws -> Data {
         let encoder = JSONEncoder()
@@ -79,8 +56,6 @@ struct GymBattleOutcome: Decodable, Equatable, Sendable {
     let foeTeam: [GymFighter]
     let log: [GymTurn]
     let run: GymRunStep?
-    /// Ready to send back as the next `carried`; nil unless the battle was in a run, won, and not the last.
-    let carry: [GymCarry?]?
 
     static func decode(_ data: Data) throws -> GymBattleOutcome {
         let decoder = JSONDecoder()

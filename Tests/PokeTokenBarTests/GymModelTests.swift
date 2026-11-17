@@ -27,7 +27,7 @@ final class GymModelTests: XCTestCase {
         XCTAssertEqual(gym.trainer.displayName(.ja), "Leader 1")
     }
 
-    func testOutcomeKeepsHpSharesAndTheMemberThatNeverFought() throws {
+    func testOutcomeKeepsHpSharesAndTheMemberThatNeverFoughtAndIgnoresTheBotsCarry() throws {
         let data = GymFixtures.outcomeData(
             gymID: "kanto-elite-2", kind: "elite", won: true, run: ("kanto-elite", 2, 5, "kanto-elite-1", "kanto-elite-3"),
             carry: [GymFixtures.carryJSON(hp: 80), nil, GymFixtures.carryJSON(hp: 35, status: "par")])
@@ -35,35 +35,20 @@ final class GymModelTests: XCTestCase {
 
         XCTAssertEqual(outcome.playerTeam.map(\.hp), [80, 0, 35, nil, 100, 60])
         XCTAssertEqual(outcome.run?.next, "kanto-elite-3")
-        XCTAssertEqual(outcome.carry, [GymCarry(hp: 80, status: nil), nil, GymCarry(hp: 35, status: "par")])
         XCTAssertEqual(outcome.log[1].lines[0].side, nil)
     }
 
-    func testBattleRequestCarriesSixMembersWithMovesAndExplicitNullCarry() throws {
+    func testBattleRequestSendsSixMembersWithMovesAndNoCarriedState() throws {
         let team = (1...6).map { PartyMember(pokemonID: $0, level: 50, shiny: false, ivs: nil, moves: [33, 45, 52, 84]) }
-        let request = GymBattleRequest(gymId: "kanto-elite-3", team: team,
-                                       carried: [nil, GymCarry(hp: 40, status: nil), GymCarry(hp: 12, status: "brn"), nil, nil, nil])
+        let request = GymBattleRequest(gymId: "kanto-elite-3", team: team)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: request.encoded()) as? [String: Any])
         let members = try XCTUnwrap(json["team"] as? [[String: Any]])
-        let carried = try XCTUnwrap(json["carried"] as? [Any])
 
         XCTAssertEqual(json["gym_id"] as? String, "kanto-elite-3")
         XCTAssertEqual(members.count, 6)
         XCTAssertEqual(members[0]["moves"] as? [Int], [33, 45, 52, 84])
         XCTAssertEqual(members[0]["pokemon_id"] as? Int, 1)
-        XCTAssertEqual(carried.count, 6)
-        XCTAssertTrue(carried[0] is NSNull)
-        let second = try XCTUnwrap(carried[1] as? [String: Any])
-        XCTAssertEqual(second["hp"] as? Int, 40)
-        XCTAssertTrue(second["status"] is NSNull)
-        XCTAssertEqual((carried[2] as? [String: Any])?["status"] as? String, "brn")
-    }
-
-    func testBattleRequestOmitsCarriedForAStandAloneGym() throws {
-        let request = GymBattleRequest(gymId: "kanto-1", team: [PartyMember(pokemonID: 25, level: 30, shiny: false, ivs: nil)])
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: request.encoded()) as? [String: Any])
-
-        XCTAssertNil(json["carried"])
+        XCTAssertEqual(Set(json.keys), ["gym_id", "team"])
     }
 
     func testSaveFromBeforeGymsDecodesWithoutBadges() throws {

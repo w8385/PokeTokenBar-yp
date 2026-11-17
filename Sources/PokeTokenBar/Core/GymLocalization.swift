@@ -55,14 +55,14 @@ extension L {
           "Continuar: batalha \(step)", "Weiter: Kampf \(step)", "Дальше: бой \(step)")
     }
     var gymRunRule: String {
-        t("연속 대결이에요. 체력과 상태 이상이 이어지고, 지면 처음부터 다시 시작해요.",
-          "Battles in a row. HP and status carry over, and a loss starts the run again.",
-          "連戦です。HPと状態異常は引き継がれ、負けると最初からやり直しです。",
-          "Combates seguidos. Los PS y el estado se mantienen y una derrota reinicia la serie.",
-          "Combats à la suite. PV et statut sont conservés ; une défaite fait recommencer.",
-          "Batalhas seguidas. PS e status continuam, e uma derrota recomeça a série.",
-          "Kämpfe am Stück. KP und Status bleiben erhalten, eine Niederlage startet von vorn.",
-          "Бои подряд. ОЗ и статус сохраняются, поражение начинает всё заново.")
+        t("연속 대결이에요. 전투마다 완전히 회복하고, 지면 처음부터 다시 시작해요.",
+          "Battles in a row. Your team is fully healed before each one, and a loss starts the run again.",
+          "連戦です。毎戦の前に全回復し、負けると最初からやり直しです。",
+          "Combates seguidos. Tu equipo se cura del todo antes de cada uno y una derrota reinicia la serie.",
+          "Combats à la suite. Ton équipe est soignée avant chacun ; une défaite fait recommencer.",
+          "Batalhas seguidas. A equipe é curada antes de cada uma, e uma derrota recomeça a série.",
+          "Kämpfe am Stück. Dein Team wird vor jedem Kampf voll geheilt, eine Niederlage startet von vorn.",
+          "Бои подряд. Перед каждым боем команда полностью лечится, поражение начинает всё заново.")
     }
 
     // MARK: Hideout
