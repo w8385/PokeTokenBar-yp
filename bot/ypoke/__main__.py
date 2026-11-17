@@ -23,7 +23,7 @@ from ypoke.transport import (
     slash_listener,
     trade_listener,
 )
-from ypoke.upload_server import MAX_ENTRY_SIZE, serve
+from ypoke.upload_server import serve
 
 
 def main() -> None:
@@ -86,7 +86,7 @@ def _after_upload(
 def _run_after_upload(
     pokeapi: PokeAPIService, handler: CommandHandler, client: WebClient, user_id: str, party: list[dict]
 ) -> None:
-    _warm(pokeapi, party[:MAX_ENTRY_SIZE])
+    _warm(pokeapi, party)
     try:
         deliveries = handler.run_pending(user_id)
     except Exception:
@@ -110,7 +110,7 @@ def _warm_stored_parties(pokeapi: PokeAPIService, store: Store) -> None:
     """One member at a time so live battles still get request slots."""
     for user_id in store.linked_user_ids():
         stored = store.party(user_id)
-        for member in stored.party[:MAX_ENTRY_SIZE] if stored else []:
+        for member in stored.party if stored else []:
             _warm(pokeapi, [member])
 
 

@@ -31,9 +31,9 @@ def member(pokemon_id, level=30):
 
 def test_an_upload_warms_every_entry_member_before_pending_battles_run():
     pokeapi, handler = FakePokeAPI(), FakeHandler()
-    party = [member(25), member(7), member(1), member(4)]
+    party = [member(25), member(7), member(1), member(4), member(150), member(151)]
     bot._run_after_upload(pokeapi, handler, None, "UA", party)
-    assert pokeapi.warmed == [party[:3]]
+    assert pokeapi.warmed == [party]
     assert handler.pending_for == ["UA"]
 
 

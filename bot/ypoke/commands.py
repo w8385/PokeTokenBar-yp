@@ -17,7 +17,7 @@ from ypoke.messages import DirectMessage
 from ypoke.narration import PRACTICE_NOTE, Card, battle_card, battle_header
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import PendingChallenge, Record, Store
-from ypoke.upload_server import MAX_ENTRY_SIZE
+from ypoke.upload_server import MAX_PARTY_SIZE
 
 REGISTER_LINK = "poketokenbar://ypoke-register"
 DOWNLOAD_URL = "https://github.com/w8385/PokeTokenBar-yp/releases/latest"
@@ -29,8 +29,9 @@ REMATCH_LOSER_ONLY = "다시 붙기는 진 쪽만 누를 수 있어요."
 SECTION_TEXT_LIMIT = 3000
 FIELD_TEXT_LIMIT = 2000
 ECHO_ARG_LIMIT = 200
-_REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)(?::([13]))?(?::([UW][A-Z0-9]+))?")
-FULL_ENTRY_WORDS = frozenset({"3", "3:3", "풀"})
+_REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)(?::([1-6]))?(?::([UW][A-Z0-9]+))?")
+FULL_ENTRY_WORD = "풀"
+_SIZE_WORD = re.compile(r"([1-6])(?::\1)?")
 _MENTION_SPLIT = re.compile(r"(<@[UW][A-Z0-9]+(?:\|[^>]*)?>)")
 _MENTION = re.compile(r"<@([UW][A-Z0-9]+)(?:\|[^>]*)?>")
 KST = timezone(timedelta(hours=9), "KST")
@@ -61,9 +62,10 @@ MENTION_WORDS = {
 HELP_TEXT = (
     "*YPoke 대결*\n"
     f"`{BATTLE_COMMAND} @상대` 한 마리씩 내보내 1:1로 붙어요. 앱 대결 탭에서 고른 첫 포켓몬이 나가요. 안 골랐으면 지금 키우는 포켓몬이 나가요.\n"
-    f"`{BATTLE_COMMAND} @상대 3`(`3:3`·`풀`도 돼요) 1~3번 칸에서 최대 3마리가 순서대로 나가요. 쓰러지면 다음 포켓몬이 나와요. 교체는 없어요.\n"
+    f"`{BATTLE_COMMAND} @상대 4`처럼 1~6을 붙이면 앱 대결 탭에서 고른 앞의 그 수만큼 순서대로 나가요. `4:4`도 되고 `풀`은 6이에요. "
+    "고른 포켓몬이 그보다 적으면 있는 만큼 나가요. 쓰러지면 다음 포켓몬이 나와요. 교체는 없어요.\n"
     "알만 있으면 대여 포켓몬이 상대 레벨로 나가요. 상대가 아직 준비 전이면 연결 안내를 보내요. 준비되면 결과가 이 채널에 올라가요.\n"
-    f"`{BATTLE_COMMAND} @YPoke [3]` 또는 `@YPoke 대결 [3]` 봇이 무작위 포켓몬으로 연습 대결을 해요. 전적에 안 남아요.\n"
+    f"`{BATTLE_COMMAND} @YPoke [1-6]` 또는 `@YPoke 대결 [1-6]` 봇이 무작위 포켓몬으로 연습 대결을 해요. 전적에 안 남아요.\n"
     f"`{LINK_COMMAND}` 앱 연결 링크를 DM으로 보내요. 다시 하면 새 링크가 나오고 옛 연결은 끊겨요.\n"
     f"`{RECORD_COMMAND} [@누구]` 승패를 보여줘요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
@@ -71,7 +73,6 @@ HELP_TEXT = (
     f"`{UMBRELLA_COMMAND}` 이 도움말이에요. `{UMBRELLA_COMMAND} 도감`처럼 뒤에 명령을 붙여도 돼요.\n"
     "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`도 돼요.\n"
     "*앱 대결 탭*\n"
-    "출전 칸은 6개예요. 1~3번은 슬랙 대결과 체육관에 나가요. 4~6번은 체육관에만 나가요.\n"
     "체육관·사천왕·아지트 도전은 앱 대결 탭에서 해요. 슬랙 명령은 없어요.\n"
     "대결로는 포켓몬이 오가지 않아요. 졸업한 포켓몬은 대결 탭의 교환 제안으로 맞바꿔요. 상대가 DM에서 고르고 수락하면 끝나요.\n"
     f"앱 받기: <{DOWNLOAD_URL}|PokeTokenBar>"
@@ -443,9 +444,13 @@ def parse_mention(text: str, bot_user_id: str | None) -> tuple[str | None, str]:
 
 
 def battle_size(text: str) -> int:
-    """3 when the battle text asks for the full lineup (`3`, `3:3`, `풀`), else 1."""
-    words = _MENTION.sub(" ", text).split()
-    return MAX_ENTRY_SIZE if any(word in FULL_ENTRY_WORDS for word in words) else 1
+    """The lineup size the battle text asks for: a word `1`–`6` or `N:N`, `풀` for 6; else 1."""
+    for word in _MENTION.sub(" ", text).split():
+        if word == FULL_ENTRY_WORD:
+            return MAX_PARTY_SIZE
+        if size := _SIZE_WORD.fullmatch(word):
+            return int(size.group(1))
+    return 1
 
 
 def reply_thread_ts(event: dict) -> str:
