@@ -143,7 +143,6 @@ enum PokemonBalance {
     }
     /// Input within this long counts as active.
     static let timeIdleLimit: TimeInterval = 5 * 60
-    static let timeDailyCap: TimeInterval = 8 * 3600
     /// One tick never credits more than this, so a long gap (sleep, a stalled timer) cannot pay out.
     static let timeMaxStep: TimeInterval = 2 * 60
     /// Token mode with no usage for this long offers the switch to time mode.
@@ -1259,9 +1258,6 @@ struct CompanionState: Codable, Sendable {
     var growthMode = GrowthMode.token
     /// Virtual tokens earned by active time. Part of the wallet, kept out of `usedSinceInstall` and usage stats.
     var timeCredit = 0
-    /// Local day key and active seconds credited on it (the daily cap). A device ledger: imports keep this Mac's.
-    var timeActiveDay = ""
-    var timeActiveSeconds = 0.0
     /// When token mode last began, and when real usage last grew. Drive the "no usage" hint.
     var tokenModeSince: Date?
     var lastUsageAt: Date?
@@ -1325,8 +1321,6 @@ struct CompanionState: Codable, Sendable {
         economyVersion     = c.lenient(Int.self, forKey: .economyVersion, default: 1)
         growthMode         = c.lenient(GrowthMode.self, forKey: .growthMode, default: .token)
         timeCredit         = c.lenient(Int.self, forKey: .timeCredit, default: 0)
-        timeActiveDay      = c.lenient(String.self, forKey: .timeActiveDay, default: "")
-        timeActiveSeconds  = c.lenient(Double.self, forKey: .timeActiveSeconds, default: 0)
         tokenModeSince     = c.lenientOptional(Date.self, forKey: .tokenModeSince)
         lastUsageAt        = c.lenientOptional(Date.self, forKey: .lastUsageAt)
         idleHintDismissed  = c.lenient(Bool.self, forKey: .idleHintDismissed, default: false)

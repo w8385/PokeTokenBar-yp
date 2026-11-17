@@ -69,7 +69,6 @@ final class TimeModeTests: XCTestCase {
         }
         XCTAssertGreaterThan(longest, 0)
         XCTAssertLessThanOrEqual(Double(longest) / Double(PokemonBalance.timeTokensPerActiveHour), 10)
-        XCTAssertEqual(PokemonBalance.timeDailyCap, 8 * 3600)
     }
 
     func testRateMathAtDifficultyOne() {
@@ -162,34 +161,15 @@ final class TimeModeTests: XCTestCase {
         XCTAssertEqual(credited, PokemonBalance.timeTokens(forActiveSeconds: PokemonBalance.timeMaxStep))
     }
 
-    // MARK: cap and clock
+    // MARK: no daily cap, clock
 
-    func testDailyCapStopsAtEightActiveHoursAndResetsNextDay() {
+    func testTwelveActiveHoursInOneDayAreAllCredited() {
         let clock = Clock(); var up: TimeInterval = 1000
         let s = egg(clock: clock)
         s.creditActiveTime(uptime: up, idle: 1, present: true)
         let credited = tick(s, clock, uptime: &up, times: 12 * 120)   // 12 hours in 30 s ticks
-        XCTAssertEqual(s.state.timeActiveSeconds, PokemonBalance.timeDailyCap, accuracy: 0.001)
-        XCTAssertLessThanOrEqual(credited, PokemonBalance.timeTokens(forActiveSeconds: PokemonBalance.timeDailyCap))
-        XCTAssertGreaterThan(credited, PokemonBalance.timeTokens(forActiveSeconds: PokemonBalance.timeDailyCap) - 100_000)
-        let afterCap = s.state.timeCredit
-        clock.now += 86_400
-        tick(s, clock, uptime: &up, times: 2)
-        XCTAssertGreaterThan(s.state.timeCredit, afterCap)
-    }
-
-    func testCapSurvivesARestart() {
-        let clock = Clock(); var up: TimeInterval = 1000
-        let url = tempURL()
-        let first = egg(clock: clock, url: url)
-        first.creditActiveTime(uptime: up, idle: 1, present: true)
-        tick(first, clock, uptime: &up, times: 12 * 120)
-        let banked = first.state.timeCredit
-        let again = store(try! String(contentsOf: url, encoding: .utf8), clock: clock, url: url)
-        up = 5
-        again.creditActiveTime(uptime: up, idle: 1, present: true)
-        XCTAssertEqual(tick(again, clock, uptime: &up, times: 20), 0)
-        XCTAssertEqual(again.state.timeCredit, banked)
+        XCTAssertEqual(credited, 12 * 120 * PokemonBalance.timeTokens(forActiveSeconds: 30), "every 30 s tick pays, past hour 8")
+        XCTAssertEqual(s.state.timeCredit, credited)
     }
 
     func testWallClockJumpsDoNotMintTime() {
@@ -245,20 +225,6 @@ final class TimeModeTests: XCTestCase {
         XCTAssertEqual(s.state.usedSinceInstall, 7)
         feed(s, 5_000_600)
         XCTAssertEqual(s.state.eggUsage, 500, "the refresh after that pays normally")
-    }
-
-    func testRewindingTheClockDoesNotReopenTheDailyCap() {
-        let clock = Clock(); var up: TimeInterval = 1000
-        let s = egg(clock: clock)
-        s.creditActiveTime(uptime: up, idle: 1, present: true)
-        tick(s, clock, uptime: &up, times: 10 * 120)
-        XCTAssertEqual(s.state.timeActiveSeconds, PokemonBalance.timeDailyCap, accuracy: 0.001)
-        let banked = s.state.timeCredit
-        clock.now -= 86_400
-        XCTAssertEqual(tick(s, clock, uptime: &up, times: 20), 0)
-        clock.now += 2 * 86_400
-        XCTAssertGreaterThan(tick(s, clock, uptime: &up, times: 2), 0, "a later day still resets")
-        XCTAssertGreaterThan(s.state.timeCredit, banked)
     }
 
     func testTheHatchCelebrationEndsOnTimeTicksWithoutAUsageUpdate() async {
@@ -387,32 +353,28 @@ final class TimeModeTests: XCTestCase {
         let reloaded = store(try String(contentsOf: url, encoding: .utf8), clock: clock, url: url)
         XCTAssertEqual(reloaded.growthMode, .time)
         XCTAssertEqual(reloaded.state.timeCredit, s.state.timeCredit)
-        XCTAssertEqual(reloaded.state.timeActiveSeconds, s.state.timeActiveSeconds, accuracy: 0.001)
-        XCTAssertEqual(reloaded.state.timeActiveDay, s.state.timeActiveDay)
         let envelope = try SaveTransfer.decode(SaveTransfer.encode(state: s.state, appVersion: "t", deviceName: "d", now: clock.now))
         XCTAssertEqual(envelope.state.growthMode, .time)
         XCTAssertEqual(envelope.state.timeCredit, s.state.timeCredit)
     }
 
-    func testImportKeepsThisMacsCapLedgerAndClampsHugeValues() {
-        var current = CompanionState()
-        current.timeActiveDay = "2026-11-16"
-        current.timeActiveSeconds = 7000
+    func testImportKeepsTimeModeAndClampsHugeCredit() {
         var incoming = CompanionState()
         incoming.growthMode = .time
-        incoming.timeActiveDay = "2020-01-01"
-        incoming.timeActiveSeconds = 1
-        let rebased = SaveTransfer.rebasedForThisDevice(incoming, current: current, todayTokensByProvider: [:],
+        incoming.timeCredit = 5_000
+        let rebased = SaveTransfer.rebasedForThisDevice(incoming, current: CompanionState(), todayTokensByProvider: [:],
                                                         todayDate: "d", hasUsageData: false)
         XCTAssertEqual(rebased.growthMode, .time)
-        XCTAssertEqual(rebased.timeActiveDay, "2026-11-16")
-        XCTAssertEqual(rebased.timeActiveSeconds, 7000)
+        XCTAssertEqual(rebased.timeCredit, 5_000)
         var hostile = CompanionState()
         hostile.timeCredit = Int.max
-        hostile.timeActiveSeconds = .infinity
-        let clean = SaveTransfer.sanitized(hostile)
-        XCTAssertEqual(clean.timeCredit, SaveTransfer.maxTokenValue)
-        XCTAssertEqual(clean.timeActiveSeconds, 0)
+        XCTAssertEqual(SaveTransfer.sanitized(hostile).timeCredit, SaveTransfer.maxTokenValue)
+    }
+
+    func testAnOldSaveWithTheRetiredDailyLedgerStillLoads() {
+        let s = egg(extra: ",\"timeActiveDay\":\"2026-11-16\",\"timeActiveSeconds\":7000,\"timeCredit\":123", clock: Clock())
+        XCTAssertEqual(s.growthMode, .time)
+        XCTAssertEqual(s.state.timeCredit, 123)
     }
 
     // MARK: hint
