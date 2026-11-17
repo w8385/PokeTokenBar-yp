@@ -144,8 +144,9 @@ extension L {
           "Подходит для \(pokemon), но остальные условия ещё не выполнены. Смотрите карточку эволюции в Покедексе. Предмет остался у вас.")
     }
 
-    func evolutionPathText(_ path: [EvolutionRequirement], speciesName: (Int) -> String) -> String {
-        path.map { evolutionRequirementText($0, speciesName: speciesName) }.joined(separator: " + ")
+    func evolutionPathText(_ path: [EvolutionRequirement], speciesName: (Int) -> String, shopDifficulty: Double) -> String {
+        path.map { evolutionRequirementText($0, speciesName: speciesName, shopDifficulty: shopDifficulty) }
+            .joined(separator: " + ")
     }
 
     var evolutionBecomesThisForm: String {
@@ -428,7 +429,8 @@ extension L {
         }
     }
 
-    func evolutionRequirementText(_ requirement: EvolutionRequirement, speciesName: (Int) -> String) -> String {
+    func evolutionRequirementText(_ requirement: EvolutionRequirement, speciesName: (Int) -> String,
+                                  shopDifficulty: Double) -> String {
         switch requirement {
         case .pets(let n):
             return t("쓰다듬기 \(n)번", "Pet it \(n) times", "\(n)回なでる", "Acariciarlo \(n) veces",
@@ -509,7 +511,7 @@ extension L {
             return t("탑 고르기", "Choose a tower", "とうをえらぶ", "Elegir una torre", "Choisir une tour",
                      "Escolher uma torre", "Einen Turm wählen", "Выбрать башню")
         case .spent(let n):
-            let amount = TokenFormatter.compact(n)
+            let amount = TokenFormatter.compact(PokemonBalance.scaled(n, by: shopDifficulty))
             return t("상점에서 토큰 \(amount) 쓰기", "Spend \(amount) tokens in the shop", "ショップでトークンを\(amount)使う",
                      "Gastar \(amount) tokens en la tienda", "Dépenser \(amount) tokens à la boutique",
                      "Gastar \(amount) tokens na loja", "\(amount) Tokens im Shop ausgeben",

@@ -124,9 +124,12 @@ final class PremiumEggTests: XCTestCase {
     // MARK: 가격 — 졸업 총량 배율(새 상수 금지)
 
     func testPricesFollowGraduationTotalRatio() {
-        XCTAssertEqual(FreshEgg.price(guaranteeing: nil), 200_000_000)
-        XCTAssertEqual(FreshEgg.price(guaranteeing: .uncommon), 500_000_000)
-        XCTAssertEqual(FreshEgg.price(guaranteeing: .rare), 800_000_000)
+        func ratio(_ tier: Rarity) -> Double {
+            Double(PokemonBalance.graduationTotal(tier)) / Double(PokemonBalance.graduationTotal(.common))
+        }
+        XCTAssertEqual(FreshEgg.price(guaranteeing: nil), FreshEgg.price)
+        XCTAssertEqual(Double(FreshEgg.price(guaranteeing: .uncommon)), Double(FreshEgg.price) * ratio(.uncommon), accuracy: 1)
+        XCTAssertEqual(Double(FreshEgg.price(guaranteeing: .rare)), Double(FreshEgg.price) * ratio(.rare), accuracy: 1)
         XCTAssertEqual(FreshEgg.shopTiers, [nil, .uncommon, .rare])
     }
 
@@ -201,7 +204,7 @@ final class PremiumEggTests: XCTestCase {
 
     /// 잔액이 그 **티어의** 가격에 미달이면 불가 — 기본 알은 살 수 있어도 희귀 알은 못 산다.
     func testFundsAreCheckedAgainstTierPrice() {
-        let s = activeStore(used: 600_000_000)   // 200M·500M 는 되고 800M 는 안 되는 잔액
+        let s = activeStore(used: FreshEgg.price(guaranteeing: .rare) - 1)
         XCTAssertTrue(s.canBuyEgg(nil))
         XCTAssertTrue(s.canBuyEgg(.uncommon))
         XCTAssertFalse(s.canBuyEgg(.rare))

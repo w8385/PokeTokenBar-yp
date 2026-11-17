@@ -146,8 +146,10 @@ final class EvolutionCardTests: XCTestCase {
                                       en.evolutionOriginalText(original, speciesName: name), "\(rule.species) \(language)")
                 }
                 for path in rule.paths {
-                    XCTAssertNotEqual(l.evolutionPathText(path, speciesName: name),
-                                      en.evolutionPathText(path, speciesName: name), "\(rule.species) \(language)")
+                    let base = PokemonBalance.defaultDifficulty
+                    XCTAssertNotEqual(l.evolutionPathText(path, speciesName: name, shopDifficulty: base),
+                                      en.evolutionPathText(path, speciesName: name, shopDifficulty: base),
+                                      "\(rule.species) \(language)")
                 }
                 if let selector = rule.selector {
                     XCTAssertNotEqual(l.evolutionSelectorText(selector), en.evolutionSelectorText(selector))

@@ -227,7 +227,7 @@ final class CompanionStore {
         }
     }
 
-    /// 상점 배율 변경 — 가격은 순수 읽기(파생값)라 재평가할 상태가 없다.
+    /// 상점 배율 변경 — 가격과 소비 진화 조건은 읽을 때 배율을 곱하므로 저장 상태를 고치지 않는다.
     func setShopDifficulty(_ value: Double) {
         let clamped = PokemonBalance.clampDifficulty(value)
         guard clamped != shopDifficulty else { return }
@@ -1201,7 +1201,8 @@ final class CompanionStore {
     }
 
     /// One tick of time mode. `uptime` is monotonic and excludes sleep; `idle` is seconds since the last input.
-    /// Credits active seconds as virtual tokens to growth and the wallet. Returns the tokens credited.
+    /// Credits active seconds as virtual tokens to growth and, at its own rate, to the wallet. Returns the growth
+    /// tokens credited.
     @discardableResult
     func creditActiveTime(uptime: TimeInterval, idle: TimeInterval, present: Bool) -> Int {
         if tokenModeSinceUnsaved {
@@ -1219,7 +1220,8 @@ final class CompanionStore {
             refreshTimeDisplayState()
             return 0
         }
-        state.timeCredit += tokens
+        state.timeCredit += PokemonBalance.timeTokens(forActiveSeconds: seconds,
+                                                      perHour: PokemonBalance.timeWalletTokensPerActiveHour)
         state.installBaselineSet = true
         creditUsage(tokens)
         save()
@@ -1398,7 +1400,8 @@ final class CompanionStore {
             return
         }
         let what = blocking.map {
-            l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" })
+            l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" },
+                                       shopDifficulty: shopDifficulty)
         }.joined(separator: " + ")
         notifyCompanionEvent(l.notifEvolveStuckTitle, l.notifEvolveStuckSkippableBody(name, what))
     }
@@ -1488,6 +1491,7 @@ final class CompanionStore {
             context.friendTypes.formUnion(speciesTypes(entry.finalID))
         }
         context.spentTokens = state.spentTokens
+        context.shopDifficulty = shopDifficulty
         context.stageXP = stageXP
         context.stageThreshold = stageThreshold
         return context

@@ -104,7 +104,7 @@ enum Rarity: String, Codable, Sendable, CaseIterable {
 /// Growth from clicking the pet. No daily limit; `minInterval` is the only guard against autoclickers.
 enum ClickGrowth {
     static let minInterval: TimeInterval = 0.3
-    /// About 2,800 clicks take a common line from a new egg to graduation (egg 1M + graduation 150M).
+    /// About 2,800 clicks take a common line from a new egg to graduation.
     static let tokensPerClick = 54_000
 }
 
@@ -135,11 +135,13 @@ enum PokemonBalance {
 
     // MARK: Time mode
 
-    /// Virtual tokens per active hour, before difficulty (which scales thresholds and prices, not this).
+    /// Growth tokens per active hour, before difficulty (which scales thresholds and prices, not this).
     static let timeTokensPerActiveHour = 40_000_000
+    /// Wallet tokens per active hour. Only growth gets `timeTokensPerActiveHour`.
+    static let timeWalletTokensPerActiveHour = 10_000_000
 
-    static func timeTokens(forActiveSeconds seconds: TimeInterval) -> Int {
-        max(0, Int(seconds * Double(timeTokensPerActiveHour) / 3600))
+    static func timeTokens(forActiveSeconds seconds: TimeInterval, perHour: Int = timeTokensPerActiveHour) -> Int {
+        max(0, Int(seconds * Double(perHour) / 3600))
     }
     /// Input within this long counts as active.
     static let timeIdleLimit: TimeInterval = 5 * 60
@@ -196,7 +198,6 @@ enum PokemonBalance {
         Int((Double(base) * clampDifficulty(difficulty)).rounded())
     }
 
-    /// 기술머신 기본가 — 위력 100 이상이거나 날씨 기술이면 120M, 70~99면 80M, 그 아래는 40M.
     static func machinePrice(power: Int, isWeather: Bool) -> Int {
         if isWeather || power >= 100 { return 120_000_000 }
         return power >= 70 ? 80_000_000 : 40_000_000
@@ -512,13 +513,11 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
 
 /// 진화의 돌 밸런스 상수 — 소모품. 쓰면 그 돌로 진화하는 갈래로 바로 진화한다(현재 단계 XP는 그대로 이어진다).
 enum EvolutionStone {
-    /// 단계에 남은 XP를 건너뛰는 값이라 사탕 2개 값(200M)으로 둔다. 돌 10종 모두 같은 값.
     static let price = 200_000_000
 }
 
 /// 지닌 도구 상수 — 소모되지 않고 배틀 포켓몬에 달았다 뗄 수 있다.
 enum HeldItem {
-    /// 배틀 도구라 진입 장벽을 둔다(진화의 돌 200M의 3배). 모든 지닌 도구 동일.
     static let price = 600_000_000
 }
 
@@ -546,24 +545,16 @@ enum RareCandy {
     static let xp = 20_000_000
     /// 주간 한도 100% 도달 시 지급 개수(세션급은 1개).
     static let weeklyGrant = 5
-    /// 상점 구매가(재화 = 사용한 토큰: usedSinceInstall − spentTokens). XP 값어치(20M)의 5배.
-    /// 토큰이 "성장 미터 + 상점 지갑"으로 이중 사용되는 구조라, 가격을 XP 와 같게 두면 구매가 사실상
-    /// 공짜 추가성장이 된다. 값어치의 5배로 두면 그 값 모으는 패시브 성장 + 사탕 XP = 실질 보너스 +20% 로
-    /// 억제된다. 무료 획득(한도 100% 보상)이 항상 이득이도록 값어치보다 비싸게.
     static let price = 100_000_000
 }
 
 /// 민트 밸런스 상수.
 enum Mint {
-    /// 상점 구매가. 성격 변경은 순수 코스메틱(성장·능력치 무관)이라 밸런스 근거가 없어 "느낌" 값 —
-    /// 사탕(100M)의 1/5로 싸게 둬서 성격을 마음에 들 때까지 굴려보는 가벼운 재미. 성장을 안 줘서
-    /// 이중계산 이슈도 없음(가격 = 순수 소비).
     static let price = 20_000_000
 }
 
 /// 이로치 부적 밸런스 상수 — 보유형(1회 구매·영구, 소비 안 됨).
 enum ShinyCharm {
-    /// 상점 구매가. 앞으로의 모든 부화에 적용되는 영구 럭 업그레이드라 프리미엄(레어 1마리 졸업분=600M).
     static let price = 600_000_000
     /// 보유 시 이로치 부화 확률 분모 — 1/64 → 1/48 (+33%). 본가 '반짝이 부적'(이로치 확률↑) 오마주.
     /// ×2(1/32)는 과해 절제. 이미 부화한 개체엔 소급 없음(이로치는 부화 순간 확정).
@@ -583,9 +574,6 @@ enum ExpShare {
 
 /// 새 알(리롤) 밸런스 상수 — 상점 구매 시 현재 포켓몬을 폐기하고 새 알로 되돌린다.
 enum FreshEgg {
-    /// 상점 구매가. 마음에 안 드는 부화를 리롤하는 프리미엄(쌓인 토큰의 활용처). 폐기 개체는 졸업이
-    /// 아니라 그냥 사라지므로 도감·확률(collectedFinals)에 무영향 — "뽑은 적 없던 것처럼". 새 알은
-    /// 처음부터 재인큐베이션(1M) 필요 + 성장(usedAtStage) 소멸이라 스팸/파밍이 자연 억제된다.
     static let price = 200_000_000
 
     /// 상점에서 파는 알 — 보증 없음(기본) → 고급 이상 → 희귀 이상. `nil` = 등급 보증 없는 기존 알.
@@ -593,13 +581,7 @@ enum FreshEgg {
     /// 상품으로 만들지 않는다). 전설은 고급/희귀 알에서 자연 가중대로 섞여 나온다 — 희귀 알 기준 약 10%.
     static let shopTiers: [Rarity?] = [nil, .uncommon, .rare]
 
-    /// 등급 보증 알의 가격 — 배율은 새 상수를 짓지 않고 **기존 졸업 총량 표**를 그대로 쓴다
-    /// (common 150M : uncommon 375M : rare 600M = 1 : 2.5 : 4 → 200M / 500M / 800M).
-    ///
-    /// 확률 배율(고급 7.16% : 희귀 6.98% ≈ 1 : 2.03)로 매기면 안 된다 — 그러면 같은 값으로 고급 알
-    /// 2개를 사는 쪽이 희귀+ 기대 1.039마리·전설 0.104마리로 희귀 알 1개(1.000·0.100)를 모든 축에서
-    /// 앞질러 상위 티어가 완전 열등재가 된다. 졸업량 배율이라야 상위 티어가 희귀+ 1마리당 800M 로
-    /// 하위 반복 구매(962M)보다 싸다.
+    /// 등급 보증 알의 가격 = 기본 알 가격 × 졸업 총량 비율(그 등급 ÷ common).
     static func price(guaranteeing tier: Rarity?) -> Int {
         guard let tier else { return price }
         let multiplier = Double(PokemonBalance.graduationTotal(tier)) / Double(PokemonBalance.graduationTotal(.common))
@@ -640,7 +622,7 @@ enum ScoutPool: Hashable, Sendable {
 enum ScoutTicket {
     /// 한 번에 보여 주는 후보 수.
     static let drawSize = 10
-    /// 모든 지역·전국 공통 가격. 종을 고르게 해 주는 대신 보증 알 값(고급 500M·희귀 800M)보다 싸게 둔다.
+    /// 모든 지역·전국 공통 가격.
     static let price = 400_000_000
 }
 
@@ -1213,7 +1195,7 @@ struct CompanionState: Codable, Sendable {
     // 토큰: 설치 이후만 측정
     var installBaselineSet = false
     var usedSinceInstall = 0
-    // 상점에서 쓴 토큰 누적(재화 지출 원장). 쓸 수 있는 재화 = usedSinceInstall − spentTokens.
+    // 상점에서 쓴 토큰 누적(재화 지출 원장). 잔액은 `CompanionStore.availableTokens`.
     // 성장 미터(usedSinceInstall)는 불변 — 구매는 이 값만 올려 잔액을 깎는다(성장 되감김 없음).
     var spentTokens = 0
     // 현재 알이 생긴 뒤 쓴 토큰(부화 인큐베이션). 누적(usedSinceInstall)과 별개 — 졸업 후 새 알마다 0.

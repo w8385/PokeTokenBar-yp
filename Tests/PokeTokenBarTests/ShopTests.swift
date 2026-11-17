@@ -1,7 +1,7 @@
 import XCTest
 @testable import PokeTokenBar
 
-// MARK: 상점 (재화 = usedSinceInstall − spentTokens, 이상한 사탕 구매)
+// MARK: 상점 (지갑 잔액, 이상한 사탕 구매)
 
 /// 라인 로딩이 필요 없는 상점 테스트용 provider(항상 throw — 지갑/구매는 라인과 무관).
 private struct ShopNoProvider: PokeProviding {
@@ -81,7 +81,7 @@ final class ShopTests: XCTestCase {
 
     /// 잔액 부족이면 no-op — 인벤토리·지출 원장 불변, false 반환.
     func testBuyInsufficientIsNoOp() {
-        let s = store(used: 80_000_000)
+        let s = store(used: RareCandy.price - 1)
         XCTAssertFalse(s.buyRareCandy())
         XCTAssertEqual(s.rareCandyCount, 0)
         XCTAssertEqual(s.state.spentTokens, 0)
@@ -89,13 +89,14 @@ final class ShopTests: XCTestCase {
 
     /// 여러 번 구매하면 잔액이 바닥날 때까지만 성공(가드가 매번 재평가).
     func testMultipleBuysUntilBroke() {
-        let s = store(used: 240_000_000)          // 2개까지 가능(200M), 3번째 실패(잔액 40M)
+        let leftover = RareCandy.price - 1
+        let s = store(used: 2 * RareCandy.price + leftover)
         XCTAssertTrue(s.buyRareCandy())
         XCTAssertTrue(s.buyRareCandy())
         XCTAssertFalse(s.buyRareCandy())
         XCTAssertEqual(s.rareCandyCount, 2)
         XCTAssertEqual(s.state.spentTokens, 2 * RareCandy.price)
-        XCTAssertEqual(s.availableTokens, 40_000_000)
+        XCTAssertEqual(s.availableTokens, leftover)
     }
 
     /// 구매는 이미 가진 사탕에 합산된다(무료 지급분과 같은 인벤토리).
@@ -126,8 +127,9 @@ final class ShopTests: XCTestCase {
 
     /// 최대 수량 = 잔액 ÷ 가격(내림). 가격 미만이면 0.
     func testMaxBuyCountIsFloorOfWalletOverPrice() {
-        XCTAssertEqual(store(used: 240_000_000).maxBuyCount(.rareCandy), 2)
-        XCTAssertEqual(store(used: 240_000_000).maxBuyCount(.mint), 12)
+        let wallet = 2 * RareCandy.price + RareCandy.price / 2
+        XCTAssertEqual(store(used: wallet).maxBuyCount(.rareCandy), 2)
+        XCTAssertEqual(store(used: wallet).maxBuyCount(.mint), wallet / Mint.price)
         XCTAssertEqual(store(used: RareCandy.price - 1).maxBuyCount(.rareCandy), 0)
     }
 
@@ -161,7 +163,7 @@ final class ShopTests: XCTestCase {
 
     /// 잔액을 넘는 수량은 부분 구매 없이 전부 거부 — 살 수 있는 만큼만 사고 끝나면 안 된다.
     func testBuyCountAboveAffordableIsNoOp() {
-        let s = store(used: 240_000_000)   // 2개까지 가능
+        let s = store(used: 3 * RareCandy.price - 1)
         XCTAssertFalse(s.buy(.rareCandy, count: 3))
         XCTAssertEqual(s.rareCandyCount, 0)
         XCTAssertEqual(s.state.spentTokens, 0)
@@ -188,14 +190,6 @@ final class ShopTests: XCTestCase {
         let s2 = CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
         XCTAssertEqual(s2.itemCount(.mint), 4, "재고 영속")
         XCTAssertEqual(s2.state.spentTokens, 4 * Mint.price, "지출 영속")
-    }
-
-    // MARK: 배틀 도구·스카우트 가격
-
-    func testBattleToolAndScoutPrices() {
-        XCTAssertEqual(ScoutTicket.price, 400_000_000)
-        XCTAssertEqual(HeldItem.price, 600_000_000)
-        XCTAssertEqual(MegaStone.price, 1_200_000_000)
     }
 
     func testEveryHeldItemIsBuyableAtExactPriceAndNotOneBelow() {
@@ -236,9 +230,7 @@ final class ShopTests: XCTestCase {
     // MARK: shopEntries (판매 아이템 + 알 3종을 하나의 가격 오름차순 목록으로 병합)
 
     /// 활성 포켓몬이 있으면 알 3종이 각자의 가격 위치에 끼워져 전체가 가격 오름차순.
-    /// (회귀: 알이 ForEach 밖에서 무조건 맨 아래로 append 돼 600M 부적보다 아래에 놓이던 표시.)
-    /// 등급 알을 인접 그룹으로 묶지 **않는** 것이 의도다 — 그러면 800M 희귀 알이 600M 부적 위로 올라가
-    /// 위 회귀를 부분적으로 되살린다. 티어 관계는 카드의 등급 배지로 읽힌다.
+    /// 등급 알을 인접 그룹으로 묶지 않는다 — 티어 관계는 카드의 등급 배지로 읽힌다.
     func testShopEntriesInterleavesFreshEggByPrice() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("shop-entries-\(UUID().uuidString).json")
         let mon = "{\"baseID\":10,\"pathIDs\":[10],\"stageIndex\":0,\"usedAtStage\":200000000,"

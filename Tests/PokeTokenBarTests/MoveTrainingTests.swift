@@ -203,7 +203,7 @@ final class MoveTrainingTests: XCTestCase {
         _ = try await rig.chooseRows(in: host, count: 3)
 
         XCTAssertTrue(rig.store.buyTM(moveID: 85, power: 90, isWeather: false))
-        XCTAssertEqual(before - rig.store.availableTokens, 80_000_000)
+        XCTAssertEqual(before - rig.store.availableTokens, rig.store.tmPrice(power: 90, isWeather: false))
         _ = try await rig.chooseRows(in: host, count: 4)
     }
 
@@ -315,16 +315,21 @@ final class MachineOwnershipTests: XCTestCase {
     }
 
     func testPriceTiersFollowPowerAndWeatherThenScaleWithShopDifficulty() async throws {
+        let low = PokemonBalance.machinePrice(power: 0, isWeather: false)
+        let mid = PokemonBalance.machinePrice(power: 70, isWeather: false)
+        let top = PokemonBalance.machinePrice(power: 100, isWeather: false)
+        XCTAssertLessThan(low, mid)
+        XCTAssertLessThan(mid, top)
         XCTAssertEqual([0, 69, 70, 99, 100, 150].map { PokemonBalance.machinePrice(power: $0, isWeather: false) },
-                       [40, 40, 80, 80, 120, 120].map { $0 * 1_000_000 })
-        XCTAssertEqual(PokemonBalance.machinePrice(power: 0, isWeather: true), 120_000_000)
+                       [low, low, mid, mid, top, top])
+        XCTAssertEqual(PokemonBalance.machinePrice(power: 0, isWeather: true), top)
 
         let rig = try await TrainingRig()
         defer { rig.close() }
-        XCTAssertEqual(rig.store.tmPrice(power: 90, isWeather: false), 80_000_000)
+        XCTAssertEqual(rig.store.tmPrice(power: 90, isWeather: false), mid)
         rig.store.setShopDifficulty(0.5)
-        XCTAssertEqual(rig.store.tmPrice(power: 90, isWeather: false), 40_000_000)
-        XCTAssertEqual(rig.store.tmPrice(power: 120, isWeather: false), 60_000_000)
+        XCTAssertEqual(rig.store.tmPrice(power: 90, isWeather: false), PokemonBalance.scaled(mid, by: 0.5))
+        XCTAssertEqual(rig.store.tmPrice(power: 120, isWeather: false), PokemonBalance.scaled(top, by: 0.5))
     }
 
     func testBuyingATMChargesOnceAndMakesItChoosableOnEveryPokemon() async throws {
@@ -338,7 +343,7 @@ final class MachineOwnershipTests: XCTestCase {
         XCTAssertTrue(rig.store.buyTM(moveID: 85, power: 90, isWeather: false))
         XCTAssertFalse(rig.store.buyTM(moveID: 85, power: 90, isWeather: false), "owned already")
 
-        XCTAssertEqual(before - rig.store.availableTokens, 80_000_000)
+        XCTAssertEqual(before - rig.store.availableTokens, rig.store.tmPrice(power: 90, isWeather: false))
         XCTAssertEqual(party(rig).map(\.moves), [[84, 209, 85], [84, 209, 85]].map { Optional($0) })
     }
 
