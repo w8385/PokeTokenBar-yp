@@ -265,7 +265,7 @@ Auth as above. The whole catalog; it is the same on every call and changes only 
 | `types` | The trainer's type (PokéAPI type names). A gym leader has one and fields only that type, from the region's own species (`first`..`last`), with no legendary, mythical or baby Pokémon. An Elite Four member has one and fields at least three of it among six. The hideout has the organization's two; the champion none. Where a region has too few of a type, gyms swap type slots, so the same `index` can carry a different type than in older bots |
 | `level` | Always 50 |
 | `trainer` | An original character: `name` and `line` (one short sentence) in `ko`, `en` and `ja`. Both grunts share the organization's name and line |
-| `team` | Species ids in battle order. Gyms 1–8 field 3, 3, 4, 4, 5, 5, 6 and 6; everyone else six. Species are picked around a base-stat total that rises with the gym number (gym 1 about 420, gym 8 about 520; early gyms may field a form that could still evolve); the Elite Four sit above gym 8, grunts low, the boss high. The champion fields a fixed table: the region's legendaries, its pseudo-legendary and showy partners. The battle uses exactly this team, then the hidden `finale` members |
+| `team` | Species ids in battle order. Gyms 1–8 field 3, 3, 4, 4, 5, 5, 6 and 6; everyone else six. Species are picked around a base-stat total that rises with the gym number (gym 1 about 420, gym 8 about 520, gym 7 eased back to gym 6's 495 as the first gym of six; early gyms may field a form that could still evolve); the Elite Four sit above gym 8, grunts low, the boss high. The champion fields a fixed table: the region's legendaries, its pseudo-legendary and showy partners. The battle uses exactly this team, then the hidden `finale` members |
 | `finale` | How many members come out after `team` has fainted, with no healing in between; their species stay hidden. `0` for everyone but the champion. Older bots leave it out |
 | `run` | `null` for a gym; otherwise `id` (`<region>-elite` or `<region>-hideout`), `step` and `steps` |
 
@@ -287,7 +287,7 @@ order, the next comes in when one faints, no switching. A `rental` member fights
 Each foe knows four moves picked from everything its species learns (level-up at any level and machines): the
 best same-type hits first, then coverage. The champion's moves are hand-picked. Each foe holds an item that works
 for it (no two alike on a team), and a champion's Mega Stone Mega Evolves its holder. Foes have no nature or
-ability. Their IVs rise with the trainer: 12 at gym 1 up to 21 at gym 8, 28 for the Elite Four, 31 for the
+ability. Their IVs rise with the trainer: 12 at gym 1 up to 21 at gym 8 (gym 7 has 18, one below gym 6), 28 for the Elite Four, 31 for the
 champion, 12 / 20 / 26 for grunts, the admin and the boss.
 
 ```json
