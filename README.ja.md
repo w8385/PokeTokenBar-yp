@@ -125,6 +125,13 @@ PokeTokenBar は、あなたがすでに使っている AI コーディングト
 </tr>
 <tr>
 <td width="55%" valign="middle">
+<h3>⚔️ 効果ごとに分かれたバトル用の道具</h3>
+ショップとバッグの<b>もちもの</b>タブでは、バトル用の道具をこうげき強化・タイプ強化・耐久と回復・すばやさ・命中・急所・状態異常と反撃・天気・専用の道具の見出しに分けて並べます。
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-held-items-ja.png" width="300" alt="こうげき強化・タイプ強化の見出しの下に並ぶショップとバッグのもちもの"></td>
+</tr>
+<tr>
+<td width="55%" valign="middle">
 <h3>📊 公式の上限、Antigravity にも</h3>
 Antigravity 2.0 と IDE が推定値ではなく実際のクォータを返します。Gemini モデル群と Claude &amp; GPT モデル群がそれぞれ <b>5時間</b>・<b>週間</b> のバケットとリセットのカウントダウンを持ち、Claude Code・Codex と並んで表示されます。バックグラウンドではトークンファイルを読み、OAuth 資格情報を自動更新できます。手動更新では Keychain にアクセスする場合があります。
 </td>

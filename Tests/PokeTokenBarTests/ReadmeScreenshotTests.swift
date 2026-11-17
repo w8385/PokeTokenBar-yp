@@ -70,6 +70,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             }
             try await shot(popover { $0.tab = .shop }, "screenshot-shop\(suffix)", in: dir, height: 548)
             try await shot(popover { $0.tab = .bag }, "screenshot-bag\(suffix)", in: dir, height: 420)
+            try await shot(heldItems(store: store), "screenshot-held-items\(suffix)", in: dir, height: nil)
             try await shot(popover { $0.tab = .dex }, "screenshot-collection-pokedex\(suffix)", in: dir, height: 420)
             try await shot(popover { $0.tab = .box }, "screenshot-collection-box\(suffix)", in: dir, height: 420)
             try await shot(popover { $0.openBoxDetail(id: BoxDexFixture.charizardID) },
@@ -163,6 +164,27 @@ final class ReadmeScreenshotTests: XCTestCase {
             }
         }
         .padding(PopoverMetrics.padding)
+    }
+
+    /// The Shop's and the Bag's held-item tabs, cut after their first battle-item groups.
+    private func heldItems(store: CompanionStore) -> some View {
+        let l = store.l
+        return VStack(alignment: .leading, spacing: 18) {
+            cropped(l.shop, height: 430) { ShopView(store: store, nav: PopoverNavigation(), initialCategory: .heldItem) }
+            cropped(l.bag, height: 305) { BagView(store: store, nav: PopoverNavigation(), initialCategory: .heldItem) }
+        }
+        .padding(PopoverMetrics.padding)
+        .environment(store)
+    }
+
+    private func cropped<Content: View>(_ title: String, height: CGFloat,
+                                        @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
+                .textCase(.uppercase).padding(.leading, 4)
+            content().frame(height: height, alignment: .top).clipped()
+        }
     }
 
     private func card<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {

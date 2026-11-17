@@ -125,6 +125,13 @@ PokeTokenBar는 당신이 이미 태우고 있는 AI 코딩 토큰(Claude Code �
 </tr>
 <tr>
 <td width="55%" valign="middle">
+<h3>⚔️ 쓰임새별로 묶인 대결 도구</h3>
+상점과 가방의 <b>지닌 도구</b> 탭은 대결 도구를 공격 강화·타입 강화·내구·회복·선공·명중·급소·상태·반격·날씨·전용 도구 제목 아래 나눠 보여 줍니다.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-held-items-ko.png" width="300" alt="공격 강화·타입 강화 제목 아래 놓인 상점과 가방의 지닌 도구"></td>
+</tr>
+<tr>
+<td width="55%" valign="middle">
 <h3>📊 공식 한도, 이제 Antigravity 도</h3>
 Antigravity 2.0 과 IDE 가 추정치가 아닌 실제 할당량을 보고합니다. Gemini 모델군과 Claude &amp; GPT 모델군이 각각 <b>5시간</b>·<b>주간</b> 버킷과 리셋 카운트다운을 갖고, Claude Code·Codex 와 나란히 표시됩니다. 백그라운드에서는 토큰 파일을 읽고 OAuth 자격증명을 자동 갱신할 수 있습니다. 수동 갱신은 Keychain에 접근할 수 있습니다.
 </td>
