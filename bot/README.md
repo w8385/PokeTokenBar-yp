@@ -1,14 +1,14 @@
 # YPoke bot
 
-Slack bot for office battles between PokeTokenBar users' Pokémon, up to three each.
+Slack bot for office battles between PokeTokenBar users' Pokémon, up to six each.
 Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Pokémon to ([API.md](API.md)).
 
-- `/대결 @상대` runs one automatic 1:1 battle with each side's first uploaded Pokémon; `/대결 @상대 3` (also `3:3`
-  or `풀`) sends out up to three in the order the app uploaded instead. When one faints the next comes in, and a
+- `/대결 @상대` runs one automatic 1:1 battle with each side's first uploaded Pokémon; `/대결 @상대 N` (N 1–6,
+  also `N:N`; `풀` is 6) sends out up to N in the order the app uploaded instead; a side with fewer sends what it has. When one faints the next comes in, and a
   side that runs out loses (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
   level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather and 27 common abilities).
   The channel gets a result card: a context line ("who ran which command", since Slack shows nobody a typed slash
-  command), the winner with the format (`1:1` or `3:3`) and turn count, both lineups side by side with each
+  command), the winner with the format (`1:1`, `3:3`, `6:6`, …) and turn count, both lineups side by side with each
   Pokémon's fate, up to three highlight lines and a "다시 붙기" button. The compact log, one line per turn, is the
   first reply in that message's thread. The bot posts it with `chat.postMessage`, so it must be a member of
   the channel; where it cannot (a DM, a private channel it is not in) the card and then the log go as two
@@ -17,7 +17,7 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   help.
 - Every in-channel slash reply starts with that context line; ephemeral ones do not. A mention reply stays in
   the mention's thread (card, then the log) and needs no echo line.
-- "다시 붙기" reruns the same matchup and format (1:1 or 3:3) with the current uploads and posts in the same thread. Only the two who
+- "다시 붙기" reruns the same matchup and format (the same size) with the current uploads and posts in the same thread. Only the two who
   fought can press it (others get a private notice); a practice battle reruns as practice, and a side with no
   upload goes through the pending flow below.
 - When the challenger has no upload, the thread/channel also sees one line saying so; the how-to stays in the DM
@@ -32,8 +32,8 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   thread, then a DM to the challenger).
 - A `rental` Pokémon (the app's starter before the first hatch) fights at the opponent's level (capped at 50) and is
   announced as "대여 포켓몬 …". It counts in records like any other.
-- `/대결 @YPoke [3]` or a channel message `@YPoke 대결 [3]` is a practice battle against a random team: as many
-  distinct species (#1–1025, picked from the battle seed) as you send out (one, or three with `3`), each at the
+- `/대결 @YPoke [N]` or a channel message `@YPoke 대결 [N]` is a practice battle against a random team: as many
+  distinct species (#1–1025, picked from the battle seed) as you send out (one, or up to N with `N`), each at the
   level of your Pokémon in the same slot. Nothing is recorded.
 - `/포켓몬연결` DMs the caller a "PokeTokenBar 연결" button. It opens
   `poketokenbar://ypoke-register?token=…&server=…`, which saves the upload token and server in the app.

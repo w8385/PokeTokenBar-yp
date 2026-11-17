@@ -17,8 +17,8 @@
     "slash_commands": [
       {
         "command": "/대결",
-        "description": "포켓몬 대결. 1:1, 3을 붙이면 3:3, @YPoke는 연습",
-        "usage_hint": "@상대 [3]",
+        "description": "포켓몬 대결. 기본 1:1, 1~6을 붙이면 그 수만큼, @YPoke는 연습",
+        "usage_hint": "@상대 [1-6]",
         "should_escape": true
       },
       {

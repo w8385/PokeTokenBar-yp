@@ -19,6 +19,7 @@ from ypoke.commands import (
     UMBRELLA_COMMAND,
     CommandHandler,
     Where,
+    battle_size,
     bot_entry,
     parse_mention,
     reply_thread_ts,
@@ -151,7 +152,54 @@ def test_a_three_member_upload_still_fights_one_on_one_by_default(store):
     assert (store.record("UA").wins, store.record("UA").losses) in ((1, 0), (0, 1))
 
 
-@pytest.mark.parametrize("word", ["3", "3:3", "풀"])
+@pytest.mark.parametrize("text,size", [
+    ("<@UB>", 1), ("<@UB> 1", 1), ("<@UB> 4", 4), ("<@UB> 4:4", 4), ("<@UB> 6", 6), ("<@UB> 풀", 6),
+    ("<@UB> 7", 1), ("<@UB> 0", 1), ("<@UB> 4:3", 1),
+])
+def test_battle_size_takes_one_to_six(text, size):
+    assert battle_size(text) == size
+
+
+@pytest.mark.parametrize("word,size", [("4", 4), ("6", 6), ("풀", 6)])
+def test_a_size_word_fields_the_first_n_members_from_a_six_member_entry(store, word, size):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50 + level) for level in range(6)])
+    store.issue_token("UB")
+    store.save_party("UB", [member(7, 50 + level) for level in range(6)])
+    reply = handler(store).handle("UA", f"<@UB> {word}")
+    assert [len(side) for side in lineups(reply)] == [size, size]
+    assert f" · {size}:{size} · " in reply.summary
+    assert reply.rematch in (f"UA:UB:{size}:UA", f"UA:UB:{size}:UB")
+
+
+def test_an_older_three_member_upload_fields_what_it_has_against_six(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50)] * 3)
+    store.issue_token("UB")
+    store.save_party("UB", [member(7, 50)] * 6)
+    reply = handler(store).handle("UA", "<@UB> 6")
+    assert [len(side) for side in lineups(reply)] == [3, 6]
+    assert " · 3:6 · " in reply.summary
+
+
+def test_a_six_member_rematch_replays_six_against_six(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50)] * 6)
+    store.issue_token("UB")
+    store.save_party("UB", [member(7, 50)] * 6)
+    reply = handler(store).rematch("UA", "UA:UB:6:UA", Where("CCHAN", "1.1"))
+    assert [len(side) for side in lineups(reply)] == [6, 6]
+
+
+def test_bot_practice_takes_up_to_six(store):
+    store.issue_token("UA")
+    store.save_party("UA", [member(25, 50)] * 6)
+    reply = handler(store).handle("UA", "<@UBOT> 6", BATTLE_COMMAND)
+    assert [len(side) for side in lineups(reply)] == [6, 6]
+    assert reply.rematch == "UA:UBOT:6"
+
+
+@pytest.mark.parametrize("word", ["3", "3:3"])
 def test_a_trailing_three_word_asks_for_the_three_member_lineup(store, word):
     store.issue_token("UA")
     store.save_party("UA", [member(7, 5), member(25, 30), member(7, 10), member(25, 100)])
@@ -562,9 +610,10 @@ def test_manifest_registers_exactly_the_handled_commands():
     assert [entry["command"] for entry in manifest["features"]["slash_commands"]] == list(COMMAND_NAMES)
 
 
-def test_help_explains_the_entry_slots_and_points_gyms_to_the_app():
-    assert "1~3번은 슬랙 대결과 체육관에 나가요. 4~6번은 체육관에만 나가요." in HELP_TEXT
+def test_help_points_gyms_to_the_app_without_splitting_entry_slots():
+    assert "앞의 그 수만큼 순서대로 나가요." in HELP_TEXT
     assert "체육관·사천왕·아지트 도전은 앱 대결 탭에서 해요." in HELP_TEXT
+    assert "출전 칸" not in HELP_TEXT and "4~6번" not in HELP_TEXT
     assert "도장" not in HELP_TEXT
 
 
@@ -655,8 +704,8 @@ def test_practice_is_one_on_one_by_default_even_with_three_picks(store):
     assert reply.rematch == "UA:UBOT:1"
 
 
-def test_the_help_lists_the_three_member_option():
-    assert "`/대결 @상대 3`" in HELP_TEXT
+def test_the_help_lists_the_one_to_six_option():
+    assert "`/대결 @상대 4`처럼 1~6을 붙이면" in HELP_TEXT
     assert "1:1" in HELP_TEXT
 
 
