@@ -26,7 +26,7 @@ final class ShopPriceTableTests: XCTestCase {
             ("egg", FreshEgg.price(guaranteeing: nil), 200_000_000),
             ("uncommon egg", FreshEgg.price(guaranteeing: .uncommon), 500_000_000),
             ("rare egg", FreshEgg.price(guaranteeing: .rare), 800_000_000),
-            ("scout ticket", ScoutTicket.price, 400_000_000),
+            ("scout ticket", ScoutTicket.price, 600_000_000),
             ("TM, power under 70", PokemonBalance.machinePrice(power: 60, isWeather: false), 40_000_000),
             ("TM, power 70 to 99", PokemonBalance.machinePrice(power: 90, isWeather: false), 80_000_000),
             ("TM, power 100 and up", PokemonBalance.machinePrice(power: 100, isWeather: false), 120_000_000),
