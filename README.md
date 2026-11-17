@@ -31,7 +31,7 @@ This runs the official Impeccable 4.1.0 installer for Codex in project scope. Th
 Hallmark 1.1.0 is installed at `.agents/skills/hallmark/` from [Nutlope/hallmark](https://github.com/Nutlope/hallmark/tree/main/skills/hallmark). On this Mac it can be reinstalled using:
 
 ```sh
-python3 /Users/patrick.park/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
   --repo Nutlope/hallmark --path skills/hallmark --dest .agents/skills
 ```
 
