@@ -83,7 +83,6 @@ METHODS=(
   PokeAPILanguageTests/testFetchedLanguageCodesMatchAppLanguageAPICodesWithoutDuplicates
   PokemonNameLocalizationTests/testRenderedNamesResolveLanguageAndEnglishFallbackWithoutChangingKeys
   PokemonNameLocalizationTests/testSelectedLanguageThenEnglishWithCurrentAndLegacyCodes
-  PreciousCompanionGuardTests/testLocalizationStringsCoverAllSevenLanguages
   RepresentativeFooterLayoutTests/testRepresentativeActionStaysIconWidthInEveryLocaleAndState
   SaveTransferTests/testImportErrorMessagesAreLocalizedNotRawSwiftText
   ShinyCharmTests/testShinyDittoRevealDoesNotClaimFixedOdds
@@ -160,6 +159,17 @@ while read -r scope class method where; do
   fi
 done <<< "$triggers"
 [ "$drift" = 0 ] || { echo "Add the class or method to scripts/invariant-tests.sh." >&2; exit 2; }
+
+stale=0
+for entry in "${CLASSES[@]}" "${METHODS[@]}" "${NOT_INVARIANT[@]}"; do
+  class=${entry%%/*}
+  if ! grep -qE "class $class: XCTestCase" Tests/PokeTokenBarTests/*.swift ||
+     { [ "$entry" != "$class" ] && ! grep -q "func ${entry##*/}(" Tests/PokeTokenBarTests/*.swift; }; then
+    echo "invariant-tests.sh: $entry is listed but no longer exists" >&2
+    stale=1
+  fi
+done
+[ "$stale" = 0 ] || { echo "Remove the entry from scripts/invariant-tests.sh." >&2; exit 2; }
 
 regex="$NAME_RULE"
 for c in "${CLASSES[@]}"; do regex+="|^PokeTokenBarTests\\.$c/"; done
