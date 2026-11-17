@@ -149,8 +149,6 @@ enum SaveTransfer {
         s.eggUsage = clampToken(s.eggUsage)
         s.clickGrowth = clampToken(s.clickGrowth)
         s.timeCredit = clampToken(s.timeCredit)
-        if !s.timeActiveSeconds.isFinite { s.timeActiveSeconds = 0 }
-        s.timeActiveSeconds = min(max(0, s.timeActiveSeconds), PokemonBalance.timeDailyCap)
         s.claimedTodayTokensByProvider = s.claimedTodayTokensByProvider?.reduce(into: [:]) { result, entry in
             result[entry.key] = clampToken(entry.value)
         }
@@ -231,8 +229,6 @@ enum SaveTransfer {
                                      hasUsageData: Bool) -> CompanionState {
         var state = imported
         state.language = current.language
-        state.timeActiveDay = current.timeActiveDay
-        state.timeActiveSeconds = current.timeActiveSeconds
         state.candyGrantTier = mergedGrantTier(imported.candyGrantTier, current.candyGrantTier)
         state.candyWindowEpoch = mergedWindowEpochs(
             imported.candyWindowEpoch, imported.candyGrantTier,

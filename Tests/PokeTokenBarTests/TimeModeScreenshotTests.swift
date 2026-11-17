@@ -44,7 +44,6 @@ final class TimeModeScreenshotTests: XCTestCase {
         let (timeStore, timeDefaults) = try makeStore("time") {
             $0.growthMode = .time
             $0.timeCredit = 12_500_000
-            $0.timeActiveSeconds = 2.5 * 3600
         }
         let (hintStore, hintDefaults) = try makeStore("hint") {
             $0.growthMode = .token

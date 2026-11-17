@@ -1184,20 +1184,13 @@ final class CompanionStore {
             timeMeter.reanchor()
             return 0
         }
-        var seconds = timeMeter.step(uptime: uptime, idle: idle, present: present)
+        let seconds = timeMeter.step(uptime: uptime, idle: idle, present: present)
         timeActiveNow = present && idle <= PokemonBalance.timeIdleLimit
-        let day = LocalUsageReader.localDayFormatter().string(from: clock())
-        if day > state.timeActiveDay {
-            state.timeActiveDay = day
-            state.timeActiveSeconds = 0
-        }
-        seconds = min(seconds, max(0, PokemonBalance.timeDailyCap - state.timeActiveSeconds))
         let tokens = PokemonBalance.timeTokens(forActiveSeconds: seconds)
         guard tokens > 0 else {
             refreshTimeDisplayState()
             return 0
         }
-        state.timeActiveSeconds += seconds
         state.timeCredit += tokens
         state.installBaselineSet = true
         creditUsage(tokens)
@@ -1212,8 +1205,6 @@ final class CompanionStore {
         refreshTimeDisplayState()
         return tokens
     }
-
-    var timeActiveSecondsToday: TimeInterval { state.timeActiveSeconds }
 
     @discardableResult
     private func expireEventWindow() -> Bool {
