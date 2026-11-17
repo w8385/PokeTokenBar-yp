@@ -111,8 +111,10 @@ final class SpriteFrameTests: XCTestCase {
             try png(try canvas(96, 96, filling: CGRect(x: 20, y: 10, width: 50, height: 60)))
                 .write(to: directory.appendingPathComponent("25-s.png"))
         }
+        // Frame 0 flares out to the full width; the body of the other frames is narrow and centered.
         try gif([try canvas(100, 40, filling: CGRect(x: 5, y: 5, width: 90, height: 30)),
-                 try canvas(100, 40, filling: CGRect(x: 5, y: 5, width: 90, height: 30), color: .green)])
+                 try canvas(100, 40, filling: CGRect(x: 30, y: 5, width: 40, height: 30), color: .green),
+                 try canvas(100, 40, filling: CGRect(x: 30, y: 5, width: 40, height: 30))])
             .write(to: directory.appendingPathComponent("25-a.gif"))
         return SpriteStore(directory: directory)
     }
@@ -134,8 +136,24 @@ final class SpriteFrameTests: XCTestCase {
         XCTAssertEqual(columns.count, 80, "the 96pt-wide pose is cut at its 80pt slot even where there is room")
     }
 
-    func testTheFirstFrameOfAMegaCharizardXShapedGIFStandsWithin15PercentOfItsStatic() throws {
-        // Mega Charizard X: static 89x82, GIF union 161x107 whose first frame fills 93 of the 107 rows.
+    func testAWideUnionWithANarrowBodyStandsWithin15PercentOfItsStatic() throws {
+        // Static 89x82. GIF union 161x107 (one frame flares out); the body is 100 wide, 93 of the 107 rows, centered.
+        let directory = try fixtureDirectory()
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        try png(try canvas(96, 96, filling: CGRect(x: 3, y: 7, width: 89, height: 82)))
+            .write(to: directory.appendingPathComponent("25-s.png"))
+        try gif([try canvas(170, 110, filling: CGRect(x: 30, y: 15, width: 100, height: 93)),
+                 try canvas(170, 110, filling: CGRect(x: 4, y: 1, width: 161, height: 107), color: .green),
+                 try canvas(170, 110, filling: CGRect(x: 30, y: 15, width: 100, height: 93))])
+            .write(to: directory.appendingPathComponent("25-a.gif"))
+        let store = SpriteStore(directory: directory)
+        let still = try opaqueRows(of: SpriteView(speciesID: 25, size: 76, spriteStore: store))
+        let moving = try opaqueRows(of: SpriteView(speciesID: 25, size: 76, animated: true, spriteStore: store))
+        XCTAssertEqual(Double(moving.height), Double(still.height), accuracy: Double(still.height) * 0.15,
+                       "frame 0 is \(moving.height)pt against a static of \(still.height)pt")
+    }
+
+    func testABodyAsWideAsItsUnionIsNotScaledUpPastTheSlot() throws {
         let directory = try fixtureDirectory()
         addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
         try png(try canvas(96, 96, filling: CGRect(x: 3, y: 7, width: 89, height: 82)))
@@ -144,10 +162,8 @@ final class SpriteFrameTests: XCTestCase {
                  try canvas(170, 110, filling: CGRect(x: 4, y: 1, width: 161, height: 107), color: .green)])
             .write(to: directory.appendingPathComponent("25-a.gif"))
         let store = SpriteStore(directory: directory)
-        let still = try opaqueRows(of: SpriteView(speciesID: 25, size: 76, spriteStore: store))
         let moving = try opaqueRows(of: SpriteView(speciesID: 25, size: 76, animated: true, spriteStore: store))
-        XCTAssertEqual(Double(moving.height), Double(still.height), accuracy: Double(still.height) * 0.15,
-                       "frame 0 is \(moving.height)pt against a static of \(still.height)pt")
+        XCTAssertEqual(Double(moving.height), 76 * 0.96 * 93 / 161, accuracy: 1.5, "the plain fit, not the 1.4x scale-up")
     }
 
     func testEveryShapeStandsOnTheBottomOfItsBox() throws {

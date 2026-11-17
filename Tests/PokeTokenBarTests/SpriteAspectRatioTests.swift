@@ -223,6 +223,56 @@ final class SpriteAspectRatioTests: XCTestCase {
         XCTAssertEqual(SpriteFit.animatedSize(for: Self.megaCharizardXGIF, reference: .zero, box: box), plain)
     }
 
+    private static let vanilliteGIF = CGSize(width: 55, height: 45)
+    private static let vanilliteStatic = CGSize(width: 24, height: 36)
+    /// Frames 0-36 hold the body at x 30..53; the bubbles that widen the union show in a minority of frames.
+    private static let vanilliteBody: ClosedRange<CGFloat> = (30.0 / 55)...(54.0 / 55)
+
+    func testAScaledUpPoseNeverReachesPastTheSlotWithItsBody() {
+        let box = SpriteFit.contentBox(76)
+        let scaled = SpriteFit.animatedSize(for: Self.vanilliteGIF, reference: Self.vanilliteStatic, box: box,
+                                            body: Self.vanilliteBody)
+        let plain = SpriteFit.size(for: Self.vanilliteGIF, box: box)
+        let bodyRight = scaled.width * (Self.vanilliteBody.upperBound - 0.5)
+        XCTAssertLessThanOrEqual(bodyRight, box / 2 + 0.001, "the body's right edge stays inside the slot")
+        XCTAssertGreaterThanOrEqual(scaled.width, plain.width, "the cap never shrinks below the plain fit")
+        XCTAssertGreaterThan(scaled.width, plain.width, "the body has a little room left, so it still grows to it")
+    }
+
+    func testABodyThatFitsKeepsTheFullScaleUp() {
+        let box = SpriteFit.contentBox(76)
+        let uncapped = SpriteFit.animatedSize(for: Self.megaCharizardXGIF, reference: Self.megaCharizardXStatic, box: box)
+        let withBody = SpriteFit.animatedSize(for: Self.megaCharizardXGIF, reference: Self.megaCharizardXStatic,
+                                              box: box, body: 0.2...0.8)
+        XCTAssertEqual(withBody, uncapped)
+        XCTAssertGreaterThan(withBody.height, SpriteFit.size(for: Self.megaCharizardXGIF, box: box).height)
+    }
+
+    @MainActor
+    func testTheBodySpanIsTheMedianFrameNotTheFrameThatFlaresOut() throws {
+        func frame(_ columns: ClosedRange<Int>) -> NSImage {
+            let image = NSImage(size: NSSize(width: 10, height: 4))
+            image.lockFocus()
+            NSColor.red.setFill()
+            NSRect(x: columns.lowerBound, y: 0, width: columns.count, height: 4).fill()
+            image.unlockFocus()
+            return image
+        }
+        let frames = [frame(6...9), frame(6...9), frame(0...9), frame(6...9)]
+        let span = try XCTUnwrap(SpriteBody.span(first: frames[0]) { frames })
+        XCTAssertEqual(span.lowerBound, 0.6, accuracy: 0.001)
+        XCTAssertEqual(span.upperBound, 1.0, accuracy: 0.001)
+        XCTAssertNil(SpriteBody.span(first: frame(0...9)) { [frame(0...9)] }, "a still has no animation to measure")
+    }
+
+    func testTheBubbleAnchorFollowsTheBodyCappedSize() {
+        let uncapped = SpriteVisibleTop.inset(box: 76, imageSize: Self.vanilliteGIF, opaqueTopFraction: 0,
+                                              reference: Self.vanilliteStatic)
+        let capped = SpriteVisibleTop.inset(box: 76, imageSize: Self.vanilliteGIF, opaqueTopFraction: 0,
+                                            reference: Self.vanilliteStatic, body: Self.vanilliteBody)
+        XCTAssertGreaterThan(capped, uncapped, "a less scaled pose is shorter, so its top sits lower")
+    }
+
     func testTheBubbleAnchorFollowsTheScaledUpPose() {
         let plain = SpriteVisibleTop.inset(box: 76, imageSize: Self.megaCharizardXGIF, opaqueTopFraction: 0)
         let scaled = SpriteVisibleTop.inset(box: 76, imageSize: Self.megaCharizardXGIF, opaqueTopFraction: 0,

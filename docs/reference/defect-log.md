@@ -1463,6 +1463,24 @@ read_when:
   (a Mega Charizard X shaped fixture compares the visible height of frame 0, not the union box; removing
   the slot clip fails the other view test).
 
+- **Scaling a pose past its fit, then clipping at the slot, cuts the Pokémon.** Vanillite (dex 582) lost its
+  right edge and left bubbles. Its GIF is 55×45 with the body at x 30..53 in most frames and bubbles that
+  reach x 0 and 54 in a few, so the union crop stays the full canvas; the static art is tall (24×36), so the
+  rule above scaled the pose 1.22x and the slot cut about 5px of source per side. Measured on the 9 sprites
+  the wide-pose rule changed, the body (median frame) reached past the slot in 8 of 9: Greninja 14.6pt, Tinkaton
+  14.0pt, Koraidon 9.9pt, Mega Gyarados 9.8pt, Mega Charizard X 8.4pt, Mega Venusaur 7.5pt, Mega Garchomp
+  6.6pt, Lugia 3.2pt at 76pt. Why no test caught it: the fixtures were solid full-width rectangles measured by height,
+  and the clip test asserted the cut as the intended behavior. `SpriteBody.span` measures the median
+  frame's left and right opaque edge once per animation (cached by first frame); `animatedSize` stops the
+  growth where that span, drawn centered, reaches the box edge, never below the plain fit. Transient
+  effects at the canvas edge may still be cut. The cost is most of the earlier gain: Greninja, Tinkaton,
+  Koraidon, Mega Venusaur and Mega Garchomp end at 1.0 to 1.04x, Mega Charizard X at 1.13x (its body fills
+  the union width), so only Lugia and Corviknight keep a real scale-up. `animatedSize` has two callers
+  (`SpriteView.fitted` through `imageSize`, and `SpriteVisibleTop.inset`); both pass the span. Tests:
+  `SpriteAspectRatioTests` (body edge stays in the slot, a body that fits keeps the full scale, median span,
+  bubble anchor); ignoring the span fails the first. `WidePoseShotTests` (opt-in with `PTB_WIDE_POSE_DIR`)
+  renders the production `SpriteView` and writes each body's overflow.
+
 ## 프로세스 제어·업데이트
 
 - **"나중에"는 이 버전을 다시 안 보여 주는 스킵이지, 다음에 또 물어보기가 아니다.** `skipCurrent()` 가

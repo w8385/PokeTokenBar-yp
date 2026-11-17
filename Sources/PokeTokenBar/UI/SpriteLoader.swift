@@ -413,13 +413,20 @@ enum SpriteFit {
 
     /// The fit of an animated crop in `box`, scaled up toward the static art's drawn height when its
     /// width-limited pose leaves it much smaller. Never shrinks; without a usable reference it is the plain fit.
-    static func animatedSize(for animated: CGSize, reference: CGSize?, box: CGFloat) -> CGSize {
+    /// `body` is the Pokémon's horizontal extent as fractions of the crop's width (`SpriteBody.span`); the growth
+    /// stops where that span, drawn centered, reaches the box edge, so scaling never cuts the body.
+    static func animatedSize(for animated: CGSize, reference: CGSize?, box: CGFloat,
+                             body: ClosedRange<CGFloat>? = nil) -> CGSize {
         let fit = size(for: animated, box: box)
         guard let reference, reference.width > 0, reference.height > 0,
               animated.width > 0, animated.height > 0 else { return fit }
         let target = size(for: reference, box: box).height
         guard fit.height < target * wideScaleThreshold else { return fit }
-        let scale = min(target / fit.height, wideScaleMaxGrowth)
+        var scale = min(target / fit.height, wideScaleMaxGrowth)
+        if let body {
+            let reach = max(abs(body.lowerBound - 0.5), abs(body.upperBound - 0.5)) * fit.width
+            if reach > 0 { scale = min(scale, max(1, box / 2 / reach)) }
+        }
         return CGSize(width: fit.width * scale, height: fit.height * scale)
     }
 
@@ -431,6 +438,34 @@ enum SpriteFit {
         }
         let scale = min(width / pixelSize.width, height / pixelSize.height)
         return CGSize(width: pixelSize.width * scale, height: pixelSize.height * scale)
+    }
+}
+
+/// The Pokémon's horizontal extent in an animation, apart from effects that flare out for a few frames.
+enum SpriteBody {
+    private final class Span {
+        let range: ClosedRange<CGFloat>?
+        init(_ range: ClosedRange<CGFloat>?) { self.range = range }
+    }
+    nonisolated(unsafe) private static let cache = NSCache<NSImage, Span>()
+
+    /// Median left and right edge of the frames' opaque pixels, as fractions of the image width. Bubbles or
+    /// sparks that reach the canvas edge in a minority of frames do not move the median. Cached by first frame.
+    static func span(first: NSImage, of frames: () -> [NSImage]) -> ClosedRange<CGFloat>? {
+        if let cached = cache.object(forKey: first) { return cached.range }
+        let frames = frames()
+        guard frames.count > 1 else { return nil }
+        var lefts: [CGFloat] = [], rights: [CGFloat] = []
+        for frame in frames {
+            var rect = CGRect(origin: .zero, size: frame.size)
+            guard let cg = frame.cgImage(forProposedRect: &rect, context: nil, hints: nil),
+                  let box = SpriteFrame.opaqueBounds(of: cg) else { continue }
+            lefts.append(box.minX / CGFloat(cg.width))
+            rights.append(box.maxX / CGFloat(cg.width))
+        }
+        let range = lefts.isEmpty ? nil : lefts.sorted()[lefts.count / 2]...rights.sorted()[rights.count / 2]
+        cache.setObject(Span(range), forKey: first)
+        return range
     }
 }
 
@@ -448,8 +483,9 @@ enum SpriteVisibleTop {
     /// and bottom-anchored in a `box`×`box` slot (`SpriteView.fitted`). `opaqueTopFraction` is the
     /// share of the image height above its first opaque row (0 = the sprite touches the image top).
     static func inset(box: CGFloat, imageSize: CGSize, opaqueTopFraction: CGFloat,
-                      reference: CGSize? = nil) -> CGFloat {
-        let fit = SpriteFit.animatedSize(for: imageSize, reference: reference, box: SpriteFit.contentBox(box))
+                      reference: CGSize? = nil, body: ClosedRange<CGFloat>? = nil) -> CGFloat {
+        let fit = SpriteFit.animatedSize(for: imageSize, reference: reference, box: SpriteFit.contentBox(box),
+                                         body: body)
         return box - SpriteFit.margin * box - fit.height + min(max(opaqueTopFraction, 0), 1) * fit.height
     }
 
