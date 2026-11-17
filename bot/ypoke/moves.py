@@ -1,6 +1,7 @@
 """Which moves a Pokémon brings to a battle."""
 
 from ypoke.battle import Move
+from ypoke.move_effects import EFFECTS
 
 MAX_MOVES = 4
 
@@ -15,8 +16,12 @@ def battle_moves(learnable: list[dict], chosen_ids: list[int] | None) -> tuple[M
 
 
 def default_move_ids(learnable: list[dict]) -> list[int]:
-    """The most recently learned level-up attacking moves; weather and machine moves are never a default. `learnable` is oldest first."""
-    return [move["id"] for move in [move for move in learnable if not move["weather"] and move.get("source") != "machine"][-MAX_MOVES:]]
+    """The most recently learned level-up attacking moves; weather, status and machine moves are never a default.
+    `learnable` is oldest first."""
+    return [move["id"] for move in [
+        move for move in learnable
+        if not move["weather"] and move.get("damage_class") != "status" and move.get("source") != "machine"
+    ][-MAX_MOVES:]]
 
 
 def _move(move: dict) -> Move:
@@ -39,4 +44,5 @@ def _move(move: dict) -> Move:
         drain=move["drain"],
         min_hits=move["min_hits"],
         max_hits=move["max_hits"],
+        effect=EFFECTS.get(move["id"]),
     )

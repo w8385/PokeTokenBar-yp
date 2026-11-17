@@ -56,7 +56,7 @@ ITEM_NAMES = {
     "silk-scarf": "실크스카프", "fairy-feather": "요정의깃털",
     "heat-rock": "뜨거운바위", "damp-rock": "축축한바위", "smooth-rock": "보송보송바위", "icy-rock": "차가운바위",
     "teal-mask": "벽록의가면", "wellspring-mask": "우물의가면", "hearthflame-mask": "화덕의가면",
-    "cornerstone-mask": "주춧돌의가면", STELLAR_CRYSTAL: "별빛 결정",
+    "cornerstone-mask": "주춧돌의가면", STELLAR_CRYSTAL: "별빛 결정", "red-orb": "주홍구슬", "blue-orb": "쪽빛구슬",
 }
 CHOICE_ITEMS = frozenset({CHOICE_SCARF, CHOICE_BAND, CHOICE_SPECS})
 LEFTOVERS_FRACTION = 16

@@ -34,7 +34,10 @@ MOVES = {
     85: move_body(85, 90, "special"),      # level-up at 36, also a TM
     87: move_body(87, 110, "special"),     # TM in Sword/Shield only
     89: move_body(89, 100),                # TM
-    86: move_body(86, None, "status"),     # status-only TM
+    92: move_body(92, None, "status"),     # status-only TM the battle does not implement
+    86: move_body(86, None, "status"),     # Thunder Wave, a status TM the battle implements
+    281: move_body(281, None, "status"),   # Yawn, an egg move
+    33: move_body(33, 40),                 # an attacking egg move
     240: move_body(240, None, "status"),   # Rain Dance, a TM
 }
 POKEMON = {
@@ -47,8 +50,11 @@ POKEMON = {
     entry(85, detail(SV, "level-up", 36), detail(SV, "machine")),
     entry(87, detail(SWSH, "machine")),
     entry(89, detail(SV, "machine")),
+    entry(92, detail(SV, "machine")),
     entry(86, detail(SV, "machine")),
     entry(240, detail(SV, "machine")),
+    entry(281, detail(SV, "egg")),
+    entry(33, detail(SV, "egg")),
 ]}
 
 
@@ -89,7 +95,7 @@ def test_the_level_gate_applies_to_level_up_moves_only(api):
 
 def test_status_only_machine_moves_are_filtered_but_weather_ones_stay(api):
     ids = [move["id"] for move in api.attacking_moves(25, 50, None)]
-    assert 86 not in ids and 240 in ids
+    assert 86 not in ids and 92 not in ids and 240 in ids
 
 
 def test_a_machine_move_taught_only_in_another_version_group_is_not_learnable(api):
@@ -162,10 +168,45 @@ def test_an_upload_may_choose_a_machine_move_at_any_level(server):
     assert store.party("U1").party[0]["moves"] == [89, 85]
 
 
-@pytest.mark.parametrize("move_id", [87, 86, 999])
+@pytest.mark.parametrize("move_id", [87, 92, 33, 999])
 def test_an_upload_rejects_a_move_of_another_group_a_status_move_or_an_unknown_one(server, move_id):
     store, base = server
     status, body = call(f"{base}/v1/party", store.issue_token("U1"),
                         {"party": [{"pokemon_id": 25, "level": 100, "moves": [move_id]}]})
     assert status == 400 and f"{move_id} is not an attacking move" in body["error"]
     assert store.party("U1") is None
+
+
+def test_status_moves_count_egg_moves_but_attacking_moves_do_not(api):
+    moves = api.attacking_moves(25, 5, None, status=True)
+    assert [(move["id"], move["source"]) for move in moves if move["damage_class"] == "status"] == [
+        (240, "machine"), (86, "machine"), (281, "egg"),
+    ]
+    assert 33 not in [move["id"] for move in moves]
+    assert 92 not in [move["id"] for move in moves]
+
+
+def test_status_moves_by_machine_follow_the_machine_ids_asked_for(api):
+    ids = [move["id"] for move in api.attacking_moves(25, 5, (), status=True)]
+    assert 281 in ids and 86 not in ids
+
+
+def test_an_old_app_without_the_status_opt_in_gets_attacking_moves_only(server):
+    store, base = server
+    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=5&machine=1", store.issue_token("U1"))
+    assert status == 200 and all(move["damage_class"] != "status" or move["weather"] for move in body["moves"])
+
+
+def test_the_status_opt_in_lists_the_battles_status_moves_but_never_as_a_default(server):
+    store, base = server
+    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=5&machine=1&status=1", store.issue_token("U1"))
+    assert status == 200
+    assert {86, 281} <= {move["id"] for move in body["moves"]}
+    assert 92 not in {move["id"] for move in body["moves"]}
+    assert body["default"] == [84]
+
+
+def test_an_upload_may_choose_a_status_move_the_battle_implements(server):
+    store, base = server
+    party = {"party": [{"pokemon_id": 25, "level": 5, "moves": [84, 281, 86]}]}
+    assert call(f"{base}/v1/party", store.issue_token("U1"), party)[0] == 200

@@ -2,8 +2,9 @@
 
 from ypoke import items, tera_forms
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm
-from ypoke.mega_stones import mega_form_id
+from ypoke.mega_stones import PRIMAL_ORBS, mega_form_id
 from ypoke.moves import battle_moves
+from ypoke.move_effects import wants_status_moves
 from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.upload_server import IV_KEYS
 
@@ -15,7 +16,9 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
     pokemon_id = member["pokemon_id"]
     item = tera_forms.usable_item(member.get("held_item"), pokemon_id)
     data = _form_data(pokeapi, pokemon_id, item)
-    learnable = pokeapi.attacking_moves(pokemon_id, member.get("learned_at", member["level"]), member.get("moves") or ())
+    chosen = member.get("moves") or ()
+    learnable = pokeapi.attacking_moves(pokemon_id, member.get("learned_at", member["level"]), chosen,
+                                        **({"status": True} if wants_status_moves(chosen) else {}))
     ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
     return Combatant(
         name=member.get("name") or data["name_ko"],
@@ -71,4 +74,4 @@ def _mega(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> MegaFor
         return None
     data = pokeapi.mega_form(form_id)
     return MegaForm(types=tuple(data["types"]), base=base_stats(data), ability=data["ability"],
-                    ability_id=data["ability_id"], form_id=form_id)
+                    ability_id=data["ability_id"], form_id=form_id, kind="primal" if item in PRIMAL_ORBS else "mega")

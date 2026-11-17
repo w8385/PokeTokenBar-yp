@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    BATTLE_LEVEL, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, FormShift, ItemEffect, ItemHeal,
-    MegaEvolution, SendOut, StatusDamage, WeatherDamage, WeatherEnd,
+    BATTLE_LEVEL, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, FormShift, HazardDamage, ItemEffect,
+    ItemHeal, MegaEvolution, SendOut, StatusDamage, TrickRoomEnd, WeatherDamage, WeatherEnd, YawnSleep,
 )
 from ypoke.dex import bar, sprite_url
 from ypoke.items import ITEM_NAMES, known
@@ -29,6 +29,13 @@ BLOCKED_TAG = {"paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자�
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {"mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼"}
 ITEM_EFFECT_TEXT = {"cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독"}
+TRICK_ROOM_ICON = "🔀"
+ROCK_ICON = "🪨"
+EFFECT_TEXT = {
+    "trick-room": f"{TRICK_ROOM_ICON}공간이 뒤틀렸다", "trick-room-off": f"{TRICK_ROOM_ICON}공간이 돌아왔다",
+    "stealth-rock": f"{ROCK_ICON}상대 쪽에 돌이 떠 있다",
+}
+FORM_CHANGE = {"mega": ("메가진화", "메가"), "primal": ("원시회귀", "원시")}
 STAT_SHORT = {
     "attack": "공격", "defense": "방어", "special_attack": "특공", "special_defense": "특방", "speed": "스피드",
 }
@@ -67,7 +74,7 @@ def battle_card(
     trainers: tuple[str, str], sides: tuple[Sequence[Combatant], Sequence[Combatant]], result: BattleResult,
     practice: bool = False,
 ) -> Card:
-    megas = {(event.side, event.pokemon) for event in result.events if isinstance(event, MegaEvolution)}
+    megas = {(event.side, event.pokemon): event.kind for event in result.events if isinstance(event, MegaEvolution)}
     columns = tuple(
         _column(side, trainers[side], roster, result.remaining[side] if side < len(result.remaining) else (), megas)
         for side, roster in enumerate(sides)
@@ -100,11 +107,11 @@ def _winner_sprite(roster: Sequence[Combatant], result: BattleResult) -> tuple[s
 
 
 def _column(side: int, trainer: str, roster: Sequence[Combatant], hps: Sequence[int | None],
-            megas: set[tuple[int, str]]) -> str:
+            megas: dict[tuple[int, str], str]) -> str:
     lines = [f"{SIDE_MARKERS[side]} *{trainer}*"]
     for index, member in enumerate(roster):
         hp = hps[index] if index < len(hps) else None
-        label = _member_label(member, (side, member.name) in megas)
+        label = _member_label(member, megas.get((side, member.name)))
         if hp is None:
             lines.append(f"{label} {WAITING}")
         elif hp == 0:
@@ -114,14 +121,14 @@ def _column(side: int, trainer: str, roster: Sequence[Combatant], hps: Sequence[
     return "\n".join(lines)
 
 
-def _member_label(member: Combatant, mega: bool) -> str:
+def _member_label(member: Combatant, mega: str | None) -> str:
     label = member.name
     if member.shiny:
         label += "✨"
     if member.rental:
         label += "(대여)"
     if mega:
-        label += "(메가)"
+        label += f"({FORM_CHANGE[mega][1]})"
     if member.level != BATTLE_LEVEL:
         label += f" Lv{member.level}"
     if known(member.item):
@@ -145,6 +152,8 @@ def _decisive_text(event: Event) -> str:
         return f"{event.attacker} 💫혼란 자해" if event.blocked == "confusion" else f"{event.attacker} {event.move}"
     if isinstance(event, ItemHeal):
         return f"{event.pokemon} @{ITEM_NAMES[event.item]}"
+    if isinstance(event, HazardDamage):
+        return f"{event.pokemon} {ROCK_ICON}스텔스록"
     icon = RESIDUAL_ICON[event.kind] if isinstance(event, StatusDamage) else WEATHER_ICON[event.weather]
     return f"{event.pokemon} {icon}"
 
@@ -155,7 +164,7 @@ def _faint_side(event: Event) -> int | None:
         if event.knockout:
             return 1 - event.side
         return event.side if event.attacker_fainted else None
-    if isinstance(event, (StatusDamage, WeatherDamage, ItemHeal)) and event.fainted:
+    if isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage)) and event.fainted:
         return event.side
     return None
 
@@ -238,7 +247,7 @@ def _turns(events: list[Event]) -> list[_Turn]:
                 current.append(_entry_segment(event))
             if isinstance(event, MegaEvolution) and event.form_id is not None:
                 (turns[-1].images if turns else opening_images).append(
-                    (sprite_url(event.form_id, False), f"{event.pokemon} 메가진화"))
+                    (sprite_url(event.form_id, False), f"{event.pokemon} {FORM_CHANGE[event.kind][0]}"))
             continue
         if not isinstance(event, SendOut):
             sent = {}
@@ -273,7 +282,8 @@ def _topic_particle(name: str) -> str:
 
 def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
     if isinstance(event, MegaEvolution):
-        return f"메가진화 [{event.ability}]" if event.ability else "메가진화"
+        word = FORM_CHANGE[event.kind][0]
+        return f"{word} [{event.ability}]" if event.ability else word
     effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
     return f"[{ABILITY_NAMES[event.ability]}] {effect}"
 
@@ -287,9 +297,16 @@ def _event_lines(event: Event) -> list[str]:
     show fainting (an attack's knocked-out target ends its line with 💥)."""
     if isinstance(event, WeatherEnd):
         return [f"{WEATHER_ICON[event.weather]}끝"]
+    if isinstance(event, TrickRoomEnd):
+        return [f"{TRICK_ROOM_ICON}트릭룸 끝"]
     marker = SIDE_MARKERS[event.side]
     if isinstance(event, SendOut):
         return [f"↪ {marker} {event.pokemon} 등장"]
+    if isinstance(event, HazardDamage):
+        return [f"{marker} {event.pokemon} {ROCK_ICON}스텔스록 {event.hp}%",
+                *([_faint_line(event.pokemon)] if event.fainted else [])]
+    if isinstance(event, YawnSleep):
+        return [f"{marker} {event.pokemon} 💤잠듦 (하품)"]
     if isinstance(event, (StatusDamage, WeatherDamage)):
         icon = RESIDUAL_ICON[event.kind] if isinstance(event, StatusDamage) else WEATHER_ICON[event.weather]
         return [f"{marker} {event.pokemon} {icon} {event.hp}%", *([_faint_line(event.pokemon)] if event.fainted else [])]
@@ -317,6 +334,12 @@ def _action_line(event: Action, marker: str) -> str:
     head = f"{head} › {event.move}"
     if event.weather:
         return f"{head} {WEATHER_ICON[event.weather]}"
+    if event.effect == "yawn":
+        return f"{head} → {event.defender} 졸음"
+    if event.effect == "thunder-wave":
+        return f"{head} → {event.defender} {STATUS_ICON['paralysis']}"
+    if event.effect:
+        return f"{head} {EFFECT_TEXT[event.effect]}"
     if event.failed:
         return f"{head} → 실패"
     if event.missed:
@@ -325,7 +348,8 @@ def _action_line(event: Action, marker: str) -> str:
         return " ".join(filter(None, [head, "→", event.defender, "무효", _ability_tag(event)]))
     hp = FAINTED if event.knockout else f"{event.defender_hp}%"
     item_tags = [f"@{ITEM_NAMES[item]}" for item in (event.attacker_item, event.defender_item) if item]
-    return " ".join([f"{head} → {event.defender} {hp}", *_hit_tags(event)[:MAX_TAGS], *item_tags])
+    pivot = ["↩교체"] if event.pivoted else []
+    return " ".join([f"{head} → {event.defender} {hp}", *_hit_tags(event)[:MAX_TAGS], *item_tags, *pivot])
 
 
 def _hit_tags(event: Action) -> list[str]:

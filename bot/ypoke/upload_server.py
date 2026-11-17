@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from ypoke.battle import CARRIED_STATUSES
 from ypoke.dex import normalize_dex
+from ypoke.move_effects import wants_status_moves
 from ypoke.moves import MAX_MOVES, default_move_ids
 from ypoke.messages import DirectMessage
 from ypoke.store import Store
@@ -29,7 +30,7 @@ GYM_BATTLE_INTERVAL = 3.0
 ABILITY_NAME = re.compile(r"[a-z][a-z-]{0,39}")
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
-MovesFor = Callable[[int, int, Collection[int] | None], list[dict]]
+MovesFor = Callable[..., list[dict]]
 OnUpload = Callable[[str, list[dict]], None]
 NameFor = Callable[[str], str | None]
 Notify = Callable[[tuple[DirectMessage, ...]], None]
@@ -79,7 +80,7 @@ def serve(
     """Start the upload server on a daemon thread and return it.
 
     `on_upload(user_id, party)` runs after each stored upload, before the reply.
-    `moves_for(pokemon_id, level, machine_ids)` returns the attacking moves usable at that level (`machine_ids` is `None` for every machine move) and raises OSError when offline.
+    `moves_for(pokemon_id, level, machine_ids, status=...)` returns the attacking moves usable at that level (`machine_ids` is `None` for every machine move), with `status` also the battle's status moves, and raises OSError when offline.
     `name_for(user_id)` returns a Slack display name, or None when it cannot be found.
     With `trades`, the trade endpoints are served and `notify` sends the DMs a new offer produces.
     With `gyms`, the gym endpoints are served; `clock` times their rate limit.
@@ -125,11 +126,13 @@ def _drop_duplicate_items(party: list[dict]) -> list[dict]:
 
 
 def check_moves(party: list[dict], moves_for: MovesFor, field: str = "party") -> None:
-    """Raise PartyError if a chosen move is not an attacking move the member can use: learned by level-up at or below its level, or by machine."""
+    """Raise PartyError if a chosen move is not a move the member can use: an attacking move learned by level-up at or
+    below its level or by machine, or one of the battle's status moves."""
     for index, member in enumerate(party):
         if "moves" not in member:
             continue
-        learnable = {move["id"] for move in moves_for(member["pokemon_id"], member["level"], member["moves"])}
+        status = {"status": True} if wants_status_moves(member["moves"]) else {}
+        learnable = {move["id"] for move in moves_for(member["pokemon_id"], member["level"], member["moves"], **status)}
         for move_id in member["moves"]:
             if move_id not in learnable:
                 raise PartyError(f"{field}[{index}].moves: {move_id} is not an attacking move learnable at level {member['level']}")
@@ -346,7 +349,8 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(400, {"ok": False, "error": "pokemon_id or level out of range"})
             return
         try:
-            moves = self.moves_for(pokemon_id, level, None if query.get("machine") == ["1"] else ())
+            status = {"status": True} if query.get("status") == ["1"] else {}
+            moves = self.moves_for(pokemon_id, level, None if query.get("machine") == ["1"] else (), **status)
         except OSError:
             self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
             return
