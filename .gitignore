@@ -35,3 +35,5 @@ docs/*
 
 # Local-only review-gate opt-out (not published)
 .no-review-gate
+
+__pycache__/

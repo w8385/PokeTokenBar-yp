@@ -56,5 +56,5 @@ for entry in "${SUITES[@]}"; do
   FILTER="${FILTER:+$FILTER|}$classes"
 done
 
-PTB_NATIVE_ARCH_ONLY="${PTB_NATIVE_ARCH_ONLY:-1}" swift test --filter "$FILTER"
+PTB_NATIVE_ARCH_ONLY="${PTB_NATIVE_ARCH_ONLY:-1}" ./scripts/swift-test-filter.py --filter "$FILTER"
 find "$OUT" -name '*.png' | wc -l | xargs echo "PNG files:"

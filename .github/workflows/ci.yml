@@ -93,14 +93,14 @@ jobs:
         env:
           PTB_SNAPSHOT_SCREENSHOT_DIR: ${{ runner.temp }}/dex-renders
           PTB_ZERO_USAGE_SCREENSHOT_DIR: ${{ runner.temp }}/dex-renders/zero-usage
-        run: swift test --skip-build --enable-code-coverage --filter "$UI_TESTS_DEX"
+        run: ./scripts/swift-test-filter.py --skip-build --enable-code-coverage --filter "$UI_TESTS_DEX"
 
       - name: UI render tests (settings)
         if: ${{ !cancelled() }}
         env:
           PTB_SNAPSHOT_SCREENSHOT_DIR: ${{ runner.temp }}/snapshot-history-renders
           PTB_ZERO_USAGE_SCREENSHOT_DIR: ${{ runner.temp }}/snapshot-history-renders/zero-usage
-        run: swift test --skip-build --enable-code-coverage --filter "$UI_TESTS_SETTINGS"
+        run: ./scripts/swift-test-filter.py --skip-build --enable-code-coverage --filter "$UI_TESTS_SETTINGS"
 
       - name: Release the local build slot (self-hosted)
         if: always() && runner.environment == 'self-hosted'
@@ -138,10 +138,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  scripts-test:
+    name: scripts-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Test the repository scripts
+        run: python3 -m unittest discover -s scripts/tests -v
+
   # Single check to require: it always reports, and passes when every needed job succeeded or was skipped.
   ci-ok:
     name: ci-ok
-    needs: [changes, build-test, secret-scan]
+    needs: [changes, build-test, secret-scan, scripts-test]
     if: always()
     runs-on: ubuntu-latest
     steps:

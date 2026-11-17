@@ -71,9 +71,9 @@ Existing local render harnesses can help when the running app is difficult to
 capture. Create a temporary output directory, then use the relevant harness:
 
 ```sh
-PTB_SCREENSHOT_DIR=<existing-dir> swift test --filter ScreenshotGenTests
-PTB_ZERO_USAGE_SCREENSHOT_DIR=<existing-dir> swift test --filter ZeroUsageHomeRenderingTests
-PTB_COLLECTION_SCREENSHOT_DIR=<existing-dir> swift test --filter CollectionReadabilityRenderingTests
+PTB_SCREENSHOT_DIR=<existing-dir> ./scripts/swift-test-filter.py --filter ScreenshotGenTests
+PTB_ZERO_USAGE_SCREENSHOT_DIR=<existing-dir> ./scripts/swift-test-filter.py --filter ZeroUsageHomeRenderingTests
+PTB_COLLECTION_SCREENSHOT_DIR=<existing-dir> ./scripts/swift-test-filter.py --filter CollectionReadabilityRenderingTests
 ```
 
 Read the selected harness before using its output. Some AppKit controls and
