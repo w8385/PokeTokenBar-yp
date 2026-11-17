@@ -15,6 +15,7 @@ from ypoke.battle import (
     simulate,
 )
 from ypoke.combatants import combatant
+from ypoke.gym_data import FINALE_LINE
 from ypoke.narration import battle_turns, split_side
 from ypoke.pokeapi import PokeAPIService
 from ypoke.upload_server import PartyError
@@ -48,6 +49,7 @@ class GymBattles:
             fighters = list(pool.map(partial(combatant, self._pokeapi), [*mine, *gyms.foe_members(opponent)]))
         player, foes = fighters[:len(mine)], tuple(fighters[len(mine):])
         seed = self._new_seed()
+        finale = len(foes) - opponent.finale if opponent.finale else None
         result = simulate((tuple(player[index] for index in awake), foes), seed, [starts[index] for index in awake])
         shown, carry = _outcomes(starts, awake, result)
         won = result.winner == 0
@@ -61,8 +63,8 @@ class GymBattles:
             "seed": seed,
             "player_team": _roster(player, shown),
             "foe_team": _roster(foes, result.remaining[1]),
-            "log": _log(result),
-            "events": _events(result, (awake, list(range(len(foes)))), [starts[index] for index in awake]),
+            "log": _log(result, finale),
+            "events": _events(result, (awake, list(range(len(foes)))), [starts[index] for index in awake], finale),
             "run": _run(opponent, following),
             "carry": carry if following else None,
         }
@@ -108,10 +110,11 @@ def _roster(roster: Sequence[Combatant], shares: Sequence[int | None]) -> list[d
     ]
 
 
-def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: Sequence[Carry | None]) -> list[dict]:
+def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: Sequence[Carry | None],
+            finale: int | None = None) -> list[dict]:
     """The battle as the app replays it: who is out, which move, HP shares, faints and statuses. `members` maps each
     side's fighting order to its team index (the player's skips members that came in down); `starts` is how each
-    of the player's fighters came in."""
+    of the player's fighters came in. A `finale` event comes right before the trainer's member `finale` is out."""
     replay = _Replay(members)
     for side in (0, 1):
         start = starts[0] if side == 0 and starts else None
@@ -121,6 +124,9 @@ def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: 
         turn = getattr(event, "turn", turn)
         if isinstance(event, SendOut):
             position = replay.send_next(event.side)
+            if event.side == 1 and position == finale:
+                replay.events.append({"turn": turn, "type": "finale", "side": 1, "member": position,
+                                      "text": dict(FINALE_LINE)})
             replay.switch(turn, event.side, starts[position] if event.side == 0 else None)
         elif isinstance(event, Action):
             replay.action(event)
@@ -187,8 +193,21 @@ class _Replay:
         self.events.append({"turn": turn, "type": kind, "side": side, "member": member, **fields})
 
 
-def _log(result: BattleResult) -> list[dict]:
-    return [
+def _log(result: BattleResult, finale: int | None = None) -> list[dict]:
+    """Every turn's lines; the turn the trainer's member `finale` comes out has the finale line before its entrance."""
+    turns = [
         {"turn": number, "lines": [dict(zip(("side", "text"), split_side(line))) for line in lines]}
         for number, lines in battle_turns(result)
     ]
+    sent = [event for event in result.events if isinstance(event, SendOut) and event.side == 1]
+    if finale is None or len(sent) < finale:
+        return turns
+    entrance = sent[finale - 1]
+    for turn in turns:
+        if turn["turn"] != entrance.turn:
+            continue
+        at = next((index for index, line in enumerate(turn["lines"])
+                   if line["side"] == 1 and line["text"].startswith("↪") and entrance.pokemon in line["text"]),
+                  len(turn["lines"]))
+        turn["lines"].insert(at, {"side": 1, "text": FINALE_LINE["ko"]})
+    return turns

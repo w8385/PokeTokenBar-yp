@@ -15,7 +15,7 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
     pokemon_id = member["pokemon_id"]
     item = tera_forms.usable_item(member.get("held_item"), pokemon_id)
     data = _form_data(pokeapi, pokemon_id, item)
-    learnable = pokeapi.attacking_moves(pokemon_id, member["level"], member.get("moves") or ())
+    learnable = pokeapi.attacking_moves(pokemon_id, member.get("learned_at", member["level"]), member.get("moves") or ())
     ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
     return Combatant(
         name=member.get("name") or data["name_ko"],
@@ -49,9 +49,12 @@ def _form_data(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> di
 
 
 def _can_evolve(pokeapi: PokeAPIService, member: dict) -> bool:
-    """Only Eviolite needs it; a failed lookup counts as fully evolved rather than failing the battle."""
+    """Only Eviolite needs it; a failed lookup counts as fully evolved rather than failing the battle. A PvE foe
+    brings its own answer."""
     if member.get("held_item") != items.EVIOLITE:
         return False
+    if "can_evolve" in member:
+        return member["can_evolve"]
     try:
         return pokeapi.can_evolve(member["pokemon_id"])
     except (OSError, ValueError, KeyError, TypeError):

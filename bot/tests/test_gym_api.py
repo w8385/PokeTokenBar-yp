@@ -4,7 +4,7 @@ import urllib.request
 
 import pytest
 
-from ypoke import gym_battle, gyms
+from ypoke import gym_battle, gym_data, gyms
 from ypoke.battle import Action, BattleResult, Carry, Change, ItemEffect, SendOut, StatusDamage
 from ypoke.gym_battle import GymBattles
 from ypoke.narration import split_side
@@ -32,6 +32,9 @@ class FakePokeAPI:
         if self.offline:
             raise OSError("offline")
         return {"name_ko": f"#{pokemon_id}", "types": ["normal"], "base": STATS if pokemon_id in FOE_IDS else STRONG}
+
+    def mega_form(self, form_id):
+        return {"types": ["normal"], "base": STATS, "ability": None, "ability_id": None}
 
     def attacking_moves(self, pokemon_id, level, machine_ids=()):
         if self.offline:
@@ -271,6 +274,21 @@ def test_the_last_battle_of_a_run_and_a_lost_one_carry_nothing(server, clock):
     assert lost["won"] is False
     assert lost["run"] == {"id": "kanto-hideout", "step": 2, "steps": 4, "first": "kanto-hideout-1", "next": None}
     assert lost["carry"] is None
+
+
+def test_a_champions_finale_comes_out_only_after_the_first_six_faint_and_the_log_marks_it(server):
+    store, base, _, _ = server
+    status, body, _ = battle(base, store.issue_token("U1"), "kanto-champion", strong_team(6))
+    assert status == 200 and body["won"] is True and len(body["foe_team"]) == 7
+    events = body["events"]
+    finale = next(index for index, event in enumerate(events) if event["type"] == "finale")
+    assert events[finale]["text"] == gym_data.FINALE_LINE and events[finale]["member"] == 6
+    assert {e["member"] for e in events[:finale] if e["side"] == 1 and e["type"] == "faint"} == set(range(6))
+    assert all(e["member"] != 6 for e in events[:finale] if e["side"] == 1)
+    assert (events[finale + 1]["type"], events[finale + 1]["side"], events[finale + 1]["member"]) == ("switch", 1, 6)
+    assert events[-1] == {"turn": events[-1]["turn"], "type": "faint", "side": 1, "member": 6}
+    lines = [line["text"] for turn in body["log"] for line in turn["lines"]]
+    assert lines.count(gym_data.FINALE_LINE["ko"]) == 1
 
 
 def test_a_member_that_was_down_stays_down_and_one_that_is_not_sent_out_keeps_its_state(server):
