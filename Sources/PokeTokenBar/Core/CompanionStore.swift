@@ -405,6 +405,7 @@ final class CompanionStore {
         displayState = isEgg ? .egg : .idle
         reevaluateEvolution()   // saves
         if state.active != nil, !isLineParked, currentLine == nil { Task { await loadCurrentLine() } }
+        if raisedGraduate != nil { Task { await checkRaisedGraduateEvolution() } }
         if state.active == nil, !isLineParked { Task { await ensureEggPrefetch() } }
     }
 
@@ -453,7 +454,10 @@ final class CompanionStore {
         return line.tree.node(withID: a.currentID)?.children(for: a.profile?.gender).isEmpty ?? true
     }
     var stageText: String {
-        if let graduate = raisedGraduate { return "Lv\(graduate.profile?.level ?? 5) · \(l.finalForm)" }
+        if let graduate = raisedGraduate {
+            let level = "Lv\(graduate.profile?.level ?? 5)"
+            return evolvingGraduate == nil ? "\(level) · \(l.finalForm)" : level
+        }
         guard let a = state.active else { return "" }
         return isFinalStage ? l.finalForm : l.stage(a.stageIndex + 1, a.totalForms)
     }
@@ -1237,6 +1241,12 @@ final class CompanionStore {
     /// A gate that waits on the clock (day/night) opens without any new usage. Called from every usage update and
     /// from the app's 30-second tick; at most one check per 20 seconds.
     func checkEvolutionGate() {
+        if raisedGraduate != nil {
+            guard clock() >= nextEvolutionGateCheck else { return }
+            nextEvolutionGateCheck = clock().addingTimeInterval(20)
+            Task { await checkRaisedGraduateEvolution() }
+            return
+        }
         guard let a = state.active, !isLineParked, currentLine != nil, a.dittoDisguise == nil || a.dittoRevealed,
               a.usedAtStage >= stageThreshold(for: a), clock() >= nextEvolutionGateCheck else { return }
         nextEvolutionGateCheck = clock().addingTimeInterval(20)
@@ -1269,6 +1279,11 @@ final class CompanionStore {
         profile.applyGrowth(standard, rarity: state.dex[index].rarity)
         if let details = pokemonDetailsByID[state.dex[index].finalID] { profile.enrich(with: details) }
         state.dex[index].profile = profile
+        if var progress = raisedEvolutionProgress {
+            progress.graduateXP += delta
+            setRaisedEvolutionProgress(progress)
+            evolveRaisedGraduateIfReady()
+        }
     }
 
     /// 토큰 증분을 현재 포켓몬에 적용 — 임계 도달 시 진화/졸업.
@@ -1329,24 +1344,27 @@ final class CompanionStore {
     /// reason however many times the period flips, so a day/night wait is not announced every ten minutes.
     private func notifyEvolutionStuckIfNeeded(of a: MonState, into next: EvoNode, in line: EvoLine, context: EvolutionContext) {
         guard let rule = EvolutionRules.rule(for: next.speciesID) else { return }
-        let unmet = rule.unmetRequirements(in: context)
-        guard !unmet.isEmpty else { return }
-        let timeOnly = unmet.allSatisfy { if case .time = $0 { return true } else { return false } }
-        let blocking = timeOnly ? [] : unmet.filter { if case .time = $0 { return false } else { return true } }
+        let block = rule.block(in: context)
+        let blocking: [EvolutionRequirement]
+        switch block {
+        case .open: return
+        case .clock: blocking = []
+        case .conditions(let conditions): blocking = conditions
+        }
         let key = ([String(next.speciesID)] + blocking.map { String(describing: $0) }).joined(separator: "|")
         guard a.evolution.stuckNotified != key else { return }
         state.active!.evolution.stuckNotified = key
         let name = formDisplayName(line.localizedName(a.currentID, state.language),
                                    speciesID: a.currentID, form: a.form)
-        let what: String
-        if timeOnly, case .time(let period) = unmet[0] {
-            what = l.notifEvolveStuckWaitsFor(period, minutes: Self.minutes(DayPeriod.secondsUntilSwitch(from: clock())))
-        } else {
-            what = blocking.map {
-                l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" })
-            }.joined(separator: " + ")
+        if case .clock(let period) = block {
+            let what = l.notifEvolveStuckWaitsFor(period, minutes: Self.minutes(DayPeriod.secondsUntilSwitch(from: clock())))
+            notifyCompanionEvent(l.notifEvolveStuckTitle, l.notifEvolveStuckBody(name, what))
+            return
         }
-        notifyCompanionEvent(l.notifEvolveStuckTitle, l.notifEvolveStuckBody(name, what))
+        let what = blocking.map {
+            l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" })
+        }.joined(separator: " + ")
+        notifyCompanionEvent(l.notifEvolveStuckTitle, l.notifEvolveStuckSkippableBody(name, what))
     }
 
     static func minutes(_ seconds: TimeInterval) -> Int { max(1, Int((seconds / 60).rounded(.up))) }
@@ -1407,18 +1425,24 @@ final class CompanionStore {
 
     /// Everything the evolution rules read about `mon` right now.
     func evolutionContext(for mon: MonState, thresholdOverride: Int? = nil) -> EvolutionContext {
+        evolutionContext(progress: mon.evolution, speciesID: mon.currentID, profile: mon.profile,
+                         stageXP: mon.usedAtStage, stageThreshold: thresholdOverride ?? stageThreshold(for: mon))
+    }
+
+    private func evolutionContext(progress: EvolutionProgress, speciesID: Int, profile: PokemonProfile?,
+                                  stageXP: Int, stageThreshold: Int) -> EvolutionContext {
         var context = EvolutionContext()
-        context.progress = mon.evolution
+        context.progress = progress
         context.period = DayPeriod.at(clock())
-        context.level = mon.profile?.level ?? 5
-        if let details = pokemonDetailsByID[mon.currentID] {
+        context.level = profile?.level ?? 5
+        if let details = pokemonDetailsByID[speciesID] {
             context.knownMoves = Set(details.levelUpMoves(through: context.level).map(\.name))
             context.learnableMoves = Set(details.moves.filter { move in
                 move.learnMethods.contains { $0.method == "level-up" }
             }.map(\.name))
         }
-        context.knownMoves.formUnion(mon.profile?.moves.map(\.name) ?? [])
-        if let id = mon.profile?.instanceID { context.heldItem = heldItem(of: id) }
+        context.knownMoves.formUnion(profile?.moves.map(\.name) ?? [])
+        if let id = profile?.instanceID { context.heldItem = heldItem(of: id) }
         for (kind, count) in ownedItems { context.bag[kind] = count }
         for id in state.friendEntryIDs {
             guard let entry = state.dex.first(where: { $0.id == id }) else { continue }
@@ -1428,8 +1452,8 @@ final class CompanionStore {
             context.friendTypes.formUnion(speciesTypes(entry.finalID))
         }
         context.spentTokens = state.spentTokens
-        context.stageXP = mon.usedAtStage
-        context.stageThreshold = thresholdOverride ?? stageThreshold(for: mon)
+        context.stageXP = stageXP
+        context.stageThreshold = stageThreshold
         return context
     }
 
@@ -1451,9 +1475,10 @@ final class CompanionStore {
         }
     }
 
-    /// The form the active individual is waiting to take and what it still lacks; nil when nothing special waits.
+    /// The form the raised Pokémon is waiting to take and what it still lacks; nil when nothing special waits.
     func pendingEvolutionGate() -> (rule: EvolutionRule, context: EvolutionContext)? {
-        guard let a = state.active, !isLineParked, let node = currentLine?.tree.node(withID: a.currentID) else { return nil }
+        if raisedGraduate != nil { return raisedGraduateGate() }
+        guard let a = state.active, let node = currentLine?.tree.node(withID: a.currentID) else { return nil }
         let gender = a.profile?.gender
         let options = growthOptions(of: node, gender: gender)
         let traits = evolutionTraits(of: a)
@@ -1467,8 +1492,174 @@ final class CompanionStore {
         return (rule, evolutionContext(for: a))
     }
 
+    // MARK: Skipping a blocked evolution
+
+    /// The active Pokémon is ready but held back by something other than the clock, so it may graduate as it is.
+    var canSkipEvolution: Bool {
+        guard let a = state.active, hasActive, currentLine != nil, a.dittoDisguise == nil || a.dittoRevealed,
+              !holdsEverstone(a.profile?.instanceID), a.usedAtStage >= stageThreshold(for: a),
+              let pending = pendingEvolutionGate(), case .conditions = pending.rule.block(in: pending.context)
+        else { return false }
+        return true
+    }
+
+    /// Graduates the active Pokémon in its current form. Its progress toward the blocked step goes with it, so
+    /// raising it again later can still evolve it.
+    @discardableResult
+    func skipEvolutionAndGraduate() -> Bool {
+        guard canSkipEvolution, let a = state.active else { return false }
+        var progress = a.evolution
+        progress.stuckNotified = nil
+        progress.graduateXP = max(0, a.usedAtStage - stageThreshold(for: a))
+        guard let entryID = graduate() else { return false }
+        state.graduateEvolution[entryID] = progress
+        save()
+        return true
+    }
+
+    // MARK: Evolving a raised graduate
+
+    /// The raised graduate's line, loaded by `checkRaisedGraduateEvolution`. In memory only.
+    private(set) var raisedGraduateLine: EvoLine?
+    private var isLoadingGraduateLine = false
+
+    /// The forms the graduate's current form can grow into, resolved for the clock and its traits now.
+    private func graduateOptions(_ entry: DexEntry, in line: EvoLine) -> [EvoNode] {
+        guard let node = line.tree.node(withID: entry.finalID) else { return [] }
+        let options = growthOptions(of: node, gender: entry.profile?.gender)
+        let traits = entry.profile.map { EvolutionTraits(seed: $0.seed, ivs: $0.ivs, nature: entry.nature) }
+        return EvolutionRules.plannable(options, traits: traits).map { option in
+            let timed = EvoNode.resolvingTimeOfDay(option, among: options, at: DayPeriod.at(clock()))
+            return EvolutionRules.resolvingSelector(timed, among: options, traits: traits)
+        }
+    }
+
+    /// A graduate has finished growing, so it counts as having reached its stage threshold; `graduateXP` is what
+    /// it has past that. Only the `longStage` requirement reads the two.
+    private func graduateContext(_ entry: DexEntry) -> EvolutionContext {
+        let progress = state.graduateEvolution[entry.id] ?? EvolutionProgress(spentBaseline: state.spentTokens)
+        let forms = max(1, entry.chainOrder.count)
+        let threshold = PokemonBalance.scaled(
+            PokemonBalance.phaseThreshold(rarity: entry.rarity, totalForms: forms + 1, stageIndex: forms - 1),
+            by: growthDifficulty)
+        return evolutionContext(progress: progress, speciesID: entry.finalID, profile: entry.profile,
+                                stageXP: threshold + progress.graduateXP, stageThreshold: threshold)
+    }
+
+    /// The raised graduate, when its line is loaded and its form can still evolve.
+    private var evolvingGraduate: (entry: DexEntry, line: EvoLine)? {
+        guard let entry = raisedGraduate, let line = raisedGraduateLine, line.baseID == entry.baseID,
+              !graduateOptions(entry, in: line).isEmpty else { return nil }
+        return (entry, line)
+    }
+
+    private func raisedGraduateGate() -> (rule: EvolutionRule, context: EvolutionContext)? {
+        guard let graduate = evolvingGraduate else { return nil }
+        for option in graduateOptions(graduate.entry, in: graduate.line) {
+            if let rule = EvolutionRules.rule(for: option.speciesID), !rule.paths.isEmpty {
+                return (rule, graduateContext(graduate.entry))
+            }
+        }
+        return nil
+    }
+
+    /// Loads the raised graduate's line once, then evolves it if a step is open. Called on raise and from the tick.
+    func checkRaisedGraduateEvolution() async {
+        guard let entry = raisedGraduate, !isLoadingGraduateLine else { return }
+        if raisedGraduateLine?.baseID != entry.baseID {
+            isLoadingGraduateLine = true
+            defer { isLoadingGraduateLine = false }
+            guard let line = try? await dexNameLine(baseID: entry.baseID) else { return }
+            raisedGraduateLine = line
+        }
+        if evolveRaisedGraduateIfReady() { save() }
+    }
+
+    /// Takes every step whose conditions hold now. The caller saves. Returns whether it evolved.
+    @discardableResult
+    private func evolveRaisedGraduateIfReady() -> Bool {
+        var evolved = false
+        for _ in 0..<5 {
+            guard let entry = raisedGraduate, let line = raisedGraduateLine, line.baseID == entry.baseID,
+                  let index = state.dex.firstIndex(where: { $0.id == entry.id }) else { break }
+            let options = graduateOptions(entry, in: line)
+            if options.isEmpty {
+                state.graduateEvolution[entry.id] = nil
+                break
+            }
+            if holdsEverstone(entry.id) { break }
+            let context = graduateContext(entry)
+            let step = options.lazy.compactMap { option in
+                EvolutionRules.openPath(into: option.speciesID, in: context).map { (speciesID: option.speciesID, path: $0) }
+            }.first
+            guard let step else { break }
+            spendEvolutionRequirements(of: step.path, instanceID: entry.profile?.instanceID)
+            evolveGraduate(at: index, to: step.speciesID, in: line, progress: context.progress)
+            evolved = true
+        }
+        return evolved
+    }
+
+    private static func mergeNames(of line: EvoLine, into entry: inout DexEntry) {
+        var names = entry.names ?? [:]
+        for id in entry.chainOrder {
+            if let incoming = line.names[id], !incoming.isEmpty {
+                names[id] = (names[id] ?? [:]).merging(incoming) { _, new in new }
+            }
+        }
+        entry.names = names.isEmpty ? nil : names
+        entry.namesVersion = entry.chainOrder.allSatisfy { line.names[$0]?.isEmpty == false }
+            ? DexEntry.currentNamesVersion : nil
+    }
+
+    /// The same individual (id, profile, shininess, held item) becomes the next species; the old one stays in
+    /// its chain, so the Pokédex still counts it.
+    private func evolveGraduate(at index: Int, to speciesID: Int, in line: EvoLine, progress: EvolutionProgress) {
+        var entry = state.dex[index]
+        let fromID = entry.finalID
+        if !entry.chainOrder.contains(speciesID) { entry.chainOrder.append(speciesID) }
+        entry.finalID = speciesID
+        Self.mergeNames(of: line, into: &entry)
+        if let details = pokemonDetailsByID[speciesID] {
+            entry.profile?.enrich(with: details)
+        } else if detailProvider != nil {
+            Task { await self.loadPokemonDetails(speciesID: speciesID) }
+        }
+        state.dex[index] = entry
+        state.collectedFinals.insert("\(entry.baseID):\(speciesID)")
+        state.graduateEvolution[entry.id] = progress.nextForm(spentBaseline: state.spentTokens)
+        state.reconcileRepresentativeSelection()
+        let oldName = formDisplayName(line.localizedName(fromID, state.language), speciesID: fromID, form: entry.form)
+        let newName = formDisplayName(line.localizedName(speciesID, state.language), speciesID: speciesID, form: entry.form)
+        justEvolvedTo = newName
+        fireCelebration(.evolve)
+        eventUntil = clock().addingTimeInterval(4)
+        notifyCompanionEvent(l.notifEvolveTitle, l.notifEvolveBody(from: oldName, to: newName))
+    }
+
+    /// The progress record the raised Pokémon's next step reads: the line's, or the evolving graduate's.
+    private var raisedEvolutionProgress: EvolutionProgress? {
+        if hasActive { return state.active!.evolution }
+        if let id = raisedGraduate?.id, let saved = state.graduateEvolution[id] { return saved }
+        guard evolvingGraduate != nil else { return nil }
+        return EvolutionProgress(spentBaseline: state.spentTokens)
+    }
+
+    private func setRaisedEvolutionProgress(_ progress: EvolutionProgress) {
+        if hasActive {
+            state.active!.evolution = progress
+        } else if let id = raisedGraduate?.id, state.graduateEvolution[id] != nil || evolvingGraduate != nil {
+            state.graduateEvolution[id] = progress
+        }
+    }
+
     /// A gate may be waiting for what just happened (a pet, a friend, a gesture): run the stage check again.
     func reevaluateEvolution() {
+        if raisedGraduate != nil {
+            evolveRaisedGraduateIfReady()
+            save()
+            return
+        }
         guard let a = state.active, !isLineParked, currentLine != nil, a.usedAtStage >= stageThreshold(for: a) else {
             save()
             return
@@ -1480,49 +1671,56 @@ final class CompanionStore {
     static let petCooldown: TimeInterval = 10
 
     func recordPet() {
-        guard hasActive else { return }
+        guard var progress = raisedEvolutionProgress else { return }
         let now = clock()
         if let last = lastEvolutionPetAt, now.timeIntervalSince(last) < Self.petCooldown { return }
         lastEvolutionPetAt = now
-        state.active!.evolution.pets += 1
+        progress.pets += 1
+        setRaisedEvolutionProgress(progress)
         reevaluateEvolution()
     }
 
     func recordFlip() {
-        guard hasActive, !state.active!.evolution.flipped else { return }
-        state.active!.evolution.flipped = true
+        guard var progress = raisedEvolutionProgress, !progress.flipped else { return }
+        progress.flipped = true
+        setRaisedEvolutionProgress(progress)
         reevaluateEvolution()
     }
 
     func recordSpin() {
-        guard hasActive, !state.active!.evolution.spun else { return }
-        state.active!.evolution.spun = true
+        guard var progress = raisedEvolutionProgress, !progress.spun else { return }
+        progress.spun = true
+        setRaisedEvolutionProgress(progress)
         reevaluateEvolution()
     }
 
     func recordTokenRain() {
-        guard hasActive, !state.active!.evolution.rained else { return }
-        state.active!.evolution.rained = true
+        guard var progress = raisedEvolutionProgress, !progress.rained else { return }
+        progress.rained = true
+        setRaisedEvolutionProgress(progress)
         reevaluateEvolution()
     }
 
     func chooseTower(_ tower: String) {
-        guard hasActive, state.active!.evolution.tower == nil else { return }
-        state.active!.evolution.tower = tower
+        guard var progress = raisedEvolutionProgress, progress.tower == nil else { return }
+        progress.tower = tower
+        setRaisedEvolutionProgress(progress)
         reevaluateEvolution()
     }
 
     func recordBattle(key: String, result: EvolutionRequirement.Tally) {
-        guard hasActive else { return }
-        state.active!.evolution.record(battle: key, result: result)
+        guard var progress = raisedEvolutionProgress else { return }
+        progress.record(battle: key, result: result)
+        setRaisedEvolutionProgress(progress)
         reevaluateEvolution()
     }
 
     /// Reads the bot's recent-battle list. Only battles after the cursor count; the first read just sets it.
     func syncBattles(_ battles: [BattleInfo.RecentBattle]) {
-        guard hasActive else { return }
-        guard let cursor = state.active!.evolution.battleCursor else {
-            state.active!.evolution.battleCursor = clock()
+        guard var progress = raisedEvolutionProgress else { return }
+        guard let cursor = progress.battleCursor else {
+            progress.battleCursor = clock()
+            setRaisedEvolutionProgress(progress)
             save()
             return
         }
@@ -1532,9 +1730,10 @@ final class CompanionStore {
             newest = max(newest, date)
             let key = "\(battle.at ?? "")|\(battle.opponentName ?? "")|\(battle.result)"
             let result: EvolutionRequirement.Tally = battle.isWin ? .won : (battle.result == "loss" ? .lost : .played)
-            state.active!.evolution.record(battle: key, result: result)
+            progress.record(battle: key, result: result)
         }
-        state.active!.evolution.battleCursor = newest
+        progress.battleCursor = newest
+        setRaisedEvolutionProgress(progress)
         reevaluateEvolution()
     }
 
@@ -1542,7 +1741,7 @@ final class CompanionStore {
 
     /// Gestures the waiting step still asks for; the Home sprite offers them in its context menu.
     var evolutionGestures: [EvolutionGesture] {
-        guard let pending = pendingEvolutionGate(), let progress = state.active?.evolution else { return [] }
+        guard let pending = pendingEvolutionGate(), let progress = raisedEvolutionProgress else { return [] }
         let requirements = pending.rule.paths.flatMap { $0 }
         var gestures: [EvolutionGesture] = []
         if requirements.contains(.flipped), !progress.flipped { gestures.append(.flip) }
@@ -1632,13 +1831,16 @@ final class CompanionStore {
         return normalized
     }
 
-    private func graduate() {
-        guard var a = state.active else { return }
+    /// Returns the new dex entry's id.
+    @discardableResult
+    private func graduate() -> String? {
+        guard var a = state.active else { return nil }
         a.profile?.advanceGrowth(to: PokemonBalance.graduationTotal(a.rarity), rarity: a.rarity)
         if let details = pokemonDetailsByID[a.currentID] { a.profile?.enrich(with: details) }
         let finalID = a.currentID
+        let entryID = a.profile?.instanceID ?? UUID().uuidString
         state.collectedFinals.insert("\(a.baseID):\(finalID)")
-        state.dex.append(DexEntry(id: a.profile?.instanceID ?? UUID().uuidString,
+        state.dex.append(DexEntry(id: entryID,
                                   baseID: a.baseID, finalID: finalID,
                                   chainOrder: a.pathIDs, rarity: a.rarity, caughtAt: clock(),
                                   isShiny: a.isShiny, nature: a.nature,
@@ -1664,6 +1866,7 @@ final class CompanionStore {
         // (부화가 소비, 디스크/불러오기는 sanitized 가 정규화). 소비 지점은 hatchCore 한 곳으로 유지한다.
         // "알을 받는 순간" 즉시 프리패칭 시작 — 다음 부화의 종·라인·스프라이트 예열.
         Task { await self.ensureEggPrefetch() }
+        return entryID
     }
 
     // MARK: 인벤토리 / 이상한 사탕
@@ -2300,6 +2503,7 @@ final class CompanionStore {
         let xp = ClickGrowth.tokensPerClick
         state.clickGrowth += xp
         if state.raisedEntry != nil {
+            recordPet()
             creditRaisedGraduate(xp)
             save()
         } else if state.active == nil {
@@ -3410,15 +3614,7 @@ final class CompanionStore {
         entry.tradeEvolutionPending = nil
         entry.tradeHeldItem = nil
         entry.tradePartnerID = nil
-        var names = entry.names ?? [:]
-        for id in entry.chainOrder {
-            if let incoming = line.names[id], !incoming.isEmpty {
-                names[id] = (names[id] ?? [:]).merging(incoming) { _, new in new }
-            }
-        }
-        entry.names = names.isEmpty ? nil : names
-        entry.namesVersion = entry.chainOrder.allSatisfy { line.names[$0]?.isEmpty == false }
-            ? DexEntry.currentNamesVersion : nil
+        Self.mergeNames(of: line, into: &entry)
         state.dex[index] = entry
         guard let next else {
             save()
@@ -3483,6 +3679,7 @@ final class CompanionStore {
         state.reconcileRaised()
         state.reconcileFriends()
         state.returnOrphanedHeldItems()
+        state.dropOrphanedGraduateEvolution()
         refreshRepresentativeSubject()
         refreshFriendSubjects()
         checkDexCompletions()   // 보유 성장분이 영속되는 매 지점에서 세대 완성 알림을 한 번만 띄운다

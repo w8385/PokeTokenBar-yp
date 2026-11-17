@@ -116,6 +116,7 @@ final class EvolutionGateRuleTests: XCTestCase {
         let decoded = try JSONDecoder().decode(EvolutionProgress.self, from: Data(#"{"pets":"x","won":2}"#.utf8))
         XCTAssertEqual(decoded.won, 2)
         XCTAssertEqual(decoded.pets, 0)
+        XCTAssertEqual(decoded.graduateXP, 0)
         let mon = try JSONDecoder().decode(MonState.self, from: Data(
             #"{"baseID":1,"pathIDs":[1],"stageIndex":0,"usedAtStage":0,"rarity":"common","totalForms":1}"#.utf8))
         XCTAssertEqual(mon.evolution, EvolutionProgress())
@@ -125,9 +126,20 @@ final class EvolutionGateRuleTests: XCTestCase {
     func testStuckMarkerSurvivesASaveAndResetsWithTheNextForm() throws {
         var progress = EvolutionProgress()
         progress.stuckNotified = "358"
+        progress.graduateXP = 9
         let back = try JSONDecoder().decode(EvolutionProgress.self, from: JSONEncoder().encode(progress))
         XCTAssertEqual(back.stuckNotified, "358")
+        XCTAssertEqual(back.graduateXP, 9)
         XCTAssertNil(progress.nextForm(spentBaseline: 0).stuckNotified)
+        XCTAssertEqual(progress.nextForm(spentBaseline: 0).graduateXP, 0)
+    }
+
+    func testBlockSplitsTheClockFromConditions() throws {
+        let chimecho = try XCTUnwrap(EvolutionRules.rule(for: 358))
+        XCTAssertEqual(chimecho.block(in: context { $0.progress.pets = 40; $0.period = .day }), .clock(.night))
+        XCTAssertEqual(chimecho.block(in: context { $0.progress.pets = 0; $0.period = .day }), .conditions([.pets(40)]))
+        XCTAssertEqual(chimecho.block(in: context { $0.progress.pets = 0; $0.period = .night }), .conditions([.pets(40)]))
+        XCTAssertEqual(chimecho.block(in: context { $0.progress.pets = 40; $0.period = .night }), .open)
     }
 
     func testUnmetRequirementsNameThePathNearestToOpen() throws {

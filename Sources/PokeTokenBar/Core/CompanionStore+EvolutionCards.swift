@@ -10,6 +10,8 @@ extension CompanionStore {
         let isNextStep: Bool
         /// The graduated individual a trade step is for, so its held item is shown on the card.
         var individualID: String?
+        /// The active Pokémon is ready but this step is held by a condition, so it may graduate as it is.
+        var offersSkip = false
         var id: String { "\(rule.species)-\(isNextStep)" }
     }
 
@@ -21,10 +23,13 @@ extension CompanionStore {
 
     /// The step into `speciesID`. Without an `individual` that is all there is (the Pokédex page is about the
     /// species). For the raised Pokémon it also carries its progress and its waiting step; for a graduated
-    /// individual, the trade steps it can take.
+    /// individual, the trade steps it can take. A raised graduate whose form can still evolve gets its step too.
     func evolutionCards(for speciesID: Int, individual: DexEntry? = nil) -> [EvolutionCard] {
-        let raised = individual.map { isActiveDexEntry($0) && $0.finalID == speciesID } ?? false
+        let raised = individual.map {
+            $0.finalID == speciesID && (isLineParked ? $0.id == state.raisedEntryID : isActiveDexEntry($0))
+        } ?? false
         let pending = raised ? pendingEvolutionGate() : nil
+        let skippable = raised && !isLineParked && canSkipEvolution
         var cards: [EvolutionCard] = []
         if let rule = EvolutionRules.rule(for: speciesID),
            !rule.paths.isEmpty || rule.selector != nil || rule.trade != nil {
@@ -32,7 +37,8 @@ extension CompanionStore {
             cards.append(EvolutionCard(rule: rule, context: live, isNextStep: false))
         }
         if let pending, pending.rule.species != speciesID {
-            cards.append(EvolutionCard(rule: pending.rule, context: pending.context, isNextStep: true))
+            cards.append(EvolutionCard(rule: pending.rule, context: pending.context, isNextStep: true,
+                                       offersSkip: skippable))
         }
         if let individual, individual.releasedAt == nil, individual.profile != nil, individual.finalID == speciesID,
            !isActiveDexEntry(individual), individual.id != state.raisedEntryID {

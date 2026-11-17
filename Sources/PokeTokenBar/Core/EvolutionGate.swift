@@ -21,6 +21,9 @@ struct EvolutionProgress: Codable, Equatable, Sendable {
     var battleCursor: Date?
     /// The blocking reason the player was last told about (`CompanionStore.evolutionBlockKey`). Resets with the form.
     var stuckNotified: String?
+    /// A graduate's stage XP past its threshold: what it had over the line's threshold when it graduated, plus
+    /// what it earned while raised in this form. A line keeps its stage XP in `MonState.usedAtStage`.
+    var graduateXP = 0
 
     static let seenBattleLimit = 200
 
@@ -45,6 +48,7 @@ struct EvolutionProgress: Codable, Equatable, Sendable {
         seenBattles = c.lenient([String].self, forKey: .seenBattles, default: [])
         battleCursor = c.lenientOptional(Date.self, forKey: .battleCursor)
         stuckNotified = c.lenientOptional(String.self, forKey: .stuckNotified)
+        graduateXP = c.lenient(Int.self, forKey: .graduateXP, default: 0)
     }
 
     /// The next form starts clean, but battles already counted stay counted.
@@ -126,6 +130,12 @@ extension EvolutionRequirement {
     }
 }
 
+enum EvolutionBlock: Equatable {
+    case open
+    case clock(DayPeriod)
+    case conditions([EvolutionRequirement])
+}
+
 extension EvolutionRule {
     /// The first path whose requirements all hold; nil while closed. A rule without paths never closes.
     func openPath(in ctx: EvolutionContext) -> [EvolutionRequirement]? {
@@ -133,6 +143,16 @@ extension EvolutionRule {
     }
 
     func isOpen(in ctx: EvolutionContext) -> Bool { openPath(in: ctx) != nil }
+
+    /// Why a ready form is not taking this step. A path that lacks only the day or night waits for the clock;
+    /// anything else it lacks is a condition the player has to meet (or skip).
+    func block(in ctx: EvolutionContext) -> EvolutionBlock {
+        guard !isOpen(in: ctx) else { return .open }
+        let unmet = unmetRequirements(in: ctx)
+        let conditions = unmet.filter { if case .time = $0 { return false } else { return true } }
+        if conditions.isEmpty, case .time(let period)? = unmet.first { return .clock(period) }
+        return .conditions(conditions)
+    }
 
     /// What a closed gate still lacks: the unmet requirements of the path that is nearest to open.
     func unmetRequirements(in ctx: EvolutionContext) -> [EvolutionRequirement] {
