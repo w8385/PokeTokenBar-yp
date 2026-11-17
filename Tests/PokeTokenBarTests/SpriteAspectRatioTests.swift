@@ -228,15 +228,47 @@ final class SpriteAspectRatioTests: XCTestCase {
     /// Frames 0-36 hold the body at x 30..53; the bubbles that widen the union show in a minority of frames.
     private static let vanilliteBody: ClosedRange<CGFloat> = (30.0 / 55)...(54.0 / 55)
 
-    func testAScaledUpPoseNeverReachesPastTheSlotWithItsBody() {
+    func testAnOffCenterNarrowBodyIsCenteredAndScaledByItsWidth() {
         let box = SpriteFit.contentBox(76)
         let scaled = SpriteFit.animatedSize(for: Self.vanilliteGIF, reference: Self.vanilliteStatic, box: box,
                                             body: Self.vanilliteBody)
+        let uncapped = SpriteFit.animatedSize(for: Self.vanilliteGIF, reference: Self.vanilliteStatic, box: box)
+        XCTAssertEqual(scaled, uncapped, "the body is narrow, so the full scale-up applies despite its position")
+        XCTAssertGreaterThan(scaled.width, SpriteFit.size(for: Self.vanilliteGIF, box: box).width)
+        let dx = SpriteFit.bodyOffset(drawn: scaled, body: Self.vanilliteBody)
+        let bodyMiddle = dx + ((Self.vanilliteBody.lowerBound + Self.vanilliteBody.upperBound) / 2 - 0.5) * scaled.width
+        XCTAssertEqual(bodyMiddle, 0, accuracy: 0.001, "the body sits in the middle of the slot")
+        let bodyWidth = (Self.vanilliteBody.upperBound - Self.vanilliteBody.lowerBound) * scaled.width
+        XCTAssertLessThanOrEqual(bodyWidth, box)
+    }
+
+    func testABodyAsWideAsItsUnionKeepsThePlainFitAndNoOffset() {
+        let box = SpriteFit.contentBox(76)
+        let body: ClosedRange<CGFloat> = 0.01...0.99
+        let scaled = SpriteFit.animatedSize(for: Self.vanilliteGIF, reference: Self.vanilliteStatic, box: box, body: body)
         let plain = SpriteFit.size(for: Self.vanilliteGIF, box: box)
-        let bodyRight = scaled.width * (Self.vanilliteBody.upperBound - 0.5)
-        XCTAssertLessThanOrEqual(bodyRight, box / 2 + 0.001, "the body's right edge stays inside the slot")
-        XCTAssertGreaterThanOrEqual(scaled.width, plain.width, "the cap never shrinks below the plain fit")
-        XCTAssertGreaterThan(scaled.width, plain.width, "the body has a little room left, so it still grows to it")
+        XCTAssertEqual(scaled.width, plain.width / 0.98, accuracy: 0.001, "capped where the body fills the box")
+        XCTAssertEqual(SpriteFit.bodyOffset(drawn: scaled, body: body), 0, accuracy: 0.001)
+        XCTAssertEqual(SpriteFit.bodyOffset(drawn: scaled, body: nil), 0)
+    }
+
+    func testTheBubbleBandFollowsTheBodyCenter() {
+        let image = NSImage(size: NSSize(width: 10, height: 4))
+        image.lockFocus()
+        NSColor.red.setFill()
+        NSRect(x: 0, y: 0, width: 2, height: 4).fill()
+        NSRect(x: 7, y: 0, width: 3, height: 2).fill()
+        image.unlockFocus()
+        XCTAssertEqual(SpriteVisibleTop.opaqueTopFraction(of: image, center: 0.8), 0.5, accuracy: 0.001,
+                       "a band on the right body sees its top row")
+        let other = NSImage(size: image.size)
+        other.lockFocus()
+        NSColor.red.setFill()
+        NSRect(x: 0, y: 0, width: 2, height: 4).fill()
+        NSRect(x: 7, y: 0, width: 3, height: 2).fill()
+        other.unlockFocus()
+        XCTAssertEqual(SpriteVisibleTop.opaqueTopFraction(of: other), 0, accuracy: 0.001,
+                       "the middle band is empty, so the whole width decides (the left pillar)")
     }
 
     func testABodyThatFitsKeepsTheFullScaleUp() {
@@ -269,7 +301,7 @@ final class SpriteAspectRatioTests: XCTestCase {
         let uncapped = SpriteVisibleTop.inset(box: 76, imageSize: Self.vanilliteGIF, opaqueTopFraction: 0,
                                               reference: Self.vanilliteStatic)
         let capped = SpriteVisibleTop.inset(box: 76, imageSize: Self.vanilliteGIF, opaqueTopFraction: 0,
-                                            reference: Self.vanilliteStatic, body: Self.vanilliteBody)
+                                            reference: Self.vanilliteStatic, body: 0.01...0.99)
         XCTAssertGreaterThan(capped, uncapped, "a less scaled pose is shorter, so its top sits lower")
     }
 

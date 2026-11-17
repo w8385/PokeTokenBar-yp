@@ -1471,15 +1471,19 @@ read_when:
   14.0pt, Koraidon 9.9pt, Mega Gyarados 9.8pt, Mega Charizard X 8.4pt, Mega Venusaur 7.5pt, Mega Garchomp
   6.6pt, Lugia 3.2pt at 76pt. Why no test caught it: the fixtures were solid full-width rectangles measured by height,
   and the clip test asserted the cut as the intended behavior. `SpriteBody.span` measures the median
-  frame's left and right opaque edge once per animation (cached by first frame); `animatedSize` stops the
-  growth where that span, drawn centered, reaches the box edge, never below the plain fit. Transient
-  effects at the canvas edge may still be cut. The cost is most of the earlier gain: Greninja, Tinkaton,
-  Koraidon, Mega Venusaur and Mega Garchomp end at 1.0 to 1.04x, Mega Charizard X at 1.13x (its body fills
-  the union width), so only Lugia and Corviknight keep a real scale-up. `animatedSize` has two callers
-  (`SpriteView.fitted` through `imageSize`, and `SpriteVisibleTop.inset`); both pass the span. Tests:
-  `SpriteAspectRatioTests` (body edge stays in the slot, a body that fits keeps the full scale, median span,
-  bubble anchor); ignoring the span fails the first. `WidePoseShotTests` (opt-in with `PTB_WIDE_POSE_DIR`)
-  renders the production `SpriteView` and writes each body's overflow.
+  frame's left and right opaque edge once per animation (cached by first frame). `SpriteView.fitted` shifts
+  the image by `SpriteFit.bodyOffset` so that span sits in the middle of the slot, and `animatedSize` stops
+  the growth where the span's width fills the box, never below the plain fit. Effects outside the body
+  (Vanillite's bubbles) may be cut at the slot. The bubble anchor's central band follows the body center
+  (`opaqueTopFraction(of:center:)`), and the speech bubble stays centered on the slot, now the body.
+  The cost is part of the earlier gain: bodies that fill the union width keep little of it (76pt: Greninja
+  1.02x, Tinkaton 1.02x, Mega Venusaur 1.03x, Mega Garchomp 1.10x, Koraidon 1.13x, Mega Charizard X 1.14x,
+  Mega Gyarados 1.18x); Vanillite (1.22x), Lugia (1.40x) and Corviknight (1.23x) keep it. `animatedSize` has
+  two callers (`SpriteView.fitted` through `imageSize`, and `SpriteVisibleTop.inset`); both pass the span.
+  Tests: `SpriteAspectRatioTests` (off-center narrow body centered and scaled by its width, body as wide as
+  its union capped with no shift, median span, bubble band and anchor) and `SpriteFrameTests`; disabling
+  the cap and the shift fails them. `WidePoseShotTests` (opt-in with `PTB_WIDE_POSE_DIR`) renders the
+  production `SpriteView` and writes each body's shift and overflow.
 
 ## 프로세스 제어·업데이트
 
