@@ -45,4 +45,5 @@ def _move(move: dict) -> Move:
         min_hits=move["min_hits"],
         max_hits=move["max_hits"],
         effect=EFFECTS.get(move["id"]),
+        id=move["id"],
     )

@@ -103,6 +103,18 @@ PRIMAL_ORBS: dict[str, tuple[int, int]] = {
 }
 
 
+# species -> (the move that lets it Mega Evolve with no stone, its Mega form `/pokemon` id)
+MOVE_MEGAS = {384: (620, 10079)}
+
+
+def move_mega_form_id(pokemon_id: int, move_ids: tuple[int, ...], item: str | None) -> int | None:
+    """Mega Rayquaza: the Mega form id when the Pokémon knows its move and holds no Mega Stone, else None."""
+    entry = MOVE_MEGAS.get(pokemon_id)
+    if entry is None or entry[0] not in move_ids or item in MEGA_STONES:
+        return None
+    return entry[1]
+
+
 def mega_form_id(item: str | None, pokemon_id: int) -> int | None:
     """The Mega (or Primal) form `/pokemon` id when `item` is the stone or orb of `pokemon_id`, else None."""
     entry = MEGA_STONES.get(item or "") or PRIMAL_ORBS.get(item or "")

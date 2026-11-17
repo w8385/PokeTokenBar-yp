@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from ypoke import items, tera_forms
 from ypoke.battle import BaseStats
-from ypoke.mega_stones import mega_form_id
+from ypoke.mega_stones import mega_form_id, move_mega_form_id
 from ypoke.move_effects import STATUS_MOVES, wants_status_moves
 from ypoke.store import Store
 
@@ -196,7 +196,9 @@ def _forms_of(member: dict) -> list[tuple[str, int]]:
         forms.append(("pokemon", tera_forms.MASKS[item][0]))
     if item == items.STELLAR_CRYSTAL:
         forms.append(("pokemon", tera_forms.STELLAR_FORM))
-    mega = mega_form_id(item, pokemon_id)
+    if item in tera_forms.ORIGIN_FORMS:
+        forms.append(("mega", tera_forms.ORIGIN_FORMS[item][1]))
+    mega = mega_form_id(item, pokemon_id) or move_mega_form_id(pokemon_id, tuple(member.get("moves") or ()), item)
     if mega is not None:
         forms.append(("mega", mega))
     return forms

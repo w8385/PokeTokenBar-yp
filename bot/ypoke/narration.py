@@ -19,7 +19,7 @@ SIDE_MARKERS = ("🔵", "🔴")
 FAINTED = "💥"
 FAINTED_TAG = "쓰러짐"
 WAITING = "대기"
-WEATHER_ICON = {"sun": "☀️", "rain": "☔", "sandstorm": "🏜️", "hail": "🌨️", "snow": "❄️"}
+WEATHER_ICON = {"sun": "☀️", "rain": "☔", "sandstorm": "🏜️", "hail": "🌨️", "snow": "❄️", "strong-winds": "🌀난기류"}
 STATUS_ICON = {
     "burn": "🔥화상", "paralysis": "⚡마비", "poison": "☠️독", "toxic": "☠️맹독", "sleep": "💤잠듦",
     "freeze": "🧊얼음", "confusion": "💫혼란",
@@ -27,7 +27,7 @@ STATUS_ICON = {
 RESIDUAL_ICON = {"burn": "🔥", "poison": "☠️", "toxic": "☠️"}
 BLOCKED_TAG = {"paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임"}
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
-FORM_CAPTION = {"mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼"}
+FORM_CAPTION = {"mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼", "origin": "오리진폼"}
 ITEM_EFFECT_TEXT = {"cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독"}
 TRICK_ROOM_ICON = "🔀"
 ROCK_ICON = "🪨"
@@ -332,6 +332,8 @@ def _action_line(event: Action, marker: str) -> str:
     if event.blocked:
         return f"{head} {BLOCKED_TAG[event.blocked]}"
     head = f"{head} › {event.move}"
+    if event.failed and event.weather:
+        return f"{head} → 실패 ({WEATHER_ICON[event.weather]})"
     if event.weather:
         return f"{head} {WEATHER_ICON[event.weather]}"
     if event.effect == "yawn":
