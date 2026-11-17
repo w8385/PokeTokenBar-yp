@@ -238,12 +238,14 @@ struct SpriteView: View {
     @ViewBuilder
     private func fitted(_ image: NSImage, reference: CGSize? = nil, body: ClosedRange<CGFloat>? = nil) -> some View {
         let fit = Self.imageSize(for: image, box: SpriteFit.contentBox(size), reference: reference, body: body)
+        let dx = SpriteFit.bodyOffset(drawn: fit, body: body)
         let slot = Image(nsImage: image).resizable().interpolation(.none)
             .frame(width: fit.width, height: fit.height)
+            .offset(x: dx)
             .padding(.bottom, SpriteFit.margin * size)
             .frame(width: size, height: size, alignment: .bottom)
-        // A scaled-up wide pose may overflow sideways with effects only; the slot cuts those.
-        if fit.width > size { slot.clipped() } else { slot }
+        // Body-centering and the scale-up may push effects (bubbles, sparks) past the slot; the slot cuts those.
+        if abs(dx) + fit.width / 2 > size / 2 { slot.clipped() } else { slot }
     }
 
     /// One anchor for the whole animation (see `SpriteVisibleTop.anchorFraction`), so it does not jitter per frame.
@@ -251,10 +253,11 @@ struct SpriteView: View {
         guard reportsVisibleTop else { return nil }
         let images = frames.isEmpty ? (subject.image.map { [$0] } ?? []) : frames.map(\.image)
         guard let first = images.first else { return nil }
-        let fraction = SpriteVisibleTop.anchorFraction(of: images.map(SpriteVisibleTop.opaqueTopFraction))
+        let body = frames.isEmpty ? nil : SpriteBody.span(first: first) { images }
+        let center = body.map { ($0.lowerBound + $0.upperBound) / 2 } ?? 0.5
+        let fraction = SpriteVisibleTop.anchorFraction(of: images.map { SpriteVisibleTop.opaqueTopFraction(of: $0, center: center) })
         return SpriteVisibleTop.inset(box: size, imageSize: first.size, opaqueTopFraction: fraction,
-                                      reference: frames.isEmpty ? nil : subject.image?.size,
-                                      body: frames.isEmpty ? nil : SpriteBody.span(first: first) { images })
+                                      reference: frames.isEmpty ? nil : subject.image?.size, body: body)
     }
 
     var body: some View {

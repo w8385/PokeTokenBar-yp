@@ -413,8 +413,8 @@ enum SpriteFit {
 
     /// The fit of an animated crop in `box`, scaled up toward the static art's drawn height when its
     /// width-limited pose leaves it much smaller. Never shrinks; without a usable reference it is the plain fit.
-    /// `body` is the Pokémon's horizontal extent as fractions of the crop's width (`SpriteBody.span`); the growth
-    /// stops where that span, drawn centered, reaches the box edge, so scaling never cuts the body.
+    /// `body` is the Pokémon's horizontal extent as fractions of the crop's width (`SpriteBody.span`); the image is
+    /// drawn shifted by `bodyOffset` so that span is centered, and the growth stops where its width fills the box.
     static func animatedSize(for animated: CGSize, reference: CGSize?, box: CGFloat,
                              body: ClosedRange<CGFloat>? = nil) -> CGSize {
         let fit = size(for: animated, box: box)
@@ -424,10 +424,17 @@ enum SpriteFit {
         guard fit.height < target * wideScaleThreshold else { return fit }
         var scale = min(target / fit.height, wideScaleMaxGrowth)
         if let body {
-            let reach = max(abs(body.lowerBound - 0.5), abs(body.upperBound - 0.5)) * fit.width
-            if reach > 0 { scale = min(scale, max(1, box / 2 / reach)) }
+            let bodyWidth = (body.upperBound - body.lowerBound) * fit.width
+            if bodyWidth > 0 { scale = min(scale, max(1, box / bodyWidth)) }
         }
         return CGSize(width: fit.width * scale, height: fit.height * scale)
+    }
+
+    /// Horizontal shift (pt, right positive) of an image drawn at `drawn` size that puts its `body` span in the
+    /// middle of the slot. Zero without a span.
+    static func bodyOffset(drawn: CGSize, body: ClosedRange<CGFloat>?) -> CGFloat {
+        guard let body else { return 0 }
+        return (0.5 - (body.lowerBound + body.upperBound) / 2) * drawn.width
     }
 
     /// Same fit inside a `width`×`height` box. An empty source falls back to a square on the shorter side.
@@ -507,14 +514,16 @@ enum SpriteVisibleTop {
 
     /// Share of the image height above the first non-transparent row of the central band
     /// (the whole width when the band is empty); 0 when the image cannot be read.
-    static func opaqueTopFraction(of image: NSImage) -> CGFloat {
+    /// `center` is the share of the width the band sits on: 0.5, or the body's center for an animation drawn
+    /// body-centered (one value per animation, so the per-image cache stays valid).
+    static func opaqueTopFraction(of image: NSImage, center: CGFloat = 0.5) -> CGFloat {
         if let cached = cache.object(forKey: image) { return CGFloat(cached.doubleValue) }
-        let fraction = scanOpaqueTopFraction(of: image)
+        let fraction = scanOpaqueTopFraction(of: image, center: center)
         cache.setObject(NSNumber(value: Double(fraction)), forKey: image)
         return fraction
     }
 
-    private static func scanOpaqueTopFraction(of image: NSImage) -> CGFloat {
+    private static func scanOpaqueTopFraction(of image: NSImage, center: CGFloat) -> CGFloat {
         var rect = CGRect(origin: .zero, size: image.size)
         guard let cg = image.cgImage(forProposedRect: &rect, context: nil, hints: nil),
               cg.width > 0, cg.height > 0,
@@ -525,8 +534,9 @@ enum SpriteVisibleTop {
         else { return 0 }
         context.draw(cg, in: CGRect(x: 0, y: 0, width: cg.width, height: cg.height))
         let pixels = data.bindMemory(to: UInt8.self, capacity: cg.width * cg.height * 4)
-        let bandStart = Int(Double(cg.width) * centralBand.lowerBound)
-        let bandEnd = max(bandStart + 1, Int(Double(cg.width) * centralBand.upperBound))
+        let shift = Double(center) - 0.5
+        let bandStart = max(0, Int(Double(cg.width) * (centralBand.lowerBound + shift)))
+        let bandEnd = max(bandStart + 1, Int(Double(cg.width) * (centralBand.upperBound + shift)))
         // Memory row 0 is the top row of the drawn image.
         func firstOpaqueRow(columns: Range<Int>) -> Int? {
             for row in 0..<cg.height {

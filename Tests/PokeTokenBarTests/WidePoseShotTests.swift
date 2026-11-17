@@ -29,7 +29,7 @@ final class WidePoseShotTests: XCTestCase {
             _ = await store.data(speciesID: id, animated: false)
         }
 
-        var rows = ["name\tid\tbodyLeft\tbodyRight\tbox\tscale\tbodyOverflowPt"]
+        var rows = ["name\tid\tbodyLeft\tbodyRight\tbox\tscale\tshiftPt\tbodyOverflowPt"]
         for (name, id) in Self.sprites {
             let frames = SpriteLoader.cachedFrames(speciesID: id, shiny: false, directory: samples).map(\.image)
             let still = SpriteLoader.cachedImage(speciesID: id, directory: samples)
@@ -39,10 +39,12 @@ final class WidePoseShotTests: XCTestCase {
                 let content = SpriteFit.contentBox(box)
                 let fit = SpriteFit.animatedSize(for: first.size, reference: still.size, box: content, body: span)
                 let plain = SpriteFit.size(for: first.size, box: content)
-                let reach = span.map { max(abs($0.lowerBound - 0.5), abs($0.upperBound - 0.5)) * fit.width } ?? 0
+                let dx = SpriteFit.bodyOffset(drawn: fit, body: span)
+                let reach = span.map { max(abs(dx + ($0.lowerBound - 0.5) * fit.width),
+                                           abs(dx + ($0.upperBound - 0.5) * fit.width)) } ?? 0
                 rows.append("\(name)\t\(id)\t\(span.map { String(format: "%.2f", $0.lowerBound) } ?? "-")"
                     + "\t\(span.map { String(format: "%.2f", $0.upperBound) } ?? "-")\t\(Int(box))"
-                    + "\t\(String(format: "%.2f", fit.width / plain.width))"
+                    + "\t\(String(format: "%.2f", fit.width / plain.width))\t\(String(format: "%.1f", dx))"
                     + "\t\(String(format: "%.1f", max(0, reach - content / 2)))")
             }
         }
