@@ -8,6 +8,9 @@ TECHNICIAN_BOOST = 1.5
 ADAPTABILITY_STAB = 2.0
 GUTS_BOOST = 1.5
 ATTACK_DOUBLED = ("huge-power", "pure-power")
+SAND_FORCE_TYPES = ("rock", "ground", "steel")
+SAND_FORCE_BOOST = 1.3
+WEATHER_CHIP_IMMUNE = {"sand-force": "sandstorm"}
 WEATHER_DOUBLES_SPEED = {"swift-swim": "rain", "chlorophyll": "sun", "sand-rush": "sandstorm"}
 WEATHER_ON_ENTRY = {
     "drizzle": "rain", "drought": "sun", "sand-stream": "sandstorm", "snow-warning": "snow",
@@ -28,7 +31,8 @@ NAMES = {
     "swift-swim": "쓱쓱", "chlorophyll": "엽록소", "sand-rush": "모래헤치기", "drizzle": "잔비",
     "drought": "가뭄", "sand-stream": "모래날림", "snow-warning": "눈퍼뜨리기", "static": "정전기",
     "flame-body": "불꽃몸", "poison-point": "독가시", "immunity": "면역", "limber": "유연", "insomnia": "불면",
-    "water-veil": "수의베일", "desolate-land": "끝의대지", "primordial-sea": "시작의바다",
+    "water-veil": "수의베일", "desolate-land": "끝의대지", "primordial-sea": "시작의바다", "sand-force": "모래의힘",
+    "gale-wings": "질풍날개",
 }
 
 
@@ -36,7 +40,10 @@ def entry_trigger(ability: str | None) -> bool:
     return ability == "intimidate" or ability in WEATHER_ON_ENTRY
 
 
-def power_multiplier(ability: str | None, move_type: str | None, power: int, low_hp: bool) -> float:
+def power_multiplier(ability: str | None, move_type: str | None, power: int, low_hp: bool,
+                     weather: str | None = None) -> float:
+    if ability == "sand-force" and weather == "sandstorm" and move_type in SAND_FORCE_TYPES:
+        return SAND_FORCE_BOOST
     if ability == "technician" and power <= TECHNICIAN_MAX_POWER:
         return TECHNICIAN_BOOST
     if low_hp and move_type is not None and LOW_HP_BOOSTED_TYPE.get(ability) == move_type:
@@ -65,6 +72,15 @@ def damage_taken_multiplier(ability: str | None, move_type: str | None) -> float
 
 def blocks_ailment(ability: str | None, ailment: str | None) -> bool:
     return ailment in AILMENT_BLOCKED.get(ability, ())
+
+
+def ignores_weather_chip(ability: str | None, weather: str | None) -> bool:
+    return weather is not None and WEATHER_CHIP_IMMUNE.get(ability) == weather
+
+
+def priority_bonus(ability: str | None, move_type: str | None, full_hp: bool) -> int:
+    """Gale Wings: a Flying move goes +1 while the user is at full HP."""
+    return int(ability == "gale-wings" and move_type == "flying" and full_hp)
 
 
 def grants_immunity(ability: str | None, move_type: str | None) -> bool:
