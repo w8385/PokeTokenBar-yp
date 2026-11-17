@@ -64,7 +64,9 @@ final class ReadmeScreenshotTests: XCTestCase {
                     .environment(uploader).environment(entry)
             }
             if language == .en {
+                store.removeFriend(entryID: BoxDexFixture.pikachuID)
                 try await shot(popover(home) { $0.tab = .home }, "screenshot-home", in: dir, height: nil)
+                XCTAssertTrue(store.addFriend(entryID: BoxDexFixture.pikachuID))
                 try await shot(await floatingFriends(usage: usage, store: store, sprites: scratch), "screenshot-floating-friends",
                                in: dir, height: nil)
             }
