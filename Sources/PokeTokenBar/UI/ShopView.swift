@@ -102,7 +102,7 @@ struct ShopItemCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(l.itemName(kind)).font(.callout.weight(.semibold))
-                        let owned = store.itemCount(kind)
+                        let owned = kind == .expShare ? store.itemOwnedTotal(kind) : store.itemCount(kind)
                         if owned > 0 && !kind.isPassive && !kind.isSingleCopy {
                             Text(l.ownedCount(owned)).font(.caption2.weight(.bold))
                                 .foregroundStyle(.secondary).monospacedDigit()

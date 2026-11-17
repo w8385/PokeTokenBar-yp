@@ -31,6 +31,16 @@ enum ItemLoreTable {
                 "fr": "Un mystérieux charme scintillant qui facilite la rencontre avec les Pokémon chromatiques.",
                 "de": "Ein mysteriöser, schillernder Glücksbringer, der die Wahrscheinlichkeit erhöht, Schillernde Pokémon zu finden.",
             ]),
+        "exp-share": Entry(appOriginalLanguages: [],
+            names: ["ko": "학습장치", "en": "Exp. Share", "ja": "がくしゅうそうち", "es": "Repartir Exp", "fr": "Multi Exp", "de": "EP-Teiler"],
+            texts: [
+                "ko": "스위치를 켜면 지닌 포켓몬 모두가 경험치를 받을 수 있는 장치.",
+                "en": "Turning on this special device will allow all the Pokémon on your team to receive Exp. Points from battles.",
+                "ja": "スイッチを　いれると　てもちの　ポケモン　すべてが　けいけんちを　もらえる　そうち。",
+                "es": "Al activar el dispositivo, todos los Pokémon de tu equipo ganan Puntos de Experiencia tras los combates, aunque no salgan a luchar.",
+                "fr": "Objet à activer. Permet de faire gagner des Points d’Expérience à tous les Pokémon de l’équipe, même à ceux qui n’ont pas participé au combat.",
+                "de": "Solange der EP-Teiler angeschaltet ist, erhält jedes Team-Pokémon nach einem Sieg Erfahrungspunkte.",
+            ]),
         "fire-stone": Entry(appOriginalLanguages: [],
             names: ["ko": "불꽃의돌", "en": "Fire Stone", "ja": "ほのおのいし", "es": "Piedra Fuego", "fr": "Pierre Feu", "de": "Feuerstein"],
             texts: [

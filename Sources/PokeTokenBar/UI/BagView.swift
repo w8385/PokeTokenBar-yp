@@ -173,7 +173,7 @@ private struct ItemCard: View {
         switch kind {
         case .rareCandy: return store.canUseRareCandy
         case .mint:      return store.canUseMint
-        case .shinyCharm: return false   // 보유형 — 사용 개념 없음(상시 효과)
+        case .shinyCharm, .expShare: return false
         default:         return store.canUseStone(kind)
         }
     }
@@ -183,6 +183,7 @@ private struct ItemCard: View {
         case .rareCandy: return "+\(TokenFormatter.compact(selectedCandyCount * RareCandy.xp)) XP"
         case .mint:      return l.mintEffectHint
         case .shinyCharm: return l.shinyCharmEffectHint
+        case .expShare: return l.expShareBagHint
         default:         return l.stoneEffectHint
         }
     }
@@ -191,7 +192,7 @@ private struct ItemCard: View {
         switch kind {
         case .rareCandy: _ = store.useRareCandy(count: selectedCandyCount)
         case .mint:      _ = store.useMint()
-        case .shinyCharm: break   // 보유형 — 사용 동작 없음
+        case .shinyCharm, .expShare: break
         default:
             let result = store.useEvolutionStone(kind)
             stoneNotReady = result == .notReady
@@ -212,6 +213,8 @@ private struct ItemCard: View {
             }
         } else if kind.isLinkingCord {
             Text(l.linkingCordBagHint).font(.caption2).foregroundStyle(.tertiary)
+        } else if kind == .expShare {
+            Text(l.expShareBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if kind.isHeldItem {
             Text(l.heldItemBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if kind.isEvolutionHeld {

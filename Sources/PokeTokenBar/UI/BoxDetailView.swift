@@ -36,6 +36,9 @@ struct BoxDetailView: View {
                                  speciesName: name, lineupSlots: battleEntry?.slots ?? []) {
                         Task { await uploader?.tick() }
                     }
+                    if store.showsExpShareSlot(for: individual) {
+                        ExpShareSlot(store: store, individual: individual)
+                    }
                     moveTraining
                     actions
                     ForEach(store.evolutionCards(for: individual.speciesID, individual: entry)) {
