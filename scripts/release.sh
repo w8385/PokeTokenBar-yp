@@ -16,64 +16,13 @@ REPO="chattymin/PokeTokenBar"
 TAP_REPO="chattymin/homebrew-tap"
 CASK_PATH="Casks/poke-token-bar.rb"
 
-# ── 문서 일관성 검토 (배포 전 항상 실행) ───────────────────────────────────
-# 기계적으로 잡을 수 있는 것만 자동 경고. 내용(기능 설명) 변경 여부는 사람이 체크리스트로 판단.
+# ── 문서·에셋 검토 (배포 전 항상 실행). 검사 본문은 fork-release.sh 와 공유한다 ──────────
+# 0 통과, 1 경고(y/N 프롬프트), 2 UI feat 에 새 README 이미지 없음(하드 게이트).
 doc_check() {
-  local warn=0
-  echo "▶ 문서 일관성 검토"
-  # 정적 버전 하드코딩(릴리스마다 수동 갱신 필요 → 동적 배지 권장)
-  if grep -rnE "img.shields.io/badge/release-v[0-9]" README*.md 2>/dev/null; then
-    echo "  ⚠ README 에 정적 버전 배지가 있습니다(동적 github/v/release 배지 권장)."; warn=1
-  fi
-  # 제거된 의존성/도구 흔적 (필요 시 PATTERN 에 추가)
-  for pat in ccusage; do
-    if grep -rniq "$pat" README*.md 2>/dev/null; then
-      echo "  ⚠ README 에 '$pat' 잔존 — 제거된 항목인지 확인."; warn=1
-    fi
-  done
-  # UI 변경 → 스크린샷 staleness (실제 diff 상태 검증 — 수동 체크리스트가 통과의례로 묻히지 않게).
-  # 직전 릴리스 태그 이후 UI 소스가 바뀌었는데 assets 스크린샷이 안 바뀌었으면 README 이미지 stale 가능.
-  local last_tag ui_changed shot_changed
+  local last_tag
   last_tag=$(git describe --tags --match "v*" --abbrev=0 2>/dev/null || echo "")
-  if [[ -n "$last_tag" ]]; then
-    ui_changed=$(git diff --name-only "$last_tag"..HEAD -- 'Sources/PokeTokenBar/UI/' 2>/dev/null)
-    shot_changed=$(git diff --name-only "$last_tag"..HEAD -- 'assets/settings*' 'assets/screenshot*' 'assets/menubar*' 'assets/shiny*' 2>/dev/null)
-    if [[ -n "$ui_changed" && -z "$shot_changed" ]]; then
-      echo "  ⚠ UI 소스가 $last_tag 이후 변경됐으나 스크린샷(assets/) 갱신 없음 — README 이미지 stale 가능:"
-      echo "$ui_changed" | sed 's/^/       /'
-      echo "     → 변경된 화면이면 assets 스크린샷 재생성 (README.md/ko/ja 각 언어)."
-      warn=1
-    fi
-
-    # 새 UI 기능 → **신규** 에셋 커버리지 (하드 게이트).
-    # 위 staleness 는 "에셋이 하나라도 바뀌었나"만 본다 → 기존 스크린샷만 다시 그려도 통과한다.
-    # 2.5.0 이 정확히 그 경로로 새 나갔다: 플로팅 펫(신규 기능)이 README·랜딩에 이미지 하나 없이 배포됐고,
-    # settings.png 를 갱신해 둔 탓에 위 검사는 조용히 통과했다. 신규 기능은 신규 에셋을 요구한다.
-    local ui_feats new_assets
-    ui_feats=$(git log "$last_tag"..HEAD --format='%s' -- 'Sources/PokeTokenBar/UI/' 2>/dev/null \
-                 | grep -iE '^(feat|feature)[(:]' || true)
-    new_assets=$(git diff --name-only --diff-filter=A "$last_tag"..HEAD -- 'assets/' 2>/dev/null)
-    if [[ -n "$ui_feats" && -z "$new_assets" ]]; then
-      echo "  ✗ UI 를 바꾼 신규 기능이 있는데 assets/ 에 **새로 추가된** 파일이 없습니다:"
-      echo "$ui_feats" | sed 's/^/       /'
-      echo "     → 새 화면·새 표면이면 전용 스크린샷을 만들어 README(ko/ja 포함)와 랜딩에 넣으세요."
-      echo "     → 이미지가 정말 불필요하다고 판단되면 그 판단을 커밋에 남기세요(feat 가 아닌 타입으로)."
-      # 예외 없음. 경고(return 1, y/N 프롬프트)와 달리 return 2 는 호출부에서 즉시 중단시킨다 —
-      # 환경변수 우회구를 두면 결국 그 변수가 습관이 된다. 통과시키려면 에셋을 만들거나
-      # 커밋 타입을 바꿔야 한다(= 판단을 기록으로 남겨야 한다).
-      return 2
-    fi
-  fi
-  cat <<'CHECK'
-  ─ 수동 체크리스트 (내용 변경 시 갱신) ─────────────────────────────
-   [ ] README.md / .ko / .ja : 기능 목록·요구사항·데이터소스·스크린샷
-   [ ] 랜딩(gh-pages/index.html): hero·features·install·works-with·요구사항·푸터
-       · 버전 배지는 동적(github/v/release) → 자동. 기능/문구만 수동.
-       · 3개 언어 i18n 사전(en/ko/ja) 동시 갱신 + 키 정합 유지.
-   [ ] homebrew-tap cask: caveats(설치 요구사항) 최신 상태인지
-  ─────────────────────────────────────────────────────────────────
-CHECK
-  return $warn
+  [[ -n "$last_tag" ]] || return 0
+  python3 scripts/release-asset-gate.py "$last_tag"
 }
 
 if [[ "${1:-}" == "--check-only" ]]; then

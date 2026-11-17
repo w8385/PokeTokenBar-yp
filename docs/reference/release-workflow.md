@@ -35,7 +35,8 @@ read_when:
 
 ## 1. 문서·이미지 갱신 (매 릴리스 필수 — "할까요?" 묻지 말고 무조건 한다)
 
-`./scripts/release.sh --check-only` 로 경고를 확인한 뒤 아래를 모두 반영한다.
+`./scripts/release.sh --check-only`(업스트림) 또는 `./scripts/fork-release.sh --check-only <직전 릴리스 태그>`(포크·train)로
+경고를 확인한 뒤 아래를 모두 반영한다. 두 스크립트는 같은 검사(`scripts/release-asset-gate.py`)를 부른다.
 
 - **README.md/ko/ja**: 기능 목록·how-it-works·스크린샷 참조.
 - **랜딩(gh-pages orphan 브랜치) — 필수.** `git worktree add /tmp/ptb-ghpages gh-pages` → `index.html`
@@ -47,6 +48,9 @@ read_when:
   (PIL 재인코딩 단독은 용량 팽창 주의). 언어별 이미지(`settings.png`/`-ko`/`-ja` 등) 각 README 참조.
   테스트로 뜨는 캡처(`PTB_*_DIR` 환경변수, `swift test --filter <Suite>`)는 `OffscreenRender` 로 화면 밖에서 그려서
   앱을 띄우거나 창을 보이지 않는다 — 릴리스 중에도 사용자의 포커스를 건드리지 않는다.
+  README 팝오버 화면(홈·상점·가방·도감·박스·프로필·학습장치·대결·체육관·리플레이·플로팅 친구)은
+  `PTB_README_SHOT_DIR=assets swift test --filter ReadmeScreenshotTests` 한 번으로 en/ko/ja 다크 720px 를 다시 그린다.
+  샘플 세이브(`BoxDexFixture`)와 봇의 관동 체육관 목록을 쓰고, 사용자 세이브는 읽지 않는다.
 - homebrew-tap cask caveat.
 
 ### 게이트의 함정
@@ -58,6 +62,18 @@ read_when:
   (**예외 없음** — 통과시키려면 에셋을 만들거나 커밋 타입을 바꿔야 한다). 기존 staleness 검사는 "에셋이 하나라도 바뀌었나"만
   보기 때문에 **기존 스크린샷만 다시 그려도 통과**한다 — 2.5.0 에서 플로팅 펫이 이미지 없이 나간 경로가
   정확히 이것이다(`settings.png` 를 갱신해 둔 탓에 조용히 통과). 갱신(stale)과 커버리지(신규)는 다른 질문이다.
+  새 에셋은 **README 이미지**(`assets/screenshot-*`·`settings*`·최상위 GIF)이고 **README 셋 모두에 실려야** 센다.
+  `assets/trainers/` 같은 앱 리소스는 세지 않는다.
+- **화면별 갱신 검사.** `release-asset-gate.py` 의 `SCREENS` 표가 UI 파일을 그 화면의 이미지 묶음(`screenshot-shop` 등,
+  `-ko`/`-ja` 포함)에 잇는다. 바뀐 UI 파일마다 그 묶음 하나는 언어별 이미지가 모두 다시 그려져야 한다 — 다른 화면 이미지를
+  다시 그려도 넘어가지 않는다. 표에 없는 UI 파일만 "README 이미지가 하나라도 바뀌었나"로 본다. 새 화면을 README 에 올리면 표에도 더한다
+  (`ScreenMapTests` 가 표의 글롭·이미지가 실제로 있는지 본다).
+- **포크·train 경로도 같은 게이트를 지난다.** `fork-release.sh` 는 빌드 전에 `gh release view` 로 읽은 직전 릴리스 태그를
+  기준으로 게이트를 돌리고, 경고(1)와 하드 게이트(2) 모두에서 멈춘다(프롬프트 없음). train 은 태그를 먼저 push 하므로
+  `git describe` 를 기준으로 쓰면 범위가 비어 늘 통과한다 — 그래서 기준은 직전 *릴리스* 태그다.
+  검토를 마친 예외만 `PTB_ASSET_GATE_SKIP="<사유>"` 로 넘기고, 사유는 게시되는 릴리스 노트 끝에 찍힌다.
+- **랜딩.** 포크(`w8385/PokeTokenBar-yp`)에는 아직 `gh-pages` 브랜치와 Pages 가 없다. 랜딩 갱신은 업스트림 `gh-pages` 를
+  받아 만든 로컬 브랜치에 `landing:` 커밋으로 두고, 게시는 통합자가 정한다.
 
 ## 2. 실행
 
