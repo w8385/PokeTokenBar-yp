@@ -96,6 +96,7 @@ final class OffscreenRenderGuardTests: XCTestCase {
         ("asyncAfter", #"\basyncAfter\("#),
         ("settle(for:)", #"\bsettle\([^)]*\bfor:"#),
         ("a literal expectation timeout", #"\btimeout:\s*[0-9]"#),
+        ("an elapsed-time clock", #"\b(ContinuousClock|SuspendingClock)\.now\b|\.duration\(to:"#),
     ]
 
     /// A fake's own latency rather than a wait, with the number of such lines each file keeps.
@@ -143,7 +144,8 @@ final class OffscreenRenderGuardTests: XCTestCase {
                        "RunLoop.current.run(mode: .default, before: .distantFuture)",
                        "DispatchQueue.main.asyncAfter(deadline: .now() + 1) {}",
                        "try await OffscreenRender.settle(host, for: .seconds(2))",
-                       "await fulfillment(of: [done], timeout: 2)"]
+                       "await fulfillment(of: [done], timeout: 2)",
+                       "let startedAt = ContinuousClock.now", "XCTAssertLessThan(start.duration(to: end), .seconds(1))"]
         for sample in samples {
             XCTAssertEqual(Self.wallClockWaits(in: sample).count, 1, "\(sample) must be rejected")
         }

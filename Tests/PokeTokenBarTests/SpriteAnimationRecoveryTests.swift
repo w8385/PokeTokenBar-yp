@@ -91,18 +91,18 @@ final class SpriteAnimationRecoveryTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: fixture.directory) }
         let store = SpriteStore(directory: fixture.directory)
         AnimationRecoveryURLProtocol.state.configure([.failure, .gif(fixture.gif)])
-        let startedAt = ContinuousClock.now
+        var waits: [Duration] = []
         var fallback: NSImage?
         var fallbackCount = 0
         let frames = await SpriteLoader.recoveringAnimationFrames(
             speciesID: 176, shiny: false, store: store,
+            waitBeforeRetry: { waits.append($0) },
             onUnavailable: {
                 fallbackCount += 1
                 fallback = await SpriteLoader.image(speciesID: 176, store: store)
                 XCTAssertNotNil(fallback, "the existing static image must remain available during retry")
             })
-        XCTAssertGreaterThanOrEqual(startedAt.duration(to: .now), .seconds(2),
-                                    "the production retry must wait instead of issuing a tight request loop")
+        XCTAssertEqual(waits, [.seconds(2)], "the retry must back off instead of issuing a tight request loop")
         XCTAssertEqual(fallbackCount, 1)
         XCTAssertEqual(AnimationRecoveryURLProtocol.state.requests.count, 2)
         XCTAssertEqual(frames.count, 2, "one failed request must not end playback loading permanently")
@@ -154,20 +154,32 @@ final class SpriteAnimationRecoveryTests: XCTestCase {
     func testCancellationInterruptsTheProductionBackoff() async throws {
         let fixture = try fixture()
         defer { try? FileManager.default.removeItem(at: fixture.directory) }
-        let fallbackShown = expectation(description: "fallback shown before sleeping")
+        var backingOff = false
+        var backoffOutcome: Result<Void, Error>?
         var result: [(image: NSImage, delay: TimeInterval)] = []
         let task = Task<Void, Never> { @MainActor in
             result = await SpriteLoader.recoveringAnimationFrames(
                 speciesID: 176, shiny: false, store: SpriteStore(directory: fixture.directory),
-                onUnavailable: { fallbackShown.fulfill() })
+                waitBeforeRetry: { duration in
+                    backingOff = true
+                    do {
+                        try await SpriteLoader.retryBackoff(duration)
+                        backoffOutcome = .success(())
+                    } catch {
+                        backoffOutcome = .failure(error)
+                        throw error
+                    }
+                }, onUnavailable: {})
         }
-        await fulfillment(of: [fallbackShown], timeout: waitCeilingSeconds)
-        let cancelledAt = ContinuousClock.now
+        try await waitUntil("the loader to enter the production backoff") { backingOff }
         task.cancel()   // Same cancellation propagated by .task teardown/species/low-power changes.
         await task.value
-        XCTAssertLessThan(cancelledAt.duration(to: .now), .seconds(1))
+        guard case .failure(let error) = try XCTUnwrap(backoffOutcome) else {
+            return XCTFail("cancellation must interrupt the backoff, not wait it out")
+        }
+        XCTAssertTrue(error is CancellationError)
         XCTAssertTrue(result.isEmpty)
-        XCTAssertEqual(AnimationRecoveryURLProtocol.state.requests.count, 1)
+        XCTAssertEqual(AnimationRecoveryURLProtocol.state.requests.count, 1, "the retry must never fire")
     }
 
     func testCancelledShinyRequestDoesNotStartNormalFallbackOrApplyAResult() async throws {
