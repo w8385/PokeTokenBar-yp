@@ -24,6 +24,10 @@ CONDITIONAL = frozenset({
     138, 173, 248, 252, 264, 284, 323, 353, 387, 389, 485, 562, 660, 682, 704, 798, 809, 892, 893, 901, 909, 918,
 })
 LAST_RESORT = RECHARGE | CHARGE_TURN | SELF_FAINT | CONDITIONAL
+# Field moves and moves whose point is stealing an item or a status the foe never has (Facade without an orb). A foe
+# takes one only when every other move it learns is already picked.
+FILLER = frozenset({15, 70, 168, 249, 263, 343})
+WEAK_POWER = 50
 ATTACKING_TYPES = tuple(TYPE_NAMES_KO)
 
 
@@ -48,12 +52,13 @@ class FoeSpecies:
 
 def pick(moves: list[FoeMove], types: tuple[str, ...], attack: int, special_attack: int) -> list[int]:
     """Move ids, best first: the strongest move of each own type, then the moves that add the most damage across the
-    18 types. A move is scored by power × accuracy × hits on the attack stat of its class, × STAB."""
-    reliable = [move for move in moves if move.id not in LAST_RESORT]
-    chosen = _pick_from(reliable, types, attack, special_attack)
-    if len(chosen) < MAX_MOVES:
-        spare = [move for move in moves if move.id in LAST_RESORT]
-        chosen += _pick_from(spare, types, attack, special_attack, chosen)[:MAX_MOVES - len(chosen)]
+    18 types. A move is scored by power × accuracy × hits on the attack stat of its class, × STAB. Moves under
+    `WEAK_POWER`, then last-resort moves, then filler only take slots the tier before could not fill."""
+    chosen: list[FoeMove] = []
+    for tier in range(4):
+        if len(chosen) < MAX_MOVES:
+            spare = [move for move in moves if _tier(move) == tier]
+            chosen += _pick_from(spare, types, attack, special_attack, chosen)[:MAX_MOVES - len(chosen)]
     return [move.id for move in chosen]
 
 
@@ -65,14 +70,20 @@ def move(move_id: int) -> FoeMove | None:
     return _table()[1].get(move_id)
 
 
+def _tier(move: FoeMove) -> int:
+    if move.id in FILLER:
+        return 3
+    if move.id in LAST_RESORT:
+        return 2
+    return 1 if move.power * move.hits < WEAK_POWER else 0
+
+
 def _pick_from(moves: list[FoeMove], types: tuple[str, ...], attack: int, special_attack: int,
                taken: list[FoeMove] = ()) -> list[FoeMove]:
-    def score(move: FoeMove) -> float:
-        stat = attack if move.physical else special_attack
-        stab = STAB_MULTIPLIER if move.type in types else 1.0
-        return move.power * (move.accuracy or 100) / 100 * move.hits * stat * stab
+    def scored(move: FoeMove) -> float:
+        return score(move, types, attack, special_attack)
 
-    ranked = sorted(moves, key=lambda move: (-score(move), move.id))
+    ranked = sorted(moves, key=lambda move: (-scored(move), move.id))
     chosen: list[FoeMove] = list(taken)
     for own in types:
         best = next((move for move in ranked if move.type == own and move not in chosen), None)
@@ -81,7 +92,7 @@ def _pick_from(moves: list[FoeMove], types: tuple[str, ...], attack: int, specia
 
     def reach(picked: list[FoeMove]) -> float:
         return sum(
-            max((score(move) * effectiveness(move.type, (defender,)) for move in picked), default=0.0)
+            max((scored(move) * effectiveness(move.type, (defender,)) for move in picked), default=0.0)
             for defender in ATTACKING_TYPES
         )
 
@@ -92,8 +103,14 @@ def _pick_from(moves: list[FoeMove], types: tuple[str, ...], attack: int, specia
         if not left:
             break
         now = reach(chosen)
-        chosen.append(max(left, key=lambda move: (reach([*chosen, move]) - now, score(move), -move.id)))
+        chosen.append(max(left, key=lambda move: (reach([*chosen, move]) - now, scored(move), -move.id)))
     return chosen[len(taken):]
+
+
+def score(move: FoeMove, types: tuple[str, ...], attack: int, special_attack: int) -> float:
+    stat = attack if move.physical else special_attack
+    stab = STAB_MULTIPLIER if move.type in types else 1.0
+    return move.power * (move.accuracy or 100) / 100 * move.hits * stat * stab
 
 
 def expected_hits(min_hits: int, max_hits: int) -> float:
