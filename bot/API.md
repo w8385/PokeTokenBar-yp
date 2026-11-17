@@ -213,8 +213,9 @@ stored party is never touched, and it counts toward no ranking. Badges and rewar
 trainers are original characters.
 
 The Elite Four and the champion are one run of five battles in a row, the hideout one run of four (two grunts,
-the admin, the boss). In a run the team's HP and status carry over from one battle to the next and a loss
-starts the run again. The bot keeps no run: see [`carried` and `carry`](#a-run-carried-and-carry).
+the admin, the boss). A loss starts the run again. The app heals the team fully between battles by sending no
+`carried`; the bot still takes `carried` from older apps, which carry HP and status over. The bot keeps no run:
+see [`carried` and `carry`](#a-run-carried-and-carry).
 
 ### `GET /v1/gyms`
 
@@ -262,7 +263,7 @@ Auth as above. The whole catalog; it is the same on every call and changes only 
 | `types` | The types the trainer's team leans to (PokéAPI type names): one for a gym leader or Elite Four member, the organization's two for the hideout, none for the champion. The team has as many of them as the region has such species, up to a share of the six |
 | `level` | Always 50 |
 | `trainer` | An original character: `name` and `line` (one short sentence) in `ko`, `en` and `ja`. Both grunts share the organization's name and line |
-| `team` | Six species ids in battle order, strongest last. The battle uses exactly this team, so the preview is the lineup. Grunts lean to low base stats, the champion and the boss to high ones |
+| `team` | Six species ids in battle order, strongest last. The battle uses exactly this team, so the preview is the lineup. Species are picked around a base-stat total that rises with the gym number (gym 1 about 420, gym 8 about 545; early gyms may field a form that could still evolve); the Elite Four and the champion sit above gym 8, grunts low, the boss high. The total is the same in every region, so every region climbs the same curve |
 | `run` | `null` for a gym; otherwise `id` (`<region>-elite` or `<region>-hideout`), `step` and `steps` |
 
 Trainer art is the app's own resource named by the battle `id`.
@@ -280,7 +281,9 @@ Auth as above, body at most 64 KB.
 moves included (the same attacking-move check, `503 pokeapi_unavailable` when PokéAPI cannot be reached to check
 them). Errors name the field as `team[i]…`. The fight is the same simulation as `/대결`: Lv50 cap, one at a time in
 order, the next comes in when one faints, no switching. A `rental` member fights at the trainer's level (50).
-The foes use their latest attacking moves and have no nature, ability or held item (IVs 15).
+The foes use their latest attacking moves and have no nature, ability or held item. Their IVs rise with the
+trainer: 12 at gym 1 up to 26 at gym 8, 28 for the Elite Four, 31 for the champion, 12 / 20 / 26 for grunts, the
+admin and the boss.
 
 ```json
 {

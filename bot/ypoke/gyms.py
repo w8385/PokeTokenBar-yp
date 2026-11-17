@@ -14,15 +14,23 @@ from pathlib import Path
 from ypoke.battle import BATTLE_LEVEL
 from ypoke.dex import REGIONS as DEX_REGIONS
 from ypoke.gym_data import CHAMPIONS, ELITE, ELITE_TYPES, GYM_TYPES, LEADERS, ORG_TYPES, ORGS
+from ypoke.upload_server import IV_KEYS
 
 TEAM_SIZE = 6
 MIN_TOTAL = 300
 LANGUAGES = ("ko", "en", "ja")
 SPECIES_TABLE = Path(__file__).with_name("species.json")
-# How far a trainer's team leans to high base-stat totals.
-STRENGTH = {"gym": 0.0, "elite": 0.5, "champion": 2.0, "grunt": -1.5, "admin": 0.5, "boss": 2.0}
-# How many of a team's six are of the trainer's focus types (fewer where the region has fewer such species).
+# (base-stat total the species are picked around, IVs of every stat): per gym number, then per other kind. Absolute,
+# not ranked within a region, so every region climbs the same curve. The Elite Four and the champion stand above gym 8.
+GYM_STRENGTH = ((420, 12), (435, 14), (450, 16), (470, 18), (490, 19), (505, 20), (525, 21), (545, 26))
+STRENGTH = {"elite": (555, 28), "champion": (600, 31), "grunt": (430, 12), "admin": (480, 20), "boss": (530, 26)}
+# How far from the target a pick may stray at random, in base-stat total.
+SPREAD = 30
+# How many of a team's six are of the trainer's focus types: `MIN_FOCUS` always (fewer where the region has fewer
+# such species), up to `FOCUS` while they are within `WINDOW` of the target total.
 FOCUS = {"gym": 6, "elite": 6, "grunt": 3, "admin": 4, "boss": 5}
+MIN_FOCUS = 3
+WINDOW = 40
 ORG_ROLES = ("grunt", "grunt", "admin", "boss")
 ORG_MEMBER_WORD = ("단원", "Grunt", "の下っ端")
 
@@ -52,6 +60,10 @@ class Opponent:
     @property
     def level(self) -> int:
         return BATTLE_LEVEL
+
+    @property
+    def iv(self) -> int:
+        return _strength(self.kind, self.index)[1]
 
 
 @dataclass(frozen=True)
@@ -115,7 +127,8 @@ def run_of(opponent: Opponent) -> tuple[Opponent, ...]:
 
 def foe_members(opponent: Opponent) -> list[dict]:
     """The team as party members the battle can build (no moves chosen: the latest attacking moves)."""
-    return [{"pokemon_id": pokemon_id, "level": opponent.level, "shiny": False, "ivs": {}} for pokemon_id in opponent.team]
+    ivs = dict.fromkeys(IV_KEYS, opponent.iv)
+    return [{"pokemon_id": pokemon_id, "level": opponent.level, "shiny": False, "ivs": ivs} for pokemon_id in opponent.team]
 
 
 @cache
@@ -141,8 +154,10 @@ def species_table() -> dict[int, Species]:
 
 def _build_region(region_id: str, name: str, first: int, last: int, table: dict[int, Species]) -> Region:
     pool = usable_species(table, first, last)
+    gym_pool = usable_species(table, first, last, final_only=False)
     gyms = [
-        _themed(region_id, f"{region_id}-{index}", "gym", index, (kind,), _trainer(LEADERS[region_id][index - 1]), pool)
+        _themed(region_id, f"{region_id}-{index}", "gym", index, (kind,), _trainer(LEADERS[region_id][index - 1]),
+                gym_pool)
         for index, kind in enumerate(GYM_TYPES[region_id], 1)
     ]
     elite_run, steps = f"{region_id}-elite", len(ELITE_TYPES[region_id]) + 1
@@ -163,11 +178,14 @@ def _build_region(region_id: str, name: str, first: int, last: int, table: dict[
     return Region(region_id, name, first, last, tuple(gyms), tuple(elite), org, tuple(hideout))
 
 
-def usable_species(table: dict[int, Species], first: int, last: int) -> list[Species]:
+def usable_species(table: dict[int, Species], first: int, last: int, final_only: bool = True) -> list[Species]:
     """Species of the dex range `first..last` a Lv50 trainer may field, by id: not baby, legendary or mythical,
-    reachable and armed by Lv50, of at least `MIN_TOTAL` base stats, and not yet evolved into a form it could
-    already be."""
-    evolving = {species.parent for species in table.values() if species.parent and species.reach <= BATTLE_LEVEL}
+    reachable and armed by Lv50, of at least `MIN_TOTAL` base stats, and with `final_only` not yet evolved into a
+    form it could already be."""
+    evolving = (
+        {species.parent for species in table.values() if species.parent and species.reach <= BATTLE_LEVEL}
+        if final_only else set()
+    )
     return [
         species for species in table.values()
         if first <= species.id <= last and not species.excluded and species.level <= BATTLE_LEVEL
@@ -180,20 +198,23 @@ def _themed(region_id: str, battle_id: str, kind: str, index: int, types: tuple[
     """Up to `FOCUS[kind]` species of the focus types, the best-ranked ones by the seed; the rest of the team comes
     from the region's other species. The strongest member goes last."""
     rng = random.Random(battle_id)
-    matching = [species for species in pool if set(types) & set(species.types)]
-    chosen = _ranked(rng, matching, STRENGTH[kind])[:FOCUS[kind]]
+    target = _strength(kind, index)[0]
+    matching = _ranked(rng, [species for species in pool if set(types) & set(species.types)], target)
+    chosen = matching[:min(FOCUS[kind], MIN_FOCUS)]
+    near = [species for species in matching[len(chosen):] if abs(species.total - target) <= WINDOW]
+    chosen += near[:FOCUS[kind] - len(chosen)]
     taken = {species.id for species in chosen}
     rest = [species for species in pool if species.id not in taken]
-    chosen += _ranked(rng, rest, STRENGTH[kind])[:TEAM_SIZE - len(chosen)]
+    chosen += _ranked(rng, rest, target)[:TEAM_SIZE - len(chosen)]
     return Opponent(battle_id, region_id, kind, index, types, trainer, _lineup(chosen), run, index if run else 0, steps)
 
 
 def _mixed(region_id: str, battle_id: str, index: int, trainer: Trainer, pool: list[Species], run: str) -> Opponent:
-    """The champion (last of the run, `index` is also the run's length) has no focus: the highest-ranked species of
-    the whole region, no two sharing a first type."""
+    """The champion (last of the run, `index` is also the run's length) has no focus: the region's species nearest
+    its target, no two sharing a first type."""
     rng = random.Random(battle_id)
     chosen: list[Species] = []
-    for species in _ranked(rng, pool, STRENGTH["champion"]):
+    for species in _ranked(rng, pool, STRENGTH["champion"][0]):
         if all(species.types[0] != other.types[0] for other in chosen):
             chosen.append(species)
         if len(chosen) == TEAM_SIZE:
@@ -201,12 +222,15 @@ def _mixed(region_id: str, battle_id: str, index: int, trainer: Trainer, pool: l
     return Opponent(battle_id, region_id, "champion", index, (), trainer, _lineup(chosen), run, index, index)
 
 
-def _ranked(rng: random.Random, candidates: list[Species], bias: float) -> list[Species]:
-    """`candidates` in a seeded random order that leans to the high end of base-stat total by `bias`."""
+def _strength(kind: str, index: int) -> tuple[int, int]:
+    return GYM_STRENGTH[index - 1] if kind == "gym" else STRENGTH[kind]
+
+
+def _ranked(rng: random.Random, candidates: list[Species], target: int) -> list[Species]:
+    """`candidates` nearest base-stat total `target` first, each pushed back by up to `SPREAD` at random."""
     ordered = sorted(candidates, key=lambda species: (species.total, species.id))
-    last = max(1, len(ordered) - 1)
-    scores = {species.id: rng.random() + bias * rank / last for rank, species in enumerate(ordered)}
-    return sorted(ordered, key=lambda species: -scores[species.id])
+    scores = {species.id: abs(species.total - target) + SPREAD * rng.random() for species in ordered}
+    return sorted(ordered, key=lambda species: scores[species.id])
 
 
 def _lineup(chosen: list[Species]) -> tuple[int, ...]:
