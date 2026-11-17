@@ -128,6 +128,9 @@ extension L {
     var gymFainted: String { t("기절", "Fainted", "ひんし", "Debilitado", "K.O.", "Desmaiou", "Besiegt", "Побеждён") }
     var gymShowLog: String { t("턴 기록 보기", "Show turn log", "ターンの記録を見る", "Ver registro", "Voir le journal", "Ver registro", "Rundenlog zeigen", "Показать журнал") }
     var gymHideLog: String { t("턴 기록 접기", "Hide turn log", "ターンの記録を閉じる", "Ocultar registro", "Masquer le journal", "Ocultar registro", "Rundenlog ausblenden", "Скрыть журнал") }
+    var gymReplaySkip: String { t("건너뛰기", "Skip", "スキップ", "Saltar", "Passer", "Pular", "Überspringen", "Пропустить") }
+    var gymReplayFast: String { t("빨리 감기", "Fast forward", "早送り", "Avance rápido", "Avance rapide", "Avançar", "Vorspulen", "Перемотка") }
+    var gymReplayStart: String { t("전투 시작!", "Battle start!", "バトル開始!", "¡Empieza el combate!", "Le combat commence !", "A batalha começa!", "Kampfbeginn!", "Бой начался!") }
     func gymTurnHeading(_ turn: Int) -> String {
         t("\(turn)턴", "Turn \(turn)", "\(turn)ターン", "Turno \(turn)", "Tour \(turn)", "Turno \(turn)", "Runde \(turn)", "Ход \(turn)")
     }

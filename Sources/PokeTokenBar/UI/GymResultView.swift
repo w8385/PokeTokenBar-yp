@@ -74,8 +74,25 @@ struct GymResultView: View {
     let onPrimary: () -> Void
     let onClose: () -> Void
     @State private var showsLog = false
+    /// Nil when the bot sent no events; the result shows at once.
+    @State private var replay: GymReplayPlayer?
+
+    init(record: GymFightRecord, language: AppLanguage, l: L, regionName: String, tmName: @escaping (Int) -> String?,
+         primaryTitle: String?, busy: Bool, onPrimary: @escaping () -> Void, onClose: @escaping () -> Void) {
+        self.record = record
+        self.language = language
+        self.l = l
+        self.regionName = regionName
+        self.tmName = tmName
+        self.primaryTitle = primaryTitle
+        self.busy = busy
+        self.onPrimary = onPrimary
+        self.onClose = onClose
+        _replay = State(initialValue: GymReplay(record.outcome).map { GymReplayPlayer($0) })
+    }
 
     private var outcome: GymBattleOutcome { record.outcome }
+    private var revealed: Bool { replay?.finished ?? true }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
@@ -92,27 +109,34 @@ struct GymResultView: View {
                 }
                 Spacer(minLength: 0)
             }
-            HStack(spacing: Spacing.sm) {
-                Text(outcome.won ? l.gymWon : l.gymLost)
-                    .font(.callout.weight(.bold)).foregroundStyle(outcome.won ? Color.green : Color.red)
-                Text(l.gymTurnCount(outcome.turns)).font(.caption).foregroundStyle(.secondary)
-            }
-            if let reward = record.reward { rewardLines(reward) }
-            if outcome.won, outcome.run != nil, outcome.run?.next == nil { Text(l.gymRunCleared).font(.caption) }
-            if !outcome.won, outcome.run != nil { Text(l.gymRunLostHint).font(.caption2).foregroundStyle(.secondary) }
-            GymTeamStrip(title: l.gymYourTeam, fighters: outcome.playerTeam, l: l)
-            GymTeamStrip(title: l.gymTheirTeam, fighters: outcome.foeTeam, l: l)
+            if let replay { GymReplayView(player: replay, outcome: outcome, l: l) }
+            if revealed { summary }
             logToggle
             HStack {
                 Button(l.gymClose, action: onClose).controlSize(.small)
                 Spacer()
-                if let primaryTitle {
+                if revealed, let primaryTitle {
                     Button(busy ? l.gymFighting : primaryTitle, action: onPrimary)
                         .controlSize(.small).keyboardShortcut(.defaultAction).disabled(busy)
                 }
             }
         }
         .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
+    }
+
+    /// Outcome, reward and both teams: held back until the replay ends so it does not give the result away.
+    @ViewBuilder
+    private var summary: some View {
+        HStack(spacing: Spacing.sm) {
+            Text(outcome.won ? l.gymWon : l.gymLost)
+                .font(.callout.weight(.bold)).foregroundStyle(outcome.won ? Color.green : Color.red)
+            Text(l.gymTurnCount(outcome.turns)).font(.caption).foregroundStyle(.secondary)
+        }
+        if let reward = record.reward { rewardLines(reward) }
+        if outcome.won, outcome.run != nil, outcome.run?.next == nil { Text(l.gymRunCleared).font(.caption) }
+        if !outcome.won, outcome.run != nil { Text(l.gymRunLostHint).font(.caption2).foregroundStyle(.secondary) }
+        GymTeamStrip(title: l.gymYourTeam, fighters: outcome.playerTeam, l: l)
+        GymTeamStrip(title: l.gymTheirTeam, fighters: outcome.foeTeam, l: l)
     }
 
     @ViewBuilder
