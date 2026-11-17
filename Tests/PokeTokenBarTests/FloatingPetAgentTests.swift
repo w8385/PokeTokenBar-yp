@@ -245,7 +245,7 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         let cleanUp: () -> Void
     }
 
-    private func makeFixture(petEnabled: Bool = true, hatched: Bool = true,
+    private func makeFixture(petEnabled: Bool = true, hatched: Bool = true, withFriend: Bool = false,
                              onOpenPopover: (() -> Void)? = nil) throws -> Fixture {
         // Motion pinned on: the bob must not depend on this Mac's Low Power or Reduce Motion.
         let suite = "FloatingPetAgentWiringTests-\(UUID().uuidString)"
@@ -256,9 +256,17 @@ final class FloatingPetAgentWiringTests: XCTestCase {
             var state = CompanionState()
             state.active = MonState(baseID: 1, pathIDs: [1], stageIndex: 0, usedAtStage: 0,
                                     rarity: .common, totalForms: 1)
+            if withFriend {
+                var friend = DexEntry(baseID: 25, finalID: 25, chainOrder: [25], rarity: .common,
+                                      caughtAt: Date(timeIntervalSince1970: 1_700_000_000), isShiny: false,
+                                      names: [25: ["en": "Pikachu"]])
+                friend.id = "friend-25"
+                state.dex = [friend]
+            }
             try JSONEncoder().encode(state).write(to: file)
         }
         let companion = CompanionStore(fileURL: file, defaults: defaults)
+        if withFriend { XCTAssertTrue(companion.addFriend(entryID: "friend-25")) }
         let controller = FloatingPetController(store: store, companion: companion, defaults: defaults,
                                                onOpenPopover: onOpenPopover, motionOverride: true)
         controller.setDisplayAwake(false)
@@ -267,6 +275,12 @@ final class FloatingPetAgentWiringTests: XCTestCase {
             defaults.removePersistentDomain(forName: suite)
             try? FileManager.default.removeItem(at: file)
         })
+    }
+
+    private func savedBytes(of companion: CompanionStore) throws -> Data {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        return try encoder.encode(companion.state)
     }
 
     private func send(_ state: String, label: String? = nil, to controller: FloatingPetController) throws {
@@ -405,6 +419,50 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         egg.controller.setDisplayAwake(true)
         egg.controller.makeHostingView(animated: false).onClick?()
         XCTAssertFalse(egg.controller.hearts.isShowing)
+    }
+
+    func testStrokingAFriendShowsItsHeartsAndTouchesNoSavedState() throws {
+        let fixture = try makeFixture(withFriend: true)
+        defer { fixture.controller.setDisplayAwake(false); fixture.cleanUp() }
+        fixture.controller.setDisplayAwake(true)
+        let hosting = fixture.controller.makeHostingView(animated: false)
+        let before = try savedBytes(of: fixture.companion)
+        hosting.onStroke?(.friend(0))
+        XCTAssertEqual(fixture.controller.hearts.friendIndex, 0)
+        XCTAssertFalse(fixture.controller.hearts.isShowing, "the main pet gets no hearts")
+        XCTAssertTrue(fixture.controller.hearts.isShowingAny)
+        XCTAssertEqual(try savedBytes(of: fixture.companion), before)
+        hosting.onStroke?(.main)
+        XCTAssertNil(fixture.controller.hearts.friendIndex)
+        XCTAssertTrue(fixture.controller.hearts.isShowing)
+    }
+
+    func testClickingAFriendPetsItAndAClickInTheOverlapPetsTheMainPet() throws {
+        let fixture = try makeFixture(withFriend: true)
+        defer { fixture.controller.setDisplayAwake(false); fixture.cleanUp() }
+        fixture.controller.setDisplayAwake(true)
+        let hosting = fixture.controller.makeHostingView(animated: false)
+        let before = try savedBytes(of: fixture.companion)
+        func click(atX x: CGFloat) throws {
+            let point = NSPoint(x: x, y: 5)
+            let down = try XCTUnwrap(NSEvent.mouseEvent(with: .leftMouseDown, location: point, modifierFlags: [],
+                timestamp: 0, windowNumber: 0, context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
+            let up = try XCTUnwrap(NSEvent.mouseEvent(with: .leftMouseUp, location: point, modifierFlags: [],
+                timestamp: 0, windowNumber: 0, context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
+            hosting.mouseDown(with: down)
+            hosting.mouseUp(with: up)
+        }
+        let xs = stride(from: CGFloat(-300), through: 400, by: 1)
+        let friendX = try XCTUnwrap(xs.first { hosting.hitAtX($0) == .friend(0) })
+        let mainEdge = try XCTUnwrap(xs.first { hosting.hitAtX($0) == .main && $0 > friendX })
+        let overlapX = mainEdge + 1
+        try click(atX: friendX)
+        XCTAssertEqual(fixture.controller.hearts.friendIndex, 0)
+        XCTAssertFalse(fixture.controller.hearts.isShowing)
+        XCTAssertEqual(try savedBytes(of: fixture.companion), before)
+        try click(atX: overlapX)
+        XCTAssertNil(fixture.controller.hearts.friendIndex)
+        XCTAssertTrue(fixture.controller.hearts.isShowing, "the main pet wins where the friend's box overlaps it")
     }
 
     func testClickingAWaitingHatchedPetClearsTheQuestionThenShowsHearts() throws {

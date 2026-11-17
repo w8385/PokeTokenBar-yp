@@ -24,6 +24,11 @@ final class FloatingFriendsLayoutShotTests: XCTestCase {
         var order: [Int] { flank ? [1, 0, 2] : (left ? Array((0...count).reversed()) : Array(0...count)) }
     }
 
+    private enum Mode { case calm, bubble, friendHearts
+        var suffix: String { self == .calm ? "" : (self == .bubble ? "-bubble" : "-friend-hearts") }
+    }
+    private static let modes: [Mode] = [.calm, .bubble, .friendHearts]
+
     private static let rows = [
         Row(name: "one-left", count: 1, left: true, flank: false),
         Row(name: "one-right", count: 1, left: false, flank: false),
@@ -75,7 +80,8 @@ final class FloatingFriendsLayoutShotTests: XCTestCase {
 
         for pair in Self.pairs {
             for row in Self.rows {
-                for bubble in [false, true] where bubble == false || pair.name == "mixed" {
+                for mode in Self.modes where mode == .calm || pair.name == "mixed" {
+                    let bubble = mode == .bubble || mode == .friendHearts
                     store.friendSubjects.forEach { store.removeFriend(entryID: $0.entryID) }
                     for id in pair.ids.prefix(row.count) { XCTAssertTrue(store.addFriend(entryID: "mon-\(id)")) }
                     let crowd = PetCrowd(settle: .seconds(120))
@@ -83,7 +89,8 @@ final class FloatingFriendsLayoutShotTests: XCTestCase {
                     crowd.friendsOnLeft = row.left
                     crowd.friendsFlank = row.flank
                     let hearts = PetHeartState()
-                    hearts.isShowing = bubble
+                    hearts.isShowing = mode == .bubble
+                    if mode == .friendHearts { hearts.friendIndex = row.count - 1 }
                     let layout = PetRowLayout(friendCount: row.count, friendsOnLeft: row.left, friendsFlank: row.flank)
                     let panel = FloatingPetController.panelSize(petSize: size, showingBubble: bubble, layout: layout)
                     let view = FloatingPetView(animated: false, spriteStore: sprites, hearts: hearts, crowd: crowd)
@@ -93,7 +100,7 @@ final class FloatingFriendsLayoutShotTests: XCTestCase {
                         .environment(\.colorScheme, .light)
                     try await OffscreenRender.capture(
                         view, size: panel, appearance: .aqua, scale: 3, settle: .seconds(5),
-                        to: directory.appendingPathComponent("\(pair.name)-\(row.name)\(bubble ? "-bubble" : "").png"))
+                        to: directory.appendingPathComponent("\(pair.name)-\(row.name)\(mode.suffix).png"))
                 }
             }
         }
