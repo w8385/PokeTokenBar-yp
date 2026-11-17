@@ -144,6 +144,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Install Pillow for the sprite generator test
+        run: python3 -m pip install --user --break-system-packages pillow==12.3.0
+
       - name: Test the repository scripts
         run: python3 -m unittest discover -s scripts/tests -v
 
