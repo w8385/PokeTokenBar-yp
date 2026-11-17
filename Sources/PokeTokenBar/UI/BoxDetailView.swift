@@ -93,6 +93,7 @@ struct BoxDetailView: View {
                 case .raising: Text(l.dexRaising).font(.callout).foregroundStyle(Color.accentColor)
                 case .parked: Text(l.parkedBadge).font(.callout).foregroundStyle(.orange)
                 case .friend: Text(l.friendLabel).font(.callout).foregroundStyle(.pink)
+                case .stored: Text(l.storedBadge).font(.callout).foregroundStyle(.secondary)
                 case .graduated: EmptyView()
                 }
             }
@@ -159,6 +160,14 @@ struct BoxDetailView: View {
                 Label(l.resumeLine, systemImage: "arrow.uturn.backward")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+        case .stored:
+            let canRaise = store.canRaise(entryID: individual.id)
+            Button { store.raise(entryID: individual.id) } label: {
+                Label(l.resumeLine, systemImage: "arrow.uturn.backward")
+            }
+            .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .disabled(!canRaise)
+            .help(canRaise ? "" : l.storedRaiseLocked)
         case .raising:
             EmptyView()
         }
@@ -187,7 +196,7 @@ struct BoxDetailView: View {
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
             .disabled(store.state.friendEntryIDs.count >= CompanionState.maxFriends)
-        case .raising, .parked:
+        case .raising, .parked, .stored:
             EmptyView()
         }
     }
@@ -197,9 +206,11 @@ struct BoxDetailView: View {
         return store.tradeRefusal(for: entry, fightingIDs: fightingIDs)
     }
 
-    /// Graduated Pokémon only: the raised and the parked ones are not tradeable and a Linking Cord needs a settled
-    /// individual.
-    private var isGraduated: Bool { individual.role != .raising && individual.role != .parked && entry.profile != nil }
+    /// Graduated Pokémon only: the raised, parked and stored ones are not tradeable and a Linking Cord needs a
+    /// settled individual.
+    private var isGraduated: Bool {
+        individual.role != .raising && individual.role != .parked && individual.role != .stored && entry.profile != nil
+    }
 
     @ViewBuilder
     private var tradeButtons: some View {

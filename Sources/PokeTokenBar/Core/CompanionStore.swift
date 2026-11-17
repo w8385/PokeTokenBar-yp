@@ -275,14 +275,6 @@ final class CompanionStore {
         if let graduate = raisedGraduate { return graduate.isShiny }
         return state.active?.displaysShiny ?? false
     }
-    /// 새 알(리롤) 구매 시 실수로 놓아주지 않도록 2단계 확인이 필요한 고가치 개체인지 판정.
-    /// 이로치(shiny)이거나 전설(legendary)인 경우에만 2단계 경고를 띄운다.
-    /// 희귀(rare)는 고급/희귀 알의 반복 리롤 피로도(alert fatigue)를 방지하기 위해 일반 확인만 거친다.
-    /// 위장 중인 메타몽은 `currentIsShiny`(=false)와 `rarity`(=.common)의 불변식을 그대로 따라
-    /// 리빌 전 정체를 누설하지 않는다.
-    var isHighValueCompanion: Bool {
-        currentIsShiny || rarity == .legendary
-    }
     var currentNature: PokemonNature? {
         if let graduate = raisedGraduate { return graduate.nature }
         return state.active?.nature
@@ -368,23 +360,54 @@ final class CompanionStore {
 
     // MARK: 키우는 포켓몬 지정
 
-    /// A graduate the player may raise: an owned, settled individual that is not already the raised one.
+    /// A graduate the player may raise: an owned, settled individual that is not already the raised one. A stored
+    /// line needs a line to swap with: the egg fields can't wait beside a line in `active`.
     func canRaise(entryID: String) -> Bool {
-        guard !isHatching, !isRevealingDitto, entryID != state.raisedEntryID, !isTradeLocked(entryID),
-              let entry = state.dex.first(where: { $0.id == entryID }) else { return false }
+        guard !isHatching, !isRevealingDitto, entryID != state.raisedEntryID, !isTradeLocked(entryID) else { return false }
+        if state.storedLines[entryID] != nil { return state.active != nil }
+        guard let entry = state.dex.first(where: { $0.id == entryID }) else { return false }
         return !entry.isReleased && entry.profile != nil && entry.tradeEvolutionPending != true
     }
 
-    /// Raises a graduate. The line in `active` (or the egg) is parked as it stands; a graduate raised before goes
-    /// back to the Box with the level it reached. Returns false and changes nothing when it can't be raised.
+    /// Raises a graduate or a stored line. For a graduate, the line in `active` (or the egg) is parked as it stands;
+    /// a graduate raised before goes back to the Box with the level it reached. A stored line takes `active` back
+    /// where it stopped and the line there goes to the Box. Returns false and changes nothing when it can't be raised.
     @discardableResult
     func raise(entryID: String) -> Bool {
         guard canRaise(entryID: entryID) else { return false }
-        if state.raisedEntryID == nil { state.parkedSpentTokens = state.spentTokens }
-        state.raisedEntryID = entryID
-        state.reconcileFriends()
+        if state.storedLines[entryID] != nil {
+            resumeStoredLine(entryID)
+        } else {
+            if state.raisedEntryID == nil { state.parkedSpentTokens = state.spentTokens }
+            state.raisedEntryID = entryID
+            state.reconcileFriends()
+        }
         settleRaisedChange()
         return true
+    }
+
+    /// Spending and battles while it waited in the Box don't count toward its evolution gate.
+    private func resumeStoredLine(_ entryID: String) {
+        if state.raisedEntryID != nil { state.resumeParkedLine(now: clock()) }
+        storeActiveInBox()
+        guard let stored = state.storedLines.removeValue(forKey: entryID) else { return }
+        state.dex.removeAll { $0.id == entryID && $0.isReleased }
+        var mon = stored.mon
+        mon.evolution.spentBaseline += max(0, state.spentTokens - stored.spentAtStore)
+        if mon.evolution.battleCursor != nil { mon.evolution.battleCursor = clock() }
+        state.active = mon
+        currentLine = nil
+        state.reconcileFriends()
+        state.reconcileRepresentativeSelection()
+    }
+
+    /// Moves the line in `active` to the Box as it stands. Its released record keeps the species in the Pokédex.
+    private func storeActiveInBox() {
+        guard let a = state.active else { return }
+        let record = releasedDexEntry(from: a)
+        state.dex.append(record)
+        state.storedLines[record.id] = StoredLine(mon: a, spentAtStore: state.spentTokens)
+        state.active = nil
     }
 
     /// Takes the parked line (or egg) back exactly where it stopped; the raised graduate returns to the Box.
@@ -541,7 +564,7 @@ final class CompanionStore {
         )
     }
 
-    /// 놓아준 개체의 영구 기록 — 알을 새로 사서 육성을 포기하는 순간 만든다.
+    /// The Pokédex record of a line sent to the Box (or released, in saves from before the Box kept it).
     ///
     /// **도달한 형태만 담는다**(`pathIDs.prefix(stageIndex + 1)`). 도감이 육성 중 보여주던 범위와
     /// 같아야 놓아준 뒤에도 칸 구성이 그대로 유지된다 — `plannedPathIDs` 나 `pathIDs` 전체를 쓰면
@@ -2350,14 +2373,13 @@ final class CompanionStore {
     @discardableResult
     func buyRareCandy() -> Bool { buy(.rareCandy) }
 
-    // MARK: 알 (리롤 — 현재 포켓몬 폐기, 도감·확률 무영향)
+    // MARK: 알 (현재 포켓몬은 박스로, 도감·확률 무영향)
 
     /// 현재 알이 보증하는 등급 하한(UI 표시용). 활성 포켓몬이 있으면 알이 없으므로 nil.
     var eggGuarantee: Rarity? { isEgg ? state.eggTier : nil }
 
-    /// 알 구매 가능 — 폐기할 활성 포켓몬이 있고 지갑이 그 티어 가격 이상일 때만.
-    /// 알 상태에서도 살 수 있게 하는 안은 채택하지 않았다(기존 새 알과 게이트 통일) — 알끼리 교체하는
-    /// 동작을 새로 만들지 않고, 상점의 알은 언제나 "지금 개체를 놓아주고 다시 뽑는다"는 한 가지 의미만 갖는다.
+    /// 알 구매 가능 — 박스로 보낼 활성 포켓몬이 있고 지갑이 그 티어 가격 이상일 때만.
+    /// 알 상태에서는 살 수 없다 — 알끼리 교체하는 동작은 만들지 않는다.
     /// 항목 자체는 알 상태에서도 상점에 남는다(shopEntries) — 이 게이트는 구매만 막는다.
     func canBuyEgg(_ tier: Rarity?) -> Bool {
         // 파는 티어인지 먼저 확인한다 — 만족 불가능한 보증(전설: capture_rate 로 표현 불가)을 사면
@@ -2368,11 +2390,8 @@ final class CompanionStore {
         return hasActive && availableTokens >= price(of: .egg(tier))
     }
 
-    /// 알 구매 — 현재 포켓몬을 놓아주고 처음부터 인큐베이션하는 새 알로. 지갑에서 가격 차감.
-    /// graduate() 의 알-리셋을 미러링하되, 놓아준 개체는 **도감에 남긴다**(`releasedDexEntry`).
-    /// 도감은 "쌓이기만 한다"는 약속을 주는데, 여기가 종이 사라질 수 있던 유일한 경로였다.
-    /// `collectedFinals`(최종체 완성·분기 가중)는 여전히 손대지 않는다 — 끝까지 키운 게 아니다.
-    /// 성장(usedAtStage)은 소멸(추가 비용).
+    /// 알 구매 — 현재 포켓몬을 박스로 보내고 처음부터 인큐베이션하는 새 알로. 지갑에서 가격 차감.
+    /// `collectedFinals`(최종체 완성·분기 가중)는 손대지 않는다 — 끝까지 키운 게 아니다.
     ///
     /// 여기서 종을 롤하지 않는다 — 롤에는 네트워크가 필요해서 오프라인이면 토큰만 사라진다. 보증만
     /// 상태(`eggTier`)에 적고, 실제 롤은 프리패치/부화 경로가 그 보증을 읽어 수행한다.
@@ -2380,19 +2399,14 @@ final class CompanionStore {
     func buyEgg(_ tier: Rarity?) -> Bool {
         guard canBuyEgg(tier) else { return false }
         state.spentTokens += price(of: .egg(tier))
-        releaseActiveForNewEgg(tier: tier, pendingHatchID: nil)
+        storeActiveForNewEgg(tier: tier, pendingHatchID: nil)
         return true
     }
 
-    /// 활성 포켓몬을 놓아주고 처음부터 인큐베이션하는 새 알로 — 상점 알과 스카우트가 같이 쓴다.
+    /// 활성 포켓몬을 박스로 보내고 처음부터 인큐베이션하는 새 알로 — 상점 알과 스카우트가 같이 쓴다.
     /// `pendingHatchID` 가 있으면(스카우트) 그 종으로 미리 정해 두고 메타몽 위장도 끈다.
-    private func releaseActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?) {
-        if let a = state.active {
-            state.dex.append(releasedDexEntry(from: a))   // 놓아줌 기록 — 도감에서 종이 사라지지 않게
-        }
-        state.active = nil            // 놓아줌 (졸업 아님 — collectedFinals 는 미변경)
-        // 놓아준 종도 이제 dex 에 있으므로 대표 선택은 유지된다. 손상 상태 파일 등으로 정말 보유가
-        // 끊긴 경우만 자동 추적으로 복귀한다.
+    private func storeActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?) {
+        storeActiveInBox()
         state.reconcileRepresentativeSelection()
         activeGeneration += 1
         currentLine = nil
@@ -2405,7 +2419,7 @@ final class CompanionStore {
         state.scoutedEgg = pendingHatchID != nil
         prefetchedLineID = nil
         justGraduated = nil; justEvolvedTo = nil; eventUntil = nil
-        AppLog.write("egg purchased: discarded active, tier=\(tier?.rawValue ?? "none") scouted=\(pendingHatchID.map(String.init) ?? "no")")
+        AppLog.write("egg purchased: active stored in the Box, tier=\(tier?.rawValue ?? "none") scouted=\(pendingHatchID.map(String.init) ?? "no")")
         Task { await self.ensureEggPrefetch() }   // 다음 부화 예열
         save()
     }
@@ -2456,16 +2470,16 @@ final class CompanionStore {
         return drawn
     }
 
-    /// 고르기는 놓아줄 포켓몬이 있을 때만 — 알 상태에서 알을 바꾸는 동작은 상점 알과 같은 이유로 만들지 않는다.
+    /// 고르기는 박스로 보낼 포켓몬이 있을 때만 — 알 상태에서 알을 바꾸는 동작은 상점 알과 같은 이유로 만들지 않는다.
     var canPickScout: Bool { hasActive }
 
-    /// 고른 종의 알로 바꾼다 — 티켓 1장과 그 풀의 후보를 지운다. 현재 포켓몬은 놓아준다(도감엔 남는다).
+    /// 고른 종의 알로 바꾼다 — 티켓 1장과 그 풀의 후보를 지운다. 현재 포켓몬은 박스로 간다.
     @discardableResult
     func pickScout(_ pool: ScoutPool, speciesID: Int) -> Bool {
         guard canPickScout, scoutTicketCount(pool) > 0, scoutDraw(for: pool)?.contains(speciesID) == true else { return false }
         state.inventory[pool.inventoryKey] = scoutTicketCount(pool) - 1
         state.scoutDraws[pool.key] = nil
-        releaseActiveForNewEgg(tier: nil, pendingHatchID: speciesID)
+        storeActiveForNewEgg(tier: nil, pendingHatchID: speciesID)
         return true
     }
 
@@ -3452,7 +3466,8 @@ final class CompanionStore {
     }
 
     func tradeRefusal(for entry: DexEntry, fightingIDs: Set<String>) -> TradeRefusal? {
-        TradePool.refusal(for: entry, fightingIDs: fightingIDs, activeID: activeDexEntry?.id,
+        if state.storedLines[entry.id] != nil { return .unavailable }
+        return TradePool.refusal(for: entry, fightingIDs: fightingIDs, activeID: activeDexEntry?.id,
                           raisedID: state.raisedEntryID, lineParked: isLineParked)
     }
 

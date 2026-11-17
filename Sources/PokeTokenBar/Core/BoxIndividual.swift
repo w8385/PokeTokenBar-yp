@@ -3,8 +3,9 @@ import Foundation
 /// One Pokémon the player owns, as the Box lists it. `id` is the instance ID that held items, trade locks and
 /// battle slots are keyed by — the raised Pokémon's `profile.instanceID`, a graduated one's `DexEntry.id`.
 struct BoxIndividual: Identifiable {
-    /// `parked` is the line Pokémon set aside while a graduate is raised.
-    enum Role { case raising, parked, friend, graduated }
+    /// `parked` is the line Pokémon set aside while a graduate is raised; `stored` is a line sent to the Box
+    /// before it graduated.
+    enum Role { case raising, parked, friend, graduated, stored }
 
     let id: String
     /// The line Pokémon's synthesized entry, or the graduated record.
@@ -55,7 +56,19 @@ extension CompanionStore {
                 : friends.contains(entry.id) ? .friend : .graduated
             result.append(BoxIndividual(id: entry.id, entry: entry, role: role))
         }
+        for (id, stored) in state.storedLines.sorted(by: { $0.key < $1.key }) {
+            result.append(BoxIndividual(id: id, entry: storedBoxEntry(id: id, stored.mon), role: .stored))
+        }
         return result
+    }
+
+    /// The stored line as it stands now; names and the time it was stored come from its Pokédex record.
+    private func storedBoxEntry(id: String, _ mon: MonState) -> DexEntry {
+        let record = state.dex.first { $0.id == id }
+        return DexEntry(id: id, baseID: mon.baseID, finalID: mon.currentID,
+                        chainOrder: Array(mon.pathIDs.prefix(mon.stageIndex + 1)), rarity: mon.rarity,
+                        caughtAt: record?.caughtAt, isShiny: mon.displaysShiny, nature: mon.nature,
+                        profile: mon.profile, names: record?.names, form: mon.form, prayers: mon.prayers)
     }
 
     func boxIndividual(id: String) -> BoxIndividual? {
@@ -64,7 +77,8 @@ extension CompanionStore {
 
     /// The Box id of a Pokédex entry; the synthesized raised entry maps to its profile's instance ID.
     func boxID(of entry: DexEntry) -> String? {
-        isActiveDexEntry(entry) ? entry.profile?.instanceID : (entry.releasedAt == nil ? entry.id : nil)
+        if isActiveDexEntry(entry) { return entry.profile?.instanceID }
+        return entry.releasedAt == nil || state.storedLines[entry.id] != nil ? entry.id : nil
     }
 
     func boxCount(speciesID: Int) -> Int {
@@ -156,7 +170,7 @@ extension CompanionStore {
 
     /// Could be offered in a trade right now: not the raised one, not fighting, not already in an open trade.
     func isTradableNow(_ individual: BoxIndividual, fightingIDs: Set<String>) -> Bool {
-        individual.role != .raising && !isTradeLocked(individual.id)
+        individual.role != .raising && individual.role != .stored && !isTradeLocked(individual.id)
             && TradePool.refusal(for: individual.entry, fightingIDs: fightingIDs, activeID: nil) == nil
     }
 

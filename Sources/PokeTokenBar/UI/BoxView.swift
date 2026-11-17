@@ -251,6 +251,7 @@ struct BoxCell: View {
                             if individual.role == .raising { roleIcon("figure.walk", tint: .accentColor) }
                             else if individual.role == .friend { roleIcon("heart.fill", tint: .pink) }
                             if individual.role == .parked { textTag(store.l.parkedBadge, tint: .orange) }
+                            if individual.role == .stored { textTag(store.l.storedBadge, tint: .secondary) }
                             if isRepresentative { textTag(store.l.representativeBadge, tint: Palette.representative) }
                         }
                         .frame(maxWidth: Self.thumb, alignment: .leading)
@@ -322,6 +323,7 @@ struct BoxCell: View {
         if entry.isShiny { parts.append(l.dexShinyLabel) }
         if individual.role == .raising { parts.append(l.dexRaising) }
         if individual.role == .parked { parts.append(l.parkedBadge) }
+        if individual.role == .stored { parts.append(l.storedBadge) }
         if individual.role == .friend { parts.append(l.friendLabel) }
         if isRepresentative { parts.append(l.representativeBadge) }
         if let held { parts.append("\(l.heldItemLabel): \(held.name(l))") }

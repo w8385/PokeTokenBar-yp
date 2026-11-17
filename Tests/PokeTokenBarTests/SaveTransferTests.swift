@@ -558,8 +558,9 @@ final class SaveTransferTests: XCTestCase {
         // appliedTradeIDs = 진행 — 적용한 교환 기록은 도감과 함께 가야 옮긴 기기에서 같은 교환이 다시 적용되지 않는다.
         // gymBadges = 진행 — 배지와 첫 클리어 보상(기술머신)이 inventory 와 함께 가야 옮긴 기기에서 같은 보상을 다시 받지 않는다.
         // graduateEvolution = 진행 — 진화를 건너뛰고 졸업한 개체의 진화 진행이라 그 개체(dex)와 함께 간다.
+        // storedLines = 진행 — 박스에 보관한 키우던 포켓몬이라 그 기록(dex)과 함께 간다.
         let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs", "gymBadges",
-                                     "graduateEvolution",
+                                     "graduateEvolution", "storedLines",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
                                      "collectedFinals", "inventory", "heldItems",

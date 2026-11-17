@@ -182,18 +182,23 @@ enum SaveTransfer {
             var seen = Set<Int>()
             return ids.filter { seen.insert($0).inserted }
         }
-        if var active = s.active {
-            active.usedAtStage = clampToken(active.usedAtStage)
+        func sanitizedMon(_ mon: MonState) -> MonState {
+            var mon = mon
+            mon.usedAtStage = clampToken(mon.usedAtStage)
             // totalForms 는 `kk * (kk + 1)` 형태로 쓰여(PokemonBalance.phaseThreshold) 큰 값이 그 자체로 트랩이다.
-            active.totalForms = min(max(1, active.totalForms), 12)
-            active.stageIndex = min(max(0, active.stageIndex), max(0, active.pathIDs.count - 1))
-            let currentID = active.currentID
-            active.pathIDs = deduped(active.pathIDs)
-            active.plannedPathIDs = deduped(active.plannedPathIDs)
-            active.stageIndex = active.pathIDs.firstIndex(of: currentID) ?? active.stageIndex
-            active.stageIndex = min(active.stageIndex, max(0, active.pathIDs.count - 1))
-            active.profile?.sanitize()
-            s.active = active
+            mon.totalForms = min(max(1, mon.totalForms), 12)
+            mon.stageIndex = min(max(0, mon.stageIndex), max(0, mon.pathIDs.count - 1))
+            let currentID = mon.currentID
+            mon.pathIDs = deduped(mon.pathIDs)
+            mon.plannedPathIDs = deduped(mon.plannedPathIDs)
+            mon.stageIndex = mon.pathIDs.firstIndex(of: currentID) ?? mon.stageIndex
+            mon.stageIndex = min(mon.stageIndex, max(0, mon.pathIDs.count - 1))
+            mon.profile?.sanitize()
+            return mon
+        }
+        s.active = s.active.map(sanitizedMon)
+        s.storedLines = s.storedLines.mapValues {
+            StoredLine(mon: sanitizedMon($0.mon), spentAtStore: clampToken($0.spentAtStore))
         }
         for index in s.dex.indices {
             s.dex[index].chainOrder = deduped(s.dex[index].chainOrder)
