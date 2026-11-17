@@ -11,6 +11,24 @@ read_when:
 버전 결정 규칙과 트리거는 `CLAUDE.md` §릴리스에 있다. 이 문서는 그 다음의 *실행 세부*를 담는다.
 체크리스트 원본은 `RELEASE.md`.
 
+## 0. 포크 버전 — SemVer (사용자 결정 2026-11-17)
+
+이 포크(`w8385/PokeTokenBar-yp`)는 업스트림과 따로 자기 SemVer 를 쓴다. 첫 버전은 **3.0.0** 이다.
+`v2.5.7-ypN` 꼬리표는 새 릴리스에 쓰지 않는다(yp40 까지 나갔다).
+
+- 버전 문자열은 하나다. `CFBundleShortVersionString` 과 `PTBForkVersion` 둘 다 `X.Y.Z` 이고 태그는 `vX.Y.Z` 다.
+  `PTBForkVersion` 키는 지우지 않는다 — `UpdateChecker` 가 현재 버전으로, `SelfUpdater` 가 받은 앱 검증으로 읽는다.
+- 세그먼트: 사용자가 패치/마이너/메이저를 말하면 그 말대로(`CLAUDE.md` §릴리스). 말이 없으면
+  train 범위에 `feat` 커밋이 하나라도 있으면 **마이너**(3.0.0 → 3.1.0), 아니면 **패치**(3.1.0 → 3.1.1).
+  메이저는 사용자가 깨짐을 지정할 때만.
+- 게시는 `scripts/fork-release.sh vX.Y.Z notes.md` 다. 태그에서 버전을 읽어 `PTB_VERSION` 으로 빌드하고,
+  두 키가 태그와 같은지, 최신 공개 릴리스보다 새 버전인지 확인한다. Xcode 메이저 게이트(`xcode-pin.sh check`)도 그대로다.
+  `PTB_DRY_RUN=1` 이면 빌드·zip 까지 하고 게시하지 않는다.
+- 자산 이름 `PokeTokenBar-yp-arm64.zip`·`.sha256` 은 바꾸지 않는다 — 설치된 앱(yp7 이후)의 `SelfUpdater` 가 이 이름을 찾는다.
+- 옛 앱도 넘어온다: yp7 이후의 `isNewer` 는 숫자 부분을 먼저 비교하고 `-ypN` 은 같을 때만 본다.
+  그래서 `3.0.0 > 2.5.7-ypN` 이다. 회귀: `UpdateCheckerTests.testSemverReleasesOutrankEveryForkSuffixRelease`,
+  `testForkSuffixInstallIsOfferedTheFirstSemverRelease`, `SelfUpdaterTests.testStagesASemverReleaseWhoseBundleCarriesTheSameVersion`.
+
 ## 1. 문서·이미지 갱신 (매 릴리스 필수 — "할까요?" 묻지 말고 무조건 한다)
 
 `./scripts/release.sh --check-only` 로 경고를 확인한 뒤 아래를 모두 반영한다.

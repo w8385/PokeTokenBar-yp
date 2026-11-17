@@ -68,6 +68,7 @@ Claude Code는 `.claude/skills/prepare-pr`의 symlink를 통해
 - "**패치**(해줘)" → x.y.**Z+1** / "**마이너**" → x.**Y+1**.0 / "**메이저**" → **X+1**.0.0
 - 버전을 직접 명시하면("2.4.1 배포") 그 값 그대로.
 - 세그먼트 지정 없이 "배포/릴리스"만 말하면: 변경 성격 기준으로 제안 후 확인받고 진행.
+- 포크 버전은 SemVer 3.0.0 부터, `-ypN` 은 은퇴(2026-11-17). 규칙은 `docs/reference/release-workflow.md` §0.
 
 **문서·스크린샷·랜딩 갱신은 매 릴리스 필수다 — "할까요?" 묻지 말고 무조건 한다.**
 실행 절차·에셋 게이트·함정은 `docs/reference/release-workflow.md`, 체크리스트는 `RELEASE.md`.

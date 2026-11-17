@@ -3,6 +3,13 @@
 버전 배포 시 **코드뿐 아니라 문서(README·웹페이지·cask)까지 일관되게** 갱신하기 위한 런북.
 기계적 단계는 `scripts/release.sh` 가 자동화하고, 내용 판단이 필요한 부분은 아래 체크리스트로 검토한다.
 
+## 포크 릴리스 버전 (2026-11-17 부터)
+
+포크는 자기 SemVer 를 쓴다. 첫 버전 `v3.0.0`, 그 뒤 `feat` 가 있는 train 은 마이너(3.1.0), 수정만 있으면
+패치(3.1.1), 메이저는 사용자가 지정할 때만. 사용자가 말한 패치/마이너/메이저가 이 규칙보다 우선한다.
+`v2.5.7-ypN` 은 은퇴했다. 게시는 `scripts/fork-release.sh vX.Y.Z notes.md`(태그 하나로 두 Info.plist 키를 채운다).
+세부는 `docs/reference/release-workflow.md` §0. 아래 `release.sh` 는 업스트림(`chattymin/PokeTokenBar`) 경로다.
+
 ## 한 줄 배포
 
 ```bash

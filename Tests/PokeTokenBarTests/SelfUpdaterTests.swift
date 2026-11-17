@@ -128,6 +128,19 @@ final class SelfUpdaterTests: XCTestCase {
         XCTAssertEqual(failure, .versionMismatch)
     }
 
+    func testStagesASemverReleaseWhoseBundleCarriesTheSameVersion() async throws {
+        let semverBase = "https://github.com/w8385/PokeTokenBar-yp/releases/download/v3.0.0/"
+        let semverAssets = [SelfUpdater.assetName: semverBase + SelfUpdater.assetName,
+                            SelfUpdater.checksumName: semverBase + SelfUpdater.checksumName]
+        let app = try await SelfUpdater.stage(assets: semverAssets, version: "3.0.0", bundleID: bundleID,
+                                              workDir: try tempDir(), download: download(try release(version: "3.0.0")))
+        XCTAssertEqual(app.lastPathComponent, "PokeTokenBar.app")
+
+        let suffixed = try await stageError(assets: semverAssets, version: "3.0.0",
+                                            download: download(try release(version: "3.0.0-yp1")))
+        XCTAssertEqual(suffixed, .versionMismatch)
+    }
+
     func testRedirectOffGitHubIsRejected() async throws {
         let files = try release()
         let failure = try await stageError(download: download(files, finalURL: URL(string: "https://evil.example/a")!))
