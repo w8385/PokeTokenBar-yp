@@ -29,7 +29,7 @@ class FakePokeAPI:
 def player_sent_in(monkeypatch, held_item, can_evolve):
     seen = []
 
-    def capture(sides, seed, starts):
+    def capture(sides, seed, starts, finale):
         seen.extend(sides[0])
         raise Reached
 

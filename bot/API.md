@@ -287,8 +287,9 @@ order, the next comes in when one faints, no switching. A `rental` member fights
 Each foe knows four moves picked from everything its species learns (level-up at any level and machines): the
 best same-type hits first, then coverage. Field and item-stealing moves (Cut, Strength, Rock Smash, Thief, Covet)
 and Facade come only when nothing else is left. The champion's moves are hand-picked. Each foe holds an item that works
-for it (no two alike on a team), and a type-boost item only for its own type or its strongest move. A champion's
-Mega Stone Mega Evolves its holder. Foes have no nature or
+for it (no two alike on a team), and a type-boost item only for its own type or its strongest move; none holds a
+Focus Band. A champion's Mega Stone Mega Evolves its holder. The champion's first six and its finale each get one Mega
+Evolution or Stellar form; the player still gets one per battle. Foes have no nature or
 ability. Their IVs rise with the trainer: 12 at gym 1 up to 21 at gym 8 (gym 7 has 18, one below gym 6), 28 for the Elite Four, 31 for the
 champion, 12 / 20 / 26 for grunts, the admin and the boss.
 

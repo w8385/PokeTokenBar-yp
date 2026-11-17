@@ -302,7 +302,7 @@ class BattleResult:
 
 
 def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[Combatant]], seed: int,
-             carried: Sequence[Carry | None] = ()) -> BattleResult:
+             carried: Sequence[Carry | None] = (), finale: int | None = None) -> BattleResult:
     """Fight until one side has no Pokémon left or `TURN_LIMIT` turns pass.
 
     At the limit the side with more Pokémon left wins, then the one with the higher HP share.
@@ -311,9 +311,10 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     A weather move is picked when it swings the exchange by `WEATHER_SWING_MIN`; the weather lasts `WEATHER_TURNS` turns.
     A fainted Pokémon is replaced after the end-of-turn effects, so its successor takes no chip damage that turn.
     `carried` (per member of the first side, in order) starts a member hurt or with a status.
+    `finale` is the second side's member index from which a second Mega Evolution is allowed.
     """
     rng = random.Random(seed)
-    teams = (_Team(_roster(sides[0]), carried), _Team(_roster(sides[1])))
+    teams = (_Team(_roster(sides[0]), carried), _Team(_roster(sides[1]), finale=finale))
     events: list[Event] = []
     weather = _Weather()
     for side in (0, 1):
@@ -418,13 +419,15 @@ class _Weather:
 
 
 class _Team:
-    """A roster fought in order: `active` is the member in the field, entered fresh when its turn comes."""
+    """A roster fought in order: `active` is the member in the field, entered fresh when its turn comes.
+    The member at `finale` gets its own Mega Evolution slot, whether or not one before it used the team's."""
 
-    def __init__(self, roster: tuple[Combatant, ...], carried: Sequence[Carry | None] = ()):
+    def __init__(self, roster: tuple[Combatant, ...], carried: Sequence[Carry | None] = (), finale: int | None = None):
         self.roster = roster
         self.carried = tuple(carried) + (None,) * (len(roster) - len(carried))
         self.entered = [_Fighter.enter(roster[0], self.carried[0])]
         self.mega_used = False
+        self.finale = finale
 
     @property
     def active(self) -> "_Fighter":
@@ -436,6 +439,8 @@ class _Team:
 
     def send_next(self) -> "_Fighter":
         index = len(self.entered)
+        if index == self.finale:
+            self.mega_used = False
         self.entered.append(_Fighter.enter(self.roster[index], self.carried[index]))
         return self.active
 

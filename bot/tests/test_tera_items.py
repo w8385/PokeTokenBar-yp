@@ -119,7 +119,7 @@ def test_the_gym_path_builds_masks_and_the_crystal_the_same_way(monkeypatch):
     class Reached(Exception):
         pass
 
-    def capture(sides, seed, starts):
+    def capture(sides, seed, starts, finale):
         seen.extend(sides[0])
         raise Reached
 
@@ -130,6 +130,24 @@ def test_the_gym_path_builds_masks_and_the_crystal_the_same_way(monkeypatch):
     assert [(fighter.types, fighter.item) for fighter in seen] == [
         (("grass", "fire"), "hearthflame-mask"), (("normal",), "stellar-crystal"), (("grass", "poison"), None)]
     assert seen[1].mega == STELLAR
+
+
+def test_only_a_champion_battle_gives_its_finale_a_second_mega_slot(monkeypatch):
+    seen = {}
+
+    class Reached(Exception):
+        pass
+
+    def capture(sides, seed, starts, finale):
+        seen[len(sides[1])] = finale
+        raise Reached
+
+    monkeypatch.setattr(gym_battle, "simulate", capture)
+    monkeypatch.setattr(gym_battle, "combatant", lambda pokeapi, member: member["pokemon_id"])
+    for battle_id in ("kanto-1", "kanto-champion"):
+        with pytest.raises(Reached):
+            GymBattles(FakePokeAPI()).battle(battle_id, [member(1)])
+    assert seen == {3: None, 7: 6}
 
 
 def test_a_mask_raises_every_move_by_a_fifth_but_not_a_confusion_hit():
@@ -193,6 +211,25 @@ def test_only_the_first_of_a_mega_holder_and_a_stellar_holder_transforms():
     events = simulate((stellar_first, (STRONG,)), seed=3).events
     assert not any(isinstance(event, MegaEvolution) for event in events)
     assert [event.kind for event in shifts(events)] == ["stellar"]
+
+
+def test_a_foe_finale_gets_its_own_mega_after_one_of_the_first_members_used_the_teams():
+    foes = (mon("메가1", mega=MEGA), mon("메가2", mega=MEGA), mon("스텔라", "stellar-crystal", mega=STELLAR, tera=True))
+
+    def foe_forms(finale):
+        events = simulate(((STRONG,), foes), seed=3, finale=finale).events
+        return [event.pokemon for event in events if event.side == 1 and isinstance(event, MegaEvolution)] + \
+            [event.pokemon for event in shifts(events, "stellar") if event.side == 1]
+
+    assert foe_forms(None) == ["메가1"]
+    assert foe_forms(1) == ["메가1", "메가2"]
+    assert foe_forms(2) == ["메가1", "스텔라"]
+
+
+def test_the_player_keeps_one_mega_per_battle_when_the_foe_has_a_finale():
+    team = (mon("메가1", mega=MEGA), mon("메가2", mega=MEGA))
+    events = simulate((team, (STRONG,)), seed=3, finale=1).events
+    assert [event.pokemon for event in events if isinstance(event, MegaEvolution)] == ["메가1"]
 
 
 def test_each_side_gets_its_own_stellar_form():
