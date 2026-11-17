@@ -287,7 +287,7 @@ admin and the boss.
 
 ```json
 {
-  "ok": true, "gym_id": "kanto-elite-2", "kind": "elite", "won": true, "turns": 14, "seed": 1894512067,
+  "ok": true, "gym_id": "kanto-elite-2", "kind": "elite", "won": true, "turns": 2, "seed": 1894512067,
   "trainer": {"name": {"ko": "…", "en": "…", "ja": "…"}, "line": {"ko": "…", "en": "…", "ja": "…"}},
   "player_team": [
     {"pokemon_id": 25, "name": "피카츄", "level": 50, "types": ["electric"], "shiny": false, "hp": 62},
@@ -298,12 +298,26 @@ admin and the boss.
   ],
   "log": [
     {"turn": 1, "lines": [
-      {"side": 0, "text": "피카츄 › 10만볼트 → 모래두지 효과 없음"},
+      {"side": 0, "text": "피카츄 › 10만볼트 → 모래두지 무효"},
+      {"side": 1, "text": "모래두지 › 할퀴기 → 피카츄 62%"}
+    ]},
+    {"turn": 2, "lines": [
+      {"side": 0, "text": "피카츄 › 아이언테일 → 모래두지 💥"},
       {"side": null, "text": "💥 모래두지 쓰러짐"}
     ]}
   ],
+  "events": [
+    {"turn": 0, "type": "switch", "side": 0, "member": 0, "hp": 100, "status": null},
+    {"turn": 0, "type": "switch", "side": 1, "member": 0, "hp": 100, "status": null},
+    {"turn": 1, "type": "move", "side": 0, "member": 0, "move": "10만볼트"},
+    {"turn": 1, "type": "move", "side": 1, "member": 0, "move": "할퀴기"},
+    {"turn": 1, "type": "damage", "side": 0, "member": 0, "hp": 62},
+    {"turn": 2, "type": "move", "side": 0, "member": 0, "move": "아이언테일"},
+    {"turn": 2, "type": "damage", "side": 1, "member": 0, "hp": 0},
+    {"turn": 2, "type": "faint", "side": 1, "member": 0}
+  ],
   "run": {"id": "kanto-elite", "step": 2, "steps": 5, "first": "kanto-elite-1", "next": "kanto-elite-3"},
-  "carry": [{"hp": 62, "status": "burn"}, {"hp": 100, "status": null}]
+  "carry": [{"hp": 62, "status": null}, {"hp": 100, "status": null}]
 }
 ```
 
@@ -315,6 +329,7 @@ admin and the boss.
 | `player_team`, `foe_team` | Every member in lineup order: `pokemon_id`, `name` (the sent `name`, else the Korean species name), battle `level`, `types`, `shiny`. `hp` is the share of max HP left at the end, `0..100`: `0` fainted (a member that came in down stays `0`), `null` never sent out |
 | `log` | One entry per turn, every turn, none left out. Entries before turn 1 (entry abilities, Mega Evolution) join turn 1 |
 | `log[].lines[]` | The same lines the Slack battle log shows, Korean only. `side` is `0` for the player, `1` for the trainer, `null` for a line that names no side (a faint line, a weather end). A send-out line starts with `↪ `. `text` carries the rest of the Slack line without the 🔵/🔴 side marker |
+| `events` | The battle in order, for the app to replay. Every event has `turn` (`0` before turn 1), `type`, `side` (`0` the player, `1` the trainer) and `member` (the index in `player_team` / `foe_team`). The `type`s: `switch` (the member comes out with `hp` and `status`; both sides' first members come out at turn `0`), `move` (the member uses `move`, its Korean name as in `log`; a turn it cannot act has no `move` event), `damage` (the member's HP share is now `hp`, up or down: hits, recoil, drain, burn and poison, weather, items), `faint` (right after a `damage` to `0`) and `status` (`status` is now one of `burn`, `poison`, `toxic`, `paralysis`, `sleep`, `freeze`, or `null` when it ends). Replaying every `switch` and `damage` ends at each member's `hp` in the rosters. Stat changes, weather and forms are only in `log`. New `type`s may be added: skip one you do not know |
 | `run` | `null` for a gym. Otherwise `id`, `step`, `steps`, `first` (the run's first battle id) and `next` (the battle to send after a win, `null` after a loss or on the last step) |
 | `carry` | See below. `null` unless the battle was in a run, was won and has a `next` |
 

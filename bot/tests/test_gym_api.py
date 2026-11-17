@@ -4,7 +4,8 @@ import urllib.request
 
 import pytest
 
-from ypoke import gyms
+from ypoke import gym_battle, gyms
+from ypoke.battle import Action, BattleResult, Carry, Change, ItemEffect, SendOut, StatusDamage
 from ypoke.gym_battle import GymBattles
 from ypoke.narration import split_side
 from ypoke.store import Store
@@ -324,3 +325,77 @@ def test_split_side_reads_the_marker_and_keeps_the_send_out_arrow():
     assert split_side("↪ 🔴 꼬부기 등장") == (1, "↪ 꼬부기 등장")
     assert split_side("💥 꼬부기 쓰러짐") == (None, "💥 꼬부기 쓰러짐")
     assert split_side("☀️끝") == (None, "☀️끝")
+
+
+@pytest.mark.parametrize("gym_id,team", [
+    ("kanto-1", None), ("kanto-2", strong_team(6)), ("kanto-8", [{"pokemon_id": 1, "level": 5}] * 2),
+])
+def test_the_events_replay_to_the_hp_each_roster_ends_with(server, gym_id, team):
+    store, base, _, _ = server
+    status, body, _ = battle(base, store.issue_token("U1"), gym_id, team)
+    assert status == 200
+    assert any(event["type"] == "move" and event["move"] for event in body["events"])
+    assert_replay_matches_the_rosters(body)
+
+
+def test_a_member_that_came_in_down_never_appears_and_a_hurt_one_switches_in_hurt(server):
+    store, base, _, _ = server
+    carried = [{"hp": 0, "status": None}, {"hp": 40, "status": "burn"}, None]
+    status, body, _ = battle(base, store.issue_token("U1"), "kanto-hideout-1", strong_team(3), carried)
+    assert status == 200
+    first = body["events"][0]
+    assert (first["member"], first["hp"], first["status"]) == (1, 40, "burn")
+    assert all(event["member"] != 0 for event in body["events"] if event["side"] == 0)
+    body["player_team"][0]["hp"] = None
+    assert_replay_matches_the_rosters(body)
+
+
+def test_the_events_follow_statuses_recoil_and_who_is_out():
+    result = BattleResult(winner=0, turns=2, events=[
+        Action(1, 0, "A", "B", "불꽃", recovered=("sleep",), defender_hp=70, attacker_hp=50,
+               changes=(Change(1, "B", "burn"), Change(1, "B", "attack", -1))),
+        StatusDamage(1, 1, "B", 64, False, "burn"),
+        ItemEffect(1, 1, "B", "lum-berry", "cure"),
+        Action(2, 1, "B", "A", "", blocked="paralysis", defender_hp=50, attacker_hp=64),
+        Action(2, 0, "A", "B", "불꽃", defender_hp=0, knockout=True, attacker_hp=38, recoil=True),
+        SendOut(2, 1, "C"),
+    ])
+    events = gym_battle._events(result, ([2], [0, 1]), [Carry(50, "sleep")])
+    assert [tuple(event.values()) for event in events] == [
+        (0, "switch", 0, 2, 50, "sleep"),
+        (0, "switch", 1, 0, 100, None),
+        (1, "move", 0, 2, "불꽃"),
+        (1, "status", 0, 2, None),
+        (1, "damage", 1, 0, 70),
+        (1, "status", 1, 0, "burn"),
+        (1, "damage", 1, 0, 64),
+        (1, "status", 1, 0, None),
+        (2, "move", 0, 2, "불꽃"),
+        (2, "damage", 1, 0, 0),
+        (2, "faint", 1, 0),
+        (2, "damage", 0, 2, 38),
+        (2, "switch", 1, 1, 100, None),
+    ]
+
+
+def assert_replay_matches_the_rosters(body):
+    events = body["events"]
+    assert [(event["turn"], event["type"], event["side"]) for event in events[:2]] == [(0, "switch", 0), (0, "switch", 1)]
+    assert [event["turn"] for event in events] == sorted(event["turn"] for event in events)
+    assert events[-1]["turn"] <= body["turns"]
+    assert {event["type"] for event in events} <= {"switch", "move", "damage", "faint", "status"}
+    left = replayed(body)
+    for side, roster in ((0, body["player_team"]), (1, body["foe_team"])):
+        for member, fighter in enumerate(roster):
+            assert left.get((side, member)) == fighter["hp"], (side, member)
+    faints = [(event["side"], event["member"]) for event in events if event["type"] == "faint"]
+    assert faints == [(event["side"], event["member"]) for event in events if event["type"] == "damage" and event["hp"] == 0]
+
+
+def replayed(body):
+    """Each member's HP share after the last event that names it; members no event names are absent."""
+    left = {}
+    for event in body["events"]:
+        if event["type"] in ("switch", "damage"):
+            left[(event["side"], event["member"])] = event["hp"]
+    return left

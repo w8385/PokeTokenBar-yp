@@ -10,7 +10,10 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
 from ypoke import gyms
-from ypoke.battle import BattleResult, Carry, Combatant, simulate
+from ypoke.battle import (
+    CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, ItemEffect, ItemHeal, SendOut, StatusDamage, WeatherDamage,
+    simulate,
+)
 from ypoke.combatants import combatant
 from ypoke.narration import battle_turns, split_side
 from ypoke.pokeapi import PokeAPIService
@@ -59,6 +62,7 @@ class GymBattles:
             "player_team": _roster(player, shown),
             "foe_team": _roster(foes, result.remaining[1]),
             "log": _log(result),
+            "events": _events(result, (awake, list(range(len(foes)))), [starts[index] for index in awake]),
             "run": _run(opponent, following),
             "carry": carry if following else None,
         }
@@ -102,6 +106,85 @@ def _roster(roster: Sequence[Combatant], shares: Sequence[int | None]) -> list[d
          "shiny": member.shiny, "hp": shares[index]}
         for index, member in enumerate(roster)
     ]
+
+
+def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: Sequence[Carry | None]) -> list[dict]:
+    """The battle as the app replays it: who is out, which move, HP shares, faints and statuses. `members` maps each
+    side's fighting order to its team index (the player's skips members that came in down); `starts` is how each
+    of the player's fighters came in."""
+    replay = _Replay(members)
+    for side in (0, 1):
+        start = starts[0] if side == 0 and starts else None
+        replay.switch(0, side, start)
+    turn = 0
+    for event in result.events:
+        turn = getattr(event, "turn", turn)
+        if isinstance(event, SendOut):
+            position = replay.send_next(event.side)
+            replay.switch(turn, event.side, starts[position] if event.side == 0 else None)
+        elif isinstance(event, Action):
+            replay.action(event)
+        elif isinstance(event, (StatusDamage, WeatherDamage, ItemHeal)):
+            replay.hp(turn, event.side, event.hp)
+        elif isinstance(event, ItemEffect) and event.effect in ("cure", *CARRIED_STATUSES):
+            replay.status(turn, event.side, None if event.effect == "cure" else event.effect)
+    return replay.events
+
+
+class _Replay:
+    def __init__(self, members: tuple[list[int], list[int]]):
+        self.members = members
+        self.active = [0, 0]
+        self.events: list[dict] = []
+        self._hp: dict[tuple[int, int], int] = {}
+        self._status: dict[tuple[int, int], str | None] = {}
+
+    def send_next(self, side: int) -> int:
+        self.active[side] += 1
+        return self.active[side]
+
+    def switch(self, turn: int, side: int, start: Carry | None) -> None:
+        key = self._key(side)
+        self._hp[key] = 100 if start is None else start.hp
+        self._status[key] = None if start is None else start.status
+        self._emit(turn, "switch", side, hp=self._hp[key], status=self._status[key])
+
+    def action(self, action: Action) -> None:
+        if action.move:
+            self._emit(action.turn, "move", action.side, move=action.move)
+        for status in action.recovered:
+            if status in CARRIED_STATUSES:
+                self.status(action.turn, action.side, None)
+        self.hp(action.turn, 1 - action.side, action.defender_hp)
+        self.hp(action.turn, action.side, action.attacker_hp)
+        for change in action.changes:
+            if change.kind in CARRIED_STATUSES:
+                self.status(action.turn, change.side, change.kind)
+            elif change.kind == "thaw":
+                self.status(action.turn, change.side, None)
+
+    def hp(self, turn: int, side: int, hp: int) -> None:
+        key = self._key(side)
+        if self._hp[key] == hp:
+            return
+        self._hp[key] = hp
+        self._emit(turn, "damage", side, hp=hp)
+        if hp == 0:
+            self._emit(turn, "faint", side)
+
+    def status(self, turn: int, side: int, status: str | None) -> None:
+        key = self._key(side)
+        if self._status[key] == status or self._hp[key] == 0:
+            return
+        self._status[key] = status
+        self._emit(turn, "status", side, status=status)
+
+    def _key(self, side: int) -> tuple[int, int]:
+        return side, self.active[side]
+
+    def _emit(self, turn: int, kind: str, side: int, **fields) -> None:
+        member = self.members[side][self.active[side]]
+        self.events.append({"turn": turn, "type": kind, "side": side, "member": member, **fields})
 
 
 def _log(result: BattleResult) -> list[dict]:

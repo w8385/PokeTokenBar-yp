@@ -93,6 +93,14 @@ def test_a_move_can_miss_and_does_no_damage():
     assert (action.move, action.missed, action.knockout, action.defender_hp) == ("헛방", True, False, 100)
 
 
+def test_a_miss_or_an_immune_target_reports_the_attackers_hp():
+    whiff = mon("A", ["fire"], moves=[Move("헛방", "fire", 200, physical=False, accuracy=1)], speed=200)
+    missed = actions(simulate((whiff, mon("B", ["normal"], level=5)), 0, [Carry(40)]))[0]
+    blank = actions(simulate((mon("노말", ["normal"], speed=200), mon("유령", ["ghost"], level=5)), 0, [Carry(30)]))[0]
+    assert (missed.missed, missed.attacker_hp) == (True, 40)
+    assert (blank.multiplier, blank.attacker_hp) == (0, 30)
+
+
 def test_an_immune_target_takes_nothing():
     action = first_action(mon("노말", ["normal"], level=80, speed=200), mon("유령", ["ghost"], level=5))
     assert (action.move, action.multiplier, action.defender_hp) == ("몸통박치기", 0, 100)
