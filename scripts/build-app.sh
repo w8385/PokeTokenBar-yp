@@ -15,7 +15,7 @@ APP="$BUILD_DIR/$APP_NAME.app"
 # 아키텍처별로 따로 빌드한 뒤 lipo 로 합친다. 로컬 개발에서 빌드 시간을 줄이려면 PTB_NATIVE_ARCH_ONLY=1.
 ARCHS=(arm64 x86_64)
 if [[ "${PTB_NATIVE_ARCH_ONLY:-0}" == "1" ]]; then
-    [[ "${PTB_REQUIRE_STABLE_SIGN:-0}" == "1" ]] && { echo "   ✗ 릴리스 빌드는 PTB_NATIVE_ARCH_ONLY 를 쓸 수 없다 (universal 필수)." >&2; exit 1; }
+    [[ "${PTB_REQUIRE_STABLE_SIGN:-0}" == "1" && "${PTB_ALLOW_NATIVE_ARCH_RELEASE:-0}" != "1" ]] && { echo "   ✗ 릴리스 빌드는 PTB_NATIVE_ARCH_ONLY 를 쓸 수 없다 (universal 필수)." >&2; exit 1; }
     ARCHS=("$(uname -m)")
 fi
 SLICES=()
@@ -95,7 +95,10 @@ AGENT
 echo "==> codesign"
 SIGN_IDENTITY="${CODESIGN_IDENTITY:-PokeTokenBar Local}"
 # 안정적 Keychain ACL 을 위해서는 인증서 존재가 아니라 유효한 codesigning identity 가 필요하다.
-if security find-identity -v -p codesigning | grep -F "\"$SIGN_IDENTITY\"" >/dev/null; then
+if [[ "${PTB_SIGN_WITH_KEY:-0}" == "1" ]]; then
+    # 키 파일 서명 — 키체인에 못 닿는 백그라운드 세션에서도 된다 (fork-release.sh 가 세팅)
+    ./scripts/sign-with-key.sh sign "$APP"
+elif security find-identity -v -p codesigning | grep -F "\"$SIGN_IDENTITY\"" >/dev/null; then
     # 안정적 자체 서명 신원 → 재빌드해도 Keychain "항상 허용" 유지
     codesign --force -s "$SIGN_IDENTITY" "$APP"
 else

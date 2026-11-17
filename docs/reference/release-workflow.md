@@ -24,6 +24,10 @@ read_when:
 - 게시는 `scripts/fork-release.sh vX.Y.Z notes.md` 다. 태그에서 버전을 읽어 `PTB_VERSION` 으로 빌드하고,
   두 키가 태그와 같은지, 최신 공개 릴리스보다 새 버전인지 확인한다. Xcode 메이저 게이트(`xcode-pin.sh check`)도 그대로다.
   `PTB_DRY_RUN=1` 이면 빌드·zip 까지 하고 게시하지 않는다.
+- 서명: `fork-release.sh` 는 키 파일(`~/.config/ptb-signing`) 없이는 거절한다. 빌드는 `PTB_SIGN_WITH_KEY=1`·`PTB_REQUIRE_STABLE_SIGN=1` 이고,
+  빌드 뒤 designated requirement 에 `cdhash` 가 없는지와 `codesign --verify --deep --strict` 를 태그 전에 확인한다.
+  ad-hoc 이면 DR 이 cdhash 라 업데이트마다 사용자의 Keychain "항상 허용"이 풀린다. 백그라운드 세션은 login keychain 에 못 닿아 키체인 신원을 쓰지 않는다.
+  만들기·분실 영향은 RELEASE.md "포크 릴리스". 회귀: `WorkflowInvariantTests.testForkReleaseNeverShipsAnAdHocSignedBuild`.
 - 자산 이름 `PokeTokenBar-yp-arm64.zip`·`.sha256` 은 바꾸지 않는다 — 설치된 앱(yp7 이후)의 `SelfUpdater` 가 이 이름을 찾는다.
 - 옛 앱도 넘어온다: yp7 이후의 `isNewer` 는 숫자 부분을 먼저 비교하고 `-ypN` 은 같을 때만 본다.
   그래서 `3.0.0 > 2.5.7-ypN` 이다. 회귀: `UpdateCheckerTests.testSemverReleasesOutrankEveryForkSuffixRelease`,

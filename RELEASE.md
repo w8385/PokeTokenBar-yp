@@ -111,3 +111,14 @@ brew update && brew upgrade --cask poke-token-bar
 - designated requirement 가 버전 간 고정 → 사용자의 Keychain "항상 허용"이 업데이트 후에도 유지.
 - 전환 직후 첫 업데이트 1회는 기존(ad-hoc 시절) 허용이 무효라 마지막 프롬프트가 뜰 수 있음.
 - 인증서를 분실/재생성하면 DR 이 바뀌어 전 사용자 재프롬프트 — 재생성 금지(스크립트가 가드).
+
+### 포크 릴리스 (`scripts/fork-release.sh`)
+
+포크 릴리스는 키체인이 아니라 **키 파일**로 서명한다. 백그라운드 세션(train 통합자)은 login keychain 에 닿지 못해
+`codesign -s "PokeTokenBar Local"` 이 "no identity found" 로 실패하기 때문이다. 업스트림 `release.sh` 는 그대로 키체인 신원을 쓴다.
+- 키: `~/.config/ptb-signing/key.pem`·`cert.pem`(모드 600, 레포 밖) + 고정 버전 `bin/rcodesign`(sha256 검증). `scripts/sign-with-key.sh` 가 서명한다.
+- designated requirement 는 `identifier "<bundle id>" and certificate leaf = H"<cert sha1>"` 로 명시해 버전이 바뀌어도 같다.
+- 처음 한 번만, 사용자가 직접: `./scripts/create-fork-signing-key.sh` (GUI·키체인 프롬프트 없음). 키·인증서를 만들고 rcodesign 을 받아 sha256 을 확인한다. 이미 있으면 다시 만들지 않는다.
+- 키가 없으면 `fork-release.sh` 는 빌드 전에 거절한다. 빌드 뒤 `codesign -dr -` 에 `cdhash` 가 있거나 `codesign --verify --deep --strict` 가 실패하면 태그 전에 멈춘다. `PTB_DRY_RUN=1` 도 같은 검사를 한다.
+- 전환 뒤 첫 업데이트는 사용자에게 Keychain 프롬프트가 마지막으로 한 번 더 뜬다(기존 ad-hoc 허용은 무효).
+- 키는 이 Mac 의 `~/.config/ptb-signing` 에만 있다. 잃거나 다시 만들면 모든 사용자가 한 번 더 프롬프트를 받는다. 재생성·커밋 금지, 백업은 사용자가 따로 한다.
