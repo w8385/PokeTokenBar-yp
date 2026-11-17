@@ -31,27 +31,39 @@ private struct GymTeamStrip: View {
     let title: String
     let fighters: [GymFighter]
     let l: L
+    /// Members from this index on stay a "?" unless they came out: the champion's finale.
+    var hiddenFrom = Int.max
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(title).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
             HStack(alignment: .top, spacing: Spacing.sm) {
-                ForEach(Array(fighters.enumerated()), id: \.offset) { _, fighter in
-                    VStack(spacing: Spacing.xxs) {
-                        SpriteView(speciesID: fighter.pokemonId, size: 36, shiny: fighter.shiny)
+                ForEach(Array(fighters.enumerated()), id: \.offset) { index, fighter in
+                    if index >= hiddenFrom, fighter.hp == nil {
+                        Text("?").font(.callout.weight(.bold)).foregroundStyle(.secondary)
                             .frame(width: 36, height: 36)
-                            .grayscale(fighter.hp == 0 ? 1 : 0)
-                        GymHPBar(hp: fighter.hp).frame(width: 34)
-                        Text("Lv\(fighter.level)").font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+                            .accessibilityLabel(l.gymFinaleHidden(1))
+                    } else {
+                        member(fighter)
                     }
-                    .opacity(fighter.hp == nil ? 0.3 : (fighter.hp == 0 ? 0.55 : 1))
-                    .help(fighter.name)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(fighter.name), Lv\(fighter.level), \(status(fighter))")
                 }
                 Spacer(minLength: 0)
             }
         }
+    }
+
+    private func member(_ fighter: GymFighter) -> some View {
+        VStack(spacing: Spacing.xxs) {
+            SpriteView(speciesID: fighter.pokemonId, size: 36, shiny: fighter.shiny)
+                .frame(width: 36, height: 36)
+                .grayscale(fighter.hp == 0 ? 1 : 0)
+            GymHPBar(hp: fighter.hp).frame(width: 34)
+            Text("Lv\(fighter.level)").font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+        }
+        .opacity(fighter.hp == nil ? 0.3 : (fighter.hp == 0 ? 0.55 : 1))
+        .help(fighter.name)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(fighter.name), Lv\(fighter.level), \(status(fighter))")
     }
 
     private func status(_ fighter: GymFighter) -> String {
@@ -136,7 +148,8 @@ struct GymResultView: View {
         if outcome.won, outcome.run != nil, outcome.run?.next == nil { Text(l.gymRunCleared).font(.caption) }
         if !outcome.won, outcome.run != nil { Text(l.gymRunLostHint).font(.caption2).foregroundStyle(.secondary) }
         GymTeamStrip(title: l.gymYourTeam, fighters: outcome.playerTeam, l: l)
-        GymTeamStrip(title: l.gymTheirTeam, fighters: outcome.foeTeam, l: l)
+        GymTeamStrip(title: l.gymTheirTeam, fighters: outcome.foeTeam, l: l,
+                     hiddenFrom: (record.opponent.finale ?? 0) > 0 ? record.opponent.team.count : .max)
     }
 
     @ViewBuilder

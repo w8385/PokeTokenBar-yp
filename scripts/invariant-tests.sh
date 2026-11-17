@@ -59,6 +59,8 @@ METHODS=(
   AntigravityUsageTests/testEntriesWithoutRootsGoesThroughResolvedRoots
   CredentialSwitchCacheTests/testAntigravityUserRefreshAlsoBypassesStillValidCache
   SaveTransferTests/testEveryCompanionStateFieldIsClassifiedForTransfer
+  GymModelTests/testGymViewsNeverShowTheBotsRegionName
+  GymModelTests/testRegionNamesFollowTheAppLanguageNotTheBotsKoreanName
   # Language sweeps the name rule does not catch.
   ActivityVisualizationTests/testTitleStatesTheWindowLength
   AdditionalClaudeAccountsStoreTests/testTheBubbleDropsAnAccountThatDoesNotFit

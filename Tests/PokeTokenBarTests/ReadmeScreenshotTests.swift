@@ -28,7 +28,7 @@ final class ReadmeScreenshotTests: XCTestCase {
         let originalArt = GymTrainerArt.directory
         GymTrainerArt.directory = GymRepo.trainerAssets
         GymTrainerArt.clearCache()
-        let catalog = try GymCatalog.decode(Data(kantoCatalog.utf8))
+        let catalog = try GymCatalog.decode(Data(contentsOf: GymRepo.kantoCatalog))
         GymSession.shared.setCatalog(catalog, for: Self.server)
         defer {
             GymSession.shared.setCatalog(nil, for: Self.server)
@@ -83,6 +83,8 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await shot(gyms(store: store, uploader: uploader, entry: entry, catalog: catalog),
                            "screenshot-gyms\(suffix)", in: dir, height: nil)
             try await shot(replay(language: language, catalog: catalog), "screenshot-gym-replay\(suffix)", in: dir,
+                           height: nil)
+            try await shot(finale(language: language, catalog: catalog), "screenshot-champion-finale\(suffix)", in: dir,
                            height: nil)
         }
     }
@@ -214,17 +216,43 @@ final class ReadmeScreenshotTests: XCTestCase {
     private func replay(language: AppLanguage, catalog: GymCatalog) throws -> some View {
         let l = L(language)
         let mine = [ReplayCast.pikachu, ReplayCast.lapras, ReplayCast.gengar]
-        let theirs = [ReplayCast.poliwhirl, ReplayCast.wartortle]
+        let theirs = [ReplayCast.wartortle, ReplayCast.seadra, ReplayCast.seaking]
         let outcome = try GymBattleOutcome.decode(GymFixtures.outcomeData(
             gymID: "kanto-1", kind: "gym", won: true, turns: 5, events: ReplayCast.events(language),
             teams: (zip(mine, [0, 100, nil]).map { GymFixtures.fighter($0.id, name: $0.name(language), hp: $1) },
-                    theirs.map { GymFixtures.fighter($0.id, name: $0.name(language), hp: 0) })))
+                    zip(theirs, [0, 0, nil]).map { GymFixtures.fighter($0.id, name: $0.name(language), hp: $1) })))
         let opponent = try XCTUnwrap(catalog.region("kanto")?.gyms.first)
         let player = GymReplayPlayer(try XCTUnwrap(GymReplay(outcome)), shown: 12)
         return VStack(alignment: .leading, spacing: Spacing.md) {
             VStack(spacing: 0) {
                 GymOpponentRow(opponent: opponent, language: language, l: l, earned: false, fighting: true,
                                disabled: true) {}
+            }
+            .ptbCard()
+            GymReplayView(player: player, outcome: outcome, l: l, autoplay: false)
+        }
+        .padding(PopoverMetrics.padding)
+        .environment(\.locale, language.displayLocale)
+    }
+
+    /// The Elite Four run with the champion's hidden "+1 ?", and the replay as the hidden partner comes out.
+    private func finale(language: AppLanguage, catalog: GymCatalog) throws -> some View {
+        let l = L(language)
+        let elite = try XCTUnwrap(catalog.region("kanto")?.elite)
+        let mine = [ReplayCast.pikachu, ReplayCast.lapras, ReplayCast.gengar]
+        let outcome = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+            gymID: "kanto-champion", kind: "champion", won: false, turns: 8, events: ReplayCast.finaleEvents(language),
+            teams: (zip(mine, [0, 0, 40]).map { GymFixtures.fighter($0.id, name: $0.name(language), hp: $1) },
+                    zip(ReplayCast.champion, [0, 0, 0, 0, 0, 0, 100]).map {
+                        GymFixtures.fighter($0.id, name: $0.name(language), hp: $1)
+                    })))
+        let player = GymReplayPlayer(try XCTUnwrap(GymReplay(outcome)))
+        player.skip()
+        return VStack(alignment: .leading, spacing: Spacing.md) {
+            VStack(spacing: 0) {
+                GymRunRow(title: l.gymEliteTitle, subtitle: nil, emblem: .hallOfFame, battles: elite.battles, l: l,
+                          lockedReason: nil, nextStep: elite.battles.count, cleared: false, fighting: true,
+                          disabled: true) {}
             }
             .ptbCard()
             GymReplayView(player: player, outcome: outcome, l: l, autoplay: false)
@@ -272,21 +300,69 @@ private struct ReplayCast {
     static let pikachu = ReplayCast(id: 25, names: [.en: "Pikachu", .ko: "피카츄", .ja: "ピカチュウ"])
     static let lapras = ReplayCast(id: 131, names: [.en: "Lapras", .ko: "라프라스", .ja: "ラプラス"])
     static let gengar = ReplayCast(id: 94, names: [.en: "Gengar", .ko: "팬텀", .ja: "ゲンガー"])
-    static let poliwhirl = ReplayCast(id: 61, names: [.en: "Poliwhirl", .ko: "슈륙챙이", .ja: "ニョロゾ"])
     static let wartortle = ReplayCast(id: 8, names: [.en: "Wartortle", .ko: "어니부기", .ja: "カメール"])
-    static let all = [pikachu, lapras, gengar, poliwhirl, wartortle]
+    static let seadra = ReplayCast(id: 117, names: [.en: "Seadra", .ko: "시드라", .ja: "シードラ"])
+    static let seaking = ReplayCast(id: 119, names: [.en: "Seaking", .ko: "왕콘치", .ja: "アズマオウ"])
+    /// The bot's Kanto champion table: six on show, then the hidden finale.
+    static let champion = [
+        ReplayCast(id: 145, names: [.en: "Zapdos", .ko: "썬더", .ja: "サンダー"]),
+        ReplayCast(id: 146, names: [.en: "Moltres", .ko: "파이어", .ja: "ファイヤー"]),
+        ReplayCast(id: 149, names: [.en: "Dragonite", .ko: "망나뇽", .ja: "カイリュー"]),
+        ReplayCast(id: 6, names: [.en: "Charizard", .ko: "리자몽", .ja: "リザードン"]),
+        ReplayCast(id: 94, names: [.en: "Gengar", .ko: "팬텀", .ja: "ゲンガー"]),
+        ReplayCast(id: 130, names: [.en: "Gyarados", .ko: "갸라도스", .ja: "ギャラドス"]),
+        ReplayCast(id: 150, names: [.en: "Mewtwo", .ko: "뮤츠", .ja: "ミュウツー"]),
+    ]
+    static let all = [pikachu, lapras, gengar, wartortle, seadra, seaking] + champion
 
     private static let moves: [String: [AppLanguage: String]] = [
         "thunderbolt": [.en: "Thunderbolt", .ko: "10만볼트", .ja: "10まんボルト"],
         "bubble-beam": [.en: "Bubble Beam", .ko: "거품광선", .ja: "バブルこうせん"],
-        "aqua-tail": [.en: "Aqua Tail", .ko: "아쿠아테일", .ja: "アクアテール"],
+        "hydro-pump": [.en: "Hydro Pump", .ko: "하이드로펌프", .ja: "ハイドロポンプ"],
         "body-slam": [.en: "Body Slam", .ko: "누르기", .ja: "のしかかり"],
+        "ice-beam": [.en: "Ice Beam", .ko: "냉동빔", .ja: "れいとうビーム"],
+        "flamethrower": [.en: "Flamethrower", .ko: "화염방사", .ja: "かえんほうしゃ"],
+        "surf": [.en: "Surf", .ko: "파도타기", .ja: "なみのり"],
+        "shadow-ball": [.en: "Shadow Ball", .ko: "섀도볼", .ja: "シャドーボール"],
+        "waterfall": [.en: "Waterfall", .ko: "폭포오르기", .ja: "たきのぼり"],
     ]
 
-    /// Pikachu beats Poliwhirl and falls to Wartortle; Lapras comes in and finishes Wartortle.
+    private static func move(_ turn: Int, side: Int, member: Int, _ id: String, _ language: AppLanguage) -> [String: Any] {
+        GymFixtures.event(turn, "move", side: side, member: member, move: moves[id]?[language] ?? id)
+    }
+
+    /// Each of the champion's six falls in turn; the hidden seventh comes out after the last.
+    static func finaleEvents(_ language: AppLanguage) -> [[String: Any]] {
+        func hit(_ turn: Int, by side: Int, _ attacker: Int, on defender: Int, _ id: String, hp: Int) -> [[String: Any]] {
+            [move(turn, side: side, member: attacker, id, language),
+             GymFixtures.event(turn, "damage", side: 1 - side, member: defender, hp: hp)]
+        }
+        func ko(_ turn: Int, side: Int, _ member: Int, next: Int) -> [[String: Any]] {
+            [GymFixtures.event(turn, "faint", side: side, member: member),
+             GymFixtures.event(turn, "switch", side: side, member: next, hp: 100)]
+        }
+        let opening = [GymFixtures.event(0, "switch", side: 0, member: 0, hp: 100),
+                       GymFixtures.event(0, "switch", side: 1, member: 0, hp: 100)]
+        let fight = [
+            hit(1, by: 0, 0, on: 0, "thunderbolt", hp: 0), ko(1, side: 1, 0, next: 1),
+            hit(2, by: 1, 1, on: 0, "flamethrower", hp: 0), ko(2, side: 0, 0, next: 1),
+            hit(3, by: 0, 1, on: 1, "surf", hp: 0), ko(3, side: 1, 1, next: 2),
+            hit(4, by: 0, 1, on: 2, "ice-beam", hp: 0), ko(4, side: 1, 2, next: 3),
+            hit(5, by: 0, 1, on: 3, "surf", hp: 0), ko(5, side: 1, 3, next: 4),
+            hit(6, by: 1, 4, on: 1, "shadow-ball", hp: 0), ko(6, side: 0, 1, next: 2),
+            hit(7, by: 0, 2, on: 4, "shadow-ball", hp: 0), ko(7, side: 1, 4, next: 5),
+            hit(8, by: 1, 5, on: 2, "waterfall", hp: 40), hit(8, by: 0, 2, on: 5, "thunderbolt", hp: 0),
+            [GymFixtures.event(8, "faint", side: 1, member: 5),
+             GymFixtures.event(8, GymBattleEvent.finale, side: 1, member: 6),
+             GymFixtures.event(8, "switch", side: 1, member: 6, hp: 100)],
+        ]
+        return opening + fight.flatMap { $0 }
+    }
+
+    /// Pikachu beats Wartortle and falls to Seadra; Lapras comes in and finishes Seadra.
     static func events(_ language: AppLanguage) -> [[String: Any]] {
         func move(_ turn: Int, side: Int, member: Int, _ id: String) -> [String: Any] {
-            GymFixtures.event(turn, "move", side: side, member: member, move: moves[id]?[language] ?? id)
+            Self.move(turn, side: side, member: member, id, language)
         }
         func damage(_ turn: Int, side: Int, member: Int, hp: Int) -> [String: Any] {
             GymFixtures.event(turn, "damage", side: side, member: member, hp: hp)
@@ -299,9 +375,9 @@ private struct ReplayCast {
             move(2, side: 0, member: 0, "thunderbolt"), damage(2, side: 1, member: 0, hp: 0),
             GymFixtures.event(2, "faint", side: 1, member: 0),
             GymFixtures.event(2, "switch", side: 1, member: 1, hp: 100),
-            move(3, side: 1, member: 1, "aqua-tail"), damage(3, side: 0, member: 0, hp: 15),
+            move(3, side: 1, member: 1, "hydro-pump"), damage(3, side: 0, member: 0, hp: 15),
             move(3, side: 0, member: 0, "thunderbolt"), damage(3, side: 1, member: 1, hp: 30),
-            move(4, side: 1, member: 1, "aqua-tail"), damage(4, side: 0, member: 0, hp: 0),
+            move(4, side: 1, member: 1, "hydro-pump"), damage(4, side: 0, member: 0, hp: 0),
             GymFixtures.event(4, "faint", side: 0, member: 0),
             GymFixtures.event(4, "switch", side: 0, member: 1, hp: 100),
             move(5, side: 0, member: 1, "body-slam"), damage(5, side: 1, member: 1, hp: 0),
@@ -309,8 +385,3 @@ private struct ReplayCast {
         ]
     }
 }
-
-/// The Kanto region of the bot's `GET /gyms` catalog (`bot/ypoke/gym_data.py`), trimmed to one region.
-private let kantoCatalog = #"""
-{"ok":true,"regions":[{"id":"kanto","name":"관동","first":1,"last":151,"gyms":[{"id":"kanto-1","kind":"gym","index":1,"types":["water"],"level":50,"trainer":{"name":{"ko":"물결","en":"Rippa","ja":"リッパ"},"line":{"ko":"파도는 멈추지 않아. 너도 그래야 해.","en":"Waves never stop. Neither should you.","ja":"波は止まらない。君もだ。"}},"team":[61,8,148,51,117,119],"run":null},{"id":"kanto-2","kind":"gym","index":2,"types":["poison"],"level":50,"trainer":{"name":{"ko":"독초","en":"Venn","ja":"ヴェン"},"line":{"ko":"한 방울이면 충분하지.","en":"One drop is plenty.","ja":"一滴で十分さ。"}},"team":[44,2,93,24,49,42],"run":null},{"id":"kanto-3","kind":"gym","index":3,"types":["normal"],"level":50,"trainer":{"name":{"ko":"한결","en":"Hal","ja":"ハル"},"line":{"ko":"평범함이 가장 단단해.","en":"Ordinary is the hardest thing to break.","ja":"ふつうが一番かたいんだ。"}},"team":[40,53,22,113,85,18],"run":null},{"id":"kanto-4","kind":"gym","index":4,"types":["flying"],"level":50,"trainer":{"name":{"ko":"새벽","en":"Aeron","ja":"エアロン"},"line":{"ko":"높이 나는 쪽이 먼저 본다.","en":"The higher flier sees first.","ja":"高く飛ぶ者が先に見る。"}},"team":[22,42,82,85,18,123],"run":null},{"id":"kanto-5","kind":"gym","index":5,"types":["ground"],"level":50,"trainer":{"name":{"ko":"자갈","en":"Dunn","ja":"ダン"},"line":{"ko":"발밑부터 단단히 다져.","en":"Pack the ground under you first.","ja":"足元から固めなさい。"}},"team":[28,112,101,76,31,34],"run":null},{"id":"kanto-6","kind":"gym","index":6,"types":["grass"],"level":50,"trainer":{"name":{"ko":"새싹","en":"Fennel","ja":"フェンネル"},"line":{"ko":"천천히 자라서 크게 이겨.","en":"Grow slow, win big.","ja":"ゆっくり育って、大きく勝つ。"}},"team":[45,71,78,68,3,103],"run":null},{"id":"kanto-7","kind":"gym","index":7,"types":["fire"],"level":50,"trainer":{"name":{"ko":"불씨","en":"Kade","ja":"ケイド"},"line":{"ko":"작은 불씨도 숲을 태워.","en":"A spark can burn a forest.","ja":"火花ひとつで森も燃える。"}},"team":[126,78,38,136,6,59],"run":null},{"id":"kanto-8","kind":"gym","index":8,"types":["psychic"],"level":50,"trainer":{"name":{"ko":"가온","en":"Oriel","ja":"オリエル"},"line":{"ko":"네 다음 수는 이미 읽었어.","en":"I read your next move already.","ja":"君の次の手は読んでいる。"}},"team":[65,121,103,6,143,59],"run":null}],"elite":{"run":"kanto-elite","badges_needed":8,"battles":[{"id":"kanto-elite-1","kind":"elite","index":1,"types":["bug"],"level":50,"trainer":{"name":{"ko":"메뚜기","en":"Pell","ja":"ペル"},"line":{"ko":"작다고 얕보면 물려.","en":"Small things bite hard.","ja":"小さいからって侮ると噛まれるよ。"}},"team":[15,49,127,131,143,59],"run":{"id":"kanto-elite","step":1,"steps":5}},{"id":"kanto-elite-2","kind":"elite","index":2,"types":["fighting"],"level":50,"trainer":{"name":{"ko":"주먹","en":"Tor","ja":"トール"},"line":{"ko":"말은 필요 없다. 덤벼라.","en":"No talk. Come at me.","ja":"言葉はいらん。かかってこい。"}},"team":[106,68,62,6,143,59],"run":{"id":"kanto-elite","step":2,"steps":5}},{"id":"kanto-elite-3","kind":"elite","index":3,"types":["rock"],"level":50,"trainer":{"name":{"ko":"바위","en":"Holt","ja":"ホルト"},"line":{"ko":"산은 한 번도 물러난 적 없다.","en":"A mountain has never stepped back.","ja":"山は一歩も退いたことがない。"}},"team":[76,141,142,131,143,59],"run":{"id":"kanto-elite","step":3,"steps":5}},{"id":"kanto-elite-4","kind":"elite","index":4,"types":["ice"],"level":50,"trainer":{"name":{"ko":"서리","en":"Rime","ja":"ライム"},"line":{"ko":"식을 때까지 기다려 줄게.","en":"I'll wait until you cool off.","ja":"頭が冷えるまで待ってあげる。"}},"team":[87,91,103,131,143,59],"run":{"id":"kanto-elite","step":4,"steps":5}},{"id":"kanto-champion","kind":"champion","index":5,"types":[],"level":50,"trainer":{"name":{"ko":"여울","en":"Idris","ja":"イドリス"},"line":{"ko":"여기까지 온 건 인정하지. 이제 진짜를 보여 줘.","en":"You made it here. Now show me the real thing.","ja":"ここまで来たことは認めよう。本物を見せてくれ。"}},"team":[142,135,103,130,143,59],"run":{"id":"kanto-elite","step":5,"steps":5}}]},"hideout":{"run":"kanto-hideout","org":{"name":{"ko":"어둠전선","en":"The Dim Circuit","ja":"ディム・サーキット"},"types":["electric","ghost"]},"battles":[{"id":"kanto-hideout-1","kind":"grunt","index":1,"types":["electric","ghost"],"level":50,"trainer":{"name":{"ko":"어둠전선 단원","en":"Dim Circuit Grunt","ja":"ディム・サーキットの下っ端"},"line":{"ko":"불 꺼지면 우리 세상이야!","en":"Lights out is our time!","ja":"明かりが消えたら俺たちの時間だ！"}},"team":[148,40,22,26,101,94],"run":{"id":"kanto-hideout","step":1,"steps":4}},{"id":"kanto-hideout-2","kind":"grunt","index":2,"types":["electric","ghost"],"level":50,"trainer":{"name":{"ko":"어둠전선 단원","en":"Dim Circuit Grunt","ja":"ディム・サーキットの下っ端"},"line":{"ko":"불 꺼지면 우리 세상이야!","en":"Lights out is our time!","ja":"明かりが消えたら俺たちの時間だ！"}},"team":[51,40,49,26,101,94],"run":{"id":"kanto-hideout","step":2,"steps":4}},{"id":"kanto-hideout-3","kind":"admin","index":3,"types":["electric","ghost"],"level":50,"trainer":{"name":{"ko":"퓨즈","en":"Fuse","ja":"ヒューズ"},"line":{"ko":"여기서부터는 정전이다.","en":"Power's out from here on.","ja":"ここから先は停電だ。"}},"team":[87,99,26,101,110,94],"run":{"id":"kanto-hideout","step":3,"steps":4}},{"id":"kanto-hideout-4","kind":"boss","index":4,"types":["electric","ghost"],"level":50,"trainer":{"name":{"ko":"어스름","en":"Umbra Vex","ja":"アンブラ・ヴェクス"},"line":{"ko":"세상 불을 다 꺼 주마.","en":"I'll put out every light in the world.","ja":"世界中の明かりを消してやる。"}},"team":[101,94,135,136,9,103],"run":{"id":"kanto-hideout","step":4,"steps":4}}]}}]}
-"""#

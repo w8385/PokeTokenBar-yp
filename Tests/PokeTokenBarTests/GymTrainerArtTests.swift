@@ -8,6 +8,9 @@ enum GymRepo {
     static let trainerAssets = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         .appendingPathComponent("assets/trainers")
+    /// The bot's Kanto catalog; `bot/tests/test_gym_api.py` fails when it drifts from `gyms.catalog()`.
+    static let kantoCatalog = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+        .appendingPathComponent("Fixtures/kanto-gym-catalog.json")
 }
 
 @MainActor

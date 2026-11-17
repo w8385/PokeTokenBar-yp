@@ -70,6 +70,12 @@ struct GymRunRow: View {
                             }
                         }
                 }
+                if let finale = battles.last?.finale, finale > 0 {
+                    Text("+\(finale) ?")
+                        .font(.caption2.weight(.semibold)).foregroundStyle(.secondary).monospacedDigit()
+                        .help(l.gymFinaleHidden(finale))
+                        .accessibilityLabel(l.gymFinaleHidden(finale))
+                }
             }
             HStack(alignment: .firstTextBaseline) {
                 Text(lockedReason ?? (started ? l.gymRunStepLine(nextStep, of: battles.count) : l.gymRunRule))

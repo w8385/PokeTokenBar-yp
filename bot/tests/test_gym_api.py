@@ -1,6 +1,7 @@
 import json
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 import pytest
 
@@ -102,6 +103,13 @@ def battle(base, token, gym_id="kanto-1", team=None, carried=None):
 
 def strong_team(size):
     return [{"pokemon_id": 900 + index, "level": 50, "name": f"멤버{index}"} for index in range(size)]
+
+
+def test_the_apps_kanto_catalog_fixture_matches_the_bots_catalog():
+    fixture = Path(__file__).resolve().parents[2] / "Tests/PokeTokenBarTests/Fixtures/kanto-gym-catalog.json"
+    kanto = [region for region in gyms.catalog()["regions"] if region["id"] == "kanto"]
+
+    assert json.loads(fixture.read_text()) == {"ok": True, "regions": kanto}
 
 
 def test_the_catalog_needs_a_token_and_lists_every_region(server):

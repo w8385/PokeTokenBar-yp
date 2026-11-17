@@ -12,6 +12,20 @@ extension L {
     var gymRetry: String { t("다시 시도", "Retry", "再試行", "Reintentar", "Réessayer", "Tentar de novo", "Erneut versuchen", "Повторить") }
     var gymFighting: String { t("대결 중…", "Fighting…", "対戦中…", "Combatiendo…", "Combat en cours…", "Lutando…", "Kampf läuft…", "Бой…") }
     var gymLoading: String { t("체육관 정보를 불러오는 중…", "Loading gyms…", "ジム情報を読み込み中…", "Cargando gimnasios…", "Chargement des arènes…", "Carregando ginásios…", "Arenen werden geladen…", "Загрузка залов…") }
+    /// The app's own name for a catalog region; the bot sends Korean only.
+    func gymRegionName(_ region: GymRegion) -> String {
+        PokedexRegion(rawValue: region.id).map(regionName) ?? region.name
+    }
+    func gymFinaleHidden(_ count: Int) -> String {
+        t("숨겨진 포켓몬 \(count)마리", "\(count) hidden Pokémon", "隠れたポケモン \(count)匹", "\(count) Pokémon ocultos",
+          "\(count) Pokémon cachés", "\(count) Pokémon ocultos", "\(count) versteckte Pokémon", "Скрытых покемонов: \(count)")
+    }
+    var gymFinaleEntrance: String {
+        t("챔피언이 끝까지 숨겨 둔 마지막 파트너를 부른다!", "The champion calls the last partner they kept hidden!",
+          "チャンピオンが 最後まで 隠していた パートナーを 呼んだ！", "¡El campeón llama al último compañero que tenía oculto!",
+          "Le Maître appelle le dernier partenaire qu'il gardait caché !", "O campeão chama o último parceiro que mantinha escondido!",
+          "Der Champion ruft den letzten Partner, den er versteckt hielt!", "Чемпион зовёт последнего партнёра, которого прятал!")
+    }
     func gymTeamLine(_ count: Int, level: Int) -> String {
         t("\(count)마리 · Lv\(level)", "\(count) Pokémon · Lv\(level)", "\(count)匹 · Lv\(level)", "\(count) Pokémon · Nv\(level)",
           "\(count) Pokémon · N\(level)", "\(count) Pokémon · Nv\(level)", "\(count) Pokémon · Lv\(level)", "\(count) покемонов · Ур\(level)")

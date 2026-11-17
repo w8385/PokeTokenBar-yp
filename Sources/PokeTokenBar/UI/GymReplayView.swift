@@ -28,6 +28,7 @@ struct GymReplayView: View {
             }
             .buttonStyle(.borderless).controlSize(.small)
             VStack(spacing: Spacing.md) {
+                if frame.finale { finaleBanner }
                 side(1, frame: frame, fighters: outcome.foeTeam)
                 moveLine(frame)
                 side(0, frame: frame, fighters: outcome.playerTeam)
@@ -95,6 +96,16 @@ struct GymReplayView: View {
                     .frame(width: 6, height: 6)
             }
         }
+    }
+
+    private var finaleBanner: some View {
+        Label(l.gymFinaleEntrance, systemImage: "sparkles")
+            .font(.caption.weight(.bold)).foregroundStyle(Self.sideColor(1))
+            .padding(.horizontal, Spacing.md).padding(.vertical, Spacing.xs)
+            .frame(maxWidth: .infinity)
+            .background(RoundedRectangle(cornerRadius: Radius.chip).fill(Self.sideColor(1).opacity(0.15)))
+            .transition(.opacity)
+            .accessibilityAddTraits(.isHeader)
     }
 
     private func moveLine(_ frame: GymReplay.Frame) -> some View {
