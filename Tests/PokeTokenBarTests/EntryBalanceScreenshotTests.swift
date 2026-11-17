@@ -53,6 +53,6 @@ final class EntryBalanceScreenshotTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light)
             .environment(\.locale, AppLanguage.en.displayLocale),
-            size: size, appearance: .aqua, settle: .seconds(2), to: file)
+            size: size, appearance: .aqua, to: file)
     }
 }

@@ -6,10 +6,10 @@ import XCTest
 /// #379: the Pokédex pager chevrons only accepted clicks on the ~7×12pt glyph itself.
 @MainActor
 final class DexPageButtonHitAreaTests: XCTestCase {
-    func testClickOutsideGlyphButInsideHitAreaPages() throws {
+    func testClickOutsideGlyphButInsideHitAreaPages() async throws {
         let side = DexPageButton.hitSize
         // Corner-adjacent point: well outside the chevron glyph, inside the 28pt target.
-        let taps = try clickCount(at: CGPoint(x: 3, y: 3), side: side)
+        let taps = try await clickCount(at: CGPoint(x: 3, y: 3), side: side)
         XCTAssertEqual(taps, 1)
     }
 
@@ -17,18 +17,17 @@ final class DexPageButtonHitAreaTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(DexPageButton.hitSize, 24)
     }
 
-    private func clickCount(at point: CGPoint, side: CGFloat) throws -> Int {
+    private func clickCount(at point: CGPoint, side: CGFloat) async throws -> Int {
         var taps = 0
-        let host = NSHostingView(rootView: DexPageButton(forward: true, label: "next") { taps += 1 }
+        let host = OffscreenRender.host(DexPageButton(forward: true, label: "next") { taps += 1 }
             .font(.system(size: 13, weight: .semibold))
-            .frame(width: side, height: side))
-        host.frame = NSRect(x: 0, y: 0, width: side, height: side)
+            .frame(width: side, height: side), size: CGSize(width: side, height: side))
         let window = OffscreenRender.windowHosting(host)
         defer { window.close() }
-        host.layoutSubtreeIfNeeded()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        try await OffscreenRender.settle(host)
 
         try OffscreenRender.click(at: point, in: window)
+        try await OffscreenRender.waitUntil("the click to page", in: host) { taps > 0 }
         return taps
     }
 }

@@ -295,8 +295,7 @@ final class EggPrayerTests: XCTestCase {
         XCTAssertEqual(burst.particles[0].xFraction, 0)
         XCTAssertEqual(burst.particles[1].xFraction, 1)
         XCTAssertTrue(burst.particles.allSatisfy { (0...1).contains($0.xFraction) })
-        try await Task.sleep(for: PrayerBurst.lifetime + .milliseconds(300))
-        XCTAssertTrue(burst.particles.isEmpty, "each particle removes itself")
+        try await waitUntil("each particle to remove itself") { burst.particles.isEmpty }
         XCTAssertEqual(burst.wobbleCount, 3)
     }
 

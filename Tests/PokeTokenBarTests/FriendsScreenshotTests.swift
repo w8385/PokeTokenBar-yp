@@ -94,6 +94,6 @@ final class FriendsScreenshotTests: XCTestCase {
         try await OffscreenRender.capture(view.frame(width: size.width, height: size.height)
             .background(Color.white)
             .environment(\.colorScheme, .light),
-            size: size, appearance: .aqua, scale: 2, settle: .seconds(5), to: file)
+            size: size, appearance: .aqua, scale: 2, to: file)
     }
 }

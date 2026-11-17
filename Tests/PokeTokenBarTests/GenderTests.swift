@@ -166,12 +166,7 @@ final class GenderStoreTests: XCTestCase {
     }
 
     private func waitUntil(_ condition: @escaping () -> Bool) async -> Bool {
-        let deadline = Date().addingTimeInterval(2)
-        while Date() < deadline {
-            if condition() { return true }
-            try? await Task.sleep(nanoseconds: 10_000_000)
-        }
-        return condition()
+        (try? await PokeTokenBarTests.waitUntil("the store condition", condition)) != nil
     }
 
     private func finish(_ s: CompanionStore) {

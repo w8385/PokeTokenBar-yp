@@ -94,7 +94,7 @@ final class DexFlavorScreenshotTests: XCTestCase {
         let size = NSSize(width: PopoverMetrics.contentWidth, height: 110)
         try await OffscreenRender.capture(route.padding(8).frame(width: size.width, height: size.height)
             .background(Color.white).environment(\.colorScheme, .light),
-            size: size, appearance: .aqua, settle: .seconds(4),
+            size: size, appearance: .aqua,
             to: directory.appendingPathComponent("evo-unowned-route.png"))
         let unowned = try XCTUnwrap(store.unownedDexSpecies.first { $0.id == 2 })
         try await capture(UnownedSpeciesDetailView(store: store, species: unowned, onOpen: { _ in }, onBack: {},
@@ -108,6 +108,6 @@ final class DexFlavorScreenshotTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light)
             .environment(\.locale, AppLanguage.ko.displayLocale),
-            size: size, appearance: .aqua, settle: .seconds(6), to: file)
+            size: size, appearance: .aqua, to: file)
     }
 }

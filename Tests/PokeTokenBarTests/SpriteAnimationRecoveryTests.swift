@@ -161,7 +161,7 @@ final class SpriteAnimationRecoveryTests: XCTestCase {
                 speciesID: 176, shiny: false, store: SpriteStore(directory: fixture.directory),
                 onUnavailable: { fallbackShown.fulfill() })
         }
-        await fulfillment(of: [fallbackShown], timeout: 2)
+        await fulfillment(of: [fallbackShown], timeout: waitCeilingSeconds)
         let cancelledAt = ContinuousClock.now
         task.cancel()   // Same cancellation propagated by .task teardown/species/low-power changes.
         await task.value
@@ -182,7 +182,7 @@ final class SpriteAnimationRecoveryTests: XCTestCase {
                 speciesID: 176, shiny: true, store: SpriteStore(directory: fixture.directory),
                 onUnavailable: { fallbackCount += 1 })
         }
-        await fulfillment(of: [requestStarted], timeout: 2)
+        await fulfillment(of: [requestStarted], timeout: waitCeilingSeconds)
         task.cancel()
         await task.value
         XCTAssertEqual(AnimationRecoveryURLProtocol.state.requests.map(\.lastPathComponent), ["176.gif"])

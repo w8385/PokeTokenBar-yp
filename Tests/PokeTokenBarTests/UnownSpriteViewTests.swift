@@ -83,14 +83,13 @@ final class UnownSpriteViewTests: XCTestCase {
         selection.shiny = startingShiny
         let host = OffscreenRender.host(UnownSpriteTogglePreview(selection: selection, store: spriteStore),
                                         size: CGSize(width: 64, height: 64))
-        try await OffscreenRender.settle(host, for: .milliseconds(100))
+        try await OffscreenRender.settle(host)
 
         if !startingShiny { selection.shiny = true }
         let shinyKey = shinyFile.path as NSString
-        for _ in 0..<40 {
-            host.layoutSubtreeIfNeeded()
-            if SpriteLoader.imageCache.object(forKey: shinyKey) != nil { break }
-            try await Task.sleep(for: .milliseconds(25))
+        try await OffscreenRender.waitUntil("the static view to request shiny bytes after seeding a normal fallback",
+                                            in: host) {
+            SpriteLoader.imageCache.object(forKey: shinyKey) != nil
         }
         let loaded = try XCTUnwrap(SpriteLoader.imageCache.object(forKey: shinyKey),
                                   "The static view must still request shiny bytes after seeding a normal fallback")

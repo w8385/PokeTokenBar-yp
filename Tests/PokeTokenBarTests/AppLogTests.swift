@@ -15,13 +15,15 @@ final class AppLogTests: XCTestCase {
     func testFlushDrainsAQueuedWriteBeforeReturning() {
         let queue = DispatchQueue(label: "poketokenbar.log.test")
         let landed = LineSink()
+        let gate = DispatchSemaphore(value: 0)
         let log = AsyncLineLog(queue: queue) { line in
-            Thread.sleep(forTimeInterval: 0.03)
+            _ = gate.wait(timeout: .now() + 60)
             landed.append(line)
         }
 
         log.write("clean shutdown")
         XCTAssertTrue(landed.lines.isEmpty, "write must return before the sink runs — otherwise flush is untestable")
+        gate.signal()
         log.flush()
         XCTAssertEqual(landed.lines, ["clean shutdown"], "flush must wait for the queued write, not return while it is still in flight")
     }

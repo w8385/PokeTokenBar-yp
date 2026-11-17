@@ -40,8 +40,13 @@ swift test --filter <TestCase>          # the tests for what you changed
 ```
 
 The script lists the classes and methods it runs. A test method named `...InEveryLanguage`,
-`...EveryLanguage` or `...AllLanguages` joins it automatically, and the script fails if a test file
-that reads `Sources/PokeTokenBar` has none of its classes listed, so add new source scanners there.
+`...EveryLanguage` or `...AllLanguages` joins it automatically, and the script fails if a test method
+reads `Sources/` or `Tests/`, reflects over a model or sweeps `AppLanguage.allCases` without being
+listed, so add new scanners and sweeps there.
+
+Tests wait for the condition they assert (`waitUntil`, `OffscreenRender.settle`), never for a
+duration: `OffscreenRenderGuardTests` fails on `Task.sleep`, `settle(for:)` and the like outside
+`OffscreenRender.swift`.
 
 Maintainer branches ride a train: each change lands on a local branch, and one integrator opens one
 PR with one CI run. That run and every push to `main` use the maintainer's self-hosted Mac (labels

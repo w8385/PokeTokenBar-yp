@@ -166,7 +166,7 @@ final class MachineShopTests: XCTestCase {
                     .environment(store).frame(width: size.width, height: size.height)
                     .background(Color.white).environment(\.colorScheme, .light)
                     .environment(\.locale, language.displayLocale),
-                size: size, appearance: .aqua, scale: 2, settle: .seconds(2),
+                size: size, appearance: .aqua, scale: 2,
                 to: directory.appendingPathComponent(name))
         }
         try await shot("tm-shop-list.png", language: .en)

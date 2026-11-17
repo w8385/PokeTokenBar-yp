@@ -155,7 +155,7 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
                 .frame(width: PopoverMetrics.width, height: height)
                 .background(Color(nsColor: NSColor(calibratedWhite: 0.07, alpha: 1))),
                 size: CGSize(width: PopoverMetrics.width, height: height), appearance: .darkAqua)
-            try await OffscreenRender.settle(host, for: .milliseconds(500))
+            try await OffscreenRender.settle(host)
             let directory = URL(fileURLWithPath: output)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             let name = costs != nil ? "\(language.rawValue)-period-costs-\(costs == .source ? "known" : "unavailable").png"

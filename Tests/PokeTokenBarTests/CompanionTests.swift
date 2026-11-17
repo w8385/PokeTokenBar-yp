@@ -85,23 +85,13 @@ final class CountingRNG: RandomNumberGenerator {
 }
 
 @MainActor
-private func waitUntil(timeout: TimeInterval = 1, _ condition: @escaping () -> Bool) async -> Bool {
-    let deadline = Date().addingTimeInterval(timeout)
-    while Date() < deadline {
-        if condition() { return true }
-        try? await Task.sleep(nanoseconds: 1_000_000)
-    }
-    return condition()
+private func waitUntil(_ condition: @escaping () -> Bool) async -> Bool {
+    (try? await PokeTokenBarTests.waitUntil("the store condition", condition)) != nil
 }
 
 @MainActor
-private func waitUntilAsync(timeout: TimeInterval = 1, _ condition: @escaping () async -> Bool) async -> Bool {
-    let deadline = Date().addingTimeInterval(timeout)
-    while Date() < deadline {
-        if await condition() { return true }
-        try? await Task.sleep(nanoseconds: 1_000_000)
-    }
-    return await condition()
+private func waitUntilAsync(_ condition: @escaping () async -> Bool) async -> Bool {
+    (try? await PokeTokenBarTests.waitUntil("the async condition", condition)) != nil
 }
 
 struct StubProvider: PokeProviding {
@@ -1422,11 +1412,7 @@ final class CompanionStoreTests: XCTestCase {
 
         s.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0,
                  burnTier: .idle, limitWarning: false, hasUsageData: true)
-        let suspensionDeadline = Date().addingTimeInterval(1)
-        while !(await provider.isSuspended()), Date() < suspensionDeadline {
-            try? await Task.sleep(nanoseconds: 1_000_000)
-        }
-        let isSuspended = await provider.isSuspended()
+        let isSuspended = await waitUntilAsync { await provider.isSuspended() }
         XCTAssertTrue(isSuspended, "line fetch should be suspended")
 
         s.applyUsage(42)

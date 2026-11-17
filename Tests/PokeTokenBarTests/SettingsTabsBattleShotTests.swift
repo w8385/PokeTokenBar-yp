@@ -36,7 +36,7 @@ final class SettingsTabsBattleShotTests: XCTestCase {
                 .background(Color.white)
                 .environment(\.colorScheme, .light)
                 .environment(\.locale, AppLanguage.ko.displayLocale),
-            size: size, appearance: .aqua, scale: 2, settle: .seconds(1),
+            size: size, appearance: .aqua, scale: 2,
             to: directory.appendingPathComponent("settings-tabs-battle-unlinked-\(suffix).png"))
     }
 }

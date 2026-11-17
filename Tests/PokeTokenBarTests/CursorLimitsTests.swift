@@ -62,7 +62,7 @@ final class CursorLimitsTests: XCTestCase {
 
         let provider = CursorRateLimitsProvider()
         let status = try await provider.fetch()
-        await fulfillment(of: [expectation], timeout: 1)
+        await fulfillment(of: [expectation], timeout: waitCeilingSeconds)
         XCTAssertEqual(status?.planUsage?.usedPercent, 75)
     }
 }

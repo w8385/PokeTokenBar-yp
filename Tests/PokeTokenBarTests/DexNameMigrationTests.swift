@@ -15,7 +15,7 @@ private actor MigratingNameProvider: PokeProviding {
     }
     func line(baseSpeciesID: Int) async throws -> EvoLine {
         calls += 1
-        try await Task.sleep(nanoseconds: 20_000_000)
+        await Task.yield()
         if offline { throw URLError(.notConnectedToInternet) }
         return value
     }

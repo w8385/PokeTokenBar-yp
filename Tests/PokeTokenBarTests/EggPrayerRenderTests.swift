@@ -46,7 +46,7 @@ final class EggPrayerRenderTests: XCTestCase {
             .background(dark ? Color(white: 0.16) : Color.white)
             .environment(\.colorScheme, dark ? .dark : .light),
             size: CGSize(width: PopoverMetrics.contentWidth, height: height),
-            appearance: dark ? .darkAqua : .aqua, scale: 2, settle: .milliseconds(150), to: url)
+            appearance: dark ? .darkAqua : .aqua, scale: 2, to: url)
         XCTAssertGreaterThan(png.count, 1000)
     }
 

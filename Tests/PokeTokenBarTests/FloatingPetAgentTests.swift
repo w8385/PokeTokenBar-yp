@@ -288,13 +288,6 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         controller.handleAgentEvent(try XCTUnwrap(AgentActivityEvent(url: url)))
     }
 
-    /// Settings observation hops through a Task; give it a bounded chance to run.
-    private func waitUntil(_ condition: () -> Bool) async {
-        for _ in 0..<100 where !condition() {
-            try? await Task.sleep(for: .milliseconds(10))
-        }
-    }
-
     func testEventsAreDroppedWhileThePetOrTheSettingIsOff() throws {
         let off = try makeFixture(petEnabled: false)
         defer { off.cleanUp() }
@@ -313,7 +306,7 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         let fixture = try makeFixture()
         defer { fixture.cleanUp() }
         // Let the sync queued by enabling the pet run first, so only the setting change can reset.
-        try? await Task.sleep(for: .milliseconds(50))
+        await Task { @MainActor in }.value
         try send("working", to: fixture.controller)
         _ = fixture.controller.beginRun(cursor: NSPoint(x: 600, y: 500),
                                         visibleFrame: NSRect(x: 0, y: 0, width: 1440, height: 900))
@@ -321,8 +314,7 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         XCTAssertNotNil(fixture.controller.agentExpiryFireDate)
 
         fixture.store.floatingPetAgentActivity = false
-        await waitUntil { fixture.controller.tracker.activity == .idle }
-        XCTAssertEqual(fixture.controller.tracker.activity, .idle)
+        try await waitUntil("the setting change to reset the agent") { fixture.controller.tracker.activity == .idle }
         XCTAssertEqual(fixture.controller.runPhase, .home)
         XCTAssertNil(fixture.controller.agentExpiryFireDate, "no timer left behind")
     }

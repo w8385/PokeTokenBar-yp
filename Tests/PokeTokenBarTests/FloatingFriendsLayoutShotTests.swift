@@ -99,7 +99,7 @@ final class FloatingFriendsLayoutShotTests: XCTestCase {
                         .background(Color.white)
                         .environment(\.colorScheme, .light)
                     try await OffscreenRender.capture(
-                        view, size: panel, appearance: .aqua, scale: 3, settle: .seconds(5),
+                        view, size: panel, appearance: .aqua, scale: 3,
                         to: directory.appendingPathComponent("\(pair.name)-\(row.name)\(mode.suffix).png"))
                 }
             }

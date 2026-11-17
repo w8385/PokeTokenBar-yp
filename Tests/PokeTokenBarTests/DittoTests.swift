@@ -292,12 +292,7 @@ final class DittoRevealTests: XCTestCase {
 
         s.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0,
                  burnTier: .idle, limitWarning: false, hasUsageData: true)
-        let deadline = Date().addingTimeInterval(1)
-        while !(await provider.isSuspended()), Date() < deadline {
-            try? await Task.sleep(nanoseconds: 1_000_000)
-        }
-        let isSuspended = await provider.isSuspended()
-        XCTAssertTrue(isSuspended)
+        try await waitUntil("the reveal fetch to suspend") { await provider.isSuspended() }
 
         XCTAssertTrue(s.buyFreshEgg())
         await s.hatch(baseID: 1)

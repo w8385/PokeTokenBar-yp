@@ -46,7 +46,7 @@ final class DayNightScreenshotTests: XCTestCase {
                     .background(Color.white)
                     .environment(\.colorScheme, .light)
                     .environment(\.locale, AppLanguage.ko.displayLocale),
-                size: size, appearance: .aqua, settle: .seconds(1),
+                size: size, appearance: .aqua,
                 to: directory.appendingPathComponent("day-night-\(name)-\(suffix).png"))
         }
     }

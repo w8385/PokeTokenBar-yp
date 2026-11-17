@@ -148,6 +148,6 @@ final class BoxDexScreenshotTests: XCTestCase {
             view.frame(width: width, height: height, alignment: .top)
                 .background(Color(nsColor: .windowBackgroundColor)),
             size: CGSize(width: width, height: height), appearance: .aqua, scale: 2,
-            settle: .seconds(4), to: dir.appendingPathComponent("\(name).png"))
+            to: dir.appendingPathComponent("\(name).png"))
     }
 }

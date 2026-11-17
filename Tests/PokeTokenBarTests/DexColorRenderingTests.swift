@@ -23,7 +23,7 @@ final class DexColorRenderingTests: XCTestCase {
         return image
     }
 
-    private func withSprites(_ body: () throws -> Void) throws {
+    private func withSprites(_ body: () async throws -> Void) async throws {
         let keys = [false, true].map {
             SpriteLoader.cacheDir.appendingPathComponent(
                 SpriteStore.cacheKey(speciesID: 606, animated: false, shiny: $0) + ".png").path as NSString
@@ -38,7 +38,7 @@ final class DexColorRenderingTests: XCTestCase {
                 else { SpriteLoader.imageCache.removeObject(forKey: key) }
             }
         }
-        try body()
+        try await body()
     }
 
     private func fixture(shinyLast: Bool) throws -> (CompanionStore, URL) {
@@ -124,25 +124,22 @@ final class DexColorRenderingTests: XCTestCase {
     }
 
     /// The selector's header updates synchronously, but SpriteView changes its cached image in
-    /// .task(id:). Wait for those rendered pixels rather than assuming one 100ms sleep is enough.
-    /// The deadline only bounds a broken test; the full pixel and badge assertions remain below.
+    /// .task(id:), so this waits for those rendered pixels.
     private func waitForDetailSprite(_ host: NSView, shiny: Bool) async throws -> NSBitmapImageRep {
-        let deadline = ContinuousClock.now + .seconds(5)
-        while true {
-            let bitmap = try OffscreenRender.bitmap(of: host)
+        var bitmap = try OffscreenRender.bitmap(of: host)
+        try await OffscreenRender.waitUntil("the detail sprite to turn \(shiny ? "shiny" : "normal")", in: host) {
+            bitmap = try OffscreenRender.bitmap(of: host)
             let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
             let normalized = try XCTUnwrap(NSBitmapImageRep(data: png))
             let scale = CGFloat(bitmap.pixelsWide) / host.bounds.width
             // Center of the synthetic 82pt identity sprite, below the appearance picker.
             let pixel = try XCTUnwrap(normalized.colorAt(x: Int(41 * scale), y: Int(101 * scale))?
                 .usingColorSpace(.deviceRGB))
-            let ready = pixel.greenComponent < 0.4
+            return pixel.greenComponent < 0.4
                 && (shiny ? pixel.blueComponent > 0.8 && pixel.redComponent < 0.3
-                           : pixel.redComponent > 0.8 && pixel.blueComponent < 0.3)
-            if ready || ContinuousClock.now >= deadline { return bitmap }
-            // Yield the main actor so the appearance's .task and following SwiftUI render can run.
-            try await Task.sleep(for: .milliseconds(20))
+                          : pixel.redComponent > 0.8 && pixel.blueComponent < 0.3)
         }
+        return bitmap
     }
 
     func testDetailSelectorChangesMountedPixelsAndReturnsToNormal() async throws {
@@ -193,8 +190,8 @@ final class DexColorRenderingTests: XCTestCase {
         }
     }
 
-    func testBoxRendersEachIndividualsColorInBothAcquisitionOrdersAndOnReentry() throws {
-        try withSprites {
+    func testBoxRendersEachIndividualsColorInBothAcquisitionOrdersAndOnReentry() async throws {
+        try await withSprites {
             for shinyLast in [false, true] {
                 let (store, file) = try fixture(shinyLast: shinyLast)
                 defer { try? FileManager.default.removeItem(at: file) }
@@ -207,10 +204,11 @@ final class DexColorRenderingTests: XCTestCase {
                         .environment(\.locale, store.language.displayLocale)
                     let host = OffscreenRender.host(view, size: CGSize(width: PopoverMetrics.contentWidth, height: 520),
                                                     appearance: .aqua)
-                    host.layoutSubtreeIfNeeded()
-                    RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
-                    host.layoutSubtreeIfNeeded()
-                    let bitmap = try OffscreenRender.bitmap(of: host)
+                    var bitmap = try OffscreenRender.bitmap(of: host)
+                    try await OffscreenRender.waitUntil("both individuals' colors in the Box", in: host) {
+                        bitmap = try OffscreenRender.bitmap(of: host)
+                        return colorRows(bitmap, shiny: false).count > 20 && colorRows(bitmap, shiny: true).count > 20
+                    }
                     try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
                         URL(fileURLWithPath: "/private/tmp/dex-color-log-shiny-last-\(shinyLast).png"))
                     let normalRows = colorRows(bitmap, shiny: false)
@@ -230,8 +228,8 @@ final class DexColorRenderingTests: XCTestCase {
         }
     }
 
-    func testPokedexGridRendersShinySpeciesColor() throws {
-        try withSprites {
+    func testPokedexGridRendersShinySpeciesColor() async throws {
+        try await withSprites {
             for shiny in [true, false] {
                 let (store, file) = try fixture(onlyShiny: shiny)
                 defer { try? FileManager.default.removeItem(at: file) }
@@ -243,10 +241,11 @@ final class DexColorRenderingTests: XCTestCase {
                     .environment(\.locale, store.language.displayLocale)
                 let host = OffscreenRender.host(view, size: CGSize(width: PopoverMetrics.contentWidth, height: 520),
                                                 appearance: .aqua)
-                host.layoutSubtreeIfNeeded()
-                RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
-                host.layoutSubtreeIfNeeded()
-                let bitmap = try OffscreenRender.bitmap(of: host)
+                var bitmap = try OffscreenRender.bitmap(of: host)
+                try await OffscreenRender.waitUntil("the \(shiny ? "shiny" : "normal") color in the Pokédex grid", in: host) {
+                    bitmap = try OffscreenRender.bitmap(of: host)
+                    return colorRows(bitmap, shiny: shiny).count > 20
+                }
                 let normalRows = colorRows(bitmap, shiny: false)
                 let shinyRows = colorRows(bitmap, shiny: true)
                 if shiny {

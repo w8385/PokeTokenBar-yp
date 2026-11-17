@@ -70,7 +70,7 @@ final class TimeModeScreenshotTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light)
             .environment(\.locale, AppLanguage.ko.displayLocale),
-            size: size, appearance: .aqua, scale: 2, settle: .seconds(2), to: file)
+            size: size, appearance: .aqua, scale: 2, to: file)
     }
 
     private func captureHome(_ companion: CompanionStore, defaults: UserDefaults, to file: URL) async throws {
@@ -85,6 +85,6 @@ final class TimeModeScreenshotTests: XCTestCase {
             .environment(\.locale, AppLanguage.ko.displayLocale)
             .frame(width: size.width, height: size.height)
             .background(Color.white),
-            size: size, appearance: .aqua, scale: 2, settle: .seconds(2), to: file)
+            size: size, appearance: .aqua, scale: 2, to: file)
     }
 }

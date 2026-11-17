@@ -104,20 +104,21 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
     }
 
     private func host(_ companion: CompanionStore, _ usage: UsageStore) -> NSView {
-        let host = NSHostingView(rootView: SettingsView(onClose: {}, onChooseRepresentative: {}, tab: .constant(.advanced))
+        let host = OffscreenRender.host(SettingsView(onClose: {}, onChooseRepresentative: {}, tab: .constant(.advanced))
             .environment(companion).environment(usage).environment(UpdateChecker())
             .environment(\.colorScheme, .light)
-            .frame(width: PopoverMetrics.width))
-        host.frame = NSRect(x: 0, y: 0, width: PopoverMetrics.width, height: 460)
+            .frame(width: PopoverMetrics.width), size: CGSize(width: PopoverMetrics.width, height: 460))
         window = OffscreenRender.windowHosting(host, appearance: .aqua)
         return host
     }
 
     private func settingsDocument(in root: NSView) async throws -> NSView {
-        try await Task.sleep(for: .milliseconds(300))
-        root.layoutSubtreeIfNeeded()
-        let scroll = try XCTUnwrap(descendants(root).compactMap { $0 as? NSScrollView }.first)
-        return try XCTUnwrap(scroll.documentView)
+        var document: NSView?
+        try await OffscreenRender.waitUntil("the Settings scroll view", in: root) {
+            document = descendants(root).compactMap { $0 as? NSScrollView }.first?.documentView
+            return document != nil
+        }
+        return try XCTUnwrap(document)
     }
 
     private func descendants(_ view: NSView) -> [NSView] {
@@ -163,15 +164,13 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
         for _ in 0..<tileLimit where coveredY < bounds.maxY - 0.5 {
             clip.scroll(to: NSPoint(x: bounds.minX, y: coveredY))
             scroll.reflectScrolledClipView(clip)
-            view.window?.contentView?.layoutSubtreeIfNeeded()
-            try await Task.sleep(for: .milliseconds(100))
-            view.window?.contentView?.layoutSubtreeIfNeeded()
-            let rect = view.visibleRect.intersection(bounds)
-            guard rect.width >= bounds.width - 0.5, rect.minY <= coveredY + 0.5,
-                  rect.maxY > coveredY + 0.5 else {
-                XCTFail("Snapshot tile did not cover document: tile=\(rect), coveredY=\(coveredY), bounds=\(bounds)")
-                throw URLError(.cannotParseResponse)
+            var rect = NSRect.zero
+            try await OffscreenRender.waitUntil(
+                "a snapshot tile to cover the document: tile=\(rect), coveredY=\(coveredY), bounds=\(bounds)", in: view) {
+                rect = view.visibleRect.intersection(bounds)
+                return rect.width >= bounds.width - 0.5 && rect.minY <= coveredY + 0.5 && rect.maxY > coveredY + 0.5
             }
+            try await OffscreenRender.settle(view)
             let tile = try XCTUnwrap(NSBitmapImageRep(
                 bitmapDataPlanes: nil, pixelsWide: Int((rect.width * 2).rounded(.up)),
                 pixelsHigh: Int((rect.height * 2).rounded(.up)), bitsPerSample: 8,
@@ -210,53 +209,40 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
         return bitmap
     }
 
-    /// Waits until the document height stops changing, then saves the render as `capture` when the CI
-    /// artifact directory is set. Height is what rows and disclosure state change, and it does not
-    /// depend on how text renders.
+    /// Lays the window out until it stops changing, then saves the render as `capture` when the CI
+    /// artifact directory is set.
     private func settle(_ document: NSView, capture name: String? = nil) async throws {
-        let root = try XCTUnwrap(document.window?.contentView)
-        var previous: CGFloat = -1
-        let deadline = ContinuousClock.now + .seconds(5)
-        repeat {
-            root.layoutSubtreeIfNeeded()
-            let height = document.bounds.height
-            if abs(height - previous) < 0.5 {
-                if let name, ProcessInfo.processInfo.environment["PTB_SNAPSHOT_SCREENSHOT_DIR"] != nil {
-                    try save(try await bitmap(of: document), name: name)
-                }
-                return
-            }
-            previous = height
-            try await Task.sleep(for: .milliseconds(300))
-        } while ContinuousClock.now < deadline
-        XCTFail("Settings document height never settled: \(document.bounds.height)")
-        throw URLError(.cannotParseResponse)
+        try await OffscreenRender.settle(try XCTUnwrap(document.window?.contentView))
+        if let name, ProcessInfo.processInfo.environment["PTB_SNAPSHOT_SCREENSHOT_DIR"] != nil {
+            try save(try await bitmap(of: document), name: name)
+        }
+    }
+
+    private func historyButton(in root: NSView, l: L) async throws -> NSButton {
+        var buttons = [NSButton]()
+        try await OffscreenRender.waitUntil(
+            "the native snapshot history button \(l.snapshotsSectionTitle) among \(buttons.map { "title=\($0.title), identifier=\(String(describing: $0.accessibilityIdentifier()))" })",
+            in: root) {
+            buttons = descendants(root).compactMap { $0 as? NSButton }
+            return buttons.contains { $0.accessibilityIdentifier() == "snapshotHistory" }
+        }
+        return try XCTUnwrap(buttons.first { $0.accessibilityIdentifier() == "snapshotHistory" })
     }
 
     private func toggleHistory(in document: NSView, l: L, expanded: Bool) async throws {
         let root = try XCTUnwrap(document.window?.contentView)
-        let deadline = ContinuousClock.now + .seconds(5)
-        var buttons = [NSButton]()
-        repeat {
-            root.layoutSubtreeIfNeeded()
-            buttons = descendants(root).compactMap { $0 as? NSButton }
-            if let button = buttons.first(where: { $0.accessibilityIdentifier() == "snapshotHistory" }) {
-                XCTAssertEqual(button.title, l.snapshotsSectionTitle)
-                XCTAssertEqual(button.accessibilityLabel(), l.snapshotsSectionTitle)
-                XCTAssertEqual(button.accessibilityValue() as? String, l.snapshotHistoryState(expanded: expanded))
-                XCTAssertTrue(button.isEnabled, "Snapshot history must remain actionable")
-                button.scrollToVisible(button.bounds)
-                button.performClick(nil)
-                try await Task.sleep(for: .milliseconds(200))
-                return
-            }
-            try await Task.sleep(for: .milliseconds(100))
-        } while ContinuousClock.now < deadline
-        let diagnostic = buttons.map {
-            "title=\($0.title), label=\(String(describing: $0.accessibilityLabel())), identifier=\(String(describing: $0.accessibilityIdentifier()))"
-        }.joined(separator: "\n")
-        XCTFail("Missing native snapshot history button: \(l.snapshotsSectionTitle)\n\(diagnostic)")
-        throw URLError(.cannotParseResponse)
+        let button = try await historyButton(in: root, l: l)
+        XCTAssertEqual(button.title, l.snapshotsSectionTitle)
+        XCTAssertEqual(button.accessibilityLabel(), l.snapshotsSectionTitle)
+        XCTAssertEqual(button.accessibilityValue() as? String, l.snapshotHistoryState(expanded: expanded))
+        XCTAssertTrue(button.isEnabled, "Snapshot history must remain actionable")
+        button.scrollToVisible(button.bounds)
+        button.performClick(nil)
+        let toggled = l.snapshotHistoryState(expanded: !expanded)
+        try await OffscreenRender.waitUntil("snapshot history to read \(toggled)", in: root) {
+            descendants(root).compactMap { $0 as? NSButton }
+                .first { $0.accessibilityIdentifier() == "snapshotHistory" }?.accessibilityValue() as? String == toggled
+        }
     }
 
     private func save(_ rendered: NSBitmapImageRep, name: String) throws {

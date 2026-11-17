@@ -99,6 +99,6 @@ final class HomeHeaderScreenshotTests: XCTestCase {
                 .background(Color(nsColor: .windowBackgroundColor))
                 .environment(\.colorScheme, dark ? .dark : .light)
                 .environment(\.locale, store.language.displayLocale),
-            size: size, appearance: dark ? .darkAqua : .aqua, scale: 2, settle: .seconds(3), to: file)
+            size: size, appearance: dark ? .darkAqua : .aqua, scale: 2, to: file)
     }
 }

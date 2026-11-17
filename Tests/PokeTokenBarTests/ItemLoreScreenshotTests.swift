@@ -56,6 +56,6 @@ final class ItemLoreScreenshotTests: XCTestCase {
             .background(Color.white)
             .environment(\.colorScheme, .light)
             .environment(\.locale, language.displayLocale),
-            size: size, appearance: .aqua, settle: .seconds(4), to: file)
+            size: size, appearance: .aqua, to: file)
     }
 }

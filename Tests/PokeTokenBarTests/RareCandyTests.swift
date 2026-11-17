@@ -550,7 +550,7 @@ final class RareCandyStoreTests: XCTestCase {
             _ = s.currentIsShiny
         } onChange: { fired.fulfill() }
         XCTAssertEqual(s.useRareCandy(), .graduated)
-        await fulfillment(of: [fired], timeout: 1)
+        await fulfillment(of: [fired], timeout: waitCeilingSeconds)
         XCTAssertNil(s.currentSpeciesID, "졸업 → 알(메뉴바 스프라이트 키 nil)")
     }
 

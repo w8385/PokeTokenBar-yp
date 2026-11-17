@@ -37,8 +37,8 @@ final class IndividualPickerRenderingTests: XCTestCase {
                 .background(Color.white).environment(\.colorScheme, .light)
             let host = OffscreenRender.host(view, size: CGSize(width: PopoverMetrics.contentWidth, height: 520),
                                             appearance: .aqua)
-            try await OffscreenRender.settle(host, for: .milliseconds(100))
             func descendants(_ v: NSView) -> [NSView] { [v] + v.subviews.flatMap(descendants) }
+            try await OffscreenRender.settle(host) { descendants(host).count > 1 }
             XCTAssertGreaterThan(descendants(host).count, 1, "the page mounted nothing")
             let menus = descendants(host).compactMap { $0 as? NSPopUpButton }
             XCTAssertEqual(menus.count, 0, "the species page never picks between individuals (\(count) owned)")

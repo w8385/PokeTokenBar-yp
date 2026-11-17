@@ -558,7 +558,8 @@ final class AdditionalClaudeAccountsStoreTests: XCTestCase {
         let folder = GatedLimits()
         let store = UsageStore(
             providers: [NilDailyProvider()],
-            claudeLimitsProvider: ScriptedLimits([.success(limitStatus(fiveHour: 10, email: "main@example.com"))]),
+            claudeLimitsProvider: ScriptedLimits([.success(limitStatus(fiveHour: 10, email: "main@example.com")),
+                                                  .success(limitStatus(fiveHour: 11, email: "main@example.com"))]),
             additionalClaudeLimitsProvider: { _ in folder },
             codexLimitsProvider: NoCodex(),
             antigravityLimitsProvider: NoAntigravity(),
@@ -568,9 +569,10 @@ final class AdditionalClaudeAccountsStoreTests: XCTestCase {
             defaults: testDefaults)
 
         let poll = Task { await store.refresh(scheduleEmptyRetry: false) }
-        for _ in 0..<200 where folder.release == nil { try await Task.sleep(for: .milliseconds(5)) }
+        try await waitUntil("the poll to block on the folder") { folder.release != nil }
         let manual = Task { await store.refreshLimitTokenFromKeychain() }
-        try await Task.sleep(for: .milliseconds(100))
+        // The manual refresh queues behind the poll in the same main-actor turn that stores its primary limits.
+        try await waitUntil("the manual refresh to queue") { store.limits?.fiveHour?.utilization == 11 }
         XCTAssertEqual(folder.calls, 1, "the manual refresh waits for the running one")
 
         folder.release?.resume()
@@ -790,11 +792,9 @@ final class AdditionalClaudeAccountsStoreTests: XCTestCase {
         // The setter refreshes on its own. Wait for that refresh inside the test: left running,
         // it outlives the test and breaks the timing of later UI tests.
         store.additionalClaudeConfigDirs = ""
-        for _ in 0..<100 where store.additionalLimitsPending || store.isRefreshing {
-            try? await Task.sleep(for: .milliseconds(10))
+        try? await waitUntil("the setter's refresh to finish") {
+            !store.additionalLimitsPending && !store.isRefreshing
         }
-        // The setter also starts a refresh; let it finish inside this test.
-        for _ in 0..<50 where store.isRefreshing { try? await Task.sleep(for: .milliseconds(20)) }
         XCTAssertTrue(store.additionalLimits.isEmpty)
         XCTAssertFalse(store.additionalLimitsPending)
         XCTAssertEqual(testDefaults.string(forKey: ClaudeAccountRoots.defaultsKey), "")
@@ -1871,8 +1871,8 @@ final class ClaudeAccountUsageStoreTests: XCTestCase {
         XCTAssertEqual(scannedFrom.timeIntervalSince1970, expected.timeIntervalSince1970, accuracy: 5)
 
         store.additionalClaudeConfigDirs = ""
-        for _ in 0..<100 where !store.claudeAccountUsage.isEmpty || store.isRefreshing {
-            try await Task.sleep(for: .milliseconds(10))
+        try await waitUntil("the setter's refresh to clear the split") {
+            store.claudeAccountUsage.isEmpty && !store.isRefreshing
         }
         XCTAssertTrue(store.claudeAccountUsage.isEmpty, "a single account needs no split")
         XCTAssertEqual(store.unattributedClaudeUsage, ClaudeAccountUsage())

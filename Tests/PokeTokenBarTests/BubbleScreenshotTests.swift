@@ -120,6 +120,6 @@ final class BubbleScreenshotTests: XCTestCase {
         try await OffscreenRender.capture(view.frame(width: size.width, height: size.height)
             .background(Color(nsColor: background))
             .environment(\.colorScheme, scheme),
-            size: size, appearance: appearance, scale: 2, settle: .seconds(3), to: file)
+            size: size, appearance: appearance, scale: 2, to: file)
     }
 }

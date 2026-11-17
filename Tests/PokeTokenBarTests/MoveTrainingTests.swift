@@ -62,7 +62,6 @@ final class TrainingRig {
         try JSONEncoder().encode(state).write(to: file)
         let defaults = UserDefaults(suiteName: "training-\(UUID())")!
         store = CompanionStore(provider: TrainingProvider(), fileURL: file, defaults: defaults)
-        try await Task.sleep(for: .milliseconds(300))
         battle = BattleEntryStore(defaults: defaults)
         let posts = self.posts, fetches = self.fetches
         let body = Data(movesJSON.utf8)
@@ -107,7 +106,7 @@ final class TrainingRig {
         let host = OffscreenRender.host(view.frame(width: size.width, height: size.height, alignment: .top)
             .background(Color.white).environment(\.colorScheme, .light), size: size, appearance: .aqua)
         windows.append(OffscreenRender.windowHosting(host, appearance: .aqua))
-        try await OffscreenRender.settle(host, for: .milliseconds(800))
+        try await OffscreenRender.settle(host)
         return host
     }
 
@@ -125,15 +124,14 @@ final class TrainingRig {
     /// The buttons once `ready` accepts them; fails the test with their frames if SwiftUI never gets there.
     func buttons(in host: NSView, until ready: ([NSButton]) -> Bool, file: StaticString = #filePath,
                  line: UInt = #line) async throws -> [NSButton] {
-        let deadline = ContinuousClock.now + .seconds(6)
-        repeat {
-            let found = buttons(in: host)
-            if ready(found) { return found }
-            try await Task.sleep(for: .milliseconds(80))
-        } while ContinuousClock.now < deadline
-        let frames = buttons(in: host).map { "\(frame(of: $0, in: host)) enabled=\($0.isEnabled)" }
-        XCTFail("the buttons never reached the expected shape: \(frames)", file: file, line: line)
-        throw CancellationError()
+        var found: [NSButton] = []
+        try await OffscreenRender.waitUntil(
+            "the buttons to reach the expected shape: \(found.map { "\(frame(of: $0, in: host)) enabled=\($0.isEnabled)" })",
+            in: host, file: file, line: line) {
+            found = buttons(in: host)
+            return ready(found)
+        }
+        return found
     }
 
     /// The full-width picker rows. Which small controls (Buy, Auto reset) have a native view differs between
@@ -163,13 +161,13 @@ final class TrainingRig {
             return frame.minX > 200 && frame.width > 30 && frame.height < 20
         }
         _ = try await buttons(in: host, until: { $0.contains(where: isLink) })
-        try await OffscreenRender.settle(host, for: .milliseconds(400))
+        try await OffscreenRender.settle(host)
         return buttons(in: host).filter(isLink)
     }
 
-    func press(_ button: NSButton, in host: NSView) async throws {
+    func press(_ button: NSButton, in host: NSView, until done: () throws -> Bool = { true }) async throws {
         button.performClick(nil)
-        try await OffscreenRender.settle(host, for: .milliseconds(400))
+        try await OffscreenRender.settle(host, until: done)
     }
 
     func close() { windows.forEach { $0.close() }; windows = [] }
@@ -185,7 +183,7 @@ final class MoveTrainingTests: XCTestCase {
 
         // Spark, Thunder Shock, then the owned Earthquake at the end of the TM group.
         let rows = try await rig.chooseRows(in: host, count: 3)
-        try await rig.press(try XCTUnwrap(rows.last), in: host)
+        try await rig.press(try XCTUnwrap(rows.last), in: host, until: { !rig.posts.all.isEmpty })
 
         XCTAssertEqual(rig.battle.chosenMoves(for: "pikachu", pokemonID: 25), [89, 209])
         XCTAssertEqual(rig.battle.chosenMoves(for: "snorlax", pokemonID: 143), [], "choices are per instance")
@@ -215,7 +213,8 @@ final class MoveTrainingTests: XCTestCase {
         rig.battle.chooseMove(209, at: 0, for: "pikachu", pokemonID: 25, current: [84, 209])
         let host = try await rig.mount(rig.boxDetail("pikachu"))
 
-        try await rig.press(try await rig.autoReset(in: host, enabled: true), in: host)
+        try await rig.press(try await rig.autoReset(in: host, enabled: true), in: host,
+                            until: { !rig.posts.all.isEmpty })
 
         XCTAssertEqual(rig.battle.chosenMoves(for: "pikachu", pokemonID: 25), [])
         XCTAssertEqual(rig.posts.all.count, 1)
