@@ -70,14 +70,14 @@ struct GymSection: View {
         } else {
             header(catalog, region: region, badges: badges)
             Divider()
-            ForEach(region.gyms) { gym in
-                GymOpponentRow(opponent: gym, language: language, l: l,
-                               earned: badges.hasGymBadge(region.id, index: gym.index),
-                               fighting: service.inFlight == gym.id, disabled: service.inFlight != nil) {
+            GymGrid(gyms: region.gyms) { gym in
+                GymOpponentCard(opponent: gym, language: language, l: l,
+                                earned: badges.hasGymBadge(region.id, index: gym.index),
+                                fighting: service.inFlight == gym.id, disabled: service.inFlight != nil) {
                     Task { await service.fightGym(gym, region: region, team: team) }
                 }
-                Divider()
             }
+            Divider()
             ForEach(Array(Self.runRows(region).enumerated()), id: \.element) { index, row in
                 if index > 0 { Divider() }
                 switch row {

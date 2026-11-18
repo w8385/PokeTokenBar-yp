@@ -399,8 +399,9 @@ final class ReadmeScreenshotTests: XCTestCase {
         let player = GymReplayPlayer(try XCTUnwrap(GymReplay(outcome)), shown: 12)
         return VStack(alignment: .leading, spacing: Spacing.md) {
             VStack(spacing: 0) {
-                GymOpponentRow(opponent: opponent, language: language, l: l, earned: false, fighting: true,
-                               disabled: true) {}
+                GymOpponentCard(opponent: opponent, language: language, l: l, earned: false, fighting: true,
+                                disabled: true) {}
+                    .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
             }
             .ptbCard()
             GymReplayView(player: player, outcome: outcome, l: l, autoplay: false)

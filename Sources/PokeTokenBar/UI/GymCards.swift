@@ -1,8 +1,32 @@
 import SwiftUI
 
-/// One gym: its leader, the types they lean to, and the challenge button.
+/// A region's gyms in two columns, read left to right, top to bottom.
 @MainActor
-struct GymOpponentRow: View {
+struct GymGrid<Cell: View>: View {
+    static var columns: Int { 2 }
+
+    let gyms: [GymOpponent]
+    @ViewBuilder let cell: (GymOpponent) -> Cell
+
+    static func rows<Item>(_ items: [Item]) -> [[Item]] {
+        stride(from: 0, to: items.count, by: columns).map { Array(items[$0..<min($0 + columns, items.count)]) }
+    }
+
+    var body: some View {
+        Grid(alignment: .topLeading, horizontalSpacing: Spacing.md, verticalSpacing: Spacing.lg) {
+            ForEach(Array(Self.rows(gyms).enumerated()), id: \.offset) { _, row in
+                GridRow {
+                    ForEach(row) { cell($0).frame(maxWidth: .infinity, alignment: .topLeading) }
+                }
+            }
+        }
+        .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
+    }
+}
+
+/// One gym as a grid cell: its leader, the types they lean to, and the challenge button.
+@MainActor
+struct GymOpponentCard: View {
     let opponent: GymOpponent
     let language: AppLanguage
     let l: L
@@ -12,24 +36,32 @@ struct GymOpponentRow: View {
     let action: () -> Void
 
     var body: some View {
-        HStack(spacing: Spacing.lg) {
-            TrainerSprite(battleID: opponent.id, size: 44)
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                HStack(spacing: Spacing.xs) {
-                    Text("\(opponent.index). \(opponent.trainer.displayName(language))")
-                        .font(.callout.weight(.semibold)).lineLimit(1)
-                    if earned { GymBadgeView(emblem: GymBadgeCase.emblem(for: opponent), earned: true, size: 16) }
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(alignment: .top, spacing: Spacing.sm) {
+                TrainerSprite(battleID: opponent.id, size: 32)
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    HStack(spacing: Spacing.xs) {
+                        Text("\(opponent.index). \(opponent.trainer.displayName(language))")
+                            .font(.callout.weight(.semibold)).lineLimit(1)
+                        if earned { GymBadgeView(emblem: GymBadgeCase.emblem(for: opponent), earned: true, size: 14) }
+                    }
+                    if !opponent.types.isEmpty {
+                        ViewThatFits(in: .horizontal) {
+                            TypeBadges(types: opponent.types, language: language)
+                            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                                ForEach(opponent.types, id: \.self) { TypeBadges(types: [$0], language: language) }
+                            }
+                        }
+                    }
+                    Text(l.gymTeamLine(opponent.team.count, level: opponent.level))
+                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                 }
-                if !opponent.types.isEmpty { TypeBadges(types: opponent.types, language: language) }
-                Text(l.gymTeamLine(opponent.team.count, level: opponent.level))
-                    .font(.caption2).foregroundStyle(.secondary)
             }
-            Spacer(minLength: Spacing.xs)
             Button(fighting ? l.gymFighting : (earned ? l.gymRematch : l.gymChallenge), action: action)
                 .controlSize(.small)
                 .disabled(disabled)
         }
-        .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .help(opponent.trainer.displayLine(language))
     }
 }
