@@ -2,7 +2,7 @@
 
 from dataclasses import replace
 
-from ypoke import abilities, items, tera_forms
+from ypoke import abilities, battle_data, items, tera_forms
 from ypoke.battle import BATTLE_LEVEL, BaseStats, Combatant, MegaForm, Move
 from ypoke.mega_stones import PRIMAL_ORBS, ULTRA_BURSTS, mega_form_id, move_mega_form_id
 from ypoke.moves import battle_moves
@@ -11,6 +11,7 @@ from ypoke.pokeapi import PokeAPIService, base_stats
 from ypoke.upload_server import IV_KEYS
 
 DEFAULT_IV = 15
+ITEM_TYPES = battle_data.args("moves", "item-type", "types")
 
 
 def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
@@ -23,7 +24,7 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
                                         **({"status": True} if wants_status_moves(chosen) else {}),
                                         **({"egg": True} if member.get("mirror_herb") else {}))
     ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
-    moves = battle_moves(learnable, member.get("moves"))
+    moves = tuple(_item_typed(move, item) for move in battle_moves(learnable, member.get("moves")))
     types = tuple(data["types"])
     plate = items.PLATES.get(item) if pokemon_id == tera_forms.ARCEUS else None
     if plate is not None:
@@ -49,6 +50,12 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
         tera=pokemon_id == tera_forms.TERAPAGOS,
         weight=data.get("weight", 0),
     )
+
+
+def _item_typed(move: Move, item: str | None) -> Move:
+    """Techno Blast takes its drive's type and Multi-Attack its memory's, on any holder."""
+    kind = ITEM_TYPES.get(move.id, {}).get(item)
+    return move if kind is None else replace(move, type=kind)
 
 
 def _retyped(moves: tuple[Move, ...], move_id: int, kind: str) -> tuple[Move, ...]:

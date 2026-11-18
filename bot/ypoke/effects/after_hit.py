@@ -283,12 +283,13 @@ class LosesType(Handler):
 
 @register("moves", "wakes-target")
 class WakesTarget(Handler):
-    """Smelling Salts and Wake-Up Slap double their power on a target with `args.status`, then cure it."""
+    """Smelling Salts and Wake-Up Slap double their power on a target with `args.status`, then cure it; Sparkling Aria
+    (`args.power` 1) only cures a burn."""
 
     by_id = True
 
     def base_power(self, move, power, scene):
-        return power * 2 if scene.target.status == arg(move, "status") else power
+        return power * arg(move, "power", 2) if scene.target.status == arg(move, "status") else power
 
     def secondary(self, move, user, target, side, rng):
         if target.status != arg(move, "status"):
