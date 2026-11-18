@@ -1730,6 +1730,12 @@ read_when:
   bytecode cache checks the source's whole-second mtime and size, so two mutants of one file with the same length,
   written within a second, share a cached mutant: four field-state injections reported "missed" while the test caught
   the edit when run by hand. Run injection loops with `PYTHONDONTWRITEBYTECODE=1` after clearing `__pycache__`.
+- **Every state a move leaves must have a narration label.** Lock-On, Foresight, Miracle Eye, Torment, Imprison,
+  Electrify, Powder, Tar Shot, Focus Energy and Laser Focus ended with a `VolatileEnd` whose kind was missing from
+  `VOLATILE_LABEL`, so the Slack narration of any battle that used one raised `KeyError`. The goldens replayed those
+  battles but only stored the event log; nothing narrated them, and the narration tests built their own events by
+  hand. Now `test_every_state_a_move_leaves_has_a_label` checks every `State` handler's key, and
+  `test_every_replayed_battle_narrates` narrates each PvP golden battle. Removing the Lock-On label fails both.
 
 ## Tests and the user's desktop
 

@@ -77,6 +77,9 @@ EFFECT_TEXT = {
     "magic-coat": "🪞변화 기술을 되받아친다", "snatch": "🫳상대의 변화 기술을 가로챈다",
     "mud-sport": "🟫전기 기술이 약해졌다", "water-sport": "💦불꽃 기술이 약해졌다",
     "focus-energy": "🎯급소에 맞히기 쉬워졌다", "laser-focus": "🎯다음 공격이 급소에 맞는다",
+    "conversion": "🔀첫 기술의 타입이 됐다", "conversion-2": "🔀상대 기술에 강한 타입이 됐다",
+    "camouflage": "🎨주변에 맞는 타입이 됐다", "reflect-type": "🪞상대와 같은 타입이 됐다",
+    "role-play": "🎭상대의 특성을 따라 했다", "doodle": "🎨상대의 특성을 따라 그렸다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
@@ -98,6 +101,9 @@ ON_FOE_TEXT = {
     "miracle-eye": "👁️정체를 간파했다", "lock-on": "🎯조준했다", "telekinesis": "🌀띄웠다",
     "electrify": "⚡기술이 전기 타입이 된다", "powder": "💥분진을 뿌렸다", "octolock": "🐙문어굳히기",
     "tar-shot": "🛢️타르 (불꽃에 약해짐)",
+    "soak": "💧물 타입이 됐다", "magic-powder": "✨에스퍼 타입이 됐다", "trick-or-treat": "🎃고스트 타입이 더해졌다",
+    "forests-curse": "🌳풀 타입이 더해졌다", "skill-swap": "🔄특성을 맞바꿨다", "entrainment": "💃특성을 옮겼다",
+    "simple-beam": "🌀특성이 단순이 됐다", "worry-seed": "😟특성이 불면이 됐다", "gastro-acid": "🧪특성이 사라졌다",
 }
 VOLATILE_LABEL = {
     "wish": "🌠소원", "aqua-ring": "💧물의고리", "ingrain": "🌱뿌리박기", "healing-wish": "🌙치유소원",
@@ -106,7 +112,9 @@ VOLATILE_LABEL = {
     "perish-song": "🎵멸망 카운트", "taunt": "😤도발", "encore": "👏앙코르", "disable": "🚫사슬묶기",
     "heal-block": "🚫회복봉인", "embargo": "🚫금제", "magnet-rise": "🧲전자부유", "telekinesis": "🌀텔레키네시스",
     "octolock": "🐙문어굳히기 방어·특방↓", "destiny-bond": "👻길동무", "grudge": "👻원념",
-    "magic-coat": "🪞매직코트", "snatch": "🫳가로채기",
+    "magic-coat": "🪞매직코트", "snatch": "🫳가로채기", "lock-on": "🎯조준", "foresight": "👁️간파",
+    "miracle-eye": "👁️간파", "torment": "😈트집", "imprison": "🔒봉인", "electrify": "⚡전자화", "powder": "💥분진",
+    "tar-shot": "🛢️타르", "focus-energy": "🎯기충전", "laser-focus": "🎯레이저포커스",
 }
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)"}

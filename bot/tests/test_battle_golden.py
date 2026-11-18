@@ -250,6 +250,12 @@ def test_fixed_seed_replays_match_the_golden_event_logs(name):
     assert actual == expected, f"{name}.log line {first + 1}: {actual[first:first + 1]} != {expected[first:first + 1]}"
 
 
+@pytest.mark.parametrize("start", range(0, PVP_SCENARIOS, PVP_PER_FILE))
+def test_every_replayed_battle_narrates(start):
+    for scenario in range(start, start + PVP_PER_FILE):
+        assert narration.battle_log(_pvp_battle(scenario)[1])
+
+
 @pytest.mark.skipif(not os.environ.get("WRITE_GOLDEN"), reason="WRITE_GOLDEN=1 rewrites the golden event logs")
 def test_write_golden_event_logs():
     GOLDEN_DIR.mkdir(exist_ok=True)
@@ -283,15 +289,19 @@ def _focus_text(case, seed):
 
 
 def _pvp_text(scenario):
+    sides, result = _pvp_battle(scenario)
+    lines = [f"## pvp {scenario}", *(_combatant_line(side, member) for side in (0, 1) for member in sides[side])]
+    return _lines(lines, result)
+
+
+def _pvp_battle(scenario):
     rng = random.Random(10_000 + scenario)
     api = ReplayAPI()
     sides = tuple(
         tuple(combatant(api, _replay_member(rng, scenario * 12 + side * 6 + slot)) for slot in range(rng.randint(3, 6)))
         for side in (0, 1)
     )
-    result = simulate(sides, seed=scenario)
-    lines = [f"## pvp {scenario}", *(_combatant_line(side, member) for side in (0, 1) for member in sides[side])]
-    return _lines(lines, result)
+    return sides, simulate(sides, seed=scenario)
 
 
 def _gyms_text(region):

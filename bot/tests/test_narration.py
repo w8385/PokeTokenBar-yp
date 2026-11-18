@@ -2,14 +2,15 @@ from dataclasses import replace
 
 import pytest
 
-from ypoke import items
+from ypoke import effects, items
 from ypoke.battle import (
     AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, ItemHeal, MegaEvolution, Move, SendOut,
     StatusDamage, WeatherDamage, WeatherEnd, simulate,
 )
 from ypoke.dex import bar
+from ypoke.effects.volatiles import State
 from ypoke.narration import (
-    MAX_LOG_BLOCKS, MAX_TAGS, PRACTICE_NOTE, SKIPPED_MARK, battle_card, battle_header, battle_log,
+    MAX_LOG_BLOCKS, MAX_TAGS, PRACTICE_NOTE, SKIPPED_MARK, VOLATILE_LABEL, battle_card, battle_header, battle_log,
 )
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
@@ -354,3 +355,8 @@ def test_a_three_hundred_turn_battle_fits_the_block_budget_keeps_both_ends_and_e
     text = "\n".join(log)
     assert text.count("→ 꼬부기 💥") == 4 and text.count("등장") == 4
     assert any(entry.startswith(SKIPPED_MARK) for entry in log)
+
+
+def test_every_state_a_move_leaves_has_a_label():
+    states = {key for key, handler in effects.loaded()["moves"].items() if isinstance(handler, State)}
+    assert states - set(VOLATILE_LABEL) == set()
