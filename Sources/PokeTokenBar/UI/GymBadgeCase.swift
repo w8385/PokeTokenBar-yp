@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Every region's eight gym badges, the Hall of Fame mark and the hideout mark.
+/// Every region's eight gym badges, the hideout mark and the Hall of Fame mark.
 @MainActor
 struct GymBadgeCase: View {
     let catalog: GymCatalog
@@ -32,14 +32,14 @@ struct GymBadgeCase: View {
                                 .accessibilityLabel("\(gym.trainer.displayName(language)): \(earned ? l.gymBadgeEarned : l.gymBadgeLocked)")
                         }
                         Spacer(minLength: Spacing.xs)
-                        GymBadgeView(emblem: .hallOfFame, earned: owned.hallOfFame, size: 24)
-                            .help(l.gymHallOfFame)
-                            .accessibilityElement()
-                            .accessibilityLabel("\(l.gymHallOfFame): \(owned.hallOfFame ? l.gymBadgeEarned : l.gymBadgeLocked)")
                         GymBadgeView(emblem: .org, earned: owned.orgBeaten, size: 24)
                             .help(region.hideout.org.displayName(language))
                             .accessibilityElement()
                             .accessibilityLabel("\(region.hideout.org.displayName(language)): \(owned.orgBeaten ? l.gymBadgeEarned : l.gymBadgeLocked)")
+                        GymBadgeView(emblem: .hallOfFame, earned: owned.hallOfFame, size: 24)
+                            .help(l.gymHallOfFame)
+                            .accessibilityElement()
+                            .accessibilityLabel("\(l.gymHallOfFame): \(owned.hallOfFame ? l.gymBadgeEarned : l.gymBadgeLocked)")
                         if owned.hiddenBeaten, let hidden = region.hidden {
                             GymBadgeView(emblem: .hidden, earned: true, size: 24)
                                 .help(hidden.trainer.displayName(language))

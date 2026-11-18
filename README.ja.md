@@ -216,7 +216,7 @@ Pi は複数のモデルを一つのセッションログに流すことがあ�
 <td width="45%" align="center"><img src="assets/screenshot-nature-picker-ja.png" width="300" alt="5×5のせいかく表を開いたボックスページと、とくせいカプセル・とくせいパッチ・きんのおうかん、個体値ごとのぎんのおうかん"></td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-battle-ja.png" width="300" alt="バトルタブのエントリー — 出る順に並んだ最大6匹"><br><br><img src="assets/screenshot-gyms-ja.png" width="300" alt="ジムリーダー・四天王・アジトとバッジケース"></td>
+<td width="45%" align="center"><img src="assets/screenshot-battle-ja.png" width="300" alt="バトルタブのエントリー — 出る順に並んだ最大6匹"><br><br><img src="assets/screenshot-gyms-ja.png" width="300" alt="ジムリーダー・アジト・四天王とバッジケース"></td>
 <td width="55%" valign="middle">
 <h3>⚔️ ジム、四天王、バッジケース</h3>
 <a href="bot/README.md">YPoke</a> の連携を済ませると、<b>バトル</b>タブは3つのサブタブに分かれます。<b>エントリー</b>にはバトルに出るポケモンを最大6匹まで順番に並べ、<b>バトル</b>にはジム、<b>履歴</b>には最近のバトルがあります。ひんしになると次のポケモンが出て、途中で交代はできません。<b>自動</b>ならいま育てているポケモンが出ます。各行にはバトルのレベルで実際に戦う能力値が出て、性格で上がる能力値に↑、下がる能力値に↓が付きます。能力値とタイプはその個体のフォルムに従います。
