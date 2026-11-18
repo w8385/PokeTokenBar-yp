@@ -154,12 +154,10 @@ final class MoreHeldItemsTests: XCTestCase {
     }
 
     func testEveryItemTheBotKnowsCanBeBoughtAndNothingElseIsUploaded() throws {
-        let source = try String(contentsOf: URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("bot/ypoke/items.py"), encoding: .utf8)
+        let known = try BattleData.knownItems()
         for kind in ItemKind.allCases {
             guard let slug = kind.heldItemSlug, kind != .everstone else { continue }
-            XCTAssertTrue(source.contains("\"\(slug)\""), "the bot has no item \(slug)")
+            XCTAssertTrue(known.contains(slug), "the bot has no item \(slug)")
         }
     }
 

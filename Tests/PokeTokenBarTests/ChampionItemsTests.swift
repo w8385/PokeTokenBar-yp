@@ -4,8 +4,8 @@ import XCTest
 @MainActor
 final class ChampionItemsTests: XCTestCase {
     func testEveryNewItemUploadsASlugTheBotItemTableKnows() throws {
-        let known = try BotItemSource.itemNames()
-        XCTAssertTrue(known.contains("leftovers"), "the parser reads constant keys")
+        let known = try BattleData.knownItems()
+        XCTAssertTrue(known.contains("leftovers"))
         XCTAssertEqual(ItemKind.championBattleItems.count, 44)
         var state = CompanionState()
         for (index, kind) in ItemKind.championBattleItems.enumerated() {
