@@ -1,26 +1,24 @@
 """Forms a held item brings: Ogerpon's masks, Terapagos' Terastal and Stellar forms, the origin items of Dialga,
 Palkia and Giratina, the rusted items of Zacian and Zamazenta and Arceus' plates (`/pokemon` ids)."""
 
-from ypoke import items
+from ypoke import battle_data, items
 
 OGERPON = 1017
 TERAPAGOS = 1024
 TERASTAL_FORM = 10276
 STELLAR_FORM = 10277
 ARCEUS = 493
+FORM_ITEM = "form-item"
+OGERPON_MASK = "ogerpon-mask"
+EFFECT_KEYS = frozenset({FORM_ITEM, OGERPON_MASK, items.STELLAR_CRYSTAL})
 # item slug -> (species it works on, the form's `/pokemon` id, the form's kind)
-ITEM_FORMS = {
-    "adamant-crystal": (483, 10245, "origin"), "lustrous-globe": (484, 10246, "origin"),
-    "griseous-core": (487, 10007, "origin"),
-    "rusted-sword": (888, 10188, "crowned-sword"), "rusted-shield": (889, 10189, "crowned-shield"),
-}
+ITEM_FORMS = {slug: (entry["args"]["species"], entry["args"]["form"], entry["args"]["form_kind"])
+              for slug, entry in battle_data.with_key("items", FORM_ITEM).items()}
 
 # mask slug -> (form `/pokemon` id or None when the base form already wears it, stat raised by 1 stage on entry)
 MASKS: dict[str, tuple[int | None, str]] = {
-    "teal-mask": (None, "speed"),
-    "wellspring-mask": (10273, "special_defense"),
-    "hearthflame-mask": (10274, "attack"),
-    "cornerstone-mask": (10275, "defense"),
+    slug: (entry["args"]["form"], entry["args"]["stat"])
+    for slug, entry in battle_data.with_key("items", OGERPON_MASK).items()
 }
 
 

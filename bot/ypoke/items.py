@@ -1,4 +1,7 @@
-"""Held items: PokéAPI item slugs the battle simulation understands. Anything else is ignored."""
+"""Held items: PokéAPI item slugs the battle simulation understands (`data/battle/items.json`). Anything else is
+ignored."""
+
+from ypoke import battle_data
 
 LEFTOVERS = "leftovers"
 CHOICE_SCARF = "choice-scarf"
@@ -29,69 +32,32 @@ FLAME_ORB = "flame-orb"
 TOXIC_ORB = "toxic-orb"
 CHARCOAL = "charcoal"
 STELLAR_CRYSTAL = "stellar-crystal"
-OGERPON_MASKS = ("teal-mask", "wellspring-mask", "hearthflame-mask", "cornerstone-mask")
 PUNCHING_GLOVE = "punching-glove"
+EFFECT_KEYS = frozenset({
+    LEFTOVERS, CHOICE_SCARF, CHOICE_BAND, CHOICE_SPECS, FOCUS_SASH, FOCUS_BAND, LIFE_ORB, EXPERT_BELT, ASSAULT_VEST,
+    EVIOLITE, ROCKY_HELMET, SITRUS_BERRY, LUM_BERRY, WHITE_HERB, BLACK_SLUDGE, SHELL_BELL, BIG_ROOT, MUSCLE_BAND,
+    WISE_GLASSES, SCOPE_LENS, RAZOR_CLAW, QUICK_CLAW, BRIGHT_POWDER, WIDE_LENS, WEAKNESS_POLICY, PUNCHING_GLOVE,
+    "type-boost", "resist-berry", "plate", "origin-boost", "weather-rock", "status-orb",
+})
 
-TYPE_BOOST_ITEMS = {
-    CHARCOAL: "fire", "mystic-water": "water", "miracle-seed": "grass", "magnet": "electric",
-    "never-melt-ice": "ice", "black-belt": "fighting", "poison-barb": "poison", "soft-sand": "ground",
-    "sharp-beak": "flying", "twisted-spoon": "psychic", "silver-powder": "bug", "hard-stone": "rock",
-    "spell-tag": "ghost", "dragon-fang": "dragon", "black-glasses": "dark", "metal-coat": "steel",
-    "silk-scarf": "normal", "fairy-feather": "fairy",
-}
+TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",
+              "rock", "ghost", "dragon", "dark", "steel", "normal", "fairy")
+
+
+def _in_type_order(by_item: dict[str, str]) -> dict[str, str]:
+    return dict(sorted(by_item.items(), key=lambda pair: TYPE_ORDER.index(pair[1])))
+
+
+TYPE_BOOST_ITEMS = _in_type_order(battle_data.args("items", "type-boost", "type"))
 # Halves one hit of the type, then is used up. All but Chilan wait for a super-effective hit.
-RESIST_BERRIES = {
-    "occa-berry": "fire", "passho-berry": "water", "wacan-berry": "electric", "rindo-berry": "grass",
-    "yache-berry": "ice", "chople-berry": "fighting", "kebia-berry": "poison", "shuca-berry": "ground",
-    "coba-berry": "flying", "payapa-berry": "psychic", "tanga-berry": "bug", "charti-berry": "rock",
-    "kasib-berry": "ghost", "haban-berry": "dragon", "colbur-berry": "dark", "babiri-berry": "steel",
-    "chilan-berry": "normal", "roseli-berry": "fairy",
-}
-PLATES = {
-    "flame-plate": "fire", "splash-plate": "water", "zap-plate": "electric", "meadow-plate": "grass",
-    "icicle-plate": "ice", "fist-plate": "fighting", "toxic-plate": "poison", "earth-plate": "ground",
-    "sky-plate": "flying", "mind-plate": "psychic", "insect-plate": "bug", "stone-plate": "rock",
-    "spooky-plate": "ghost", "draco-plate": "dragon", "dread-plate": "dark", "iron-plate": "steel",
-    "pixie-plate": "fairy",
-}
+RESIST_BERRIES = _in_type_order(battle_data.args("items", "resist-berry", "type"))
+PLATES = _in_type_order(battle_data.args("items", "plate", "type"))
 # The types an origin item boosts; it works only on its own species (`tera_forms.usable_item`).
-ORIGIN_BOOSTS = {
-    "adamant-crystal": ("dragon", "steel"), "lustrous-globe": ("dragon", "water"),
-    "griseous-core": ("dragon", "ghost"),
-}
-WEATHER_ROCKS = {
-    "heat-rock": ("sun",), "damp-rock": ("rain",), "smooth-rock": ("sandstorm",), "icy-rock": ("hail", "snow"),
-}
-ITEM_NAMES = {
-    LEFTOVERS: "먹다남은음식", CHOICE_SCARF: "구애스카프", CHOICE_BAND: "구애머리띠", CHOICE_SPECS: "구애안경",
-    FOCUS_SASH: "기합의띠", FOCUS_BAND: "기합의머리띠", LIFE_ORB: "생명의구슬", EXPERT_BELT: "달인의띠",
-    ASSAULT_VEST: "돌격조끼", EVIOLITE: "진화의휘석", ROCKY_HELMET: "울퉁불퉁멧", SITRUS_BERRY: "자뭉열매",
-    LUM_BERRY: "리샘열매", WHITE_HERB: "하양허브", BLACK_SLUDGE: "검은오물", SHELL_BELL: "조개껍질방울",
-    BIG_ROOT: "큰뿌리", MUSCLE_BAND: "힘의머리띠", WISE_GLASSES: "박식안경", SCOPE_LENS: "초점렌즈",
-    RAZOR_CLAW: "예리한손톱", QUICK_CLAW: "선제공격손톱", BRIGHT_POWDER: "반짝가루", WIDE_LENS: "광각렌즈",
-    WEAKNESS_POLICY: "약점보험", FLAME_ORB: "화염구슬", TOXIC_ORB: "맹독구슬",
-    CHARCOAL: "목탄", "mystic-water": "신비의물방울", "miracle-seed": "기적의씨", "magnet": "자석",
-    "never-melt-ice": "녹지않는얼음", "black-belt": "검은띠", "poison-barb": "독바늘", "soft-sand": "부드러운모래",
-    "sharp-beak": "예리한부리", "twisted-spoon": "휘어진스푼", "silver-powder": "은빛가루", "hard-stone": "딱딱한돌",
-    "spell-tag": "저주의부적", "dragon-fang": "용의이빨", "black-glasses": "검은안경", "metal-coat": "금속코트",
-    "silk-scarf": "실크스카프", "fairy-feather": "요정의깃털",
-    "heat-rock": "뜨거운바위", "damp-rock": "축축한바위", "smooth-rock": "보송보송바위", "icy-rock": "차가운바위",
-    "teal-mask": "벽록의가면", "wellspring-mask": "우물의가면", "hearthflame-mask": "화덕의가면",
-    "cornerstone-mask": "주춧돌의가면", STELLAR_CRYSTAL: "별빛 결정", "red-orb": "주홍구슬", "blue-orb": "쪽빛구슬",
-    PUNCHING_GLOVE: "펀치글러브", "adamant-crystal": "큰금강옥", "lustrous-globe": "큰백옥", "griseous-core": "큰백금옥",
-    "rusted-sword": "녹슨검", "rusted-shield": "녹슨방패", "ultranecrozium-z": "울트라네크로Z",
-    "occa-berry": "오카열매", "passho-berry": "꼬시개열매", "wacan-berry": "초나열매", "rindo-berry": "린드열매",
-    "yache-berry": "플카열매", "chople-berry": "로플열매", "kebia-berry": "으름열매", "shuca-berry": "슈캐열매",
-    "coba-berry": "바코열매", "payapa-berry": "야파열매", "tanga-berry": "리체열매", "charti-berry": "루미열매",
-    "kasib-berry": "수불열매", "haban-berry": "하반열매", "colbur-berry": "마코열매", "babiri-berry": "바리비열매",
-    "chilan-berry": "카리열매", "roseli-berry": "로셀열매",
-    "flame-plate": "불구슬플레이트", "splash-plate": "물방울플레이트", "zap-plate": "우레플레이트",
-    "meadow-plate": "초록플레이트", "icicle-plate": "고드름플레이트", "fist-plate": "주먹플레이트",
-    "toxic-plate": "맹독플레이트", "earth-plate": "대지플레이트", "sky-plate": "푸른하늘플레이트",
-    "mind-plate": "이상한플레이트", "insect-plate": "비단벌레플레이트", "stone-plate": "암석플레이트",
-    "spooky-plate": "원령플레이트", "draco-plate": "용의플레이트", "dread-plate": "공포플레이트",
-    "iron-plate": "강철플레이트", "pixie-plate": "정령플레이트",
-}
+ORIGIN_BOOSTS = battle_data.args("items", "origin-boost", "types")
+WEATHER_ROCKS = battle_data.args("items", "weather-rock", "weathers")
+OGERPON_MASKS = tuple(battle_data.with_key("items", "ogerpon-mask"))
+ORB_AILMENTS = battle_data.args("items", "status-orb", "ailment")
+ITEM_NAMES = battle_data.bot_names("items", unless="mega-stone")
 CHOICE_ITEMS = frozenset({CHOICE_SCARF, CHOICE_BAND, CHOICE_SPECS})
 LEFTOVERS_FRACTION = 16
 BLACK_SLUDGE_HURT_FRACTION = 8
@@ -112,7 +78,6 @@ RESIST_BERRY_MULTIPLIER = 0.5
 BRIGHT_POWDER_ACCURACY = 0.9
 WIDE_LENS_ACCURACY = 1.1
 ROCK_WEATHER_TURNS = 8
-ORB_AILMENTS = {FLAME_ORB: "burn", TOXIC_ORB: "toxic"}
 
 
 def known(item: str | None) -> str | None:

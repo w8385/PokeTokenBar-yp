@@ -8,7 +8,7 @@ import urllib.request
 from collections.abc import Collection, Sequence
 from concurrent.futures import ThreadPoolExecutor
 
-from ypoke import items, tera_forms
+from ypoke import battle_data, items, tera_forms
 from ypoke.battle import BaseStats
 from ypoke.mega_stones import mega_form_id, move_mega_form_id
 from ypoke.move_effects import STATUS_MOVES, wants_status_moves
@@ -36,10 +36,12 @@ _STAT_KEYS = {
 }
 _BATTLE_STAT_KEYS = set(_STAT_KEYS) - {"hp"}
 _AILMENTS = {"burn", "paralysis", "poison", "toxic", "sleep", "freeze", "confusion"}
-_TOXIC_MOVE_IDS = {92, 305, 830}
+EFFECT_KEYS = frozenset({"badly-poisons", "weather", "always-hits-in"})
+_TOXIC_MOVE_IDS = battle_data.ids("moves", "badly-poisons")
 _STAT_CATEGORIES = {"damage-lower": "target", "damage-raise": "user"}
-WEATHER_MOVES = {241: "sun", 240: "rain", 201: "sandstorm", 258: "hail", 883: "snow"}
-_ALWAYS_HITS_IN = {87: ["rain"], 542: ["rain"], 59: ["hail", "snow"]}
+WEATHER_MOVES = battle_data.args("moves", "weather", "weather")
+_ALWAYS_HITS_IN = {move_id: list(weathers)
+                   for move_id, weathers in battle_data.args("moves", "always-hits-in", "weathers").items()}
 
 
 class PokeAPIService:

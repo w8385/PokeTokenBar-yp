@@ -1,41 +1,35 @@
-"""Battle abilities by PokéAPI name ("huge-power"). An ability not listed here does nothing."""
+"""Battle abilities by PokéAPI name ("huge-power"), from `data/battle/abilities.json`. An ability that runs none of
+`EFFECT_KEYS` does nothing."""
 
+from ypoke import battle_data
+
+EFFECT_KEYS = frozenset({
+    "pinch-type-boost", "intimidate", "type-immunity", "attack-doubled", "type-resist", "technician", "sturdy",
+    "adaptability", "guts", "weather-speed", "weather-on-entry", "contact-ailment", "ailment-block", "sand-force",
+    "weather-chip-immune", "gale-wings", "supreme-overlord",
+})
 LOW_HP_FRACTION = 3
-LOW_HP_BOOSTED_TYPE = {"blaze": "fire", "torrent": "water", "overgrow": "grass", "swarm": "bug"}
+LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
 LOW_HP_BOOST = 1.5
 TECHNICIAN_MAX_POWER = 60
 TECHNICIAN_BOOST = 1.5
 ADAPTABILITY_STAB = 2.0
 GUTS_BOOST = 1.5
-ATTACK_DOUBLED = ("huge-power", "pure-power")
+ATTACK_DOUBLED = tuple(battle_data.with_key("abilities", "attack-doubled"))
 SAND_FORCE_TYPES = ("rock", "ground", "steel")
 SAND_FORCE_BOOST = 1.3
 SUPREME_OVERLORD_STEP = 0.1
 SUPREME_OVERLORD_MAX_FALLEN = 5
-WEATHER_CHIP_IMMUNE = {"sand-force": "sandstorm"}
-WEATHER_DOUBLES_SPEED = {"swift-swim": "rain", "chlorophyll": "sun", "sand-rush": "sandstorm"}
-WEATHER_ON_ENTRY = {
-    "drizzle": "rain", "drought": "sun", "sand-stream": "sandstorm", "snow-warning": "snow",
-    "desolate-land": "sun", "primordial-sea": "rain", "delta-stream": "strong-winds",
-}
-RESISTED_TYPES = {"thick-fat": ("fire", "ice")}
-IMMUNE_TYPE = {"levitate": "ground"}
-AILMENT_BLOCKED = {
-    "immunity": ("poison", "toxic"), "limber": ("paralysis",), "insomnia": ("sleep",), "water-veil": ("burn",),
-}
-CONTACT_AILMENT = {"static": "paralysis", "flame-body": "burn", "poison-point": "poison"}
+WEATHER_CHIP_IMMUNE = battle_data.args("abilities", "weather-chip-immune", "weather")
+WEATHER_DOUBLES_SPEED = battle_data.args("abilities", "weather-speed", "weather")
+WEATHER_ON_ENTRY = battle_data.args("abilities", "weather-on-entry", "weather")
+RESISTED_TYPES = battle_data.args("abilities", "type-resist", "types")
+IMMUNE_TYPE = battle_data.args("abilities", "type-immunity", "type")
+AILMENT_BLOCKED = battle_data.args("abilities", "ailment-block", "ailments")
+CONTACT_AILMENT = battle_data.args("abilities", "contact-ailment", "ailment")
 CONTACT_CHANCE = 0.3
 
-NAMES = {
-    "blaze": "맹화", "torrent": "급류", "overgrow": "심록", "swarm": "벌레의알림", "intimidate": "위협",
-    "levitate": "부유", "huge-power": "천하장사", "pure-power": "요가파워", "thick-fat": "두꺼운지방",
-    "technician": "테크니션", "sturdy": "옹골참", "adaptability": "적응력", "guts": "근성",
-    "swift-swim": "쓱쓱", "chlorophyll": "엽록소", "sand-rush": "모래헤치기", "drizzle": "잔비",
-    "drought": "가뭄", "sand-stream": "모래날림", "snow-warning": "눈퍼뜨리기", "static": "정전기",
-    "flame-body": "불꽃몸", "poison-point": "독가시", "immunity": "면역", "limber": "유연", "insomnia": "불면",
-    "water-veil": "수의베일", "desolate-land": "끝의대지", "primordial-sea": "시작의바다", "sand-force": "모래의힘",
-    "gale-wings": "질풍날개", "delta-stream": "델타스트림", "supreme-overlord": "총대장",
-}
+NAMES = battle_data.bot_names("abilities")
 
 
 def entry_trigger(ability: str | None) -> bool:

@@ -26,7 +26,7 @@ jobs:
         run: |
           bot=true
           if files=$(git diff --name-only "$BASE" "$HEAD" 2>/dev/null) && [ -n "$files" ]; then
-            grep -qE '^(bot/|\.github/workflows/bot\.yml$)' <<<"$files" || bot=false
+            grep -qE '^(bot/|data/battle/|\.github/workflows/bot\.yml$)' <<<"$files" || bot=false
           fi
           echo "Bot changes: $bot"
           echo "bot=$bot" >> "$GITHUB_OUTPUT"
