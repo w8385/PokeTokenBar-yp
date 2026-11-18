@@ -261,7 +261,7 @@ class Hazard(StatusMove):
 class StealthRock(Hazard):
     def hazard(self, name, layers, fighter, side, turn, rng):
         ratio = effectiveness("rock", fighter.combatant.types)
-        if ratio <= 0 or _booted(fighter):
+        if ratio <= 0 or _booted(fighter) or battle._chip_free(fighter):
             return None
         fighter.hp = max(0, fighter.hp - max(1, int(fighter.max_hp * ratio / battle.STEALTH_ROCK_FRACTION)))
         return battle.HazardDamage(turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0)
@@ -270,7 +270,7 @@ class StealthRock(Hazard):
 @register("moves", "spikes")
 class Spikes(Hazard):
     def hazard(self, name, layers, fighter, side, turn, rng):
-        if not battle._grounded(fighter) or _booted(fighter):
+        if not battle._grounded(fighter) or _booted(fighter) or battle._chip_free(fighter):
             return None
         damage = fighter.max_hp * fs.SPIKES_DAMAGE[layers] // fs.SPIKES_DENOMINATOR
         fighter.hp = max(0, fighter.hp - max(1, damage))
@@ -300,7 +300,8 @@ class StickyWeb(Hazard):
     def hazard(self, name, layers, fighter, side, turn, rng):
         if not battle._grounded(fighter) or _booted(fighter):
             return None
-        change = battle.shift_stage(fighter, side, "speed", -1, battle._stats_guarded(fighter))
+        foe = fighter.arena.foe_of(fighter) if fighter.arena is not None else None
+        change = battle.shift_stage(fighter, side, "speed", -1, guarded=battle._stats_guarded(fighter), by=foe)
         if change is None:
             return None
         return battle.HazardHit(turn, side, fighter.combatant.name, name, fighter.hp_percent, change=change)
@@ -316,8 +317,8 @@ class Defog(StatusMove):
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         dropped = None
-        if not stats.guarded(user, foe) and not any(battle._field(foe, "shields", move, user)):
-            dropped = stats.shift(foe, 1 - side, "evasion", fs.DEFOG_EVASION)
+        if not any(battle._field(foe, "shields", move, user)):
+            dropped = stats.shift(foe, 1 - side, "evasion", fs.DEFOG_EVASION, guarded=stats.guarded(user, foe), by=user)
         gone = [*_cleared(arena, 1 - side, fs.DEFOGGED, move.name, "sides"),
                 *_cleared(arena, 1 - side, fs.HAZARDS, move.name, "hazards"),
                 *_cleared(arena, side, fs.HAZARDS, move.name, "hazards")]

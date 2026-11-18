@@ -49,7 +49,8 @@ class HPCostOnHit(Handler):
 
 
 def pay(user, hp: int, kind: str):
-    user.hp = max(0, user.hp - max(1, hp))
+    if not battle._chip_free(user):
+        user.hp = max(0, user.hp - max(1, hp))
     return battle.Change(user.side, user.combatant.name, kind)
 
 

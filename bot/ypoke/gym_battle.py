@@ -11,8 +11,9 @@ from functools import partial
 
 from ypoke import gyms
 from ypoke.battle import (
-    CARRIED_STATUSES, AbilityTransform, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage, HazardHit,
-    ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal, VolatileTick, WeatherDamage, YawnSleep, simulate,
+    CARRIED_STATUSES, AbilityAct, AbilityTransform, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage,
+    HazardHit, ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal, VolatileTick, WeatherDamage,
+    YawnSleep, simulate,
 )
 from ypoke.combatants import combatant
 from ypoke.gym_data import FINALE_LINE
@@ -142,6 +143,8 @@ def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: 
                 replay.status(turn, event.side, event.change.kind)
         elif isinstance(event, ItemEffect) and event.effect in ("cure", *CARRIED_STATUSES):
             replay.status(turn, event.side, None if event.effect == "cure" else event.effect)
+        elif isinstance(event, AbilityAct):
+            replay.ability(turn, event)
         elif isinstance(event, YawnSleep):
             replay.status(turn, event.side, "sleep")
         elif isinstance(event, (MegaEvolution, FormShift)) and event.form_id is not None:
@@ -195,6 +198,14 @@ class _Replay:
                 self.status(action.turn, change.side, change.kind)
             elif change.kind in ("thaw", "cure"):
                 self.status(action.turn, change.side, None)
+
+    def ability(self, turn: int, act: AbilityAct) -> None:
+        for side, hp in ((act.side, act.hp), (1 - act.side, act.foe_hp)):
+            if hp is not None:
+                self.hp(turn, side, hp)
+        for change in act.changes:
+            if change.kind in CARRIED_STATUSES or change.kind == "cure":
+                self.status(turn, change.side, None if change.kind == "cure" else change.kind)
 
     def hp(self, turn: int, side: int, hp: int) -> None:
         key = self._key(side)

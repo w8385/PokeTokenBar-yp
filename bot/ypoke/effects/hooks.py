@@ -37,7 +37,7 @@ HOOKS = {
     "modify_stat": "item, then ability: multiplies a stat after its stage (paralysis halves Speed in between)",
     "field_stat": "ability: multiplies a stat in a weather or terrain, after `modify_stat`",
     "side_stat": "state: multiplies a stat of the Pokémon on its side, last",
-    "stage_factor": "ability: multiplies every stat stage change on its holder before the guards (Contrary's -1)",
+    "stage_factor": "ability: multiplies every stat stage change on its holder before the guards (Contrary's -1, Simple's 2)",
     "acts_asleep": "move: its user uses it while asleep (Sleep Talk); the sleep still counts down",
     "thaws_user": "move: a frozen user thaws to use it, and a frozen target it hits thaws (Scald)",
     "bans_move": "state: a move that cannot be used at all, after sleep and freeze and before confusion and PP",
@@ -136,6 +136,13 @@ HOOKS = {
     "guards_ailment": "state: an ailment a Pokémon on its side cannot get, from anyone or only from a foe",
     "blocks_ailment": "ability: an ailment its holder cannot get now",
     "guards_stats": "state: a foe cannot lower the stats of a Pokémon on its side",
+    "guards_stat": "ability: a foe cannot lower this stat of its holder (Clear Body, Hyper Cutter)",
+    "reflects_drop": "ability: a foe's stat drop lands on the foe instead (Mirror Armor)",
+    "on_stat_lowered": "ability: answers a foe lowering its holder's stat (Defiant); returns an event",
+    "answers_intimidate": "ability: acts in place of Intimidate's drop (Guard Dog); returns an event",
+    "after_intimidate": "ability: acts once Intimidate lowered its holder's Attack (Rattled); returns an event",
+    "blocks_secondary": "ability: a foe's move's added effects do not land on its holder (Shield Dust)",
+    "secondary_chance": "ability: multiplies the chance of its holder's move's added effects (Serene Grace)",
     "secondary": "move: acts on a target the hits left standing, after the ailment and stat changes, unless a "
                  "Substitute took them (flinch); returns the changes",
     "on_contact": "ability: may hit back at a contact move's user once the move is over",
@@ -162,6 +169,11 @@ HOOKS = {
     "volatile_end": "state: a Pokémon's own state acts or counts down at the end of a turn, after the items",
     "tick_due": "state: the HP a Pokémon's own state takes from it at the next end of turn",
     "keeps_weather": "ability: the weather lasts only while a holder is out",
+    "status_damage": "ability: replaces its holder's poison or burn damage at the end of a turn (Poison Heal); returns "
+                     "the event",
+    "on_switch_out": "ability: acts as its holder leaves the field by its own move (Regenerator); returns an event",
+    "idles_item": "ability: its holder's item does nothing (Klutz)",
+    "unnerves": "ability: the foe facing its holder cannot eat berries (Unnerve)",
 }
 
 
@@ -170,10 +182,15 @@ def ability(fighter, hook: str, *args, default=None):
 
 
 def item(fighter, hook: str, *args, default=None):
-    """A state that suppresses held items (Magic Room, Embargo) leaves the holder's item idle."""
+    """A state that suppresses held items (Magic Room, Embargo) or the holder's ability (Klutz) leaves the holder's
+    item idle, and a foe's ability can keep it from eating a berry (Unnerve)."""
     from ypoke import battle
 
-    held = None if fighter.item is None or any(battle._field(fighter, "suppresses_items")) else fighter.item
+    held = fighter.item
+    if held is not None and (any(battle._field(fighter, "suppresses_items"))
+                             or call("abilities", fighter.ability, "idles_item", default=False)
+                             or battle._unnerved(fighter, held)):
+        held = None
     return call("items", held, hook, *args, default=default)
 
 

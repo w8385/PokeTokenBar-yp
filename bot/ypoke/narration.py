@@ -5,9 +5,10 @@ from dataclasses import dataclass, field
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    BATTLE_LEVEL, AbilityField, AbilityRetype, AbilityTransform, AbilityTrigger, Action, BattleResult, Change,
-    Combatant, Event, FieldEnd, FieldStart, FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal, MegaEvolution,
-    SendOut, StatusDamage, TerrainHeal, TrickRoomEnd, VolatileEnd, VolatileTick, WeatherDamage, WeatherEnd, YawnSleep,
+    BATTLE_LEVEL, AbilityAct, AbilityEntry, AbilityField, AbilityRetype, AbilityTransform, AbilityTrigger, Action,
+    BattleResult, Change, Combatant, Event, FieldEnd, FieldStart, FormShift, HazardDamage, HazardHit, ItemEffect,
+    ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal, TrickRoomEnd, VolatileEnd, VolatileTick,
+    WeatherDamage, WeatherEnd, YawnSleep,
 )
 from ypoke.dex import bar, sprite_url
 from ypoke.items import ITEM_NAMES, known
@@ -148,6 +149,12 @@ CHANGE_TEXT = {
     "uproar": "📢소란 시작", "rollout": "🔒구르기 시작", "fatigue": "💫지쳐서 혼란", "woke": "⏰잠에서 깼다",
     "guard-lifted": "🛡️방어가 풀렸다",
 }
+# What an ability did, by `AbilityAct.effect` or `AbilityEntry.effect`; `{detail}` is a type, item or ability name.
+ABILITY_EFFECT_TEXT = {
+    "first": "선제공격", "guard": "능력이 떨어지지 않는다",
+}
+# Text after the ability name when it stopped a move, in place of "에 막힘".
+ABILITY_BLOCKED_TEXT = {"truant": " 게으름을 피우고 있다"}
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)", "binding": "풀려났다"}
 
@@ -277,7 +284,9 @@ def _decisive_text(event: Event) -> str:
         return f"{event.pokemon} {STATE_LABEL[event.hazard]}"
     if isinstance(event, VolatileTick):
         return f"{event.pokemon} {VOLATILE_LABEL[event.kind]}"
-    icon = RESIDUAL_ICON[event.kind] if isinstance(event, StatusDamage) else WEATHER_ICON[event.weather]
+    if isinstance(event, AbilityAct):
+        return f"{event.pokemon} [{ABILITY_NAMES[event.ability]}]"
+    icon =RESIDUAL_ICON[event.kind] if isinstance(event, StatusDamage) else WEATHER_ICON[event.weather]
     return f"{event.pokemon} {icon}"
 
 
@@ -289,6 +298,8 @@ def _faint_side(event: Event) -> int | None:
         return event.side if event.attacker_fainted else None
     if isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage, HazardHit, VolatileTick)) and event.fainted:
         return event.side
+    if isinstance(event, AbilityAct) and (event.fainted or event.foe_fainted):
+        return event.side if event.fainted else 1 - event.side
     return None
 
 
@@ -418,6 +429,9 @@ def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
         effect = f"{event.into}{_direction_particle(event.into)} 변신"
     elif isinstance(event, AbilityRetype):
         effect = f"{TYPE_NAMES_KO.get(event.into, event.into)} 타입이 되었다"
+    elif isinstance(event, AbilityEntry):
+        effect = " ".join(filter(None, [_ability_effect(event.effect, event.detail),
+                                        *(_change_tag(change, event.side) for change in event.changes)]))
     else:
         effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
     return f"[{ABILITY_NAMES[event.ability]}] {effect}"
@@ -472,10 +486,29 @@ def _event_lines(event: Event) -> list[str]:
                 *([_faint_line(event.pokemon)] if event.fainted else [])]
     if isinstance(event, VolatileEnd):
         return [f"{marker} {event.pokemon} {VOLATILE_LABEL[event.kind]} {VOLATILE_END_TEXT.get(event.kind, '끝')}"]
-    lines = [_action_line(event, marker)]
+    if isinstance(event, AbilityAct):
+        return [_ability_line(event, marker), *([_faint_line(event.pokemon)] if event.fainted else []),
+                *([_faint_line(event.foe)] if event.foe_fainted else [])]
+    lines =[_action_line(event, marker)]
     if event.attacker_fainted:
         lines.append(_faint_line(event.attacker))
     return lines
+
+
+def _ability_line(event: AbilityAct, marker: str) -> str:
+    parts = [f"{marker} {event.pokemon} [{ABILITY_NAMES[event.ability]}]", _ability_effect(event.effect, event.detail),
+             *(_change_tag(change, event.side) for change in event.changes),
+             f"{event.hp}%" if event.hp is not None else ""]
+    if event.foe:
+        parts.append(f"→ {event.foe}" + (f" {event.foe_hp}%" if event.foe_hp is not None else ""))
+    return " ".join(filter(None, parts))
+
+
+def _ability_effect(effect: str, detail: str) -> str:
+    if not effect:
+        return ""
+    name = TYPE_NAMES_KO.get(detail) or ITEM_NAMES.get(detail) or ABILITY_NAMES.get(detail) or detail
+    return ABILITY_EFFECT_TEXT[effect].format(detail=name)
 
 
 def _hazard_line(event: HazardHit, marker: str) -> str:
@@ -495,9 +528,9 @@ def _action_line(event: Action, marker: str) -> str:
         return f"{head} 💫혼란 자해 {event.attacker_hp}%"
     if event.blocked and event.move:
         tags = [_change_tag(change, event.side) for change in event.changes]
-        return " ".join([f"{head} › {event.move} → {BLOCKED_TAG[event.blocked]}", *tags])
+        return " ".join([f"{head} › {event.move} → {_blocked_tag(event.blocked)}", *tags])
     if event.blocked:
-        return f"{head} {BLOCKED_TAG[event.blocked]}"
+        return f"{head} {_blocked_tag(event.blocked)}"
     head = f"{head} › {event.via}: {event.move}" if event.via else f"{head} › {event.move}"
     if event.failed and event.weather:
         return f"{head} → 실패 ({WEATHER_ICON[event.weather]})"
@@ -530,6 +563,12 @@ def _action_line(event: Action, marker: str) -> str:
     item_tags = [f"@{ITEM_NAMES[item]}" for item in (event.attacker_item, event.defender_item) if item]
     pivot = ["↩교체"] if event.pivoted else []
     return " ".join([f"{head} → {event.defender} {hp}", *_hit_tags(event)[:MAX_TAGS], *item_tags, *pivot])
+
+
+def _blocked_tag(blocked: str) -> str:
+    if blocked in BLOCKED_TAG:
+        return BLOCKED_TAG[blocked]
+    return f"[{ABILITY_NAMES[blocked]}]{ABILITY_BLOCKED_TEXT.get(blocked, '에 막힘')}"
 
 
 def _hit_tags(event: Action) -> list[str]:

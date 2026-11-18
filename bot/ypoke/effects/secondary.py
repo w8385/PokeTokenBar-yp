@@ -16,7 +16,8 @@ class Flinch(Handler):
     by_id = True
 
     def secondary(self, move, user, target, side, rng):
-        if not target.acted and chance(move, rng, "flinch_chance") and not battle._blocks_ailment(target, "flinch"):
+        if (not target.acted and chance(move, rng, user, target, "flinch_chance")
+                and not battle._blocks_ailment(target, "flinch")):
             target.volatiles["flinch"] = True
         return ()
 
@@ -34,7 +35,7 @@ class RandomAilment(Handler):
     by_id = True
 
     def secondary(self, move, user, target, side, rng):
-        if not chance(move, rng):
+        if not chance(move, rng, user, target):
             return ()
         landed = afflict(rng.choice(arg(move, "ailments")), user, target, side, rng)
         return () if landed is None else (landed,)
@@ -47,13 +48,13 @@ class SecretPower(Handler):
     by_id = True
 
     def secondary(self, move, user, target, side, rng):
-        if not chance(move, rng):
+        if not chance(move, rng, user, target):
             return ()
-        terrain = user.arena.terrain if user.arena is not None else None
+        terrain =user.arena.terrain if user.arena is not None else None
         ailment, drop = SECRET_POWER.get(terrain, ("paralysis", None))
         if drop is not None:
-            landed = None if battle._stats_guarded(target, not battle._infiltrates(user)) else shift(
-                target, 1 - side, *drop)
+            landed = shift(target, 1 - side, *drop, guarded=battle._stats_guarded(target, not battle._infiltrates(user)),
+                           by=user)
         else:
             landed = afflict(ailment, user, target, side, rng)
         return () if landed is None else (landed,)
@@ -76,8 +77,8 @@ def afflict(ailment: str, user, target, side: int, rng):
     return battle._inflict(ailment, target, 1 - side, rng)
 
 
-def chance(move, rng, field: str = "ailment_chance") -> bool:
-    return rng.random() * 100 < meta(move, field)
+def chance(move, rng, user, target, field: str = "ailment_chance") -> bool:
+    return rng.random() * 100 < meta(move, field) * battle._chance_scale(move, user, target)
 
 
 def meta(move, field: str, default=0):

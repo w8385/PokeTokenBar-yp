@@ -190,7 +190,7 @@ class StrengthSap(Heal):
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         amount = self._amount(move, user, foe, arena)
-        dropped = shift(foe, 1 - side, "attack", -1)
+        dropped = shift(foe, 1 - side, "attack", -1, by=user)
         if dropped is None:
             return "", ()
         restore(user, amount)

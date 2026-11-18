@@ -96,7 +96,8 @@ class DropShield(Protect):
     def punishes(self, name, move, attacker, side, rng):
         if not attacking(move) or not battle.makes_contact(attacker, move):
             return ()
-        dropped = shift(attacker, side, *self.DROPS[name])
+        holder = attacker.arena.foe_of(attacker) if attacker.arena is not None else None
+        dropped = shift(attacker, side, *self.DROPS[name], by=holder)
         return (dropped,) if dropped else ()
 
 
@@ -105,7 +106,7 @@ class SpikyShield(Protect):
     """A contact move's user loses 1/8 of its max HP."""
 
     def punishes(self, name, move, attacker, side, rng):
-        if attacking(move) and battle.makes_contact(attacker, move):
+        if attacking(move) and battle.makes_contact(attacker, move) and not battle._chip_free(attacker):
             attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // SPIKY_SHARE))
         return ()
 

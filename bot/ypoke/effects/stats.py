@@ -44,7 +44,7 @@ class Stages(StatusMove):
             return "", ()
         if self.targets_foe(move):
             guarded = battle._stats_guarded(foe, not battle._infiltrates(user))
-            landed = shift_all(foe, 1 - side, arg(move, "changes"), guarded)
+            landed = shift_all(foe, 1 - side, arg(move, "changes"), guarded=guarded, by=user)
             return ("stages" if landed else ""), landed
         cost = arg(move, "cost", 0)
         if cost and user.hp <= user.max_hp // cost:
@@ -108,9 +108,9 @@ def boost_wanted(changes, user, foe, weather) -> bool:
                for key, stages in changes)
 
 
-def shift_all(fighter, side: int, changes, guarded: bool = False) -> tuple:
+def shift_all(fighter, side: int, changes, *, guarded: bool = False, by=None) -> tuple:
     return tuple(change for key, stages in changes
-                 if (change := shift(fighter, side, key, stages, guarded)) is not None)
+                 if (change := shift(fighter, side, key, stages, guarded=guarded, by=by)) is not None)
 
 
 @register("moves", "growth")

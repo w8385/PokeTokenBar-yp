@@ -2,7 +2,7 @@
 `ypoke.items`; `fighter` is the holder, a `battle._Fighter`."""
 
 from ypoke import battle, items, tera_forms
-from ypoke.effects import Handler, elsewhere, register
+from ypoke.effects import Handler, elsewhere, hooks, register
 from ypoke.move_effects import PUNCH_MOVES
 
 CHOICE_STATS = {"choice-scarf": "speed", "choice-band": "attack", "choice-specs": "special_attack"}
@@ -145,6 +145,8 @@ class LifeOrb(Handler):
         return items.LIFE_ORB_MULTIPLIER
 
     def after_move_as_user(self, name, fighter, move, dealt, drained):
+        if battle._chip_free(fighter) or hooks.ability(fighter, "secondary_chance", move, default=1.0) == 0:
+            return None
         fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // items.LIFE_ORB_RECOIL_FRACTION))
         return True
 
@@ -269,6 +271,8 @@ class BlackSludge(Leftovers):
     def end_of_turn(self, name, fighter, side, turn, rng):
         if "poison" in fighter.combatant.types:
             return super().end_of_turn(name, fighter, side, turn, rng)
+        if battle._chip_free(fighter):
+            return None
         fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // items.BLACK_SLUDGE_HURT_FRACTION))
         return battle.ItemHeal(turn, side, fighter.combatant.name, name, fighter.hp_percent, fighter.hp == 0)
 

@@ -12,8 +12,18 @@ PROTEAN = "protean"
 @register("abilities", "intimidate")
 class Intimidate(Handler):
     def on_entry(self, name, fighter, foe, side, weather):
-        change = battle.shift_stage(foe, 1 - side, "attack", -1, battle._stats_guarded(foe))
-        return None if change is None else battle.AbilityTrigger(side, fighter.combatant.name, name, change=change)
+        lowers = hooks.ability(foe, "stage_factor", default=1) > 0
+        if lowers and battle._stats_guarded(foe):
+            return None
+        answer = hooks.ability(foe, "answers_intimidate", foe, 1 - side)
+        if answer is not None:
+            battle._announce(foe, answer)
+            return battle.AbilityTrigger(side, fighter.combatant.name, name)
+        if lowers and foe.stages["attack"] <= -battle.MAX_STAGE:
+            return None
+        change = battle.shift_stage(foe, 1 - side, "attack", -1, by=fighter)
+        battle._announce(foe, hooks.ability(foe, "after_intimidate", foe, 1 - side))
+        return battle.AbilityTrigger(side, fighter.combatant.name, name, change=change)
 
 
 @register("abilities", "weather-on-entry")

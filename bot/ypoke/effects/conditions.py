@@ -88,7 +88,7 @@ class ToxicThread(StatusMove):
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         poisoned = (battle._inflict("poison", foe, 1 - side, rng),) if lands(move, "poison", user, foe) else ()
-        slowed = () if guarded(user, foe) else shift_all(foe, 1 - side, THREAD_DROP)
+        slowed = shift_all(foe, 1 - side, THREAD_DROP, guarded=guarded(user, foe), by=user)
         return (self.key if poisoned or slowed else ""), (*poisoned, *slowed)
 
 
