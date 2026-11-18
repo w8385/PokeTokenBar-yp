@@ -15,6 +15,9 @@ class Crash(Handler):
 
     by_id = True
 
+    def hp_paid(self, move, user):
+        return user.max_hp // CRASH_SHARE * (100 - (move.accuracy or 100)) / 100
+
     def crashes(self, move, user):
         return pay(user, user.max_hp // CRASH_SHARE, "crash")
 
@@ -25,8 +28,11 @@ class HPCost(Handler):
 
     by_id = True
 
+    def hp_paid(self, move, user):
+        return half_max_hp(user)
+
     def pays_hp(self, move, user):
-        return pay(user, -(-user.max_hp // COST_SHARE), "hp-cost")
+        return pay(user, half_max_hp(user), "hp-cost")
 
 
 @register("moves", "hp-cost-on-hit")
@@ -35,10 +41,17 @@ class HPCostOnHit(Handler):
 
     by_id = True
 
+    def hp_paid(self, move, user):
+        return half_max_hp(user)
+
     def after_move(self, move, user, target, dealt):
-        return (pay(user, -(-user.max_hp // COST_SHARE), "hp-cost"),)
+        return (pay(user, half_max_hp(user), "hp-cost"),)
 
 
 def pay(user, hp: int, kind: str):
     user.hp = max(0, user.hp - max(1, hp))
     return battle.Change(user.side, user.combatant.name, kind)
+
+
+def half_max_hp(user) -> int:
+    return -(-user.max_hp // COST_SHARE)

@@ -9,6 +9,7 @@ from ypoke import battle, narration
 HIGH_JUMP_KICK, AXE_KICK, STEEL_BEAM, MIND_BLOWN, CHLOROBLAST = (attack(136), attack(853), attack(796), attack(720),
                                                                 attack(835))
 PROTECT = data_move(182)
+BRAVE_BIRD = attack(413)
 
 
 def misses(accuracy):
@@ -84,3 +85,21 @@ def _act(user, foe, move, arena, seed):
     user.combatant = replace(user.combatant, moves=(move,))
     user.pp = [move.pp]
     return battle._act(1, 0, (user, foe), 0, arena.weather, random.Random(seed), arena)
+
+
+def test_the_chooser_weighs_an_hp_cost_against_the_hp_the_user_has_left():
+    user, foe, arena = duel()
+    free = replace(STEEL_BEAM, id=0)
+    full = battle._move_score(user, foe, STEEL_BEAM, None)
+    assert full == battle._move_score(user, foe, free, None) * (1 - -(-user.max_hp // 2) / user.hp)
+    user.hp = user.max_hp // 2
+    assert battle._move_score(user, foe, STEEL_BEAM, None) == 0.0 < battle._move_score(user, foe, free, None)
+
+
+def test_the_chooser_weighs_recoil_and_a_likely_crash():
+    user, foe, arena = duel()
+    for move in (BRAVE_BIRD, HIGH_JUMP_KICK):
+        free = replace(move, id=0, drain=0)
+        assert 0.0 < battle._move_score(user, foe, move, None) < battle._move_score(user, foe, free, None), move.name
+    user.hp = 1
+    assert battle._move_score(user, foe, BRAVE_BIRD, None) == 0.0

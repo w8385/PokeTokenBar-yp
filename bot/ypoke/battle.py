@@ -1605,7 +1605,8 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
             or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)):
         return 0.0
     with _ability_ignored(defender, move):
-        return _damage_score(attacker, defender, move, weather) * hooks.move(move, "score_share", weather, default=1.0)
+        return (_damage_score(attacker, defender, move, weather) * hooks.move(move, "score_share", weather, default=1.0)
+                * _hp_kept(attacker, defender, move, weather))
 
 
 def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
@@ -1623,6 +1624,16 @@ def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: s
         * _item_boost(attacker, move, multiplier)
         * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False) * _exposed(attacker, defender)
     )
+
+
+def _hp_kept(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
+    """The share of its HP the user keeps after the recoil and HP cost it expects the move to take (Brave Bird,
+    Steel Beam)."""
+    paid = hooks.move(move, "hp_paid", attacker, default=0)
+    if move.drain < 0:
+        dealt = _unrolled_damage(attacker, defender, move, _multiplier(move, defender, weather), weather)
+        paid += min(defender.hp, dealt) * -move.drain / 100
+    return max(0.0, 1 - paid / max(1, attacker.hp))
 
 
 def _sleeps_through(attacker: _Fighter, move: Move) -> bool:

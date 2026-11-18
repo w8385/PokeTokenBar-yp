@@ -22,7 +22,9 @@ HOOKS = {
     "wanted": "move: whether the move chooser picks this effect move now",
     "score_share": "move: the share of its damage the move chooser counts for a turn (half for a move that takes two)",
     "wasted": "move: the move chooser expects the move to fail this turn (Focus Punch against a foe that attacks)",
-    "craves": "item: eating the berry now would help its holder",
+    "hp_paid": "move: the HP the move chooser expects its user to pay for it beyond recoil (Steel Beam, a crash on a "
+               "miss)",
+    "craves":"item: eating the berry now would help its holder",
     "burdens": "item: the item only hurts or hinders the given holder, so a move chooser hands it over",
     "bars_status_moves": "item: its holder only picks damaging moves",
     "modify_type": "move: the move as this weather, terrain or user changes it: its type, or its accuracy (Thunder in "
