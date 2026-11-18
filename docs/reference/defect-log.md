@@ -1976,3 +1976,16 @@ read_when:
   Class sweep: the other README families were redrawn twice and compared byte for byte; all 65 PNGs
   matched. Remaining `Date()` reads in `PopoverView` (limit rows, pace, reset clock) only draw when
   official limits are loaded, which no README shot does.
+- **A stored-friends README render drew Charmander in the evolution strip as the 🥚 placeholder.** The
+  shot draws through a scratch `SpriteStore`, and its preload missed the strip's other species (4, 5)
+  and the picker entries' GIFs, so those downloaded mid-shot and landed only when the network was fast.
+  Why no test caught it: the clock guard covers Home on the warmed shared store, and nothing checked
+  that a shot made no downloads. Fix: `preloadHeaderSprites` also warms each species in `lineNodes`
+  (still and GIF), and `storedFriends` warms each picker entry's GIF. Guard: `ReadmeScreenshotTests.hosted`
+  arms `LateSpriteRequests`, a URLProtocol that fails and lists every sprite request made while a shot is
+  on screen, so a missed preload fails every time, whatever the network speed.
+  `testStoredFriendsShotPreloadsEverySprite` runs it in CI. The shared store's disk cache can hide a miss
+  on a warm machine; the scratch stores are always cold.
+  Class sweep: every README shot goes through `hosted`, and only the three stored-friends images
+  requested sprites; after the fix all 68 PNGs redrew byte-identical to `assets/` twice. The other
+  `PTB_*_SHOT_DIR` tests write PR screenshots, not committed assets, so they stay unguarded.
