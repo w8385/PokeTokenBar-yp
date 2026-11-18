@@ -43,7 +43,7 @@ PokeTokenBar turns the AI coding tokens you're already burning — Claude Code, 
 3. ⚡ **Evolve.** Keep coding and it grows through its actual evolution tree (1/2/3 stages, branching), with a little flash celebration at each step. Unusual evolutions (Inkay's upside-down flip, Tyrogue's three branches, friendship evolutions like Pikachu, …) are translated into conditions the app can check; the Pokédex detail shows the original condition and the app condition, and a Pokémon's own detail in the Box shows its progress. Day and night alternate every 10 minutes on the wall clock (day :00–:09, night :10–:19, day :20–:29, …) instead of following the real sun, and the condition shows "Day now · night in 7 min". Home shows a small sun-and-moon dial with the current period and the minutes to the switch. If a Pokémon is ready to evolve but a condition is unmet, you get one notification per blocking reason pointing you to the Pokédex.
 4. 🎓 **Graduate & collect.** Final form + threshold permanently archives it in your **Pokédex** — rarer takes longer (≈3 days Normal → ≈24 days Legendary at heavy use) — and a fresh egg arrives.
 5. 🍬 **Max out, get a candy.** Fill a 5-hour or weekly usage limit and you earn **Rare Candy** — spend it from the **Bag** to grow your current Pokémon.
-6. 🛒 **Spend at the Shop.** Every token you've used is spendable currency — buy **Rare Candy**, a **Mint** that re-rolls your Pokémon's nature, a **Shiny Charm** that permanently raises your shiny odds, or an egg to send off your current companion and start over. Eggs come in three grades: a plain **Pokémon Egg**, a **Rare Egg** guaranteed to hatch Rare or better, and an **Epic Egg** guaranteed to hatch Epic or better. A **Scout Ticket** for each region (or all of them) shows 10 random Pokémon from it so you can pick the egg you want.
+6. 🛒 **Spend at the Shop.** Every token you've used is spendable currency — buy **Rare Candy**, a **Mint** that sets your Pokémon's nature to the one you pick, a **Shiny Charm** that permanently raises your shiny odds, or an egg to send off your current companion and start over. Eggs come in three grades: a plain **Pokémon Egg**, a **Rare Egg** guaranteed to hatch Rare or better, and an **Epic Egg** guaranteed to hatch Epic or better. A **Scout Ticket** for each region (or all of them) shows 10 random Pokémon from it so you can pick the egg you want.
 7. 🔁 **Trade with coworkers.** Swap graduated Pokémon with a linked coworker from the Friends tab (the other side accepts in Slack), or send a graduated Pokémon straight from its Box detail. Pokémon that evolve by trade, like Haunter or Kadabra, now stop there until they're traded — or until you use a **Linking Cord** from the Shop on one in your Box. Trade evolutions that also need a held item (Onix with Metal Coat, Seadra with Dragon Scale, …) need that item equipped on the Pokémon first, in its Box detail; Karrablast and Shelmet evolve when traded for each other, or with a Linking Cord while the other one is your friend.
 
 ## Tour
@@ -126,7 +126,7 @@ Max out a 5-hour or weekly usage limit and you're handed a <b>Rare Candy</b> —
 <td width="45%" align="center"><img src="assets/screenshot-shop.png" width="300" alt="Token Shop — Mint, Rare Candy, Pokémon Egg, Rare Egg, Shiny Charm, Epic Egg"></td>
 <td width="55%" valign="middle">
 <h3>🛒 A shop that runs on your usage</h3>
-The tokens you've already used are your currency. Buy several consumables at once with a quantity selector and total-price preview: <b>Rare Candy</b> grows your Pokémon, and a <b>Mint</b> re-rolls its nature. A <b>Shiny Charm</b> permanently raises your shiny hatch odds. Eggs send off your companion and start over: a plain <b>Pokémon Egg</b>, a <b>Rare Egg</b> guaranteed to hatch Rare or better, or an <b>Epic Egg</b> guaranteed to hatch Epic or better. Legendaries stay in both graded pools. An empty Bag links straight to the Shop.
+The tokens you've already used are your currency. Buy several consumables at once with a quantity selector and total-price preview: <b>Rare Candy</b> grows your Pokémon, and a <b>Mint</b> changes its nature to the one you pick. A <b>Shiny Charm</b> permanently raises your shiny hatch odds. Eggs send off your companion and start over: a plain <b>Pokémon Egg</b>, a <b>Rare Egg</b> guaranteed to hatch Rare or better, or an <b>Epic Egg</b> guaranteed to hatch Epic or better. Legendaries stay in both graded pools. An empty Bag links straight to the Shop.
 </td>
 </tr>
 <tr>
@@ -190,6 +190,15 @@ An Exp. Share can also move between Pokémon: <b>Move here</b> on a Box page pic
 <h3>🤝 Box Pokémon walk with you too</h3>
 A Pokémon waiting in the Box can be a friend, not only a graduate. The picker marks it <b>Stored</b>. It walks beside your Pokémon on Home and with the floating pet in its current form, and it leaves the friend list when you raise it again. When a Pokémon Egg or a scout sends your Pokémon to the Box while a friend slot is free, it joins as a friend.
 </td>
+</tr>
+<tr>
+<td width="55%" valign="middle">
+<h3>🧪 Ability, nature, IVs and form, like a trainer's team</h3>
+What a gym trainer's team can field, yours can too. The <b>Mint</b> no longer re-rolls: <b>Change</b> next to the nature on Home or a Box page opens a 5×5 chart. Rows raise a stat, columns lower one, and the neutral natures sit on the diagonal. Pick a nature and confirm; with no Mint in the Bag, the confirm buys one and uses it.
+<br><br>
+The Shop's Growth tab adds the <b>Ability Capsule</b> (the other regular ability), the <b>Ability Patch</b> (regular ↔ hidden ability), the <b>Bottle Cap</b> (one IV to 31) and the <b>Gold Bottle Cap</b> (all six IVs). Three key items switch forms and are never used up: the <b>Reveal Glass</b> (Incarnate ↔ Therian), the <b>DNA Splicers</b> (Kyurem) and the <b>Reins of Unity</b> (Calyrex). A form brings its own types, ability and stats to your battles.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-nature-picker.png" width="300" alt="An Onix's Box page with the 5×5 nature chart open, the Ability Capsule, Ability Patch and Gold Bottle Cap, and a Bottle Cap on each IV"></td>
 </tr>
 <tr>
 <td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab — an entry of up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, Elite Four, hideout and the badge case"></td>

@@ -60,9 +60,13 @@ final class ReadmeScreenshotTests: XCTestCase {
         }
 
         let home = try await sampleUsage(defaults: defaults)
+        for name in ReadmeAbilityNames.table.keys {
+            _ = await PokemonNameDisplayStore.shared.load(.init(kind: .ability, name: name), provider: ReadmeAbilityNames())
+        }
 
         for (language, suffix) in languages {
-            let (store, cleanup) = try BoxDexFixture.makeStore(language: language, mutate: Self.sample, defaults: defaults)
+            let (store, cleanup) = try BoxDexFixture.makeStore(language: language, mutate: Self.sample, defaults: defaults,
+                                                               provider: ReadmeAbilityProvider())
             defer { cleanup() }
             for id in Self.species { await store.loadPokemonDetails(speciesID: id) }
             store.update(todayTokensByProvider: ["claude_code": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
@@ -94,6 +98,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await shot(popover { $0.tab = .box }, "screenshot-collection-box\(suffix)", in: dir, height: 420)
             try await shot(popover { $0.openBoxDetail(id: BoxDexFixture.charizardID) },
                            "screenshot-pokemon-profile\(suffix)", in: dir, height: 560)
+            try await shot(try naturePicker(store: store), "screenshot-nature-picker\(suffix)", in: dir, height: 1120)
             try await shot(statusMoves(store: store, uploader: uploader, entry: entry),
                            "screenshot-status-moves\(suffix)", in: dir, height: nil)
             try await shot(moveOrder(store: store, uploader: uploader, entry: entry),
@@ -152,6 +157,12 @@ final class ReadmeScreenshotTests: XCTestCase {
         state.inventory[ItemKind.expShare.rawValue] = 1
         state.inventory["shiny-egg:150"] = 1
         state.inventory[ItemKind.punchingGlove.rawValue] = 1
+        for kind in [ItemKind.abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap] {
+            state.inventory[kind.rawValue] = 1
+        }
+        if let onix = state.dex.firstIndex(where: { $0.id == BoxDexFixture.onixID }) {
+            state.dex[onix].nature = .lonely
+        }
         state.expShareHolders = [BoxDexFixture.pikachuID]
         state.friendEntryIDs = [BoxDexFixture.charizardID]
         StoredFriendScreenshotTests.addBulbasaur(&state)
@@ -286,6 +297,16 @@ final class ReadmeScreenshotTests: XCTestCase {
      {"id":86,"name":"전기자석파","type":"electric","power":0,"damage_class":"status","accuracy":90,"level":0,"pp":20,"source":"machine","ailment":"paralysis","ailment_chance":0}
     ]}
     """
+
+    /// Onix's Box page with the Mint's nature chart open and the training items under its ability.
+    private func naturePicker(store: CompanionStore) throws -> some View {
+        let onix = try XCTUnwrap(store.boxIndividual(id: BoxDexFixture.onixID))
+        let nav = PopoverNavigation()
+        nav.openBoxDetail(id: BoxDexFixture.onixID, naturePicker: true)
+        return BoxDetailView(store: store, individual: onix, navigation: nav, onBack: {})
+            .environment(store)
+            .padding(PopoverMetrics.padding)
+    }
 
     /// Charizard's moves on its Box page with the picker open on the Swords Dance slot.
     private func statusMoves(store: CompanionStore, uploader: PartyUploader, entry: BattleEntryStore) throws -> some View {
@@ -436,7 +457,28 @@ final class ReadmeScreenshotTests: XCTestCase {
     }
 }
 
-private struct MunchlaxLineProvider: PokeProviding, SpeciesIndexProviding, PokemonDetailProviding {
+/// The Box fixture with Onix's abilities, so the Ability Capsule and Patch have something to switch.
+private struct ReadmeAbilityProvider: PokeProviding, PokemonDetailProviding {
+    func line(baseSpeciesID: Int) async throws -> EvoLine { try await BoxDexProvider().line(baseSpeciesID: baseSpeciesID) }
+    func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
+    func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
+    func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
+        try SpeciesFacts.details(speciesID, abilities: speciesID == 95 ? TrainingAbilities.byID[95] ?? [] : [])
+    }
+}
+
+private struct ReadmeAbilityNames: PokemonNameProviding {
+    static let table: [String: [String: String]] = [
+        "rock-head": ["en": "Rock Head", "ko": "돌머리", "ja": "いしあたま"],
+        "sturdy": ["en": "Sturdy", "ko": "옹골참", "ja": "がんじょう"],
+        "weak-armor": ["en": "Weak Armor", "ko": "깨어진갑옷", "ja": "くだけるよろい"],
+    ]
+    func names(for resource: PokemonNameResource) async throws -> [String: String] {
+        try XCTUnwrap(Self.table[resource.name])
+    }
+}
+
+private struct MunchlaxLineProvider:PokeProviding, SpeciesIndexProviding, PokemonDetailProviding {
     func line(baseSpeciesID: Int) async throws -> EvoLine {
         EvoLine(baseID: 446, tree: EvoNode(speciesID: 446, children: [EvoNode(speciesID: 143, children: [])]),
                 rarity: .rare, names: [446: try SpeciesFacts.names(446), 143: try SpeciesFacts.names(143)])
