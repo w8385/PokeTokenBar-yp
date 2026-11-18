@@ -1289,7 +1289,7 @@ final class CompanionStore {
     /// from the app's 30-second tick; at most one check per 20 seconds.
     func checkEvolutionGate() {
         checkStuckMoveOn()
-        if !state.expShareHolders.isEmpty, clock() >= nextExpShareCheck {
+        if hasExpShareWork, clock() >= nextExpShareCheck {
             nextExpShareCheck = clock().addingTimeInterval(20)
             Task { await checkExpShareEvolution() }
         }
@@ -1882,9 +1882,22 @@ final class CompanionStore {
         state.expShareHolders.compactMap { id in state.storedLines[id].map { (id, $0.mon.baseID) } }
     }
 
+    /// Stored lines full at their last planned form that hold no copy: a copy passed on before Box graduation
+    /// existed left them waiting.
+    private var fullStoredLinesWithoutCopy: [(id: String, baseID: Int)] {
+        state.storedLines.filter { id, stored in
+            !holdsExpShare(id) && stored.mon.stageIndex + 1 >= stored.mon.plannedPathIDs.count
+                && stored.mon.usedAtStage >= stageThreshold(for: stored.mon)
+        }.map { (id: $0.key, baseID: $0.value.mon.baseID) }.sorted { $0.id < $1.id }
+    }
+
+    private var graduatingStoredLines: [(id: String, baseID: Int)] { expShareStoredLines + fullStoredLinesWithoutCopy }
+
+    private var hasExpShareWork: Bool { !state.expShareHolders.isEmpty || !fullStoredLinesWithoutCopy.isEmpty }
+
     /// Loads each holder's line once, then takes any step that is open now (a clock gate opens on its own).
     func checkExpShareEvolution() async {
-        let baseIDs = Set(expShareGraduates.map(\.baseID)).union(expShareStoredLines.map(\.baseID))
+        let baseIDs = Set(expShareGraduates.map(\.baseID)).union(graduatingStoredLines.map(\.baseID))
         for baseID in baseIDs where expShareLines[baseID] == nil {
             guard loadingExpShareLines.insert(baseID).inserted else { continue }
             defer { loadingExpShareLines.remove(baseID) }
@@ -1896,9 +1909,9 @@ final class CompanionStore {
             if evolveGraduateIfReady(id: entry.id, in: line, celebrate: false) { evolved = true }
         }
         var graduated: [String] = []
-        for holder in expShareStoredLines {
+        for holder in graduatingStoredLines {
             guard let line = expShareLines[holder.baseID] else { continue }
-            if evolveStoredLineIfReady(id: holder.id, in: line) { evolved = true }
+            if holdsExpShare(holder.id), evolveStoredLineIfReady(id: holder.id, in: line) { evolved = true }
             if isStoredLineGraduating(id: holder.id, in: line),
                let name = graduateStoredLine(id: holder.id, in: line) { graduated.append(l.boxGraduatedLine(name)) }
         }

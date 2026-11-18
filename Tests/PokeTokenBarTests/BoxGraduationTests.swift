@@ -66,6 +66,15 @@ final class BoxGraduationTests: StoredLineHarness {
         XCTAssertEqual(store.itemCount(.expShare), 1)
     }
 
+    func testWithMoveOnOffItStillGraduatesAndKeepsItsCopy() async throws {
+        let store = try makeStore(graduatedState())
+        store.autoMoveOn = false
+        await store.checkExpShareEvolution()
+        XCTAssertNotNil(graduate(store, Self.zardID))
+        XCTAssertEqual(store.state.expShareHolders, [Self.zardID])
+        XCTAssertEqual(store.latestEvent?.text, store.l.boxGraduatedLine("#6"))
+    }
+
     func testAHolderShortOfXPStaysInTheBoxAndKeepsItsCopyEvenAtLevel100() async throws {
         var state = graduatedState(short: 1)
         state.storedLines[Self.zardID]?.mon.profile?.level = 100
@@ -143,6 +152,18 @@ final class BoxGraduationTests: StoredLineHarness {
         store.checkEvolutionGate()
         try await waitUntil("the stored holder to graduate") { self.graduate(store, Self.zardID) != nil }
         XCTAssertNil(store.state.storedLines[Self.zardID])
+    }
+
+    func testASavedFullFinalFormWhoseCopyWasPassedOnGraduatesOnTheFirstPeriodicCheck() async throws {
+        var state = graduatedState(near: false)
+        state.storedLines[Self.zardID]?.mon.profile?.level = 100
+        state.expShareHolders = []
+        state.inventory[ItemKind.expShare.rawValue] = 1
+        let store = try makeStore(state)
+        store.checkEvolutionGate()
+        try await waitUntil("the stored line to graduate") { self.graduate(store, Self.zardID) != nil }
+        XCTAssertNil(store.state.storedLines[Self.zardID])
+        XCTAssertEqual(store.itemCount(.expShare), 1)
     }
 
     func testAttachingACopyToAFullFinalFormGraduatesIt() async throws {
