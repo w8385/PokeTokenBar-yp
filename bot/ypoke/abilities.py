@@ -10,6 +10,8 @@ GUTS_BOOST = 1.5
 ATTACK_DOUBLED = ("huge-power", "pure-power")
 SAND_FORCE_TYPES = ("rock", "ground", "steel")
 SAND_FORCE_BOOST = 1.3
+SUPREME_OVERLORD_STEP = 0.1
+SUPREME_OVERLORD_MAX_FALLEN = 5
 WEATHER_CHIP_IMMUNE = {"sand-force": "sandstorm"}
 WEATHER_DOUBLES_SPEED = {"swift-swim": "rain", "chlorophyll": "sun", "sand-rush": "sandstorm"}
 WEATHER_ON_ENTRY = {
@@ -32,7 +34,7 @@ NAMES = {
     "drought": "가뭄", "sand-stream": "모래날림", "snow-warning": "눈퍼뜨리기", "static": "정전기",
     "flame-body": "불꽃몸", "poison-point": "독가시", "immunity": "면역", "limber": "유연", "insomnia": "불면",
     "water-veil": "수의베일", "desolate-land": "끝의대지", "primordial-sea": "시작의바다", "sand-force": "모래의힘",
-    "gale-wings": "질풍날개", "delta-stream": "델타스트림",
+    "gale-wings": "질풍날개", "delta-stream": "델타스트림", "supreme-overlord": "총대장",
 }
 
 
@@ -40,8 +42,10 @@ def entry_trigger(ability: str | None) -> bool:
     return ability == "intimidate" or ability in WEATHER_ON_ENTRY
 
 
-def power_multiplier(ability: str | None, move_type: str | None, power: int, low_hp: bool,
-                     weather: str | None = None) -> float:
+def power_multiplier(ability: str | None, move_type: str | None, power: float, low_hp: bool,
+                     weather: str | None = None, fallen_allies: int = 0) -> float:
+    if ability == "supreme-overlord":
+        return 1 + SUPREME_OVERLORD_STEP * min(fallen_allies, SUPREME_OVERLORD_MAX_FALLEN)
     if ability == "sand-force" and weather == "sandstorm" and move_type in SAND_FORCE_TYPES:
         return SAND_FORCE_BOOST
     if ability == "technician" and power <= TECHNICIAN_MAX_POWER:

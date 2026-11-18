@@ -1668,6 +1668,24 @@ read_when:
   `save()`'s friend reconcile. Residual: an offer the other player picks in Slack reaches this app at its next sync
   (up to a minute), and a pool upload lags a few minutes, so an unequip in that gap is settled by `give_held_item`
   on delivery rather than prevented. Tests: `TradeItemLockTests`, `test_trades.py` (item taken off, put on, swapped).
+- **A move whose power depends on the battle must not hit at PokéAPI's listed number.** Last Respects always hit at
+  50 and Eruption at 150 at any HP: `_power` multiplied `move.power` by the ability and nothing else, and PokéAPI has
+  one number per move. The tests built every move with a fixed power and `_power` took no target or battle state, so
+  no test could have asked for a different number. Now `ypoke/move_power.py` holds one rule per move id (Gen 9,
+  checked against Showdown's `basePowerCallback`/`onBasePower`) and `battle` resolves every move through it before
+  scoring or hitting; the battle tracks what the rules read (fainted teammates per side at turn start, hits taken,
+  who moved this turn, a hit by the foe, a stat drop, last turn's failed move, a knocked-off item). Weather Ball also
+  changes type, so `move_power.typed` runs before the type is read anywhere. A Knock Off that takes a Choice item
+  also ends the Choice lock. Class sweep: every non-status move in Showdown's `moves.ts` with a `basePowerCallback`,
+  `onBasePower`, `onModifyType` or a power change in `onModifyMove` (past-generation moves included, since a
+  learnset comes from a Pokémon's newest game), checked against the 458 attacking moves of `foe_moves.json`: 31 moves
+  and Supreme Overlord implemented; left at listed power are moves that need state the battle does not model
+  (terrain, consecutive-use streaks, Terastallization, doubles, the partner's Fusion move, damage from any source this
+  turn), random power (Fickle Beam), type by form or IVs, and fixed-damage moves PokéAPI lists at power 1 (Ruination,
+  Comeuppance). Moves PokéAPI lists with no power (Low Kick, Reversal, Gyro Ball…) never reach a battle:
+  `attacking_moves` drops them. Tests in
+  `test_move_power.py` hit each rule's boosted and plain branch, and the battle-state ones go through `simulate`/`_act`
+  with a spy on the power actually used; each rule and each state line was broken once to see its test fail.
 
 ## Tests and the user's desktop
 
