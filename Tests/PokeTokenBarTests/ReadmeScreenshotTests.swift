@@ -99,6 +99,8 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await shot(popover { $0.tab = .shop }, "screenshot-shop\(suffix)", in: dir, height: 640)
             try await shot(popover { $0.tab = .bag }, "screenshot-bag\(suffix)", in: dir, height: 420)
             try await shot(heldItems(store: store), "screenshot-held-items\(suffix)", in: dir, height: nil)
+            try await shot(shopSearch(store: store, language: language), "screenshot-shop-search\(suffix)", in: dir,
+                           height: nil)
             try await shot(popover { $0.tab = .dex }, "screenshot-collection-pokedex\(suffix)", in: dir, height: 420)
             try await shot(popover { $0.tab = .box }, "screenshot-collection-box\(suffix)", in: dir, height: 420)
             try await shot(popover { $0.openBoxDetail(id: BoxDexFixture.charizardID) },
@@ -343,6 +345,13 @@ final class ReadmeScreenshotTests: XCTestCase {
         }
         .padding(PopoverMetrics.padding)
         .environment(store)
+    }
+
+    private func shopSearch(store: CompanionStore, language: AppLanguage) -> some View {
+        let query = language == .ko ? "구슬" : "orb"
+        return ShopView(store: store, nav: PopoverNavigation(), searchQuery: query)
+            .padding(PopoverMetrics.padding)
+            .environment(store)
     }
 
     private func cropped<Content: View>(_ title: String, height: CGFloat,

@@ -139,9 +139,16 @@ The tokens you've already used are your currency. Buy several consumables at onc
 <tr>
 <td width="55%" valign="middle">
 <h3>⚔️ Battle items, grouped by what they do</h3>
-The <b>Held items</b> tab in the Shop and the Bag sorts battle items under short headers: attack boost, type boost, bulk &amp; healing, speed, aim &amp; crits, status &amp; counters, weather and signature items.
+The <b>Held items</b> tab in the Shop and the Bag sorts battle items under short headers: attack boost, type boost, bulk &amp; healing, speed, aim &amp; crits, status &amp; counters, weather and signature items. In the Shop, a second chip row shows one group at a time.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-held-items.png" width="300" alt="Held items in the Shop and the Bag, under Attack boost and Type boost headers"></td>
+</tr>
+<tr>
+<td width="45%" align="center"><img src="assets/screenshot-shop-search.png" width="300" alt="The Shop searched for orb — Life Orb, Flame Orb and Toxic Orb under their usual headers"></td>
+<td width="55%" valign="middle">
+<h3>🔎 Search the whole shop</h3>
+One search field above the chips covers every item, Mega Stone, egg, scouting ticket and TM. Names match in any of the app's eight languages, so "orb" finds Life Orb in the Japanese UI too, and effect text matches in your language. Results keep the Shop's headers and order whatever chip is picked; clear the field to go back.
+</td>
 </tr>
 <tr>
 <td width="55%" valign="middle">
@@ -211,7 +218,7 @@ The Shop's Growth tab adds the <b>Ability Capsule</b> (the other regular ability
 <td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab, Entry sub-tab — up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, Elite Four, hideout and the badge case"></td>
 <td width="55%" valign="middle">
 <h3>⚔️ Gyms, the Elite Four, and a badge case</h3>
-With the <a href="bot/README.md">YPoke</a> link set up, the <b>Battle</b> tab has three sub-tabs. <b>Entry</b> holds up to six Pokémon that fight in order, <b>Battle</b> holds the gyms, and <b>History</b> lists your recent battles. When one faints the next comes in; nothing switches mid-battle. <b>Auto</b> sends the Pokémon you're raising.
+With the <a href="bot/README.md">YPoke</a> link set up, the <b>Battle</b> tab has three sub-tabs. <b>Entry</b> holds up to six Pokémon that fight in order, <b>Battle</b> holds the gyms, and <b>History</b> lists your recent battles. When one faints the next comes in; nothing switches mid-battle. <b>Auto</b> sends the Pokémon you're raising. Each row shows the stats it fights with at its battle level, with ↑ and ↓ on the stats its nature raises and lowers, and follows the Pokémon's form.
 <br><br>
 Under <b>Gyms</b>, each region has eight leaders with their own type and team. Your entry fights at Lv50 or below, and nothing is posted to Slack. A win earns the badge and can grant a TM. Eight badges open the <b>Elite Four</b> run, and the <b>hideout</b> is a run of battles in a row: your team is fully healed before each one, and a loss starts the run again. The <b>badge case</b> shows each region's badges.
 </td>
@@ -273,7 +280,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 - **Usage streak** — a flame beside the recap shortcut shows consecutive usage days, from two days onward. It stays gray until today's first usage extends the streak.
 - **Sprite recovery** — failed animated-sprite downloads retry automatically while the fallback remains visible.
 - **Additional scan folders** — per-provider extra scan roots for logs kept outside the built-in paths (Settings → Advanced).
-- **Several Claude accounts** — Claude Code logins kept in their own config folder (`CLAUDE_CONFIG_DIR`) each get a tab under the official limits, with their own gauges, Rare Candy, alerts, and today/month tokens. `~/.claude-*` folders and an exported `CLAUDE_CONFIG_DIR` are found automatically; add others in Settings → Advanced. The menu bar percentage, companion mood, and forecast follow the account you used last (Settings → General → Tracked Claude account). Each account can take its own claude.ai session key (Settings → Advanced), so its limits keep refreshing without the Keychain.
+- **Several Claude accounts** — Claude Code logins kept in their own config folder (`CLAUDE_CONFIG_DIR`) each get a tab under the official limits, with their own gauges, Rare Candy, alerts, and today/month tokens. `~/.claude-*` folders and an exported `CLAUDE_CONFIG_DIR` are found automatically; add others in Settings → Advanced. A folder pinned with `CLAUDE_SECURESTORAGE_CONFIG_DIR` that holds only a `.credentials.json` is found too. A rate-limited account keeps its tab, with a line saying when refresh resumes. The menu bar percentage, companion mood, and forecast follow the account you used last (Settings → General → Tracked Claude account). Each account can take its own claude.ai session key (Settings → Advanced), so its limits keep refreshing without the Keychain.
 - **Burn-rate forecast** — projects when the current 5h window hits 100%.
 - **In-app updates** — installs new fork releases by itself (checksum-verified), or on one click when automatic updates are off; current version shown in Settings.
 - **Usage recap** — a Pokédex-style recap of any week, month, or year (total, meters, comparison, best day, best streak, graduations). Hover a meter for its date and full token count, and jump back to This week / This month / This year in one click. History is kept locally for this year and the last.
