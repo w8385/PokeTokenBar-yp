@@ -136,7 +136,55 @@ final class ReadmeScreenshotTests: XCTestCase {
                            height: nil)
             try await shot(try await nextEvolution(language: language, scratch: scratch),
                            "screenshot-dex-next-evolution\(suffix)", in: dir, height: 510)
+            try await shot(try await moveOn(language: language, scratch: scratch, usage: usage),
+                           "screenshot-move-on\(suffix)", in: dir, height: nil)
+            try await shot(SettingsView(onClose: {}, onChooseRepresentative: {}, tab: .constant(.general))
+                               .environment(usage).environment(store).environment(updater).environment(uploader),
+                           "settings\(suffix)", in: dir, height: 460)
         }
+    }
+
+    /// Home under a raised Munchlax whose full XP waits for pets: what it needs, the countdown and Keep waiting.
+    private func moveOn(language: AppLanguage, scratch: URL, usage: UsageStore) async throws -> some View {
+        var state = CompanionState()
+        state.language = language
+        state.installBaselineSet = true
+        var mon = MonState(baseID: 446, pathIDs: [446], plannedPathIDs: [446, 143], stageIndex: 0, usedAtStage: 0,
+                           rarity: .rare, totalForms: 2,
+                           profile: PokemonProfile.generate(seed: 8, instanceID: "readme-munchlax"))
+        mon.usedAtStage = PokemonBalance.scaled(mon.phaseThreshold, by: 1.0)
+        mon.evolution.pets = 12
+        state.active = mon
+        let file = scratch.appendingPathComponent("move-on-\(language.rawValue).json")
+        try JSONEncoder().encode(state).write(to: file)
+        let suite = "readme-move-on-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        addTeardownBlock { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        defaults.set(1.0, forKey: "growthDifficulty")
+        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
+        let clock = ReadmeClock()
+        let store = CompanionStore(provider: MoveOnLineProvider(), clock: { clock.now }, fileURL: file,
+                                   rng: SeededRNG(seed: 1), dittoDisguiseRollingEnabled: false, defaults: defaults)
+        store.update(todayTokensByProvider: ["claude_code": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
+                     limitWarning: false, hasUsageData: true)
+        try await waitUntil("the raised Munchlax's line to load") { store.currentLine != nil }
+        store.checkEvolutionGate()
+        clock.now.addTimeInterval(10 * 60)
+        XCTAssertEqual(store.moveOnStatus?.minutes, 20)
+        let sprites = SpriteStore(directory: scratch.appendingPathComponent("move-on-sprites"))
+        for id in [446, 143] {
+            for shiny in [false, true] {
+                for female in [false, true] {
+                    _ = await SpriteLoader.image(speciesID: id, shiny: shiny, store: sprites, female: female)
+                }
+            }
+        }
+        return card(store.l.home) {
+            CompanionHeader(store: store, spriteStore: sprites).padding(12)
+        }
+        .environment(store).environment(usage)
+        .padding(PopoverMetrics.padding)
+        .environment(\.locale, language.displayLocale)
     }
 
     /// Uncaught Snorlax's page, the one Home's next node opens, while a raised Munchlax has 3 of its 30 pets.
@@ -511,6 +559,16 @@ private struct MunchlaxLineProvider:PokeProviding, SpeciesIndexProviding, Pokemo
         SpeciesIndex(entries: [try SpeciesFacts.indexEntry(446), try SpeciesFacts.indexEntry(143)])
     }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails { try SpeciesFacts.details(speciesID) }
+}
+
+private struct MoveOnLineProvider: PokeProviding {
+    func line(baseSpeciesID: Int) async throws -> EvoLine {
+        EvoLine(baseID: 446, tree: EvoNode(speciesID: 446, children: [EvoNode(speciesID: 143, children: [])]),
+                rarity: .rare, names: [446: try SpeciesFacts.names(446).merging(["ja": "ゴンベ"]) { a, _ in a },
+                                       143: try SpeciesFacts.names(143).merging(["ja": "カビゴン"]) { a, _ in a }])
+    }
+    func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
+    func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
 }
 
 private struct NoReadmeFlavor: SpeciesFlavorProviding {
