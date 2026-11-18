@@ -1924,3 +1924,20 @@ read_when:
   Class sweep: `fork-release.sh` also skips `test-gate.sh` and `release-metadata.py check-notes`,
   which `release.sh` runs before publishing. Train runs CI on the train PR, which covers the tests,
   but nothing checks fork release notes yet.
+
+- **"Every variant's bytes changed" stood in for "redrawn", so a correct redraw of a change that is
+  invisible in some language could never pass.** Train 23 localized move names: the en and ja move
+  images changed, the ko ones were byte-identical (Korean names were already Korean). A no-visual
+  refactor of `GymSection.swift` and the replay label left the gym and replay images identical in every
+  language. One `ReadmeScreenshotTests` run at HEAD drew every family, and the gate still warned on five
+  UI files, with `PTB_ASSET_GATE_SKIP` as the only way through. Why it stayed hidden: clock text and
+  sprite animation frames change bytes on most redraws, so earlier trains cleared the check by noise
+  (Home's "Night 10m" → "9m" would have cleared `PopoverView.swift` here). Why no test caught it: the
+  gate tests used text blobs as images and only modeled "redrawn" as "changed".
+  The gate now also clears a family when `PTB_README_FRESH_DIR` holds a fresh render of HEAD that
+  matches every committed PNG variant through `png-diff.py` (pixels where a second render in
+  `PTB_README_NOISE_DIR` disagrees count as noise). It prints which path cleared each file. A missing
+  render, a missing variant or a real difference still fails. Tests in `test_release_asset_gate.py`
+  cover a stale image, an identical render, noise-only differences and no render; each failed once with
+  its guard removed. Class sweep: `release.sh` calls the same gate, so it gets the same path. No other
+  check compares bytes to decide whether an image is current.

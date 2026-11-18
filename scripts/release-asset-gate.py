@@ -6,11 +6,18 @@
 Exit 0: assets are current. Exit 1: warnings, such as a changed screen whose screenshots were not
 redrawn. Exit 2: a UI feat since <base-ref> without a new README image. The callers decide what a
 warning does; fork-release.sh stops on both.
+
+A screen whose images did not all change still passes when PTB_README_FRESH_DIR holds a
+`ReadmeScreenshotTests` render of <head-ref> that matches every committed variant (png-diff, with
+PTB_README_NOISE_DIR as a second render that marks clock and animation noise).
 """
 import fnmatch
+import importlib.util
+import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 UI_ROOT = "Sources/PokeTokenBar/UI/"
@@ -98,6 +105,7 @@ def stale_screens(base, head):
                       if README_IMAGE_RE.match(p)}
     images_at_head = [p for p in git_lines("ls-tree", "-r", "--name-only", head, "--", "assets/")
                       if README_IMAGE_RE.match(p)]
+    fresh = FreshRender(head, images_at_head)
     found = []
     for path in changed_ui:
         families = families_for(path[len(UI_ROOT):])
@@ -105,10 +113,65 @@ def stale_screens(base, head):
             if not changed_images:
                 found.append(f"{path} changed and no README image changed since {base}.")
             continue
-        if not any(family_redrawn(f, images_at_head, changed_images) for f in families):
-            names = ", ".join(f"assets/{f}{{,-ko,-ja}}" for f in families)
-            found.append(f"{path} changed since {base}; redraw {names} (every language variant).")
+        redrawn = [f for f in families if family_redrawn(f, images_at_head, changed_images)]
+        if redrawn:
+            print(f"  ✓ {path}: assets/{redrawn[0]} redrawn (every variant changed)")
+            continue
+        current = [f for f in families if fresh.matches(f)]
+        if current:
+            print(f"  ✓ {path}: assets/{current[0]} matches a fresh render of {head}")
+            continue
+        names = ", ".join(f"assets/{f}{{,-ko,-ja}}" for f in families)
+        found.append(f"{path} changed since {base}; redraw {names} (every language variant). {fresh.reason(families)}")
     return found
+
+
+class FreshRender:
+    """Committed variants of a family compared with PTB_README_FRESH_DIR through png-diff."""
+
+    def __init__(self, head, images_at_head):
+        self.head, self.images = head, images_at_head
+        self.dir = os.environ.get("PTB_README_FRESH_DIR")
+        self.noise = os.environ.get("PTB_README_NOISE_DIR")
+        self.failures = {}
+
+    def matches(self, family):
+        if not self.dir:
+            return False
+        variants = [p for p in self.images if family_of(p) == family and p.endswith(".png")]
+        if not variants:
+            self.failures[family] = "no PNG variant"
+            return False
+        diff = png_diff()
+        for path in variants:
+            name = Path(path).name
+            rendered = Path(self.dir) / name
+            if not rendered.is_file():
+                self.failures[family] = f"{name} missing from the fresh render"
+                return False
+            with tempfile.TemporaryDirectory() as scratch:
+                committed = Path(scratch) / name
+                committed.write_bytes(subprocess.run(["git", "show", f"{self.head}:{path}"], capture_output=True,
+                                                     check=True).stdout)
+                second = Path(self.noise) / name if self.noise else None
+                noise = diff.noise_mask(rendered, second, 0) if second and second.is_file() else None
+                changed, _, box, _ = diff.compare(committed, rendered, 0, noise)
+            if changed != 0:
+                self.failures[family] = f"{name} differs from the fresh render ({'size' if changed < 0 else box})"
+                return False
+        return True
+
+    def reason(self, families):
+        if not self.dir:
+            return "No fresh render (PTB_README_FRESH_DIR) to compare with."
+        return "Fresh render: " + "; ".join(self.failures.get(f, "not checked") for f in families) + "."
+
+
+def png_diff():
+    spec = importlib.util.spec_from_file_location("png_diff", Path(__file__).with_name("png-diff.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def families_for(ui_relative_path):

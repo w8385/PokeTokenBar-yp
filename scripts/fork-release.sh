@@ -15,7 +15,7 @@ asset_gate() {
         echo "asset gate failed (exit $rc) and is skipped: $PTB_ASSET_GATE_SKIP" >&2
         return 0
     fi
-    echo "asset gate failed (exit $rc): redraw the screens above and commit them, or set PTB_ASSET_GATE_SKIP=\"<reviewed reason>\"" >&2
+    echo "asset gate failed (exit $rc): redraw the screens above and commit them, point PTB_README_FRESH_DIR (and PTB_README_NOISE_DIR) at two ReadmeScreenshotTests renders of HEAD, or set PTB_ASSET_GATE_SKIP=\"<reviewed reason>\"" >&2
     return 1
 }
 
