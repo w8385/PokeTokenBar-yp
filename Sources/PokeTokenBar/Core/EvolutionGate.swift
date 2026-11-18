@@ -138,6 +138,16 @@ extension EvolutionRequirement {
         case .pets, .holds, .bag, .flipped, .spun, .tokenRain, .battles, .towerChosen, .spent, .candies: false
         }
     }
+
+    /// Will be met by more stage XP, a higher level or the clock alone, with nothing asked of the player.
+    func opensWithoutPlayer(in ctx: EvolutionContext) -> Bool {
+        switch self {
+        case .time, .longStage: true
+        case .knownMove(let name, let fallback): !ctx.learnableMoves.contains(name) && ctx.level < fallback
+        case .knownFairyMove(let fallback): ctx.learnableMoves.isDisjoint(with: Self.fairyMoves) && ctx.level < fallback
+        default: false
+        }
+    }
 }
 
 enum EvolutionBlock: Equatable {
@@ -157,6 +167,18 @@ extension EvolutionRule {
     /// The first path that is open now and asks nothing of the player; nil while there is none.
     func pathOpenByItself(in ctx: EvolutionContext) -> [EvolutionRequirement]? {
         paths.isEmpty ? [] : paths.first { $0.allSatisfy { $0.opensByItself && $0.isMet(in: ctx) } }
+    }
+
+    /// Closed, and every path lacks something only the player can do: tokens and the clock can't open it.
+    func waitsOnPlayer(in ctx: EvolutionContext) -> Bool {
+        !paths.isEmpty && !isOpen(in: ctx)
+            && paths.allSatisfy { path in path.contains { !$0.isMet(in: ctx) && !$0.opensWithoutPlayer(in: ctx) } }
+    }
+
+    /// What the player still has to do on the nearest path.
+    func playerRequirements(in ctx: EvolutionContext) -> [EvolutionRequirement] {
+        paths.map { path in path.filter { !$0.isMet(in: ctx) && !$0.opensWithoutPlayer(in: ctx) } }
+            .min { $0.count < $1.count } ?? []
     }
 
     /// Why a ready form is not taking this step. A path that lacks only the day or night waits for the clock;

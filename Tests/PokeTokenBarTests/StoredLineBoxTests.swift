@@ -13,6 +13,8 @@ private struct BoxLineProvider: PokeProviding {
         891: node(891, [node(892)]),
         458: node(458, [node(226)]),
         10: node(10, [node(11, time: "day"), node(12, time: "night")]),
+        446: node(446, [node(143)]),
+        447: node(447, [node(448, time: "day")]),
     ]
 
     func line(baseSpeciesID: Int) async throws -> EvoLine {
@@ -336,6 +338,7 @@ final class StoredLineEvolutionTests: StoredLineHarness {
         store(mantyke, in: &state)
         state.dex.append(graduate("remoraid", species: 223, seed: 31, caught: 5_000))
         let store = try makeStore(state)
+        store.autoMoveOn = false
         await store.checkExpShareEvolution()
         XCTAssertEqual(try storedMon(store, "mantyke").currentID, 458, "no Remoraid walks with you")
         XCTAssertTrue(store.addFriend(entryID: "remoraid"))

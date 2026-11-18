@@ -26,7 +26,7 @@ final class CompanionStore {
     /// Bumped when the active Pokémon hatches, evolves, graduates or reveals as Ditto; friends cheer on a change.
     private(set) var cheerSeq = 0
     private(set) var isHatching = false
-    private var isRevealingDitto = false   // 메타몽 리빌 비동기 중복 방지(isHatching 자매)
+    private(set) var isRevealingDitto = false   // 메타몽 리빌 비동기 중복 방지(isHatching 자매)
     private(set) var justEvolvedTo: String?     // 이름(연출/문구)
     private(set) var justGraduated: String?
     private var eventUntil: Date?
@@ -55,7 +55,7 @@ final class CompanionStore {
     private var dexNameRequests: [Int: Task<EvoLine, Error>] = [:]
     private let detailProvider: (any PokemonDetailProviding)?
     private let speciesIndexProvider: (any SpeciesIndexProviding)?
-    private let clock: () -> Date
+    let clock: () -> Date
     private let fileURL: URL
     private var rng: any RandomNumberGenerator
     private let dittoDisguiseRollingEnabled: Bool
@@ -64,7 +64,7 @@ final class CompanionStore {
     private(set) var pokemonDetailsByID: [Int: PokemonDetails] = [:]
     private(set) var loadingPokemonDetailIDs: Set<Int> = []
     private(set) var failedPokemonDetailIDs: Set<Int> = []
-    private let defaults: UserDefaults
+    let defaults: UserDefaults
     /// 세션 내 활성 개체 교체 감지용. await 뒤 이전 개체의 결과가 새 개체를 덮지 않게 한다.
     private var activeGeneration = 0
     private var lastAutoSnapshotDate: Date?
@@ -86,6 +86,12 @@ final class CompanionStore {
     private(set) var growthDifficulty: Double
     /// 상점 배율 — 아이템·알 가격에 곱한다. 낮을수록 싸다.
     private(set) var shopDifficulty: Double
+    /// Moves a stuck raised Pokémon or an idle Exp. Share holder on by itself (`CompanionStore+MoveOn`).
+    var autoMoveOn: Bool {
+        didSet { defaults.set(autoMoveOn, forKey: Self.autoMoveOnKey) }
+    }
+    /// The popover is open, so the player can see a stuck Pokémon.
+    private(set) var isAttended = false
 
     init(provider: any PokeProviding = PokeAPIClient.shared,
          detailProvider: (any PokemonDetailProviding)? = nil,
@@ -103,6 +109,7 @@ final class CompanionStore {
         self.rng = rng
         self.dittoDisguiseRollingEnabled = dittoDisguiseRollingEnabled
         self.defaults = defaults
+        autoMoveOn = defaults.object(forKey: Self.autoMoveOnKey) as? Bool ?? true
         let storedGrowth = defaults.object(forKey: "growthDifficulty") as? Double
         let storedShop = defaults.object(forKey: "shopDifficulty") as? Double
         let difficultyMigrated = defaults.bool(forKey: PokemonBalance.difficultyMigratedKey)
@@ -241,7 +248,7 @@ final class CompanionStore {
 
     /// 난이도를 반영한 단계 임계. **`PokemonBalance.phaseThreshold` 를 직접 부르지 않는다** —
     /// 배율을 빠뜨린 호출부가 생기면 그 경로만 조용히 기본 난이도로 돌아간다.
-    private func stageThreshold(for mon: MonState) -> Int {
+    func stageThreshold(for mon: MonState) -> Int {
         PokemonBalance.scaled(mon.phaseThreshold, by: growthDifficulty)
     }
 
@@ -1281,6 +1288,7 @@ final class CompanionStore {
     /// A gate that waits on the clock (day/night) opens without any new usage. Called from every usage update and
     /// from the app's 30-second tick; at most one check per 20 seconds.
     func checkEvolutionGate() {
+        checkStuckMoveOn()
         if !state.expShareHolders.isEmpty, clock() >= nextExpShareCheck {
             nextExpShareCheck = clock().addingTimeInterval(20)
             Task { await checkExpShareEvolution() }
@@ -1419,7 +1427,7 @@ final class CompanionStore {
 
     /// The form a line moves into next: its planned child (else a fresh pick), resolved for the clock and its traits.
     /// `replans` when that is not the plan. The raised line and a stored holder both choose here.
-    private func lineStep(of a: MonState, at node: EvoNode, among options: [EvoNode]) -> (next: EvoNode, replans: Bool) {
+    func lineStep(of a: MonState, at node: EvoNode, among options: [EvoNode]) -> (next: EvoNode, replans: Bool) {
         let nextIndex = a.stageIndex + 1
         let traits = evolutionTraits(of: a)
         let planned = a.plannedPathIDs.indices.contains(nextIndex)
@@ -1557,6 +1565,80 @@ final class CompanionStore {
         return (rule, evolutionContext(for: a))
     }
 
+    // MARK: Moving on from a stuck Pokémon (`CompanionStore+MoveOn`)
+
+    func setAttended(_ attended: Bool) {
+        guard attended != isAttended else { return }
+        isAttended = attended
+        guard state.stuckWatch != nil else { return }
+        state.stuckWatch?.since = clock()
+        save()
+    }
+
+    /// Called from the evolution tick. Starts, resets or clears the watch, and moves on once it has run out unseen.
+    func checkStuckMoveOn() {
+        guard !isHatching, !isRevealingDitto, !isStuckUnknown else { return }
+        let stuck = stuckRaised
+        if let stuck, let mark = state.keepWaiting[stuck.id], mark != stuck.speciesID {
+            state.keepWaiting[stuck.id] = nil
+        }
+        guard autoMoveOn, let stuck, !isKeptWaiting(stuck.id, species: stuck.speciesID) else {
+            if state.stuckWatch != nil {
+                state.stuckWatch = nil
+                save()
+            }
+            return
+        }
+        guard let watch = state.stuckWatch, watch.id == stuck.id else {
+            state.stuckWatch = StuckWatch(id: stuck.id, since: clock())
+            save()
+            return
+        }
+        guard !isAttended, clock().timeIntervalSince(watch.since) >= Self.stuckMoveOnDelay else { return }
+        moveOn(stuck)
+    }
+
+    func keepWaitingOnStuck() {
+        guard let stuck = stuckRaised else { return }
+        state.keepWaiting[stuck.id] = stuck.speciesID
+        state.stuckWatch = nil
+        save()
+    }
+
+    private func moveOn(_ stuck: StuckRaised) {
+        state.stuckWatch = nil
+        let next: MoveOnNext
+        if stuck.isGraduate {
+            let parkedName = parkedLineName ?? l.parkedEggName
+            state.resumeParkedLine(now: clock())
+            addFriendIfSlotFree(stuck.id)
+            if let pick = raiseCandidate(excluding: stuck.id), raise(entryID: pick.id) {
+                next = .raise(candidateName(pick.id))
+            } else {
+                settleRaisedChange()
+                next = .resume(parkedName)
+            }
+        } else if let pick = raiseCandidate(excluding: stuck.id) {
+            let name = candidateName(pick.id)
+            if state.storedLines[pick.id] != nil {
+                raise(entryID: pick.id)
+                if state.storedLines[stuck.id] != nil { addFriendIfSlotFree(stuck.id) }
+            } else {
+                storeActiveForNewEgg(tier: nil, pendingHatchID: nil, attachesBagCopy: false)
+                raise(entryID: pick.id)
+            }
+            next = .raise(name)
+        } else {
+            storeActiveForNewEgg(tier: nil, pendingHatchID: nil, attachesBagCopy: false)
+            next = .egg
+        }
+        giveBagExpShareToCandidate()
+        save()
+        AppLog.write("move on: \(stuck.speciesID) stuck, next \(next)")
+        notifyCompanionEvent(l.moveOnTitle,
+                             l.moveOnBody(stuck.name, requirementsText(stuck.needs), next, toGraduates: stuck.isGraduate))
+    }
+
     // MARK: Skipping a blocked evolution
 
     /// The active Pokémon is ready but held back by something other than the clock, so it may graduate as it is.
@@ -1589,7 +1671,7 @@ final class CompanionStore {
     private var isLoadingGraduateLine = false
 
     /// The forms the graduate's current form can grow into, resolved for the clock and its traits now.
-    private func graduateOptions(_ entry: DexEntry, in line: EvoLine) -> [EvoNode] {
+    func graduateOptions(_ entry: DexEntry, in line: EvoLine) -> [EvoNode] {
         guard let node = line.tree.node(withID: entry.finalID) else { return [] }
         let options = growthOptions(of: node, gender: entry.profile?.gender)
         let traits = entry.profile.map { EvolutionTraits(seed: $0.seed, ivs: $0.ivs, nature: entry.nature) }
@@ -1601,7 +1683,7 @@ final class CompanionStore {
 
     /// A graduate has finished growing, so it counts as having reached its stage threshold; `graduateXP` is what
     /// it has past that. Only the `longStage` requirement reads the two.
-    private func graduateContext(_ entry: DexEntry) -> EvolutionContext {
+    func graduateContext(_ entry: DexEntry) -> EvolutionContext {
         let progress = state.graduateEvolution[entry.id] ?? EvolutionProgress(spentBaseline: state.spentTokens)
         let forms = max(1, entry.chainOrder.count)
         let threshold = PokemonBalance.scaled(
@@ -1612,13 +1694,13 @@ final class CompanionStore {
     }
 
     /// The raised graduate, when its line is loaded and its form can still evolve.
-    private var evolvingGraduate: (entry: DexEntry, line: EvoLine)? {
+    var evolvingGraduate: (entry: DexEntry, line: EvoLine)? {
         guard let entry = raisedGraduate, let line = raisedGraduateLine, line.baseID == entry.baseID,
               !graduateOptions(entry, in: line).isEmpty else { return nil }
         return (entry, line)
     }
 
-    private func raisedGraduateGate() -> (rule: EvolutionRule, context: EvolutionContext)? {
+    func raisedGraduateGate() -> (rule: EvolutionRule, context: EvolutionContext)? {
         guard let graduate = evolvingGraduate else { return nil }
         for option in graduateOptions(graduate.entry, in: graduate.line) {
             if let rule = EvolutionRules.rule(for: option.speciesID), !rule.paths.isEmpty {
@@ -1712,6 +1794,12 @@ final class CompanionStore {
 
     /// A shop or scout egg makes the Pokémon it sends to the Box a friend while a slot is free.
     var eggSwapAddsFriend: Bool { state.friendEntryIDs.count < CompanionState.maxFriends }
+
+    /// The Pokémon leaving the raised slot walks with you while a friend slot is free.
+    func addFriendIfSlotFree(_ boxID: String) {
+        guard eggSwapAddsFriend, let key = state.friendKey(forBoxID: boxID), !state.friendEntryIDs.contains(key) else { return }
+        state.friendEntryIDs.append(key)
+    }
 
     @discardableResult
     func detachExpShare(from instanceID: String) -> Bool {
@@ -1812,6 +1900,7 @@ final class CompanionStore {
             if evolveStoredLineIfReady(id: holder.id, in: line) { evolved = true }
         }
         if evolved { save() }
+        moveIdleExpShares()
     }
 
     /// The step a stored line takes in the Box now: the one the raised line would choose, through a path that asks
@@ -1874,16 +1963,21 @@ final class CompanionStore {
     }
 
     /// Spending while it waits in the Box does not count toward its gate (`resumeStoredLine`).
-    private func storedLineContext(_ stored: StoredLine) -> EvolutionContext {
+    func storedLineContext(_ stored: StoredLine) -> EvolutionContext {
         var context = evolutionContext(for: stored.mon)
         context.spentTokens = stored.spentAtStore
         return context
     }
 
-    /// The step a stored holder waits on in the Box and what it still lacks, for its Box page.
+    /// The step a stored line waits on in the Box and what it still lacks, for its Box page. Without a loaded line
+    /// (it holds no Exp. Share) the step is its planned one.
     func storedLineGate(id: String) -> (rule: EvolutionRule, context: EvolutionContext)? {
-        guard holdsExpShare(id), let stored = state.storedLines[id], let line = expShareLines[stored.mon.baseID],
-              let node = line.tree.node(withID: stored.mon.currentID) else { return nil }
+        guard let stored = state.storedLines[id] else { return nil }
+        guard holdsExpShare(id), let line = expShareLines[stored.mon.baseID],
+              let node = line.tree.node(withID: stored.mon.currentID) else {
+            guard let rule = plannedStoredStep(stored.mon), !rule.paths.isEmpty else { return nil }
+            return (rule, storedLineContext(stored))
+        }
         let mon = stored.mon
         let options = growthOptions(of: node, gender: mon.profile?.gender)
         let traits = evolutionTraits(of: mon)
@@ -2044,7 +2138,7 @@ final class CompanionStore {
     }
 
     /// Children growth reaches by itself. Item-only forms (an apple, an armor) are reached by using the item.
-    private func growthOptions(of node: EvoNode, gender: PokemonGender?) -> [EvoNode] {
+    func growthOptions(of node: EvoNode, gender: PokemonGender?) -> [EvoNode] {
         EvolutionRules.growthChildren(node.children(for: gender))
     }
 
@@ -2764,10 +2858,10 @@ final class CompanionStore {
 
     /// 활성 포켓몬을 박스로 보내고 처음부터 인큐베이션하는 새 알로 — 상점 알과 스카우트가 같이 쓴다.
     /// `pendingHatchID` 가 있으면(스카우트) 그 종으로 미리 정해 두고 메타몽 위장도 끈다.
-    private func storeActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?, shiny: Bool = false) {
+    func storeActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?, shiny: Bool = false, attachesBagCopy: Bool = true) {
         if let storedID = storeActiveInBox() {
-            if eggSwapAddsFriend { state.friendEntryIDs.append(CompanionState.friendKey(storedLine: storedID)) }
-            attachExpShare(to: storedID)
+            addFriendIfSlotFree(storedID)
+            if attachesBagCopy { attachExpShare(to: storedID) }
         }
         state.reconcileRepresentativeSelection()
         activeGeneration += 1
@@ -3057,7 +3151,7 @@ final class CompanionStore {
     private(set) var latestEvent: CompanionEvent?
     private var eventSeq = 0
 
-    private func notifyCompanionEvent(_ title: String, _ body: String, showsOnPet: Bool = true) {
+    func notifyCompanionEvent(_ title: String, _ body: String, showsOnPet: Bool = true) {
         if showsOnPet {
             eventSeq += 1
             latestEvent = CompanionEvent(seq: eventSeq, text: body, at: clock())
@@ -4086,11 +4180,12 @@ final class CompanionStore {
         // (디코드는 *성공*하므로 위의 .corrupt 복구도 발동하지 않는다). 여기서 걸면 자가 복구된다.
         state = SaveTransfer.sanitized(s)
     }
-    private func save() {
+    func save() {
         state.reconcileRaised()
         state.reconcileFriends()
         state.returnOrphanedHeldItems()
         state.returnOrphanedExpShares()
+        state.dropOrphanedKeepWaiting()
         state.dropOrphanedGraduateEvolution()
         refreshRepresentativeSubject()
         refreshFriendSubjects()

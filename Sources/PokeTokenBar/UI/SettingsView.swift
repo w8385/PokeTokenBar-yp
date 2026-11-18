@@ -235,6 +235,9 @@ struct SettingsView: View {
                 .layoutPriority(1)
             }
             Divider()
+            toggleRow(l.moveOnSetting, Binding(get: { companion.autoMoveOn }, set: { companion.autoMoveOn = $0 }),
+                      hint: l.moveOnSettingHint(Int(CompanionStore.stuckMoveOnDelay / 60)))
+            Divider()
             groupRow {
                 Text(l.refreshInterval)
                 Spacer()

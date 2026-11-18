@@ -954,6 +954,17 @@ struct CompanionHeader: View {
                                 .buttonStyle(.bordered).controlSize(.mini).fixedSize()
                         }
                     }
+                    if let status = store.moveOnStatus {
+                        HStack(spacing: 6) {
+                            Text(store.l.moveOnCountdown(status.needs, minutes: status.minutes, next: status.next,
+                                                         toGraduates: status.toGraduates))
+                                .font(.caption2).foregroundStyle(.secondary)
+                                .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 4)
+                            Button(store.l.keepWaiting) { store.keepWaitingOnStuck() }
+                                .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
