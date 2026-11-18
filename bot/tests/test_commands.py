@@ -612,7 +612,7 @@ def test_manifest_registers_exactly_the_handled_commands():
 
 def test_help_points_gyms_to_the_app_without_splitting_entry_slots():
     assert "앞의 그 수만큼 순서대로 나가요." in HELP_TEXT
-    assert "체육관·사천왕·아지트 도전은 앱 대결 탭에서 해요." in HELP_TEXT
+    assert "체육관·아지트·사천왕 도전은 앱 대결 탭에서 해요." in HELP_TEXT
     assert "출전 칸" not in HELP_TEXT and "4~6번" not in HELP_TEXT
     assert "도장" not in HELP_TEXT
 
