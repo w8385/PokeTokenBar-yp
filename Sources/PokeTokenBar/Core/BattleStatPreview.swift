@@ -20,10 +20,34 @@ struct BattleStatLine: Equatable, Sendable {
 enum BattleStatPreview {
     @MainActor
     static func lines(for fighter: BattleCandidate, speciesID: Int, in store: CompanionStore) -> [BattleStatLine] {
-        let details = fighter.member.pokemonID == speciesID ? store.pokemonDetailsByID[speciesID] : nil
-        return lines(member: fighter.member, details: details, heldItem: store.heldItem(of: fighter.id),
-                     mega: store.megaStone(of: fighter.id, speciesID: speciesID),
-                     tera: store.teraForm(of: fighter.id, speciesID: speciesID))
+        lines(member: fighter.member, details: details(for: fighter, speciesID: speciesID, in: store),
+              heldItem: store.heldItem(of: fighter.id), mega: store.megaStone(of: fighter.id, speciesID: speciesID),
+              tera: store.teraForm(of: fighter.id, speciesID: speciesID))
+    }
+
+    /// The species id of the row; the raised line's candidate carries its form's variety id instead.
+    @MainActor
+    static func speciesID(of fighter: BattleCandidate, in store: CompanionStore) -> Int {
+        store.dexEntry(for: fighter)?.finalID ?? fighter.member.pokemonID
+    }
+
+    /// The types the row's badges show: the battle form's, else the uploaded form's, else the species'.
+    @MainActor
+    static func types(for fighter: BattleCandidate, speciesID: Int, in store: CompanionStore) -> [String]? {
+        if let types = store.megaStone(of: fighter.id, speciesID: speciesID)?.types
+            ?? store.teraForm(of: fighter.id, speciesID: speciesID)?.types {
+            return types
+        }
+        return (details(for: fighter, speciesID: speciesID, in: store) ?? store.pokemonDetailsByID[speciesID])?.types
+    }
+
+    /// The details of the form the member is uploaded as; nil for a variety the app has no battle data for.
+    @MainActor
+    static func details(for fighter: BattleCandidate, speciesID: Int, in store: CompanionStore) -> PokemonDetails? {
+        let form = store.dexEntry(for: fighter)?.form
+        guard fighter.member.pokemonID == speciesID || FormBattleData.of(speciesID: speciesID, form: form) != nil
+        else { return nil }
+        return store.pokemonDetails(speciesID: speciesID, form: form)
     }
 
     /// `details` must be the default form the member fights in; a row whose starting form the app has no base

@@ -23,12 +23,26 @@ final class BattleRowStatsScreenshotTests: XCTestCase {
         }
         let directory = URL(fileURLWithPath: output)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let megaLineup = try [
+            entry(6, id: "zard", level: 62, nature: .adamant),
+            entry(94, id: "gengar", level: 38, nature: .timid),
+            entry(149, id: "dragonite", level: 55, nature: .hardy),
+        ]
+        let formLineup = try [
+            entry(645, id: "landorus", level: 58, nature: .jolly, form: PokemonForm("therian")),
+            entry(898, id: "calyrex", level: 60, nature: .brave, form: PokemonForm("ice")),
+        ]
+        let stone = try XCTUnwrap(MegaStone.stone(slug: "charizardite-x")).inventoryKey
         for language in [AppLanguage.ko, .en] {
-            try await captureLineup(language: language, to: directory.appendingPathComponent("row-stats-\(language.rawValue).png"))
+            try await captureLineup(megaLineup, heldItems: ["zard": stone], language: language,
+                                    to: directory.appendingPathComponent("row-stats-\(language.rawValue).png"))
+            try await captureLineup(formLineup, heldItems: [:], language: language,
+                                    to: directory.appendingPathComponent("row-forms-\(language.rawValue).png"))
         }
     }
 
-    private func captureLineup(language: AppLanguage, to file: URL) async throws {
+    private func captureLineup(_ lineup: [DexEntry], heldItems: [String: String], language: AppLanguage,
+                               to file: URL) async throws {
         let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("row-stats-shot-\(UUID())")
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: scratch) }
@@ -36,20 +50,16 @@ final class BattleRowStatsScreenshotTests: XCTestCase {
         var state = CompanionState()
         state.language = language
         state.installBaselineSet = true
-        state.dex = try [
-            entry(6, id: "zard", level: 62, nature: .adamant),
-            entry(94, id: "gengar", level: 38, nature: .timid),
-            entry(149, id: "dragonite", level: 55, nature: .hardy),
-        ]
-        state.heldItems = ["zard": try XCTUnwrap(MegaStone.stone(slug: "charizardite-x")).inventoryKey]
+        state.dex = lineup
+        state.heldItems = heldItems
         let stateFile = scratch.appendingPathComponent("state.json")
         try JSONEncoder().encode(state).write(to: stateFile)
         let store = CompanionStore(provider: RowStatsShotProvider(), fileURL: stateFile)
-        for species in [6, 94, 149] { await store.loadPokemonDetails(speciesID: species) }
+        for entry in lineup { await store.loadPokemonDetails(speciesID: entry.finalID) }
 
         let defaults = UserDefaults(suiteName: "row-stats-shot-\(UUID())")!
         let battle = BattleEntryStore(defaults: defaults)
-        ["zard", "gengar", "dragonite"].forEach { battle.add($0) }
+        lineup.forEach { battle.add($0.id) }
         let uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,
             appVersion: "shot", send: { _ in 200 }, fetch: { _ in (Data(), 404) }, partySource: { [] })
@@ -66,7 +76,8 @@ final class BattleRowStatsScreenshotTests: XCTestCase {
             size: size, appearance: .aqua, to: file)
     }
 
-    private func entry(_ species: Int, id: String, level: Int, nature: PokemonNature) throws -> DexEntry {
+    private func entry(_ species: Int, id: String, level: Int, nature: PokemonNature,
+                       form: PokemonForm? = nil) throws -> DexEntry {
         var profile = PokemonProfile.generate(seed: UInt64(species), instanceID: id)
         profile.level = level
         var entry = DexEntry(baseID: species, finalID: species, chainOrder: [species], rarity: .rare,
@@ -74,6 +85,7 @@ final class BattleRowStatsScreenshotTests: XCTestCase {
                              names: [species: try SpeciesFacts.names(species)])
         entry.id = id
         entry.nature = nature
+        entry.form = form
         return entry
     }
 }

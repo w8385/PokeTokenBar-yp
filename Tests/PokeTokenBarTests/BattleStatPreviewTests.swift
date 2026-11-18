@@ -61,6 +61,70 @@ final class BattleStatPreviewTests: XCTestCase {
         XCTAssertEqual(L(.en).battleStatName("hp"), "HP")
     }
 
+    func testTherianLandorusRowsShowTherianTypesAndStats() async throws {
+        let therian = PokemonForm("therian")
+        let expected = botStats(base: [89, 145, 90, 105, 80, 91], ivs: [31, 20, 7, 13, 0, 25], level: 50, up: 1, down: 3)
+        XCTAssertEqual(expected, [164, 176, 98, 104, 85, 108])
+
+        var entry = try landorusEntry(form: therian)
+        entry.id = "boxed"
+        var raisedProfile = PokemonProfile.generate(seed: 645, instanceID: "raised")
+        raisedProfile.level = 62
+        raisedProfile.ivs = ivs
+        var state = CompanionState()
+        state.installBaselineSet = true
+        state.dex = [entry]
+        state.active = MonState(baseID: 645, pathIDs: [645], stageIndex: 0, usedAtStage: 0, rarity: .rare,
+                                totalForms: 1, nature: .adamant, profile: raisedProfile, form: therian)
+        let store = try await store(state: state, species: 645)
+
+        for id in ["boxed", "raised"] {
+            let fighter = try XCTUnwrap(BattleEntry.candidates(in: store.state).first { $0.id == id })
+            XCTAssertEqual(fighter.member.pokemonID, 10021, id)
+            let speciesID = BattleStatPreview.speciesID(of: fighter, in: store)
+            XCTAssertEqual(speciesID, 645, id)
+            XCTAssertEqual(BattleStatPreview.types(for: fighter, speciesID: speciesID, in: store), ["ground", "flying"], id)
+            let details = BattleStatPreview.details(for: fighter, speciesID: speciesID, in: store)
+            XCTAssertEqual(details?.baseStats["attack"], 145, id)
+            let lines = BattleStatPreview.lines(for: fighter, speciesID: speciesID, in: store)
+            XCTAssertEqual(lines.map(\.form), [.normal], id)
+            XCTAssertEqual(lines.first?.stats.map(\.value), expected, id)
+        }
+    }
+
+    func testIceRiderCalyrexRowTakesTheFormTypes() async throws {
+        var entry = DexEntry(baseID: 898, finalID: 898, chainOrder: [898], rarity: .rare,
+                             caughtAt: Date(timeIntervalSince1970: 1_700_000_000),
+                             profile: PokemonProfile.generate(seed: 898, instanceID: "rider"),
+                             names: [898: try SpeciesFacts.names(898)])
+        entry.form = PokemonForm("ice")
+        var state = CompanionState()
+        state.installBaselineSet = true
+        state.dex = [entry]
+        let store = try await store(state: state, species: 898)
+        let fighter = try XCTUnwrap(BattleEntry.candidates(in: store.state).first)
+
+        XCTAssertEqual(fighter.member.pokemonID, 10193)
+        let speciesID = BattleStatPreview.speciesID(of: fighter, in: store)
+        XCTAssertEqual(BattleStatPreview.types(for: fighter, speciesID: speciesID, in: store), ["psychic", "ice"])
+    }
+
+    func testVarietyWithoutBattleDataShowsNoLine() async throws {
+        var entry = DexEntry(baseID: 492, finalID: 492, chainOrder: [492], rarity: .rare,
+                             caughtAt: Date(timeIntervalSince1970: 1_700_000_000),
+                             profile: PokemonProfile.generate(seed: 492, instanceID: "sky"),
+                             names: [492: try SpeciesFacts.names(492)])
+        entry.form = PokemonForm("sky")
+        var state = CompanionState()
+        state.installBaselineSet = true
+        state.dex = [entry]
+        let store = try await store(state: state, species: 492)
+        let fighter = try XCTUnwrap(BattleEntry.candidates(in: store.state).first)
+
+        XCTAssertEqual(fighter.member.pokemonID, 10006)
+        XCTAssertEqual(BattleStatPreview.lines(for: fighter, speciesID: 492, in: store), [])
+    }
+
     func testStellarCrystalRowShowsOnlyTheStellarLine() async throws {
         let lines = try await storeLines(species: TeraForm.terapagos, heldItem: ItemKind.stellarCrystal.rawValue)
 
@@ -89,6 +153,29 @@ final class BattleStatPreviewTests: XCTestCase {
         stats[up] = stats[up] * 110 / 100
         stats[down] = stats[down] * 90 / 100
         return stats
+    }
+
+    private func landorusEntry(form: PokemonForm) throws -> DexEntry {
+        var profile = PokemonProfile.generate(seed: 645, instanceID: "boxed")
+        profile.level = 62
+        profile.ivs = ivs
+        var entry = DexEntry(baseID: 645, finalID: 645, chainOrder: [645], rarity: .rare,
+                             caughtAt: Date(timeIntervalSince1970: 1_700_000_000), profile: profile,
+                             names: [645: try SpeciesFacts.names(645)])
+        entry.nature = .adamant
+        entry.form = form
+        return entry
+    }
+
+    private func store(state: CompanionState, species: Int) async throws -> CompanionStore {
+        let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("stat-preview-\(UUID())")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: scratch) }
+        let file = scratch.appendingPathComponent("state.json")
+        try JSONEncoder().encode(state).write(to: file)
+        let store = CompanionStore(provider: StatPreviewProvider(), fileURL: file)
+        await store.loadPokemonDetails(speciesID: species)
+        return store
     }
 
     private func storeLines(species: Int, heldItem: String?) async throws -> [BattleStatLine] {
