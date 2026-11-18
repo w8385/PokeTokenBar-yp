@@ -6,23 +6,35 @@ extension EvolutionRules {
     private static func make(
         _ species: Int, _ covers: [String], _ original: [EvolutionOriginal],
         _ paths: [[EvolutionRequirement]] = [], selector: EvolutionSelector? = nil, formNotShown: Bool = false,
-        trade: EvolutionTrade? = nil, from: Int? = nil
+        trade: EvolutionTrade? = nil
     ) -> EvolutionRule {
         EvolutionRule(species: species, covers: Set(covers), original: original, paths: paths,
-                      selector: selector, formNotShown: formNotShown, trade: trade, from: from)
+                      selector: selector, formNotShown: formNotShown, trade: trade, from: parents[species])
     }
 
-    private static func traded(_ species: Int, from: Int) -> EvolutionRule {
-        make(species, ["trade"], [.trade], trade: .plain, from: from)
+    /// The species each special step grows from (PokéAPI `evolves_from_species`).
+    private static let parents: [Int: Int] = [
+        25: 172, 35: 173, 39: 174, 65: 64, 68: 67, 76: 75, 94: 93, 106: 236, 107: 236, 113: 440, 122: 439, 143: 446,
+        169: 42, 176: 175, 183: 298, 185: 438, 186: 61, 196: 133, 197: 133, 199: 79, 208: 95, 212: 123, 226: 458,
+        230: 117, 233: 137, 237: 236, 242: 113, 266: 265, 268: 265, 292: 290, 315: 406, 350: 349, 358: 433, 367: 366,
+        368: 366, 424: 190, 428: 427, 448: 447, 461: 215, 463: 108, 464: 112, 465: 114, 466: 125, 467: 126, 469: 193,
+        472: 207, 473: 221, 474: 233, 477: 356, 526: 525, 528: 527, 534: 533, 542: 541, 589: 588, 617: 616, 675: 674,
+        683: 682, 685: 684, 687: 686, 700: 133, 706: 705, 709: 708, 711: 710, 763: 762, 773: 772, 804: 803, 809: 808,
+        841: 840, 842: 840, 849: 848, 853: 852, 855: 854, 865: 83, 867: 562, 869: 868, 873: 872, 892: 891, 899: 234,
+        900: 123, 901: 217, 902: 550, 903: 215, 904: 211, 923: 922, 925: 924, 936: 935, 937: 935, 947: 946, 954: 953,
+        964: 963, 979: 57, 981: 203, 982: 206, 983: 625, 1000: 999, 1011: 840, 1013: 1012, 1018: 884, 1019: 1011,
+    ]
+
+    private static func traded(_ species: Int) -> EvolutionRule {
+        make(species, ["trade"], [.trade], trade: .plain)
     }
 
-    private static func tradedHolding(_ species: Int, from: Int, _ item: ItemKind) -> EvolutionRule {
-        make(species, ["trade+held_item"], [.tradeHolding(item.evolutionHeldSlug ?? "")], trade: .holding(item),
-             from: from)
+    private static func tradedHolding(_ species: Int, _ item: ItemKind) -> EvolutionRule {
+        make(species, ["trade+held_item"], [.tradeHolding(item.evolutionHeldSlug ?? "")], trade: .holding(item))
     }
 
-    private static func tradedFor(_ species: Int, from: Int, partner: Int) -> EvolutionRule {
-        make(species, ["trade+trade_species"], [.tradeForSpecies(partner)], trade: .partner(partner), from: from)
+    private static func tradedFor(_ species: Int, partner: Int) -> EvolutionRule {
+        make(species, ["trade+trade_species"], [.tradeForSpecies(partner)], trade: .partner(partner))
     }
 
     private static let happy = "level-up+min_happiness"
@@ -58,7 +70,7 @@ extension EvolutionRules {
         petsAt(196, .day), petsAt(197, .night), petsAt(315, .day), petsAt(358, .night, happiness: 220),
         petsAt(448, .day), petsAt(873, .night),
         make(350, ["level-up+min_beauty", "trade+held_item"], [.beauty(170), .tradeHolding("prism-scale")],
-             [[.pets(60)]], trade: .holding(.prismScale), from: 349),
+             [[.pets(60)]], trade: .holding(.prismScale)),
         make(700, ["level-up+known_move_type+min_affection", "level-up+known_move_type+min_happiness"],
              [.knownMoveType("fairy"), .happiness(160)], [[.pets(30), .knownFairyMove(fallbackLevel: 15)]]),
         make(923, ["level-up+min_steps"], [.steps(1000)], [[.pets(50)]]),
@@ -94,7 +106,7 @@ extension EvolutionRules {
         uses(1018, .metalAlloy, "metal-alloy"),
         make(199, ["use-item:galarica-wreath", "trade+held_item"],
              [.useItem("galarica-wreath"), .tradeHolding("kings-rock")], [[.bag(.galaricaWreath)]],
-             trade: .holding(.kingsRock), from: 79),
+             trade: .holding(.kingsRock)),
         make(855, ["use-item:cracked-pot", "use-item:chipped-pot"], [.useItem("cracked-pot"), .useItem("chipped-pot")],
              [[.bag(.crackedPot)], [.bag(.chippedPot)]]),
         make(1013, ["use-item:unremarkable-teacup", "use-item:masterpiece-teacup"],
@@ -125,16 +137,13 @@ extension EvolutionRules {
     ]
 
     private static let trades: [EvolutionRule] = [
-        traded(65, from: 64), traded(68, from: 67), traded(76, from: 75), traded(94, from: 93),
-        traded(526, from: 525), traded(534, from: 533), traded(709, from: 708), traded(711, from: 710),
-        tradedHolding(186, from: 61, .kingsRock), tradedHolding(208, from: 95, .metalCoat),
-        tradedHolding(212, from: 123, .metalCoat), tradedHolding(230, from: 117, .dragonScale),
-        tradedHolding(233, from: 137, .upGrade), tradedHolding(367, from: 366, .deepSeaTooth),
-        tradedHolding(368, from: 366, .deepSeaScale), tradedHolding(464, from: 112, .protector),
-        tradedHolding(466, from: 125, .electirizer), tradedHolding(467, from: 126, .magmarizer),
-        tradedHolding(474, from: 233, .dubiousDisc), tradedHolding(477, from: 356, .reaperCloth),
-        tradedHolding(683, from: 682, .sachet), tradedHolding(685, from: 684, .whippedDream),
-        tradedFor(589, from: 588, partner: 616), tradedFor(617, from: 616, partner: 588),
+        traded(65), traded(68), traded(76), traded(94), traded(526), traded(534), traded(709), traded(711),
+        tradedHolding(186, .kingsRock), tradedHolding(208, .metalCoat), tradedHolding(212, .metalCoat),
+        tradedHolding(230, .dragonScale), tradedHolding(233, .upGrade), tradedHolding(367, .deepSeaTooth),
+        tradedHolding(368, .deepSeaScale), tradedHolding(464, .protector), tradedHolding(466, .electirizer),
+        tradedHolding(467, .magmarizer), tradedHolding(474, .dubiousDisc), tradedHolding(477, .reaperCloth),
+        tradedHolding(683, .sachet), tradedHolding(685, .whippedDream),
+        tradedFor(589, partner: 616), tradedFor(617, partner: 588),
     ]
 
     private static let others: [EvolutionRule] = [

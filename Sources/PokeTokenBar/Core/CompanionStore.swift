@@ -68,7 +68,6 @@ final class CompanionStore {
     /// 세션 내 활성 개체 교체 감지용. await 뒤 이전 개체의 결과가 새 개체를 덮지 않게 한다.
     private var activeGeneration = 0
     private var lastAutoSnapshotDate: Date?
-    private var lastEvolutionPetAt: Date?
     private var nextEvolutionGateCheck = Date.distantPast
     private(set) var availableSnapshots: [SaveSnapshot] = []
     private var timeMeter = ActiveTimeMeter()
@@ -1818,14 +1817,8 @@ final class CompanionStore {
         applyUsage(0)
     }
 
-    /// Petting counts once per `petCooldown` so holding the button does not fill the bar.
-    static let petCooldown: TimeInterval = 10
-
     func recordPet() {
         guard var progress = raisedEvolutionProgress else { return }
-        let now = clock()
-        if let last = lastEvolutionPetAt, now.timeIntervalSince(last) < Self.petCooldown { return }
-        lastEvolutionPetAt = now
         progress.pets += 1
         setRaisedEvolutionProgress(progress)
         reevaluateEvolution()

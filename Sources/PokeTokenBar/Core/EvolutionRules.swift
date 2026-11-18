@@ -119,7 +119,7 @@ struct EvolutionRule: Sendable {
     var formNotShown = false
     /// Set when a trade also reaches the step. Trade-only steps have no `paths`: growth never gets there.
     var trade: EvolutionTrade?
-    /// The species a trade step grows from, so the card can show it on that species' own page.
+    /// The species this step grows from, so the card also shows on that species' own page.
     var from: Int?
 
     /// Reached only by using an item: left out of the plan while a sibling can be reached by growth.

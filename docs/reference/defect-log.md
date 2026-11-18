@@ -1192,11 +1192,23 @@ read_when:
   Battle tab's equip control hid which one it changed. Now the Pokédex is species only (count + "N in Box" link),
   the Box lists every owned individual and its detail is the only place that calls `equip`/`unequip`; Battle,
   evolution cards and Home only show the item and link to the Box detail. The live evolution progress is drawn only
-  when the card is for the raised individual. Old tests passed because they built one Pokémon per species, where
+  for the raised individual: in its Box detail, and (user, 2026-11-18) read-only on the Pokédex pages of its
+  current species and of the species it waits to become, with no skip control or held-item row. Old tests passed because they built one Pokémon per species, where
   species and individual coincide. **Regression:** `BoxTests` source-scans `Sources/.../UI` so only `BoxDetailView`
   may call `.equip(`/`.unequip(`, renders the equip slot locked while listed for trade, and uses two individuals
   of one species. Sweep: held-item rows in Battle entry and the picker, the evolution cards and the Home tile were
   the other readers; none writes.
+
+- **Data keyed by one end of a relation must also show at the other end.** Evolution rules are keyed by the species
+  they produce, so a step's card showed only on that target's Pokédex page. A raised Munchlax sat a day at 3/30 pets
+  because Munchlax's own page said nothing and the card lived on Snorlax's page. Only trade rules knew their parent
+  (`from`), and only the Box used it. **Why the tests missed it:** `EvolutionCardTests` asserted the gap
+  (`evolutionCards(for: 686).isEmpty`, "the Pokédex page is about the species"), so a test pinned the missing card as
+  intended. Now every rule carries `from` (`EvolutionRuleTable.parents`), and a species page lists the steps into and
+  out of it. **Regression:** `DexNextEvolutionTests.testEveryPreEvolutionPageShowsEachSpecialStepOutOfIt` walks the
+  whole table (97 steps from 86 parents), and `EvolutionRulesTests` checks every `from` against the fixture's parent.
+  Dropping the outgoing lookup fails 97 assertions. Sweep: Box detail already showed the raised and trade steps; the
+  unowned page showed no card at all and now shows the same cards.
 
 - **Anchors and measuring views go outside a `LazyVGrid`.** The Box scroll-to-top anchor was `Color.clear` placed
   inside the grid, so it took the first cell and the first Pokémon started in column two. The fix moves it above the
