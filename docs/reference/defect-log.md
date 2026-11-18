@@ -399,9 +399,11 @@ read_when:
   copy it could not use. The raised line graduates on `options.isEmpty` before it reads the Everstone.
   **Why it slipped:** the stored-line tests only used lines with a step left; no test held a final form.
   **Fix:** the Box graduates through the raised path's `graduateRecord`; a stored final form is never idle; the
-  idle rule reads the Everstone only when an option is left.
+  idle rule reads the Everstone only when an option is left. A full final form whose copy the old idle rule
+  already passed on is checked too, so a save from before this graduates it.
   **Guards:** `BoxGraduationTests` (graduation, copy hand-off, short of XP at level 100, Everstone on both sides,
-  one notice for two). Disabling the Box graduation fails 6 tests; dropping the hand-off fails 6.
+  one notice for two, the copyless old-save line). Disabling the Box graduation fails 6 tests; dropping the
+  hand-off fails 6; checking holders only fails the old-save test.
 
 ## 외부 로그·사용량 소스
 
