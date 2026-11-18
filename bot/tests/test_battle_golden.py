@@ -236,6 +236,8 @@ FOCUS_CASES = {
                                                                          [756, 89]))),
     "boost-rest": (((143, None, None, [74, 156, 34]), (3, None, None, [74, 156, 75])),
                    ((68, None, None, [2, 7]), (59, None, None, [53, 44]))),
+    "thaw-moves": (((131, None, None, [58]), (87, None, None, [58]), (124, None, None, [58])),
+                   ((9, None, None, [503]), (134, None, None, [503, 815]), (1013, None, None, [902]))),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
@@ -413,7 +415,7 @@ def _replay_moves():
     stat_names = {key: name for name, key in pokeapi._STAT_KEYS.items()}
     moves = {}
     for move_id, entry in battle_data.table("moves").items():
-        meta = entry["meta"]
+        meta = pokeapi.merged_meta(entry)
         raw = {
             "id": int(move_id), "name": entry["slug"],
             "names": [{"language": {"name": language}, "name": name} for language, name in entry["names"].items()],

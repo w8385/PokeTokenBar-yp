@@ -1243,7 +1243,8 @@ def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tupl
             attacker.status = None
             recovered.append("sleep")
     elif attacker.status == "freeze":
-        thawed = rng.random() < FREEZE_THAW_CHANCE or move.type == "fire"
+        thawed = (rng.random() < FREEZE_THAW_CHANCE or move.type == "fire"
+                  or hooks.move(move, "thaws_user", default=False))
         if not thawed:
             return (), "freeze"
         attacker.status = None
@@ -1314,7 +1315,7 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
             blocked_by = defender.ability
         else:
             changes.append(_inflict(move.ailment, defender, 1 - side, rng))
-    if defender.status == "freeze" and move.type == "fire":
+    if defender.status == "freeze" and (move.type == "fire" or hooks.move(move, "thaws_user", default=False)):
         defender.status = None
         changes.append(Change(1 - side, defender.combatant.name, "thaw"))
     if move.stat_changes and rng.random() * 100 < move.stat_chance:
@@ -1328,6 +1329,7 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
             target.lowered = target.lowered or target.stages[key] < before
             if target.stages[key] != before:
                 changes.append(Change(target_side, target.combatant.name, key, target.stages[key] - before))
+    changes.extend(hooks.move(move, "secondary", attacker, defender, side, rng, default=()))
     return tuple(changes), blocked_by
 
 
