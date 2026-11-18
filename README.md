@@ -184,7 +184,7 @@ Pi can route more than one model through a single session log. Usage is now attr
 <h3>Every Pokémon has its own profile</h3>
 Open a Pokémon in the <b>Box</b> to inspect it: level, gender, nature, ability, IVs, calculated stats, held item, and moves. Species descriptions, abilities, and moves use your selected language, with English as the fallback when PokéAPI has no translation.
 <br><br>
-<b>Status moves</b> join the move picker in their own group: Swords Dance, Thunder Wave, Yawn, Trick Room and Stealth Rock, when the Pokémon learns them by level-up, by TM or as an egg move. In battles your Pokémon uses them by the same rules as the trainers.
+<b>Status moves</b> join the move picker in their own group: Swords Dance, Thunder Wave, Yawn, Trick Room, the screens (Reflect, Light Screen, Aurora Veil), the hazards (Stealth Rock, Spikes, Toxic Spikes, Sticky Web), the four terrains, Tailwind, Safeguard, Mist, Lucky Chant, Gravity, Haze, Defog, Court Change and Tidy Up, when the Pokémon learns them by level-up, by TM or as an egg move. In battles your Pokémon uses them by the same rules as the trainers.
 <br><br>
 Each move slot is its own card. The <b>▲/▼</b> buttons on a filled slot swap it with the one above or below, so you can change the order without picking the moves again.
 </td>

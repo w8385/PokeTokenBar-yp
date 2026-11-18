@@ -1698,6 +1698,19 @@ read_when:
   the form; the Battle tab's recent battles are Slack battles, not gym ones. Tests: `test_gym_api.py` (form events
   for an NPC Mega, a player Mega, Terastal, Stellar, Origin; a teal mask sends none), `GymReplayTests` (one member
   only, status kept, pivot return, a Mega with no sprite).
+- **A move's accuracy and crit rate must not be taken from PokéAPI when its Gen 9 rule says "always".** Flower Trick
+  (870) never missed but crit only at the base rate, because PokéAPI gives it `crit_rate` 0; Tachyon Cutter (911) always
+  missed, because PokéAPI gives it accuracy 0 rather than null. The battle read both numbers as they came, and no test
+  used either move. Class sweep of Gen 9 always-crit moves: Frost Breath, Storm Throw, Wicked Blow and Surging Strikes
+  already carry `crit_rate` 6; Flower Trick is the only gap (Zippy Zap is left alone on purpose). Never-miss moves:
+  every other one has accuracy null. Now `always-crit` and `never-miss` handlers run by move id from
+  `data/battle/moves.json`; `test_flower_trick_always_crits_and_never_misses` and
+  `test_tachyon_cutter_never_misses_despite_pokeapis_zero_accuracy` run 40 and 20 seeds, and taking either key out of
+  the data fails them.
+- **A defect injection that edits a source file and reruns within the same second can test a stale `.pyc`.** Python's
+  bytecode cache checks the source's whole-second mtime and size, so two mutants of one file with the same length,
+  written within a second, share a cached mutant: four field-state injections reported "missed" while the test caught
+  the edit when run by hand. Run injection loops with `PYTHONDONTWRITEBYTECODE=1` after clearing `__pycache__`.
 
 ## Tests and the user's desktop
 
