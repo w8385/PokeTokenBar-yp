@@ -388,6 +388,21 @@ def test_the_events_replay_to_the_hp_each_roster_ends_with(server, gym_id, team)
     assert_replay_matches_the_rosters(body)
 
 
+@pytest.mark.parametrize("gym_id,team", [
+    ("kanto-1", None), ("kanto-8", [{"pokemon_id": 900, "level": 50, "moves": [33, 14]}]),
+    ("kanto-champion", strong_team(6)),
+])
+def test_every_move_event_carries_the_pokeapi_id_of_its_move_on_both_sides(server, gym_id, team):
+    store, base, _, _ = server
+    status, body, _ = battle(base, store.issue_token("U1"), gym_id, team)
+    assert status == 200
+    moves = [event for event in body["events"] if event["type"] == "move"]
+    ids = {move["name"]: move["id"] for move in (TACKLE, HYPER, SWORDS_DANCE)}
+    assert {event["side"] for event in moves} == {0, 1}
+    assert all(set(event) == {"turn", "type", "side", "member", "move", "move_id"} for event in moves)
+    assert all(event["move_id"] == ids[event["move"]] for event in moves), moves
+
+
 def test_a_member_that_came_in_down_never_appears_and_a_hurt_one_switches_in_hurt(server):
     store, base, _, _ = server
     carried = [{"hp": 0, "status": None}, {"hp": 40, "status": "burn"}, None]
@@ -402,25 +417,25 @@ def test_a_member_that_came_in_down_never_appears_and_a_hurt_one_switches_in_hur
 
 def test_the_events_follow_statuses_recoil_and_who_is_out():
     result = BattleResult(winner=0, turns=2, events=[
-        Action(1, 0, "A", "B", "불꽃", recovered=("sleep",), defender_hp=70, attacker_hp=50,
+        Action(1, 0, "A", "B", "불꽃", recovered=("sleep",), defender_hp=70, attacker_hp=50, move_id=52,
                changes=(Change(1, "B", "burn"), Change(1, "B", "attack", -1))),
         StatusDamage(1, 1, "B", 64, False, "burn"),
         ItemEffect(1, 1, "B", "lum-berry", "cure"),
         Action(2, 1, "B", "A", "", blocked="paralysis", defender_hp=50, attacker_hp=64),
-        Action(2, 0, "A", "B", "불꽃", defender_hp=0, knockout=True, attacker_hp=38, recoil=True),
+        Action(2, 0, "A", "B", "불꽃", defender_hp=0, knockout=True, attacker_hp=38, recoil=True, move_id=52),
         SendOut(2, 1, "C"),
     ])
     events = gym_battle._events(result, ([2], [0, 1]), [Carry(50, "sleep")])
     assert [tuple(event.values()) for event in events] == [
         (0, "switch", 0, 2, 50, "sleep"),
         (0, "switch", 1, 0, 100, None),
-        (1, "move", 0, 2, "불꽃"),
+        (1, "move", 0, 2, "불꽃", 52),
         (1, "status", 0, 2, None),
         (1, "damage", 1, 0, 70),
         (1, "status", 1, 0, "burn"),
         (1, "damage", 1, 0, 64),
         (1, "status", 1, 0, None),
-        (2, "move", 0, 2, "불꽃"),
+        (2, "move", 0, 2, "불꽃", 52),
         (2, "damage", 1, 0, 0),
         (2, "faint", 1, 0),
         (2, "damage", 0, 2, 38),

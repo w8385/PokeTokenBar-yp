@@ -105,7 +105,7 @@ class Move:
         return (self.min_hits + self.max_hits) / 2
 
 
-STRUGGLE = Move("발버둥", None, 50, physical=True)
+STRUGGLE = Move("발버둥", None, 50, physical=True, id=165)
 CONFUSION_HIT = Move("혼란", None, CONFUSION_SELF_HIT_POWER, physical=True)
 
 
@@ -190,6 +190,7 @@ class Action:
     defender_item: str = ""
     effect: str = ""
     pivoted: bool = False
+    move_id: int = 0
 
 
 @dataclass(frozen=True)
@@ -885,6 +886,8 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
          rng: random.Random, arena: _Arena | None = None) -> Action:
     """One Pokémon's turn. A self-KO move (Explosion) faints its user once used, hit, miss or immune target."""
     action = _resolve(turn, side, fighters, index, weather, rng, arena)
+    if action.move:
+        action = replace(action, move_id=(STRUGGLE if index is None else fighters[side].combatant.moves[index]).id)
     if action.move and _self_ko(fighters[side], index):
         fighters[side].hp = 0
         return replace(action, attacker_hp=0, attacker_fainted=True)

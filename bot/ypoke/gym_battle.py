@@ -164,7 +164,7 @@ class _Replay:
 
     def action(self, action: Action) -> None:
         if action.move:
-            self._emit(action.turn, "move", action.side, move=action.move)
+            self._emit(action.turn, "move", action.side, move=action.move, move_id=action.move_id)
         for status in action.recovered:
             if status in CARRIED_STATUSES:
                 self.status(action.turn, action.side, None)

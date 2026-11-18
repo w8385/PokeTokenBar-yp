@@ -64,6 +64,7 @@ def test_choice_item_repeats_its_first_move_and_struggles_when_it_runs_out():
     free = actions(simulate((mon("자유", moves=(ONE_SHOT, TACKLE), speed=100), wall), seed=2))
     mine = [action.move for action in locked if action.attacker == "고집"]
     assert mine[0] == "한방" and set(mine[1:5]) == {STRUGGLE.name}
+    assert {action.move_id for action in locked if action.move == STRUGGLE.name} == {165}
     assert {action.move for action in free if action.attacker == "자유"} == {"한방", "몸통박치기"}
 
 
