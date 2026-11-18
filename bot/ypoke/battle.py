@@ -38,6 +38,8 @@ BATTLE_STATS = ("attack", "defense", "special_attack", "special_defense", "speed
 STAGES = (*BATTLE_STATS, "accuracy", "evasion")
 WEATHER_TURNS = 5
 STRONG_WINDS = "strong-winds"
+# Under Desolate Land's sun or Primordial Sea's rain, damaging moves of this type fail.
+PRIMAL_DOUSED = {"sun": "water", "rain": "fire"}
 WEATHER_CHIP_FRACTION = 16
 WEATHER_MOVE_BOOST = {
     "sun": {"fire": 1.5, "water": 0.5},
@@ -627,7 +629,14 @@ def _status_upkeep(turn: int, teams: tuple["_Team", "_Team"], fighters: tuple["_
                    events: list[Event]) -> int | None:
     for side, fighter in enumerate(fighters):
         if fighter.hp > 0 and fighter.status in ("burn", "poison", "toxic"):
-            fighter.hp = max(0, fighter.hp - fighter.residual_damage())
+            damage = fighter.residual_damage()
+            if _chip_free(fighter):
+                continue
+            answer = hooks.ability(fighter, "status_damage", damage, fighter, side, turn)
+            if answer is not None:
+                events.append(answer)
+                continue
+            fighter.hp = max(0, fighter.hp - damage)
             events.append(
                 StatusDamage(turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0, fighter.status)
             )
@@ -678,6 +687,7 @@ def _send_in(team: "_Team", side: int, turn: int, arena: "_Arena", events: list[
     False if the hazards knocked it out."""
     returning = team.send_next(member)
     fighter = team.active
+    fighter.entered_turn = turn
     events.append(SendOut(turn, side, fighter.combatant.name, team.current))
     for hazard, layers in list(arena.hazards[side].items()):
         if fighter.hp > 0:
@@ -695,6 +705,8 @@ def _pivot(teams: tuple["_Team", "_Team"], side: int, turn: int, arena: "_Arena"
     team = teams[side]
     target = team.pivot_target()
     team.bench_active()
+    events.extend(arena.log)
+    arena.log.clear()
     if _send_in(team, side, turn, arena, events, rng, target):
         events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, (side,)))
         return None
@@ -959,7 +971,9 @@ class _Team:
         return next((index for index in self.queue if self._group(index) == self._group(self.current)), None)
 
     def bench_active(self) -> None:
-        """The active member leaves the field healthy: back of its group's queue, volatile state cleared."""
+        """The active member leaves the field healthy: back of its group's queue, volatile state cleared, after its
+        ability acts on the way out (Regenerator)."""
+        _announce(self.active, hooks.ability(self.active, "on_switch_out", self.active, self.side))
         self.active.leave()
         group = self._group(self.current)
         at = next((position for position, index in enumerate(self.queue) if self._group(index) > group), len(self.queue))
@@ -1250,7 +1264,7 @@ def _weather_chip(fighter: _Fighter, weather: str | None) -> int:
 
 def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:
     immune = WEATHER_CHIP_IMMUNE_TYPES.get(weather)
-    return (immune is not None and not immune.intersection(fighter.combatant.types)
+    return (immune is not None and not immune.intersection(fighter.combatant.types) and not _chip_free(fighter)
             and not hooks.ability(fighter, "blocks_weather_chip", weather, default=False))
 
 
@@ -1351,8 +1365,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         return Action(turn, side, *names, move.name, failed=True, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     _announce(attacker, hooks.ability(attacker, "before_move", move, attacker, side, turn))
-    if move.damaging and _weather_boost(move, weather.kind) == 0:
-        return Action(turn, side, *names, move.name, failed=True, blocked=weather.current, recovered=recovered,
+    if move.damaging and weather.lasting and weather.kind and move.type == PRIMAL_DOUSED.get(weather.kind):
+        return Action(turn, side, *names, move.name, failed=True, weather=weather.kind, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     stopped = _stopped(attacker, defender, move)
     if stopped:
@@ -1434,7 +1448,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         defender.hit_by_foe = defender.hit_by_foe or damage > 0
         critical, hits, dealt = critical or hit_critical, hits + 1, dealt + damage
         if damage > 0 and makes_contact(attacker, move):
-            attacker.hp = max(0, attacker.hp - hooks.item(defender, "on_contact_hit", attacker, default=0))
+            attacker.hp = max(0, attacker.hp - (0 if _chip_free(attacker) else hooks.item(
+                defender, "on_contact_hit", attacker, default=0)))
         if defender.hp == 0 or attacker.hp == 0:
             break
         held = defender.item
@@ -1512,6 +1527,14 @@ def _announce(fighter: "_Fighter", event) -> None:
     """Logs what an ability did mid-action, shown after the action."""
     if event is not None and fighter.arena is not None:
         _append(fighter.arena.log, event)
+
+
+def _unnerved(fighter: "_Fighter", item: str) -> bool:
+    """A foe's ability keeps `fighter` from eating its berry (Unnerve)."""
+    if not item.endswith("-berry") or fighter.arena is None:
+        return False
+    foe = fighter.arena.foe_of(fighter)
+    return foe is not None and foe is not fighter and foe.hp > 0 and hooks.ability(foe, "unnerves", default=False)
 
 
 def _chip_free(fighter: "_Fighter") -> bool:
@@ -1653,29 +1676,50 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
     if defender.status == "freeze" and (move.type == "fire" or hooks.move(move, "thaws_user", default=False)):
         defender.status = None
         changes.append(Change(1 - side, defender.combatant.name, "thaw"))
-    if move.stat_changes and rng.random() * 100 < move.stat_chance:
+    if move.stat_changes and rng.random() * 100 < move.stat_chance * _chance_scale(
+            move, attacker, None if move.stat_on_user else defender):
         target, target_side = (attacker, side) if move.stat_on_user else (defender, 1 - side)
         guarded = not move.stat_on_user and _stats_guarded(defender, not _infiltrates(attacker))
         for key, stages in move.stat_changes:
-            change = shift_stage(target, target_side, key, stages, guarded)
+            change = shift_stage(target, target_side, key, stages, guarded=guarded,
+                                 by=None if move.stat_on_user else attacker)
             if change is not None:
                 changes.append(change)
     changes.extend(hooks.move(move, "secondary", attacker, defender, side, rng, default=()))
     return tuple(changes), blocked_by
 
 
-def shift_stage(fighter: _Fighter, side: int, key: str, stages: int, guarded: bool = False) -> Change | None:
-    """Moves one stat stage within ±6, turned around by its holder's Contrary; the `Change` that landed, None when
-    the stage stayed or `guarded` (Mist, Clear Body) stopped a drop."""
+def shift_stage(fighter: _Fighter, side: int, key: str, stages: int, *, guarded: bool = False,
+                by: "_Fighter | None" = None) -> Change | None:
+    """Moves one stat stage within ±6 after its holder's ability scales it (Contrary, Simple); the `Change` that
+    landed, None when none did. A drop is stopped when `guarded` (Mist); `by` is the foe lowering it, and the holder's
+    ability may keep the stat (Clear Body), bounce the drop back at `by` (Mirror Armor) or answer it (Defiant)."""
     stages *= hooks.ability(fighter, "stage_factor", default=1)
-    before = fighter.stages[key]
     if guarded and stages < 0:
         return None
+    by_foe = by is not None and by is not fighter and stages < 0
+    if by_foe and hooks.ability(fighter, "guards_stat", key, fighter, default=False):
+        _ability_act(fighter, effect="guard")
+        return None
+    if by_foe and hooks.ability(fighter, "reflects_drop", default=False):
+        _ability_act(fighter, changes=tuple(filter(None, (shift_stage(by, 1 - side, key, stages),))))
+        return None
+    before = fighter.stages[key]
     fighter.stages[key] = max(-MAX_STAGE, min(MAX_STAGE, before + stages))
     if fighter.stages[key] == before:
         return None
     fighter.lowered = fighter.lowered or fighter.stages[key] < before
-    return Change(side, fighter.combatant.name, key, fighter.stages[key] - before)
+    change = Change(side, fighter.combatant.name, key, fighter.stages[key] - before)
+    if by_foe:
+        _announce(fighter, hooks.ability(fighter, "on_stat_lowered", fighter, side))
+    return change
+
+
+def _ability_act(fighter: _Fighter, **details) -> None:
+    """Logs `fighter`'s ability acting mid-turn (`AbilityAct` fields in `details`)."""
+    if fighter.arena is not None:
+        fighter.arena.log.append(AbilityAct(fighter.arena.turn, fighter.side, fighter.combatant.name,
+                                            fighter.ability or fighter.combatant.ability, **details))
 
 
 def _contact_effect(side: int, move: Move, attacker: _Fighter, defender: _Fighter,
@@ -1686,7 +1730,16 @@ def _contact_effect(side: int, move: Move, attacker: _Fighter, defender: _Fighte
 def _ailment_lands(move: Move, attacker: _Fighter, defender: _Fighter, rng: random.Random) -> bool:
     if move.ailment not in AILMENT_IMMUNE_TYPES:
         return False
-    return _open_to(move.ailment, defender, not _infiltrates(attacker)) and rng.random() * 100 < move.ailment_chance
+    return (_open_to(move.ailment, defender, not _infiltrates(attacker))
+            and rng.random() * 100 < move.ailment_chance * _chance_scale(move, attacker, defender))
+
+
+def _chance_scale(move: Move, attacker: _Fighter, defender: _Fighter | None) -> float:
+    """Scales the chance of a move's added effect: the user's ability (Serene Grace, Sheer Force), and the target's
+    when the effect lands on it (Shield Dust)."""
+    if defender is not None and hooks.ability(defender, "blocks_secondary", default=False):
+        return 0.0
+    return hooks.ability(attacker, "secondary_chance", move, default=1.0)
 
 
 def _open_to(ailment: str, fighter: _Fighter, by_foe: bool = False) -> bool:

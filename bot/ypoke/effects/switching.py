@@ -68,9 +68,10 @@ class PartingShot(SelfSwitch):
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         team = arena.teams[side] if arena.teams else None
-        if team is None or team.pivot_target() is None or battle._stats_guarded(foe, not battle._infiltrates(user)):
+        if team is None or team.pivot_target() is None:
             return "", ()
-        landed = shift_all(foe, 1 - side, PARTING_DROPS)
+        guarded = battle._stats_guarded(foe, not battle._infiltrates(user))
+        landed = shift_all(foe, 1 - side, PARTING_DROPS, guarded=guarded, by=user)
         return (self.key if landed else ""), landed
 
 

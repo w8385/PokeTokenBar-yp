@@ -83,7 +83,7 @@ def hurt(fighter, share: int) -> int:
 
 
 def due(fighter, share: int) -> int:
-    return max(1, fighter.max_hp // share)
+    return 0 if battle._chip_free(fighter) else max(1, fighter.max_hp // share)
 
 
 def ticked(fighter, side: int, turn: int, kind: str, **fields):
@@ -504,7 +504,7 @@ class TarShot(State):
                 and any(known.damaging and known.type == "fire" for known in user.combatant.moves))
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
-        slowed = () if guarded(user, foe) else shift_all(foe, 1 - side, TAR_DROP)
+        slowed = shift_all(foe, 1 - side, TAR_DROP, guarded=guarded(user, foe), by=user)
         tarred = self.key not in foe.volatiles
         foe.volatiles[self.key] = True
         return (self.key if slowed or tarred else ""), slowed
