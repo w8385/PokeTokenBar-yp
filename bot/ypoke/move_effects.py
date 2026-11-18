@@ -34,6 +34,7 @@ STATUS_EFFECTS = (
     "water-sport", "focus-energy", "laser-focus",
     "conversion", "conversion-2", "camouflage", "reflect-type", "soak", "magic-powder", "trick-or-treat",
     "forests-curse", "gastro-acid", "simple-beam", "worry-seed", "entrainment", "skill-swap", "role-play", "doodle",
+    "trick", "switcheroo", "bestow", "recycle", "corrosive-gas", "teatime", "stuff-cheeks",
     "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
     "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
 )

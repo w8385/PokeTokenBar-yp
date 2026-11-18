@@ -82,6 +82,45 @@ extension L {
               "Neutralise le talent de la cible jusqu'à son retrait",
               "Anula a habilidade do alvo até ele sair", "Unterdrückt die Fähigkeit des Ziels bis zum Austausch",
               "Подавляет способность цели до её замены")
+        case 271, 415:
+            t("상대와 지닌 도구를 맞바꿈", "Swaps held items with the target", "相手と 持ち物を入れ替える",
+              "Intercambia los objetos equipados con el objetivo", "Échange les objets tenus avec la cible",
+              "Troca os itens segurados com o alvo", "Tauscht die getragenen Items mit dem Ziel",
+              "Меняется предметами с целью")
+        case 516:
+            t("빈손인 상대에게 지닌 도구를 건넴 (대타출동을 통과)",
+              "Gives its held item to a target holding none (passes a Substitute)",
+              "持ち物のない相手に 自分の持ち物を渡す (みがわりを無視)",
+              "Da su objeto a un objetivo sin objeto (ignora Sustituto)",
+              "Donne son objet à une cible qui n'en tient pas (ignore Clonage)",
+              "Dá seu item a um alvo sem item (ignora Substituto)",
+              "Gibt sein Item einem Ziel ohne Item (ignoriert Delegator)",
+              "Отдаёт свой предмет цели без предмета (проходит сквозь Замену)")
+        case 278:
+            t("다 쓴 도구를 되살림 (빼앗기거나 건넨 도구는 제외)",
+              "Restores the item it used up (not one taken or given away)",
+              "使った持ち物を元に戻す (奪われたり渡した持ち物は除く)",
+              "Recupera el objeto que gastó (no uno quitado o dado)",
+              "Récupère l'objet qu'il a utilisé (pas un objet perdu ou donné)",
+              "Recupera o item que usou (não um tirado ou dado)",
+              "Holt sein verbrauchtes Item zurück (kein geraubtes oder abgegebenes)",
+              "Возвращает израсходованный предмет (не отнятый и не отданный)")
+        case 810:
+            t("상대가 지닌 도구를 녹여 없앰", "Melts away the target's held item", "相手の持ち物を溶かして なくす",
+              "Derrite el objeto del objetivo", "Fait fondre l'objet tenu par la cible",
+              "Derrete o item segurado pelo alvo", "Löst das getragene Item des Ziels auf",
+              "Растворяет предмет цели")
+        case 752:
+            t("양쪽 모두 지닌 나무열매를 바로 먹음", "Every Pokémon eats its held Berry at once",
+              "全員が 持っているきのみを すぐに食べる", "Todos los Pokémon se comen su baya al instante",
+              "Tous les Pokémon mangent aussitôt leur Baie", "Todos os Pokémon comem sua fruta na hora",
+              "Alle Pokémon essen sofort ihre Beere", "Все покемоны сразу съедают свои ягоды")
+        case 747:
+            t("지닌 나무열매를 먹고 방어 2랭크 상승", "Eats its held Berry, then raises Defense by 2 stages",
+              "持っているきのみを食べ 防御2段階アップ", "Se come su baya y sube 2 niveles su Defensa",
+              "Mange sa Baie et augmente de 2 niveaux sa Défense", "Come sua fruta e aumenta 2 estágios a Defesa",
+              "Isst seine Beere und erhöht die Verteidigung um 2 Stufen",
+              "Съедает свою ягоду и повышает Защиту на 2 ступени")
         default: nil
         }
     }
