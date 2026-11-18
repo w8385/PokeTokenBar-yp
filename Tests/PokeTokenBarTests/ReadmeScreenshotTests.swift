@@ -112,7 +112,33 @@ final class ReadmeScreenshotTests: XCTestCase {
                            height: nil)
             try await shot(hiddenBoss(language: language, catalog: catalog), "screenshot-hidden-boss\(suffix)", in: dir,
                            height: nil)
+            try await shot(try await nextEvolution(language: language, scratch: scratch),
+                           "screenshot-dex-next-evolution\(suffix)", in: dir, height: 510)
         }
+    }
+
+    /// Uncaught Snorlax's page, the one Home's next node opens, while a raised Munchlax has 3 of its 30 pets.
+    private func nextEvolution(language: AppLanguage, scratch: URL) async throws -> some View {
+        var state = CompanionState()
+        state.language = language
+        state.installBaselineSet = true
+        let file = scratch.appendingPathComponent("next-evolution-\(language.rawValue).json")
+        try JSONEncoder().encode(state).write(to: file)
+        let suite = "readme-next-evolution-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        addTeardownBlock { UserDefaults.standard.removePersistentDomain(forName: suite) }
+        let clock = ReadmeClock()
+        let store = CompanionStore(provider: MunchlaxLineProvider(), clock: { clock.now }, fileURL: file,
+                                   rng: SeededRNG(seed: 1), dittoDisguiseRollingEnabled: false, defaults: defaults)
+        await store.loadSpeciesIndexIfNeeded()
+        await store.hatch(baseID: 446)
+        for _ in 0..<3 { clock.now.addTimeInterval(1); store.recordPet() }
+        await store.loadPokemonDetails(speciesID: 143)
+        let snorlax = try XCTUnwrap(store.unownedDexSpecies.first { $0.id == 143 })
+        return UnownedSpeciesDetailView(store: store, species: snorlax, onOpen: { _ in }, onBack: {},
+                                        flavorProvider: NoReadmeFlavor())
+            .padding(PopoverMetrics.padding)
+            .environment(\.locale, language.displayLocale)
     }
 
     private static func sample(_ state: inout CompanionState) {
@@ -263,7 +289,7 @@ final class ReadmeScreenshotTests: XCTestCase {
     }
 
     private func preloadSprites() async throws {
-        for id in Self.species + [382] + ReplayCast.all.map(\.id) {
+        for id in Self.species + [382, 143, 446] + ReplayCast.all.map(\.id) {
             _ = await SpriteLoader.image(speciesID: id)
             _ = await SpriteLoader.image(speciesID: id, back: true)
         }
@@ -363,6 +389,27 @@ final class ReadmeScreenshotTests: XCTestCase {
         }
         try OffscreenRender.writePNG(of: host, to: dir.appendingPathComponent("\(name).png"), scale: 2)
     }
+}
+
+private struct MunchlaxLineProvider: PokeProviding, SpeciesIndexProviding, PokemonDetailProviding {
+    func line(baseSpeciesID: Int) async throws -> EvoLine {
+        EvoLine(baseID: 446, tree: EvoNode(speciesID: 446, children: [EvoNode(speciesID: 143, children: [])]),
+                rarity: .rare, names: [446: try SpeciesFacts.names(446), 143: try SpeciesFacts.names(143)])
+    }
+    func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
+    func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
+    func speciesIndex() async throws -> SpeciesIndex {
+        SpeciesIndex(entries: [try SpeciesFacts.indexEntry(446), try SpeciesFacts.indexEntry(143)])
+    }
+    func pokemonDetails(speciesID: Int) async throws -> PokemonDetails { try SpeciesFacts.details(speciesID) }
+}
+
+private struct NoReadmeFlavor: SpeciesFlavorProviding {
+    func flavor(speciesID: Int) async -> SpeciesFlavor? { nil }
+}
+
+private final class ReadmeClock: @unchecked Sendable {
+    var now = Calendar.current.date(bySettingHour: 12, minute: 1, second: 0, of: Date())!
 }
 
 private struct SampleUsageProvider: UsageProvider {

@@ -89,6 +89,13 @@ PokeTokenBar는 당신이 이미 태우고 있는 AI 코딩 토큰(Claude Code �
 <td width="45%" align="center"><img src="assets/screenshot-collection-pokedex-ko.png" width="300" alt="도감 — 종 하나가 한 칸"><br><br><img src="assets/screenshot-collection-box-ko.png" width="300" alt="박스 — 내가 가진 모든 개체와 레벨·지닌 도구"></td>
 </tr>
 <tr>
+<td width="45%" align="center"><img src="assets/screenshot-dex-next-evolution-ko.png" width="300" alt="쓰다듬기 조건과 키우는 먹고자의 3/30 진행이 보이는 잠만보 도감 페이지"></td>
+<td width="55%" valign="middle">
+<h3>다음 진화가 보이는 도감</h3>
+종의 도감 페이지에 그 종으로 오는 특수 진화와 그 종에서 나가는 특수 진화가 모두 나옵니다. 먹고자 페이지에는 "다음: 잠만보 · 쓰다듬기 30번"이 보여요. 키우는 포켓몬의 지금 모습이거나 그 포켓몬이 될 모습이면 카드에 3/30 같은 진행도가 나옵니다. 아직 없는 종의 페이지에도 같은 카드가 나와요. 홈에서 갈래가 있는 진화 라인의 <b>?</b>를 누르면 키우는 종의 페이지가 열리고, 갈래마다 조건이 나옵니다.
+</td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-regional-dex-ko.png" width="300" alt="지방별 수집 수·완성 배지의 실제 UI 컴포넌트 샘플"><br><small>실제 UI 컴포넌트 · 샘플 상태</small></td>
 <td width="55%" valign="middle">
 <h3>지방을 완성하고 배지를 모으세요</h3>
@@ -252,7 +259,7 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 
 <img src="assets/screenshot-usage-recap-ko.png" width="360" alt="선택한 기간의 사용량 돌아보기">
 
-<small>위 홈·설정·폼·상점·가방·도감·박스·프로필·학습장치·대결·체육관·리플레이·챔피언·플로팅 친구·난이도·활동·지방 도감·펫 상호작용·회고 이미지는 샘플 데이터로 실제 UI를 로컬 렌더링한 이미지입니다. 체육관 이미지는 YPoke 봇의 관동 체육관 목록을 씁니다. 지방 도감·펫 보드는 별도로 렌더링한 실제 UI 컴포넌트를 조합했습니다. GIF는 설명용 데모이며 이전 배치를 보여줄 수 있습니다.</small>
+<small>위 홈·설정·폼·상점·가방·도감·다음 진화·박스·프로필·학습장치·대결·체육관·리플레이·챔피언·플로팅 친구·난이도·활동·지방 도감·펫 상호작용·회고 이미지는 샘플 데이터로 실제 UI를 로컬 렌더링한 이미지입니다. 체육관 이미지는 YPoke 봇의 관동 체육관 목록을 씁니다. 지방 도감·펫 보드는 별도로 렌더링한 실제 UI 컴포넌트를 조합했습니다. GIF는 설명용 데모이며 이전 배치를 보여줄 수 있습니다.</small>
 
 ## 에이전트 활동
 
