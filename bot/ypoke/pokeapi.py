@@ -33,6 +33,8 @@ _STAT_KEYS = {
     "special-attack": "special_attack",
     "special-defense": "special_defense",
     "speed": "speed",
+    "accuracy": "accuracy",
+    "evasion": "evasion",
 }
 _BATTLE_STAT_KEYS = set(_STAT_KEYS) - {"hp"}
 _AILMENTS = {"burn", "paralysis", "poison", "toxic", "sleep", "freeze", "confusion"}
@@ -164,7 +166,10 @@ class PokeAPIService:
         return data
 
     def move(self, move_id: int) -> dict:
-        """The move's battle data; `ailment` is one of the simulated statuses and other secondary effects are dropped."""
+        """The move's battle data; `ailment` is one of the simulated statuses and other secondary effects are dropped.
+        A move whose `data/battle/moves.json` entry fills meta PokéAPI lacks (`args.meta`) is read from there."""
+        if "meta" in battle_data.table("moves").get(str(move_id), {}).get("args", {}):
+            return data_move(move_id)
         key = f"move-v4/{move_id}"
         cached = self._store.cached(key)
         if cached is not None:
@@ -306,11 +311,17 @@ def move_from(move: dict) -> dict:
 
 
 def data_move(move_id: int) -> dict:
-    """`move_from` for a move read from `data/battle/moves.json`, as a move that calls another (Metronome) gets it."""
+    """`move_from` for a move read from `data/battle/moves.json`. Its `args.meta` fills what PokéAPI leaves out (the
+    Gen 9 moves' meta, an accuracy drop)."""
     entry = battle_data.table("moves")[str(move_id)]
-    changes = [(key, change) for key, change in entry["meta"]["stat_changes"] if key != "hp"]
+    meta = merged_meta(entry)
+    changes = [(key, change) for key, change in meta["stat_changes"] if key != "hp"]
     return _battle_move(move_id, entry["names"].get("ko") or entry["names"]["en"], entry["type"], entry["class"],
-                        entry, entry["meta"], changes)
+                        entry, meta, changes)
+
+
+def merged_meta(entry: dict) -> dict:
+    return {**entry["meta"], **entry.get("args", {}).get("meta", {})}
 
 
 def _battle_move(move_id: int, name: str, kind: str, damage_class: str, move: dict, meta: dict,

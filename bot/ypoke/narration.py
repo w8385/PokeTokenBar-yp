@@ -43,6 +43,7 @@ BLOCKED_TAG = {
     "quick-guard": "🛡️퍼스트가드에 막힘", "crafty-shield": "🛡️트릭가드에 막힘", "substitute": "🧸대타에 막힘",
     "taunt": "😤도발 때문에 못 씀", "disable": "🚫사슬묶기로 못 씀", "torment": "😈트집 때문에 연달아 못 씀",
     "heal-block": "🚫회복봉인으로 못 씀", "imprison": "🔒봉인되어 못 씀", "powder": "💥분진이 터졌다",
+    "flinch": "😖풀죽어서 못 움직임",
 }
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {

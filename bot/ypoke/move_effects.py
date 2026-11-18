@@ -48,6 +48,7 @@ DAMAGE_EFFECTS = ("pivot", "self-ko", *CHOSEN_DAMAGE_EFFECTS)
 ID_KEYS = frozenset({
     "always-crit", "never-miss", "rising-voltage", "expanding-force", "terrain-pulse", "grassy-glide",
     "misty-explosion", "psyblade", "steel-roller", "ice-spinner", "stone-axe", "ceaseless-edge", "screen-breaker",
+    *("flinch", "random-ailment", "secret-power", "thaw"),
 })
 EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "struggle", "judgment",
                          "ivy-cudgel"})

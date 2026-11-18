@@ -31,6 +31,7 @@ HOOKS = {
     "field_stat": "ability: multiplies a stat in a weather or terrain, after `modify_stat`",
     "side_stat": "state: multiplies a stat of the Pokémon on its side, last",
     "acts_asleep": "move: its user uses it while asleep (Sleep Talk); the sleep still counts down",
+    "thaws_user": "move: a frozen user thaws to use it, and a frozen target it hits thaws (Scald)",
     "bans_move": "state: a move that cannot be used at all, after sleep and freeze and before confusion and PP",
     "bans_foe_move": "state: a move the foe facing its holder cannot use (Imprison), with `bans_move`",
     "locks_move": "item: its holder repeats the move it used",
@@ -81,6 +82,8 @@ HOOKS = {
     "guards_ailment": "state: an ailment a Pokémon on its side cannot get, from anyone or only from a foe",
     "blocks_ailment": "ability: an ailment its holder cannot get",
     "guards_stats": "state: a foe cannot lower the stats of a Pokémon on its side",
+    "secondary": "move: acts on a target the hits left standing, after the ailment and stat changes, unless a "
+                 "Substitute took them (flinch); returns the changes",
     "on_contact": "ability: may hit back at a physical move's user once the move is over",
     "modify_drain": "item: the HP a draining move gives back",
     "after_move_as_user": "item: acts after its holder's move dealt damage, after recoil and drain",

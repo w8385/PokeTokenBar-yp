@@ -3344,3 +3344,462 @@ Action turn=14 side=0 attacker='P143' defender='P59' move='누르기' defender_h
 Action turn=14 side=1 attacker='P59' defender='P143' move='' defender_hp=30 blocked='paralysis' attacker_hp=8
 Action turn=15 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=0 knockout=True attacker_hp=30 move_id=34
 result winner=0 turns=15 remaining=((30, None), (0, 0)) statuses=((None, None), ('paralysis', 'paralysis'))
+## focus thaw-moves 0
+side=0 P131 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[58] mega=None
+side=0 P87 Lv50 ('dark',) item=None ability=None nature=None moves=[58] mega=None
+side=0 P124 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[58] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[503] mega=None
+side=1 P134 Lv50 ('ground', 'ice') item=None ability=None nature=None moves=[503, 815] mega=None
+side=1 P1013 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[902] mega=None
+Action turn=1 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 changes=(Change(side=0, pokemon='P131', kind='burn', stages=0),) defender_hp=91 move_id=503
+Action turn=1 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=58 attacker_hp=91 move_id=58
+StatusDamage turn=1 side=0 pokemon='P131' hp=85 fainted=False
+Action turn=2 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=76 attacker_hp=58 move_id=503
+Action turn=2 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=20 attacker_hp=76 move_id=58
+StatusDamage turn=2 side=0 pokemon='P131' hp=71 fainted=False
+Action turn=3 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=62 attacker_hp=20 move_id=503
+Action turn=3 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=62 move_id=58
+StatusDamage turn=3 side=0 pokemon='P131' hp=56 fainted=False
+SendOut turn=3 side=1 pokemon='P134' member=1
+Action turn=4 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=77 attacker_hp=56 move_id=58
+Action turn=4 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=37 attacker_hp=77 move_id=815
+StatusDamage turn=4 side=0 pokemon='P131' hp=31 fainted=False
+Action turn=5 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=55 attacker_hp=31 move_id=58
+Action turn=5 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=12 attacker_hp=55 move_id=815
+StatusDamage turn=5 side=0 pokemon='P131' hp=7 fainted=False
+Action turn=6 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=35 attacker_hp=7 move_id=58
+Action turn=6 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=0 knockout=True attacker_hp=35 move_id=815
+SendOut turn=6 side=0 pokemon='P87' member=1
+Action turn=7 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=14 move_id=58
+Action turn=7 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=60 attacker_hp=14 move_id=815
+Action turn=8 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=0 knockout=True attacker_hp=60 move_id=58
+SendOut turn=8 side=1 pokemon='P1013' member=2
+Action turn=9 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=88 attacker_hp=60 move_id=58
+Action turn=9 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=29 drained=True move_id=902
+Action turn=10 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=89 attacker_hp=29 move_id=58
+Action turn=10 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=0 knockout=True drained=True move_id=902
+SendOut turn=10 side=0 pokemon='P124' member=2
+Action turn=11 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 changes=(Change(side=0, pokemon='P124', kind='burn', stages=0),) defender_hp=96 drained=True move_id=902
+Action turn=11 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=86 attacker_hp=96 move_id=58
+StatusDamage turn=11 side=0 pokemon='P124' hp=90 fainted=False
+Action turn=12 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=87 drained=True attacker_hp=88 move_id=902
+Action turn=12 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=75 attacker_hp=87 move_id=58
+StatusDamage turn=12 side=0 pokemon='P124' hp=81 fainted=False
+Action turn=13 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=77 drained=True attacker_hp=78 move_id=902
+Action turn=13 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=64 attacker_hp=77 move_id=58
+StatusDamage turn=13 side=0 pokemon='P124' hp=71 fainted=False
+Action turn=14 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=67 drained=True attacker_hp=67 move_id=902
+Action turn=14 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=52 attacker_hp=67 move_id=58
+StatusDamage turn=14 side=0 pokemon='P124' hp=61 fainted=False
+Action turn=15 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=57 drained=True attacker_hp=55 move_id=902
+Action turn=15 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=41 attacker_hp=57 move_id=58
+StatusDamage turn=15 side=0 pokemon='P124' hp=51 fainted=False
+Action turn=16 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=47 drained=True attacker_hp=43 move_id=902
+Action turn=16 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=29 attacker_hp=47 move_id=58
+StatusDamage turn=16 side=0 pokemon='P124' hp=41 fainted=False
+Action turn=17 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=38 drained=True attacker_hp=31 move_id=902
+Action turn=17 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=17 attacker_hp=38 move_id=58
+StatusDamage turn=17 side=0 pokemon='P124' hp=32 fainted=False
+Action turn=18 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=28 drained=True attacker_hp=20 move_id=902
+Action turn=18 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=6 attacker_hp=28 move_id=58
+StatusDamage turn=18 side=0 pokemon='P124' hp=22 fainted=False
+Action turn=19 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=19 drained=True attacker_hp=9 move_id=902
+Action turn=19 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 critical=True defender_hp=0 knockout=True attacker_hp=19 move_id=58
+result winner=0 turns=19 remaining=((0, 0, 19), (0, 0, 0)) statuses=(('burn', None, 'burn'), (None, None, None))
+## focus thaw-moves 1
+side=0 P131 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[58] mega=None
+side=0 P87 Lv50 ('dark',) item=None ability=None nature=None moves=[58] mega=None
+side=0 P124 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[58] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[503] mega=None
+side=1 P134 Lv50 ('ground', 'ice') item=None ability=None nature=None moves=[503, 815] mega=None
+side=1 P1013 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[902] mega=None
+Action turn=1 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 changes=(Change(side=0, pokemon='P131', kind='burn', stages=0),) defender_hp=92 move_id=503
+Action turn=1 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=54 attacker_hp=92 move_id=58
+StatusDamage turn=1 side=0 pokemon='P131' hp=86 fainted=False
+Action turn=2 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 critical=True defender_hp=72 attacker_hp=54 move_id=503
+Action turn=2 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=14 attacker_hp=72 move_id=58
+StatusDamage turn=2 side=0 pokemon='P131' hp=67 fainted=False
+Action turn=3 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=58 attacker_hp=14 move_id=503
+Action turn=3 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=58 move_id=58
+StatusDamage turn=3 side=0 pokemon='P131' hp=53 fainted=False
+SendOut turn=3 side=1 pokemon='P134' member=1
+Action turn=4 side=1 attacker='P134' defender='P131' move='열사의대지' critical=True defender_hp=24 move_id=815
+Action turn=4 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=78 attacker_hp=24 move_id=58
+StatusDamage turn=4 side=0 pokemon='P131' hp=18 fainted=False
+Action turn=5 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=0 knockout=True attacker_hp=78 move_id=815
+SendOut turn=5 side=0 pokemon='P87' member=1
+Action turn=6 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=54 move_id=58
+Action turn=6 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=68 attacker_hp=54 move_id=815
+Action turn=7 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=31 attacker_hp=68 move_id=58
+Action turn=7 side=1 attacker='P134' defender='P87' move='열사의대지' changes=(Change(side=0, pokemon='P87', kind='burn', stages=0),) defender_hp=32 attacker_hp=31 move_id=815
+StatusDamage turn=7 side=0 pokemon='P87' hp=26 fainted=False
+Action turn=8 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=6 attacker_hp=26 move_id=58
+Action turn=8 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=0 knockout=True attacker_hp=6 move_id=815
+SendOut turn=8 side=0 pokemon='P124' member=2
+Action turn=9 side=1 attacker='P134' defender='P124' move='열사의대지' multiplier=4.0 defender_hp=13 attacker_hp=6 move_id=815
+Action turn=9 side=0 attacker='P124' defender='P134' move='냉동빔' defender_hp=0 knockout=True attacker_hp=13 move_id=58
+SendOut turn=9 side=1 pokemon='P1013' member=2
+Action turn=10 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=9 drained=True move_id=902
+Action turn=10 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=87 attacker_hp=9 move_id=58
+Action turn=11 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=6 drained=True attacker_hp=89 move_id=902
+Action turn=11 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=76 attacker_hp=6 move_id=58
+Action turn=12 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=2 drained=True attacker_hp=78 move_id=902
+Action turn=12 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=65 attacker_hp=2 move_id=58
+Action turn=13 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=0 knockout=True drained=True attacker_hp=67 move_id=902
+result winner=1 turns=13 remaining=((0, 0, 0), (0, 0, 67)) statuses=(('burn', 'burn', None), (None, None, None))
+## focus thaw-moves 2
+side=0 P131 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[58] mega=None
+side=0 P87 Lv50 ('dark',) item=None ability=None nature=None moves=[58] mega=None
+side=0 P124 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[58] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[503] mega=None
+side=1 P134 Lv50 ('ground', 'ice') item=None ability=None nature=None moves=[503, 815] mega=None
+side=1 P1013 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[902] mega=None
+Action turn=1 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 changes=(Change(side=0, pokemon='P131', kind='burn', stages=0),) defender_hp=92 move_id=503
+Action turn=1 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=60 attacker_hp=92 move_id=58
+StatusDamage turn=1 side=0 pokemon='P131' hp=85 fainted=False
+Action turn=2 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 critical=True defender_hp=72 attacker_hp=60 move_id=503
+Action turn=2 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=20 attacker_hp=72 move_id=58
+StatusDamage turn=2 side=0 pokemon='P131' hp=66 fainted=False
+Action turn=3 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=58 attacker_hp=20 move_id=503
+Action turn=3 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=58 move_id=58
+StatusDamage turn=3 side=0 pokemon='P131' hp=52 fainted=False
+SendOut turn=3 side=1 pokemon='P134' member=1
+Action turn=4 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=35 move_id=815
+Action turn=4 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=81 attacker_hp=35 move_id=58
+StatusDamage turn=4 side=0 pokemon='P131' hp=28 fainted=False
+Action turn=5 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=10 attacker_hp=81 move_id=815
+Action turn=5 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=62 attacker_hp=10 move_id=58
+StatusDamage turn=5 side=0 pokemon='P131' hp=4 fainted=False
+Action turn=6 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=0 knockout=True attacker_hp=62 move_id=815
+SendOut turn=6 side=0 pokemon='P87' member=1
+Action turn=7 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=41 move_id=58
+Action turn=7 side=1 attacker='P134' defender='P87' move='열사의대지' changes=(Change(side=0, pokemon='P87', kind='burn', stages=0),) defender_hp=60 attacker_hp=41 move_id=815
+StatusDamage turn=7 side=0 pokemon='P87' hp=54 fainted=False
+Action turn=8 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=19 attacker_hp=54 move_id=58
+Action turn=8 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=17 attacker_hp=19 move_id=815
+StatusDamage turn=8 side=0 pokemon='P87' hp=11 fainted=False
+Action turn=9 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=0 knockout=True attacker_hp=11 move_id=58
+StatusDamage turn=9 side=0 pokemon='P87' hp=5 fainted=False
+SendOut turn=9 side=1 pokemon='P1013' member=2
+Action turn=10 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=91 attacker_hp=5 move_id=58
+Action turn=10 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=0 knockout=True drained=True attacker_hp=93 move_id=902
+SendOut turn=10 side=0 pokemon='P124' member=2
+Action turn=11 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=96 drained=True attacker_hp=96 move_id=902
+Action turn=11 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=84 attacker_hp=96 move_id=58
+Action turn=12 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=91 drained=True attacker_hp=87 move_id=902
+Action turn=12 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=75 attacker_hp=91 move_id=58
+Action turn=13 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=87 drained=True attacker_hp=78 move_id=902
+Action turn=13 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=65 attacker_hp=87 move_id=58
+Action turn=14 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=83 drained=True attacker_hp=69 move_id=902
+Action turn=14 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=57 attacker_hp=83 move_id=58
+Action turn=15 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=79 drained=True attacker_hp=60 move_id=902
+Action turn=15 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=48 attacker_hp=79 move_id=58
+Action turn=16 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=79 attacker_hp=48 move_id=902
+Action turn=16 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=37 attacker_hp=79 move_id=58
+Action turn=17 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=75 drained=True attacker_hp=40 move_id=902
+Action turn=17 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=29 attacker_hp=75 move_id=58
+Action turn=18 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=71 drained=True attacker_hp=32 move_id=902
+Action turn=18 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=20 attacker_hp=71 move_id=58
+Action turn=19 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 critical=True defender_hp=65 drained=True attacker_hp=24 move_id=902
+Action turn=19 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=13 attacker_hp=65 move_id=58
+Action turn=20 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=61 drained=True attacker_hp=16 move_id=902
+Action turn=20 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=5 attacker_hp=61 move_id=58
+Action turn=21 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=61 attacker_hp=5 move_id=902
+Action turn=21 side=0 attacker='P124' defender='P1013' move='발버둥' recoil=True defender_hp=0 knockout=True attacker_hp=36 move_id=165
+result winner=0 turns=21 remaining=((0, 0, 36), (0, 0, 0)) statuses=(('burn', 'burn', None), (None, None, None))
+## focus thaw-moves 3
+side=0 P131 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[58] mega=None
+side=0 P87 Lv50 ('dark',) item=None ability=None nature=None moves=[58] mega=None
+side=0 P124 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[58] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[503] mega=None
+side=1 P134 Lv50 ('ground', 'ice') item=None ability=None nature=None moves=[503, 815] mega=None
+side=1 P1013 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[902] mega=None
+Action turn=1 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=91 move_id=503
+Action turn=1 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=62 attacker_hp=91 move_id=58
+Action turn=2 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=82 attacker_hp=62 move_id=503
+Action turn=2 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=18 attacker_hp=82 move_id=58
+Action turn=3 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=74 attacker_hp=18 move_id=503
+Action turn=3 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=74 move_id=58
+SendOut turn=3 side=1 pokemon='P134' member=1
+Action turn=4 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=81 attacker_hp=74 move_id=58
+Action turn=4 side=1 attacker='P134' defender='P131' move='열사의대지' critical=True defender_hp=50 attacker_hp=81 move_id=815
+Action turn=5 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=59 attacker_hp=50 move_id=58
+Action turn=5 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=32 attacker_hp=59 move_id=815
+Action turn=6 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=40 attacker_hp=32 move_id=58
+Action turn=6 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=16 attacker_hp=40 move_id=815
+Action turn=7 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=19 attacker_hp=16 move_id=58
+Action turn=7 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=0 knockout=True attacker_hp=19 move_id=815
+SendOut turn=7 side=0 pokemon='P87' member=1
+Action turn=8 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=0 knockout=True move_id=58
+SendOut turn=8 side=1 pokemon='P1013' member=2
+Action turn=9 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=90 move_id=58
+Action turn=9 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=72 drained=True move_id=902
+Action turn=10 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=90 attacker_hp=72 move_id=58
+Action turn=10 side=1 attacker='P1013' defender='P87' move='휘적휘적포' changes=(Change(side=0, pokemon='P87', kind='burn', stages=0),) defender_hp=40 drained=True move_id=902
+StatusDamage turn=10 side=0 pokemon='P87' hp=34 fainted=False
+Action turn=11 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=90 attacker_hp=34 move_id=58
+Action turn=11 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=3 drained=True move_id=902
+StatusDamage turn=11 side=0 pokemon='P87' hp=0 fainted=True
+SendOut turn=11 side=0 pokemon='P124' member=2
+Action turn=12 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=96 drained=True move_id=902
+Action turn=12 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=87 attacker_hp=96 move_id=58
+Action turn=13 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 changes=(Change(side=0, pokemon='P124', kind='burn', stages=0),) defender_hp=92 drained=True attacker_hp=90 move_id=902
+Action turn=13 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=76 attacker_hp=92 move_id=58
+StatusDamage turn=13 side=0 pokemon='P124' hp=86 fainted=False
+Action turn=14 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=86 attacker_hp=76 move_id=902
+Action turn=14 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=63 attacker_hp=86 move_id=58
+StatusDamage turn=14 side=0 pokemon='P124' hp=80 fainted=False
+Action turn=15 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=80 attacker_hp=63 move_id=902
+Action turn=15 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=50 attacker_hp=80 move_id=58
+StatusDamage turn=15 side=0 pokemon='P124' hp=74 fainted=False
+Action turn=16 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=70 drained=True attacker_hp=53 move_id=902
+Action turn=16 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=40 attacker_hp=70 move_id=58
+StatusDamage turn=16 side=0 pokemon='P124' hp=63 fainted=False
+Action turn=17 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=59 drained=True attacker_hp=43 move_id=902
+Action turn=17 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=30 attacker_hp=59 move_id=58
+StatusDamage turn=17 side=0 pokemon='P124' hp=53 fainted=False
+Action turn=18 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=53 attacker_hp=30 move_id=902
+Action turn=18 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=16 attacker_hp=53 move_id=58
+StatusDamage turn=18 side=0 pokemon='P124' hp=47 fainted=False
+Action turn=19 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 critical=True defender_hp=41 drained=True attacker_hp=20 move_id=902
+Action turn=19 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=6 attacker_hp=41 move_id=58
+StatusDamage turn=19 side=0 pokemon='P124' hp=35 fainted=False
+Action turn=20 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=31 drained=True attacker_hp=8 move_id=902
+Action turn=20 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=0 knockout=True attacker_hp=31 move_id=58
+result winner=0 turns=20 remaining=((0, 0, 31), (0, 0, 0)) statuses=((None, 'burn', 'burn'), (None, None, None))
+## focus thaw-moves 4
+side=0 P131 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[58] mega=None
+side=0 P87 Lv50 ('dark',) item=None ability=None nature=None moves=[58] mega=None
+side=0 P124 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[58] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[503] mega=None
+side=1 P134 Lv50 ('ground', 'ice') item=None ability=None nature=None moves=[503, 815] mega=None
+side=1 P1013 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[902] mega=None
+Action turn=1 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=90 move_id=503
+Action turn=1 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 critical=True defender_hp=38 attacker_hp=90 move_id=58
+Action turn=2 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 changes=(Change(side=0, pokemon='P131', kind='burn', stages=0),) defender_hp=81 attacker_hp=38 move_id=503
+Action turn=2 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=81 move_id=58
+StatusDamage turn=2 side=0 pokemon='P131' hp=75 fainted=False
+SendOut turn=2 side=1 pokemon='P134' member=1
+Action turn=3 side=0 attacker='P131' defender='P134' move='냉동빔' critical=True defender_hp=69 attacker_hp=75 move_id=58
+Action turn=3 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=56 attacker_hp=69 move_id=815
+StatusDamage turn=3 side=0 pokemon='P131' hp=50 fainted=False
+Action turn=4 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=48 attacker_hp=50 move_id=58
+Action turn=4 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=31 attacker_hp=48 move_id=815
+StatusDamage turn=4 side=0 pokemon='P131' hp=25 fainted=False
+Action turn=5 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=26 attacker_hp=25 move_id=58
+Action turn=5 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=6 attacker_hp=26 move_id=815
+StatusDamage turn=5 side=0 pokemon='P131' hp=0 fainted=True
+SendOut turn=5 side=0 pokemon='P87' member=1
+Action turn=6 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=6 move_id=58
+Action turn=6 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=60 attacker_hp=6 move_id=815
+Action turn=7 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=0 knockout=True attacker_hp=60 move_id=58
+SendOut turn=7 side=1 pokemon='P1013' member=2
+Action turn=8 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=92 attacker_hp=60 move_id=58
+Action turn=8 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=30 drained=True move_id=902
+Action turn=9 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=92 attacker_hp=30 move_id=58
+Action turn=9 side=1 attacker='P1013' defender='P87' move='휘적휘적포' missed=True defender_hp=30 attacker_hp=92 move_id=902
+Action turn=10 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=83 attacker_hp=30 move_id=58
+Action turn=10 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=1 drained=True attacker_hp=97 move_id=902
+Action turn=11 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=89 attacker_hp=1 move_id=58
+Action turn=11 side=1 attacker='P1013' defender='P87' move='휘적휘적포' missed=True defender_hp=1 attacker_hp=89 move_id=902
+Action turn=12 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=80 attacker_hp=1 move_id=58
+Action turn=12 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=0 knockout=True drained=True attacker_hp=81 move_id=902
+SendOut turn=12 side=0 pokemon='P124' member=2
+Action turn=13 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=96 drained=True attacker_hp=83 move_id=902
+Action turn=13 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=72 attacker_hp=96 move_id=58
+Action turn=14 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=93 drained=True attacker_hp=74 move_id=902
+Action turn=14 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=62 attacker_hp=93 move_id=58
+Action turn=15 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=90 drained=True attacker_hp=64 move_id=902
+Action turn=15 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=53 attacker_hp=90 move_id=58
+Action turn=16 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=86 drained=True attacker_hp=55 move_id=902
+Action turn=16 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=44 attacker_hp=86 move_id=58
+Action turn=17 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=83 drained=True attacker_hp=46 move_id=902
+Action turn=17 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=34 attacker_hp=83 move_id=58
+Action turn=18 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=79 drained=True attacker_hp=37 move_id=902
+Action turn=18 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=24 attacker_hp=79 move_id=58
+Action turn=19 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 changes=(Change(side=0, pokemon='P124', kind='burn', stages=0),) defender_hp=76 drained=True attacker_hp=26 move_id=902
+Action turn=19 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=14 attacker_hp=76 move_id=58
+StatusDamage turn=19 side=0 pokemon='P124' hp=70 fainted=False
+Action turn=20 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=66 drained=True attacker_hp=16 move_id=902
+Action turn=20 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=5 attacker_hp=66 move_id=58
+StatusDamage turn=20 side=0 pokemon='P124' hp=61 fainted=False
+Action turn=21 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=57 drained=True attacker_hp=8 move_id=902
+Action turn=21 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=0 knockout=True attacker_hp=57 move_id=58
+result winner=0 turns=21 remaining=((0, 0, 57), (0, 0, 0)) statuses=(('burn', None, 'burn'), (None, None, None))
+## focus thaw-moves 5
+side=0 P131 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[58] mega=None
+side=0 P87 Lv50 ('dark',) item=None ability=None nature=None moves=[58] mega=None
+side=0 P124 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[58] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[503] mega=None
+side=1 P134 Lv50 ('ground', 'ice') item=None ability=None nature=None moves=[503, 815] mega=None
+side=1 P1013 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[902] mega=None
+Action turn=1 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=90 move_id=503
+Action turn=1 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=55 attacker_hp=90 move_id=58
+Action turn=2 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=80 attacker_hp=55 move_id=503
+Action turn=2 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=8 attacker_hp=80 move_id=58
+Action turn=3 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 changes=(Change(side=0, pokemon='P131', kind='burn', stages=0),) defender_hp=68 attacker_hp=8 move_id=503
+Action turn=3 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=68 move_id=58
+StatusDamage turn=3 side=0 pokemon='P131' hp=62 fainted=False
+SendOut turn=3 side=1 pokemon='P134' member=1
+Action turn=4 side=0 attacker='P131' defender='P134' move='냉동빔' critical=True defender_hp=69 attacker_hp=62 move_id=58
+Action turn=4 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=41 attacker_hp=69 move_id=815
+StatusDamage turn=4 side=0 pokemon='P131' hp=36 fainted=False
+Action turn=5 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=47 attacker_hp=36 move_id=58
+Action turn=5 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=14 attacker_hp=47 move_id=815
+StatusDamage turn=5 side=0 pokemon='P131' hp=9 fainted=False
+Action turn=6 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=25 attacker_hp=9 move_id=58
+Action turn=6 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=0 knockout=True attacker_hp=25 move_id=815
+SendOut turn=6 side=0 pokemon='P87' member=1
+Action turn=7 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=5 move_id=58
+Action turn=7 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=66 attacker_hp=5 move_id=815
+Action turn=8 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=0 knockout=True attacker_hp=66 move_id=58
+SendOut turn=8 side=1 pokemon='P1013' member=2
+Action turn=9 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=91 attacker_hp=66 move_id=58
+Action turn=9 side=1 attacker='P1013' defender='P87' move='휘적휘적포' changes=(Change(side=0, pokemon='P87', kind='burn', stages=0),) defender_hp=39 drained=True move_id=902
+StatusDamage turn=9 side=0 pokemon='P87' hp=33 fainted=False
+Action turn=10 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 critical=True defender_hp=86 attacker_hp=33 move_id=58
+Action turn=10 side=1 attacker='P1013' defender='P87' move='휘적휘적포' critical=True defender_hp=0 knockout=True drained=True move_id=902
+SendOut turn=10 side=0 pokemon='P124' member=2
+Action turn=11 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=96 drained=True move_id=902
+Action turn=11 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=88 attacker_hp=96 move_id=58
+Action turn=12 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=92 drained=True attacker_hp=91 move_id=902
+Action turn=12 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=79 attacker_hp=92 move_id=58
+Action turn=13 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=88 drained=True attacker_hp=82 move_id=902
+Action turn=13 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=71 attacker_hp=88 move_id=58
+Action turn=14 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=84 drained=True attacker_hp=74 move_id=902
+Action turn=14 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=62 attacker_hp=84 move_id=58
+Action turn=15 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=80 drained=True attacker_hp=65 move_id=902
+Action turn=15 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=53 attacker_hp=80 move_id=58
+Action turn=16 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=80 attacker_hp=53 move_id=902
+Action turn=16 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=40 attacker_hp=80 move_id=58
+Action turn=17 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=76 drained=True attacker_hp=43 move_id=902
+Action turn=17 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=32 attacker_hp=76 move_id=58
+Action turn=18 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=76 attacker_hp=32 move_id=902
+Action turn=18 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=21 attacker_hp=76 move_id=58
+Action turn=19 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=73 drained=True attacker_hp=23 move_id=902
+Action turn=19 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=10 attacker_hp=73 move_id=58
+Action turn=20 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=69 drained=True attacker_hp=13 move_id=902
+Action turn=20 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=2 attacker_hp=69 move_id=58
+Action turn=21 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=69 attacker_hp=2 move_id=902
+Action turn=21 side=0 attacker='P124' defender='P1013' move='발버둥' recoil=True defender_hp=0 knockout=True attacker_hp=44 move_id=165
+result winner=0 turns=21 remaining=((0, 0, 44), (0, 0, 0)) statuses=(('burn', 'burn', None), (None, None, None))
+## focus thaw-moves 6
+side=0 P131 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[58] mega=None
+side=0 P87 Lv50 ('dark',) item=None ability=None nature=None moves=[58] mega=None
+side=0 P124 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[58] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[503] mega=None
+side=1 P134 Lv50 ('ground', 'ice') item=None ability=None nature=None moves=[503, 815] mega=None
+side=1 P1013 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[902] mega=None
+Action turn=1 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=91 move_id=503
+Action turn=1 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=59 attacker_hp=91 move_id=58
+Action turn=2 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 changes=(Change(side=0, pokemon='P131', kind='burn', stages=0),) defender_hp=83 attacker_hp=59 move_id=503
+Action turn=2 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=18 attacker_hp=83 move_id=58
+StatusDamage turn=2 side=0 pokemon='P131' hp=77 fainted=False
+Action turn=3 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=68 attacker_hp=18 move_id=503
+Action turn=3 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=68 move_id=58
+StatusDamage turn=3 side=0 pokemon='P131' hp=62 fainted=False
+SendOut turn=3 side=1 pokemon='P134' member=1
+Action turn=4 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=80 attacker_hp=62 move_id=58
+Action turn=4 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=45 attacker_hp=80 move_id=815
+StatusDamage turn=4 side=0 pokemon='P131' hp=39 fainted=False
+Action turn=5 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=59 attacker_hp=39 move_id=58
+Action turn=5 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=23 attacker_hp=59 move_id=815
+StatusDamage turn=5 side=0 pokemon='P131' hp=17 fainted=False
+Action turn=6 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=38 attacker_hp=17 move_id=58
+Action turn=6 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=0 knockout=True attacker_hp=38 move_id=815
+SendOut turn=6 side=0 pokemon='P87' member=1
+Action turn=7 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=18 move_id=58
+Action turn=7 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=67 attacker_hp=18 move_id=815
+Action turn=8 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=0 knockout=True attacker_hp=67 move_id=58
+SendOut turn=8 side=1 pokemon='P1013' member=2
+Action turn=9 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=90 attacker_hp=67 move_id=58
+Action turn=9 side=1 attacker='P1013' defender='P87' move='휘적휘적포' changes=(Change(side=0, pokemon='P87', kind='burn', stages=0),) defender_hp=40 drained=True move_id=902
+StatusDamage turn=9 side=0 pokemon='P87' hp=34 fainted=False
+Action turn=10 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=91 attacker_hp=34 move_id=58
+Action turn=10 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=6 drained=True move_id=902
+StatusDamage turn=10 side=0 pokemon='P87' hp=1 fainted=False
+Action turn=11 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=90 attacker_hp=1 move_id=58
+Action turn=11 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=0 knockout=True drained=True attacker_hp=91 move_id=902
+SendOut turn=11 side=0 pokemon='P124' member=2
+Action turn=12 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 changes=(Change(side=0, pokemon='P124', kind='burn', stages=0),) defender_hp=96 drained=True attacker_hp=93 move_id=902
+Action turn=12 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=80 attacker_hp=96 move_id=58
+StatusDamage turn=12 side=0 pokemon='P124' hp=90 fainted=False
+Action turn=13 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=90 attacker_hp=80 move_id=902
+Action turn=13 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=66 attacker_hp=90 move_id=58
+StatusDamage turn=13 side=0 pokemon='P124' hp=84 fainted=False
+Action turn=14 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=81 drained=True attacker_hp=68 move_id=902
+Action turn=14 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=54 attacker_hp=81 move_id=58
+StatusDamage turn=14 side=0 pokemon='P124' hp=75 fainted=False
+Action turn=15 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=75 attacker_hp=54 move_id=902
+Action turn=15 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=39 attacker_hp=75 move_id=58
+StatusDamage turn=15 side=0 pokemon='P124' hp=69 fainted=False
+Action turn=16 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=65 drained=True attacker_hp=42 move_id=902
+Action turn=16 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=28 attacker_hp=65 move_id=58
+StatusDamage turn=16 side=0 pokemon='P124' hp=59 fainted=False
+Action turn=17 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=55 drained=True attacker_hp=30 move_id=902
+Action turn=17 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=17 attacker_hp=55 move_id=58
+StatusDamage turn=17 side=0 pokemon='P124' hp=49 fainted=False
+Action turn=18 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=49 attacker_hp=17 move_id=902
+Action turn=18 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=2 attacker_hp=49 move_id=58
+StatusDamage turn=18 side=0 pokemon='P124' hp=43 fainted=False
+Action turn=19 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=39 drained=True attacker_hp=5 move_id=902
+Action turn=19 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=0 knockout=True attacker_hp=39 move_id=58
+result winner=0 turns=19 remaining=((0, 0, 39), (0, 0, 0)) statuses=(('burn', 'burn', 'burn'), (None, None, None))
+## focus thaw-moves 7
+side=0 P131 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[58] mega=None
+side=0 P87 Lv50 ('dark',) item=None ability=None nature=None moves=[58] mega=None
+side=0 P124 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[58] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[503] mega=None
+side=1 P134 Lv50 ('ground', 'ice') item=None ability=None nature=None moves=[503, 815] mega=None
+side=1 P1013 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[902] mega=None
+Action turn=1 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 changes=(Change(side=0, pokemon='P131', kind='burn', stages=0),) defender_hp=92 move_id=503
+Action turn=1 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=59 attacker_hp=92 move_id=58
+StatusDamage turn=1 side=0 pokemon='P131' hp=86 fainted=False
+Action turn=2 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=76 attacker_hp=59 move_id=503
+Action turn=2 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 changes=(Change(side=1, pokemon='P9', kind='freeze', stages=0),) defender_hp=13 attacker_hp=76 move_id=58
+StatusDamage turn=2 side=0 pokemon='P131' hp=70 fainted=False
+Action turn=3 side=1 attacker='P9' defender='P131' move='열탕' multiplier=0.5 defender_hp=61 recovered=('freeze',) attacker_hp=13 move_id=503
+Action turn=3 side=0 attacker='P131' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=61 move_id=58
+StatusDamage turn=3 side=0 pokemon='P131' hp=56 fainted=False
+SendOut turn=3 side=1 pokemon='P134' member=1
+Action turn=4 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=35 move_id=815
+Action turn=4 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=77 attacker_hp=35 move_id=58
+StatusDamage turn=4 side=0 pokemon='P131' hp=29 fainted=False
+Action turn=5 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=10 attacker_hp=77 move_id=815
+Action turn=5 side=0 attacker='P131' defender='P134' move='냉동빔' defender_hp=53 attacker_hp=10 move_id=58
+StatusDamage turn=5 side=0 pokemon='P131' hp=5 fainted=False
+Action turn=6 side=1 attacker='P134' defender='P131' move='열사의대지' defender_hp=0 knockout=True attacker_hp=53 move_id=815
+SendOut turn=6 side=0 pokemon='P87' member=1
+Action turn=7 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=29 move_id=58
+Action turn=7 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=56 attacker_hp=29 move_id=815
+Action turn=8 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=8 attacker_hp=56 move_id=58
+Action turn=8 side=1 attacker='P134' defender='P87' move='열사의대지' defender_hp=12 attacker_hp=8 move_id=815
+Action turn=9 side=0 attacker='P87' defender='P134' move='냉동빔' defender_hp=0 knockout=True attacker_hp=12 move_id=58
+SendOut turn=9 side=1 pokemon='P1013' member=2
+Action turn=10 side=0 attacker='P87' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=90 attacker_hp=12 move_id=58
+Action turn=10 side=1 attacker='P1013' defender='P87' move='휘적휘적포' defender_hp=0 knockout=True drained=True attacker_hp=95 move_id=902
+SendOut turn=10 side=0 pokemon='P124' member=2
+Action turn=11 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 attacker_hp=95 move_id=902
+Action turn=11 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=81 move_id=58
+Action turn=12 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=95 drained=True attacker_hp=84 move_id=902
+Action turn=12 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=71 attacker_hp=95 move_id=58
+Action turn=13 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=92 drained=True attacker_hp=74 move_id=902
+Action turn=13 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=59 attacker_hp=92 move_id=58
+Action turn=14 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 changes=(Change(side=0, pokemon='P124', kind='burn', stages=0),) defender_hp=88 drained=True attacker_hp=62 move_id=902
+Action turn=14 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=50 attacker_hp=88 move_id=58
+StatusDamage turn=14 side=0 pokemon='P124' hp=81 fainted=False
+Action turn=15 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=77 drained=True attacker_hp=53 move_id=902
+Action turn=15 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=39 attacker_hp=77 move_id=58
+StatusDamage turn=15 side=0 pokemon='P124' hp=71 fainted=False
+Action turn=16 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=71 attacker_hp=39 move_id=902
+Action turn=16 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=26 attacker_hp=71 move_id=58
+StatusDamage turn=16 side=0 pokemon='P124' hp=65 fainted=False
+Action turn=17 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=61 drained=True attacker_hp=29 move_id=902
+Action turn=17 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=15 attacker_hp=61 move_id=58
+StatusDamage turn=17 side=0 pokemon='P124' hp=55 fainted=False
+Action turn=18 side=1 attacker='P1013' defender='P124' move='휘적휘적포' missed=True multiplier=0.25 defender_hp=55 attacker_hp=15 move_id=902
+Action turn=18 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 defender_hp=2 attacker_hp=55 move_id=58
+StatusDamage turn=18 side=0 pokemon='P124' hp=48 fainted=False
+Action turn=19 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=44 drained=True attacker_hp=5 move_id=902
+Action turn=19 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 critical=True defender_hp=0 knockout=True attacker_hp=44 move_id=58
+result winner=0 turns=19 remaining=((0, 0, 44), (0, 0, 0)) statuses=(('burn', None, 'burn'), (None, None, None))
