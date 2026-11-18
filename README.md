@@ -184,7 +184,7 @@ Pi can route more than one model through a single session log. Usage is now attr
 <h3>Every Pokémon has its own profile</h3>
 Open a Pokémon in the <b>Box</b> to inspect it: level, gender, nature, ability, IVs, calculated stats, held item, and moves. Species descriptions, abilities, and moves use your selected language, with English as the fallback when PokéAPI has no translation.
 <br><br>
-<b>Status moves</b> join the move picker in their own group: Swords Dance, Thunder Wave, Yawn, Trick Room, the screens (Reflect, Light Screen, Aurora Veil), the hazards (Stealth Rock, Spikes, Toxic Spikes, Sticky Web), the four terrains, Tailwind, Safeguard, Mist, Lucky Chant, Gravity, Haze, Defog, Court Change and Tidy Up, when the Pokémon learns them by level-up, by TM or as an egg move. In battles your Pokémon uses them by the same rules as the trainers.
+<b>Status moves</b> join the move picker in their own group when the Pokémon learns them by level-up, by TM or as an egg move. Every Gen 9 status move that does something in a one-on-one battle works: stat changes, healing, Protect and Substitute, status conditions, Taunt and Encore, the screens, hazards and terrains, type, ability and item changers, Baton Pass and the other switching moves, and move callers like Metronome. A few do nothing in singles and stay out of the picker: Whirlwind and Roar, the trapping moves (Mean Look, Block, Spider Web, Fairy Lock), After You and Quash, Attract and Captivate, Wide Guard and Instruct. In battles your Pokémon uses them by the same rules as the trainers.
 <br><br>
 Each move slot is its own card. The <b>▲/▼</b> buttons on a filled slot swap it with the one above or below, so you can change the order without picking the moves again.
 </td>
