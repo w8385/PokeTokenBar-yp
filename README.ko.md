@@ -58,10 +58,10 @@ PokeTokenBar는 당신이 이미 태우고 있는 AI 코딩 토큰(Claude Code �
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pet-interactions-ko.png" width="300" alt="기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 펫 샘플"><br><small>실제 UI 컴포넌트 · 샘플 상태</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="플로팅 펫 옆에 선 친구 둘, 그중 하나 위에 뜬 하트"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pet-interactions-ko.png" width="300" alt="기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 펫 샘플"><br><small>실제 UI 컴포넌트 · 샘플 상태</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="플로팅 펫 옆에 선 친구 둘, 그중 하나 위에 뜬 하트"><br><br><img src="assets/screenshot-pet-xp-ko.png" width="300" alt="빠르게 다섯 번 클릭한 뒤 +270K XP 배지가 뜬 홈 스프라이트"><br><small>샘플 상태</small></td>
 <td width="55%" valign="middle">
 <h3>작은 반응이 있는 파트너</h3>
-플로팅 펫 위로 포인터를 움직이거나 클릭해 쓰다듬고, 알을 클릭해 기도해 보세요. 작은 반응, 삐침, 가끔 나타나는 이벤트 말풍선을 볼 수 있어요. 친구는 펫 바로 옆에 살짝 겹쳐 서고, 친구를 쓰다듬으면 그 친구 위에 하트가 떠요. 이 상호작용은 연출이며 기도가 부화 확률이나 성장 보상을 바꾸지는 않습니다. 기도 30회마다 한마디와 함께 사용량을 새로고침할 수 있어요. 에이전트의 작업·입력 대기·완료 반응은 <a href="#에이전트-활동">수동 설정</a> 후 사용할 수 있어요.
+플로팅 펫 위로 포인터를 움직이거나 클릭해 쓰다듬고, 알을 클릭해 기도해 보세요. 작은 반응, 삐침, 가끔 나타나는 이벤트 말풍선을 볼 수 있어요. 친구는 펫 바로 옆에 살짝 겹쳐 서고, 친구를 쓰다듬으면 그 친구 위에 하트가 떠요. 이 상호작용은 연출이며 기도가 부화 확률이나 성장 보상을 바꾸지는 않습니다. 홈의 큰 스프라이트나 부화한 플로팅 펫을 클릭하면 실제로 자라고, 클릭은 매번 셉니다. 빠르게 누르면 +XP 배지 하나에 더해져요. 기도 30회마다 한마디와 함께 사용량을 새로고침할 수 있어요. 에이전트의 작업·입력 대기·완료 반응은 <a href="#에이전트-활동">수동 설정</a> 후 사용할 수 있어요.
 </td>
 </tr>
 <tr>
