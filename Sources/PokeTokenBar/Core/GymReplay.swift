@@ -10,6 +10,7 @@ struct GymReplay: Equatable, Sendable {
         let side: Int
         let member: Int
         let name: String
+        var id: Int? = nil
     }
 
     /// Both sides after some events: who is out, each member's HP share (nil until it comes out) and status.
@@ -57,7 +58,7 @@ struct GymReplay: Equatable, Sendable {
                 frame.hp[event.side][event.member] = event.hp ?? 100
                 frame.status[event.side][event.member] = event.status
             case "move":
-                frame.lastMove = Move(side: event.side, member: event.member, name: event.move ?? "")
+                frame.lastMove = Move(side: event.side, member: event.member, name: event.move ?? "", id: event.moveId)
             case "damage":
                 frame.hp[event.side][event.member] = event.hp
             case "faint":

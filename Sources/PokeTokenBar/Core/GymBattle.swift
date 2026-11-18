@@ -54,6 +54,8 @@ struct GymBattleEvent: Decodable, Equatable, Sendable {
     var hp: Int?
     var status: String?
     var move: String?
+    /// The PokéAPI id of `move`; nil from a bot older than localized replays.
+    var moveId: Int?
 }
 
 extension GymBattleEvent {

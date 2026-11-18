@@ -16,6 +16,7 @@ struct MoveTrainingSection: View {
     @State private var loadedSpecies: Int?
     @State private var unavailable = false
     @State private var editing: Int?
+    @Environment(\.pokemonNameStore) private var injectedNames
 
     init(store: CompanionStore, battleEntry: BattleEntryStore, uploader: PartyUploader,
          candidate: BattleCandidate, initialEditing: Int? = nil, onChange: @escaping () -> Void) {
@@ -177,8 +178,8 @@ struct MoveTrainingSection: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
-            .help(move.name)
-            .accessibilityLabel(move.name)
+            .help(name(move))
+            .accessibilityLabel(name(move))
         }
     }
 
@@ -204,12 +205,17 @@ struct MoveTrainingSection: View {
         }
     }
 
-    private func buyHelp(_ move: LearnableMove) -> String { "\(l.buy) \(move.name)" }
+    private func buyHelp(_ move: LearnableMove) -> String { "\(l.buy) \(name(move))" }
+
+    private func name(_ move: LearnableMove) -> String {
+        MoveName.text(id: move.id, botName: move.name, language: store.language,
+                      names: (injectedNames ?? .shared).names)
+    }
 
     private func moveLabel(_ move: LearnableMove) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
-                Text(move.name).font(.callout)
+                MoveNameLabel(id: move.id, botName: move.name, language: store.language).font(.callout)
                 TypeBadges(types: [move.type], language: store.language)
                 Spacer()
                 if let source = source(move) { Text(source).font(.caption2).foregroundStyle(.tertiary) }

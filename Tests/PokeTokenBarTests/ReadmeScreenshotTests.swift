@@ -12,6 +12,8 @@ final class ReadmeScreenshotTests: XCTestCase {
     private static let server = "http://bot-host:8790"
     private static let species = [1, 4, 5, 6, 25, 95, 133]
     private let languages: [(AppLanguage, String)] = [(.en, ""), (.ko, "-ko"), (.ja, "-ja")]
+    /// The app's move names by id, loaded from `StubMoveNames` the way PokéAPI answers them.
+    private var moveNames: PokemonNameDisplayStore?
 
     func testDrawReadmeImages() async throws {
         guard let output = ProcessInfo.processInfo.environment["PTB_README_SHOT_DIR"] else {
@@ -36,6 +38,9 @@ final class ReadmeScreenshotTests: XCTestCase {
             GymTrainerArt.clearCache()
         }
         try await preloadSprites()
+        let moveNames = PokemonNameDisplayStore()
+        await MoveName.load(ids: StubMoveNames.table.keys, store: moveNames, provider: StubMoveNames())
+        self.moveNames = moveNames
 
         let usage = UsageStore(providers: [], discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil },
                                claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults)
@@ -285,7 +290,8 @@ final class ReadmeScreenshotTests: XCTestCase {
         .padding(PopoverMetrics.padding)
     }
 
-    /// What the bot answers for Charizard with `status=1`: Korean names, as the bot sends them.
+    /// What the bot answers for Charizard with `status=1`: Korean names, as the bot sends them. The app shows each
+    /// in its language by id, from `moveNames`.
     private static let charizardMoves = """
     {"ok":true,"default":[52,225,53,337],"moves":[
      {"id":52,"name":"불꽃세례","type":"fire","power":40,"damage_class":"special","accuracy":100,"level":1,"pp":25,"source":"level","ailment":"burn","ailment_chance":10},
@@ -447,6 +453,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             .background(Color(nsColor: .windowBackgroundColor))
             .environment(\.colorScheme, .dark)
             .environment(\.controlActiveState, .active)
+            .environment(\.pokemonNameProvider, StubMoveNames()).environment(\.pokemonNameStore, moveNames)
         let host = OffscreenRender.host(styled, size: CGSize(width: width, height: height ?? 2_000), appearance: .darkAqua)
         try await OffscreenRender.settle(host)
         if height == nil {
