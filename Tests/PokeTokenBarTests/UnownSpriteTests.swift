@@ -76,6 +76,11 @@ final class UnownSpriteCacheTests: XCTestCase {
         (.a, "201"), (.b, "201-b"), (.exclamation, "201-exclamation"), (.question, "201-question"),
     ]
 
+    override func setUp() {
+        super.setUp()
+        SpriteLoader.imageCache.removeAllObjects()
+    }
+
     private func directory() throws -> URL {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("unown-sprites-\(UUID())")
