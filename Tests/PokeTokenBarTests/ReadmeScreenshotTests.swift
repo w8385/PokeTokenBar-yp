@@ -198,6 +198,8 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await shot(heldItems(store: store), "screenshot-held-items\(suffix)", in: dir, height: nil)
             try await shot(shopSearch(store: store, language: language), "screenshot-shop-search\(suffix)", in: dir,
                            height: nil)
+            try await shot(setPowerTMs(store: store, language: language), "screenshot-set-power-tms\(suffix)", in: dir,
+                           height: 540)
             try await shot(popover { $0.tab = .dex }, "screenshot-collection-pokedex\(suffix)", in: dir, height: 420)
             try await shot(popover { $0.tab = .box }, "screenshot-collection-box\(suffix)", in: dir, height: 420)
             try await shot(popover { $0.openBoxDetail(id: BoxDexFixture.charizardID) },
@@ -519,6 +521,14 @@ final class ReadmeScreenshotTests: XCTestCase {
     private func shopSearch(store: CompanionStore, language: AppLanguage) -> some View {
         let query = language == .ko ? "구슬" : "orb"
         return ShopView(store: store, nav: PopoverNavigation(), searchQuery: query)
+            .padding(PopoverMetrics.padding)
+            .environment(store)
+    }
+
+    /// The TM shop searched for "ball": Electro Ball and Gyro Ball show "Power —" next to the fixed-power balls.
+    private func setPowerTMs(store: CompanionStore, language: AppLanguage) -> some View {
+        let query = ["ko": "볼", "ja": "ボール"][language.rawValue] ?? "ball"
+        return ShopView(store: store, nav: PopoverNavigation(), initialCategory: .machine, machineQuery: query)
             .padding(PopoverMetrics.padding)
             .environment(store)
     }
