@@ -49,6 +49,9 @@ ID_KEYS = frozenset({
     "always-crit", "never-miss", "rising-voltage", "expanding-force", "terrain-pulse", "grassy-glide",
     "misty-explosion", "psyblade", "steel-roller", "ice-spinner", "stone-axe", "ceaseless-edge", "screen-breaker",
     *("flinch", "random-ailment", "secret-power", "thaw"),
+    *("steal-item", "eat-berry", "burn-berry", "fell-stinger", "spectral-thief", "clear-smog", "smack-down",
+      "hits-airborne", "throat-chop", "salt-cure", "syrup-bomb", "psychic-noise", "sappy-seed", "eerie-spell",
+      "core-enforcer", "if-raised", "loses-type", "wakes-target", "false-swipe", "plasma-fists", "grav-apple"),
 })
 EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "struggle", "judgment",
                          "ivy-cudgel"})

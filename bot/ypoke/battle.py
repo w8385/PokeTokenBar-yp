@@ -805,6 +805,7 @@ class _Team:
         fallen = sum(fighter.hp == 0 for fighter in self.fighters.values())
         fighter = self.active
         fighter.acted = fighter.hit_by_foe = fighter.lowered = False
+        fighter.turn_stages = dict(fighter.stages)
         fighter.flopped_last, fighter.flopped = fighter.flopped, False
         fighter.fallen_allies = fallen
         fighter.ally_fell_last_turn = fallen > self.fallen_before
@@ -875,6 +876,7 @@ class _Fighter:
     acted: bool = False
     hit_by_foe: bool = False
     lowered: bool = False
+    turn_stages: dict[str, int] | None = None
     flopped: bool = False
     flopped_last: bool = False
     times_hit: int = 0
@@ -1122,6 +1124,9 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         return Action(turn, side, *names, move.name, failed=True, blocked=backfired, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent,
                       attacker_fainted=attacker.hp == 0)
+    if hooks.move(move, "fails", attacker, defender, default=False):
+        return Action(turn, side, *names, move.name, failed=True, recovered=recovered,
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     stopped = _stopped(attacker, defender, move)
     if stopped:
         changes = tuple(change for answer in _field(defender, "punishes", move, attacker, side, rng)
@@ -1164,7 +1169,9 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
             continue
         damage = min(defender.hp, damage)
         lethal, from_full, held = damage >= defender.hp, defender.hp == defender.max_hp > 1, defender.item
-        if lethal and any(_field(defender, "endures", defender, from_full, rng)):
+        if lethal and hooks.move(move, "spares", default=False):
+            damage = defender.hp - 1
+        elif lethal and any(_field(defender, "endures", defender, from_full, rng)):
             damage = defender.hp - 1
         elif lethal and hooks.ability(defender, "endures", defender, from_full, rng, default=False):
             damage, sturdy = defender.hp - 1, True
@@ -1473,7 +1480,8 @@ def _surely_finishes(attacker: _Fighter, defender: _Fighter, move: Move, weather
     never_misses = move.accuracy in (None, 100) or hooks.move(move, "skips_accuracy", weather, default=False)
     damage = _unrolled_damage(attacker, defender, move, _multiplier(move, defender, weather), weather)
     return (never_misses and damage * 0.85 >= defender.hp and not _banned(attacker, move)
-            and not _stopped(attacker, defender, move))
+            and not _stopped(attacker, defender, move) and not hooks.move(move, "spares", default=False)
+            and not hooks.move(move, "fails", attacker, defender, default=False))
 
 
 def _best_weather_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> int | None:
@@ -1506,7 +1514,8 @@ def _best_score(attacker: _Fighter, defender: _Fighter, weather: str | None) -> 
 def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
     """Power × STAB × type × weather × accuracy × attack/defense; 0 for a move a state bans or stops."""
     move = move_power.typed(move, weather, attacker)
-    if _banned(attacker, move) or _stopped(attacker, defender, move):
+    if (_banned(attacker, move) or _stopped(attacker, defender, move)
+            or hooks.move(move, "fails", attacker, defender, default=False)):
         return 0.0
     attack, defense = _stats_for(attacker, defender, move.physical, weather, _ignores_burn(move))
     skips = move.accuracy is None or hooks.move(move, "skips_accuracy", weather, default=False)
@@ -1562,7 +1571,8 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
     move hit it through its Flying type and its airborne ability."""
     if move.type is None:
         return 1.0
-    forced_down = move.type == "ground" and any(_field(defender, "grounds"))
+    forced_down = move.type == "ground" and (any(_field(defender, "grounds"))
+                                             or hooks.move(move, "hits_airborne", default=False))
     if not forced_down and hooks.ability(defender, "immune_to", move.type, default=False):
         return 0.0
     if not forced_down and move.type == "ground" and any(_field(defender, "lifts")):
