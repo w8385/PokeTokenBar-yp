@@ -1,5 +1,6 @@
 """Which moves a Pokémon brings to a battle."""
 
+from ypoke import pokeapi
 from ypoke.battle import Move
 from ypoke.move_effects import EFFECTS
 
@@ -13,6 +14,11 @@ def battle_moves(learnable: list[dict], chosen_ids: list[int] | None) -> tuple[M
     if not picked:
         picked = [by_id[move_id] for move_id in default_move_ids(learnable)]
     return tuple(_move(move) for move in picked)
+
+
+def from_data(move_id: int) -> Move:
+    """A move that no Pokémon in the battle knows, brought in mid-battle (Metronome, Nature Power)."""
+    return _move(pokeapi.data_move(move_id))
 
 
 def default_move_ids(learnable: list[dict]) -> list[int]:

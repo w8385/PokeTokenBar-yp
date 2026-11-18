@@ -3044,3 +3044,303 @@ Action turn=8 side=0 attacker='P18' defender='P54' move='지진' defender_hp=46 
 Action turn=8 side=1 attacker='P54' defender='P18' move='지진' defender_hp=59 attacker_hp=46 move_id=89
 Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True attacker_hp=59 move_id=89
 result winner=0 turns=9 remaining=((0, 0, 59), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus boost-rest 0
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[74, 156, 34] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[74, 156, 75] mega=None
+side=1 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[2, 7] mega=None
+side=1 P59 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[53, 44] mega=None
+Action turn=1 side=0 attacker='P143' defender='P68' move='성장' changes=(Change(side=0, pokemon='P143', kind='attack', stages=1), Change(side=0, pokemon='P143', kind='special_attack', stages=1)) effect='stages' move_id=74
+Action turn=1 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 changes=(Change(side=0, pokemon='P143', kind='burn', stages=0),) defender_hp=94 move_id=7
+StatusDamage turn=1 side=0 pokemon='P143' hp=88 fainted=False
+Action turn=2 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=75 attacker_hp=88 move_id=34
+Action turn=2 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=82 attacker_hp=75 move_id=7
+StatusDamage turn=2 side=0 pokemon='P143' hp=76 fainted=False
+Action turn=3 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=52 attacker_hp=76 move_id=34
+Action turn=3 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=71 attacker_hp=52 move_id=7
+StatusDamage turn=3 side=0 pokemon='P143' hp=65 fainted=False
+Action turn=4 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=27 attacker_hp=65 move_id=34
+Action turn=4 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=59 attacker_hp=27 move_id=7
+StatusDamage turn=4 side=0 pokemon='P143' hp=53 fainted=False
+Action turn=5 side=0 attacker='P143' defender='P68' move='누르기' changes=(Change(side=1, pokemon='P68', kind='paralysis', stages=0),) defender_hp=3 attacker_hp=53 move_id=34
+Action turn=5 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=47 attacker_hp=3 move_id=7
+StatusDamage turn=5 side=0 pokemon='P143' hp=41 fainted=False
+Action turn=6 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=0 knockout=True attacker_hp=41 move_id=34
+StatusDamage turn=6 side=0 pokemon='P143' hp=36 fainted=False
+SendOut turn=6 side=1 pokemon='P59' member=1
+Action turn=7 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=21 move_id=53
+Action turn=7 side=0 attacker='P143' defender='P59' move='누르기' changes=(Change(side=1, pokemon='P59', kind='paralysis', stages=0),) defender_hp=89 attacker_hp=21 move_id=34
+StatusDamage turn=7 side=0 pokemon='P143' hp=16 fainted=False
+Action turn=8 side=0 attacker='P143' defender='P59' move='잠자기' changes=(Change(side=0, pokemon='P143', kind='sleep', stages=0),) defender_hp=89 effect='rest' move_id=156
+Action turn=8 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=85 attacker_hp=89 move_id=53
+Action turn=9 side=0 attacker='P143' defender='P59' move='' defender_hp=89 blocked='sleep' attacker_hp=85
+Action turn=9 side=1 attacker='P59' defender='P143' move='' defender_hp=85 blocked='paralysis' attacker_hp=89
+Action turn=10 side=0 attacker='P143' defender='P59' move='' defender_hp=89 blocked='sleep' attacker_hp=85
+Action turn=10 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=70 attacker_hp=89 move_id=53
+Action turn=11 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=69 recovered=('sleep',) attacker_hp=70 move_id=34
+Action turn=11 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=56 attacker_hp=69 move_id=53
+Action turn=12 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=48 attacker_hp=56 move_id=34
+Action turn=12 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=42 attacker_hp=48 move_id=53
+Action turn=13 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=28 attacker_hp=42 move_id=34
+Action turn=13 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=28 attacker_hp=28 move_id=53
+Action turn=14 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=7 attacker_hp=28 move_id=34
+Action turn=14 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=13 attacker_hp=7 move_id=53
+Action turn=15 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=0 knockout=True attacker_hp=13 move_id=34
+result winner=0 turns=15 remaining=((13, None), (0, 0)) statuses=((None, None), ('paralysis', 'paralysis'))
+## focus boost-rest 1
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[74, 156, 34] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[74, 156, 75] mega=None
+side=1 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[2, 7] mega=None
+side=1 P59 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[53, 44] mega=None
+Action turn=1 side=0 attacker='P143' defender='P68' move='성장' changes=(Change(side=0, pokemon='P143', kind='attack', stages=1), Change(side=0, pokemon='P143', kind='special_attack', stages=1)) effect='stages' move_id=74
+Action turn=1 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=94 move_id=7
+Action turn=2 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 changes=(Change(side=0, pokemon='P143', kind='burn', stages=0),) defender_hp=88 move_id=7
+Action turn=2 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=78 attacker_hp=88 move_id=34
+StatusDamage turn=2 side=0 pokemon='P143' hp=82 fainted=False
+Action turn=3 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=76 attacker_hp=78 move_id=7
+Action turn=3 side=0 attacker='P143' defender='P68' move='누르기' changes=(Change(side=1, pokemon='P68', kind='paralysis', stages=0),) defender_hp=56 attacker_hp=76 move_id=34
+StatusDamage turn=3 side=0 pokemon='P143' hp=70 fainted=False
+Action turn=4 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=34 attacker_hp=70 move_id=34
+Action turn=4 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=64 attacker_hp=34 move_id=7
+StatusDamage turn=4 side=0 pokemon='P143' hp=58 fainted=False
+Action turn=5 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=14 attacker_hp=58 move_id=34
+Action turn=5 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=52 attacker_hp=14 move_id=7
+StatusDamage turn=5 side=0 pokemon='P143' hp=46 fainted=False
+Action turn=6 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=0 knockout=True attacker_hp=46 move_id=34
+StatusDamage turn=6 side=0 pokemon='P143' hp=40 fainted=False
+SendOut turn=6 side=1 pokemon='P59' member=1
+Action turn=7 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=24 move_id=53
+Action turn=7 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=89 attacker_hp=24 move_id=34
+StatusDamage turn=7 side=0 pokemon='P143' hp=18 fainted=False
+Action turn=8 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=3 attacker_hp=89 move_id=53
+Action turn=8 side=0 attacker='P143' defender='P59' move='잠자기' changes=(Change(side=0, pokemon='P143', kind='sleep', stages=0),) defender_hp=89 effect='rest' move_id=156
+Action turn=9 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=84 attacker_hp=89 move_id=53
+Action turn=9 side=0 attacker='P143' defender='P59' move='' defender_hp=89 blocked='sleep' attacker_hp=84
+Action turn=10 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 critical=True defender_hp=61 attacker_hp=89 move_id=53
+Action turn=10 side=0 attacker='P143' defender='P59' move='' defender_hp=89 blocked='sleep' attacker_hp=61
+Action turn=11 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=47 attacker_hp=89 move_id=53
+Action turn=11 side=0 attacker='P143' defender='P59' move='누르기' changes=(Change(side=1, pokemon='P59', kind='paralysis', stages=0),) defender_hp=69 recovered=('sleep',) attacker_hp=47 move_id=34
+Action turn=12 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=50 attacker_hp=47 move_id=34
+Action turn=12 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=33 attacker_hp=50 move_id=53
+Action turn=13 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=30 attacker_hp=33 move_id=34
+Action turn=13 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=19 attacker_hp=30 move_id=53
+Action turn=14 side=0 attacker='P143' defender='P59' move='잠자기' changes=(Change(side=0, pokemon='P143', kind='sleep', stages=0),) defender_hp=30 effect='rest' move_id=156
+Action turn=14 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=84 attacker_hp=30 move_id=53
+Action turn=15 side=0 attacker='P143' defender='P59' move='' defender_hp=30 blocked='sleep' attacker_hp=84
+Action turn=15 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=69 attacker_hp=30 move_id=53
+Action turn=16 side=0 attacker='P143' defender='P59' move='' defender_hp=30 blocked='sleep' attacker_hp=69
+Action turn=16 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=53 attacker_hp=30 move_id=53
+Action turn=17 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=12 recovered=('sleep',) attacker_hp=53 move_id=34
+Action turn=17 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=39 attacker_hp=12 move_id=53
+Action turn=18 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=0 knockout=True attacker_hp=39 move_id=34
+result winner=0 turns=18 remaining=((39, None), (0, 0)) statuses=((None, None), ('paralysis', 'paralysis'))
+## focus boost-rest 2
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[74, 156, 34] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[74, 156, 75] mega=None
+side=1 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[2, 7] mega=None
+side=1 P59 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[53, 44] mega=None
+Action turn=1 side=0 attacker='P143' defender='P68' move='성장' changes=(Change(side=0, pokemon='P143', kind='attack', stages=1), Change(side=0, pokemon='P143', kind='special_attack', stages=1)) effect='stages' move_id=74
+Action turn=1 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 changes=(Change(side=0, pokemon='P143', kind='burn', stages=0),) defender_hp=94 move_id=7
+StatusDamage turn=1 side=0 pokemon='P143' hp=88 fainted=False
+Action turn=2 side=0 attacker='P143' defender='P68' move='누르기' changes=(Change(side=1, pokemon='P68', kind='paralysis', stages=0),) defender_hp=79 attacker_hp=88 move_id=34
+Action turn=2 side=1 attacker='P68' defender='P143' move='' defender_hp=88 blocked='paralysis' attacker_hp=79
+StatusDamage turn=2 side=0 pokemon='P143' hp=81 fainted=False
+Action turn=3 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=58 attacker_hp=81 move_id=34
+Action turn=3 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=75 attacker_hp=58 move_id=7
+StatusDamage turn=3 side=0 pokemon='P143' hp=68 fainted=False
+Action turn=4 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=38 attacker_hp=68 move_id=34
+Action turn=4 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=62 attacker_hp=38 move_id=7
+StatusDamage turn=4 side=0 pokemon='P143' hp=55 fainted=False
+Action turn=5 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=18 attacker_hp=55 move_id=34
+Action turn=5 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 critical=True defender_hp=46 attacker_hp=18 move_id=7
+StatusDamage turn=5 side=0 pokemon='P143' hp=39 fainted=False
+Action turn=6 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=0 knockout=True attacker_hp=39 move_id=34
+StatusDamage turn=6 side=0 pokemon='P143' hp=33 fainted=False
+SendOut turn=6 side=1 pokemon='P59' member=1
+Action turn=7 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=19 move_id=53
+Action turn=7 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=89 attacker_hp=19 move_id=34
+StatusDamage turn=7 side=0 pokemon='P143' hp=13 fainted=False
+Action turn=8 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=89 move_id=53
+SendOut turn=8 side=0 pokemon='P3' member=1
+Action turn=9 side=0 attacker='P3' defender='P59' move='성장' changes=(Change(side=0, pokemon='P3', kind='attack', stages=1), Change(side=0, pokemon='P3', kind='special_attack', stages=1)) defender_hp=89 effect='stages' move_id=74
+Action turn=9 side=1 attacker='P59' defender='P3' move='화염방사' defender_hp=63 attacker_hp=89 move_id=53
+Action turn=10 side=0 attacker='P3' defender='P59' move='잎날가르기' multiplier=2.0 defender_hp=56 attacker_hp=63 move_id=75
+Action turn=10 side=1 attacker='P59' defender='P3' move='화염방사' defender_hp=29 attacker_hp=56 move_id=53
+Action turn=11 side=0 attacker='P3' defender='P59' move='잎날가르기' multiplier=2.0 defender_hp=23 attacker_hp=29 move_id=75
+Action turn=11 side=1 attacker='P59' defender='P3' move='화염방사' defender_hp=0 knockout=True attacker_hp=23 move_id=53
+result winner=1 turns=11 remaining=((0, 0), (0, 23)) statuses=(('burn', None), ('paralysis', None))
+## focus boost-rest 3
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[74, 156, 34] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[74, 156, 75] mega=None
+side=1 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[2, 7] mega=None
+side=1 P59 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[53, 44] mega=None
+Action turn=1 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=94 move_id=7
+Action turn=1 side=0 attacker='P143' defender='P68' move='성장' changes=(Change(side=0, pokemon='P143', kind='attack', stages=1), Change(side=0, pokemon='P143', kind='special_attack', stages=1)) attacker_hp=94 effect='stages' move_id=74
+Action turn=2 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=88 move_id=7
+Action turn=2 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=65 attacker_hp=88 move_id=34
+Action turn=3 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=82 attacker_hp=65 move_id=7
+Action turn=3 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=32 attacker_hp=82 move_id=34
+Action turn=4 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=76 attacker_hp=32 move_id=7
+Action turn=4 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=0 knockout=True attacker_hp=76 move_id=34
+SendOut turn=4 side=1 pokemon='P59' member=1
+Action turn=5 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=62 move_id=53
+Action turn=5 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=80 attacker_hp=62 move_id=34
+Action turn=6 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=49 attacker_hp=80 move_id=53
+Action turn=6 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=59 attacker_hp=49 move_id=34
+Action turn=7 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=35 attacker_hp=59 move_id=53
+Action turn=7 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=40 attacker_hp=35 move_id=34
+Action turn=8 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=21 attacker_hp=40 move_id=53
+Action turn=8 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=20 attacker_hp=21 move_id=34
+Action turn=9 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=8 attacker_hp=20 move_id=53
+Action turn=9 side=0 attacker='P143' defender='P59' move='잠자기' changes=(Change(side=0, pokemon='P143', kind='sleep', stages=0),) defender_hp=20 effect='rest' move_id=156
+Action turn=10 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=87 attacker_hp=20 move_id=53
+Action turn=10 side=0 attacker='P143' defender='P59' move='' defender_hp=20 blocked='sleep' attacker_hp=87
+Action turn=11 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=72 attacker_hp=20 move_id=53
+Action turn=11 side=0 attacker='P143' defender='P59' move='' defender_hp=20 blocked='sleep' attacker_hp=72
+Action turn=12 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=58 attacker_hp=20 move_id=53
+Action turn=12 side=0 attacker='P143' defender='P59' move='누르기' critical=True defender_hp=0 knockout=True recovered=('sleep',) attacker_hp=58 move_id=34
+result winner=0 turns=12 remaining=((58, None), (0, 0)) statuses=((None, None), (None, None))
+## focus boost-rest 4
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[74, 156, 34] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[74, 156, 75] mega=None
+side=1 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[2, 7] mega=None
+side=1 P59 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[53, 44] mega=None
+Action turn=1 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=94 move_id=7
+Action turn=1 side=0 attacker='P143' defender='P68' move='성장' changes=(Change(side=0, pokemon='P143', kind='attack', stages=1), Change(side=0, pokemon='P143', kind='special_attack', stages=1)) attacker_hp=94 effect='stages' move_id=74
+Action turn=2 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 critical=True defender_hp=85 move_id=7
+Action turn=2 side=0 attacker='P143' defender='P68' move='누르기' changes=(Change(side=1, pokemon='P68', kind='paralysis', stages=0),) defender_hp=65 attacker_hp=85 move_id=34
+Action turn=3 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=31 attacker_hp=85 move_id=34
+Action turn=3 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=79 attacker_hp=31 move_id=7
+Action turn=4 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=0 knockout=True attacker_hp=79 move_id=34
+SendOut turn=4 side=1 pokemon='P59' member=1
+Action turn=5 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=65 move_id=53
+Action turn=5 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=82 attacker_hp=65 move_id=34
+Action turn=6 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 changes=(Change(side=0, pokemon='P143', kind='burn', stages=0),) defender_hp=51 attacker_hp=82 move_id=53
+Action turn=6 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=72 attacker_hp=51 move_id=34
+StatusDamage turn=6 side=0 pokemon='P143' hp=45 fainted=False
+Action turn=7 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=31 attacker_hp=72 move_id=53
+Action turn=7 side=0 attacker='P143' defender='P59' move='누르기' changes=(Change(side=1, pokemon='P59', kind='paralysis', stages=0),) defender_hp=62 attacker_hp=31 move_id=34
+StatusDamage turn=7 side=0 pokemon='P143' hp=24 fainted=False
+Action turn=8 side=0 attacker='P143' defender='P59' move='잠자기' changes=(Change(side=0, pokemon='P143', kind='sleep', stages=0),) defender_hp=62 effect='rest' move_id=156
+Action turn=8 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=86 attacker_hp=62 move_id=53
+Action turn=9 side=0 attacker='P143' defender='P59' move='' defender_hp=62 blocked='sleep' attacker_hp=86
+Action turn=9 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=73 attacker_hp=62 move_id=53
+Action turn=10 side=0 attacker='P143' defender='P59' move='' defender_hp=62 blocked='sleep' attacker_hp=73
+Action turn=10 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=59 attacker_hp=62 move_id=53
+Action turn=11 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=42 recovered=('sleep',) attacker_hp=59 move_id=34
+Action turn=11 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=46 attacker_hp=42 move_id=53
+Action turn=12 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=23 attacker_hp=46 move_id=34
+Action turn=12 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=33 attacker_hp=23 move_id=53
+Action turn=13 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=4 attacker_hp=33 move_id=34
+Action turn=13 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=19 attacker_hp=4 move_id=53
+Action turn=14 side=0 attacker='P143' defender='P59' move='누르기' critical=True defender_hp=0 knockout=True attacker_hp=19 move_id=34
+result winner=0 turns=14 remaining=((19, None), (0, 0)) statuses=((None, None), ('paralysis', 'paralysis'))
+## focus boost-rest 5
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[74, 156, 34] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[74, 156, 75] mega=None
+side=1 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[2, 7] mega=None
+side=1 P59 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[53, 44] mega=None
+Action turn=1 side=0 attacker='P143' defender='P68' move='성장' changes=(Change(side=0, pokemon='P143', kind='attack', stages=1), Change(side=0, pokemon='P143', kind='special_attack', stages=1)) effect='stages' move_id=74
+Action turn=1 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=95 move_id=7
+Action turn=2 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=59 attacker_hp=95 move_id=34
+Action turn=2 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=89 attacker_hp=59 move_id=7
+Action turn=3 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=15 attacker_hp=89 move_id=34
+Action turn=3 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=84 attacker_hp=15 move_id=7
+Action turn=4 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=0 knockout=True attacker_hp=84 move_id=34
+SendOut turn=4 side=1 pokemon='P59' member=1
+Action turn=5 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 critical=True defender_hp=65 move_id=53
+Action turn=5 side=0 attacker='P143' defender='P59' move='누르기' changes=(Change(side=1, pokemon='P59', kind='paralysis', stages=0),) defender_hp=79 attacker_hp=65 move_id=34
+Action turn=6 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=58 attacker_hp=65 move_id=34
+Action turn=6 side=1 attacker='P59' defender='P143' move='' defender_hp=65 blocked='paralysis' attacker_hp=58
+Action turn=7 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=35 attacker_hp=65 move_id=34
+Action turn=7 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=53 attacker_hp=35 move_id=53
+Action turn=8 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=15 attacker_hp=53 move_id=34
+Action turn=8 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=39 attacker_hp=15 move_id=53
+Action turn=9 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=0 knockout=True attacker_hp=39 move_id=34
+result winner=0 turns=9 remaining=((39, None), (0, 0)) statuses=((None, None), (None, 'paralysis'))
+## focus boost-rest 6
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[74, 156, 34] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[74, 156, 75] mega=None
+side=1 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[2, 7] mega=None
+side=1 P59 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[53, 44] mega=None
+Action turn=1 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 changes=(Change(side=0, pokemon='P143', kind='burn', stages=0),) defender_hp=93 move_id=7
+Action turn=1 side=0 attacker='P143' defender='P68' move='성장' changes=(Change(side=0, pokemon='P143', kind='attack', stages=1), Change(side=0, pokemon='P143', kind='special_attack', stages=1)) attacker_hp=93 effect='stages' move_id=74
+StatusDamage turn=1 side=0 pokemon='P143' hp=87 fainted=False
+Action turn=2 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=81 attacker_hp=87 move_id=34
+Action turn=2 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=81 attacker_hp=81 move_id=7
+StatusDamage turn=2 side=0 pokemon='P143' hp=75 fainted=False
+Action turn=3 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=69 attacker_hp=81 move_id=7
+Action turn=3 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=62 attacker_hp=69 move_id=34
+StatusDamage turn=3 side=0 pokemon='P143' hp=63 fainted=False
+Action turn=4 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=57 attacker_hp=62 move_id=7
+Action turn=4 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=43 attacker_hp=57 move_id=34
+StatusDamage turn=4 side=0 pokemon='P143' hp=51 fainted=False
+Action turn=5 side=0 attacker='P143' defender='P68' move='누르기' changes=(Change(side=1, pokemon='P68', kind='paralysis', stages=0),) defender_hp=24 attacker_hp=51 move_id=34
+Action turn=5 side=1 attacker='P68' defender='P143' move='' defender_hp=51 blocked='paralysis' attacker_hp=24
+StatusDamage turn=5 side=0 pokemon='P143' hp=46 fainted=False
+Action turn=6 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=5 attacker_hp=46 move_id=34
+Action turn=6 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=40 attacker_hp=5 move_id=7
+StatusDamage turn=6 side=0 pokemon='P143' hp=34 fainted=False
+Action turn=7 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=0 knockout=True attacker_hp=34 move_id=34
+StatusDamage turn=7 side=0 pokemon='P143' hp=28 fainted=False
+SendOut turn=7 side=1 pokemon='P59' member=1
+Action turn=8 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=15 move_id=53
+Action turn=8 side=0 attacker='P143' defender='P59' move='누르기' changes=(Change(side=1, pokemon='P59', kind='paralysis', stages=0),) defender_hp=90 attacker_hp=15 move_id=34
+StatusDamage turn=8 side=0 pokemon='P143' hp=9 fainted=False
+Action turn=9 side=0 attacker='P143' defender='P59' move='잠자기' changes=(Change(side=0, pokemon='P143', kind='sleep', stages=0),) defender_hp=90 effect='rest' move_id=156
+Action turn=9 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=85 attacker_hp=90 move_id=53
+Action turn=10 side=0 attacker='P143' defender='P59' move='' defender_hp=90 blocked='sleep' attacker_hp=85
+Action turn=10 side=1 attacker='P59' defender='P143' move='' defender_hp=85 blocked='paralysis' attacker_hp=90
+Action turn=11 side=0 attacker='P143' defender='P59' move='' defender_hp=90 blocked='sleep' attacker_hp=85
+Action turn=11 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=72 attacker_hp=90 move_id=53
+Action turn=12 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=70 recovered=('sleep',) attacker_hp=72 move_id=34
+Action turn=12 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=57 attacker_hp=70 move_id=53
+Action turn=13 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=49 attacker_hp=57 move_id=34
+Action turn=13 side=1 attacker='P59' defender='P143' move='' defender_hp=57 blocked='paralysis' attacker_hp=49
+Action turn=14 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=30 attacker_hp=57 move_id=34
+Action turn=14 side=1 attacker='P59' defender='P143' move='' defender_hp=57 blocked='paralysis' attacker_hp=30
+Action turn=15 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=12 attacker_hp=57 move_id=34
+Action turn=15 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=42 attacker_hp=12 move_id=53
+Action turn=16 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=0 knockout=True attacker_hp=42 move_id=34
+result winner=0 turns=16 remaining=((42, None), (0, 0)) statuses=((None, None), ('paralysis', 'paralysis'))
+## focus boost-rest 7
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[74, 156, 34] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[74, 156, 75] mega=None
+side=1 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[2, 7] mega=None
+side=1 P59 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[53, 44] mega=None
+Action turn=1 side=0 attacker='P143' defender='P68' move='성장' changes=(Change(side=0, pokemon='P143', kind='attack', stages=1), Change(side=0, pokemon='P143', kind='special_attack', stages=1)) effect='stages' move_id=74
+Action turn=1 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 changes=(Change(side=0, pokemon='P143', kind='burn', stages=0),) defender_hp=94 move_id=7
+StatusDamage turn=1 side=0 pokemon='P143' hp=88 fainted=False
+Action turn=2 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=81 attacker_hp=88 move_id=34
+Action turn=2 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=81 attacker_hp=81 move_id=7
+StatusDamage turn=2 side=0 pokemon='P143' hp=76 fainted=False
+Action turn=3 side=0 attacker='P143' defender='P68' move='누르기' changes=(Change(side=1, pokemon='P68', kind='paralysis', stages=0),) defender_hp=59 attacker_hp=76 move_id=34
+Action turn=3 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=70 attacker_hp=59 move_id=7
+StatusDamage turn=3 side=0 pokemon='P143' hp=64 fainted=False
+Action turn=4 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=38 attacker_hp=64 move_id=34
+Action turn=4 side=1 attacker='P68' defender='P143' move='' defender_hp=64 blocked='paralysis' attacker_hp=38
+StatusDamage turn=4 side=0 pokemon='P143' hp=58 fainted=False
+Action turn=5 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=18 attacker_hp=58 move_id=34
+Action turn=5 side=1 attacker='P68' defender='P143' move='불꽃펀치' multiplier=0.5 defender_hp=52 attacker_hp=18 move_id=7
+StatusDamage turn=5 side=0 pokemon='P143' hp=46 fainted=False
+Action turn=6 side=0 attacker='P143' defender='P68' move='누르기' defender_hp=0 knockout=True attacker_hp=46 move_id=34
+StatusDamage turn=6 side=0 pokemon='P143' hp=40 fainted=False
+SendOut turn=6 side=1 pokemon='P59' member=1
+Action turn=7 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=91 attacker_hp=40 move_id=34
+Action turn=7 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=26 attacker_hp=91 move_id=53
+StatusDamage turn=7 side=0 pokemon='P143' hp=20 fainted=False
+Action turn=8 side=0 attacker='P143' defender='P59' move='잠자기' changes=(Change(side=0, pokemon='P143', kind='sleep', stages=0),) defender_hp=91 effect='rest' move_id=156
+Action turn=8 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=85 attacker_hp=91 move_id=53
+Action turn=9 side=0 attacker='P143' defender='P59' move='' defender_hp=91 blocked='sleep' attacker_hp=85
+Action turn=9 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=72 attacker_hp=91 move_id=53
+Action turn=10 side=0 attacker='P143' defender='P59' move='' defender_hp=91 blocked='sleep' attacker_hp=72
+Action turn=10 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=58 attacker_hp=91 move_id=53
+Action turn=11 side=0 attacker='P143' defender='P59' move='누르기' changes=(Change(side=1, pokemon='P59', kind='paralysis', stages=0),) defender_hp=71 recovered=('sleep',) attacker_hp=58 move_id=34
+Action turn=11 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=44 attacker_hp=71 move_id=53
+Action turn=12 side=0 attacker='P143' defender='P59' move='누르기' critical=True defender_hp=45 attacker_hp=44 move_id=34
+Action turn=12 side=1 attacker='P59' defender='P143' move='화염방사' multiplier=0.5 defender_hp=30 attacker_hp=45 move_id=53
+Action turn=13 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=26 attacker_hp=30 move_id=34
+Action turn=13 side=1 attacker='P59' defender='P143' move='' defender_hp=30 blocked='paralysis' attacker_hp=26
+Action turn=14 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=8 attacker_hp=30 move_id=34
+Action turn=14 side=1 attacker='P59' defender='P143' move='' defender_hp=30 blocked='paralysis' attacker_hp=8
+Action turn=15 side=0 attacker='P143' defender='P59' move='누르기' defender_hp=0 knockout=True attacker_hp=30 move_id=34
+result winner=0 turns=15 remaining=((30, None), (0, 0)) statuses=((None, None), ('paralysis', 'paralysis'))

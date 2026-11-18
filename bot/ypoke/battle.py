@@ -169,7 +169,8 @@ class Action:
     `recovered` lists what ended before it acted ("sleep", "freeze", "confusion"). `hits` counts a multi-hit
     move's hits; `drained` means the user healed from the damage. `attacker_item` / `defender_item` name the
     held item that triggered on that side during this action (Life Orb recoil, Focus Sash). `effect` is what an
-    effect move did (its effect key, or "trick-room-off"); `pivoted` means the user switched out."""
+    effect move did (its effect key, or "trick-room-off"); `pivoted` means the user switched out. `via` names the
+    move that called `move` (Metronome), and `move_id` is always the slot the user picked."""
 
     turn: int
     side: int
@@ -197,6 +198,7 @@ class Action:
     effect: str = ""
     pivoted: bool = False
     move_id: int = 0
+    via: str = ""
 
 
 @dataclass(frozen=True)
@@ -883,6 +885,7 @@ class _Fighter:
     memory: dict[str, object] = field(default_factory=dict)
     entered_as: Combatant | None = None
     entered_stats: dict[str, int] | None = None
+    entered_pp: list[int] | None = None
     last_used: int | None = None
     choice: int | None = None
     arena: _Arena | None = field(default=None, repr=False, compare=False)
@@ -890,14 +893,16 @@ class _Fighter:
 
     def leave(self) -> None:
         """Switching out clears stat stages, the Choice lock, confusion, the toxic count, drowsiness, its own states
-        (`volatiles`, `memory`), a changed type, ability or stat and what this and the last turn did to it; the times
-        it was hit stay."""
+        (`volatiles`, `memory`), a changed type, ability, stat or moveset and what this and the last turn did to it;
+        the times it was hit stay."""
         self.stages = dict.fromkeys(STAGES, 0)
         self.volatiles, self.memory, self.last_used = {}, {}, None
         if self.entered_as is not None:
             self.combatant, self.entered_as = self.entered_as, None
         if self.entered_stats is not None:
             self.stats, self.entered_stats = self.entered_stats, None
+        if self.entered_pp is not None:
+            self.pp, self.entered_pp = self.entered_pp, None
         self.locked = None
         self.confusion_left = self.toxic_ticks = self.drowsy_at = 0
         self.fresh = True
@@ -1094,11 +1099,24 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
             turn, side, *names, move="", defender_hp=defender.hp_percent, blocked=blocked, recovered=recovered,
             attacker_hp=attacker.hp_percent, attacker_fainted=attacker.hp == 0,
         )
-    move = _retyped(attacker, move_power.typed(move, weather.kind, attacker))
     if index is not None:
         attacker.pp[index] -= 1
         if hooks.item(attacker, "locks_move", default=False):
             attacker.locked = index
+    stage = arena if arena is not None else _Arena(weather=weather)
+    called = hooks.move(move, "calls", attacker, defender, side, stage, rng, default=move)
+    if called is None:
+        return Action(turn, side, *names, move.name, failed=True, recovered=recovered, defender_hp=defender.hp_percent,
+                      attacker_hp=attacker.hp_percent)
+    action = _strike(turn, side, attacker, defender, _retyped(attacker, move_power.typed(called, weather.kind, attacker)),
+                     recovered, weather, rng, stage)
+    return action if called is move else replace(action, via=move.name)
+
+
+def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: Move, recovered: tuple[str, ...],
+            weather: _Weather, rng: random.Random, arena: _Arena) -> Action:
+    """The used move acts on the defender, once its user could act and paid the PP."""
+    names = (attacker.combatant.name, defender.combatant.name)
     backfired = next(iter(_field(attacker, "backfires", move, attacker)), "")
     if backfired:
         return Action(turn, side, *names, move.name, failed=True, blocked=backfired, recovered=recovered,
@@ -1111,9 +1129,7 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
         return Action(turn, side, *names, move.name, failed=True, blocked=stopped, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=changes,
                       attacker_fainted=attacker.hp == 0)
-    used = hooks.move(move, "use", attacker, defender, side, turn, weather,
-                      arena if arena is not None else _Arena(weather=weather),
-                      rng)
+    used = hooks.move(move, "use", attacker, defender, side, turn, weather, arena, rng)
     if used is not None:
         return Action(turn, side, *names, move.name, recovered=recovered, defender_hp=defender.hp_percent,
                       attacker_hp=attacker.hp_percent, **used)
@@ -1221,9 +1237,11 @@ def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tupl
     if attacker.status == "sleep":
         if attacker.sleep_left > 0:
             attacker.sleep_left -= 1
-            return (), "sleep"
-        attacker.status = None
-        recovered.append("sleep")
+            if not hooks.move(move, "acts_asleep", default=False):
+                return (), "sleep"
+        else:
+            attacker.status = None
+            recovered.append("sleep")
     elif attacker.status == "freeze":
         thawed = rng.random() < FREEZE_THAW_CHANCE or move.type == "fire"
         if not thawed:

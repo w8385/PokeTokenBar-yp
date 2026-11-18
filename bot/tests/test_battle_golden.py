@@ -234,6 +234,8 @@ FOCUS_CASES = {
                  (18, None, None, [366, 432, 89])),
                 ((18, None, None, [89]), (7, None, None, [866, 89]), (54, "heavy-duty-boots", "screen-cleaner",
                                                                          [756, 89]))),
+    "boost-rest": (((143, None, None, [74, 156, 34]), (3, None, None, [74, 156, 75])),
+                   ((68, None, None, [2, 7]), (59, None, None, [53, 44]))),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
@@ -254,6 +256,10 @@ def test_fixed_seed_replays_match_the_golden_event_logs(name):
 def test_every_replayed_battle_narrates(start):
     for scenario in range(start, start + PVP_PER_FILE):
         assert narration.battle_log(_pvp_battle(scenario)[1])
+
+
+def test_a_move_read_from_the_data_matches_the_move_pokeapi_gives():
+    assert {move_id: pokeapi.data_move(move_id) for move_id in _replay_moves()} == _replay_moves()
 
 
 @pytest.mark.skipif(not os.environ.get("WRITE_GOLDEN"), reason="WRITE_GOLDEN=1 rewrites the golden event logs")

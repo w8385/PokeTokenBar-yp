@@ -18,7 +18,7 @@ IVY_CUDGEL = 904
 DRAGON_ASCENT = 620
 FLOWER_TRICK = 870
 STATUS_EFFECTS = (
-    "trick-room", "stealth-rock", "swords-dance", "yawn", "thunder-wave",
+    "sleep-talk", "transform", "trick-room", "stealth-rock", "swords-dance", "yawn", "thunder-wave",
     "electric-terrain", "grassy-terrain", "psychic-terrain", "misty-terrain", "reflect", "light-screen", "aurora-veil",
     "spikes", "toxic-spikes", "sticky-web", "tailwind", "safeguard", "mist", "lucky-chant", "gravity", "haze", "defog",
     "court-change", "tidy-up",
@@ -36,9 +36,10 @@ STATUS_EFFECTS = (
     "forests-curse", "gastro-acid", "simple-beam", "worry-seed", "entrainment", "skill-swap", "role-play", "doodle",
     "trick", "switcheroo", "bestow", "recycle", "corrosive-gas", "teatime", "stuff-cheeks", "magic-room", "wonder-room",
     "teleport", "parting-shot", "chilly-reception",
+    "mirror-move", "copycat", "me-first", "nature-power", "mimic", "sketch",
     "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
     "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
-    "baton-pass",
+    "baton-pass", "metronome", "assist",
 )
 # Damaging moves the chooser may pick for their effect, like a status move.
 CHOSEN_DAMAGE_EFFECTS = ("rapid-spin", "mortal-spin")

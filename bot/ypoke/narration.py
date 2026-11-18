@@ -90,6 +90,7 @@ EFFECT_TEXT = {
     "stuff-cheeks": "🐿️나무열매를 먹었다",
     "teleport": "✨순간이동으로 물러났다", "baton-pass": "🪄바통을 넘겼다",
     "chilly-reception": "❄️눈을 부르고 물러났다", "chilly-reception-dry": "🥶썰렁한 농담을 하고 물러났다",
+    "mimic": "🪞상대의 기술을 따라 배웠다", "sketch": "✏️상대의 기술을 스케치했다", "transform": "🔄상대로 변신했다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
@@ -127,7 +128,7 @@ VOLATILE_LABEL = {
     "magic-coat": "🪞매직코트", "snatch": "🫳가로채기", "lock-on": "🎯조준", "foresight": "👁️간파",
     "miracle-eye": "👁️간파", "torment": "😈트집", "imprison": "🔒봉인", "electrify": "⚡전자화", "powder": "💥분진",
     "tar-shot": "🛢️타르", "focus-energy": "🎯기충전", "laser-focus": "🎯레이저포커스",
-    "baton-pass": "🪄바통 이어받음",
+    "baton-pass": "🪄바통 이어받음", "transform": "🔄변신",
 }
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)"}
@@ -457,7 +458,7 @@ def _action_line(event: Action, marker: str) -> str:
         return " ".join([f"{head} › {event.move} → {BLOCKED_TAG[event.blocked]}", *tags])
     if event.blocked:
         return f"{head} {BLOCKED_TAG[event.blocked]}"
-    head = f"{head} › {event.move}"
+    head = f"{head} › {event.via}: {event.move}" if event.via else f"{head} › {event.move}"
     if event.failed and event.weather:
         return f"{head} → 실패 ({WEATHER_ICON[event.weather]})"
     if event.weather:
