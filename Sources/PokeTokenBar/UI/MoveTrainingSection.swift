@@ -73,8 +73,9 @@ struct MoveTrainingSection: View {
                 .buttonStyle(.borderless).font(.caption)
                 .help(l.battleEntryAutoMoves)                .disabled(custom.isEmpty)
             }
-            ForEach(0..<BattleEntry.maxMoves, id: \.self) { index in
-                slotRow(index: index, move: index < selected.count ? moves.moves.first { $0.id == selected[index] } : nil)
+            MoveSlotStack(count: BattleEntry.maxMoves) { index in
+                slotRow(index: index, move: index < selected.count ? moves.moves.first { $0.id == selected[index] } : nil,
+                        selected: selected)
             }
             if let editing {
                 picker(moves, editing: editing, selected: selected)
@@ -85,27 +86,55 @@ struct MoveTrainingSection: View {
         }
     }
 
-    private func slotRow(index: Int, move: LearnableMove?) -> some View {
+    private func slotRow(index: Int, move: LearnableMove?, selected: [Int]) -> some View {
         let isEditing = editing == index
-        return Button {
-            editing = isEditing ? nil : index
-        } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(index + 1)").font(.caption2.weight(.bold)).foregroundStyle(.secondary).frame(width: 12)
-                if let move {
-                    moveLabel(move)
-                } else {
-                    Text(l.moveSlotEmpty).font(.callout).foregroundStyle(Color.accentColor)
-                    Spacer()
+        return HStack(spacing: Spacing.xs) {
+            Button {
+                editing = isEditing ? nil : index
+            } label: {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
+                    Text("\(index + 1)").font(.ptb(.small, weight: .bold))
+                        .foregroundStyle(isEditing ? Color.white : Color.primary)
+                        .frame(width: 16, height: 16)
+                        .background(Circle().fill(isEditing ? Color.accentColor : Color.secondary.opacity(0.2)))
+                    if let move {
+                        moveLabel(move)
+                    } else {
+                        Text(l.moveSlotEmpty).font(.callout).foregroundStyle(Color.accentColor)
+                        Spacer()
+                    }
+                }
+                .padding(.leading, Spacing.md).padding(.vertical, Spacing.sm)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if move != nil {
+                VStack(spacing: 0) {
+                    orderButton("chevron.up", l.moveSlotUp, disabled: index == 0) {
+                        swap(index, index - 1, selected: selected)
+                    }
+                    orderButton("chevron.down", l.moveSlotDown, disabled: index >= selected.count - 1) {
+                        swap(index, index + 1, selected: selected)
+                    }
                 }
             }
-            .padding(.horizontal, 8).padding(.vertical, 5)
-            .background(RoundedRectangle(cornerRadius: Radius.chip).fill(isEditing ? Color.accentColor.opacity(0.15) : Color.clear))
-            .overlay(RoundedRectangle(cornerRadius: Radius.chip)
-                .strokeBorder(isEditing ? Color.accentColor : Color.secondary.opacity(0.35), lineWidth: 1))
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .padding(.trailing, Spacing.md)
+        .moveSlotCard(editing: isEditing)
+    }
+
+    private func orderButton(_ symbol: String, _ label: String, disabled: Bool,
+                             action: @escaping () -> Void) -> some View {
+        Button(action: action) { Image(systemName: symbol).frame(width: 18, height: 16) }
+            .buttonStyle(.borderless)
+            .help(label)
+            .accessibilityLabel(label)
+            .disabled(disabled)
+    }
+
+    private func swap(_ a: Int, _ b: Int, selected: [Int]) {
+        change { battleEntry.swapMoves(a, b, for: candidate.id, pokemonID: member.pokemonID, current: selected) }
+        editing = nil
     }
 
     @ViewBuilder
@@ -119,28 +148,37 @@ struct MoveTrainingSection: View {
     private func group(_ title: String, _ list: [LearnableMove], index: Int, selected: [Int],
                        moves: LearnableMoves) -> some View {
         if !list.isEmpty {
-            Text(title).font(.caption).fontWeight(.semibold).foregroundStyle(.secondary).padding(.top, 2)
-            ForEach(list) { move in
-                if move.isMachine && !store.ownsTM(move.id) {
-                    lockedRow(move)
-                } else {
-                    Button {
-                        change {
-                            battleEntry.chooseMove(move.id, at: index, for: candidate.id, pokemonID: member.pokemonID,
-                                                   current: selected, isMachine: move.isMachine)
-                        }
-                        editing = nil
-                    } label: {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Image(systemName: selected.contains(move.id) ? "checkmark.square.fill" : "square")
-                            moveLabel(move)
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.borderless)
-                    .help(move.name)
-                    .accessibilityLabel(move.name)                }
+            Text(title).font(.caption).fontWeight(.semibold).foregroundStyle(.secondary).padding(.top, Spacing.sm)
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                ForEach(Array(list.enumerated()), id: \.element.id) { offset, move in
+                    if offset > 0 { Divider() }
+                    candidateRow(move, index: index, selected: selected)
+                }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func candidateRow(_ move: LearnableMove, index: Int, selected: [Int]) -> some View {
+        if move.isMachine && !store.ownsTM(move.id) {
+            lockedRow(move)
+        } else {
+            Button {
+                change {
+                    battleEntry.chooseMove(move.id, at: index, for: candidate.id, pokemonID: member.pokemonID,
+                                           current: selected, isMachine: move.isMachine)
+                }
+                editing = nil
+            } label: {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Image(systemName: selected.contains(move.id) ? "checkmark.square.fill" : "square")
+                    moveLabel(move)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.borderless)
+            .help(move.name)
+            .accessibilityLabel(move.name)
         }
     }
 
@@ -223,5 +261,28 @@ struct MoveTrainingSection: View {
         battleEntry.prune(owned: Set(BattleEntry.candidates(in: store.state).map(\.id)))
         edit()
         onChange()
+    }
+}
+
+/// The move slots as separate cards, one under another.
+@MainActor
+struct MoveSlotStack<Card: View>: View {
+    let count: Int
+    @ViewBuilder let card: (Int) -> Card
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            ForEach(0..<count, id: \.self) { card($0) }
+        }
+    }
+}
+
+extension View {
+    /// One move slot: a filled card, or the accent fill and a heavier accent border while its picker is open.
+    func moveSlotCard(editing: Bool) -> some View {
+        background(editing ? Color.accentColor.opacity(0.18) : Color(nsColor: .controlBackgroundColor),
+                   in: RoundedRectangle(cornerRadius: Radius.chip))
+            .overlay(RoundedRectangle(cornerRadius: Radius.chip)
+                .strokeBorder(editing ? Color.accentColor : Color.secondary.opacity(0.5), lineWidth: editing ? 2 : 1))
     }
 }

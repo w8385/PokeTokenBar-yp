@@ -91,7 +91,10 @@ final class TrainingRig {
         let body = Data(movesJSON.utf8)
         uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,
-            appVersion: "test", send: { _ in posts.add("post"); return 200 },
+            appVersion: "test", send: { request in
+                posts.add(String(decoding: request.httpBody ?? Data(), as: UTF8.self))
+                return 200
+            },
             fetch: { request in fetches.add(request.url?.absoluteString ?? ""); return (body, 200) },
             partySource: { [store, battle] in
                 BattleEntry.party(state: store.state, slots: battle.slots, moveChoices: battle.moveChoices,
