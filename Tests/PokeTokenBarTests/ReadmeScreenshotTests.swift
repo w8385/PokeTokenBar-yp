@@ -14,6 +14,85 @@ final class ReadmeScreenshotTests: XCTestCase {
     private let languages: [(AppLanguage, String)] = [(.en, ""), (.ko, "-ko"), (.ja, "-ja")]
     /// The app's move names by id, loaded from `StubMoveNames` the way PokéAPI answers them.
     private var moveNames: PokemonNameDisplayStore?
+    /// Wednesday 11/18 at 12:14 local time, six minutes into the night. The shots read this, never the wall clock.
+    nonisolated static let pinnedNow = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 18, hour: 12,
+                                                                      minute: 14))!
+    private static let lastRefresh = pinnedNow.addingTimeInterval(-60)
+
+    func testHomeShotIgnoresTheWallClock() async throws {
+        let suite = "readme-home-clock-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("readme-home-clock-\(UUID())")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        try await preloadSprites()
+        let usage = try await sampleUsage(defaults: defaults)
+        let updater = UpdateChecker(currentVersion: "3.5.0", defaults: defaults, fetchLatest: { nil })
+        let uploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch)
+        let entry = BattleEntryStore(defaults: defaults)
+        let clock = ReadmeClock(Self.pinnedNow)
+        let (store, cleanup) = try await homeStore(language: .en, defaults: defaults, clock: { clock.now })
+        defer { cleanup() }
+        func render() async throws -> NSView {
+            let nav = PopoverNavigation()
+            nav.tab = .home
+            return try await hosted(Self.popover(usage: usage, store: store, updater: updater, uploader: uploader,
+                                                 entry: entry, nav: nav), height: nil)
+        }
+        func render(_ name: String) async throws -> Data { try OffscreenRender.png(of: try await render(), scale: 2) }
+
+        _ = try await render("warm-up")
+        let held = try await render()
+        let first = try OffscreenRender.png(of: held, scale: 2)
+        let firstDone = Date()
+        try await waitUntil("a wall-clock second to pass") { Date().timeIntervalSince(firstDone) >= 1 }
+        XCTAssertEqual(first, try OffscreenRender.png(of: held, scale: 2), "a sprite kept animating on screen")
+        let second = try await render("second")
+        XCTAssertEqual(first, second, "Home read the wall clock between two renders")
+
+        usage.pinnedNow = Self.pinnedNow.addingTimeInterval(60)
+        let updatedLater = try await render("updated-later")
+        XCTAssertNotEqual(first, updatedLater, "the Updated age ignores the usage store's clock")
+        usage.pinnedNow = Self.pinnedNow
+        clock.now = Self.pinnedNow.addingTimeInterval(2 * 60)
+        let laterTonight = try await render("later-tonight")
+        XCTAssertNotEqual(first, laterTonight, "the day/night dial ignores the companion's clock")
+    }
+
+    /// The en/ko/ja store every popover shot draws, with the raised Pokémon's line loaded.
+    private func homeStore(language: AppLanguage, defaults: UserDefaults,
+                           clock: @escaping () -> Date) async throws -> (CompanionStore, cleanup: () -> Void) {
+        let (store, cleanup) = try BoxDexFixture.makeStore(language: language, mutate: Self.sample, defaults: defaults,
+                                                           provider: ReadmeAbilityProvider(), clock: clock)
+        for id in Self.species { await store.loadPokemonDetails(speciesID: id) }
+        store.update(todayTokensByProvider: ["claude_code": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
+                     limitWarning: false, hasUsageData: true)
+        try await waitUntil("the raised Pokémon's line to load") { store.currentLine != nil }
+        await Self.preloadHeaderSprites(of: store)
+        return (store, cleanup)
+    }
+
+    /// Loads the still and the GIF of the raised Pokémon and each walking friend, so a shot never draws mid-load.
+    static func preloadHeaderSprites(of store: CompanionStore, into sprites: SpriteStore = .shared) async {
+        let main = store.representativeSubject
+        var shown = store.friendSubjects.map {
+            ($0.spriteSpeciesID, $0.isShiny, $0.spriteForm, $0.megaSpriteID == nil && $0.isFemale)
+        }
+        if let id = main.spriteSpeciesID { shown.append((id, main.isShiny, main.spriteForm, main.spriteIsFemale)) }
+        for (id, shiny, form, female) in shown {
+            _ = await SpriteLoader.image(speciesID: id, shiny: shiny, store: sprites, form: form, female: female)
+            _ = await SpriteLoader.animationFrames(speciesID: id, shiny: shiny, store: sprites, form: form,
+                                                   female: female)
+        }
+    }
+
+    private static func popover(usage: UsageStore, store: CompanionStore, updater: UpdateChecker,
+                                uploader: PartyUploader, entry: BattleEntryStore, nav: PopoverNavigation) -> some View {
+        PopoverView(screenHeight: 5000)
+            .environment(usage).environment(store).environment(updater).environment(nav)
+            .environment(uploader).environment(entry)
+    }
 
     func testDrawReadmeImages() async throws {
         guard let output = ProcessInfo.processInfo.environment["PTB_README_SHOT_DIR"] else {
@@ -43,7 +122,8 @@ final class ReadmeScreenshotTests: XCTestCase {
         self.moveNames = moveNames
 
         let usage = UsageStore(providers: [], discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil },
-                               claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults)
+                               claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults,
+                               pinnedNow: Self.pinnedNow)
         let updater = UpdateChecker(currentVersion: "3.5.0", defaults: defaults, fetchLatest: { nil })
         let uploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch,
                                                         moves: [6: Self.charizardMoves])
@@ -70,21 +150,15 @@ final class ReadmeScreenshotTests: XCTestCase {
         }
 
         for (language, suffix) in languages {
-            let (store, cleanup) = try BoxDexFixture.makeStore(language: language, mutate: Self.sample, defaults: defaults,
-                                                               provider: ReadmeAbilityProvider())
+            let (store, cleanup) = try await homeStore(language: language, defaults: defaults, clock: { Self.pinnedNow })
             defer { cleanup() }
-            for id in Self.species { await store.loadPokemonDetails(speciesID: id) }
-            store.update(todayTokensByProvider: ["claude_code": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
-                         limitWarning: false, hasUsageData: true)
-            try await waitUntil("the raised Pokémon's line to load") { store.currentLine != nil }
 
             func popover(_ usage: UsageStore = usage, store: CompanionStore = store, entry: BattleEntryStore = entry,
                          nav: PopoverNavigation = PopoverNavigation(),
                          _ configure: (PopoverNavigation) -> Void) -> some View {
                 configure(nav)
-                return PopoverView(screenHeight: 5000)
-                    .environment(usage).environment(store).environment(updater).environment(nav)
-                    .environment(uploader).environment(entry)
+                return Self.popover(usage: usage, store: store, updater: updater, uploader: uploader, entry: entry,
+                                    nav: nav)
             }
             if language == .en {
                 try await shot(popover(home) { $0.tab = .home }, "screenshot-home", in: dir, height: nil)
@@ -113,7 +187,8 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await shot(popover { $0.openBoxDetail(id: StoredFriendScreenshotTests.bulbasaurID) },
                            "screenshot-exp-share\(suffix)", in: dir, height: 380)
             let (battleStore, battleCleanup) = try BoxDexFixture.makeStore(
-                language: language, mutate: { Self.sample(&$0); Self.addKyogre(&$0) }, defaults: defaults)
+                language: language, mutate: { Self.sample(&$0); Self.addKyogre(&$0) }, defaults: defaults,
+                clock: { Self.pinnedNow })
             defer { battleCleanup() }
             for id in Self.species + [382] { await battleStore.loadPokemonDetails(speciesID: id) }
             battleStore.update(todayTokensByProvider: ["claude_code": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
@@ -176,6 +251,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             for shiny in [false, true] {
                 for female in [false, true] {
                     _ = await SpriteLoader.image(speciesID: id, shiny: shiny, store: sprites, female: female)
+                    _ = await SpriteLoader.animationFrames(speciesID: id, shiny: shiny, store: sprites, female: female)
                 }
             }
         }
@@ -244,7 +320,7 @@ final class ReadmeScreenshotTests: XCTestCase {
     /// Two weeks of Claude Code and Codex use, ending with a busy today.
     private func sampleUsage(defaults: UserDefaults) async throws -> UsageStore {
         let formatter = LocalUsageReader.localDayFormatter()
-        let now = Date()
+        let now = Self.pinnedNow
         let calendar = Calendar.current
         func day(_ offset: Int, _ tokens: Int) -> DailyUsage {
             let date = calendar.date(byAdding: .day, value: -offset, to: now)!
@@ -267,8 +343,9 @@ final class ReadmeScreenshotTests: XCTestCase {
             providers: [provider("claude_code", "Claude Code", pattern: [4, 0, 6, 9, 3, 5, 7, 0, 2, 6, 8, 5, 10, 7]),
                         provider("codex", "Codex", pattern: [2, 0, 1, 3, 2, 0, 4, 0, 1, 2, 3, 2, 3, 4])],
             discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil }, claudeUsageEntries: { _ in [] },
-            autoRefresh: false, defaults: defaults)
+            autoRefresh: false, defaults: defaults, pinnedNow: Self.lastRefresh)
         await usage.refresh(scheduleEmptyRetry: false)
+        usage.pinnedNow = Self.pinnedNow
         return usage
     }
 
@@ -303,7 +380,8 @@ final class ReadmeScreenshotTests: XCTestCase {
     /// The friend picker offering the stored Bulbasaur, and Home's header once it walks beside the raised Pokémon.
     private func storedFriends(store: CompanionStore, language: AppLanguage, usage: UsageStore, defaults: UserDefaults,
                                sprites: URL) async throws -> some View {
-        let (walking, cleanup) = try BoxDexFixture.makeStore(language: language, mutate: Self.sample, defaults: defaults)
+        let (walking, cleanup) = try BoxDexFixture.makeStore(language: language, mutate: Self.sample, defaults: defaults,
+                                                             clock: { Self.pinnedNow })
         addTeardownBlock { @MainActor in cleanup() }
         XCTAssertTrue(walking.addFriend(entryID: StoredFriendScreenshotTests.bulbasaurID))
         for id in Self.species { await walking.loadPokemonDetails(speciesID: id) }
@@ -317,6 +395,7 @@ final class ReadmeScreenshotTests: XCTestCase {
                                        shiny: friend.isShiny, form: friend.megaSpriteID == nil ? friend.form : nil,
                                        female: friend.megaSpriteID == nil && friend.isFemale)
         }
+        await Self.preloadHeaderSprites(of: walking, into: spriteStore)
         return VStack(alignment: .leading, spacing: 18) {
             FriendPicker(store: store, spriteStore: spriteStore) {}
                 .frame(height: 96, alignment: .top)
@@ -509,6 +588,11 @@ final class ReadmeScreenshotTests: XCTestCase {
 
     /// `height: nil` draws the view at its own height.
     private func shot<V: View>(_ view: V, _ name: String, in dir: URL, height: CGFloat?) async throws {
+        let host = try await hosted(view, height: height)
+        try OffscreenRender.writePNG(of: host, to: dir.appendingPathComponent("\(name).png"), scale: 2)
+    }
+
+    private func hosted<V: View>(_ view: V, height: CGFloat?) async throws -> NSView {
         let width = PopoverMetrics.width
         let styled = view
             .frame(width: width, height: height, alignment: .top)
@@ -516,6 +600,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             .background(Color(nsColor: .windowBackgroundColor))
             .environment(\.colorScheme, .dark)
             .environment(\.controlActiveState, .active)
+            .environment(\.animatesSprites, false)
             .environment(\.pokemonNameProvider, StubMoveNames()).environment(\.pokemonNameStore, moveNames)
         let host = OffscreenRender.host(styled, size: CGSize(width: width, height: height ?? 2_000), appearance: .darkAqua)
         try await OffscreenRender.settle(host)
@@ -523,7 +608,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             host.frame.size.height = host.fittingSize.height
             try await OffscreenRender.settle(host)
         }
-        try OffscreenRender.writePNG(of: host, to: dir.appendingPathComponent("\(name).png"), scale: 2)
+        return host
     }
 }
 
@@ -576,7 +661,10 @@ private struct NoReadmeFlavor: SpeciesFlavorProviding {
 }
 
 private final class ReadmeClock: @unchecked Sendable {
-    var now = Calendar.current.date(bySettingHour: 12, minute: 1, second: 0, of: Date())!
+    var now: Date
+    init(_ now: Date = Calendar.current.date(bySettingHour: 12, minute: 1, second: 0, of: ReadmeScreenshotTests.pinnedNow)!) {
+        self.now = now
+    }
 }
 
 private struct SampleUsageProvider: UsageProvider {

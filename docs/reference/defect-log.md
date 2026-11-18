@@ -1953,3 +1953,26 @@ read_when:
   cover a stale image, an identical render, noise-only differences and no render; each failed once with
   its guard removed. Class sweep: `release.sh` calls the same gate, so it gets the same path. No other
   check compares bytes to decide whether an image is current.
+
+## README renders that read the wall clock
+
+- **The Home README image changed on every redraw, so the asset gate's fresh-render path could never
+  clear `PopoverView.swift`.** `ReadmeScreenshotTests` pinned the companion clock for some images but
+  not the usage store or the popover footer. The day/night label read the real minute ("Night 10m" →
+  "9m"), the footer drew `Text(updated, style: .relative)`, which ticks on SwiftUI's own clock, and
+  today's chart bar used `LocalUsageReader.todayKey()` at render time. GIF sprites also advanced on
+  `Task.sleep` and loaded asynchronously, so a sprite could be on another frame or still missing.
+  Why no test caught it: no test rendered the same image twice and compared bytes. The gate's
+  noise dir hid the drift instead of failing on it.
+  Fix: `UsageStore.pinnedNow` (nil in the app) is "now" for today's totals, the streak, the chart and
+  the Updated age; the footer prints a static age from it. README shots pass the fixture clock to
+  every `CompanionStore`, set `\.animatesSprites` to false (first GIF frame, no bob), and preload each
+  shown sprite's PNG and GIF. Guard: `ReadmeScreenshotTests.testHomeShotIgnoresTheWallClock` renders
+  Home, waits for a wall-clock second, then compares bytes twice: the same host again (a sprite still
+  animating fails) and a fresh render (a wall-clock read fails). It also moves each pinned clock and
+  expects the image to change. Unpinning the fixture, making the footer ignore the pin, or dropping
+  `\.animatesSprites` turns it red. A day/night label that reads `Date()` is caught only when the
+  dial moves a pixel in that second (3 of 5 runs).
+  Class sweep: the other README families were redrawn twice and compared byte for byte; all 65 PNGs
+  matched. Remaining `Date()` reads in `PopoverView` (limit rows, pace, reset clock) only draw when
+  official limits are loaded, which no README shot does.

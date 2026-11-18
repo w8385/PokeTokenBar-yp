@@ -48,6 +48,8 @@ final class UsageStore {
     /// providerID → 프로바이더 상태 페이지 인시던트 지표(표시 전용). 조회 실패 시 이전 값 유지.
     private(set) var statuses: [String: ProviderStatus] = [:]
     private(set) var lastUpdated: Date?
+    /// nil in the app. Set, it is "now" for today's totals, the streak, the chart and the "Updated" age.
+    var pinnedNow: Date?
     private(set) var isRefreshing = false
     private var refreshPending = false          // 진행 중 refresh 에 겹친 요청을 1회 코얼레싱(드롭 방지)
     private(set) var isRefreshingLimitToken = false
@@ -335,7 +337,7 @@ final class UsageStore {
 
     var todayTotalTokens: Int {
         // 날짜 가드: 스냅샷의 일자가 현재 로컬 날짜와 다르면 (자정 직후 등) 합계에서 제외
-        let todayKey = LocalUsageReader.todayKey()
+        let todayKey = LocalUsageReader.todayKey(now())
         return snapshots.reduce(0) { $0 + ($1.today?.date == todayKey ? $1.todayTotalTokens : 0) }
     }
 
@@ -348,7 +350,7 @@ final class UsageStore {
     /// 키는 `UsageProvider.id`를 그대로 사용하며, 프로바이더 등록/식별자 정책은
     /// `docs/reference/provider-extension.md`를 따른다.
     var todayTokensByProvider: [String: Int] {
-        let todayKey = LocalUsageReader.todayKey()
+        let todayKey = LocalUsageReader.todayKey(now())
         return snapshots.reduce(into: [:]) { result, snapshot in
             guard let today = snapshot.today, today.date == todayKey else { return }
             result[snapshot.providerID] = today.totalTokens
@@ -512,7 +514,7 @@ final class UsageStore {
     var showsCost: Bool { !costingSnapshots.isEmpty }
 
     var todayUsageCost: UsageCost {
-        let todayKey = LocalUsageReader.todayKey()
+        let todayKey = LocalUsageReader.todayKey(now())
         return costingSnapshots.reduce(into: UsageCost()) { total, snapshot in
             if let day = snapshot.today, day.date == todayKey { total.add(day.usageCost) }
         }
@@ -668,7 +670,7 @@ final class UsageStore {
 
     /// The run of days with usage that is still going, read from the same ledger as the recap.
     var currentStreak: UsageStreak {
-        dailyLedger.currentStreak(now: Date(), calendar: RecapPeriod.calendar())
+        dailyLedger.currentStreak(now: now(), calendar: RecapPeriod.calendar())
     }
 
     private func recordDailyLedger() {
@@ -677,7 +679,7 @@ final class UsageStore {
         // This year and the one before it: the year view compares against last year, and nothing
         // reaches further back.
         let calendar = RecapPeriod.calendar()
-        let lastYear = RecapPeriod(scope: .year, containing: Date(), calendar: calendar)
+        let lastYear = RecapPeriod(scope: .year, containing: now(), calendar: calendar)
             .shifted(by: -1, calendar: calendar)
         ledger.prune(before: LocalUsageReader.localDayFormatter().string(from: lastYear.start))
         guard ledger != dailyLedger else { return }
@@ -900,8 +902,11 @@ final class UsageStore {
     var isStale: Bool {
         guard let lastUpdated else { return true }
         let allowance = refreshInterval > 0 ? refreshInterval * 2 : 1800
-        return Date().timeIntervalSince(lastUpdated) > allowance
+        return now().timeIntervalSince(lastUpdated) > allowance
     }
+
+    /// The clock the popover reads: `pinnedNow` when set (README shots), else the wall clock.
+    func now() -> Date { pinnedNow ?? Date() }
 
     // MARK: 생명주기
 
@@ -941,8 +946,10 @@ final class UsageStore {
          },
          autoRefresh: Bool = true,
          defaults: UserDefaults = .standard,
-         displaysAsleep: @escaping @MainActor () -> Bool = { CGDisplayIsAsleep(CGMainDisplayID()) != 0 }) {
+         displaysAsleep: @escaping @MainActor () -> Bool = { CGDisplayIsAsleep(CGMainDisplayID()) != 0 },
+         pinnedNow: Date? = nil) {
         self.providers = providers
+        self.pinnedNow = pinnedNow
         self.displaysAsleep = displaysAsleep
         self.limitsProvider = claudeLimitsProvider
         self.additionalClaudeLimitsProvider = additionalClaudeLimitsProvider
@@ -1135,7 +1142,7 @@ final class UsageStore {
             }
         }
 
-        let todayKey = LocalUsageReader.todayKey()
+        let todayKey = LocalUsageReader.todayKey(now())
         let providers = activeProviders
 
         // ── Phase 1: daily (critical) — 메뉴바 숫자와 stale 판정은 여기서 확정.
@@ -1224,11 +1231,11 @@ final class UsageStore {
         snapshots = newSnapshots
 
         if errors.isEmpty {
-            lastUpdated = Date()
+            lastUpdated = now()
             lastErrorDescription = nil
         } else {
             lastErrorDescription = errors.joined(separator: " / ")
-            if lastUpdated == nil && !snapshots.isEmpty { lastUpdated = Date() }
+            if lastUpdated == nil && !snapshots.isEmpty { lastUpdated = now() }
         }
         writeParitySnapshot()
         AppLog.write("phase1 done total=\(todayTotalTokens) errors=\(errors.isEmpty ? "none" : errors.joined(separator: " | "))")

@@ -64,13 +64,14 @@ enum BoxDexFixture {
     @MainActor
     static func makeStore(language: AppLanguage = .ko, mutate: (inout CompanionState) -> Void = { _ in },
                           defaults: UserDefaults? = nil,
-                          provider: any PokeProviding = BoxDexProvider()) throws -> (CompanionStore, cleanup: () -> Void) {
+                          provider: any PokeProviding = BoxDexProvider(),
+                          clock: @escaping () -> Date = Date.init) throws -> (CompanionStore, cleanup: () -> Void) {
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("box-dex-\(UUID()).json")
         var state = state(language: language)
         mutate(&state)
         try JSONEncoder().encode(state).write(to: file)
-        let store = defaults.map { CompanionStore(provider: provider, fileURL: file, defaults: $0) }
-            ?? CompanionStore(provider: provider, fileURL: file)
+        let store = defaults.map { CompanionStore(provider: provider, clock: clock, fileURL: file, defaults: $0) }
+            ?? CompanionStore(provider: provider, clock: clock, fileURL: file)
         return (store, { try? FileManager.default.removeItem(at: file) })
     }
 
