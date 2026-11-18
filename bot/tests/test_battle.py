@@ -133,10 +133,10 @@ def test_burn_halves_physical_damage_and_hurts_each_turn():
     burns = [event for event in result.events if isinstance(event, StatusDamage)]
     assert burns and burns[0] == StatusDamage(1, 1, "B", burns[0].hp, False)
     fighter = _Fighter.enter(mon("B", ["normal"]))
-    plain = _stats_for(fighter, fighter, physical=True)[0]
+    plain = _stats_for(fighter, fighter, TACKLE)[0]
     fighter.status = "burn"
-    assert _stats_for(fighter, fighter, physical=True)[0] == plain / 2
-    assert _stats_for(fighter, fighter, physical=False)[0] == fighter.stat("special_attack")
+    assert _stats_for(fighter, fighter, TACKLE)[0] == plain / 2
+    assert _stats_for(fighter, fighter, EMBER)[0] == fighter.stat("special_attack")
 
 
 def test_type_immunity_blocks_the_ailment():
@@ -263,11 +263,11 @@ def test_sun_and_rain_scale_fire_and_water_moves(move, weather, factor):
 
 def test_sandstorm_raises_rock_special_defense_and_snow_raises_ice_defense():
     rock, ice, plain = (_Fighter.enter(mon("X", [types])) for types in ("rock", "ice", "normal"))
-    assert _stats_for(plain, rock, False, "sandstorm")[1] == rock.stat("special_defense") * 1.5
-    assert _stats_for(plain, rock, True, "sandstorm")[1] == rock.stat("defense")
-    assert _stats_for(plain, plain, False, "sandstorm")[1] == plain.stat("special_defense")
-    assert _stats_for(plain, ice, True, "snow")[1] == ice.stat("defense") * 1.5
-    assert _stats_for(plain, ice, False, "snow")[1] == ice.stat("special_defense")
+    assert _stats_for(plain, rock, EMBER, "sandstorm")[1] == rock.stat("special_defense") * 1.5
+    assert _stats_for(plain, rock, TACKLE, "sandstorm")[1] == rock.stat("defense")
+    assert _stats_for(plain, plain, EMBER, "sandstorm")[1] == plain.stat("special_defense")
+    assert _stats_for(plain, ice, TACKLE, "snow")[1] == ice.stat("defense") * 1.5
+    assert _stats_for(plain, ice, EMBER, "snow")[1] == ice.stat("special_defense")
 
 
 def test_a_water_user_opens_with_rain_dance_and_weather_lasts_five_turns():

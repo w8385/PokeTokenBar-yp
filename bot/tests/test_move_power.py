@@ -185,7 +185,7 @@ def test_hydro_steam_is_boosted_in_sun_while_other_water_moves_are_weakened():
 def test_facade_ignores_the_burn_attack_cut():
     burned, paralyzed, target = fighter(), fighter(), fighter()
     burned.status, paralyzed.status = "burn", "paralysis"
-    assert _stats_for(burned, target, True, None, ignores_burn=True)[0] == burned.stat("attack")
+    assert _stats_for(burned, target, FACADE)[0] == burned.stat("attack")
     assert _unrolled_damage(burned, target, FACADE, 1.0, None) == _unrolled_damage(paralyzed, target, FACADE, 1.0, None)
     assert _unrolled_damage(burned, target, TACKLE, 1.0, None) < _unrolled_damage(paralyzed, target, TACKLE, 1.0, None)
 
