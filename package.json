@@ -2,7 +2,7 @@
   "name": "poketokenbar-landing",
   "private": true,
   "scripts": {
-    "preview": "python3 -m http.server 8765 --bind 127.0.0.1",
+    "preview": "node scripts/serve.cjs",
     "test": "node scripts/verify.cjs",
     "stamp": "node scripts/stamp.cjs",
     "design:check": "sh scripts/check-design.sh",

@@ -40,6 +40,8 @@ People using supported AI coding tools on a Mac. The installation and feature de
 
 Existing static HTML/CSS/JavaScript on the orphan `gh-pages` branch, served by GitHub Pages at https://w8385.dev/PokeTokenBar-yp/ (the owner's user-site custom domain). No website build step.
 
+Six routes: home (`/`) plus five feature pages served as folder indexes (`/usage/`, `/growth/`, `/collection/`, `/battle/`, `/items/`), a `404.html` and a `sitemap.xml`. Home keeps the hero, install, the growth story, short links to the feature pages, the desktop companion and the guide; the detailed feature copy lives on the feature pages. `scripts/site.cjs` lists the pages for the stamp script and the tests.
+
 ## Evidence on Hand
 
 - Main branch README files, native source and release documentation are the product authorities.

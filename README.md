@@ -7,14 +7,16 @@ Static landing page for https://w8385.dev/PokeTokenBar-yp/ (fork of chattymin/Po
 ```sh
 npm ci
 npm run preview
-# http://127.0.0.1:8765
+# http://127.0.0.1:8765/PokeTokenBar-yp/
 
 npm run stamp
 npm test
 npm run design:check
 ```
 
-`index.html` loads `tokens.css`, `styles.css` and `app.js` with `?v=<first 8 hex of sha256>`, because the CDN in front of the site caches assets for hours. After editing any of them, run `npm run stamp`; `npm test` fails while a `?v=` does not match its file.
+The site has a home page, five feature pages in folders (`usage/`, `growth/`, `collection/`, `battle/`, `items/`), `404.html` and `sitemap.xml`. `scripts/site.cjs` lists them. Feature pages use `../` paths; `404.html` uses `/PokeTokenBar-yp/` paths because GitHub Pages serves it at any depth. Feature-page strings live in `pages-i18n.js`, which loads before `app.js`. The preview server mimics GitHub Pages: it serves under `/PokeTokenBar-yp/`, maps folders to `index.html` and answers misses with `404.html`.
+
+Every page loads `tokens.css`, `styles.css`, `pages-i18n.js` and `app.js` with `?v=<first 8 hex of sha256>`, because the CDN in front of the site caches assets for hours. After editing any of them, run `npm run stamp`; `npm test` fails while a `?v=` does not match its file.
 
 `npm test` starts its own local server on port 18765, uses installed Google Chrome on this Mac, and saves screenshots plus results under `test-results/`. Set `CHROME_PATH` for a different local Chrome executable. The suite covers three languages, responsive layouts, light/dark themes, axe accessibility scans, keyboard controls, clipboard errors, no JavaScript and unavailable local storage. There is no website production build step.
 

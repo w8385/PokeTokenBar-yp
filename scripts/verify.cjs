@@ -1,24 +1,35 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const {spawn, execFileSync} = require('node:child_process');
+const {execFileSync} = require('node:child_process');
 const {chromium} = require('playwright');
 const {default: AxeBuilder} = require('@axe-core/playwright');
+const {createServer, prefix} = require('./serve.cjs');
+const {origin, pages, notFound, htmlFiles} = require('./site.cjs');
 
 // Tests launch their own local server; no production writes or downloads.
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'test-results');
+const handoff = path.join(output, 'handoff');
 const port = 18765;
-const url = `http://127.0.0.1:${port}`;
+const base = `http://127.0.0.1:${port}${prefix}/`;
+const url = base;
+const featurePages = pages.filter(p => p.id !== 'home');
+const programmaticKeys = ['theme','nav.menu','copy.pending','copy.ok','copy.error','demo.stop','growth.play','growth.pause',
+  ...[...featurePages, notFound].flatMap(p => [`meta.${p.id}.title`, `meta.${p.id}.desc`])];
 const results = [];
 const problems = [];
-fs.mkdirSync(output, {recursive:true});
-const server = spawn('python3', ['-m','http.server',String(port),'--bind','127.0.0.1'], {cwd:root,stdio:'ignore'});
+fs.mkdirSync(handoff, {recursive:true});
+const server = createServer();
 
 async function test(name, fn) {
-  try {await fn();results.push({name,status:'pass'});}
-  catch(error) {problems.push({name,error:error.message});results.push({name,status:'fail'});}
+  let timer;
+  const limit=new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('timed out after 180s')),180000);});
+  try {await Promise.race([fn(),limit]);results.push({name,status:'pass'});}
+  catch(error) {problems.push({name,error:error.message});results.push({name,status:'fail'});console.log(`FAIL ${name}: ${error.message.split('\n')[0]}`);}
+  finally {clearTimeout(timer);}
 }
+function read(file) {return fs.readFileSync(path.join(root, file), 'utf8');}
 function swiftSource() {
   try {return execFileSync('git',['show','origin/main:Sources/PokeTokenBar/Core/CompanionModel.swift'],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});}
   catch {return null;}
@@ -57,66 +68,228 @@ async function layout(page) {
   }));
   assert.equal(state.overflow,false,JSON.stringify(state));assert.deepEqual(state.broken,[]);assert.deepEqual(state.missing,[]);assert.deepEqual(state.duplicates,[]);
 }
-async function capture(page,name,full=false) {
+async function loadAll(page) {
   await page.evaluate(async()=>{for(let y=0;y<document.body.scrollHeight;y+=700){scrollTo(0,y);await new Promise(r=>setTimeout(r,15));}scrollTo(0,0);await document.fonts.ready;});
-  await page.screenshot({path:path.join(output,name+'.png'),fullPage:full});
+  await page.waitForFunction(()=>[...document.images].every(i=>i.complete));
 }
+async function capture(page,name,full=false,dir=output) {
+  await loadAll(page);
+  await page.screenshot({path:path.join(dir,name+'.png'),fullPage:full});
+}
+async function axe(page) {
+  return (await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations;
+}
+function expectNoViolations(violations,name) {
+  if(violations.length)fs.writeFileSync(path.join(output,`axe-${name}.json`),JSON.stringify(violations,null,2));
+  assert.deepEqual(violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),[]);
+}
+async function dictionaries(browser) {
+  const p=await browser.newPage();
+  try {await p.goto(url);return await p.evaluate(()=>I18N);}finally{await p.close();}
+}
+
 (async()=>{
  let browser;
  try {
-  await test('index.html links tokens.css, styles.css and app.js with ?v= equal to their content hash (npm run stamp)',async()=>{
-   const {indexPath,staleReferences}=require('./stamp.cjs');
-   assert.deepEqual(staleReferences(fs.readFileSync(indexPath,'utf8')),[]);
+  await new Promise(resolve=>server.listen(port,'127.0.0.1',resolve));
+  await test('every page links tokens.css, styles.css, pages-i18n.js and app.js with ?v= equal to their content hash (npm run stamp)',async()=>{
+   const {staleReferences}=require('./stamp.cjs');
+   assert.deepEqual(htmlFiles.flatMap(file=>staleReferences(read(file)).map(ref=>`${file}: ${ref}`)),[]);
   });
-  let ready=false;
-  for(let i=0;i<60;i++) {try {const response=await fetch(url);if(response.ok){ready=true;break;}}catch{} await new Promise(r=>setTimeout(r,100));}
-  assert.ok(ready,'Local test server did not start');
+  await test('every page has a title, a description and its own canonical URL; the sitemap lists every page',async()=>{
+   const sitemap=read('sitemap.xml');
+   const listed=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+   assert.deepEqual(listed.sort(),pages.map(p=>origin+p.path).sort());
+   for(const p of [...pages,notFound]) {
+    const html=read(p.file);
+    assert.match(html,/<title>[^<]+<\/title>/,p.file);
+    assert.match(html,/<meta name="description" content="[^"]+">/,p.file);
+    assert.ok(html.includes(`<link rel="canonical" href="${origin+p.path}">`),`${p.file} canonical`);
+    if(p!==notFound) {
+     assert.ok(html.includes(`<meta property="og:url" content="${origin+p.path}">`)||p.id==='home',`${p.file} og:url`);
+     assert.match(html,/<meta property="og:title" content="[^"]+">/,p.file);
+    }
+   }
+  });
+  for(let i=0;i<60;i++) {try {const response=await fetch(url);if(response.ok)break;}catch{} await new Promise(r=>setTimeout(r,100));}
   const executablePath=process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
   browser=await chromium.launch({executablePath,headless:true});
-  for(const lang of ['en','ko','ja']) {
-   for(const width of [320,375,414,768,1024,1440,1920]) {
-    await test(`layout / ${lang} / ${width}px`,async()=>{
-     const p=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});
-     const errors=[];p.on('pageerror',e=>errors.push(e.message));
-     try {
-      await p.addInitScript(lang=>localStorage.setItem('ptb-lang',lang),lang);
-      await p.goto(url);await p.evaluate(()=>document.fonts.ready);
-      assert.equal(await p.locator('html').getAttribute('lang'),lang);
-      assert.ok((await p.locator('html').getAttribute('class')).includes('js'));
-      await layout(p);
-      if([375,1440].includes(width)) {await capture(p,`${lang}-${width}-light`);await capture(p,`${lang}-${width}-full`,true);}
-      assert.equal(await p.locator('#gtab-growth').isVisible(),true);
-      const lastWhen=()=>p.locator('#gTimeline .tl-when').last().innerText();
-      assert.match(await lastWhen(),/(^|\D)4(\D|$)/);
-      await p.locator('#gRarity').selectOption('legendary');
-      assert.match(await lastWhen(),/(^|\D)28(\D|$)/);
-      await p.locator('#gMode').selectOption('time');
-      assert.equal(await p.locator('#gPaceField').isVisible(),false);
-      assert.match(await lastWhen(),/^30\D+8(\D|$)/);
-      assert.match(await p.locator('#gTimeline .tl-when').first().innerText(),/^2\D+1(\D|$)/);
-      await layout(p);
-      await p.locator('#gMode').selectOption('token');
-      await p.locator('.install-more > summary').click();
-      await layout(p);
-      await p.locator('#themeBtn').click();
-      assert.equal(await p.locator('html').getAttribute('data-theme'),'dark');
-      await layout(p);
-      if([375,1440].includes(width)) {
-       await capture(p,`${lang}-${width}-dark`);
-       await p.locator('#themeBtn').click();
-       await capture(p,`${lang}-${width}-expanded`,true);
-       const native = await p.locator('[data-i18n-image]').evaluateAll(images => images.map(i=>({src:i.getAttribute('src'),loaded:i.complete&&i.naturalWidth>0,width:i.naturalWidth,height:i.naturalHeight,caption:i.closest('figure').querySelector('figcaption').textContent})));
-       assert.equal(native.length,15);
-       const suffix=lang==='en'?'':'-'+lang;
-       for(const i of native) {assert.ok(i.loaded,JSON.stringify(i));assert.ok(i.src.endsWith(suffix+'.png'),JSON.stringify(i));assert.equal(i.width,720);assert.ok(i.caption.trim());}
-       await layout(p);
-      }
-      assert.deepEqual(errors,[]);
-     }finally{await p.close();}
-    });
+  const I18N=await dictionaries(browser);
+
+  await test('translation keys agree in every language; no key is missing or unused on any page; ko never says 도장',async()=>{
+   for(const lang of ['ko','ja']) {
+    assert.deepEqual(Object.keys(I18N.en).filter(k=>!(k in I18N[lang])),[],`missing in ${lang}`);
+    assert.deepEqual(Object.keys(I18N[lang]).filter(k=>!(k in I18N.en)),[],`extra in ${lang}`);
    }
+   const used=new Set(programmaticKeys);
+   for(const file of htmlFiles)for(const m of read(file).matchAll(/data-i18n(?:-alt|-aria)?="([^"]+)"/g))used.add(m[1]);
+   assert.deepEqual([...used].filter(k=>!(k in I18N.en)),[],'used but undefined');
+   assert.deepEqual(Object.keys(I18N.en).filter(k=>!used.has(k)),[],'defined but unused');
+   assert.deepEqual(Object.entries(I18N.ko).filter(([,v])=>v.includes('도장')).map(([k])=>k),[]);
+  });
+
+  await test('every nav, footer and page-list link to this site resolves; the current page carries aria-current',async()=>{
+   const checked=new Set();
+   for(const p of [...pages,notFound]) {
+    const html=read(p.file);
+    const pageUrl=new URL(p.path,base);
+    const nav=html.match(/<nav class="nav-links"[^>]*>(.*?)<\/nav>/s)[1];
+    const current=[...nav.matchAll(/<a [^>]*aria-current="page"[^>]*>/g)].map(m=>m[0].match(/href="([^"]+)"/)[1]);
+    if(p.id==='home'||p===notFound)assert.deepEqual(current,[],p.file);
+    else assert.deepEqual(current.map(h=>new URL(h,pageUrl).href),[pageUrl.href],p.file);
+    for(const m of html.matchAll(/<a [^>]*href="([^"#]*)(#[^"]*)?"[^>]*data-internal/g)) {
+     const target=new URL(m[1],pageUrl);
+     if(checked.has(target.href+(m[2]||'')))continue;
+     checked.add(target.href+(m[2]||''));
+     const response=await fetch(target);
+     assert.equal(response.status,200,`${p.file} → ${target.href}`);
+     if(m[2]&&m[2]!=='#top') assert.ok((await response.text()).includes(`id="${m[2].slice(1)}"`),`${p.file} → ${m[0]}`);
+    }
+   }
+  });
+
+  await test('an unknown deep path answers 404 with the styled 404 page and working links',async()=>{
+   const response=await fetch(new URL('no/such/page/',base));
+   assert.equal(response.status,404);
+   const p=await browser.newPage({viewport:{width:375,height:812}});
+   const errors=[];p.on('pageerror',e=>errors.push(e.message));
+   try {
+    await p.goto(new URL('no/such/page/',base).href);
+    await loadAll(p);
+    assert.equal(await p.evaluate(()=>getComputedStyle(document.body).fontFamily.includes('Pretendard')||getComputedStyle(document.querySelector('.site-header')).position==='sticky'),true);
+    await layout(p);
+    assert.equal(await p.locator('.page-list a').count(),featurePages.length);
+    await p.locator('.page-list a').first().click();
+    await p.waitForURL(new URL('usage/',base).href);
+    assert.deepEqual(errors,[]);
+   }finally{await p.close();}
+  });
+
+  for(const p of [...pages,notFound]) for(const lang of ['en','ko','ja']) for(const width of [375,1440]) for(const theme of ['light','dark']) {
+   await test(`page ${p.id} / ${lang} / ${width}px / ${theme}: layout, native images and axe WCAG 2.2 AA`,async()=>{
+    const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'});
+    const page=await context.newPage();
+    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    try {
+     await page.addInitScript(({lang,theme})=>{localStorage.setItem('ptb-lang',lang);localStorage.setItem('ptb-theme',theme);},{lang,theme});
+     await page.goto(new URL(p.path,base).href);
+     assert.equal(await page.locator('html').getAttribute('lang'),lang);
+     assert.equal(await page.locator('html').getAttribute('data-theme'),theme);
+     await loadAll(page);
+     await layout(page);
+     const expectedTitle=p.id==='home'?`PokeTokenBar — ${I18N[lang]['hero.h1a']} ${I18N[lang]['hero.h1b']}`:I18N[lang][`meta.${p.id}.title`];
+     assert.equal(await page.title(),expectedTitle);
+     const suffix=lang==='en'?'':'-'+lang;
+     const native=await page.locator('[data-i18n-image]').evaluateAll(images=>images.map(i=>({src:i.getAttribute('src'),loaded:i.complete&&i.naturalWidth>0,caption:i.closest('figure')?.querySelector('figcaption')?.textContent||''})));
+     assert.equal(native.length,(read(p.file).match(/data-i18n-image=/g)||[]).length);
+     for(const i of native) {assert.ok(i.loaded,JSON.stringify(i));assert.ok(i.src.endsWith(suffix+'.png'),JSON.stringify(i));assert.ok(i.caption.trim(),JSON.stringify(i));}
+     expectNoViolations(await axe(page),`${p.id}-${lang}-${width}-${theme}`);
+     if(lang==='ko'&&theme==='light') await capture(page,`${p.id}-ko-${width}`,true,handoff);
+     assert.deepEqual(errors,[]);
+    }finally{await context.close();}
+   });
   }
-  for(const lang of ['en','ko','ja']) for(const theme of ['light','dark']) await test(`axe WCAG 2.2 AA / ${lang} / ${theme}`,async()=>{
+
+  for(const p of [...pages,notFound]) {
+   await test(`page ${p.id}: menu opens, moves focus, closes on Escape and on resize at 375px`,async()=>{
+    const page=await browser.newPage({viewport:{width:375,height:812},reducedMotion:'reduce'});
+    try {
+     await page.goto(new URL(p.path,base).href);
+     assert.equal(await page.locator('#site-nav').isVisible(),false);
+     await page.locator('#menuBtn').focus();await page.keyboard.press('Enter');
+     assert.equal(await page.locator('#site-nav').isVisible(),true);
+     assert.equal(await page.locator('#menuBtn').getAttribute('aria-expanded'),'true');
+     assert.equal(await page.evaluate(()=>document.activeElement.closest('#site-nav')!==null),true);
+     await page.keyboard.press('Tab');
+     assert.equal(await page.evaluate(()=>document.activeElement.closest('#site-nav')!==null),true);
+     await page.keyboard.press('Escape');
+     assert.equal(await page.locator('#site-nav').isVisible(),false);
+     assert.equal(await page.locator('#menuBtn').evaluate(x=>x===document.activeElement),true);
+     await page.locator('#menuBtn').click();
+     await page.setViewportSize({width:1440,height:900});
+     await page.waitForFunction(()=>document.getElementById('menuBtn').getAttribute('aria-expanded')==='false',null,{timeout:5000});
+     assert.equal(await page.locator('#site-nav').isVisible(),true);
+     assert.equal(await page.locator('#menuBtn').isVisible(),false);
+    }finally{await page.close();}
+   });
+   await test(`page ${p.id}: JavaScript disabled still shows navigation, text and images`,async()=>{
+    const page=await browser.newPage({javaScriptEnabled:false,viewport:{width:375,height:812}});
+    try {
+     await page.goto(new URL(p.path,base).href);
+     assert.equal(await page.locator('#site-nav').isVisible(),true);
+     assert.equal(await page.locator('#menuBtn').isVisible(),false);
+     for(const image of await page.locator('main img:visible').all()) {
+      await image.scrollIntoViewIfNeeded();
+      assert.ok(await image.evaluate(i=>i.complete&&i.naturalWidth>0||new Promise(r=>i.addEventListener('load',()=>r(true),{once:true}))),await image.getAttribute('src'));
+     }
+     await layout(page);
+    }finally{await page.close();}
+   });
+  }
+
+  await test('language: ?lang= wins, storage carries it to the next page, blocked storage carries it in links',async()=>{
+   const context=await browser.newContext();
+   try {
+    const p=await context.newPage();
+    await p.goto(new URL('battle/?lang=ja',base).href);
+    assert.equal(await p.locator('html').getAttribute('lang'),'ja');
+    await p.locator('#site-nav a[href="../items/"]').click();
+    await p.waitForURL(/\/items\/$/);
+    assert.equal(await p.locator('html').getAttribute('lang'),'ja');
+    await p.locator('#language').selectOption('ko');
+    await p.goto(base);
+    assert.equal(await p.locator('html').getAttribute('lang'),'ko');
+    await p.goto(new URL('growth/?lang=xx',base).href);
+    assert.equal(await p.locator('html').getAttribute('lang'),'ko');
+    await p.goto(new URL('growth/?lang=en',base).href);
+    await p.locator('#language').selectOption('ja');
+    assert.match(p.url(),/[?&]lang=ja/);
+   }finally{await context.close();}
+   const blocked=await browser.newPage();
+   try {
+    await blocked.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw Error('blocked');}}));
+    await blocked.goto(new URL('collection/',base).href);
+    await blocked.locator('#language').selectOption('ko');
+    assert.match(await blocked.locator('#site-nav a[href*="battle/"]').getAttribute('href'),/battle\/\?lang=ko$/);
+    assert.match(await blocked.locator('#site-nav a[href*="#install"]').getAttribute('href'),/\?lang=ko#install$/);
+    await blocked.locator('#site-nav a[href*="battle/"]').click();
+    await blocked.waitForURL(/battle\/\?lang=ko$/);
+    assert.equal(await blocked.locator('html').getAttribute('lang'),'ko');
+   }finally{await blocked.close();}
+  });
+
+  await test('home: growth calculator, install details and theme at every width in every language',async()=>{
+   for(const lang of ['en','ko','ja']) for(const width of [320,375,414,768,1024,1100,1101,1440,1920]) {
+    const p=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});
+    const errors=[];p.on('pageerror',e=>errors.push(e.message));
+    try {
+     await p.addInitScript(lang=>localStorage.setItem('ptb-lang',lang),lang);
+     await p.goto(url);await p.evaluate(()=>document.fonts.ready);
+     assert.ok((await p.locator('html').getAttribute('class')).includes('js'));
+     await layout(p);
+     const header=await p.locator('.site-header').boundingBox();
+     assert.ok(header.height<=(width>1100?90:130),`${lang} ${width}px header is ${header.height}px tall`);
+     assert.equal(await p.locator('#gtab-growth').isVisible(),true);
+     const lastWhen=()=>p.locator('#gTimeline .tl-when').last().innerText();
+     assert.match(await lastWhen(),/(^|\D)4(\D|$)/);
+     await p.locator('#gRarity').selectOption('legendary');
+     assert.match(await lastWhen(),/(^|\D)28(\D|$)/);
+     await p.locator('#gMode').selectOption('time');
+     assert.equal(await p.locator('#gPaceField').isVisible(),false);
+     assert.match(await lastWhen(),/^30\D+8(\D|$)/);
+     assert.match(await p.locator('#gTimeline .tl-when').first().innerText(),/^2\D+1(\D|$)/);
+     await layout(p);
+     await p.locator('#gMode').selectOption('token');
+     await p.locator('.install-more > summary').click();
+     await layout(p);
+     await p.locator('#themeBtn').click();
+     assert.equal(await p.locator('html').getAttribute('data-theme'),'dark');
+     await layout(p);
+     assert.deepEqual(errors,[]);
+    }finally{await p.close();}
+   }
+  });
+  for(const lang of ['en','ko','ja']) for(const theme of ['light','dark']) await test(`home guide tabs axe WCAG 2.2 AA / ${lang} / ${theme}`,async()=>{
    const context=await browser.newContext({viewport:{width:1440,height:960},reducedMotion:'reduce'});
    const p=await context.newPage();
    try {
@@ -124,9 +297,7 @@ async function capture(page,name,full=false) {
     await p.goto(url);await p.evaluate(()=>{document.querySelectorAll('details').forEach(x=>x.open=true);});
     for(const tab of ['growth','daily','collect']) {
      await p.locator(`#tab-${tab}`).click();
-     const report=await new AxeBuilder({page:p}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();
-     if(report.violations.length)fs.writeFileSync(path.join(output,`axe-${lang}-${theme}-${tab}.json`),JSON.stringify(report.violations,null,2));
-     assert.deepEqual(report.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),[]);
+     expectNoViolations(await axe(p),`home-${lang}-${theme}-${tab}`);
     }
    }finally{await context.close();}
   });
@@ -148,12 +319,10 @@ async function capture(page,name,full=false) {
     assert.equal(await p.locator('[data-copy]').isEnabled(),true);
    }finally{await p.close();}
   });
-  await test('mobile menu, Escape, anchors, guide tab keyboard',async()=>{
+  await test('home: menu anchor to #install, guide tab keyboard',async()=>{
    const p=await browser.newPage({viewport:{width:375,height:812},reducedMotion:'reduce'});
    try {
-    await p.goto(url);await p.locator('#menuBtn').click();assert.equal(await p.locator('#site-nav').isVisible(),true);
-    await p.keyboard.press('Escape');assert.equal(await p.locator('#site-nav').isVisible(),false);
-    assert.equal(await p.locator('#menuBtn').evaluate(x=>x===document.activeElement),true);
+    await p.goto(url);
     await p.locator('#menuBtn').click();await p.locator('#site-nav a[href="#install"]').click();
     assert.equal(await p.locator('#site-nav').isVisible(),false);
     await p.waitForFunction(()=>location.hash==='#install');
@@ -164,17 +333,16 @@ async function capture(page,name,full=false) {
     assert.equal(await p.locator('#gtab-daily').isVisible(),true);assert.equal(await p.locator('#gtab-growth').isVisible(),false);
     await p.keyboard.press('End');assert.equal(await p.locator('#tab-collect').getAttribute('aria-selected'),'true');
     await p.keyboard.press('Home');assert.equal(await p.locator('#tab-growth').getAttribute('aria-selected'),'true');
+    for(const anchor of ['top','features','companion','guide','install'])assert.equal(await p.locator('#'+anchor).count(),1,anchor);
    }finally{await p.close();}
   });
-  await test('JavaScript disabled: install, navigation and every guide section work',async()=>{
+  await test('home without JavaScript: install command and every guide section show',async()=>{
    const p=await browser.newPage({javaScriptEnabled:false,viewport:{width:375,height:812}});
    try {
-    await p.goto(url);assert.equal(await p.locator('#site-nav').isVisible(),true);
+    await p.goto(url);
     assert.equal(await p.locator('[data-copy]').isVisible(),false);
     assert.match(await p.locator('#install-command').innerText(),/curl -L https:\/\/github\.com\/w8385\/PokeTokenBar-yp\//);
-    assert.equal(await p.locator('#gtab-growth').isVisible(),true);
     for(const k of ['growth','daily','collect'])assert.equal(await p.locator('#gtab-'+k).isVisible(),true);
-    await layout(p);
    }finally{await p.close();}
   });
   await test('blocked localStorage and missing image fallback do not block installation',async()=>{
@@ -198,39 +366,45 @@ async function capture(page,name,full=false) {
     assert.equal(await p.locator('html').getAttribute('lang'),'ja');assert.equal(await p.locator('html').getAttribute('data-theme'),'dark');
    }finally{await p.close();}
   });
-  await test('growth guide is expanded; 16 linked tools follow it in both themes',async()=>{
+  await test('16 linked tools follow the guide on home and close the usage page, in both themes',async()=>{
    const p=await browser.newPage({viewport:{width:375,height:812}});
    try {
-    await p.goto(url);
-    assert.equal(await p.locator('details.guide-body').count(),0);
-    assert.equal(await p.locator('#gtab-growth').isVisible(),true);
-    assert.equal(await p.locator('#providers').evaluate(x=>x.previousElementSibling.id),'guide');
-    const links=p.locator('.provider-link');assert.equal(await links.count(),16);
-    for(const theme of ['light','dark']) {
-     if(theme==='dark')await p.locator('#themeBtn').click();
-     await p.locator('#providers').scrollIntoViewIfNeeded();
-     await p.waitForFunction(()=>[...document.querySelectorAll('.provider-icon img')].every(i=>i.complete&&i.naturalWidth));
-     for(const link of await links.all()) {assert.equal(await link.isVisible(),true);assert.match(await link.getAttribute('href'),/^https:\/\//);}
-     await layout(p);await p.locator('#providers').screenshot({path:path.join(output,'providers-'+theme+'.png')});
+    for(const target of [url,new URL('usage/',base).href]) {
+     await p.goto(target);
+     const links=p.locator('.provider-link');assert.equal(await links.count(),16);
+     for(const theme of ['light','dark']) {
+      if(theme==='dark')await p.locator('#themeBtn').click();
+      await links.first().scrollIntoViewIfNeeded();
+      await p.waitForFunction(()=>[...document.querySelectorAll('.provider-icon img')].every(i=>i.complete&&i.naturalWidth));
+      for(const link of await links.all()) {assert.equal(await link.isVisible(),true);assert.match(await link.getAttribute('href'),/^https:\/\//);}
+      await layout(p);
+      if(target===url)await p.locator('#providers').screenshot({path:path.join(output,'providers-'+theme+'.png')});
+      if(theme==='dark')await p.locator('#themeBtn').click();
+     }
     }
+    await p.goto(url);
+    assert.equal(await p.locator('#providers').evaluate(x=>x.previousElementSibling.id),'guide');
+    assert.equal(await p.locator('.provider-link').filter({hasText:'Kimi Code'}).getAttribute('href'),'https://www.kimi.com/code');
     await p.route('https://claude.com/**',r=>r.fulfill({status:200,body:'Official destination intercepted for navigation test'}));
-    await links.first().click();await p.waitForURL('https://claude.com/product/claude-code');
+    await p.locator('.provider-link').first().click();await p.waitForURL('https://claude.com/product/claude-code');
    }finally{await p.close();}
   });
-  await test('language switching swaps native samples; fallback and translation keys agree',async()=>{
+  await test('language switching swaps text, alt text and native samples on every page',async()=>{
    const p=await browser.newPage({reducedMotion:'reduce'});
    try {
-    await p.goto(url);
-    assert.deepEqual(await p.evaluate(()=>Object.keys(I18N.en).filter(k=>!(k in I18N.ko)||!(k in I18N.ja))),[]);
-    for(const lang of ['ko','ja','en']) {
-     await p.locator('#language').selectOption(lang);
-     assert.deepEqual(await p.locator('[data-i18n-alt]').evaluateAll(es=>es.filter(e=>e.alt!==I18N[document.documentElement.lang][e.dataset.i18nAlt]).map(e=>e.dataset.i18nAlt)),[]);
-     assert.deepEqual(await p.locator('[data-i18n]').evaluateAll(es=>es.filter(e=>e.textContent.replace(/\n/g,'')!==I18N[document.documentElement.lang][e.dataset.i18n].replace(/\n/g,'')).map(e=>e.dataset.i18n)),[]);
-     const suffix=lang==='en'?'':'-'+lang;
-     for(const src of await p.locator('[data-i18n-image]').evaluateAll(es=>es.map(e=>e.getAttribute('src'))))assert.ok(src.endsWith(suffix+'.png'));
-     assert.equal(await p.locator('.product-image img').getAttribute('src'),'assets/screenshot-home.png');
+    for(const page of [...pages,notFound]) {
+     await p.goto(new URL(page.path,base).href);
+     for(const lang of ['ko','ja','en']) {
+      await p.locator('#language').selectOption(lang);
+      assert.deepEqual(await p.locator('[data-i18n-alt]').evaluateAll(es=>es.filter(e=>e.alt!==I18N[document.documentElement.lang][e.dataset.i18nAlt]).map(e=>e.dataset.i18nAlt)),[],page.id);
+      assert.deepEqual(await p.locator('[data-i18n]').evaluateAll(es=>es.filter(e=>e.textContent.replace(/\n/g,'')!==I18N[document.documentElement.lang][e.dataset.i18n].replace(/\n/g,'')).map(e=>e.dataset.i18n)),[],page.id);
+      const suffix=lang==='en'?'':'-'+lang;
+      for(const src of await p.locator('[data-i18n-image]').evaluateAll(es=>es.map(e=>e.getAttribute('src'))))assert.ok(src.endsWith(suffix+'.png'),src);
+      assert.equal(await p.locator('meta[name="description"]').getAttribute('content'),I18N[lang][page.id==='home'?'hero.lead':`meta.${page.id}.desc`]);
+     }
     }
-    assert.equal(await p.locator('.provider-link').filter({hasText:'Kimi Code'}).getAttribute('href'),'https://www.kimi.com/code');
+    await p.goto(url);
+    assert.equal(await p.locator('.product-image img').getAttribute('src'),'assets/screenshot-home.png');
    }finally{await p.close();}
   });
   const swift=swiftSource();
@@ -241,7 +415,7 @@ async function capture(page,name,full=false) {
    const p=await browser.newPage();
    try {await p.goto(url);assert.deepEqual(await p.evaluate(()=>BALANCE),appBalance(swift));}finally{await p.close();}
   });
-  await test('cost table and number copy follow BALANCE in every language; no dead keys',async()=>{
+  await test('cost table and number copy follow BALANCE in every language',async()=>{
    const p=await browser.newPage();
    try {
     await p.goto(url);
@@ -266,10 +440,6 @@ async function capture(page,name,full=false) {
      return Object.entries(I18N).flatMap(([lang,dict])=>Object.entries(expected).flatMap(([key,parts])=>parts.filter(part=>!dict[key].includes(part)).map(part=>`${lang} ${key}: ${part}`)));
     });
     assert.deepEqual(missing,[]);
-    const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-    const programmatic=['theme','nav.menu','copy.pending','copy.ok','copy.error','demo.stop','growth.play','growth.pause'];
-    assert.deepEqual(await p.evaluate(()=>Object.keys(I18N.en)).then(keys=>keys.filter(k=>!programmatic.includes(k)&&!html.includes(`"${k}"`))),[]);
-    assert.deepEqual(await p.evaluate(()=>Object.entries(I18N.ko).filter(([,v])=>v.includes('도장')).map(([k])=>k)),[]);
    }finally{await p.close();}
   });
   await test('growth animation play, pause and reduced motion remain available',async()=>{
@@ -288,14 +458,17 @@ async function capture(page,name,full=false) {
   await test('every same-page link has a target and ZIP uses latest release',async()=>{
    const p=await browser.newPage();
    try {
+    for(const page of [...pages,notFound]) {
+     await p.goto(new URL(page.path,base).href);
+     assert.deepEqual(await p.locator('a[href^="#"]').evaluateAll(as=>as.filter(a=>!document.getElementById(a.hash.slice(1))).map(a=>a.hash)),[],page.id);
+    }
     await p.goto(url);
-    assert.deepEqual(await p.locator('a[href^="#"]').evaluateAll(as=>as.filter(a=>!document.getElementById(a.hash.slice(1))).map(a=>a.hash)),[]);
     assert.equal(await p.locator('a[href$="PokeTokenBar-yp-arm64.zip"]').getAttribute('href'),'https://github.com/w8385/PokeTokenBar-yp/releases/latest/download/PokeTokenBar-yp-arm64.zip');
    }finally{await p.close();}
   });
  }catch(error){problems.push({name:'harness',error:error.stack});}
  finally {
-  if(browser)await browser.close();server.kill();
+  if(browser)await browser.close();server.close();
   fs.writeFileSync(path.join(output,'verification.json'),JSON.stringify({results,problems},null,2));
   console.log(`${results.filter(r=>r.status==='pass').length}/${results.length} checks passed`);
   if(problems.length){console.error(JSON.stringify(problems,null,2));process.exitCode=1;}

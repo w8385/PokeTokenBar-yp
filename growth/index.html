@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Growing a partner — PokeTokenBar</title>
+<meta name="description" content="Grow a Pokémon from your AI coding tokens or your active time: difficulty, Rare Candy, day and night, tricky evolutions and a partner on your desktop.">
+<link rel="canonical" href="https://w8385.dev/PokeTokenBar-yp/growth/">
+<link rel="icon" type="image/png" href="../assets/icon.png">
+<link rel="apple-touch-icon" href="../assets/icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Growing a partner — PokeTokenBar">
+<meta property="og:description" content="Grow a Pokémon from your AI coding tokens or your active time: difficulty, Rare Candy, day and night, tricky evolutions and a partner on your desktop.">
+<meta property="og:image" content="https://w8385.dev/PokeTokenBar-yp/assets/screenshot-pet-interactions.png">
+<meta property="og:url" content="https://w8385.dev/PokeTokenBar-yp/growth/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="../assets/fonts/bricolage-grotesque.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="../tokens.css?v=48148ac5">
+<link rel="stylesheet" href="../styles.css?v=abf8ff44">
+<script>
+try { var savedTheme=localStorage.getItem('ptb-theme'); if(savedTheme==='dark'||savedTheme==='light') document.documentElement.dataset.theme=savedTheme; } catch (_) {}
+</script>
+</head><body data-page="growth">
+
+<a data-i18n="skip" class="skip" href="#main">Skip to content</a>
+<header class="site-header"><div class="wrap header-row">
+<a class="brand" href="../" data-internal><img src="../assets/icon.png" alt="" width="32" height="32"><span>PokeTokenBar</span></a>
+<nav class="nav-links" id="site-nav" data-i18n-aria="aria.nav" aria-label="Main navigation"><a data-i18n="nav.usage" href="../usage/" data-internal>Usage</a><a data-i18n="nav.growth" href="../growth/" data-internal aria-current="page">Growth</a><a data-i18n="nav.collection" href="../collection/" data-internal>Collection</a><a data-i18n="nav.battle" href="../battle/" data-internal>Battle</a><a data-i18n="nav.items" href="../items/" data-internal>Items</a><a data-i18n="nav.install" href="../#install" data-internal>Install</a></nav>
+<div class="header-tools js-only">
+<select class="language" id="language" aria-label="Language"><option value="en" lang="en">English</option><option value="ko" lang="ko">한국어</option><option value="ja" lang="ja">日本語</option></select>
+<button class="icon-btn" id="themeBtn" aria-label="Switch color theme" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13a8 8 0 0 1-9-9 8 8 0 1 0 9 9Z"/></svg></button>
+<button class="icon-btn menu-toggle" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+</div></div></header>
+<main id="main">
+<section class="page-hero" id="top"><div class="wrap"><h1 data-i18n="gr.h1">Your partner grows<br>while you work.</h1><p class="hero-lead" data-i18n="gr.lead">Tokens or active time hatch an egg and move your partner along its real evolution line. Set the pace you like.</p></div></section>
+<div class="section page-body"><div class="wrap">
+
+<section class="modes" id="modes" aria-labelledby="modes-title"><span class="badge" data-i18n="badge.fork">Only in PokeTokenBar-yp</span><h2 id="modes-title" data-i18n="modes.title">Two ways to grow.</h2><p class="growth-lead" data-i18n="modes.desc">Choose the growth source in Settings and switch any time. Progress you have already banked stays the same in both modes.</p>
+<div class="mode-grid"><article class="mode-card"><span class="mode-tag" data-i18n="modes.tokenTag">Token mode · default</span><h3 data-i18n="modes.tokenT">Grow with your AI coding</h3><p data-i18n="modes.tokenD">Every token your coding agents use counts, cache reads included. The same tokens fill your Shop wallet.</p><p class="muted" data-i18n="modes.tokenFit">Suits heavy agent users.</p></article>
+<article class="mode-card"><span class="mode-tag" data-i18n="modes.timeTag">Time mode</span><h3 data-i18n="modes.timeT">Grow while you work</h3><ul><li data-i18n="modes.timeRate">Each active hour adds 40M growth tokens and 10M Shop tokens.</li><li data-i18n="modes.timeIdle">You count as active if you used the keyboard or mouse in the last 5 minutes. One check credits at most 2 minutes.</li><li data-i18n="modes.timeOnly">AI token usage earns nothing in this mode.</li></ul><p class="muted" data-i18n="modes.timeFit">Suits light users, or anyone without an AI coding tool.</p></article></div>
+<p class="note" data-i18n="modes.hint">No token usage for 3 days? The app suggests time mode in Settings.</p>
+<div class="click-note"><h3 data-i18n="modes.clickT">Click to help.</h3><p data-i18n="modes.clickD">In either mode, clicking the big sprite on Home or the floating pet adds 54k growth tokens, at most one click every 0.3 s. About 2,800 clicks take a Normal line from egg to graduation.</p></div></section>
+
+<section class="feature-story" id="difficulty" aria-labelledby="difficulty-title"><div class="feature-copy"><h2 id="difficulty-title" data-i18n="p1.t">Difficulty from 10% to 200%</h2><p data-i18n="p1.d">Growth and Shop difficulty have their own sliders. A species you have graduated before grows twice as fast after it hatches.</p><h3 data-i18n="gr.save.t">Save to apply</h3><p data-i18n="gr.save.d">Dragging a slider only edits a draft. Press Save to apply it. A new difficulty keeps your current stage progress instead of forcing an evolution.</p></div>
+<figure class="feature-media"><img src="../assets/screenshot-difficulty.png" data-i18n-image="screenshot-difficulty" width="720" height="340" loading="lazy" data-i18n-alt="alt.difficulty" alt="Native difficulty settings sample with labeled growth and shop slider ends"><figcaption data-i18n="native.difficulty">Native UI · sample settings.</figcaption></figure></section>
+
+<section class="feature-story flip" id="rare-candy" aria-labelledby="candy-title"><div class="feature-copy"><h2 id="candy-title" data-i18n="c4.t">Rare Candy from limits</h2><p data-i18n="c4.d">Fill a 5-hour or weekly limit to earn Rare Candy. Use several at once and preview the growth first.</p></div>
+<figure class="feature-media"><img src="../assets/screenshot-bag.png" data-i18n-image="screenshot-bag" width="720" height="840" loading="lazy" data-i18n-alt="alt.bag" alt="Native Bag sample with Rare Candy and a Mint"><figcaption data-i18n="native.current">Native UI renders · sample states</figcaption></figure></section>
+
+<section class="feature-story" id="menu-bar" aria-labelledby="menubar-title"><div class="feature-copy"><h2 id="menubar-title" data-i18n="p2.t">Growth % in the menu bar</h2><p data-i18n="p2.d">Show egg or evolution progress next to the icon. Hover Home’s bar for tokens, target and percentage.</p></div>
+<figure class="feature-media small"><img src="../assets/screenshot-menu-growth.png" data-i18n-image="screenshot-menu-growth" width="200" height="44" loading="lazy" data-i18n-alt="alt.menuGrowth" alt="Native menu-bar sample with the growth percentage next to the sprite"><figcaption data-i18n="native.current">Native UI renders · sample states</figcaption></figure></section>
+
+<section class="feature-story flip" id="pet" aria-labelledby="pet-title"><div class="feature-copy"><h2 id="pet-title" data-i18n="p3.t">A pet on your desktop</h2><p data-i18n="p3.d">Put your partner on the desktop at 48 to 384 px. Hover for today’s usage, drag it anywhere, and use right-click → Open for the app.</p><h3 data-i18n="p4.t">Pet, pray, sulk</h3><p data-i18n="p4.d">Pet it with the pointer, click an egg to pray, and watch for sulking or event bubbles. Praying is just for fun.</p><h3 data-i18n="p5.t">Agent events</h3><p data-i18n="p5.d">Optional URL events make the pet react while an agent works, waits or finishes. You add the hooks yourself; the app never edits agent settings.</p><a class="text-link" data-i18n="agent.guide" href="https://github.com/w8385/PokeTokenBar-yp#agent-activity" target="_blank" rel="noopener">Read the agent setup guide</a><h3 data-i18n="p6.t">Representative Pokémon</h3><p data-i18n="p6.d">Pin an owned species and form to the menu bar and the desktop pet. Your current partner keeps growing on Home.</p></div>
+<figure class="feature-media"><img src="../assets/screenshot-pet-interactions.png" data-i18n-image="screenshot-pet-interactions" width="720" height="828" loading="lazy" data-i18n-alt="alt.petInteractions" alt="Separate native pet samples for egg prayer, petting, sulking and agent waiting"><figcaption data-i18n="native.current">Native UI renders · sample states</figcaption></figure></section>
+
+<section class="feature-group" id="rules" aria-labelledby="rules-title"><h2 id="rules-title" data-i18n="gr.rules.t">How growth works</h2><div class="card-grid wide">
+<article><span class="badge" data-i18n="badge.fork">Only in PokeTokenBar-yp</span><h3 data-i18n="k3.t">Lighter costs</h3><p data-i18n="k3.d">Growth costs and Shop prices are one fifth of the original app’s, set for a typical day of about 44M tokens. A Normal line graduates at 150M tokens and a Legendary at 1.2B. Saves from older versions were converted when the change shipped.</p></article>
+<article><span class="badge" data-i18n="badge.fork">Only in PokeTokenBar-yp</span><h3 data-i18n="k13.t">Day, night and tricky evolutions</h3><p data-i18n="k13.d">Day and night switch every 10 minutes on the clock, and Home shows a sun-and-moon dial. Unusual evolutions become conditions the app can check, and a notice tells you what is blocking one.</p><p data-i18n="gr.evo.d2">If a Pokémon is ready to evolve but a condition is unmet, you get one notice per blocking reason. The Pokédex shows the original condition next to the app’s.</p></article>
+</div></section>
+
+<section class="guide-link" aria-labelledby="guide-link-title"><h2 id="guide-link-title" data-i18n="gr.guide.t">Work out your pace</h2><p data-i18n="gr.guide.d">The field guide lists the tokens per evolution and estimates the days for your pace, rarity and difficulty.</p><a class="btn btn-secondary" href="../#guide" data-internal><span data-i18n="gr.guide.link">Open the field guide</span></a></section>
+
+</div></div>
+<section class="section more-pages" aria-labelledby="more-title"><div class="wrap"><h2 id="more-title" data-i18n="more.title">More of the app.</h2><ul class="page-list">
+<li><a class="page-link" href="../usage/" data-internal><span class="page-link-title" data-i18n="pages.usage.t">Usage tracker</span><span class="page-link-desc" data-i18n="pages.usage.d">Today’s tokens per tool, official limits and resets, several Claude accounts, activity and recaps.</span></a></li>
+<li><a class="page-link" href="../collection/" data-internal><span class="page-link-title" data-i18n="pages.collection.t">Pokédex and Box</span><span class="page-link-desc" data-i18n="pages.collection.d">The Gen 1–9 Pokédex, forms, the Box, friends beside your partner, trades and Scout Tickets.</span></a></li>
+<li><a class="page-link" href="../battle/" data-internal><span class="page-link-title" data-i18n="pages.battle.t">Battles and gyms</span><span class="page-link-desc" data-i18n="pages.battle.d">The Battle tab, eight gyms per region, the Elite Four and the champion, the hidden boss, replays and the Slack battle bot.</span></a></li>
+<li><a class="page-link" href="../items/" data-internal><span class="page-link-title" data-i18n="pages.items.t">Items and moves</span><span class="page-link-desc" data-i18n="pages.items.d">The token Shop, held items and Mega Evolution, TMs, the Exp. Share, and nature, ability and IV items.</span></a></li>
+</ul><a class="btn btn-primary" href="../#install" data-internal><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 17v4h14v-4"/></svg><span data-i18n="hero.install">Get PokeTokenBar</span></a></div></section>
+</main><footer class="site-footer"><div class="wrap"><div class="footer-top"><a class="brand" href="../" data-internal><img src="../assets/icon.png" width="32" height="32" alt=""><span>PokeTokenBar</span></a><nav class="footer-links" data-i18n-aria="aria.project" aria-label="Project links"><a data-i18n="footer.source" href="https://github.com/w8385/PokeTokenBar-yp" target="_blank" rel="noopener">Source code</a><a data-i18n="footer.releases" href="https://github.com/w8385/PokeTokenBar-yp/releases" target="_blank" rel="noopener">Release notes</a><a data-i18n="footer.help" href="https://github.com/w8385/PokeTokenBar-yp/issues" target="_blank" rel="noopener">Get help</a><a data-i18n="footer.upstream" href="https://github.com/chattymin/PokeTokenBar" target="_blank" rel="noopener">Original by chattymin</a><a data-i18n="footer.sponsor" href="https://github.com/sponsors/chattymin" target="_blank" rel="noopener">Sponsor</a></nav></div><p data-i18n="foot.disclaimer" class="disclaimer">Pokémon data &amp; sprites by PokéAPI. This is an unofficial, non-commercial fan project. It is not affiliated with, endorsed, sponsored, or approved by Nintendo, Game Freak, or The Pokémon Company. Pokémon and Pokémon character names are trademarks of Nintendo; names, data, and sprites are © Nintendo / Game Freak / The Pokémon Company, used at runtime for identification only. The MIT license covers this project's source code only.</p></div></footer>
+<script src="../pages-i18n.js?v=a11533f5" defer></script>
+<script src="../app.js?v=c3263eef" defer></script>
+</body></html>

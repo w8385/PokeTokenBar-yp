@@ -20,8 +20,6 @@ function formatTokens(n) {
 const I18N = {
   "en": {
     "skip": "Skip to content",
-    "nav.features": "The app",
-    "nav.guide": "Field guide",
     "nav.install": "Install",
     "nav.menu": "Menu",
     "theme": "Switch color theme",
@@ -87,12 +85,8 @@ const I18N = {
     "usage.desc": "Today’s tokens, usage trends and provider limits live together. Open the menu bar when you need the details; keep working when you don’t.",
     "usage.limits": "See the reset coming",
     "usage.limitsDesc": "Official Claude, Codex and Antigravity limits, OpenCode Go 5-hour / weekly / monthly allowances, and Grok CLI weekly subscription credits. Availability depends on each tool’s login or subscription.",
-    "usage.caption": "Activity: sample data · UI render. Limits: English example screen.",
     "alt.trend": "Production activity UI rendered with sample data, showing bar-period selection and the 16-week activity grid",
     "alt.quota": "Example provider limits and reset timing",
-    "groups.title": "What’s in the app.",
-    "groups.desc": "Most of this comes from chattymin’s original PokeTokenBar.",
-    "grp.usage": "Usage and limits",
     "u1.t": "Today’s total, per tool",
     "u1.d": "The menu bar shows today’s tokens from every tracked tool. Open it for per-tool tabs; Pi usage also splits by model.",
     "u2.t": "Limits, resets and pace",
@@ -107,7 +101,6 @@ const I18N = {
     "u6.d": "Get notified as a limit gets close, and when your partner hatches, evolves or graduates.",
     "alt.recap": "Native weekly recap sample with token usage and Pokémon graduation records",
     "native.recap": "Native UI · sample usage and Pokémon.",
-    "grp.partner": "Your partner",
     "p1.t": "Difficulty from 10% to 200%",
     "p1.d": "Growth and Shop difficulty have their own sliders. A species you have graduated before grows twice as fast after it hatches.",
     "p2.t": "Growth % in the menu bar",
@@ -123,7 +116,6 @@ const I18N = {
     "p6.d": "Pin an owned species and form to the menu bar and the desktop pet. Your current partner keeps growing on Home.",
     "alt.petInteractions": "Separate native pet samples for egg prayer, petting, sulking and agent waiting",
     "native.current": "Native UI renders · sample states",
-    "grp.collect": "Collection and items",
     "c1.t": "Pokédex",
     "c1.d": "One cell per species you have owned, 16 per page. Search, sort, filter by rarity, Shiny or region, and earn completion badges.",
     "c2.t": "Alternate forms",
@@ -145,17 +137,13 @@ const I18N = {
     "x4.d": "Pick 2.5, 5 or 10 fps, or Original, for the menu bar and the floating pet. Low Power Mode caps it.",
     "alt.difficulty": "Native difficulty settings sample with labeled growth and shop slider ends",
     "native.difficulty": "Native UI · sample settings.",
-    "fork.title": "Only in PokeTokenBar-yp.",
-    "fork.desc": "PokeTokenBar-yp is a fork of chattymin’s PokeTokenBar. The original made the companion, the tracker and most of what you see above. The features below exist only in this fork, so please report problems with them here, not upstream.",
+    "fork.desc": "PokeTokenBar-yp is a fork of chattymin’s PokeTokenBar. The original made the companion and the usage tracker. Features marked Only in PokeTokenBar-yp exist only in this fork, so please report problems with them here, not upstream.",
     "k1.t": "The full Pokédex, Gen 1 to 9",
     "k1.d": "The Pokédex runs to #1025, and an egg can start any of 540 Gen 1–9 lines. A legendary hatch is about 1 in 48. The regional filter covers nine regions, Kanto to Paldea, and the national badge counts all 1,025.",
-    "k2.t": "Time mode and click growth",
-    "k2.d": "Grow from active time instead of tokens, and click your partner to help it along. Both are described above under Two ways to grow.",
-    "k2.link": "See the two modes",
     "k3.t": "Lighter costs",
     "k3.d": "Growth costs and Shop prices are one fifth of the original app’s, set for a typical day of about 44M tokens. A Normal line graduates at 150M tokens and a Legendary at 1.2B. Saves from older versions were converted when the change shipped.",
-    "k4.t": "Battle tab and gyms",
-    "k4.d": "With the YPoke Slack battle bot linked, the Battle tab lines up to six Pokémon in fighting order; Auto sends the one you are raising. Each region has eight gym leaders in a two-column grid, and your team fights at Lv50 or below. A win earns a badge for the badge case and can grant a TM. Sub-tabs split the tab into Entry, Battle and History. Each lineup row shows the stats it fights with, marks what its nature raises and lowers, and follows its form.",
+    "k4.t": "The Battle tab",
+    "k4.d": "With the YPoke Slack battle bot linked, the Battle tab lines up to six Pokémon in fighting order; Auto sends the one you are raising. Sub-tabs split the tab into Entry, Battle and History. Each lineup row shows the stats it fights with, marks what its nature raises and lowers, and follows its form.",
     "alt.gyms": "Native gym list sample with Kanto leaders in two columns, the hideout, the Elite Four and the badge case",
     "k5.t": "The Elite Four and the champion",
     "k5.d": "Below the gyms, the hideout is a run of battles with a full heal before each one, and a loss starts it again. Eight badges open the Elite Four run below it. The champion brings the region’s legendaries and hides one more partner, shown as +1 ?, until the first six faint. Beating the champion opens a hidden boss whose first clear pays a strong TM, a shiny legendary egg and Rare Candies. Each gym fight can be replayed turn by turn, with Mega Evolutions and form changes drawn as they happen.",
@@ -180,7 +168,7 @@ const I18N = {
     "k9.d": "Attach an Exp. Share to one Pokémon in the Box. It gets 50% of the EXP your current Pokémon or egg earns, so a graduate keeps growing while you raise the next one. When a new egg sends your partner to the Box, an Exp. Share from your Bag goes on it. Move here on a Box page moves a copy from another holder, even with an empty Bag, and a holder in the Box evolves there when the next step needs only EXP, a level, friends or a type. A holder that can't use more EXP passes its copy to the closest Box line.",
     "alt.expShare": "Native Box detail sample for a stored Bulbasaur with Move here and Attach for the Exp. Share",
     "k10.t": "Trades and the Linking Cord",
-    "k10.d": "Trade graduated Pokémon with a linked coworker from the Friends tab; the other side accepts in Slack. Trade evolutions such as Haunter or Kadabra wait for a trade, or for a Linking Cord from the Shop. Some also need a held item first, like Onix with a Metal Coat.",
+    "k10.d": "Trade graduated Pokémon with a linked coworker from the Friends tab, or send one straight from its Box page; the other side accepts in Slack. Trade evolutions such as Haunter or Kadabra wait for a trade, or for a Linking Cord from the Shop. Some also need a held item first, like Onix with a Metal Coat.",
     "k11.t": "Friends beside your partner",
     "k11.d": "Pick up to two friends from your graduates and the Pokémon waiting in the Box. They stand next to your partner on Home and on the floating pet in their current form, and petting a friend pops a heart over it. When a new egg or a scout sends your partner to the Box while a slot is free, it joins as a friend.",
     "alt.storedFriends": "Native friend picker sample offering a stored Bulbasaur, and Home with that Bulbasaur walking beside Charizard",
@@ -292,7 +280,7 @@ const I18N = {
     "faq.cost.q": "Does raising a Pokémon spend extra tokens?",
     "faq.cost.a": "No. The app reads usage from your supported coding tools. It doesn’t run model turns to grow your companion.",
     "faq.fork.q": "How is this different from PokeTokenBar?",
-    "faq.fork.a": "PokeTokenBar-yp is an unofficial fork of chattymin’s PokeTokenBar (MIT). It adds the features under Only in PokeTokenBar-yp. Report problems with this fork here, not to the original project.",
+    "faq.fork.a": "PokeTokenBar-yp is an unofficial fork of chattymin’s PokeTokenBar (MIT). The feature pages mark what it adds with Only in PokeTokenBar-yp. Report problems with this fork here, not to the original project.",
     "faq.source.q": "Can I build it myself?",
     "faq.source.a": "Yes. The Swift source, build instructions and issue tracker are on GitHub.",
     "footer.source": "Source code",
@@ -304,8 +292,6 @@ const I18N = {
   },
   "ko": {
     "skip": "본문으로 건너뛰기",
-    "nav.features": "앱 둘러보기",
-    "nav.guide": "성장 가이드",
     "nav.install": "설치",
     "nav.menu": "메뉴",
     "theme": "화면 테마 전환",
@@ -371,12 +357,8 @@ const I18N = {
     "usage.desc": "오늘의 토큰, 사용량 추이, 프로바이더 한도를 한곳에서 확인하세요. 자세히 볼 때만 메뉴바를 열면 됩니다.",
     "usage.limits": "리셋까지 얼마나 남았는지",
     "usage.limitsDesc": "Claude·Codex·Antigravity의 공식 한도, OpenCode Go의 5시간·주간·월간 사용량, Grok CLI의 주간 구독 크레딧을 확인하세요. 도구의 로그인·구독 상태에 따라 표시됩니다.",
-    "usage.caption": "활동: 샘플 데이터 · UI 렌더. 한도: 영어 예시 화면.",
     "alt.trend": "기간 선택 막대 차트와 16주 활동 격자를 샘플 데이터로 렌더링한 실제 UI",
     "alt.quota": "프로바이더 한도와 리셋 시점 예시",
-    "groups.title": "앱에 담긴 것.",
-    "groups.desc": "대부분 chattymin의 원작 PokeTokenBar에서 온 기능이에요.",
-    "grp.usage": "사용량과 한도",
     "u1.t": "오늘 합계, 도구별로",
     "u1.d": "메뉴바에 추적 중인 모든 도구의 오늘 토큰이 보여요. 열면 도구별 탭이 있고, Pi는 모델별로도 나눠 보여요.",
     "u2.t": "한도, 리셋, 사용 속도",
@@ -391,7 +373,6 @@ const I18N = {
     "u6.d": "한도가 가까워질 때, 파트너가 부화·진화·졸업할 때 알려줘요.",
     "alt.recap": "토큰 사용량과 포켓몬 졸업 기록이 표시된 실제 주간 회고 UI 샘플",
     "native.recap": "실제 UI 렌더 · 샘플 사용량과 포켓몬.",
-    "grp.partner": "나의 파트너",
     "p1.t": "난이도 10%~200%",
     "p1.d": "성장 난이도와 상점 난이도는 슬라이더가 따로예요. 전에 졸업시킨 종은 부화한 뒤 두 배 빠르게 자라요.",
     "p2.t": "메뉴바에 성장률 표시",
@@ -407,7 +388,6 @@ const I18N = {
     "p6.d": "가진 종과 폼을 메뉴바와 바탕화면 펫에 고정하세요. 지금 키우는 파트너는 홈에서 계속 자라요.",
     "alt.petInteractions": "알 기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 실제 펫 샘플",
     "native.current": "실제 UI 렌더 · 샘플 상태",
-    "grp.collect": "수집과 아이템",
     "c1.t": "도감",
     "c1.d": "가졌던 종마다 한 칸씩, 한 페이지에 16마리. 검색·정렬, 희귀도·이로치·지방 필터, 완성 배지가 있어요.",
     "c2.t": "다양한 폼",
@@ -429,17 +409,13 @@ const I18N = {
     "x4.d": "메뉴바와 플로팅 펫의 움직임을 2.5·5·10fps 또는 원본으로 고르세요. 저전력 모드에서는 낮게 제한돼요.",
     "alt.difficulty": "성장·상점 슬라이더 양끝에 값이 표시된 실제 난이도 설정 UI 샘플",
     "native.difficulty": "실제 UI 렌더 · 샘플 설정.",
-    "fork.title": "PokeTokenBar-yp에만 있는 것.",
-    "fork.desc": "PokeTokenBar-yp는 chattymin의 PokeTokenBar를 바탕으로 한 포크예요. 파트너와 사용량 트래커, 위에 보이는 대부분은 원작이 만든 거예요. 아래 기능은 이 포크에만 있으니, 문제가 있으면 원작이 아니라 여기에 알려 주세요.",
+    "fork.desc": "PokeTokenBar-yp는 chattymin의 PokeTokenBar를 바탕으로 한 포크예요. 파트너와 사용량 트래커는 원작이 만들었어요. ‘PokeTokenBar-yp에만 있어요’ 표시가 붙은 기능은 이 포크에만 있으니, 문제가 있으면 원작이 아니라 여기에 알려 주세요.",
     "k1.t": "1~9세대 전국 도감",
     "k1.d": "도감은 #1025까지 있고, 알은 1~9세대의 540가지 시작 종 중 하나로 부화해요. 전설은 48번에 한 번꼴이에요. 지방 필터는 관동부터 팔데아까지 9개 지방이고, 전국 배지는 1,025종 전부를 셉니다.",
-    "k2.t": "시간 모드와 클릭 성장",
-    "k2.d": "토큰 대신 활동 시간으로 키우고, 파트너를 클릭해 성장을 거들 수 있어요. 자세한 내용은 위 ‘키우는 방법은 두 가지’에 있어요.",
-    "k2.link": "두 가지 모드 보기",
     "k3.t": "가벼워진 비용",
     "k3.d": "성장 비용과 상점 가격이 원작의 5분의 1이에요. 하루 44M 토큰쯤 쓰는 보통의 하루에 맞췄어요. 기본 등급 라인은 150M 토큰, 전설은 1.2B 토큰이면 졸업해요. 예전 버전의 저장 데이터는 이 변경이 나갈 때 함께 바뀌었어요.",
-    "k4.t": "대결 탭과 체육관",
-    "k4.d": "YPoke 슬랙 대결 봇을 연결하면 대결 탭에 최대 여섯 마리를 나갈 순서대로 세워요. 자동이면 지금 키우는 포켓몬이 나가요. 지방마다 관장 여덟 명이 두 줄로 있고, 내 팀은 Lv50 이하로 맞춰 싸워요. 이기면 배지 케이스에 배지가 들어가고 기술머신을 받을 수도 있어요. 탭 안은 엔트리·배틀·기록으로 나뉘어요. 줄마다 실제로 싸우는 능력치가 나오고, 성격이 올리고 내리는 능력치에 ↑·↓가 붙고, 폼을 따라요.",
+    "k4.t": "대결 탭",
+    "k4.d": "YPoke 슬랙 대결 봇을 연결하면 대결 탭에 최대 여섯 마리를 나갈 순서대로 세워요. 자동이면 지금 키우는 포켓몬이 나가요. 탭 안은 엔트리·배틀·기록으로 나뉘어요. 줄마다 실제로 싸우는 능력치가 나오고, 성격이 올리고 내리는 능력치에 ↑·↓가 붙고, 폼을 따라요.",
     "alt.gyms": "두 줄로 선 관동 관장·아지트·사천왕·배지 케이스를 보여 주는 실제 체육관 목록 UI 샘플",
     "k5.t": "사천왕과 챔피언",
     "k5.d": "체육관 아래 아지트는 판마다 완전히 회복하고 싸우는 연전이고, 지면 처음부터 다시 해요. 그 아래 사천왕 연전은 배지 여덟 개면 열려요. 챔피언은 그 지방의 전설을 데려오고, +1 ?로만 보이는 파트너 하나를 앞의 여섯 마리가 쓰러질 때까지 숨겨 둬요. 챔피언을 이기면 숨겨진 강자가 열리고, 처음 이기면 강한 기술머신, 빛나는 전설의 알, 이상한사탕을 받아요. 체육관 대결은 턴마다 다시 볼 수 있고, 메가진화와 폼 변화도 그 모습으로 나와요.",
@@ -464,7 +440,7 @@ const I18N = {
     "k9.d": "박스 포켓몬 하나에 학습장치를 달아 주세요. 그 포켓몬은 지금 키우는 포켓몬이나 알이 얻는 경험치의 50%를 함께 받아서, 다음 포켓몬을 키우는 동안 졸업한 포켓몬도 계속 자라요. 새 알로 파트너를 박스에 보내면 가방의 학습장치 하나가 그 포켓몬에 달려요. 박스 화면의 여기로 옮기기로 다른 포켓몬의 학습장치를 가져올 수 있고, 가방이 비어 있어도 돼요. 학습장치를 단 박스 포켓몬은 경험치·레벨·친구·타입만 필요한 단계라면 박스에서 진화해요. 경험치를 더 쓸 수 없는 포켓몬의 학습장치는 가장 가까운 박스 포켓몬에게 넘어가요.",
     "alt.expShare": "여기로 옮기기와 달기 버튼이 보이는 박스 속 이상해씨의 실제 상세 UI 샘플",
     "k10.t": "교환과 연결의끈",
-    "k10.d": "친구 탭에서 연결한 동료와 졸업한 포켓몬을 맞바꿔요. 상대는 슬랙에서 수락해요. 고우스트·윤겔라처럼 교환으로 진화하는 포켓몬은 교환하거나 상점의 연결의끈을 쓸 때까지 기다려요. 롱스톤과 금속코트처럼 도구를 먼저 지녀야 하는 경우도 있어요.",
+    "k10.d": "친구 탭에서 연결한 동료와 졸업한 포켓몬을 맞바꾸거나, 박스 상세에서 바로 보내요. 상대는 슬랙에서 수락해요. 고우스트·윤겔라처럼 교환으로 진화하는 포켓몬은 교환하거나 상점의 연결의끈을 쓸 때까지 기다려요. 롱스톤과 금속코트처럼 도구를 먼저 지녀야 하는 경우도 있어요.",
     "k11.t": "파트너 곁의 친구",
     "k11.d": "졸업한 포켓몬과 박스에서 쉬는 포켓몬 중에서 최대 두 마리까지 친구로 고르세요. 홈과 플로팅 펫에서 지금 모습 그대로 파트너 옆에 서고, 친구를 쓰다듬으면 그 위에 하트가 떠요. 새 알이나 스카우트로 파트너를 박스에 보낼 때 친구 칸이 비어 있으면 그 포켓몬이 친구로 들어와요.",
     "alt.storedFriends": "보관 중인 이상해씨를 고를 수 있는 친구 선택과, 리자몽 옆을 걷는 이상해씨가 보이는 실제 홈 UI 샘플",
@@ -576,7 +552,7 @@ const I18N = {
     "faq.cost.q": "포켓몬을 키우면 토큰을 추가로 쓰나요?",
     "faq.cost.a": "아니요. 지원하는 코딩 도구의 사용량을 읽습니다. 파트너를 키우기 위해 모델을 실행하지 않아요.",
     "faq.fork.q": "원작 PokeTokenBar와 무엇이 다른가요?",
-    "faq.fork.a": "PokeTokenBar-yp는 chattymin의 PokeTokenBar(MIT)를 바탕으로 한 비공식 포크예요. ‘PokeTokenBar-yp에만 있는 것’에 적은 기능이 더해졌어요. 이 포크의 문제는 원작이 아니라 여기에 알려 주세요.",
+    "faq.fork.a": "PokeTokenBar-yp는 chattymin의 PokeTokenBar(MIT)를 바탕으로 한 비공식 포크예요. 더해진 기능은 기능 페이지에 ‘PokeTokenBar-yp에만 있어요’로 표시돼 있어요. 이 포크의 문제는 원작이 아니라 여기에 알려 주세요.",
     "faq.source.q": "직접 빌드할 수 있나요?",
     "faq.source.a": "네. Swift 소스 코드, 빌드 방법, 이슈 트래커가 GitHub에 공개되어 있습니다.",
     "footer.source": "소스 코드",
@@ -588,8 +564,6 @@ const I18N = {
   },
   "ja": {
     "skip": "本文へ移動",
-    "nav.features": "アプリを見る",
-    "nav.guide": "育成ガイド",
     "nav.install": "インストール",
     "nav.menu": "メニュー",
     "theme": "テーマを切り替え",
@@ -655,12 +629,8 @@ const I18N = {
     "usage.desc": "今日のトークン、使用量の推移、プロバイダーの上限をひとつの場所に。詳しく知りたいときだけメニューバーを開けばOK。",
     "usage.limits": "リセットまで、あとどれくらい？",
     "usage.limitsDesc": "Claude・Codex・Antigravity の公式上限、OpenCode Go の5時間・週間・月間利用枠、Grok CLI の週間サブスクリプションクレジットを表示。各ツールのログイン・契約により異なります。",
-    "usage.caption": "活動：サンプルデータ · UI レンダー。上限：英語の画面例。",
     "alt.trend": "期間を選べる棒グラフと16週間の活動グリッドをサンプルデータで描画した実際のUI",
     "alt.quota": "プロバイダーの上限とリセット時刻の例",
-    "groups.title": "アプリでできること。",
-    "groups.desc": "ほとんどは chattymin によるオリジナルの PokeTokenBar の機能です。",
-    "grp.usage": "使用量と上限",
     "u1.t": "今日の合計をツール別に",
     "u1.d": "メニューバーに、記録中のすべてのツールの今日のトークンを表示。開くとツール別のタブがあり、Pi はモデル別にも分けて表示します。",
     "u2.t": "上限、リセット、ペース",
@@ -675,7 +645,6 @@ const I18N = {
     "u6.d": "上限が近づいたとき、パートナーが孵化・進化・卒業したときにお知らせします。",
     "alt.recap": "トークン使用量とポケモンの卒業記録を表示した実際の週間振り返りUIサンプル",
     "native.recap": "実際のUIレンダー · サンプル使用量とポケモン。",
-    "grp.partner": "パートナー",
     "p1.t": "難易度は10%〜200%",
     "p1.d": "成長とショップの難易度は別々のスライダーで調整します。以前に卒業させた種族は、孵化したあと2倍の速さで育ちます。",
     "p2.t": "メニューバーに成長率",
@@ -691,7 +660,6 @@ const I18N = {
     "p6.d": "所有する種族と姿を、メニューバーとデスクトップペットに固定できます。いま育てているパートナーはホームで育ち続けます。",
     "alt.petInteractions": "タマゴへのお祈り・なでる動作・すねる姿・エージェントの入力待ちを個別に描画した実際のペットサンプル",
     "native.current": "実際の UI レンダー · サンプル状態",
-    "grp.collect": "コレクションとアイテム",
     "c1.t": "図鑑",
     "c1.d": "持ったことのある種族を1マスずつ、1ページ16匹。検索・並べ替え、レア度・色違い・地方の絞り込み、完成バッジがあります。",
     "c2.t": "さまざまな姿",
@@ -713,17 +681,13 @@ const I18N = {
     "x4.d": "メニューバーとデスクトップペットの動きを、2.5・5・10fpsかオリジナルから選べます。低電力モードでは低く抑えます。",
     "alt.difficulty": "育成・ショップのスライダー両端に値を表示した実際の難易度設定UIサンプル",
     "native.difficulty": "実際のUIレンダー · サンプル設定。",
-    "fork.title": "PokeTokenBar-yp だけの機能。",
-    "fork.desc": "PokeTokenBar-yp は chattymin の PokeTokenBar をもとにしたフォークです。パートナーも使用量トラッカーも、上にあるほとんどはオリジナルが作ったものです。以下の機能はこのフォークだけにあるので、不具合はオリジナルではなくこちらに報告してください。",
+    "fork.desc": "PokeTokenBar-yp は chattymin の PokeTokenBar をもとにしたフォークです。パートナーも使用量トラッカーも、オリジナルが作ったものです。「PokeTokenBar-yp だけ」の印がある機能はこのフォークだけにあるので、不具合はオリジナルではなくこちらに報告してください。",
     "k1.t": "第1〜9世代の全国図鑑",
     "k1.d": "図鑑は #1025 まであり、タマゴは第1〜9世代の540種類の最初の姿のどれかから始まります。伝説はおよそ48回に1回。地方の絞り込みはカントーからパルデアまでの9地方で、全国バッジは1,025種すべてを数えます。",
-    "k2.t": "時間モードとクリック成長",
-    "k2.d": "トークンの代わりに作業時間で育てたり、パートナーをクリックして成長を手伝ったりできます。詳しくは上の「育て方は2つ」にあります。",
-    "k2.link": "2つのモードを見る",
     "k3.t": "軽くなったコスト",
     "k3.d": "成長コストとショップの価格は、オリジナルの5分の1です。1日におよそ44Mトークンを使う、ふつうの1日に合わせています。ノーマルの進化ラインは150Mトークン、伝説は1.2Bトークンで卒業します。古いバージョンのセーブは、この変更のときに一緒に変換されました。",
-    "k4.t": "バトルタブとジム",
-    "k4.d": "YPoke の Slack バトルボットと連携すると、バトルタブに最大6匹を出る順に並べられます。自動ならいま育てているポケモンが出ます。地方ごとに8人のジムリーダーが2列で並び、こちらのチームはLv50以下で戦います。勝つとバッジケースにバッジが入り、わざマシンがもらえることもあります。タブの中はエントリー・バトル・履歴に分かれます。 各行には実際に戦う能力値が出て、性格で上がる・下がる能力値に↑・↓が付き、フォルムに従います。",
+    "k4.t": "バトルタブ",
+    "k4.d": "YPoke の Slack バトルボットと連携すると、バトルタブに最大6匹を出る順に並べられます。自動ならいま育てているポケモンが出ます。タブの中はエントリー・バトル・履歴に分かれます。各行には実際に戦う能力値が出て、性格で上がる・下がる能力値に↑・↓が付き、フォルムに従います。",
     "alt.gyms": "2列に並んだカントーのジムリーダー・アジト・四天王・バッジケースを示す実際のジム一覧UIサンプル",
     "k5.t": "四天王とチャンピオン",
     "k5.d": "ジムの下のアジトは毎回全回復してから戦う連戦で、負けると最初からやり直しです。その下の四天王の連戦はバッジ8個で開きます。チャンピオンはその地方の伝説を連れてきて、+1 ? とだけ表示されるパートナーを、先の6匹がひんしになるまで隠しています。チャンピオンに勝つと隠れた強者が現れ、初勝利で強力なわざマシン、色違いの伝説のタマゴ、ふしぎなアメがもらえます。ジムのバトルはターンごとに見返せて、メガシンカやフォルムチェンジもその姿で表示されます。",
@@ -748,7 +712,7 @@ const I18N = {
     "k9.d": "ボックスのポケモン1匹に、がくしゅうそうちをつけます。そのポケモンは、いま育てているポケモンやタマゴが得る経験値の50%を一緒に受け取るので、次のポケモンを育てている間も卒業したポケモンが育ち続けます。新しいタマゴでパートナーをボックスに預けると、バッグのがくしゅうそうちを1つそのポケモンにつけます。ボックス画面の「ここに移す」で、ほかのポケモンのがくしゅうそうちを付け替えられます。バッグが空でもかまいません。がくしゅうそうちをつけたボックスのポケモンは、経験値・レベル・フレンド・タイプだけで進める段階ならボックスで進化します。これ以上経験値を使えないポケモンのがくしゅうそうちは、いちばん近いボックスのポケモンに渡ります。",
     "alt.expShare": "「ここに移す」と「つける」が見える、ボックスのフシギダネの実際の詳細UIサンプル",
     "k10.t": "通信交換とつながりのヒモ",
-    "k10.d": "フレンドタブから、つながった同僚と卒業したポケモンを交換できます。相手は Slack で承諾します。ゴーストやユンゲラーのように交換で進化するポケモンは、交換するか、ショップのつながりのヒモを使うまで待ちます。イワークとメタルコートのように、先に道具を持たせる必要がある場合もあります。",
+    "k10.d": "フレンドタブから、つながった同僚と卒業したポケモンを交換できます。ボックスの詳細からそのまま送ることもできます。相手は Slack で承諾します。ゴーストやユンゲラーのように交換で進化するポケモンは、交換するか、ショップのつながりのヒモを使うまで待ちます。イワークとメタルコートのように、先に道具を持たせる必要がある場合もあります。",
     "k11.t": "パートナーのそばのフレンド",
     "k11.d": "卒業したポケモンとボックスで待っているポケモンから、最大2匹までフレンドに選べます。ホームとデスクトップペットで、いまの姿のままパートナーの横に並び、フレンドをなでるとその上にハートが浮かびます。新しいタマゴやスカウトでパートナーをボックスに預けるとき、フレンドの枠が空いていれば、そのポケモンがフレンドに加わります。",
     "alt.storedFriends": "預け中のフシギダネを選べるフレンド選択と、リザードンの横を歩くフシギダネが見える実際のホームUIサンプル",
@@ -860,7 +824,7 @@ const I18N = {
     "faq.cost.q": "育成のために追加トークンを使いますか？",
     "faq.cost.a": "いいえ。対応するコーディングツールの使用量を読み取ります。育成のためにモデルを実行することはありません。",
     "faq.fork.q": "オリジナルの PokeTokenBar とは何が違いますか？",
-    "faq.fork.a": "PokeTokenBar-yp は chattymin の PokeTokenBar（MIT）をもとにした非公式のフォークです。「PokeTokenBar-yp だけの機能」にある機能が加わっています。このフォークの不具合は、オリジナルではなくこちらに報告してください。",
+    "faq.fork.a": "PokeTokenBar-yp は chattymin の PokeTokenBar（MIT）をもとにした非公式のフォークです。加わった機能は、機能ページで「PokeTokenBar-yp だけ」と印をつけています。このフォークの不具合は、オリジナルではなくこちらに報告してください。",
     "faq.source.q": "自分でビルドできますか？",
     "faq.source.a": "はい。Swiftのソースコード、ビルド手順、IssueトラッカーをGitHubで公開しています。",
     "footer.source": "ソースコード",
@@ -871,7 +835,11 @@ const I18N = {
     "foot.disclaimer": "ポケモンのデータ・スプライトは PokéAPI を使用しています。本プロジェクトは非公式・非商用のファンプロジェクトであり、任天堂・ゲームフリーク・株式会社ポケモンとの提携、推奨、後援、承認はありません。「ポケモン」およびポケモンのキャラクター名は任天堂の商標であり、名前・データ・スプライトの著作権は © Nintendo / Game Freak / The Pokémon Company に帰属し、識別目的でランタイムに利用しています。MIT ライセンスは本プロジェクトのソースコードのみを対象とします。"
   }
 };
+// pages-i18n.js loads first and holds the feature-page strings.
+if (typeof I18N_PAGES !== 'undefined') for (const lang of Object.keys(I18N)) Object.assign(I18N[lang], I18N_PAGES[lang]);
 const root = document.documentElement;
+const page = document.body.dataset.page || 'home';
+const assetRoot = root.dataset.root || '';
 const language = document.getElementById('language');
 const themeButton = document.getElementById('themeBtn');
 const menuButton = document.getElementById('menuBtn');
@@ -879,8 +847,23 @@ const navigation = document.getElementById('site-nav');
 const copyStatus = document.getElementById('copy-status');
 let copyState = '';
 let currentLang = 'en';
+let storageWorks = false;
+try { localStorage.setItem('ptb-probe', '1'); localStorage.removeItem('ptb-probe'); storageWorks = true; } catch (_) {}
 
 function translated(key) { return I18N[currentLang][key] || I18N.en[key] || key; }
+function urlLanguage() {
+  const value = new URLSearchParams(location.search).get('lang');
+  return I18N[value] ? value : null;
+}
+// Without storage, the language rides along in internal links instead.
+function carryLanguage() {
+  if (storageWorks) return;
+  document.querySelectorAll('a[data-internal]').forEach(a => {
+    const target = new URL(a.getAttribute('href'), location.href);
+    target.searchParams.set('lang', currentLang);
+    a.href = target.href;
+  });
+}
 function applyLanguage(value) {
   currentLang = I18N[value] ? value : 'en';
   root.lang = currentLang;
@@ -899,15 +882,21 @@ function applyLanguage(value) {
   document.querySelectorAll('[data-i18n-alt]').forEach(el => el.setAttribute('alt', translated(el.dataset.i18nAlt)));
   document.querySelectorAll('[data-i18n-image]').forEach(el => {
     const suffix = currentLang === 'en' ? '' : '-' + currentLang;
-    el.src = 'assets/' + el.dataset.i18nImage + suffix + '.png';
+    el.src = assetRoot + 'assets/' + el.dataset.i18nImage + suffix + '.png';
   });
-  syncDemoLabel();
-  syncGrowthLabel();
-  document.title = 'PokeTokenBar — ' + translated('hero.h1a') + ' ' + translated('hero.h1b');
-  document.querySelector('meta[name="description"]').content = translated('hero.lead');
-  copyStatus.textContent = copyState ? translated('copy.' + copyState) : '';
+  if (demoButton) syncDemoLabel();
+  if (growthMotionButton) syncGrowthLabel();
+  document.title = page === 'home' ? 'PokeTokenBar — ' + translated('hero.h1a') + ' ' + translated('hero.h1b') : translated('meta.' + page + '.title');
+  document.querySelector('meta[name="description"]').content = translated(page === 'home' ? 'hero.lead' : 'meta.' + page + '.desc');
+  if (copyStatus) copyStatus.textContent = copyState ? translated('copy.' + copyState) : '';
   try { localStorage.setItem('ptb-lang', currentLang); } catch (_) {}
-  renderJourney();
+  if (urlLanguage() && urlLanguage() !== currentLang) {
+    const url = new URL(location.href);
+    url.searchParams.set('lang', currentLang);
+    history.replaceState(history.state, '', url);
+  }
+  carryLanguage();
+  if (calc('gTimeline')) renderJourney();
 }
 
 function applyTheme(theme) {
@@ -931,7 +920,7 @@ navigation.querySelectorAll('a').forEach(a => a.addEventListener('click', closeM
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {closeMenu();menuButton.focus();}
 });
-matchMedia('(min-width: 761px)').addEventListener('change', event => {if(event.matches) closeMenu();});
+matchMedia('(min-width: 1101px)').addEventListener('change', event => {if(event.matches) closeMenu();});
 
 document.querySelectorAll('[data-copy]').forEach(button => {
   button.addEventListener('click', async () => {
@@ -1020,7 +1009,7 @@ function renderJourney() {
     row.append(label,amount,when);return row;
   }));
 }
-['gMode','gPace','gHours','gRarity','gDifficulty','gRepeat'].forEach(id => calc(id).addEventListener('change', renderJourney));
+if (calc('gTimeline')) ['gMode','gPace','gHours','gRarity','gDifficulty','gRepeat'].forEach(id => calc(id).addEventListener('change', renderJourney));
 
 const demoButton = document.getElementById('demoBtn');
 const demoImage = document.getElementById('pet-demo');
@@ -1029,11 +1018,13 @@ function syncDemoLabel() {
 }
 function setDemoPlaying(playing) {
   demoButton.setAttribute('aria-pressed', String(playing));
-  demoImage.src = playing ? 'assets/floating-pet.gif' : 'assets/floating-pet-still.png';
+  demoImage.src = assetRoot + (playing ? 'assets/floating-pet.gif' : 'assets/floating-pet-still.png');
   syncDemoLabel();
 }
-demoButton.addEventListener('click', () => setDemoPlaying(demoButton.getAttribute('aria-pressed') !== 'true'));
-matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => { if(event.matches) setDemoPlaying(false); });
+if (demoButton) {
+  demoButton.addEventListener('click', () => setDemoPlaying(demoButton.getAttribute('aria-pressed') !== 'true'));
+  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => { if(event.matches) setDemoPlaying(false); });
+}
 
 const growthMotionButton = document.getElementById('growth-motion');
 const growthMotionPreference = matchMedia('(prefers-reduced-motion: reduce)');
@@ -1043,19 +1034,21 @@ function syncGrowthLabel() {
 function setGrowthPlaying(playing) {
   growthMotionButton.setAttribute('aria-pressed', String(playing));
   document.querySelectorAll('[data-growth-sprite]').forEach(img => {
-    img.src = `assets/growth/${img.dataset.growthSprite}.${playing ? 'gif' : 'png'}`;
+    img.src = `${assetRoot}assets/growth/${img.dataset.growthSprite}.${playing ? 'gif' : 'png'}`;
   });
   syncGrowthLabel();
 }
-growthMotionButton.addEventListener('click', () => setGrowthPlaying(growthMotionButton.getAttribute('aria-pressed') !== 'true'));
-growthMotionPreference.addEventListener('change', event => { if (event.matches) setGrowthPlaying(false); });
+if (growthMotionButton) {
+  growthMotionButton.addEventListener('click', () => setGrowthPlaying(growthMotionButton.getAttribute('aria-pressed') !== 'true'));
+  growthMotionPreference.addEventListener('change', event => { if (event.matches) setGrowthPlaying(false); });
+}
 
 let initialLanguage = navigator.language.slice(0,2);
 try { initialLanguage = localStorage.getItem('ptb-lang') || initialLanguage; } catch (_) {}
-applyLanguage(initialLanguage);
+applyLanguage(urlLanguage() || initialLanguage);
 applyTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');
-selectTab(tabs[0]);
+if (tabs.length) selectTab(tabs[0]);
 // Keep baseline content available if script initialization fails or JavaScript is disabled.
 root.classList.add('js');
 
-setGrowthPlaying(!growthMotionPreference.matches);
+if (growthMotionButton) setGrowthPlaying(!growthMotionPreference.matches);

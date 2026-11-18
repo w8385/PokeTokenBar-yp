@@ -1,11 +1,11 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const {htmlFiles} = require('./site.cjs');
 
 const root = path.resolve(__dirname, '..');
-const indexPath = path.join(root, 'index.html');
-const assets = ['tokens.css', 'styles.css', 'app.js'];
-const reference = new RegExp(`((?:href|src)=")(${assets.map(a => a.replace('.', '\\.')).join('|')})(?:\\?v=([^"]*))?"`, 'g');
+const assets = ['tokens.css', 'styles.css', 'pages-i18n.js', 'app.js'];
+const reference = new RegExp(`((?:href|src)="(?:\\.\\./|/PokeTokenBar-yp/)?)(${assets.map(a => a.replace('.', '\\.')).join('|')})(?:\\?v=([^"]*))?"`, 'g');
 
 function versionOf(asset) {
   return crypto.createHash('sha256').update(fs.readFileSync(path.join(root, asset))).digest('hex').slice(0, 8);
@@ -22,8 +22,8 @@ function staleReferences(html) {
 }
 
 if (require.main === module) {
-  fs.writeFileSync(indexPath, stamp(fs.readFileSync(indexPath, 'utf8')));
+  for (const file of htmlFiles) fs.writeFileSync(path.join(root, file), stamp(fs.readFileSync(path.join(root, file), 'utf8')));
   console.log(assets.map(a => `${a}?v=${versionOf(a)}`).join(' '));
 }
 
-module.exports = {indexPath, staleReferences};
+module.exports = {root, htmlFiles, staleReferences};
