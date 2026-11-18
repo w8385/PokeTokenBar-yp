@@ -1189,6 +1189,12 @@ struct StoredLine: Codable, Sendable {
     }
 }
 
+/// The raised Pokémon (by instance ID) whose next step waits on the player, and when the popover last closed on it.
+struct StuckWatch: Codable, Equatable, Sendable {
+    var id: String
+    var since: Date
+}
+
 /// 도감 항목 — 라인 전체(초기→최종) 순서 보존.
 struct DexEntry: Codable, Sendable, Identifiable {
     /// Version 1 preserves every API language; earlier saves retained only app-supported names.
@@ -1361,6 +1367,9 @@ struct CompanionState: Codable, Sendable {
     var storedLines: [String: StoredLine] = [:]
     /// Instance IDs holding an Exp. Share, oldest first. Attached copies are out of `inventory`.
     var expShareHolders: [String] = []
+    var stuckWatch: StuckWatch? = nil
+    /// Instance ID → the species it was when the player chose to keep waiting; void once it evolves.
+    var keepWaiting: [String: Int] = [:]
     // 도감
     var dex: [DexEntry] = []
     // 소유한 (base,final) 쌍 — 분기 다양성용
@@ -1444,6 +1453,8 @@ struct CompanionState: Codable, Sendable {
         storedLines        = c.lenient([String: Lossy<StoredLine>].self, forKey: .storedLines, default: [:])
             .compactMapValues(\.value)
         expShareHolders    = c.lenient([String].self, forKey: .expShareHolders, default: [])
+        stuckWatch         = c.lenientOptional(StuckWatch.self, forKey: .stuckWatch)
+        keepWaiting        = c.lenient([String: Int].self, forKey: .keepWaiting, default: [:])
         // 도감은 항목별 격리 — 손상 항목 하나가 도감 전체를 날리지 않게.
         dex                = c.lenient([Lossy<DexEntry>].self, forKey: .dex, default: []).compactMap(\.value)
         reconcileRaised()
@@ -1512,6 +1523,13 @@ struct CompanionState: Codable, Sendable {
         guard returned > 0 else { return }
         inventory[ItemKind.expShare.rawValue, default: 0] += returned
         expShareHolders = kept
+    }
+
+    /// A Keep waiting mark leaves with its Pokémon.
+    mutating func dropOrphanedKeepWaiting() {
+        guard !keepWaiting.isEmpty else { return }
+        let owned = ownedInstanceIDs
+        keepWaiting = keepWaiting.filter { owned.contains($0.key) }
     }
 
     /// 졸업 기록 또는 현재 개체가 실제로 도달한 단계에 이 종이 포함되는가.
