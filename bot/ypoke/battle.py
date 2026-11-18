@@ -1374,8 +1374,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     stopped = _stopped(attacker, defender, move)
     if stopped:
+        absorbed = hooks.ability(defender, "absorbs", move, defender, 1 - side, default=()) if (
+            stopped == defender.ability) else ()
         changes = tuple(change for answer in _field(defender, "punishes", move, attacker, side, rng)
-                        for change in answer) + _crash(attacker, move)
+                        for change in answer) + tuple(absorbed) + _crash(attacker, move)
         return Action(turn, side, *names, move.name, failed=True, blocked=stopped, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=changes,
                       attacker_fainted=attacker.hp == 0)
@@ -1402,11 +1404,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     if multiplier == 0:
         granted = hooks.ability(defender, "immune_to", move, defender, default=False) and effectiveness(
             move.type, defender.combatant.types) > 0
-        absorbed = tuple(hooks.ability(defender, "absorbs", move, defender, 1 - side, default=())) if granted else ()
         crash = _crash(attacker, move)
         return Action(turn, side, *names, move.name, multiplier=0, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent,
-                      ability=defender.ability if granted else None, changes=(*absorbed, *crash),
+                      ability=defender.ability if granted else None, changes=crash,
                       attacker_fainted=attacker.hp == 0)
     critical, hits, dealt, sturdy, endured, berry, shielded = False, 0, 0, False, "", "", False
     hooks.move(move, "draws", attacker, rng)
@@ -1811,8 +1812,9 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
         return best
     for effect in (*STATUS_EFFECTS, *CHOSEN_DAMAGE_EFFECTS):
         for index in _with_effect(attacker, effect):
-            if not _banned(attacker, attacker.combatant.moves[index]) and hooks.move(
-                    attacker.combatant.moves[index], "wanted", team, foes, side, arena, weather, default=False):
+            move = attacker.combatant.moves[index]
+            if not _banned(attacker, move) and not _wasted_on(attacker, defender, move) and hooks.move(
+                    move, "wanted", team, foes, side, arena, weather, default=False):
                 return index
     pivot = _usable(attacker, "pivot")
     if pivot is not None and team.pivot_target() is not None and _threatened(attacker, defender, weather):
@@ -2127,6 +2129,13 @@ def _stopped(attacker: _Fighter, defender: _Fighter, move: Move) -> str:
     if hooks.ability(attacker, "fails_against", move, defender, default=False):
         return attacker.ability
     return ""
+
+
+def _wasted_on(attacker: _Fighter, defender: _Fighter, move: Move) -> bool:
+    """The move would fail on the defender or its ability would bounce it back (Magic Bounce)."""
+    bounced = hooks.move(move, "targets_foe", default=False) and hooks.ability(defender, "reflects", move,
+                                                                              default=False)
+    return bool(_stopped(attacker, defender, move)) or bounced
 
 
 def _stats_for(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None = None) -> tuple[float, float]:

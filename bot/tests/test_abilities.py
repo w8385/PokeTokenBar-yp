@@ -126,7 +126,7 @@ def test_the_same_weather_is_not_set_twice():
 
 def test_an_unknown_ability_changes_nothing():
     plain = (mon(types=["fire"], moves=[FLAMETHROWER]), mon(name="B", types=["water"], moves=[SURF]))
-    odd = (replace(plain[0], ability="made-up"), replace(plain[1], ability="wonder-guard"))
+    odd = (replace(plain[0], ability="made-up"), replace(plain[1], ability="run-away"))
     for seed in range(10):
         assert simulate(odd, seed) == simulate(plain, seed)
 

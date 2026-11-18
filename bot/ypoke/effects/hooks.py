@@ -74,7 +74,8 @@ HOOKS = {
     "heals": "move: a healing move, which Heal Block bans",
     "passes_substitute": "move: it passes a Substitute and hits the Pokémon behind it (Hyperspace Hole)",
     "shields": "state: a foe's status move fails on its holder (Substitute)",
-    "reflects": "state: the state that bounces a foe's status move back to its user (Magic Coat)",
+    "reflects": "state, then ability: the state or ability that bounces a foe's status move back to its user (Magic "
+                "Coat, Magic Bounce)",
     "snatches": "state: the state that makes the foe's self-targeting status move act for its holder (Snatch)",
     "weather_turns": "item: how long a weather its holder starts lasts",
     "ignores_ability": "move: the target's ability does nothing while the move acts, until its contact ability "
@@ -109,8 +110,8 @@ HOOKS = {
     "lifts":"state: its holder floats over Ground moves and is not grounded (Magnet Rise)",
     "airborne": "ability: its holder is not grounded",
     "immune_to": "ability: a move that does nothing to its holder",
-    "absorbs": "ability: acts on its holder when it takes no damage from a move its `immune_to` named (Volt Absorb); "
-               "returns the changes",
+    "absorbs": "ability: acts on its holder when its `stops_move` stopped a foe's move (Volt Absorb); returns the "
+               "changes",
     "crit_stage": "move, then item, then state, then ability: the move's critical-hit stage, then added to it",
     "always_crits": "ability: its holder's moves land a critical hit on this target (Merciless)",
     "guards_crit": "state, ability: no critical hit lands on its side or holder (the draw still happens)",

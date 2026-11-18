@@ -9,8 +9,8 @@ from ypoke.effects import Handler, elsewhere, hooks, register
 
 class StatusMove(Handler):
     """A status move draws for accuracy, then acts; `_apply` returns what it did ("" when it failed) and the changes.
-    One aimed at the foe (`hits_foe`) meets the foe's Substitute and Magic Coat; one aimed at its user can be taken by
-    the foe's Snatch (`snatchable`)."""
+    One aimed at the foe (`hits_foe`) meets the foe's Substitute, Magic Coat and Magic Bounce; one aimed at its user
+    can be taken by the foe's Snatch (`snatchable`)."""
 
     hits_foe = False
     snatchable = False
@@ -26,6 +26,9 @@ class StatusMove(Handler):
             if shield:
                 return {"failed": True, "blocked": shield}
             taken = next(iter(battle._field(foe, "reflects", move)), "")
+            if not taken and hooks.ability(foe, "reflects", move, default=False):
+                arena.log.append(battle.AbilityAct(turn, 1 - side, foe.combatant.name, foe.ability, effect="bounce"))
+                user, foe, side = foe, user, 1 - side
         elif self.snatchable:
             taken = next(iter(battle._field(foe, "snatches", move)), "")
         if taken:

@@ -277,6 +277,8 @@ FOCUS_CASES = {
     "scrappy": (((130, None, "intimidate", [33]), (306, None, "heavy-metal", [484])),
                 ((115, None, "scrappy", [33]), (2, None, None, [275, 499]))),
     "serene-grace": (((18, None, "serene-grace", [52]),), ((36, None, None, [33]),)),
+    "liquid-ooze": (((3, None, None, [202, 73, 254]), (248, None, "sand-stream", [33])),
+                    ((72, None, "liquid-ooze", [33]), (1, None, "overcoat", [33]))),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
