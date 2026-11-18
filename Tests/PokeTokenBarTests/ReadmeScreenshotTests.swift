@@ -96,6 +96,8 @@ final class ReadmeScreenshotTests: XCTestCase {
                            "screenshot-pokemon-profile\(suffix)", in: dir, height: 560)
             try await shot(statusMoves(store: store, uploader: uploader, entry: entry),
                            "screenshot-status-moves\(suffix)", in: dir, height: nil)
+            try await shot(moveOrder(store: store, uploader: uploader, entry: entry),
+                           "screenshot-move-order\(suffix)", in: dir, height: nil)
             try await shot(popover { $0.openBoxDetail(id: StoredFriendScreenshotTests.bulbasaurID) },
                            "screenshot-exp-share\(suffix)", in: dir, height: 380)
             let (battleStore, battleCleanup) = try BoxDexFixture.makeStore(
@@ -290,6 +292,13 @@ final class ReadmeScreenshotTests: XCTestCase {
         let candidate = try XCTUnwrap(BattleEntry.candidates(in: store.state).first { $0.id == BoxDexFixture.charizardID })
         return MoveTrainingSection(store: store, battleEntry: entry, uploader: uploader, candidate: candidate,
                                    initialEditing: 0, onChange: {})
+            .padding(PopoverMetrics.padding)
+    }
+
+    private func moveOrder(store: CompanionStore, uploader: PartyUploader, entry: BattleEntryStore) throws -> some View {
+        let candidate = try XCTUnwrap(BattleEntry.candidates(in: store.state).first { $0.id == BoxDexFixture.charizardID })
+        return MoveTrainingSection(store: store, battleEntry: entry, uploader: uploader, candidate: candidate,
+                                   onChange: {})
             .padding(PopoverMetrics.padding)
     }
 

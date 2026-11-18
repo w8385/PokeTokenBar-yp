@@ -165,12 +165,14 @@ Pi can route more than one model through a single session log. Usage is now attr
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile.png" width="300" alt="A Box Pokémon's profile with its held item, Exp. Share slot and moves"><br><br><img src="assets/screenshot-status-moves.png" width="300" alt="The move picker with level-up moves and a Status moves group"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile.png" width="300" alt="A Box Pokémon's profile with its held item, Exp. Share slot and moves"><br><br><img src="assets/screenshot-status-moves.png" width="300" alt="The move picker with level-up moves and a Status moves group"><br><br><img src="assets/screenshot-move-order.png" width="300" alt="Four move slots as separate cards, each filled one with up and down arrows"></td>
 <td width="55%" valign="middle">
 <h3>Every Pokémon has its own profile</h3>
 Open a Pokémon in the <b>Box</b> to inspect it: level, gender, nature, ability, IVs, calculated stats, held item, and moves. Species descriptions, abilities, and moves use your selected language, with English as the fallback when PokéAPI has no translation.
 <br><br>
 <b>Status moves</b> join the move picker in their own group: Swords Dance, Thunder Wave, Yawn, Trick Room and Stealth Rock, when the Pokémon learns them by level-up, by TM or as an egg move. In battles your Pokémon uses them by the same rules as the trainers.
+<br><br>
+Each move slot is its own card. The <b>▲/▼</b> buttons on a filled slot swap it with the one above or below, so you can change the order without picking the moves again.
 </td>
 </tr>
 <tr>
