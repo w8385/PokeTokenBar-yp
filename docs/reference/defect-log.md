@@ -392,6 +392,16 @@ read_when:
   base HP 1 인 종은 껍질몬뿐이지만 규칙은 "종" 에 걸린 것이다.
   **회귀 가드:** `PokemonProfileLogicTests.testShedinjaAlwaysHasOneHP` — Lv1/50/100 모두 1, 다른 스탯은 일반 공식,
   base HP 1 인 다른 종은 일반 공식. 수정 전 3건 실패 확인.
+- **"Done growing" is one rule: no growth option left and full stage XP.** A Box line holding an Exp. Share
+  evolved there but never graduated, so a final form with full XP sat in the Box. The idle-holder rule judged the
+  same final form by level 100 instead, so it could pass its copy on while still short of graduation XP, and it
+  checked the Everstone before the "no option left" branch, so a level-100 final graduate with an Everstone kept a
+  copy it could not use. The raised line graduates on `options.isEmpty` before it reads the Everstone.
+  **Why it slipped:** the stored-line tests only used lines with a step left; no test held a final form.
+  **Fix:** the Box graduates through the raised path's `graduateRecord`; a stored final form is never idle; the
+  idle rule reads the Everstone only when an option is left.
+  **Guards:** `BoxGraduationTests` (graduation, copy hand-off, short of XP at level 100, Everstone on both sides,
+  one notice for two). Disabling the Box graduation fails 6 tests; dropping the hand-off fails 6.
 
 ## 외부 로그·사용량 소스
 
