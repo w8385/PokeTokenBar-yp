@@ -86,13 +86,15 @@ class PokeAPIService:
 
         Every member is tried; the first OSError is raised afterwards. Returns the number of distinct Pokémon.
         """
-        needed = sorted({(member["pokemon_id"], member["level"], tuple(member.get("moves") or ())) for member in members})
+        needed = sorted({(member["pokemon_id"], member["level"], tuple(member.get("moves") or ()), bool(member.get("mirror_herb")))
+                         for member in members})
         forms = sorted({form for member in members for form in _forms_of(member)})
 
-        def fetch(item: tuple[int, int, tuple[int, ...]]) -> OSError | None:
+        def fetch(item: tuple[int, int, tuple[int, ...], bool]) -> OSError | None:
+            pokemon_id, level, chosen, herb = item
             try:
-                self.pokemon(item[0])
-                self.attacking_moves(*item, status=wants_status_moves(item[2]))
+                self.pokemon(pokemon_id)
+                self.attacking_moves(pokemon_id, level, chosen, status=wants_status_moves(chosen), **({"egg": True} if herb else {}))
             except OSError as error:
                 return error
             return None
@@ -109,25 +111,30 @@ class PokeAPIService:
         errors = [error for error in results if error is not None]
         if errors:
             raise errors[0]
-        return len({pokemon_id for pokemon_id, _, _ in needed})
+        return len({pokemon_id for pokemon_id, *_ in needed})
 
     def attacking_moves(self, pokemon_id: int, level: int, machine_ids: Collection[int] | None = (),
-                        status: bool = False) -> list[dict]:
+                        status: bool = False, egg: bool = False) -> list[dict]:
         """Damaging and weather-setting moves usable at `level`: level-up moves learned at or below it, oldest first,
         then machine (TM) moves by id. Raises on network errors.
 
-        Each move is `move()` plus `"level"` (0 for a machine move) and `"source"` (`"level"` or `"machine"`).
-        A TM move's data is fetched only if its id is in `machine_ids`; `None` means all of them.
-        With `status`, the status moves the battle implements follow (`status_move_entries`).
+        Each move is `move()` plus `"level"` (0 for a machine or egg move) and `"source"` (`"level"`, `"egg"` or
+        `"machine"`). A TM move's data is fetched only if its id is in `machine_ids`; `None` means all of them.
+        With `egg` (a Mirror Herb), the attacking egg moves of the Pokémon and every species it evolved from come
+        between the level-up and machine moves, by id. With `status`, the status moves the battle implements follow
+        (`status_move_entries`).
         """
         learnset = self.learnset(pokemon_id)
+        eggs = [self.egg_moves(member) for member in (pokemon_id, *_ancestors(pokemon_id))] if status or egg else []
         by_id = {entry["move_id"]: entry for entry in learnset if entry["source"] == "level" and entry["level"] <= level}
+        if egg:
+            for move_id in sorted({move_id for listed in eggs for move_id in listed}):
+                by_id.setdefault(move_id, {"move_id": move_id, "level": 0, "source": "egg"})
         for entry in learnset:
             if entry["source"] == "machine" and entry["move_id"] not in by_id and (machine_ids is None or entry["move_id"] in machine_ids):
                 by_id[entry["move_id"]] = entry
         learned = [entry for entry in by_id.values() if entry["move_id"] not in STATUS_MOVES]
         if status:
-            eggs = [self.egg_moves(member) for member in (pokemon_id, *_ancestors(pokemon_id))]
             learned += status_move_entries(learnset, level, machine_ids, eggs)
         with ThreadPoolExecutor(max_workers=MOVE_FETCH_WORKERS) as pool:
             moves = list(pool.map(self.move, [entry["move_id"] for entry in learned]))

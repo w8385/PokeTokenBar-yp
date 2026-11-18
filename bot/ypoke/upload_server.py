@@ -80,7 +80,7 @@ def serve(
     """Start the upload server on a daemon thread and return it.
 
     `on_upload(user_id, party)` runs after each stored upload, before the reply.
-    `moves_for(pokemon_id, level, machine_ids, status=...)` returns the attacking moves usable at that level (`machine_ids` is `None` for every machine move), with `status` also the battle's status moves, and raises OSError when offline.
+    `moves_for(pokemon_id, level, machine_ids, status=..., egg=...)` returns the attacking moves usable at that level (`machine_ids` is `None` for every machine move), with `egg` also the attacking egg moves, with `status` also the battle's status moves, and raises OSError when offline.
     `name_for(user_id)` returns a Slack display name, or None when it cannot be found.
     With `trades`, the trade endpoints are served and `notify` sends the DMs a new offer produces.
     With `gyms`, the gym endpoints are served; `clock` times their rate limit.
@@ -127,12 +127,15 @@ def _drop_duplicate_items(party: list[dict]) -> list[dict]:
 
 def check_moves(party: list[dict], moves_for: MovesFor, field: str = "party") -> None:
     """Raise PartyError if a chosen move is not a move the member can use: an attacking move learned by level-up at or
-    below its level or by machine, or one of the battle's status moves."""
+    below its level or by machine, an attacking egg move when the member has a Mirror Herb, or one of the battle's
+    status moves."""
     for index, member in enumerate(party):
         if "moves" not in member:
             continue
-        status = {"status": True} if wants_status_moves(member["moves"]) else {}
-        learnable = {move["id"] for move in moves_for(member["pokemon_id"], member["level"], member["moves"], **status)}
+        opt_ins = {"status": True} if wants_status_moves(member["moves"]) else {}
+        if member.get("mirror_herb"):
+            opt_ins["egg"] = True
+        learnable = {move["id"] for move in moves_for(member["pokemon_id"], member["level"], member["moves"], **opt_ins)}
         for move_id in member["moves"]:
             if move_id not in learnable:
                 raise PartyError(f"{field}[{index}].moves: {move_id} is not an attacking move learnable at level {member['level']}")
@@ -349,8 +352,10 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(400, {"ok": False, "error": "pokemon_id or level out of range"})
             return
         try:
-            status = {"status": True} if query.get("status") == ["1"] else {}
-            moves = self.moves_for(pokemon_id, level, None if query.get("machine") == ["1"] else (), **status)
+            opt_ins = {"status": True} if query.get("status") == ["1"] else {}
+            if query.get("egg") == ["1"]:
+                opt_ins["egg"] = True
+            moves = self.moves_for(pokemon_id, level, None if query.get("machine") == ["1"] else (), **opt_ins)
         except OSError:
             self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
             return
@@ -400,6 +405,11 @@ def _validate_member(field: str, index: int, member: object) -> dict:
         raise PartyError(f"{where}.rental must be a boolean")
     if rental:
         normalized["rental"] = True
+    mirror_herb = member.get("mirror_herb", False)
+    if not isinstance(mirror_herb, bool):
+        raise PartyError(f"{where}.mirror_herb must be a boolean")
+    if mirror_herb:
+        normalized["mirror_herb"] = True
     nature = member.get("nature")
     if isinstance(nature, str) and 0 < len(nature.strip()) <= 20:
         normalized["nature"] = nature.strip().lower()
