@@ -1107,9 +1107,11 @@ def _self_ko(fighter: _Fighter, index: int | None) -> bool:
 
 def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, weather: _Weather,
              rng: random.Random, arena: _Arena | None = None) -> Action:
+    """A move charged on the last turn (Solar Beam) comes out now with no PP paid, unless the user cannot act."""
     attacker, defender = fighters[side], fighters[1 - side]
     names = (attacker.combatant.name, defender.combatant.name)
-    move = STRUGGLE if index is None else attacker.combatant.moves[index]
+    readied = next(iter(_field(attacker, "readied", attacker)), None)
+    move = readied or (STRUGGLE if index is None else attacker.combatant.moves[index])
     recovered, blocked = _start_of_action(attacker, move, rng)
     if blocked:
         if blocked == "confusion":
@@ -1118,7 +1120,7 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
             turn, side, *names, move="", defender_hp=defender.hp_percent, blocked=blocked, recovered=recovered,
             attacker_hp=attacker.hp_percent, attacker_fainted=attacker.hp == 0,
         )
-    if index is not None:
+    if index is not None and readied is None:
         attacker.pp[index] -= 1
         if hooks.item(attacker, "locks_move", default=False):
             attacker.locked = index
@@ -1127,8 +1129,13 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
     if called is None:
         return Action(turn, side, *names, move.name, failed=True, recovered=recovered, defender_hp=defender.hp_percent,
                       attacker_hp=attacker.hp_percent)
+    effect, charged = (None if readied else hooks.move(called, "charges", attacker, side, weather.kind)) or ("", ())
+    if effect:
+        return Action(turn, side, *names, called.name, effect=effect, changes=charged, recovered=recovered,
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     action = _strike(turn, side, attacker, defender, _retyped(attacker, move_power.typed(called, weather.kind, attacker)),
                      recovered, weather, rng, stage)
+    action = replace(action, changes=(*charged, *action.changes)) if charged else action
     return action if called is move else replace(action, via=move.name)
 
 
@@ -1150,6 +1157,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                         for change in answer) + _crash(attacker, move)
         return Action(turn, side, *names, move.name, failed=True, blocked=stopped, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=changes,
+                      attacker_fainted=attacker.hp == 0)
+    if _dodges(attacker, defender, move):
+        return Action(turn, side, *names, move.name, missed=True, recovered=recovered, defender_hp=defender.hp_percent,
+                      attacker_hp=attacker.hp_percent, changes=_crash(attacker, move),
                       attacker_fainted=attacker.hp == 0)
     used = hooks.move(move, "use", attacker, defender, side, turn, weather, arena, rng)
     if used is not None:
@@ -1560,12 +1571,17 @@ def _best_score(attacker: _Fighter, defender: _Fighter, weather: str | None) -> 
 
 
 def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
-    """Power × STAB × type × weather × accuracy × attack/defense; 0 for a move a state bans or stops. A move with set
+    """Power × STAB × type × weather × accuracy × attack/defense × the share a turn gets of a move that takes two
+    (`score_share`); 0 for a move a state bans or stops, or one that cannot reach the hiding foe. A move with set
     damage scores the power that would deal that damage at even attack and defense."""
     move = move_power.typed(move, weather, attacker)
-    if (_banned(attacker, move) or _stopped(attacker, defender, move)
+    if (_banned(attacker, move) or _stopped(attacker, defender, move) or _dodges(attacker, defender, move)
             or hooks.move(move, "fails", attacker, defender, default=False)):
         return 0.0
+    return _damage_score(attacker, defender, move, weather) * hooks.move(move, "score_share", weather, default=1.0)
+
+
+def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
     attack, defense = _stats_for(attacker, defender, move.physical, weather, _ignores_burn(move))
     skips = move.accuracy is None or hooks.move(move, "skips_accuracy", weather, default=False)
     accuracy = 100 if skips else hooks.move(move, "own_accuracy", attacker, defender, default=move.accuracy)
@@ -1611,13 +1627,15 @@ def _weather_boost(move: Move, weather: str | None) -> float:
 
 def _power(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None, multiplier: float,
            hit: int | None = None) -> float:
-    """The move's power in this battle state (`move_power`), then the attacker's ability on that power."""
+    """The move's power in this battle state (`move_power`), then the attacker's ability on that power, the field, and
+    a target hiding where the move reaches it (Earthquake on Dig)."""
     if move is STRUGGLE or move is CONFUSION_HIT:
         return move.power
     power = move_power.power(move, attacker, defender, weather, multiplier, hit)
     low_hp = attacker.hp * abilities.LOW_HP_FRACTION <= attacker.max_hp
     return power * hooks.ability(attacker, "modify_power", move.type, power, low_hp, weather, attacker.fallen_allies,
-                                 default=1.0) * math.prod(_field(attacker, "field_power", move, attacker, defender))
+                                 default=1.0) * math.prod(_field(attacker, "field_power", move, attacker, defender)) * (
+        _hidden(defender, move) or 1.0)
 
 
 def _stab(attacker: _Fighter, move: Move) -> float:
@@ -1685,6 +1703,17 @@ def _accuracy_stages(attacker: _Fighter, defender: _Fighter) -> float:
         evasion = 0
     stage = max(-MAX_STAGE, min(MAX_STAGE, attacker.stages["accuracy"] - evasion))
     return (3 + stage) / 3 if stage >= 0 else 3 / (3 - stage)
+
+
+def _dodges(attacker: _Fighter, defender: _Fighter, move: Move) -> bool:
+    aimed = move.damaging or hooks.move(move, "targets_foe", default=False)
+    return aimed and _hidden(defender, move) == 0 and not _sure_hit(attacker, defender)
+
+
+def _hidden(defender: _Fighter, move: Move) -> float:
+    """0 when `defender` hides where `move` cannot reach it (Fly, Dig); otherwise the power multiplier of a move
+    that reaches it there (Earthquake on Dig), 1 when it hides nowhere."""
+    return math.prod(_field(defender, "hides", move, defender))
 
 
 def _sure_hit(attacker: _Fighter, defender: _Fighter) -> bool:

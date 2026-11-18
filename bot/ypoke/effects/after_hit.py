@@ -117,13 +117,16 @@ class ClearSmog(Handler):
 
 @register("moves", "smack-down")
 class SmackDown(Handler):
-    """Smack Down and Thousand Arrows bring a floating target down until it switches out."""
+    """Smack Down and Thousand Arrows bring a floating target down until it switches out, and one flying up (Fly)
+    down before it strikes."""
 
     by_id = True
 
     def secondary(self, move, user, target, side, rng):
-        floating = not battle._grounded(target)
-        for state in LIFTING_STATES:
+        hiding = target.volatiles.get("semi-invulnerable")
+        flying = hiding is not None and arg(hiding, "where") == "flying"
+        floating = flying or not battle._grounded(target)
+        for state in (*LIFTING_STATES, *("semi-invulnerable",) * flying):
             target.volatiles.pop(state, None)
         target.volatiles[self.key] = True
         return (battle.Change(1 - side, target.combatant.name, "grounded"),) if floating else ()

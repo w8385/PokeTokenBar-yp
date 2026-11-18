@@ -3,7 +3,7 @@
 
 from dataclasses import replace
 
-from ypoke import battle, move_power
+from ypoke import battle, battle_data, move_power
 from ypoke.effects import Handler, elsewhere, hooks, register
 
 
@@ -116,8 +116,15 @@ class WeatherMove(Handler):
 
 @register("moves", "always-hits-in")
 class AlwaysHitsIn(Handler):
+    """Never misses in its weathers; `args.accuracy_in` sets its accuracy in others (Thunder's 50 in sun)."""
+
     def skips_accuracy(self, move, weather):
         return weather in move.always_hits_in
+
+    def modify_type(self, move, weather, user):
+        args = battle_data.table("moves").get(str(move.id), {}).get("args", {})
+        accuracy = args.get("accuracy_in", {}).get(weather)
+        return move if accuracy is None else replace(move, accuracy=accuracy)
 
 
 @register("moves", "always-crit")

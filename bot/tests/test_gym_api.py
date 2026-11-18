@@ -338,14 +338,14 @@ def test_the_hidden_boss_is_one_full_hp_battle_whose_every_stone_holder_mega_evo
 
 def test_a_member_that_was_down_stays_down_and_one_that_is_not_sent_out_keeps_its_state(server):
     store, base, _, _ = server
-    carried = [{"hp": 0, "status": None}, None, {"hp": 40, "status": "burn"}]
-    status, body, _ = battle(base, store.issue_token("U1"), "kanto-hideout-1", strong_team(3), carried)
+    carried = [{"hp": 0, "status": None}, None, None, {"hp": 40, "status": "burn"}]
+    status, body, _ = battle(base, store.issue_token("U1"), "kanto-hideout-1", strong_team(4), carried)
     assert status == 200 and body["won"] is True
     assert [member["hp"] for member in body["player_team"]][0] == 0
-    assert body["player_team"][1]["hp"] is not None and body["player_team"][2]["hp"] is None
+    assert body["player_team"][1]["hp"] is not None and body["player_team"][3]["hp"] is None
     assert body["carry"][0] == {"hp": 0, "status": None}
-    assert body["carry"][2] == {"hp": 40, "status": "burn"}
-    assert 0 < body["carry"][1]["hp"] <= 100
+    assert body["carry"][3] == {"hp": 40, "status": "burn"}
+    assert 0 < body["carry"][2]["hp"] <= 100
 
 
 def test_a_hurt_member_goes_in_hurt_and_its_loss_ends_the_run_battle(server):
