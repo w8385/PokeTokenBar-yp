@@ -10,7 +10,8 @@ holding its Mega Stone (or Primal orb) Mega Evolves as it enters."""
 
 import math
 import random
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
 
 from ypoke import abilities, items, move_power, tera_forms
@@ -43,6 +44,7 @@ WEATHER_MOVE_BOOST = {
 WEATHER_CHIP_IMMUNE_TYPES = {"sandstorm": {"rock", "ground", "steel"}, "hail": {"ice"}}
 SPECIAL_DEFENSE_BOOSTED_TYPE = {"sandstorm": "rock"}
 DEFENSE_BOOSTED_TYPE = {"snow": "ice"}
+STAT_PAIRS = {True: ("attack", "defense"), False: ("special_attack", "special_defense")}
 WEATHER_SWING_MIN = 1.3
 WEATHER_CHIP_SWING = 1.5
 FREEZE_THAW_CHANCE = 0.2
@@ -896,6 +898,7 @@ class _Fighter:
     ally_fell_last_turn: bool = False
     item_lost: bool = False
     ate_berry: bool = False
+    ability_ignored: bool = False
     volatiles: dict[str, object] = field(default_factory=dict)
     memory: dict[str, object] = field(default_factory=dict)
     entered_as: Combatant | None = None
@@ -946,7 +949,7 @@ class _Fighter:
 
     @property
     def ability(self) -> str | None:
-        return self.combatant.ability
+        return None if self.ability_ignored else self.combatant.ability
 
     def residual_damage(self) -> int:
         if self.status == "toxic":
@@ -954,8 +957,8 @@ class _Fighter:
             return max(1, self.max_hp * self.toxic_ticks // TOXIC_DAMAGE_FRACTION)
         return max(1, self.max_hp // RESIDUAL_FRACTIONS[self.status])
 
-    def stat(self, key: str, weather: str | None = None) -> float:
-        stage = self.stages[key]
+    def stat(self, key: str, weather: str | None = None, staged: bool = True) -> float:
+        stage = self.stages[key] if staged else 0
         context = (key, weather, self.status is not None, self.combatant.can_evolve)
         multiplier = hooks.item(self, "modify_stat", *context, default=1.0)
         raw = self.stats[next(iter(_field(self, "swaps_stat", key)), key)]
@@ -1134,10 +1137,22 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
     if effect:
         return Action(turn, side, *names, called.name, effect=effect, changes=charged, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
-    action = _strike(turn, side, attacker, defender, _retyped(attacker, move_power.typed(called, weather.kind, attacker)),
-                     recovered, weather, rng, stage)
+    with _ability_ignored(defender, called):
+        action = _strike(turn, side, attacker, defender,
+                         _retyped(attacker, move_power.typed(called, weather.kind, attacker)), recovered, weather, rng,
+                         stage)
     action = replace(action, changes=(*charged, *action.changes)) if charged else action
     return action if called is move else replace(action, via=move.name)
+
+
+@contextmanager
+def _ability_ignored(defender: _Fighter, move: Move) -> Iterator[None]:
+    """A move that ignores abilities (Sunsteel Strike) leaves the target's out until its contact ability acts."""
+    defender.ability_ignored = hooks.move(move, "ignores_ability", default=False)
+    try:
+        yield
+    finally:
+        defender.ability_ignored = False
 
 
 def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: Move, recovered: tuple[str, ...],
@@ -1171,7 +1186,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     multiplier = _multiplier(move, defender, weather.kind)
     accuracy = hooks.move(move, "own_accuracy", attacker, defender)
     if accuracy is None:
-        accuracy = (move.accuracy or 0) * _accuracy_stages(attacker, defender) * (
+        accuracy = (move.accuracy or 0) * _accuracy_stages(attacker, defender, move) * (
             hooks.item(attacker, "accuracy_as_user", default=1.0)
             * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy"))
     checks_accuracy = (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
@@ -1241,6 +1256,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     changes, ability = (), defender.ability if sturdy else None
     if defender.hp > 0 and (not shielded or move.stat_on_user):
         changes, blocked_by = _secondary_effects(side, move, attacker, defender, rng)
+        defender.ability_ignored = False
         contact = _contact_effect(side, move, attacker, defender, rng)
         if contact:
             changes, ability = (*changes, contact), defender.ability
@@ -1344,7 +1360,7 @@ def _damage(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: floa
 def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float,
                      weather: str | None, hit: int | None = None, critical: bool = False) -> float:
     """`move` is already `move_power.typed`; `hit` is the 0-based hit of a multi-hit move (None: the mean hit)."""
-    attack, defense = _stats_for(attacker, defender, move.physical, weather, _ignores_burn(move))
+    attack, defense = _stats_for(attacker, defender, move, weather)
     level = attacker.combatant.level
     power = _power(attacker, defender, move, weather, multiplier, hit)
     damage = ((2 * level // 5 + 2) * power * attack / max(1, defense)) // DAMAGE_DIVISOR + 2
@@ -1586,11 +1602,12 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
             or hooks.move(move, "fails", attacker, defender, default=False)
             or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)):
         return 0.0
-    return _damage_score(attacker, defender, move, weather) * hooks.move(move, "score_share", weather, default=1.0)
+    with _ability_ignored(defender, move):
+        return _damage_score(attacker, defender, move, weather) * hooks.move(move, "score_share", weather, default=1.0)
 
 
 def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
-    attack, defense = _stats_for(attacker, defender, move.physical, weather, _ignores_burn(move))
+    attack, defense = _stats_for(attacker, defender, move, weather)
     skips = move.accuracy is None or hooks.move(move, "skips_accuracy", weather, default=False)
     accuracy = 100 if skips else hooks.move(move, "own_accuracy", attacker, defender, default=move.accuracy)
     multiplier = _multiplier(move, defender, weather)
@@ -1621,10 +1638,6 @@ def _expected_hits(move: Move, attacker: _Fighter, accuracy: float) -> float:
     if accuracy < 100 and hooks.move(move, "rolls_each_hit", default=False):
         return sum((accuracy / 100) ** hit for hit in range(move.max_hits))
     return hooks.move(move, "hit_count", attacker, default=move.expected_hits)
-
-
-def _ignores_burn(move: Move) -> bool:
-    return hooks.move(move, "ignores_burn", default=False)
 
 
 def _damage_taken(defender: _Fighter, move: Move) -> float:
@@ -1713,10 +1726,10 @@ def _foe_field(fighter: _Fighter, hook: str, *args) -> list:
     return [answer for state in foe.volatiles if (answer := hooks.key("moves", state, hook, *args)) is not None]
 
 
-def _accuracy_stages(attacker: _Fighter, defender: _Fighter) -> float:
+def _accuracy_stages(attacker: _Fighter, defender: _Fighter, move: Move | None = None) -> float:
     """The user's accuracy stage less the target's evasion stage, on the Gen 9 thirds table. A state that exposes the
-    target (Foresight) drops its raised evasion."""
-    evasion = defender.stages["evasion"]
+    target (Foresight) drops its raised evasion, and a move that ignores stages (Sacred Sword) any evasion."""
+    evasion = 0 if move is not None and _ignores_stages(move) else defender.stages["evasion"]
     if evasion > 0 and any(_field(defender, "exposes", None)):
         evasion = 0
     stage = max(-MAX_STAGE, min(MAX_STAGE, attacker.stages["accuracy"] - evasion))
@@ -1744,16 +1757,26 @@ def _stopped(attacker: _Fighter, defender: _Fighter, move: Move) -> str:
     return next(iter(_field(defender, "stops_move", move, _move_priority(attacker, move), defender)), "")
 
 
-def _stats_for(attacker: _Fighter, defender: _Fighter, physical: bool,
-               weather: str | None = None, ignores_burn: bool = False) -> tuple[float, float]:
-    boosted = (DEFENSE_BOOSTED_TYPE if physical else SPECIAL_DEFENSE_BOOSTED_TYPE).get(weather)
+def _stats_for(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None = None) -> tuple[float, float]:
+    """The user's Attack against the target's Defense for a physical move and the special pair otherwise, unless the
+    move names its own (`stat_source`: Psyshock, Foul Play, Body Press). A burn halves any attack stat but Special
+    Attack."""
+    source, attack_key, defense_key = hooks.move(move, "stat_source", attacker, defender, weather, default=None) or (
+        attacker, *STAT_PAIRS[move.physical])
+    boosted = (DEFENSE_BOOSTED_TYPE if defense_key == "defense" else SPECIAL_DEFENSE_BOOSTED_TYPE).get(weather)
     boost = 1.5 if boosted in defender.combatant.types else 1.0
-    if physical:
-        halved = (attacker.status == "burn" and not hooks.ability(attacker, "ignores_burn", default=False)
-                  and not ignores_burn)
-        burned = 0.5 if halved else 1.0
-        return attacker.stat("attack", weather) * burned, defender.stat("defense", weather) * boost
-    return attacker.stat("special_attack", weather), defender.stat("special_defense", weather) * boost
+    halved = (attack_key != "special_attack" and attacker.status == "burn"
+              and not hooks.ability(attacker, "ignores_burn", default=False) and not _ignores_burn(move))
+    defense = defender.stat(defense_key, weather, staged=not _ignores_stages(move))
+    return source.stat(attack_key, weather) * (0.5 if halved else 1.0), defense * boost
+
+
+def _ignores_burn(move: Move) -> bool:
+    return hooks.move(move, "ignores_burn", default=False)
+
+
+def _ignores_stages(move: Move) -> bool:
+    return hooks.move(move, "ignores_stages", default=False)
 
 
 def _other_stat(base: int, iv: int, level: int) -> int:

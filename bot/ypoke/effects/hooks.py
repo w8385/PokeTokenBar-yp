@@ -58,12 +58,15 @@ HOOKS = {
     "reflects": "state: the state that bounces a foe's status move back to its user (Magic Coat)",
     "snatches": "state: the state that makes the foe's self-targeting status move act for its holder (Snatch)",
     "weather_turns": "item: how long a weather its holder starts lasts",
+    "ignores_ability": "move: the target's ability does nothing while the move acts, until its contact ability "
+                       "(Sunsteel Strike)",
     "before_hit": "move: acts before the accuracy draw and the target's immunity",
     "crashes": "move: its user loses HP when the move meets Protect, misses or hits an immune target (High Jump Kick); "
                "returns the change",
     "own_accuracy": "move: its accuracy against this target, in place of the data's and unmoved by stages and items "
                     "(OHKO moves)",
     "skips_accuracy":"move: hits without an accuracy draw",
+    "ignores_stages": "move: the target's Defense, Special Defense and evasion stages do nothing to it (Sacred Sword)",
     "hit_count": "move: how many times it hits this time, in place of the data's hit range (Beat Up)",
     "rolls_each_hit": "move: each hit after the first draws for accuracy and a miss ends the move (Triple Kick)",
     "accuracy_as_user": "item: multiplies the user's accuracy, before the target's item",
@@ -84,6 +87,8 @@ HOOKS = {
     "draws": "move: draws what its hits use once it lands, before `fixed_damage` and the hits (Magnitude)",
     "fixed_damage": "move: the damage each hit deals, with no roll, critical hit or modifier (Seismic Toss); the "
                     "mean when the rng is None",
+    "stat_source": "move: the Pokémon whose attack stat it uses and the stats, in place of the user's and its class's "
+                   "(Psyshock, Foul Play, Body Press)",
     "modify_power": "ability: multiplies the user's base power",
     "field_power": "state: multiplies the base power, after the ability",
     "modify_stab": "ability: replaces the same-type bonus",

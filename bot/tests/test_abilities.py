@@ -168,8 +168,8 @@ def test_guts_raises_attack_when_statused_and_ignores_the_burn_penalty():
     assert guts.stat("attack") == plain.stat("attack")
     guts.status = plain.status = "burn"
     assert guts.stat("attack") == plain.stat("attack") * 1.5
-    assert _stats_for(guts, guts, physical=True)[0] == guts.stat("attack")
-    assert _stats_for(plain, plain, physical=True)[0] == plain.stat("attack") / 2
+    assert _stats_for(guts, guts, TACKLE)[0] == guts.stat("attack")
+    assert _stats_for(plain, plain, TACKLE)[0] == plain.stat("attack") / 2
 
 
 def test_sturdy_survives_one_would_be_knockout_at_full_hp_only():

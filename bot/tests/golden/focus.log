@@ -4596,3 +4596,176 @@ Action turn=8 side=0 attacker='P900' defender='P143' move='암석액스' defende
 Action turn=8 side=1 attacker='P143' defender='P900' move='몸통박치기' defender_hp=13 attacker_hp=8 move_id=33
 Action turn=9 side=0 attacker='P900' defender='P143' move='암석액스' defender_hp=0 knockout=True attacker_hp=13 move_id=830
 result winner=0 turns=9 remaining=((13,), (0,)) statuses=((None,), (None,))
+## focus sappy-seed 0
+side=0 P1 Lv50 ('fire', 'psychic') item=None ability=None nature=None moves=[738] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='leech-seed', stages=0),) defender_hp=87 move_id=738
+Action turn=1 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=86 attacker_hp=87 move_id=33
+VolatileTick turn=1 side=1 pokemon='P143' kind='leech-seed' hp=75
+VolatileTick turn=1 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=2 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=63 move_id=738
+Action turn=2 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 attacker_hp=63 move_id=33
+VolatileTick turn=2 side=1 pokemon='P143' kind='leech-seed' hp=51
+VolatileTick turn=2 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=3 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=39 move_id=738
+Action turn=3 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 attacker_hp=39 move_id=33
+VolatileTick turn=3 side=1 pokemon='P143' kind='leech-seed' hp=27
+VolatileTick turn=3 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=4 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=15 move_id=738
+Action turn=4 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=87 attacker_hp=15 move_id=33
+VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=3
+VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=0 knockout=True move_id=738
+result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
+## focus sappy-seed 1
+side=0 P1 Lv50 ('fire', 'psychic') item=None ability=None nature=None moves=[738] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='leech-seed', stages=0),) defender_hp=88 move_id=738
+Action turn=1 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=87 attacker_hp=88 move_id=33
+VolatileTick turn=1 side=1 pokemon='P143' kind='leech-seed' hp=76
+VolatileTick turn=1 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=2 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=63 move_id=738
+Action turn=2 side=1 attacker='P143' defender='P1' move='몸통박치기' critical=True defender_hp=80 attacker_hp=63 move_id=33
+VolatileTick turn=2 side=1 pokemon='P143' kind='leech-seed' hp=51
+VolatileTick turn=2 side=0 pokemon='P1' kind='leech-seed-heal' hp=95
+Action turn=3 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=40 attacker_hp=95 move_id=738
+Action turn=3 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=83 attacker_hp=40 move_id=33
+VolatileTick turn=3 side=1 pokemon='P143' kind='leech-seed' hp=28
+VolatileTick turn=3 side=0 pokemon='P1' kind='leech-seed-heal' hp=98
+Action turn=4 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=15 attacker_hp=98 move_id=738
+Action turn=4 side=1 attacker='P143' defender='P1' move='몸통박치기' critical=True defender_hp=81 attacker_hp=15 move_id=33
+VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=3
+VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal' hp=96
+Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' missed=True multiplier=0.5 defender_hp=3 attacker_hp=96 move_id=738
+Action turn=5 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=83 attacker_hp=3 move_id=33
+VolatileTick turn=5 side=1 pokemon='P143' kind='leech-seed' hp=0 fainted=True
+VolatileTick turn=5 side=0 pokemon='P1' kind='leech-seed-heal' hp=86
+result winner=0 turns=5 remaining=((86,), (0,)) statuses=((None,), (None,))
+## focus sappy-seed 2
+side=0 P1 Lv50 ('fire', 'psychic') item=None ability=None nature=None moves=[738] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' missed=True multiplier=0.5 move_id=738
+Action turn=1 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=89 move_id=33
+Action turn=2 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='leech-seed', stages=0),) defender_hp=87 attacker_hp=89 move_id=738
+Action turn=2 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=78 attacker_hp=87 move_id=33
+VolatileTick turn=2 side=1 pokemon='P143' kind='leech-seed' hp=75
+VolatileTick turn=2 side=0 pokemon='P1' kind='leech-seed-heal' hp=94
+Action turn=3 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=62 attacker_hp=94 move_id=738
+Action turn=3 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=81 attacker_hp=62 move_id=33
+VolatileTick turn=3 side=1 pokemon='P143' kind='leech-seed' hp=49
+VolatileTick turn=3 side=0 pokemon='P1' kind='leech-seed-heal' hp=97
+Action turn=4 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=37 attacker_hp=97 move_id=738
+Action turn=4 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=85 attacker_hp=37 move_id=33
+VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=24
+VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=11 move_id=738
+Action turn=5 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 attacker_hp=11 move_id=33
+VolatileTick turn=5 side=1 pokemon='P143' kind='leech-seed' hp=0 fainted=True
+VolatileTick turn=5 side=0 pokemon='P1' kind='leech-seed-heal'
+result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
+## focus sappy-seed 3
+side=0 P1 Lv50 ('fire', 'psychic') item=None ability=None nature=None moves=[738] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='leech-seed', stages=0),) defender_hp=87 move_id=738
+Action turn=1 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=87 attacker_hp=87 move_id=33
+VolatileTick turn=1 side=1 pokemon='P143' kind='leech-seed' hp=75
+VolatileTick turn=1 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=2 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=62 move_id=738
+Action turn=2 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=85 attacker_hp=62 move_id=33
+VolatileTick turn=2 side=1 pokemon='P143' kind='leech-seed' hp=50
+VolatileTick turn=2 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=3 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=37 move_id=738
+Action turn=3 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=87 attacker_hp=37 move_id=33
+VolatileTick turn=3 side=1 pokemon='P143' kind='leech-seed' hp=25
+VolatileTick turn=3 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=4 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=13 move_id=738
+Action turn=4 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=87 attacker_hp=13 move_id=33
+VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=1
+VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 critical=True defender_hp=0 knockout=True move_id=738
+result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
+## focus sappy-seed 4
+side=0 P1 Lv50 ('fire', 'psychic') item=None ability=None nature=None moves=[738] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='leech-seed', stages=0),) defender_hp=87 move_id=738
+Action turn=1 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 attacker_hp=87 move_id=33
+VolatileTick turn=1 side=1 pokemon='P143' kind='leech-seed' hp=75
+VolatileTick turn=1 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=2 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=63 move_id=738
+Action turn=2 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=87 attacker_hp=63 move_id=33
+VolatileTick turn=2 side=1 pokemon='P143' kind='leech-seed' hp=51
+VolatileTick turn=2 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=3 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=38 move_id=738
+Action turn=3 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=87 attacker_hp=38 move_id=33
+VolatileTick turn=3 side=1 pokemon='P143' kind='leech-seed' hp=26
+VolatileTick turn=3 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=4 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=13 move_id=738
+Action turn=4 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=86 attacker_hp=13 move_id=33
+VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=1
+VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=0 knockout=True move_id=738
+result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
+## focus sappy-seed 5
+side=0 P1 Lv50 ('fire', 'psychic') item=None ability=None nature=None moves=[738] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 move_id=33
+Action turn=1 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='leech-seed', stages=0),) defender_hp=88 attacker_hp=88 move_id=738
+VolatileTick turn=1 side=1 pokemon='P143' kind='leech-seed' hp=76
+VolatileTick turn=1 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=2 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 attacker_hp=76 move_id=33
+Action turn=2 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=64 attacker_hp=88 move_id=738
+VolatileTick turn=2 side=1 pokemon='P143' kind='leech-seed' hp=52
+VolatileTick turn=2 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=3 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 attacker_hp=52 move_id=33
+Action turn=3 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=41 attacker_hp=88 move_id=738
+VolatileTick turn=3 side=1 pokemon='P143' kind='leech-seed' hp=29
+VolatileTick turn=3 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=4 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 attacker_hp=29 move_id=33
+Action turn=4 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=16 attacker_hp=88 move_id=738
+VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=4
+VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=5 side=1 attacker='P143' defender='P1' move='몸통박치기' critical=True defender_hp=82 attacker_hp=4 move_id=33
+Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=82 move_id=738
+result winner=0 turns=5 remaining=((82,), (0,)) statuses=((None,), (None,))
+## focus sappy-seed 6
+side=0 P1 Lv50 ('fire', 'psychic') item=None ability=None nature=None moves=[738] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='leech-seed', stages=0),) defender_hp=88 move_id=738
+Action turn=1 side=1 attacker='P143' defender='P1' move='몸통박치기' critical=True defender_hp=85 attacker_hp=88 move_id=33
+VolatileTick turn=1 side=1 pokemon='P143' kind='leech-seed' hp=76
+VolatileTick turn=1 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=2 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=64 move_id=738
+Action turn=2 side=1 attacker='P143' defender='P1' move='몸통박치기' critical=True defender_hp=83 attacker_hp=64 move_id=33
+VolatileTick turn=2 side=1 pokemon='P143' kind='leech-seed' hp=52
+VolatileTick turn=2 side=0 pokemon='P1' kind='leech-seed-heal' hp=99
+Action turn=3 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=40 attacker_hp=99 move_id=738
+Action turn=3 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=90 attacker_hp=40 move_id=33
+VolatileTick turn=3 side=1 pokemon='P143' kind='leech-seed' hp=28
+VolatileTick turn=3 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=4 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=17 move_id=738
+Action turn=4 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=91 attacker_hp=17 move_id=33
+VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=5
+VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=0 knockout=True move_id=738
+result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
+## focus sappy-seed 7
+side=0 P1 Lv50 ('fire', 'psychic') item=None ability=None nature=None moves=[738] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='leech-seed', stages=0),) defender_hp=89 move_id=738
+Action turn=1 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=88 attacker_hp=89 move_id=33
+VolatileTick turn=1 side=1 pokemon='P143' kind='leech-seed' hp=77
+VolatileTick turn=1 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=2 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=65 move_id=738
+Action turn=2 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=89 attacker_hp=65 move_id=33
+VolatileTick turn=2 side=1 pokemon='P143' kind='leech-seed' hp=53
+VolatileTick turn=2 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=3 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=42 move_id=738
+Action turn=3 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=89 attacker_hp=42 move_id=33
+VolatileTick turn=3 side=1 pokemon='P143' kind='leech-seed' hp=30
+VolatileTick turn=3 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=4 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=19 move_id=738
+Action turn=4 side=1 attacker='P143' defender='P1' move='몸통박치기' defender_hp=89 attacker_hp=19 move_id=33
+VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=7
+VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal'
+Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=0 knockout=True move_id=738
+result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
