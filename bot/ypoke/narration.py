@@ -137,7 +137,7 @@ CHANGE_TEXT = {
     "reset": "🌫️능력 변화 사라짐", "grounded": "⬇️땅에 떨어짐", "throat-chop": "🤐소리 기술 봉인",
     "salt-cure": "🧂소금절이", "syrup-bomb": "🍯사탕범벅", "heal-block": "🚫회복봉인", "leech-seed": "🌱씨뿌리기",
     "spite": "마지막 기술 PP↓", "ability-lost": "🧪특성 사라짐", "lost-fire": "🔥불꽃 타입 잃음",
-    "lost-electric": "⚡전기 타입 잃음",
+    "lost-electric": "⚡전기 타입 잃음", "crash": "💥크래시 데미지", "hp-cost": "💥HP 절반 소모",
 }
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)"}
@@ -490,10 +490,11 @@ def _action_line(event: Action, marker: str) -> str:
         return " ".join(filter(None, [head, EFFECT_TEXT.get(event.effect, "→"), *tags]))
     if event.failed:
         return f"{head} → 실패"
+    tags = [_change_tag(change, event.side) for change in event.changes]
     if event.missed:
-        return f"{head} → 빗나감"
+        return " ".join([f"{head} → 빗나감", *tags])
     if event.multiplier == 0:
-        return " ".join(filter(None, [head, "→", event.defender, "무효", _ability_tag(event)]))
+        return " ".join(filter(None, [head, "→", event.defender, "무효", _ability_tag(event), *tags]))
     hp = FAINTED if event.knockout else f"{event.defender_hp}%"
     item_tags = [f"@{ITEM_NAMES[item]}" for item in (event.attacker_item, event.defender_item) if item]
     pivot = ["↩교체"] if event.pivoted else []

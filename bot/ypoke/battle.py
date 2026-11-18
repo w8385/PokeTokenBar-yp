@@ -1070,7 +1070,8 @@ def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:
 
 def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, weather: _Weather,
          rng: random.Random, arena: _Arena | None = None) -> Action:
-    """One Pokémon's turn. A self-KO move (Explosion) faints its user once used, hit, miss or immune target."""
+    """One Pokémon's turn. A self-KO move (Explosion) faints its user once used, hit, miss or immune target, and an
+    HP-cost move (Steel Beam) takes its share then too."""
     action = _resolve(turn, side, fighters, index, weather, rng, arena)
     if action.move:
         used = STRUGGLE if index is None else fighters[side].combatant.moves[index]
@@ -1078,6 +1079,10 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         fighters[side].last_used = index
         if arena is not None:
             arena.last_move = used
+        paid = hooks.move(used, "pays_hp", fighters[side]) if not action.failed or action.blocked else None
+        if paid is not None:
+            action = replace(action, changes=(*action.changes, paid), attacker_hp=fighters[side].hp_percent,
+                             attacker_fainted=fighters[side].hp == 0)
     if action.move and _self_ko(fighters[side], index):
         fighters[side].hp = 0
         return replace(action, attacker_hp=0, attacker_fainted=True)
@@ -1130,7 +1135,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     stopped = _stopped(attacker, defender, move)
     if stopped:
         changes = tuple(change for answer in _field(defender, "punishes", move, attacker, side, rng)
-                        for change in answer)
+                        for change in answer) + _crash(attacker, move)
         return Action(turn, side, *names, move.name, failed=True, blocked=stopped, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=changes,
                       attacker_fainted=attacker.hp == 0)
@@ -1145,14 +1150,18 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy"))
     if (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
             and not _sure_hit(attacker, defender) and rng.random() * 100 >= accuracy):
+        crash = _crash(attacker, move)
         return Action(turn, side, *names, move.name, missed=True, multiplier=multiplier, recovered=recovered,
-                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=crash,
+                      attacker_fainted=attacker.hp == 0)
     if multiplier == 0:
         granted = hooks.ability(defender, "immune_to", move.type, default=False) and effectiveness(
             move.type, defender.combatant.types) > 0
+        crash = _crash(attacker, move)
         return Action(turn, side, *names, move.name, multiplier=0, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent,
-                      ability=defender.ability if granted else None)
+                      ability=defender.ability if granted else None, changes=crash,
+                      attacker_fainted=attacker.hp == 0)
     critical, hits, dealt, sturdy, endured, berry, shielded = False, 0, 0, False, "", "", False
     resisted = defender.item if hooks.item(defender, "resists", move.type, multiplier, default=False) else ""
     crit_stage = (hooks.move(move, "crit_stage", default=move.crit_stage) + hooks.item(attacker, "crit_stage", default=0)
@@ -1215,6 +1224,11 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         recovered=recovered, hits=hits, drained=drained, attacker_hp=attacker.hp_percent, ability=ability,
         attacker_item=attacker_item, defender_item=defender_item,
     )
+
+
+def _crash(attacker: _Fighter, move: Move) -> tuple[Change, ...]:
+    crash = hooks.move(move, "crashes", attacker)
+    return () if crash is None else (crash,)
 
 
 def _retyped(attacker: _Fighter, move: Move) -> Move:

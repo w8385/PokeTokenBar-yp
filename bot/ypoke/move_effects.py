@@ -52,6 +52,7 @@ ID_KEYS = frozenset({
     *("steal-item", "eat-berry", "burn-berry", "fell-stinger", "spectral-thief", "clear-smog", "smack-down",
       "hits-airborne", "throat-chop", "salt-cure", "syrup-bomb", "psychic-noise", "sappy-seed", "eerie-spell",
       "core-enforcer", "if-raised", "loses-type", "wakes-target", "false-swipe", "plasma-fists", "grav-apple"),
+    *("crash", "hp-cost", "hp-cost-on-hit"),
 })
 EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "struggle", "judgment",
                          "ivy-cudgel"})
