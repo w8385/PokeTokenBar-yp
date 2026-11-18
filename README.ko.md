@@ -166,12 +166,14 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ko.png" width="300" alt="지닌 도구·학습장치 칸·기술이 보이는 박스 포켓몬 프로필"><br><br><img src="assets/screenshot-status-moves-ko.png" width="300" alt="레벨업 기술과 변화 기술 묶음이 보이는 기술 선택"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ko.png" width="300" alt="지닌 도구·학습장치 칸·기술이 보이는 박스 포켓몬 프로필"><br><br><img src="assets/screenshot-status-moves-ko.png" width="300" alt="레벨업 기술과 변화 기술 묶음이 보이는 기술 선택"><br><br><img src="assets/screenshot-move-order-ko.png" width="300" alt="카드로 나뉜 기술칸 네 개와 채워진 칸의 위·아래 화살표"></td>
 <td width="55%" valign="middle">
 <h3>포켓몬마다 고유한 프로필</h3>
 <b>박스</b>에서 포켓몬을 열면 레벨·성별·성격·특성·개체값·계산된 능력치·지닌 도구·기술을 확인할 수 있습니다. 종 설명과 특성·기술은 선택 언어로 표시하고, PokéAPI에 번역이 없으면 영어를 사용합니다.
 <br><br>
 <b>변화 기술</b>도 기술 선택의 별도 묶음으로 고를 수 있습니다. 칼춤·전기자석파·하품·트릭룸·스텔스록을 레벨업·기술머신·알 기술로 배우면 나옵니다. 배틀에서는 트레이너와 같은 규칙으로 씁니다.
+<br><br>
+기술칸은 칸마다 카드로 나뉩니다. 채워진 칸의 <b>▲/▼</b> 버튼을 누르면 위나 아래 칸과 자리를 바꿔서, 기술을 다시 고르지 않고 순서만 바꿀 수 있습니다.
 </td>
 </tr>
 <tr>

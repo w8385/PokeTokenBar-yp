@@ -34,7 +34,7 @@ SCREENS = (
     ("BoxFilterPanel.swift", ("screenshot-collection-box",)),
     ("BoxDetailView.swift", ("screenshot-pokemon-profile", "screenshot-exp-share")),
     ("PokemonDetailParts.swift", ("screenshot-pokemon-profile",)),
-    ("MoveTrainingSection.swift", ("screenshot-pokemon-profile",)),
+    ("MoveTrainingSection.swift", ("screenshot-pokemon-profile", "screenshot-move-order", "screenshot-status-moves")),
     ("ExpShareSlot.swift", ("screenshot-exp-share",)),
     ("GymReplayView.swift", ("screenshot-gym-replay",)),
     ("GymResultView.swift", ("screenshot-gym-replay", "screenshot-hidden-boss")),
