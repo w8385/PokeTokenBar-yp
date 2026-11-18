@@ -587,6 +587,25 @@ struct EvoLineView: View {
     }
 }
 
+/// Home's line under a stuck Pokémon: what it needs and the move-on countdown, with Keep waiting.
+@MainActor
+struct MoveOnCountdownRow: View {
+    let text: String
+    let keepWaiting: String
+    let onKeepWaiting: () -> Void
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(text)
+                .font(.caption2).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 4)
+            Button(keepWaiting, action: onKeepWaiting)
+                .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+        }
+    }
+}
+
 /// Growth bar. Hovering 300 ms grows it with a small spring "plop" and reveals the exact numbers
 /// ("X / Y · Z%") inside; leaving shrinks it back. The expanded height is always reserved, so the
 /// hover never moves the layout or resizes the popover.
@@ -955,15 +974,10 @@ struct CompanionHeader: View {
                         }
                     }
                     if let status = store.moveOnStatus {
-                        HStack(spacing: 6) {
-                            Text(store.l.moveOnCountdown(status.needs, minutes: status.minutes, next: status.next,
-                                                         toGraduates: status.toGraduates))
-                                .font(.caption2).foregroundStyle(.secondary)
-                                .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                            Spacer(minLength: 4)
-                            Button(store.l.keepWaiting) { store.keepWaitingOnStuck() }
-                                .buttonStyle(.bordered).controlSize(.mini).fixedSize()
-                        }
+                        MoveOnCountdownRow(text: store.l.moveOnCountdown(status.needs, minutes: status.minutes,
+                                                                         next: status.next,
+                                                                         toGraduates: status.toGraduates),
+                                           keepWaiting: store.l.keepWaiting) { store.keepWaitingOnStuck() }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
