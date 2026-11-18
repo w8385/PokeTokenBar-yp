@@ -16,11 +16,11 @@ def battle_moves(learnable: list[dict], chosen_ids: list[int] | None) -> tuple[M
 
 
 def default_move_ids(learnable: list[dict]) -> list[int]:
-    """The most recently learned level-up attacking moves; weather, status and machine moves are never a default.
+    """The most recently learned level-up attacking moves; weather, status, egg and machine moves are never a default.
     `learnable` is oldest first."""
     return [move["id"] for move in [
         move for move in learnable
-        if not move["weather"] and move.get("damage_class") != "status" and move.get("source") != "machine"
+        if not move["weather"] and move.get("damage_class") != "status" and move.get("source") not in ("machine", "egg")
     ][-MAX_MOVES:]]
 
 

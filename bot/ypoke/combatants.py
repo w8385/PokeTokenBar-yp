@@ -20,7 +20,8 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
     data = _form_data(pokeapi, pokemon_id, item)
     chosen = member.get("moves") or ()
     learnable = pokeapi.attacking_moves(pokemon_id, member.get("learned_at", member["level"]), chosen,
-                                        **({"status": True} if wants_status_moves(chosen) else {}))
+                                        **({"status": True} if wants_status_moves(chosen) else {}),
+                                        **({"egg": True} if member.get("mirror_herb") else {}))
     ivs = {key: member["ivs"].get(key, DEFAULT_IV) for key in IV_KEYS}
     moves = battle_moves(learnable, member.get("moves"))
     types = tuple(data["types"])
