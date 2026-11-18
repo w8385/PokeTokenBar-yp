@@ -54,6 +54,7 @@ HOOKS = {
     "crashes": "move: its user loses HP when the move meets Protect, misses or hits an immune target (High Jump Kick); "
                "returns the change",
     "skips_accuracy":"move: hits without an accuracy draw",
+    "rolls_each_hit": "move: each hit after the first draws for accuracy and a miss ends the move (Triple Kick)",
     "accuracy_as_user": "item: multiplies the user's accuracy, before the target's item",
     "accuracy_as_target": "item: multiplies the accuracy of a move used on its holder",
     "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
