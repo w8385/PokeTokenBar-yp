@@ -44,6 +44,15 @@ let statusMovesJSON = """
 ]}
 """
 
+/// `statusMovesJSON` from a bot that also offers the field and side status moves Pikachu learns by TM.
+let fieldStatusMovesJSON = statusMovesJSON.replacingOccurrences(of: "\n]}", with: """
+,
+ {"id":113,"name":"빛의장막","type":"psychic","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":30,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":115,"name":"리플렉터","type":"psychic","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":20,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":604,"name":"일렉트릭필드","type":"electric","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":10,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]}
+]}
+""")
+
 /// The same Pikachu from a bot that predates status moves (or ignores `status=1`).
 let noStatusMovesJSON = """
 {"ok":true,"default":[84,209],"moves":[
@@ -489,9 +498,11 @@ final class StatusMoveGroupingTests: XCTestCase {
 
     func testEveryOfferedStatusMoveHasItsOwnEffectLineInEveryLanguage() {
         for language in AppLanguage.allCases {
-            let lines = [14, 86, 281, 433, 446].map { L(language).statusMoveEffect($0) }
+            let offered = [14, 54, 86, 113, 114, 115, 191, 219, 281, 356, 366, 381, 390, 432, 433, 446, 564, 580, 581,
+                           604, 678, 694, 756, 882]
+            let lines = offered.map { L(language).statusMoveEffect($0) }
             XCTAssertFalse(lines.contains(nil), "\(language)")
-            XCTAssertEqual(Set(lines).count, 5, "\(language)")
+            XCTAssertEqual(Set(lines).count, offered.count, "\(language)")
             XCTAssertNil(L(language).statusMoveEffect(92), "a status move the bot does not offer")
         }
     }
@@ -556,7 +567,8 @@ final class StatusMoveScreenshotTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         for (language, suffix) in [(AppLanguage.ko, "ko"), (.en, "en")] {
             for (json, name, rows, height) in [(noStatusMovesJSON, "before", 2, CGFloat(490)),
-                                               (statusMovesJSON, "after", 5, CGFloat(830))] {
+                                               (statusMovesJSON, "after", 5, CGFloat(830)),
+                                               (fieldStatusMovesJSON, "field", 5, CGFloat(1080))] {
                 let rig = try await TrainingRig(movesJSON: json, language: language)
                 let host = try await rig.mount(rig.section("pikachu"), height: height)
                 _ = try await rig.chooseRows(in: host, count: rows)

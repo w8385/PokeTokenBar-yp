@@ -150,6 +150,132 @@ extension L {
               "Los rivales que entran reciben daño Roca", "Les adversaires qui entrent subissent des dégâts Roche",
               "Rivais que entram sofrem dano de Pedra", "Eingewechselte Gegner nehmen Gestein-Schaden",
               "Выходящие соперники получают урон Камнем")
+        case 604:
+            t("5턴 동안 전기 기술 강화, 땅 위 포켓몬은 잠들지 않음", "5 turns: Electric moves up, grounded Pokémon can't fall asleep",
+              "5ターン でんきわざ強化、地面にいるポケモンはねむらない",
+              "5 turnos: más poder Eléctrico, los Pokémon en el suelo no se duermen",
+              "5 tours : capacités Électrik renforcées, pas de sommeil au sol",
+              "5 turnos: golpes Elétricos mais fortes, Pokémon no chão não dormem",
+              "5 Runden: Elektro-Attacken stärker, Pokémon am Boden schlafen nicht ein",
+              "5 ходов: электроприёмы сильнее, покемоны на земле не засыпают")
+        case 580:
+            t("5턴 동안 풀 기술 강화, 땅 위 포켓몬 매 턴 회복", "5 turns: Grass moves up, grounded Pokémon heal each turn",
+              "5ターン くさわざ強化、地面にいるポケモンが毎ターン回復",
+              "5 turnos: más poder Planta, los Pokémon en el suelo se curan cada turno",
+              "5 tours : capacités Plante renforcées, soin à chaque tour au sol",
+              "5 turnos: golpes de Planta mais fortes, Pokémon no chão curam a cada turno",
+              "5 Runden: Pflanzen-Attacken stärker, Pokémon am Boden heilen jede Runde",
+              "5 ходов: травяные приёмы сильнее, покемоны на земле лечатся каждый ход")
+        case 678:
+            t("5턴 동안 에스퍼 기술 강화, 땅 위 포켓몬에게 오는 선공기를 막음",
+              "5 turns: Psychic moves up, blocks priority moves on grounded Pokémon",
+              "5ターン エスパーわざ強化、地面にいるポケモンへの先制わざを防ぐ",
+              "5 turnos: más poder Psíquico, bloquea la prioridad contra Pokémon en el suelo",
+              "5 tours : capacités Psy renforcées, bloque les capacités prioritaires au sol",
+              "5 turnos: golpes Psíquicos mais fortes, bloqueia prioridade contra Pokémon no chão",
+              "5 Runden: Psycho-Attacken stärker, blockt Erstschläge gegen Pokémon am Boden",
+              "5 ходов: психические приёмы сильнее, без приоритетных приёмов по покемонам на земле")
+        case 581:
+            t("5턴 동안 드래곤 기술 반감, 땅 위 포켓몬은 상태이상에 걸리지 않음",
+              "5 turns: halves Dragon moves, grounded Pokémon can't get a status",
+              "5ターン ドラゴンわざ半減、地面にいるポケモンは状態異常にならない",
+              "5 turnos: el tipo Dragón hace la mitad, sin problemas de estado en el suelo",
+              "5 tours : capacités Dragon réduites de moitié, pas de statut au sol",
+              "5 turnos: golpes de Dragão pela metade, sem status no chão",
+              "5 Runden: Drachen-Attacken halbiert, keine Statusprobleme am Boden",
+              "5 ходов: драконьи приёмы вдвое слабее, покемоны на земле без статусов")
+        case 115:
+            t("5턴 동안 물리 피해 반감", "Halves physical damage for 5 turns", "5ターン 物理ダメージ半減",
+              "Reduce a la mitad el daño físico 5 turnos", "Divise par deux les dégâts physiques pendant 5 tours",
+              "Corta o dano físico pela metade por 5 turnos", "Halbiert physischen Schaden 5 Runden lang",
+              "Вдвое снижает физический урон на 5 ходов")
+        case 113:
+            t("5턴 동안 특수 피해 반감", "Halves special damage for 5 turns", "5ターン 特殊ダメージ半減",
+              "Reduce a la mitad el daño especial 5 turnos", "Divise par deux les dégâts spéciaux pendant 5 tours",
+              "Corta o dano especial pela metade por 5 turnos", "Halbiert Spezialschaden 5 Runden lang",
+              "Вдвое снижает специальный урон на 5 ходов")
+        case 694:
+            t("설경·싸라기눈일 때 5턴 동안 모든 피해 반감", "In snow or hail, halves all damage for 5 turns",
+              "ゆき・あられの時 5ターン ダメージ半減", "Con nieve o granizo, reduce a la mitad todo el daño 5 turnos",
+              "Sous la neige ou la grêle, divise par deux tous les dégâts pendant 5 tours",
+              "Com neve ou granizo, corta todo o dano pela metade por 5 turnos",
+              "Bei Schnee oder Hagel halbiert allen Schaden 5 Runden lang",
+              "В снег или град вдвое снижает весь урон на 5 ходов")
+        case 191:
+            t("교체해 나오는 상대에게 피해 (3번까지 쌓임)", "Foes that switch in take damage (stacks up to 3)",
+              "交代で出てくる相手にダメージ（3回まで重なる）", "Los rivales que entran reciben daño (hasta 3 capas)",
+              "Les adversaires qui entrent subissent des dégâts (jusqu'à 3 couches)",
+              "Rivais que entram sofrem dano (até 3 camadas)", "Eingewechselte Gegner nehmen Schaden (bis zu 3 Lagen)",
+              "Выходящие соперники получают урон (до 3 слоёв)")
+        case 390:
+            t("교체해 나오는 상대를 독 (2번 깔면 맹독)", "Foes that switch in get poisoned (badly with 2 layers)",
+              "交代で出てくる相手をどくにする（2回でもうどく）", "Envenena a los rivales que entran (gravemente con 2 capas)",
+              "Empoisonne les adversaires qui entrent (gravement avec 2 couches)",
+              "Envenena rivais que entram (gravemente com 2 camadas)", "Vergiftet eingewechselte Gegner (schwer bei 2 Lagen)",
+              "Отравляет выходящих соперников (сильно при 2 слоях)")
+        case 564:
+            t("교체해 나오는 상대의 스피드 1랭크 하락", "Foes that switch in lose 1 Speed stage",
+              "交代で出てくる相手のすばやさ1段階ダウン", "Los rivales que entran bajan 1 nivel de Velocidad",
+              "Les adversaires qui entrent perdent 1 niveau de Vitesse", "Rivais que entram perdem 1 estágio de Velocidade",
+              "Eingewechselte Gegner verlieren 1 Initiative-Stufe", "Выходящие соперники теряют 1 ступень скорости")
+        case 366:
+            t("4턴 동안 우리 편 스피드 2배", "Doubles your side's Speed for 4 turns", "4ターン 味方のすばやさ2倍",
+              "Duplica la Velocidad de tu lado 4 turnos", "Double la Vitesse de ton camp pendant 4 tours",
+              "Dobra a Velocidade do seu lado por 4 turnos", "Verdoppelt die Initiative deiner Seite 4 Runden lang",
+              "Удваивает скорость вашей стороны на 4 хода")
+        case 219:
+            t("5턴 동안 상대가 거는 상태이상을 막음", "Blocks status from foes for 5 turns", "5ターン 相手からの状態異常を防ぐ",
+              "Bloquea problemas de estado del rival 5 turnos", "Bloque les statuts adverses pendant 5 tours",
+              "Bloqueia status vindos do rival por 5 turnos", "Blockt Statusprobleme durch Gegner 5 Runden lang",
+              "Защищает от статусов соперника на 5 ходов")
+        case 54:
+            t("5턴 동안 상대가 능력치를 낮추지 못함", "Foes can't lower your stats for 5 turns", "5ターン 相手に能力を下げられない",
+              "Los rivales no pueden bajar tus características 5 turnos",
+              "L'adversaire ne peut pas baisser tes stats pendant 5 tours",
+              "Rivais não podem baixar seus atributos por 5 turnos",
+              "Gegner können deine Werte 5 Runden lang nicht senken",
+              "Соперник не может снижать ваши характеристики 5 ходов")
+        case 381:
+            t("5턴 동안 급소에 맞지 않음", "No critical hits against your side for 5 turns", "5ターン 急所に当たらない",
+              "Sin golpes críticos contra tu lado 5 turnos", "Aucun coup critique contre ton camp pendant 5 tours",
+              "Sem golpes críticos contra o seu lado por 5 turnos", "Keine Volltreffer gegen deine Seite 5 Runden lang",
+              "По вашей стороне нет критических ударов 5 ходов")
+        case 356:
+            t("5턴 동안 모두 땅에 붙고 명중률 상승, 공중 기술 못 씀",
+              "5 turns: everyone is grounded, accuracy up, no airborne moves",
+              "5ターン 全員が地面に落ち命中率アップ、空中わざが使えない",
+              "5 turnos: todos en el suelo, más precisión, sin movimientos aéreos",
+              "5 tours : tout le monde au sol, précision accrue, pas de capacités aériennes",
+              "5 turnos: todos no chão, precisão maior, sem golpes aéreos",
+              "5 Runden: alle am Boden, höhere Genauigkeit, keine Flug-Attacken",
+              "5 ходов: все на земле, точность выше, без воздушных приёмов")
+        case 114:
+            t("양쪽의 능력 변화를 모두 없앰", "Resets every stat change on both sides", "両方の能力変化をすべて元に戻す",
+              "Anula todos los cambios de características de ambos lados",
+              "Annule toutes les modifications de stats des deux camps",
+              "Zera todas as mudanças de atributos dos dois lados", "Setzt alle Wertänderungen beider Seiten zurück",
+              "Сбрасывает все изменения характеристик у обеих сторон")
+        case 432:
+            t("양쪽 함정, 상대의 벽과 필드를 걷어냄", "Clears hazards on both sides, the foe's screens and the terrain",
+              "両方の設置わざと相手の壁、フィールドを消す", "Quita trampas de ambos lados, las barreras rivales y el campo",
+              "Retire les pièges des deux camps, les protections adverses et le terrain",
+              "Remove armadilhas dos dois lados, barreiras do rival e o campo",
+              "Entfernt Fallen beider Seiten, gegnerische Schilde und das Feld",
+              "Убирает ловушки обеих сторон, экраны соперника и поле")
+        case 756:
+            t("양쪽의 벽·순풍·함정을 맞바꿈", "Swaps screens, Tailwind and hazards between sides",
+              "両方の壁・おいかぜ・設置わざを入れ替える", "Intercambia barreras, Viento Afín y trampas entre lados",
+              "Échange protections, Vent Arrière et pièges entre les camps",
+              "Troca barreiras, Vento a Favor e armadilhas entre os lados",
+              "Tauscht Schilde, Rückenwind und Fallen zwischen den Seiten",
+              "Меняет местами экраны, попутный ветер и ловушки сторон")
+        case 882:
+            t("양쪽 함정을 치우고 공격·스피드 1랭크 상승", "Clears hazards on both sides, Attack and Speed +1 stage",
+              "両方の設置わざを片付け、こうげき・すばやさ1段階アップ", "Quita trampas de ambos lados, Ataque y Velocidad +1 nivel",
+              "Retire les pièges des deux camps, Attaque et Vitesse +1 niveau",
+              "Remove armadilhas dos dois lados, Ataque e Velocidade +1 estágio",
+              "Entfernt Fallen beider Seiten, Angriff und Initiative +1 Stufe",
+              "Убирает ловушки обеих сторон, атака и скорость +1 ступень")
         default: nil
         }
     }
