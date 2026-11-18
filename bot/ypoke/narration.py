@@ -5,8 +5,9 @@ from dataclasses import dataclass, field
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    BATTLE_LEVEL, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, FormShift, HazardDamage, ItemEffect,
-    ItemHeal, MegaEvolution, SendOut, StatusDamage, TrickRoomEnd, WeatherDamage, WeatherEnd, YawnSleep,
+    BATTLE_LEVEL, AbilityField, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, FieldEnd, FieldStart,
+    FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal,
+    TrickRoomEnd, WeatherDamage, WeatherEnd, YawnSleep,
 )
 from ypoke.dex import bar, sprite_url
 from ypoke.items import ITEM_NAMES, known
@@ -25,7 +26,16 @@ STATUS_ICON = {
     "freeze": "🧊얼음", "confusion": "💫혼란",
 }
 RESIDUAL_ICON = {"burn": "🔥", "poison": "☠️", "toxic": "☠️"}
-BLOCKED_TAG = {"paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임"}
+STATE_LABEL = {
+    "electric-terrain": "⚡일렉트릭필드", "grassy-terrain": "🌿그래스필드", "psychic-terrain": "🔮사이코필드",
+    "misty-terrain": "🌫️미스트필드", "reflect": "🛡️리플렉터", "light-screen": "🛡️빛의장막", "aurora-veil": "🛡️오로라베일",
+    "stealth-rock": "🪨스텔스록", "spikes": "📌압정", "toxic-spikes": "☠️독압정", "sticky-web": "🕸️끈적끈적네트",
+    "tailwind": "🍃순풍", "safeguard": "✨신비의부적", "mist": "🌁흰안개", "lucky-chant": "🍀주술", "gravity": "🌍중력",
+}
+BLOCKED_TAG = {
+    "paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임",
+    "gravity": "🌍중력 때문에 기술을 못 씀", "psychic-terrain": "🔮사이코필드에 막힘",
+}
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {
     "mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼", "origin": "오리진폼", "crowned-sword": "검왕의모습",
@@ -37,6 +47,14 @@ ROCK_ICON = "🪨"
 EFFECT_TEXT = {
     "trick-room": f"{TRICK_ROOM_ICON}공간이 뒤틀렸다", "trick-room-off": f"{TRICK_ROOM_ICON}공간이 돌아왔다",
     "stealth-rock": f"{ROCK_ICON}상대 쪽에 돌이 떠 있다", "swords-dance": "⚔️공격이 크게 올랐다",
+    "electric-terrain": "⚡일렉트릭필드가 깔렸다", "grassy-terrain": "🌿그래스필드가 깔렸다",
+    "psychic-terrain": "🔮사이코필드가 깔렸다", "misty-terrain": "🌫️미스트필드가 깔렸다",
+    "reflect": "🛡️물리 피해가 줄어든다", "light-screen": "🛡️특수 피해가 줄어든다", "aurora-veil": "🛡️받는 피해가 줄어든다",
+    "spikes": "📌상대 쪽에 압정이 깔렸다", "toxic-spikes": "☠️상대 쪽에 독압정이 깔렸다",
+    "sticky-web": "🕸️상대 쪽에 끈적끈적네트가 깔렸다", "tailwind": "🍃순풍이 분다",
+    "safeguard": "✨상태이상을 막는다", "mist": "🌁능력이 떨어지지 않는다", "lucky-chant": "🍀급소를 막는다",
+    "gravity": "🌍중력이 강해졌다", "haze": "🌫️모든 능력 변화가 사라졌다", "defog": "💨안개를 걷어냈다",
+    "court-change": "🔄양쪽 필드를 바꿨다", "tidy-up": "🧹주변을 정리했다 (공격·스피드↑)",
 }
 FORM_CHANGE = {"mega": ("메가진화", "메가"), "primal": ("원시회귀", "원시"), "ultra": ("울트라버스트", "울트라")}
 STAT_SHORT = {
@@ -157,6 +175,8 @@ def _decisive_text(event: Event) -> str:
         return f"{event.pokemon} @{ITEM_NAMES[event.item]}"
     if isinstance(event, HazardDamage):
         return f"{event.pokemon} {ROCK_ICON}스텔스록"
+    if isinstance(event, HazardHit):
+        return f"{event.pokemon} {STATE_LABEL[event.hazard]}"
     icon = RESIDUAL_ICON[event.kind] if isinstance(event, StatusDamage) else WEATHER_ICON[event.weather]
     return f"{event.pokemon} {icon}"
 
@@ -167,7 +187,7 @@ def _faint_side(event: Event) -> int | None:
         if event.knockout:
             return 1 - event.side
         return event.side if event.attacker_fainted else None
-    if isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage)) and event.fainted:
+    if isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage, HazardHit)) and event.fainted:
         return event.side
     return None
 
@@ -287,7 +307,12 @@ def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
     if isinstance(event, MegaEvolution):
         word = FORM_CHANGE[event.kind][0]
         return f"{word} [{event.ability}]" if event.ability else word
-    effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
+    if isinstance(event, AbilityField) and event.terrain:
+        effect = STATE_LABEL[event.terrain]
+    elif isinstance(event, AbilityField):
+        effect = f"{'·'.join(STATE_LABEL[key] for key in event.cleared)} 사라짐"
+    else:
+        effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
     return f"[{ABILITY_NAMES[event.ability]}] {effect}"
 
 
@@ -302,12 +327,21 @@ def _event_lines(event: Event) -> list[str]:
         return [f"{WEATHER_ICON[event.weather]}끝"]
     if isinstance(event, TrickRoomEnd):
         return [f"{TRICK_ROOM_ICON}트릭룸 끝"]
+    if isinstance(event, FieldEnd):
+        side = f"{SIDE_MARKERS[event.side]} " if event.side >= 0 else ""
+        return [f"{side}{STATE_LABEL[event.kind]} {f'사라짐 ({event.move})' if event.move else '끝'}"]
     marker = SIDE_MARKERS[event.side]
     if isinstance(event, SendOut):
         return [f"↪ {marker} {event.pokemon} 등장"]
     if isinstance(event, HazardDamage):
         return [f"{marker} {event.pokemon} {ROCK_ICON}스텔스록 {event.hp}%",
                 *([_faint_line(event.pokemon)] if event.fainted else [])]
+    if isinstance(event, FieldStart):
+        return [f"{marker} 쪽에 {STATE_LABEL[event.kind]} 깔림"]
+    if isinstance(event, HazardHit):
+        return [_hazard_line(event, marker), *([_faint_line(event.pokemon)] if event.fainted else [])]
+    if isinstance(event, TerrainHeal):
+        return [f"{marker} {event.pokemon} {STATE_LABEL['grassy-terrain']} {event.hp}%"]
     if isinstance(event, YawnSleep):
         return [f"{marker} {event.pokemon} 💤잠듦 (하품)"]
     if isinstance(event, (StatusDamage, WeatherDamage)):
@@ -324,6 +358,13 @@ def _event_lines(event: Event) -> list[str]:
     return lines
 
 
+def _hazard_line(event: HazardHit, marker: str) -> str:
+    head = f"{marker} {event.pokemon} {STATE_LABEL[event.hazard]}"
+    if event.cleared:
+        return f"{head} 흡수"
+    return f"{head} {_change_tag(event.change, event.side)}" if event.change else f"{head} {event.hp}%"
+
+
 def _faint_line(name: str) -> str:
     return f"{FAINTED} {name} {FAINTED_TAG}"
 
@@ -332,6 +373,8 @@ def _action_line(event: Action, marker: str) -> str:
     head = " ".join([marker, event.attacker, *(RECOVERED_TAG[kind] for kind in event.recovered)])
     if event.blocked == "confusion":
         return f"{head} 💫혼란 자해 {event.attacker_hp}%"
+    if event.blocked and event.move:
+        return f"{head} › {event.move} → {BLOCKED_TAG[event.blocked]}"
     if event.blocked:
         return f"{head} {BLOCKED_TAG[event.blocked]}"
     head = f"{head} › {event.move}"

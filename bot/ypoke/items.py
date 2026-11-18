@@ -38,7 +38,8 @@ EFFECT_KEYS = frozenset({
     LEFTOVERS, CHOICE_SCARF, CHOICE_BAND, CHOICE_SPECS, FOCUS_SASH, FOCUS_BAND, LIFE_ORB, EXPERT_BELT, ASSAULT_VEST,
     EVIOLITE, ROCKY_HELMET, SITRUS_BERRY, LUM_BERRY, WHITE_HERB, BLACK_SLUDGE, SHELL_BELL, BIG_ROOT, MUSCLE_BAND,
     WISE_GLASSES, SCOPE_LENS, RAZOR_CLAW, QUICK_CLAW, BRIGHT_POWDER, WIDE_LENS, WEAKNESS_POLICY, PUNCHING_GLOVE,
-    "type-boost", "resist-berry", "plate", "origin-boost", "weather-rock", "status-orb",
+    "type-boost", "resist-berry", "plate", "origin-boost", "weather-rock", "status-orb", "state-extender",
+    "hazard-boots",
 })
 
 TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",
@@ -58,6 +59,7 @@ ORIGIN_BOOSTS = battle_data.args("items", "origin-boost", "types")
 WEATHER_ROCKS = battle_data.args("items", "weather-rock", "weathers")
 OGERPON_MASKS = tuple(battle_data.with_key("items", "ogerpon-mask"))
 ORB_AILMENTS = battle_data.args("items", "status-orb", "ailment")
+EXTENDED_STATES = battle_data.args("items", "state-extender", "states")
 ITEM_NAMES = battle_data.bot_names("items", unless="mega-stone")
 LEFTOVERS_FRACTION = 16
 BLACK_SLUDGE_HURT_FRACTION = 8

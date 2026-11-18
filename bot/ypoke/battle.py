@@ -2,18 +2,20 @@
 (capped at 50), IVs, natures, type effectiveness and level-up moves with PP, priority, critical-hit stages,
 multi-hit, drain and recoil, the major statuses (burn, paralysis, poison, toxic, sleep, freeze), confusion, stat
 stages, five-turn weather, about twenty abilities and one held item per Pokémon, and the effect moves (Trick Room,
-Stealth Rock, Yawn, Thunder Wave, the pivot moves). Abilities, items and move effects act through their handlers in
-`ypoke.effects`, which this turn loop calls at the hook points of `effects.hooks.HOOKS`.
+Yawn, Thunder Wave, the pivot moves) with the field and side states: terrains, Gravity, screens, Tailwind, Safeguard,
+Mist, Lucky Chant and the entry hazards. Abilities, items, move effects and active states act through their handlers
+in `ypoke.effects`, which this turn loop calls at the hook points of `effects.hooks.HOOKS`.
 The next member comes in when one faints; the only other switch is a pivot move's. The first member of a side
 holding its Mega Stone (or Primal orb) Mega Evolves as it enters."""
 
+import math
 import random
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 
 from ypoke import abilities, items, move_power, tera_forms
 from ypoke.effects import hooks
-from ypoke.move_effects import PUNCH_MOVES, STATUS_MOVES
+from ypoke.move_effects import CHOSEN_DAMAGE_EFFECTS, PUNCH_MOVES, STATUS_MOVES
 from ypoke.type_chart import effectiveness
 
 STAB_MULTIPLIER = 1.5
@@ -55,7 +57,7 @@ TRICK_ROOM_TURNS = 5
 STEALTH_ROCK_FRACTION = 8
 STATUS_EFFECTS = tuple(STATUS_MOVES.values())
 SWORDS_DANCE_STAGES = 2
-END_OF_TURN = ("status", "weather", "items", "yawn", "trick-room", "winds", "replace")
+END_OF_TURN = ("status", "weather", "terrain", "items", "yawn", "sides", "trick-room", "field", "winds", "replace")
 _NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
 _NATURE_NAMES = (
     "hardy lonely brave adamant naughty bold docile relaxed impish lax timid hasty serious jolly naive "
@@ -159,13 +161,13 @@ class Change:
 
 @dataclass(frozen=True)
 class Action:
-    """One Pokémon's turn. `move` is "" when it could not act; `blocked` says why ("paralysis", "sleep", "freeze"
-    or "confusion", the last one meaning it hurt itself). `attacker_hp` / `defender_hp` are HP shares after it.
+    """One Pokémon's turn. `move` is "" when it could not act; `blocked` says why ("paralysis", "sleep", "freeze",
+    "gravity" or "confusion", the last one meaning it hurt itself). A used move a state stopped keeps its `move`,
+    with `failed` and the state in `blocked` ("psychic-terrain"). `attacker_hp` / `defender_hp` are HP shares after it.
     `recovered` lists what ended before it acted ("sleep", "freeze", "confusion"). `hits` counts a multi-hit
     move's hits; `drained` means the user healed from the damage. `attacker_item` / `defender_item` name the
     held item that triggered on that side during this action (Life Orb recoil, Focus Sash). `effect` is what an
-    effect move did ("trick-room", "trick-room-off", "stealth-rock", "swords-dance", "yawn", "thunder-wave"); `pivoted` means the user
-    switched out."""
+    effect move did (its effect key, or "trick-room-off"); `pivoted` means the user switched out."""
 
     turn: int
     side: int
@@ -204,6 +206,56 @@ class AbilityTrigger:
     ability: str
     change: Change | None = None
     weather: str | None = None
+
+
+@dataclass(frozen=True)
+class AbilityField(AbilityTrigger):
+    """An entry ability that started a `terrain` or `cleared` field and side states (Screen Cleaner)."""
+
+    terrain: str | None = None
+    cleared: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class FieldStart:
+    """An attack that set a hazard on `side` as it hit (Stone Axe, Ceaseless Edge)."""
+
+    turn: int
+    side: int
+    kind: str
+
+
+@dataclass(frozen=True)
+class FieldEnd:
+    """A field or side state that wore off, or that `move` cleared. `side` is -1 for a state of the whole field."""
+
+    turn: int
+    kind: str
+    side: int = -1
+    move: str = ""
+
+
+@dataclass(frozen=True)
+class HazardHit:
+    """An entry hazard other than Stealth Rock acting on an entering Pokémon: Spikes (`hp` is the share left), Toxic
+    Spikes (`change` is the poison; `cleared` means a Poison type absorbed them) or Sticky Web (`change`)."""
+
+    turn: int
+    side: int
+    pokemon: str
+    hazard: str
+    hp: int = 100
+    fainted: bool = False
+    change: Change | None = None
+    cleared: bool = False
+
+
+@dataclass(frozen=True)
+class TerrainHeal:
+    turn: int
+    side: int
+    pokemon: str
+    hp: int
 
 
 @dataclass(frozen=True)
@@ -320,7 +372,7 @@ class FormShift:
 
 Event = (
     Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | ItemEffect | MegaEvolution
-    | FormShift | TrickRoomEnd | HazardDamage | YawnSleep
+    | FormShift | TrickRoomEnd | HazardDamage | YawnSleep | FieldStart | FieldEnd | HazardHit | TerrainHeal
 )
 
 
@@ -363,10 +415,11 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     Both sides follow the same rules and the same move choice (`_choose`).
     """
     rng = random.Random(seed)
-    teams = (_Team(_roster(sides[0]), carried), _Team(_roster(sides[1]), finale=finale, unlimited_megas=unlimited_megas))
+    arena = _Arena()
+    teams = (_Team(_roster(sides[0]), carried, arena=arena, side=0),
+             _Team(_roster(sides[1]), finale=finale, unlimited_megas=unlimited_megas, arena=arena, side=1))
     events: list[Event] = []
     weather = _Weather()
-    arena = _Arena()
     for side in (0, 1):
         _enter_forms(teams[side], side, 1, events)
     events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng))
@@ -375,6 +428,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     loser: int | None = None
     while loser is None and turn < TURN_LIMIT:
         turn += 1
+        arena.turn = turn
         for team in teams:
             team.start_turn()
         fighters = (teams[0].active, teams[1].active)
@@ -393,6 +447,8 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
             if action.move and _pivots(teams[side], action, choices[side]):
                 action = replace(action, pivoted=True)
             events.append(action)
+            events.extend(arena.log)
+            arena.log.clear()
             loser = _exhausted(teams, (side, 1 - side) if _self_ko(teams[side].active, choices[side]) else (1 - side, side))
             if loser is not None:
                 break
@@ -433,10 +489,16 @@ def _end_of_turn_step(step: str, turn: int, teams: tuple["_Team", "_Team"], figh
     if step == "items":
         _item_upkeep(turn, fighters, events, rng)
         return _exhausted(teams, (0, 1))
-    if step == "yawn":
+    if step == "terrain":
+        _terrain_upkeep(turn, fighters, events, rng)
+    elif step == "yawn":
         _yawn_upkeep(turn, fighters, events, rng)
+    elif step == "sides":
+        _side_upkeep(turn, arena, events)
     elif step == "trick-room":
         _trick_room_upkeep(turn, arena, events)
+    elif step == "field":
+        _field_upkeep(turn, arena, events)
     elif step == "winds":
         _calm_winds(turn, teams, weather, events)
     else:
@@ -478,7 +540,7 @@ def _exhausted(teams: tuple["_Team", "_Team"], order: tuple[int, ...]) -> int | 
 
 def _replace_fainted(teams: tuple["_Team", "_Team"], turn: int, arena: "_Arena", weather: "_Weather",
                      rng: random.Random, events: list[Event]) -> int | None:
-    """End of turn: each side whose active Pokémon fainted sends the next one, again while Stealth Rock knocks out
+    """End of turn: each side whose active Pokémon fainted sends the next one, again while the hazards knock out
     the newcomer. Returns the side that ran out, if any."""
     while True:
         entering = tuple(side for side in (0, 1) if teams[side].active.hp == 0)
@@ -487,23 +549,22 @@ def _replace_fainted(teams: tuple["_Team", "_Team"], turn: int, arena: "_Arena",
         loser = _exhausted(teams, entering)
         if loser is not None:
             return loser
-        standing = tuple(side for side in entering if _send_in(teams[side], side, turn, arena, events))
+        standing = tuple(side for side in entering if _send_in(teams[side], side, turn, arena, events, rng))
         if standing:
             events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, standing))
             _item_triggers(turn, (teams[0].active, teams[1].active), events)
 
 
-def _send_in(team: "_Team", side: int, turn: int, arena: "_Arena", events: list[Event],
+def _send_in(team: "_Team", side: int, turn: int, arena: "_Arena", events: list[Event], rng: random.Random,
              member: int | None = None) -> bool:
-    """Brings in the next member (or `member`): Stealth Rock first, then its forms. False if the rocks knocked it out."""
+    """Brings in the next member (or `member`): the hazards on its side in the order they were set, then its forms.
+    False if the hazards knocked it out."""
     returning = team.send_next(member)
     fighter = team.active
     events.append(SendOut(turn, side, fighter.combatant.name, team.current))
-    if arena.rocks[side]:
-        ratio = effectiveness("rock", fighter.combatant.types)
-        if ratio > 0:
-            fighter.hp = max(0, fighter.hp - max(1, int(fighter.max_hp * ratio / STEALTH_ROCK_FRACTION)))
-            events.append(HazardDamage(turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0))
+    for hazard, layers in list(arena.hazards[side].items()):
+        if fighter.hp > 0:
+            _append(events, hooks.key("moves", hazard, "hazard", layers, fighter, side, turn, rng))
     if fighter.hp == 0:
         return False
     if not returning:
@@ -517,7 +578,7 @@ def _pivot(teams: tuple["_Team", "_Team"], side: int, turn: int, arena: "_Arena"
     team = teams[side]
     target = team.pivot_target()
     team.bench_active()
-    if _send_in(team, side, turn, arena, events, target):
+    if _send_in(team, side, turn, arena, events, rng, target):
         events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, (side,)))
         return None
     return _exhausted(teams, (side,))
@@ -540,8 +601,8 @@ def _yawn_upkeep(turn: int, fighters: tuple["_Fighter", "_Fighter"], events: lis
         if fighter.drowsy_at != turn:
             continue
         fighter.drowsy_at = 0
-        if fighter.hp > 0 and fighter.status is None and not hooks.ability(fighter, "blocks_ailment", "sleep",
-                                                                            default=False):
+        if fighter.hp > 0 and _open_to("sleep", fighter) and not hooks.ability(fighter, "blocks_ailment", "sleep",
+                                                                                default=False):
             _inflict("sleep", fighter, side, rng)
             events.append(YawnSleep(turn, side, fighter.combatant.name))
 
@@ -552,6 +613,35 @@ def _trick_room_upkeep(turn: int, arena: "_Arena", events: list[Event]) -> None:
     arena.trick_room -= 1
     if arena.trick_room == 0:
         events.append(TrickRoomEnd(turn))
+
+
+def _terrain_upkeep(turn: int, fighters: tuple["_Fighter", "_Fighter"], events: list[Event],
+                    rng: random.Random) -> None:
+    for side, fighter in enumerate(fighters):
+        if fighter.hp > 0:
+            events.extend(_field(fighter, "end_of_turn", fighter, side, turn, rng))
+
+
+def _side_upkeep(turn: int, arena: "_Arena", events: list[Event]) -> None:
+    for side, states in enumerate(arena.sides):
+        for kind in list(states):
+            states[kind] -= 1
+            if states[kind] == 0:
+                del states[kind]
+                events.append(FieldEnd(turn, kind, side))
+
+
+def _field_upkeep(turn: int, arena: "_Arena", events: list[Event]) -> None:
+    """Gravity, then the terrain."""
+    if arena.gravity:
+        arena.gravity -= 1
+        if arena.gravity == 0:
+            events.append(FieldEnd(turn, "gravity"))
+    if arena.terrain is not None:
+        arena.terrain_turns -= 1
+        if arena.terrain_turns == 0:
+            events.append(FieldEnd(turn, arena.terrain))
+            arena.terrain = None
 
 
 def _enter_forms(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
@@ -568,7 +658,8 @@ def _enter_forms(team: "_Team", side: int, turn: int, events: list[Event]) -> No
 
 
 def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
-    """A Pokémon that just entered keeps its HP share and status; its Mega form replaces the base stats and types."""
+    """A Pokémon that just entered keeps its HP share, status and stat stages (a Sticky Web drop); its Mega form
+    replaces the base stats and types."""
     fighter = team.active
     mega = fighter.combatant.mega
     if mega is None or (team.mega_used and not team.unlimited_megas):
@@ -577,7 +668,9 @@ def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> No
     if mega.ability_id is not None:
         ability = mega.ability_id if mega.ability_id in abilities.NAMES else None
     evolved = replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None, tera=False)
-    team.fighters[team.current] = _Fighter.enter(evolved, _carry_of(fighter))
+    mega_fighter = _Fighter.enter(evolved, _carry_of(fighter))
+    mega_fighter.stages = fighter.stages
+    team.place(team.current, mega_fighter)
     team.mega_used = True
     if mega.kind == "stellar":
         events.append(FormShift(turn, side, fighter.combatant.name, "stellar", mega.form_id))
@@ -593,10 +686,22 @@ class _Weather:
 
 @dataclass
 class _Arena:
-    """`trick_room` is the turns it has left; `rocks[side]` means Stealth Rock lies on that side."""
+    """The field. `trick_room`, `gravity` and `terrain_turns` are the turns left; `sides[side]` maps each timed side
+    state (a screen, Tailwind, Safeguard, Mist, Lucky Chant) to its turns left and `hazards[side]` each hazard to
+    its layers, in the order they were set. `log` collects the events a move's handlers make mid-action."""
 
     trick_room: int = 0
-    rocks: list[bool] = field(default_factory=lambda: [False, False])
+    gravity: int = 0
+    terrain: str | None = None
+    terrain_turns: int = 0
+    sides: list[dict[str, int]] = field(default_factory=lambda: [{}, {}])
+    hazards: list[dict[str, int]] = field(default_factory=lambda: [{}, {}])
+    turn: int = 0
+    log: list = field(default_factory=list)
+
+    def states(self, side: int) -> tuple[str, ...]:
+        """The effect keys of the states that act on `side`: the terrain, Gravity, then that side's timed states."""
+        return (*((self.terrain,) if self.terrain else ()), *(("gravity",) if self.gravity else ()), *self.sides[side])
 
 
 class _Team:
@@ -606,22 +711,28 @@ class _Team:
     or not one before it used the team's."""
 
     def __init__(self, roster: tuple[Combatant, ...], carried: Sequence[Carry | None] = (), finale: int | None = None,
-                 unlimited_megas: bool = False):
+                 unlimited_megas: bool = False, arena: _Arena | None = None, side: int = 0):
         self.roster = roster
         self.carried = tuple(carried) + (None,) * (len(roster) - len(carried))
-        self.fighters = {0: _Fighter.enter(roster[0], self.carried[0])}
+        self.arena, self.side = arena, side
+        self.fighters: dict[int, _Fighter] = {}
+        self.place(0, _Fighter.enter(roster[0], self.carried[0]))
         self.current = 0
         self.queue = list(range(1, len(roster)))
         self.mega_used = False
         self.unlimited_megas = unlimited_megas
         self.finale = finale
-        self.trick_room_used = False
-        self.rocks_used = False
+        self.used: set[str] = set()
         self.fallen_before = 0
 
     @property
     def active(self) -> "_Fighter":
         return self.fighters[self.current]
+
+    def place(self, index: int, fighter: "_Fighter") -> None:
+        """Puts `fighter` in roster slot `index`, under this side's field states."""
+        fighter.arena, fighter.side = self.arena, self.side
+        self.fighters[index] = fighter
 
     def start_turn(self) -> None:
         """Clears the active member's this-turn state and tells it how many teammates have fainted so far and
@@ -647,7 +758,7 @@ class _Team:
             return True
         if index == self.finale:
             self.mega_used = False
-        self.fighters[index] = _Fighter.enter(self.roster[index], self.carried[index])
+        self.place(index, _Fighter.enter(self.roster[index], self.carried[index]))
         return False
 
     def pivot_target(self) -> int | None:
@@ -705,6 +816,8 @@ class _Fighter:
     fallen_allies: int = 0
     ally_fell_last_turn: bool = False
     item_lost: bool = False
+    arena: _Arena | None = field(default=None, repr=False, compare=False)
+    side: int = field(default=0, repr=False, compare=False)
 
     def leave(self) -> None:
         """Switching out clears stat stages, the Choice lock, confusion, the toxic count, drowsiness and what this
@@ -753,7 +866,10 @@ class _Fighter:
         value = self.stats[key] * ((2 + stage) / 2 if stage >= 0 else 2 / (2 - stage)) * multiplier
         if key == "speed" and self.status == "paralysis":
             value /= 2
-        return value * hooks.ability(self, "modify_stat", *context, default=1.0)
+        terrain = self.arena.terrain if self.arena is not None else None
+        return (value * hooks.ability(self, "modify_stat", *context, default=1.0)
+                * hooks.ability(self, "field_stat", key, weather, terrain, default=1.0)
+                * math.prod(_field(self, "side_stat", key)))
 
 
 def _carry_of(fighter: _Fighter) -> Carry | None:
@@ -794,8 +910,12 @@ def _turn_order(fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, 
 def _priority(fighter: _Fighter, choice: int | None) -> int:
     if choice is None:
         return 0
-    move = fighter.combatant.moves[choice]
-    return move.priority + hooks.ability(fighter, "modify_priority", move, fighter, default=0)
+    return _move_priority(fighter, fighter.combatant.moves[choice])
+
+
+def _move_priority(fighter: _Fighter, move: Move) -> int:
+    return (move.priority + hooks.ability(fighter, "modify_priority", move, fighter, default=0)
+            + hooks.move(move, "modify_priority", fighter, default=0))
 
 
 def _quick_claws(turn: int, fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
@@ -892,19 +1012,25 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
             turn, side, *names, move="", defender_hp=defender.hp_percent, blocked=blocked, recovered=recovered,
             attacker_hp=attacker.hp_percent, attacker_fainted=attacker.hp == 0,
         )
-    move = move_power.typed(move, weather.kind)
+    move = move_power.typed(move, weather.kind, attacker)
     if index is not None:
         attacker.pp[index] -= 1
         if hooks.item(attacker, "locks_move", default=False):
             attacker.locked = index
+    stopped = _stopped(attacker, defender, move)
+    if stopped:
+        return Action(turn, side, *names, move.name, failed=True, blocked=stopped, recovered=recovered,
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     used = hooks.move(move, "use", attacker, defender, side, turn, weather, arena if arena is not None else _Arena(),
                       rng)
     if used is not None:
         return Action(turn, side, *names, move.name, recovered=recovered, defender_hp=defender.hp_percent,
                       attacker_hp=attacker.hp_percent, **used)
+    hooks.move(move, "before_hit", attacker, defender)
     multiplier = _multiplier(move, defender, weather.kind)
     accuracy = (move.accuracy or 0) * (hooks.item(attacker, "accuracy_as_user", default=1.0)
-                                       * hooks.item(defender, "accuracy_as_target", default=1.0))
+                                       * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(
+        _field(attacker, "modify_accuracy"))
     if (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
             and rng.random() * 100 >= accuracy):
         return Action(turn, side, *names, move.name, missed=True, multiplier=multiplier, recovered=recovered,
@@ -917,10 +1043,11 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
                       ability=defender.ability if granted else None)
     critical, hits, dealt, sturdy, endured, berry = False, 0, 0, False, "", ""
     resisted = defender.item if hooks.item(defender, "resists", move.type, multiplier, default=False) else ""
-    crit_stage = move.crit_stage + hooks.item(attacker, "crit_stage", default=0)
+    crit_stage = hooks.move(move, "crit_stage", default=move.crit_stage) + hooks.item(attacker, "crit_stage", default=0)
+    no_crit = any(_field(defender, "guards_crit"))
     hit_count = _hit_count(move, rng)
     for hit in range(hit_count):
-        hit_critical = rng.random() < CRITICAL_CHANCES[min(crit_stage, len(CRITICAL_CHANCES) - 1)]
+        hit_critical = rng.random() < CRITICAL_CHANCES[min(crit_stage, len(CRITICAL_CHANCES) - 1)] and not no_crit
         damage = _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng, hit)
         if resisted and hit == 0:
             damage, defender.item = max(1, int(damage * items.RESIST_BERRY_MULTIPLIER)), None
@@ -959,7 +1086,7 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
         attacker.hp = min(attacker.max_hp, attacker.hp + hooks.item(attacker, "modify_drain", healed, default=healed))
     attacker_item = _attacker_item_effect(attacker, move, dealt, drained)
     defender_item = endured or _defender_item_effect(defender, move, multiplier, dealt) or berry or resisted
-    hooks.move(move, "after_move", attacker, defender, dealt)
+    changes = (*changes, *(hooks.move(move, "after_move", attacker, defender, dealt) or ()))
     return Action(
         turn, side, *names, move.name, multiplier=multiplier, critical=critical, changes=changes, recoil=recoil,
         defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
@@ -998,6 +1125,9 @@ def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tupl
             return (), "freeze"
         attacker.status = None
         recovered.append("freeze")
+    banned = _banned(attacker, move)
+    if banned:
+        return tuple(recovered), banned
     if attacker.confusion_left > 0:
         attacker.confusion_left -= 1
         if attacker.confusion_left == 0:
@@ -1019,13 +1149,13 @@ def _hit_count(move: Move, rng: random.Random) -> int:
 
 def _damage(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float, critical: bool,
             weather: str | None, rng: random.Random, hit: int | None = None) -> int:
-    damage = _unrolled_damage(attacker, defender, move, multiplier, weather, hit)
+    damage = _unrolled_damage(attacker, defender, move, multiplier, weather, hit, critical)
     damage *= (CRITICAL_MULTIPLIER if critical else 1.0) * rng.randint(85, 100) / 100
     return max(1, int(damage))
 
 
 def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float,
-                     weather: str | None, hit: int | None = None) -> float:
+                     weather: str | None, hit: int | None = None, critical: bool = False) -> float:
     """`move` is already `move_power.typed`; `hit` is the 0-based hit of a multi-hit move (None: the mean hit)."""
     attack, defense = _stats_for(attacker, defender, move.physical, weather, _ignores_burn(move))
     level = attacker.combatant.level
@@ -1034,7 +1164,21 @@ def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multipl
     return (
         damage * _stab(attacker, move) * multiplier * _weather_boost(move, weather)
         * _damage_taken(defender, move) * _item_boost(attacker, move, multiplier)
+        * _screen(attacker, defender, move, critical)
     )
+
+
+def _screen(attacker: _Fighter, defender: _Fighter, move: Move, critical: bool) -> float:
+    """The strongest screen on the defender's side (Aurora Veil does not stack with Reflect or Light Screen). A critical
+    hit, a hit on itself (confusion) and an Infiltrator pass it."""
+    screens = _field(defender, "screen", move)
+    if not screens or critical or attacker is defender or _infiltrates(attacker):
+        return 1.0
+    return min(screens)
+
+
+def _infiltrates(fighter: _Fighter) -> bool:
+    return hooks.ability(fighter, "infiltrates", default=False)
 
 
 def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fighter,
@@ -1042,7 +1186,7 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
     """The effects that landed, and the defender's ability if it stopped the move's ailment."""
     changes: list[Change] = []
     blocked_by = None
-    if _ailment_lands(move, defender, rng):
+    if _ailment_lands(move, attacker, defender, rng):
         if hooks.ability(defender, "blocks_ailment", move.ailment, default=False):
             blocked_by = defender.ability
         else:
@@ -1052,7 +1196,10 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
         changes.append(Change(1 - side, defender.combatant.name, "thaw"))
     if move.stat_changes and rng.random() * 100 < move.stat_chance:
         target, target_side = (attacker, side) if move.stat_on_user else (defender, 1 - side)
+        guarded = not move.stat_on_user and _stats_guarded(defender, not _infiltrates(attacker))
         for key, stages in move.stat_changes:
+            if guarded and stages < 0:
+                continue
             before = target.stages[key]
             target.stages[key] = max(-MAX_STAGE, min(MAX_STAGE, before + stages))
             target.lowered = target.lowered or target.stages[key] < before
@@ -1066,16 +1213,24 @@ def _contact_effect(side: int, move: Move, attacker: _Fighter, defender: _Fighte
     return hooks.ability(defender, "on_contact", side, move, attacker, defender, rng)
 
 
-def _ailment_lands(move: Move, defender: _Fighter, rng: random.Random) -> bool:
+def _ailment_lands(move: Move, attacker: _Fighter, defender: _Fighter, rng: random.Random) -> bool:
     if move.ailment not in AILMENT_IMMUNE_TYPES:
         return False
-    return _open_to(move.ailment, defender) and rng.random() * 100 < move.ailment_chance
+    return _open_to(move.ailment, defender, not _infiltrates(attacker)) and rng.random() * 100 < move.ailment_chance
 
 
-def _open_to(ailment: str, fighter: _Fighter) -> bool:
+def _open_to(ailment: str, fighter: _Fighter, by_foe: bool = False) -> bool:
+    """Whether `fighter` can get `ailment` now. `by_foe`: a foe inflicts it and its side's guards (Safeguard) count."""
     if any(kind in fighter.combatant.types for kind in AILMENT_IMMUNE_TYPES[ailment]):
         return False
+    if any(_field(fighter, "guards_ailment", ailment, fighter, by_foe)):
+        return False
     return fighter.confusion_left == 0 if ailment == "confusion" else fighter.status is None
+
+
+def _stats_guarded(fighter: _Fighter, by_foe: bool = True) -> bool:
+    """Whether a foe cannot lower `fighter`'s stats now (Mist)."""
+    return by_foe and any(_field(fighter, "guards_stats"))
 
 
 def _inflict(ailment: str, defender: _Fighter, side: int, rng: random.Random) -> Change:
@@ -1094,7 +1249,8 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
     has come: Trick Room on its first turn in when its team is slower than the foe and none has been set, Stealth Rock
     once while the foe has members to come, Swords Dance once per entry above half HP and below +6 Attack, Yawn on a
     foe with no status, Thunder Wave on a faster foe it can
-    paralyze. A self-KO move only when it surely knocks the foe out (and no other move does) or the user is at 1/3 HP
+    paralyze, then the field and side moves by their own `wanted` (a screen once on entry, each hazard until its
+    layers are full, a terrain that helps it, Rapid Spin or Defog to clear its own hazards). A self-KO move only when it surely knocks the foe out (and no other move does) or the user is at 1/3 HP
     or less, never by the side's last member. Then a pivot move when the foe has a
     super-effective hit on it and a member of its group can come in. Otherwise `_best_move`."""
     team, foes = teams[side], teams[1 - side]
@@ -1112,10 +1268,11 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
         return best
     if best is not None and _surely_finishes(attacker, defender, attacker.combatant.moves[best], weather):
         return best
-    for effect in STATUS_EFFECTS:
+    for effect in (*STATUS_EFFECTS, *CHOSEN_DAMAGE_EFFECTS):
         index = _usable(attacker, effect)
-        if index is not None and hooks.move(attacker.combatant.moves[index], "wanted", team, foes, side, arena, weather,
-                                            default=False):
+        if index is None or _banned(attacker, attacker.combatant.moves[index]):
+            continue
+        if hooks.move(attacker.combatant.moves[index], "wanted", team, foes, side, arena, weather, default=False):
             return index
     pivot = _usable(attacker, "pivot")
     if pivot is not None and team.pivot_target() is not None and _threatened(attacker, defender, weather):
@@ -1125,16 +1282,15 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
     return best
 
 
-def _paralyzable(move: Move, fighter: _Fighter) -> bool:
-    """Thunder Wave fails on a Pokémon with a status, an Electric type, one its type cannot touch (Ground) or an
-    ability that blocks paralysis."""
-    return (fighter.status is None and "electric" not in fighter.combatant.types
-            and effectiveness(move.type, fighter.combatant.types) > 0
+def _paralyzable(move: Move, fighter: _Fighter, by_foe: bool = True) -> bool:
+    """Thunder Wave fails on a Pokémon with a status, an Electric type, one its type cannot touch (Ground), one a
+    state guards or an ability that blocks paralysis."""
+    return (_open_to("paralysis", fighter, by_foe) and effectiveness(move.type, fighter.combatant.types) > 0
             and not hooks.ability(fighter, "blocks_ailment", "paralysis", default=False))
 
 
-def _yawnable(fighter: _Fighter) -> bool:
-    return (fighter.status is None and not fighter.drowsy_at
+def _yawnable(fighter: _Fighter, by_foe: bool = True) -> bool:
+    return (_open_to("sleep", fighter, by_foe) and not fighter.drowsy_at
             and not hooks.ability(fighter, "blocks_ailment", "sleep", default=False))
 
 
@@ -1145,7 +1301,7 @@ def _usable(fighter: _Fighter, effect: str) -> int | None:
 
 def _threatened(fighter: _Fighter, foe: _Fighter, weather: str | None) -> bool:
     """Whether `foe` has a super-effective damaging move with PP against `fighter`."""
-    return any(_multiplier(move_power.typed(move, weather), fighter, weather) > 1
+    return any(_multiplier(move_power.typed(move, weather, foe), fighter, weather) > 1
                for index, move in enumerate(foe.combatant.moves)
                if foe.pp[index] > 0 and move.power and not move.weather and move.effect not in STATUS_EFFECTS)
 
@@ -1183,10 +1339,11 @@ def _best_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> i
 
 def _surely_finishes(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> bool:
     """Whether a hit with the lowest damage roll that cannot miss knocks the defender out."""
-    move = move_power.typed(move, weather)
+    move = move_power.typed(move, weather, attacker)
     never_misses = move.accuracy in (None, 100) or hooks.move(move, "skips_accuracy", weather, default=False)
     damage = _unrolled_damage(attacker, defender, move, _multiplier(move, defender, weather), weather)
-    return never_misses and damage * 0.85 >= defender.hp
+    return (never_misses and damage * 0.85 >= defender.hp and not _banned(attacker, move)
+            and not _stopped(attacker, defender, move))
 
 
 def _best_weather_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> int | None:
@@ -1217,8 +1374,10 @@ def _best_score(attacker: _Fighter, defender: _Fighter, weather: str | None) -> 
 
 
 def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
-    """Power × STAB × type × weather × accuracy × attack/defense."""
-    move = move_power.typed(move, weather)
+    """Power × STAB × type × weather × accuracy × attack/defense; 0 for a move a state bans or stops."""
+    move = move_power.typed(move, weather, attacker)
+    if _banned(attacker, move) or _stopped(attacker, defender, move):
+        return 0.0
     attack, defense = _stats_for(attacker, defender, move.physical, weather, _ignores_burn(move))
     skips = move.accuracy is None or hooks.move(move, "skips_accuracy", weather, default=False)
     accuracy = 100 if skips else move.accuracy
@@ -1227,7 +1386,7 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
         _power(attacker, defender, move, weather, multiplier) * move.expected_hits * _stab(attacker, move) * multiplier
         * _weather_boost(move, weather) * _damage_taken(defender, move)
         * _item_boost(attacker, move, multiplier)
-        * accuracy * attack / max(1, defense)
+        * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False)
     )
 
 
@@ -1259,7 +1418,7 @@ def _power(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | No
     power = move_power.power(move, attacker, defender, weather, multiplier, hit)
     low_hp = attacker.hp * abilities.LOW_HP_FRACTION <= attacker.max_hp
     return power * hooks.ability(attacker, "modify_power", move.type, power, low_hp, weather, attacker.fallen_allies,
-                                 default=1.0)
+                                 default=1.0) * math.prod(_field(attacker, "field_power", move, attacker, defender))
 
 
 def _stab(attacker: _Fighter, move: Move) -> float:
@@ -1269,15 +1428,43 @@ def _stab(attacker: _Fighter, move: Move) -> float:
 
 
 def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> float:
-    """Strong winds take away the Flying type's weaknesses."""
+    """Strong winds take away the Flying type's weaknesses. A state that grounds the defender (Gravity) lets a Ground
+    move hit it through its Flying type and its airborne ability."""
     if move.type is None:
         return 1.0
-    if hooks.ability(defender, "immune_to", move.type, default=False):
+    forced_down = move.type == "ground" and any(_field(defender, "grounds"))
+    if not forced_down and hooks.ability(defender, "immune_to", move.type, default=False):
         return 0.0
     types = defender.combatant.types
-    if weather == STRONG_WINDS and effectiveness(move.type, ("flying",)) > 1:
+    if forced_down or weather == STRONG_WINDS and effectiveness(move.type, ("flying",)) > 1:
         types = tuple(kind for kind in types if kind != "flying")
     return effectiveness(move.type, types)
+
+
+def _field(fighter: _Fighter, hook: str, *args) -> list:
+    """The answers of the field and side states acting on `fighter`'s side that run `hook`, None left out."""
+    arena = fighter.arena
+    if arena is None:
+        return []
+    return [answer for state in arena.states(fighter.side)
+            if (answer := hooks.key("moves", state, hook, *args)) is not None]
+
+
+def _grounded(fighter: _Fighter) -> bool:
+    """A Flying type or an airborne ability (Levitate) floats unless a state grounds it (Gravity)."""
+    if any(_field(fighter, "grounds")):
+        return True
+    return "flying" not in fighter.combatant.types and not hooks.ability(fighter, "airborne", default=False)
+
+
+def _banned(fighter: _Fighter, move: Move) -> str:
+    """The state that keeps `fighter` from using `move` at all ("gravity"), or ""."""
+    return next(iter(_field(fighter, "bans_move", move)), "")
+
+
+def _stopped(attacker: _Fighter, defender: _Fighter, move: Move) -> str:
+    """The state that makes `move` fail on `defender` once used ("psychic-terrain"), or ""."""
+    return next(iter(_field(defender, "stops_move", move, _move_priority(attacker, move), defender)), "")
 
 
 def _stats_for(attacker: _Fighter, defender: _Fighter, physical: bool,

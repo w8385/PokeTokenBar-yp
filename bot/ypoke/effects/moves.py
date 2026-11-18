@@ -24,30 +24,15 @@ class StatusMove(Handler):
 class TrickRoom(StatusMove):
     def wanted(self, move, team, foes, side, arena, weather):
         user = team.active
-        return (user.fresh and not team.trick_room_used and not arena.trick_room
+        return (user.fresh and self.key not in team.used and not arena.trick_room
                 and battle._team_speed(team) < foes.active.stat("speed", weather))
 
     def remember(self, name, team):
-        team.trick_room_used = True
+        team.used.add(name)
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         arena.trick_room = 0 if arena.trick_room else battle.TRICK_ROOM_TURNS
         return ("trick-room" if arena.trick_room else "trick-room-off"), ()
-
-
-@register("moves", "stealth-rock")
-class StealthRock(StatusMove):
-    def wanted(self, move, team, foes, side, arena, weather):
-        return not team.rocks_used and not arena.rocks[1 - side] and foes.has_next
-
-    def remember(self, name, team):
-        team.rocks_used = True
-
-    def _apply(self, move, user, foe, side, turn, arena, rng):
-        if arena.rocks[1 - side]:
-            return "", ()
-        arena.rocks[1 - side] = True
-        return "stealth-rock", ()
 
 
 @register("moves", "swords-dance")
@@ -71,7 +56,7 @@ class Yawn(StatusMove):
         return battle._yawnable(foes.active)
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
-        if not battle._yawnable(foe):
+        if not battle._yawnable(foe, not battle._infiltrates(user)):
             return "", ()
         foe.drowsy_at = turn + 1
         return "yawn", ()
@@ -84,7 +69,7 @@ class ThunderWave(StatusMove):
         return foe.stat("speed", weather) > user.stat("speed", weather) and battle._paralyzable(move, foe)
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
-        if not battle._paralyzable(move, foe):
+        if not battle._paralyzable(move, foe, not battle._infiltrates(user)):
             return "", ()
         return "thunder-wave", (battle._inflict("paralysis", foe, 1 - side, rng),)
 
@@ -103,6 +88,26 @@ class WeatherMove(Handler):
 class AlwaysHitsIn(Handler):
     def skips_accuracy(self, move, weather):
         return weather in move.always_hits_in
+
+
+@register("moves", "always-crit")
+class AlwaysCrit(Handler):
+    """PokéAPI gives some always-crit moves no crit rate."""
+
+    by_id = True
+
+    def crit_stage(self, move):
+        return len(battle.CRITICAL_CHANCES) - 1
+
+
+@register("moves", "never-miss")
+class NeverMiss(Handler):
+    """PokéAPI gives some never-miss moves an accuracy of 0."""
+
+    by_id = True
+
+    def skips_accuracy(self, move, weather):
+        return True
 
 
 @register("moves", "pivot")
@@ -132,7 +137,7 @@ class Facade(PowerRule):
 
 @register("moves", "weather-ball")
 class WeatherBall(PowerRule):
-    def modify_type(self, move, weather):
+    def modify_type(self, move, weather, user):
         kind = move_power.WEATHER_BALL_TYPES.get(weather)
         return move if kind is None else replace(move, type=kind)
 

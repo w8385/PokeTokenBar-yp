@@ -221,6 +221,19 @@ FOCUS_CASES = {
               ((6, None, None, [240, 241, 53, 58]), (9, None, None, [240, 57]))),
     "thaw": (((131, None, None, [58, 369]), (6, None, None, [53, 517])),
              ((3, "leftovers", None, [33]), (143, "sitrus-berry", None, [33]))),
+    "veil-mist": (((5, "light-clay", "snow-warning", [694, 58]), (23, None, None, [54, 57])),
+                  ((2, None, "infiltrator", [196, 53]), (20, None, None, [196]))),
+    "gravity-terrain": (((8, "terrain-extender", "misty-surge", [356, 89]), (11, None, None, [281, 89])),
+                        ((9, None, None, [86, 65]), (17, None, "levitate", [86, 85]), (27, None, None, [281, 17]))),
+    "terrain-moves": (((8, None, "electric-surge", [804, 875]), (17, None, "psychic-surge", [797, 857]),
+                       (20, None, "misty-surge", [802, 805])),
+                      ((5, None, "grassy-surge", [803, 89]), (23, None, "grass-pelt", [798, 830]),
+                       (2, None, "hadron-engine", [805, 85]))),
+    "sand-force": (((9, None, "sand-force", [89, 65]),), ((5, None, "sand-stream", [58]), (23, None, None, [57]))),
+    "hazards": (((54, None, None, [191, 390, 564, 446]), (36, "light-clay", None, [115, 113, 280]),
+                 (18, None, None, [366, 432, 89])),
+                ((18, None, None, [89]), (7, None, None, [866, 89]), (54, "heavy-duty-boots", "screen-cleaner",
+                                                                         [756, 89]))),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

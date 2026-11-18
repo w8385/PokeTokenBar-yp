@@ -16,9 +16,23 @@ EXPLOSION = 153
 JUDGMENT = 449
 IVY_CUDGEL = 904
 DRAGON_ASCENT = 620
-STATUS_EFFECTS = ("trick-room", "stealth-rock", "swords-dance", "yawn", "thunder-wave")
-DAMAGE_EFFECTS = ("pivot", "self-ko")
-EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, "damage", "struggle", "judgment", "ivy-cudgel"})
+FLOWER_TRICK = 870
+STATUS_EFFECTS = (
+    "trick-room", "stealth-rock", "swords-dance", "yawn", "thunder-wave",
+    "electric-terrain", "grassy-terrain", "psychic-terrain", "misty-terrain", "reflect", "light-screen", "aurora-veil",
+    "spikes", "toxic-spikes", "sticky-web", "tailwind", "safeguard", "mist", "lucky-chant", "gravity", "haze", "defog",
+    "court-change", "tidy-up",
+)
+# Damaging moves the chooser may pick for their effect, like a status move.
+CHOSEN_DAMAGE_EFFECTS = ("rapid-spin", "mortal-spin")
+DAMAGE_EFFECTS = ("pivot", "self-ko", *CHOSEN_DAMAGE_EFFECTS)
+# Keys found by the move's id rather than its `effect`.
+ID_KEYS = frozenset({
+    "always-crit", "never-miss", "rising-voltage", "expanding-force", "terrain-pulse", "grassy-glide",
+    "misty-explosion", "psyblade", "steel-roller", "ice-spinner", "stone-axe", "ceaseless-edge", "screen-breaker",
+})
+EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "struggle", "judgment",
+                         "ivy-cudgel"})
 # Punching Glove boosts these.
 PUNCH_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
                         if "punch" in entry.get("flags", ()))

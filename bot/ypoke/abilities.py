@@ -7,7 +7,8 @@ from ypoke.effects import hooks
 EFFECT_KEYS = frozenset({
     "pinch-type-boost", "intimidate", "type-immunity", "attack-doubled", "type-resist", "technician", "sturdy",
     "adaptability", "guts", "weather-speed", "weather-on-entry", "contact-ailment", "ailment-block", "sand-force",
-    "weather-chip-immune", "gale-wings", "supreme-overlord",
+    "weather-chip-immune", "gale-wings", "supreme-overlord", "terrain-on-entry", "field-stat", "screen-cleaner",
+    "infiltrator", "airborne",
 })
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
@@ -28,6 +29,10 @@ IMMUNE_TYPE = battle_data.args("abilities", "type-immunity", "type")
 AILMENT_BLOCKED = battle_data.args("abilities", "ailment-block", "ailments")
 CONTACT_AILMENT = battle_data.args("abilities", "contact-ailment", "ailment")
 CONTACT_CHANCE = 0.3
+TERRAIN_ON_ENTRY = battle_data.args("abilities", "terrain-on-entry", "terrain")
+FIELD_STAT_STATE = battle_data.args("abilities", "field-stat", "field")
+FIELD_STAT_STAT = battle_data.args("abilities", "field-stat", "stat")
+FIELD_STAT_MULTIPLIER = battle_data.args("abilities", "field-stat", "multiplier")
 
 NAMES = battle_data.bot_names("abilities")
 

@@ -132,8 +132,11 @@ with `machine=1`, which apps that know TMs send) every move it learns by machine
 Without `machine=1` the list is level-up moves only. Both come from the newest main game that has level-up moves
 for it. Attacking moves only, plus the weather moves (Sunny Day, Rain Dance, Sandstorm,
 Hail, Snowscape), which come with `"power": 0` and `"damage_class": "status"`. With `status=1` (apps that show
-status moves send it) the battle's status moves follow, by id: Swords Dance (14), Thunder Wave (86), Yawn (281),
-Trick Room (433) and Stealth Rock (446). They also come with `"power": 0` and `"damage_class": "status"`, and
+status moves send it) the battle's status moves follow, by id: Swords Dance (14), Mist (54), Thunder Wave (86),
+Light Screen (113), Haze (114), Reflect (115), Spikes (191), Safeguard (219), Yawn (281), Gravity (356), Tailwind (366),
+Lucky Chant (381), Toxic Spikes (390), Defog (432), Trick Room (433), Stealth Rock (446), Sticky Web (564), Grassy
+Terrain (580), Misty Terrain (581), Electric Terrain (604), Psychic Terrain (678), Aurora Veil (694), Court Change
+(756) and Tidy Up (882). They also come with `"power": 0` and `"damage_class": "status"`, and
 `"accuracy"` is `null` for the ones that never miss. A status move is listed when the Pokémon learns it by level-up at
 or below `level`, by machine (only with `machine=1`), or as an egg move of the Pokémon or any species it evolved from
 (`"source": "egg"`, `"level": 0`). A move learnable several ways is listed once, as the first of level-up, egg,

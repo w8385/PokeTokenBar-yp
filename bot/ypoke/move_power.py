@@ -57,9 +57,10 @@ EFFECT_KEYS = frozenset({
 })
 
 
-def typed(move, weather: str | None):
-    """Weather Ball takes the weather's type; any other move comes back as it is."""
-    return hooks.move(move, "modify_type", weather, default=move)
+def typed(move, weather: str | None, user=None):
+    """Weather Ball takes the weather's type and Terrain Pulse its grounded `user`'s terrain's; any other move comes
+    back as it is."""
+    return hooks.move(move, "modify_type", weather, user, default=move)
 
 
 def power(move, user, target, weather: str | None, multiplier: float, hit: int | None = None) -> float:

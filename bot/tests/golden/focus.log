@@ -1988,3 +1988,1059 @@ Action turn=8 side=0 attacker='P131' defender='P143' move='냉동빔' multiplier
 Action turn=8 side=1 attacker='P143' defender='P131' move='몸통박치기' defender_hp=3 attacker_hp=24 move_id=33
 Action turn=9 side=0 attacker='P131' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=3 move_id=58
 result winner=0 turns=9 remaining=((3, None), (0, 0)) statuses=((None, None), (None, None))
+## focus veil-mist 0
+side=0 P5 Lv50 ('ice', 'water') item=light-clay ability=snow-warning nature=None moves=[694, 58] mega=None
+side=0 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[54, 57] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=infiltrator nature=None moves=[196, 53] mega=None
+side=1 P20 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[196] mega=None
+AbilityTrigger side=0 pokemon='P5' ability='snow-warning' weather='snow'
+Action turn=1 side=1 attacker='P2' defender='P5' move='화염방사' changes=(Change(side=0, pokemon='P5', kind='burn', stages=0),) defender_hp=86 move_id=53
+Action turn=1 side=0 attacker='P5' defender='P2' move='오로라베일' attacker_hp=86 effect='aurora-veil' move_id=694
+StatusDamage turn=1 side=0 pokemon='P5' hp=80 fainted=False
+Action turn=2 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=66 move_id=53
+Action turn=2 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=82 attacker_hp=66 move_id=58
+StatusDamage turn=2 side=0 pokemon='P5' hp=60 fainted=False
+Action turn=3 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=47 attacker_hp=82 move_id=53
+Action turn=3 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=65 attacker_hp=47 move_id=58
+StatusDamage turn=3 side=0 pokemon='P5' hp=40 fainted=False
+Action turn=4 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=27 attacker_hp=65 move_id=53
+Action turn=4 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=45 attacker_hp=27 move_id=58
+StatusDamage turn=4 side=0 pokemon='P5' hp=21 fainted=False
+Action turn=5 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=6 attacker_hp=45 move_id=53
+Action turn=5 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=29 attacker_hp=6 move_id=58
+StatusDamage turn=5 side=0 pokemon='P5' hp=0 fainted=True
+WeatherEnd turn=5 weather='snow'
+SendOut turn=5 side=0 pokemon='P23' member=1
+Action turn=6 side=1 attacker='P2' defender='P23' move='화염방사' critical=True defender_hp=66 attacker_hp=29 move_id=53
+Action turn=6 side=0 attacker='P23' defender='P2' move='흰안개' defender_hp=29 attacker_hp=66 effect='mist' move_id=54
+Action turn=7 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=42 attacker_hp=29 move_id=53
+Action turn=7 side=0 attacker='P23' defender='P2' move='파도타기' multiplier=0.5 defender_hp=19 attacker_hp=42 move_id=57
+Action turn=8 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=21 attacker_hp=19 move_id=53
+Action turn=8 side=0 attacker='P23' defender='P2' move='파도타기' multiplier=0.5 defender_hp=9 attacker_hp=21 move_id=57
+FieldEnd turn=8 kind='aurora-veil' side=0
+Action turn=9 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=0 knockout=True attacker_hp=9 move_id=53
+result winner=1 turns=9 remaining=((0, 0), (9, None)) statuses=(('burn', None), (None, None))
+## focus veil-mist 1
+side=0 P5 Lv50 ('ice', 'water') item=light-clay ability=snow-warning nature=None moves=[694, 58] mega=None
+side=0 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[54, 57] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=infiltrator nature=None moves=[196, 53] mega=None
+side=1 P20 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[196] mega=None
+AbilityTrigger side=0 pokemon='P5' ability='snow-warning' weather='snow'
+Action turn=1 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=86 move_id=53
+Action turn=1 side=0 attacker='P5' defender='P2' move='오로라베일' attacker_hp=86 effect='aurora-veil' move_id=694
+Action turn=2 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=69 move_id=53
+Action turn=2 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 critical=True defender_hp=69 attacker_hp=69 move_id=58
+Action turn=3 side=1 attacker='P2' defender='P5' move='화염방사' critical=True defender_hp=45 attacker_hp=69 move_id=53
+Action turn=3 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=49 attacker_hp=45 move_id=58
+Action turn=4 side=1 attacker='P2' defender='P5' move='화염방사' critical=True defender_hp=24 attacker_hp=49 move_id=53
+Action turn=4 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=28 attacker_hp=24 move_id=58
+Action turn=5 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=7 attacker_hp=28 move_id=53
+Action turn=5 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=7 attacker_hp=7 move_id=58
+WeatherEnd turn=5 weather='snow'
+Action turn=6 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=0 knockout=True attacker_hp=7 move_id=53
+SendOut turn=6 side=0 pokemon='P23' member=1
+Action turn=7 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=78 attacker_hp=7 move_id=53
+Action turn=7 side=0 attacker='P23' defender='P2' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=78 move_id=57
+SendOut turn=7 side=1 pokemon='P20' member=1
+Action turn=8 side=0 attacker='P23' defender='P20' move='흰안개' attacker_hp=78 effect='mist' move_id=54
+Action turn=8 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=77 move_id=196
+FieldEnd turn=8 kind='aurora-veil' side=0
+Action turn=9 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=91 attacker_hp=77 move_id=57
+Action turn=9 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 critical=True defender_hp=70 attacker_hp=91 move_id=196
+Action turn=10 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=82 attacker_hp=70 move_id=57
+Action turn=10 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=66 attacker_hp=82 move_id=196
+Action turn=11 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=73 attacker_hp=66 move_id=57
+Action turn=11 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=62 attacker_hp=73 move_id=196
+Action turn=12 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=64 attacker_hp=62 move_id=57
+Action turn=12 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=58 attacker_hp=64 move_id=196
+FieldEnd turn=12 kind='mist' side=0
+Action turn=13 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=56 attacker_hp=58 move_id=57
+Action turn=13 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=54 attacker_hp=56 move_id=196
+Action turn=14 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=51 attacker_hp=56 move_id=196
+Action turn=14 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=47 attacker_hp=51 move_id=57
+Action turn=15 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=46 attacker_hp=47 move_id=196
+Action turn=15 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=39 attacker_hp=46 move_id=57
+Action turn=16 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=42 attacker_hp=39 move_id=196
+Action turn=16 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=30 attacker_hp=42 move_id=57
+Action turn=17 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 critical=True changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=36 attacker_hp=30 move_id=196
+Action turn=17 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=21 attacker_hp=36 move_id=57
+Action turn=18 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=33 attacker_hp=21 move_id=196
+Action turn=18 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=14 attacker_hp=33 move_id=57
+Action turn=19 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=29 attacker_hp=14 move_id=196
+Action turn=19 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=5 attacker_hp=29 move_id=57
+Action turn=20 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=25 attacker_hp=5 move_id=196
+Action turn=20 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=25 move_id=57
+result winner=0 turns=20 remaining=((0, 25), (0, 0)) statuses=((None, None), (None, None))
+## focus veil-mist 2
+side=0 P5 Lv50 ('ice', 'water') item=light-clay ability=snow-warning nature=None moves=[694, 58] mega=None
+side=0 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[54, 57] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=infiltrator nature=None moves=[196, 53] mega=None
+side=1 P20 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[196] mega=None
+AbilityTrigger side=0 pokemon='P5' ability='snow-warning' weather='snow'
+Action turn=1 side=0 attacker='P5' defender='P2' move='오로라베일' effect='aurora-veil' move_id=694
+Action turn=1 side=1 attacker='P2' defender='P5' move='화염방사' changes=(Change(side=0, pokemon='P5', kind='burn', stages=0),) defender_hp=88 move_id=53
+StatusDamage turn=1 side=0 pokemon='P5' hp=81 fainted=False
+Action turn=2 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=80 attacker_hp=81 move_id=58
+Action turn=2 side=1 attacker='P2' defender='P5' move='화염방사' critical=True defender_hp=61 attacker_hp=80 move_id=53
+StatusDamage turn=2 side=0 pokemon='P5' hp=55 fainted=False
+Action turn=3 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=59 attacker_hp=55 move_id=58
+Action turn=3 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=42 attacker_hp=59 move_id=53
+StatusDamage turn=3 side=0 pokemon='P5' hp=36 fainted=False
+Action turn=4 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=39 attacker_hp=36 move_id=58
+Action turn=4 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=22 attacker_hp=39 move_id=53
+StatusDamage turn=4 side=0 pokemon='P5' hp=16 fainted=False
+Action turn=5 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=21 attacker_hp=16 move_id=58
+Action turn=5 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=2 attacker_hp=21 move_id=53
+StatusDamage turn=5 side=0 pokemon='P5' hp=0 fainted=True
+WeatherEnd turn=5 weather='snow'
+SendOut turn=5 side=0 pokemon='P23' member=1
+Action turn=6 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=78 attacker_hp=21 move_id=53
+Action turn=6 side=0 attacker='P23' defender='P2' move='흰안개' defender_hp=21 attacker_hp=78 effect='mist' move_id=54
+Action turn=7 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=55 attacker_hp=21 move_id=53
+Action turn=7 side=0 attacker='P23' defender='P2' move='파도타기' multiplier=0.5 defender_hp=10 attacker_hp=55 move_id=57
+Action turn=8 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=30 attacker_hp=10 move_id=53
+Action turn=8 side=0 attacker='P23' defender='P2' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=30 move_id=57
+FieldEnd turn=8 kind='aurora-veil' side=0
+SendOut turn=8 side=1 pokemon='P20' member=1
+Action turn=9 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=26 move_id=196
+Action turn=9 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=92 attacker_hp=26 move_id=57
+Action turn=10 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=21 attacker_hp=92 move_id=196
+Action turn=10 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=84 attacker_hp=21 move_id=57
+FieldEnd turn=10 kind='mist' side=0
+Action turn=11 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=16 attacker_hp=84 move_id=196
+Action turn=11 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=75 attacker_hp=16 move_id=57
+Action turn=12 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=12 attacker_hp=75 move_id=196
+Action turn=12 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=67 attacker_hp=12 move_id=57
+Action turn=13 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=8 attacker_hp=67 move_id=196
+Action turn=13 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=60 attacker_hp=8 move_id=57
+Action turn=14 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=4 attacker_hp=60 move_id=196
+Action turn=14 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=52 attacker_hp=4 move_id=57
+Action turn=15 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=0 knockout=True attacker_hp=52 move_id=196
+result winner=1 turns=15 remaining=((0, 0), (0, 52)) statuses=(('burn', None), (None, None))
+## focus veil-mist 3
+side=0 P5 Lv50 ('ice', 'water') item=light-clay ability=snow-warning nature=None moves=[694, 58] mega=None
+side=0 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[54, 57] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=infiltrator nature=None moves=[196, 53] mega=None
+side=1 P20 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[196] mega=None
+AbilityTrigger side=0 pokemon='P5' ability='snow-warning' weather='snow'
+Action turn=1 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=85 move_id=53
+Action turn=1 side=0 attacker='P5' defender='P2' move='오로라베일' attacker_hp=85 effect='aurora-veil' move_id=694
+Action turn=2 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=72 move_id=53
+Action turn=2 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=81 attacker_hp=72 move_id=58
+Action turn=3 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=56 attacker_hp=81 move_id=53
+Action turn=3 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=62 attacker_hp=56 move_id=58
+Action turn=4 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=42 attacker_hp=62 move_id=53
+Action turn=4 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=45 attacker_hp=42 move_id=58
+Action turn=5 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=27 attacker_hp=45 move_id=53
+Action turn=5 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=24 attacker_hp=27 move_id=58
+WeatherEnd turn=5 weather='snow'
+Action turn=6 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=14 attacker_hp=24 move_id=53
+Action turn=6 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=4 attacker_hp=14 move_id=58
+Action turn=7 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=0 knockout=True attacker_hp=4 move_id=53
+SendOut turn=7 side=0 pokemon='P23' member=1
+Action turn=8 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=77 attacker_hp=4 move_id=53
+Action turn=8 side=0 attacker='P23' defender='P2' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=77 move_id=57
+FieldEnd turn=8 kind='aurora-veil' side=0
+SendOut turn=8 side=1 pokemon='P20' member=1
+Action turn=9 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=73 move_id=196
+Action turn=9 side=0 attacker='P23' defender='P20' move='흰안개' attacker_hp=73 effect='mist' move_id=54
+Action turn=10 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=69 move_id=196
+Action turn=10 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=92 attacker_hp=69 move_id=57
+Action turn=11 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=65 attacker_hp=92 move_id=196
+Action turn=11 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=83 attacker_hp=65 move_id=57
+Action turn=12 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=61 attacker_hp=83 move_id=196
+Action turn=12 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=76 attacker_hp=61 move_id=57
+Action turn=13 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=57 attacker_hp=76 move_id=196
+Action turn=13 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=68 attacker_hp=57 move_id=57
+FieldEnd turn=13 kind='mist' side=0
+Action turn=14 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=54 attacker_hp=68 move_id=196
+Action turn=14 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=60 attacker_hp=54 move_id=57
+Action turn=15 side=1 attacker='P20' defender='P23' move='얼어붙은바람' missed=True multiplier=0.25 defender_hp=54 attacker_hp=60 move_id=196
+Action turn=15 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=52 attacker_hp=54 move_id=57
+Action turn=16 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=49 attacker_hp=52 move_id=196
+Action turn=16 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=43 attacker_hp=49 move_id=57
+Action turn=17 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=46 attacker_hp=43 move_id=196
+Action turn=17 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=34 attacker_hp=46 move_id=57
+Action turn=18 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=42 attacker_hp=34 move_id=196
+Action turn=18 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=25 attacker_hp=42 move_id=57
+Action turn=19 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=38 attacker_hp=25 move_id=196
+Action turn=19 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=17 attacker_hp=38 move_id=57
+Action turn=20 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=34 attacker_hp=17 move_id=196
+Action turn=20 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=8 attacker_hp=34 move_id=57
+Action turn=21 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=30 attacker_hp=8 move_id=196
+Action turn=21 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=30 move_id=57
+result winner=0 turns=21 remaining=((0, 30), (0, 0)) statuses=((None, None), (None, None))
+## focus veil-mist 4
+side=0 P5 Lv50 ('ice', 'water') item=light-clay ability=snow-warning nature=None moves=[694, 58] mega=None
+side=0 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[54, 57] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=infiltrator nature=None moves=[196, 53] mega=None
+side=1 P20 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[196] mega=None
+AbilityTrigger side=0 pokemon='P5' ability='snow-warning' weather='snow'
+Action turn=1 side=0 attacker='P5' defender='P2' move='오로라베일' effect='aurora-veil' move_id=694
+Action turn=1 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=84 move_id=53
+Action turn=2 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 critical=True defender_hp=70 attacker_hp=84 move_id=58
+Action turn=2 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=68 attacker_hp=70 move_id=53
+Action turn=3 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=50 attacker_hp=68 move_id=58
+Action turn=3 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=52 attacker_hp=50 move_id=53
+Action turn=4 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 changes=(Change(side=1, pokemon='P2', kind='freeze', stages=0),) defender_hp=30 attacker_hp=52 move_id=58
+Action turn=4 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=37 recovered=('freeze',) attacker_hp=30 move_id=53
+Action turn=5 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 changes=(Change(side=1, pokemon='P2', kind='freeze', stages=0),) defender_hp=10 attacker_hp=37 move_id=58
+Action turn=5 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=22 recovered=('freeze',) attacker_hp=10 move_id=53
+WeatherEnd turn=5 weather='snow'
+Action turn=6 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=22 move_id=58
+SendOut turn=6 side=1 pokemon='P20' member=1
+Action turn=7 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 changes=(Change(side=1, pokemon='P20', kind='freeze', stages=0),) defender_hp=85 attacker_hp=22 move_id=58
+Action turn=7 side=1 attacker='P20' defender='P5' move='' defender_hp=22 blocked='freeze' attacker_hp=85
+Action turn=8 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=66 attacker_hp=22 move_id=58
+Action turn=8 side=1 attacker='P20' defender='P5' move='' defender_hp=22 blocked='freeze' attacker_hp=66
+FieldEnd turn=8 kind='aurora-veil' side=0
+Action turn=9 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=51 attacker_hp=22 move_id=58
+Action turn=9 side=1 attacker='P20' defender='P5' move='' defender_hp=22 blocked='freeze' attacker_hp=51
+Action turn=10 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=34 attacker_hp=22 move_id=58
+Action turn=10 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=19 recovered=('freeze',) attacker_hp=34 move_id=196
+Action turn=11 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=16 attacker_hp=34 move_id=196
+Action turn=11 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=18 attacker_hp=16 move_id=58
+Action turn=12 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=14 attacker_hp=18 move_id=196
+Action turn=12 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=18 failed=True attacker_hp=14 move_id=694
+Action turn=13 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=12 attacker_hp=18 move_id=196
+Action turn=13 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=18 failed=True attacker_hp=12 move_id=694
+Action turn=14 side=1 attacker='P20' defender='P5' move='얼어붙은바람' missed=True multiplier=0.25 defender_hp=12 attacker_hp=18 move_id=196
+Action turn=14 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=18 failed=True attacker_hp=12 move_id=694
+Action turn=15 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=9 attacker_hp=18 move_id=196
+Action turn=15 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=18 failed=True attacker_hp=9 move_id=694
+Action turn=16 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=7 attacker_hp=18 move_id=196
+Action turn=16 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=18 failed=True attacker_hp=7 move_id=694
+Action turn=17 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=5 attacker_hp=18 move_id=196
+Action turn=17 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=18 failed=True attacker_hp=5 move_id=694
+Action turn=18 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=3 attacker_hp=18 move_id=196
+Action turn=18 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=18 failed=True attacker_hp=3 move_id=694
+Action turn=19 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=0 knockout=True attacker_hp=18 move_id=196
+SendOut turn=19 side=0 pokemon='P23' member=1
+Action turn=20 side=1 attacker='P20' defender='P23' move='얼어붙은바람' missed=True multiplier=0.25 attacker_hp=18 move_id=196
+Action turn=20 side=0 attacker='P23' defender='P20' move='흰안개' defender_hp=18 effect='mist' move_id=54
+Action turn=21 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=96 attacker_hp=18 move_id=196
+Action turn=21 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=9 attacker_hp=96 move_id=57
+Action turn=22 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=93 attacker_hp=9 move_id=196
+Action turn=22 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=93 move_id=57
+result winner=0 turns=22 remaining=((0, 93), (0, 0)) statuses=((None, None), (None, None))
+## focus veil-mist 5
+side=0 P5 Lv50 ('ice', 'water') item=light-clay ability=snow-warning nature=None moves=[694, 58] mega=None
+side=0 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[54, 57] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=infiltrator nature=None moves=[196, 53] mega=None
+side=1 P20 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[196] mega=None
+AbilityTrigger side=0 pokemon='P5' ability='snow-warning' weather='snow'
+Action turn=1 side=0 attacker='P5' defender='P2' move='오로라베일' effect='aurora-veil' move_id=694
+Action turn=1 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=86 move_id=53
+Action turn=2 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=81 attacker_hp=86 move_id=58
+Action turn=2 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=72 attacker_hp=81 move_id=53
+Action turn=3 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=60 attacker_hp=72 move_id=58
+Action turn=3 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=56 attacker_hp=60 move_id=53
+Action turn=4 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=38 attacker_hp=56 move_id=58
+Action turn=4 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=41 attacker_hp=38 move_id=53
+Action turn=5 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=17 attacker_hp=41 move_id=58
+Action turn=5 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=27 attacker_hp=17 move_id=53
+WeatherEnd turn=5 weather='snow'
+Action turn=6 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=27 move_id=58
+SendOut turn=6 side=1 pokemon='P20' member=1
+Action turn=7 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=84 attacker_hp=27 move_id=58
+Action turn=7 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=26 attacker_hp=84 move_id=196
+Action turn=8 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=24 attacker_hp=84 move_id=196
+Action turn=8 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=67 attacker_hp=24 move_id=58
+FieldEnd turn=8 kind='aurora-veil' side=0
+Action turn=9 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=22 attacker_hp=67 move_id=196
+Action turn=9 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=49 attacker_hp=22 move_id=58
+Action turn=10 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 critical=True changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=18 attacker_hp=49 move_id=196
+Action turn=10 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=34 attacker_hp=18 move_id=58
+Action turn=11 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=16 attacker_hp=34 move_id=196
+Action turn=11 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=16 attacker_hp=16 move_id=58
+Action turn=12 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=13 attacker_hp=16 move_id=196
+Action turn=12 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=16 failed=True attacker_hp=13 move_id=694
+Action turn=13 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=10 attacker_hp=16 move_id=196
+Action turn=13 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=16 failed=True attacker_hp=10 move_id=694
+Action turn=14 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=8 attacker_hp=16 move_id=196
+Action turn=14 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=16 failed=True attacker_hp=8 move_id=694
+Action turn=15 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=5 attacker_hp=16 move_id=196
+Action turn=15 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=16 failed=True attacker_hp=5 move_id=694
+Action turn=16 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=2 attacker_hp=16 move_id=196
+Action turn=16 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=16 failed=True attacker_hp=2 move_id=694
+Action turn=17 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=0 knockout=True attacker_hp=16 move_id=196
+SendOut turn=17 side=0 pokemon='P23' member=1
+Action turn=18 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=96 attacker_hp=16 move_id=196
+Action turn=18 side=0 attacker='P23' defender='P20' move='흰안개' defender_hp=16 attacker_hp=96 effect='mist' move_id=54
+Action turn=19 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=92 attacker_hp=16 move_id=196
+Action turn=19 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=7 attacker_hp=92 move_id=57
+Action turn=20 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=88 attacker_hp=7 move_id=196
+Action turn=20 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=88 move_id=57
+result winner=0 turns=20 remaining=((0, 88), (0, 0)) statuses=((None, None), (None, None))
+## focus veil-mist 6
+side=0 P5 Lv50 ('ice', 'water') item=light-clay ability=snow-warning nature=None moves=[694, 58] mega=None
+side=0 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[54, 57] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=infiltrator nature=None moves=[196, 53] mega=None
+side=1 P20 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[196] mega=None
+AbilityTrigger side=0 pokemon='P5' ability='snow-warning' weather='snow'
+Action turn=1 side=0 attacker='P5' defender='P2' move='오로라베일' effect='aurora-veil' move_id=694
+Action turn=1 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=84 move_id=53
+Action turn=2 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=80 attacker_hp=84 move_id=58
+Action turn=2 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=70 attacker_hp=80 move_id=53
+Action turn=3 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=60 attacker_hp=70 move_id=58
+Action turn=3 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=56 attacker_hp=60 move_id=53
+Action turn=4 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=40 attacker_hp=56 move_id=58
+Action turn=4 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=41 attacker_hp=40 move_id=53
+Action turn=5 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 changes=(Change(side=1, pokemon='P2', kind='freeze', stages=0),) defender_hp=21 attacker_hp=41 move_id=58
+Action turn=5 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=26 recovered=('freeze',) attacker_hp=21 move_id=53
+WeatherEnd turn=5 weather='snow'
+Action turn=6 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=4 attacker_hp=26 move_id=58
+Action turn=6 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=11 attacker_hp=4 move_id=53
+Action turn=7 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=11 move_id=58
+SendOut turn=7 side=1 pokemon='P20' member=1
+Action turn=8 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=84 attacker_hp=11 move_id=58
+Action turn=8 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=10 attacker_hp=84 move_id=196
+FieldEnd turn=8 kind='aurora-veil' side=0
+Action turn=9 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=7 attacker_hp=84 move_id=196
+Action turn=9 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=67 attacker_hp=7 move_id=58
+Action turn=10 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=4 attacker_hp=67 move_id=196
+Action turn=10 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 changes=(Change(side=1, pokemon='P20', kind='freeze', stages=0),) defender_hp=50 attacker_hp=4 move_id=58
+Action turn=11 side=1 attacker='P20' defender='P5' move='' defender_hp=4 blocked='freeze' attacker_hp=50
+Action turn=11 side=0 attacker='P5' defender='P20' move='냉동빔' multiplier=0.5 defender_hp=33 attacker_hp=4 move_id=58
+Action turn=12 side=1 attacker='P20' defender='P5' move='' defender_hp=4 blocked='freeze' attacker_hp=33
+Action turn=12 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=4 move_id=694
+Action turn=13 side=1 attacker='P20' defender='P5' move='' defender_hp=4 blocked='freeze' attacker_hp=33
+Action turn=13 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=4 move_id=694
+Action turn=14 side=1 attacker='P20' defender='P5' move='' defender_hp=4 blocked='freeze' attacker_hp=33
+Action turn=14 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=4 move_id=694
+Action turn=15 side=1 attacker='P20' defender='P5' move='' defender_hp=4 blocked='freeze' attacker_hp=33
+Action turn=15 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=4 move_id=694
+Action turn=16 side=1 attacker='P20' defender='P5' move='' defender_hp=4 blocked='freeze' attacker_hp=33
+Action turn=16 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=4 move_id=694
+Action turn=17 side=1 attacker='P20' defender='P5' move='' defender_hp=4 blocked='freeze' attacker_hp=33
+Action turn=17 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=4 move_id=694
+Action turn=18 side=1 attacker='P20' defender='P5' move='' defender_hp=4 blocked='freeze' attacker_hp=33
+Action turn=18 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=4 move_id=694
+Action turn=19 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P5', kind='speed', stages=-1),) defender_hp=1 recovered=('freeze',) attacker_hp=33 move_id=196
+Action turn=19 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=1 move_id=694
+Action turn=20 side=1 attacker='P20' defender='P5' move='얼어붙은바람' missed=True multiplier=0.25 defender_hp=1 attacker_hp=33 move_id=196
+Action turn=20 side=0 attacker='P5' defender='P20' move='오로라베일' defender_hp=33 failed=True attacker_hp=1 move_id=694
+Action turn=21 side=1 attacker='P20' defender='P5' move='얼어붙은바람' multiplier=0.25 defender_hp=0 knockout=True attacker_hp=33 move_id=196
+SendOut turn=21 side=0 pokemon='P23' member=1
+Action turn=22 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=96 attacker_hp=33 move_id=196
+Action turn=22 side=0 attacker='P23' defender='P20' move='흰안개' defender_hp=33 attacker_hp=96 effect='mist' move_id=54
+Action turn=23 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=92 attacker_hp=33 move_id=196
+Action turn=23 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=23 attacker_hp=92 move_id=57
+Action turn=24 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=87 attacker_hp=23 move_id=196
+Action turn=24 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=12 attacker_hp=87 move_id=57
+Action turn=25 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=83 attacker_hp=12 move_id=196
+Action turn=25 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=2 attacker_hp=83 move_id=57
+Action turn=26 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=79 attacker_hp=2 move_id=196
+Action turn=26 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=79 move_id=57
+result winner=0 turns=26 remaining=((0, 79), (0, 0)) statuses=((None, None), (None, None))
+## focus veil-mist 7
+side=0 P5 Lv50 ('ice', 'water') item=light-clay ability=snow-warning nature=None moves=[694, 58] mega=None
+side=0 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[54, 57] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=infiltrator nature=None moves=[196, 53] mega=None
+side=1 P20 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[196] mega=None
+AbilityTrigger side=0 pokemon='P5' ability='snow-warning' weather='snow'
+Action turn=1 side=0 attacker='P5' defender='P2' move='오로라베일' effect='aurora-veil' move_id=694
+Action turn=1 side=1 attacker='P2' defender='P5' move='화염방사' changes=(Change(side=0, pokemon='P5', kind='burn', stages=0),) defender_hp=87 move_id=53
+StatusDamage turn=1 side=0 pokemon='P5' hp=81 fainted=False
+Action turn=2 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=83 attacker_hp=81 move_id=58
+Action turn=2 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=66 attacker_hp=83 move_id=53
+StatusDamage turn=2 side=0 pokemon='P5' hp=60 fainted=False
+Action turn=3 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 changes=(Change(side=1, pokemon='P2', kind='freeze', stages=0),) defender_hp=63 attacker_hp=60 move_id=58
+Action turn=3 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=47 recovered=('freeze',) attacker_hp=63 move_id=53
+StatusDamage turn=3 side=0 pokemon='P5' hp=41 fainted=False
+Action turn=4 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 changes=(Change(side=1, pokemon='P2', kind='freeze', stages=0),) defender_hp=44 attacker_hp=41 move_id=58
+Action turn=4 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=28 recovered=('freeze',) attacker_hp=44 move_id=53
+StatusDamage turn=4 side=0 pokemon='P5' hp=22 fainted=False
+Action turn=5 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=26 attacker_hp=22 move_id=58
+Action turn=5 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=8 attacker_hp=26 move_id=53
+StatusDamage turn=5 side=0 pokemon='P5' hp=2 fainted=False
+WeatherEnd turn=5 weather='snow'
+Action turn=6 side=0 attacker='P5' defender='P2' move='냉동빔' multiplier=0.5 defender_hp=9 attacker_hp=2 move_id=58
+Action turn=6 side=1 attacker='P2' defender='P5' move='화염방사' defender_hp=0 knockout=True attacker_hp=9 move_id=53
+SendOut turn=6 side=0 pokemon='P23' member=1
+Action turn=7 side=1 attacker='P2' defender='P23' move='화염방사' defender_hp=75 attacker_hp=9 move_id=53
+Action turn=7 side=0 attacker='P23' defender='P2' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=75 move_id=57
+SendOut turn=7 side=1 pokemon='P20' member=1
+Action turn=8 side=0 attacker='P23' defender='P20' move='흰안개' attacker_hp=75 effect='mist' move_id=54
+Action turn=8 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=72 move_id=196
+FieldEnd turn=8 kind='aurora-veil' side=0
+Action turn=9 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=92 attacker_hp=72 move_id=57
+Action turn=9 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=68 attacker_hp=92 move_id=196
+Action turn=10 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 critical=True defender_hp=80 attacker_hp=68 move_id=57
+Action turn=10 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=64 attacker_hp=80 move_id=196
+Action turn=11 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=71 attacker_hp=64 move_id=57
+Action turn=11 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=59 attacker_hp=71 move_id=196
+Action turn=12 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=62 attacker_hp=59 move_id=57
+Action turn=12 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=55 attacker_hp=62 move_id=196
+FieldEnd turn=12 kind='mist' side=0
+Action turn=13 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=54 attacker_hp=55 move_id=57
+Action turn=13 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=51 attacker_hp=54 move_id=196
+Action turn=14 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=46 attacker_hp=54 move_id=196
+Action turn=14 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=46 attacker_hp=46 move_id=57
+Action turn=15 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=42 attacker_hp=46 move_id=196
+Action turn=15 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=38 attacker_hp=42 move_id=57
+Action turn=16 side=1 attacker='P20' defender='P23' move='얼어붙은바람' missed=True multiplier=0.25 defender_hp=42 attacker_hp=38 move_id=196
+Action turn=16 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=29 attacker_hp=42 move_id=57
+Action turn=17 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=38 attacker_hp=29 move_id=196
+Action turn=17 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=21 attacker_hp=38 move_id=57
+Action turn=18 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 critical=True changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=31 attacker_hp=21 move_id=196
+Action turn=18 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=13 attacker_hp=31 move_id=57
+Action turn=19 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 changes=(Change(side=0, pokemon='P23', kind='speed', stages=-1),) defender_hp=27 attacker_hp=13 move_id=196
+Action turn=19 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=5 attacker_hp=27 move_id=57
+Action turn=20 side=1 attacker='P20' defender='P23' move='얼어붙은바람' multiplier=0.25 defender_hp=22 attacker_hp=5 move_id=196
+Action turn=20 side=0 attacker='P23' defender='P20' move='파도타기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=22 move_id=57
+result winner=0 turns=20 remaining=((0, 22), (0, 0)) statuses=(('burn', None), (None, None))
+## focus gravity-terrain 0
+side=0 P8 Lv50 ('ground', 'ice') item=terrain-extender ability=misty-surge nature=None moves=[356, 89] mega=None
+side=0 P11 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[281, 89] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[86, 65] mega=None
+side=1 P17 Lv50 ('fairy', 'dragon') item=None ability=levitate nature=None moves=[86, 85] mega=None
+side=1 P27 Lv50 ('flying',) item=None ability=None nature=None moves=[281, 17] mega=None
+AbilityField side=0 pokemon='P8' ability='misty-surge' terrain='misty-terrain'
+Action turn=1 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=67 move_id=65
+Action turn=1 side=0 attacker='P8' defender='P9' move='중력' attacker_hp=67 effect='gravity' move_id=356
+Action turn=2 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=32 move_id=65
+Action turn=2 side=0 attacker='P8' defender='P9' move='지진' defender_hp=54 attacker_hp=32 move_id=89
+Action turn=3 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=1 attacker_hp=54 move_id=65
+Action turn=3 side=0 attacker='P8' defender='P9' move='지진' defender_hp=10 attacker_hp=1 move_id=89
+Action turn=4 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=0 knockout=True attacker_hp=10 move_id=65
+SendOut turn=4 side=0 pokemon='P11' member=1
+Action turn=5 side=1 attacker='P9' defender='P11' move='회전부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=10 move_id=65
+result winner=1 turns=5 remaining=((0, 0), (10, None, None)) statuses=((None, None), (None, None, None))
+## focus gravity-terrain 1
+side=0 P8 Lv50 ('ground', 'ice') item=terrain-extender ability=misty-surge nature=None moves=[356, 89] mega=None
+side=0 P11 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[281, 89] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[86, 65] mega=None
+side=1 P17 Lv50 ('fairy', 'dragon') item=None ability=levitate nature=None moves=[86, 85] mega=None
+side=1 P27 Lv50 ('flying',) item=None ability=None nature=None moves=[281, 17] mega=None
+AbilityField side=0 pokemon='P8' ability='misty-surge' terrain='misty-terrain'
+Action turn=1 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=73 move_id=65
+Action turn=1 side=0 attacker='P8' defender='P9' move='중력' attacker_hp=73 effect='gravity' move_id=356
+Action turn=2 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=41 move_id=65
+Action turn=2 side=0 attacker='P8' defender='P9' move='지진' defender_hp=55 attacker_hp=41 move_id=89
+Action turn=3 side=1 attacker='P9' defender='P8' move='회전부리' critical=True defender_hp=0 knockout=True attacker_hp=55 move_id=65
+SendOut turn=3 side=0 pokemon='P11' member=1
+Action turn=4 side=1 attacker='P9' defender='P11' move='회전부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=55 move_id=65
+result winner=1 turns=4 remaining=((0, 0), (55, None, None)) statuses=((None, None), (None, None, None))
+## focus gravity-terrain 2
+side=0 P8 Lv50 ('ground', 'ice') item=terrain-extender ability=misty-surge nature=None moves=[356, 89] mega=None
+side=0 P11 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[281, 89] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[86, 65] mega=None
+side=1 P17 Lv50 ('fairy', 'dragon') item=None ability=levitate nature=None moves=[86, 85] mega=None
+side=1 P27 Lv50 ('flying',) item=None ability=None nature=None moves=[281, 17] mega=None
+AbilityField side=0 pokemon='P8' ability='misty-surge' terrain='misty-terrain'
+Action turn=1 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=75 move_id=65
+Action turn=1 side=0 attacker='P8' defender='P9' move='중력' attacker_hp=75 effect='gravity' move_id=356
+Action turn=2 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=48 move_id=65
+Action turn=2 side=0 attacker='P8' defender='P9' move='지진' defender_hp=52 attacker_hp=48 move_id=89
+Action turn=3 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=23 attacker_hp=52 move_id=65
+Action turn=3 side=0 attacker='P8' defender='P9' move='지진' defender_hp=1 attacker_hp=23 move_id=89
+Action turn=4 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=0 knockout=True attacker_hp=1 move_id=65
+SendOut turn=4 side=0 pokemon='P11' member=1
+Action turn=5 side=1 attacker='P9' defender='P11' move='회전부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=1 move_id=65
+result winner=1 turns=5 remaining=((0, 0), (1, None, None)) statuses=((None, None), (None, None, None))
+## focus gravity-terrain 3
+side=0 P8 Lv50 ('ground', 'ice') item=terrain-extender ability=misty-surge nature=None moves=[356, 89] mega=None
+side=0 P11 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[281, 89] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[86, 65] mega=None
+side=1 P17 Lv50 ('fairy', 'dragon') item=None ability=levitate nature=None moves=[86, 85] mega=None
+side=1 P27 Lv50 ('flying',) item=None ability=None nature=None moves=[281, 17] mega=None
+AbilityField side=0 pokemon='P8' ability='misty-surge' terrain='misty-terrain'
+Action turn=1 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=70 move_id=65
+Action turn=1 side=0 attacker='P8' defender='P9' move='중력' attacker_hp=70 effect='gravity' move_id=356
+Action turn=2 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=43 move_id=65
+Action turn=2 side=0 attacker='P8' defender='P9' move='지진' defender_hp=45 attacker_hp=43 move_id=89
+Action turn=3 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=13 attacker_hp=45 move_id=65
+Action turn=3 side=0 attacker='P8' defender='P9' move='지진' defender_hp=0 knockout=True attacker_hp=13 move_id=89
+SendOut turn=3 side=1 pokemon='P17' member=1
+Action turn=4 side=0 attacker='P8' defender='P17' move='지진' defender_hp=59 attacker_hp=13 move_id=89
+Action turn=4 side=1 attacker='P17' defender='P8' move='10만볼트' multiplier=0 defender_hp=13 attacker_hp=59 move_id=85
+Action turn=5 side=0 attacker='P8' defender='P17' move='지진' defender_hp=19 attacker_hp=13 move_id=89
+Action turn=5 side=1 attacker='P17' defender='P8' move='10만볼트' multiplier=0 defender_hp=13 attacker_hp=19 move_id=85
+FieldEnd turn=5 kind='gravity'
+Action turn=6 side=0 attacker='P8' defender='P17' move='중력' defender_hp=19 attacker_hp=13 effect='gravity' move_id=356
+Action turn=6 side=1 attacker='P17' defender='P8' move='10만볼트' multiplier=0 defender_hp=13 attacker_hp=19 move_id=85
+Action turn=7 side=0 attacker='P8' defender='P17' move='지진' defender_hp=0 knockout=True attacker_hp=13 move_id=89
+SendOut turn=7 side=1 pokemon='P27' member=2
+Action turn=8 side=1 attacker='P27' defender='P8' move='날개치기' defender_hp=0 knockout=True move_id=17
+FieldEnd turn=8 kind='misty-terrain'
+SendOut turn=8 side=0 pokemon='P11' member=1
+Action turn=9 side=1 attacker='P27' defender='P11' move='하품' effect='yawn' move_id=281
+Action turn=9 side=0 attacker='P11' defender='P27' move='하품' effect='yawn' move_id=281
+Action turn=10 side=1 attacker='P27' defender='P11' move='날개치기' multiplier=2.0 defender_hp=22 move_id=17
+Action turn=10 side=0 attacker='P11' defender='P27' move='지진' defender_hp=71 attacker_hp=22 move_id=89
+YawnSleep turn=10 side=0 pokemon='P11'
+YawnSleep turn=10 side=1 pokemon='P27'
+FieldEnd turn=10 kind='gravity'
+Action turn=11 side=1 attacker='P27' defender='P11' move='' defender_hp=22 blocked='sleep' attacker_hp=71
+Action turn=11 side=0 attacker='P11' defender='P27' move='' defender_hp=71 blocked='sleep' attacker_hp=22
+Action turn=12 side=1 attacker='P27' defender='P11' move='날개치기' multiplier=2.0 defender_hp=0 knockout=True recovered=('sleep',) attacker_hp=71 move_id=17
+result winner=1 turns=12 remaining=((0, 0), (0, 0, 71)) statuses=((None, 'sleep'), (None, None, None))
+## focus gravity-terrain 4
+side=0 P8 Lv50 ('ground', 'ice') item=terrain-extender ability=misty-surge nature=None moves=[356, 89] mega=None
+side=0 P11 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[281, 89] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[86, 65] mega=None
+side=1 P17 Lv50 ('fairy', 'dragon') item=None ability=levitate nature=None moves=[86, 85] mega=None
+side=1 P27 Lv50 ('flying',) item=None ability=None nature=None moves=[281, 17] mega=None
+AbilityField side=0 pokemon='P8' ability='misty-surge' terrain='misty-terrain'
+Action turn=1 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=70 move_id=65
+Action turn=1 side=0 attacker='P8' defender='P9' move='중력' attacker_hp=70 effect='gravity' move_id=356
+Action turn=2 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=44 move_id=65
+Action turn=2 side=0 attacker='P8' defender='P9' move='지진' defender_hp=60 attacker_hp=44 move_id=89
+Action turn=3 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=15 attacker_hp=60 move_id=65
+Action turn=3 side=0 attacker='P8' defender='P9' move='지진' defender_hp=17 attacker_hp=15 move_id=89
+Action turn=4 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=0 knockout=True attacker_hp=17 move_id=65
+SendOut turn=4 side=0 pokemon='P11' member=1
+Action turn=5 side=1 attacker='P9' defender='P11' move='회전부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=17 move_id=65
+result winner=1 turns=5 remaining=((0, 0), (17, None, None)) statuses=((None, None), (None, None, None))
+## focus gravity-terrain 5
+side=0 P8 Lv50 ('ground', 'ice') item=terrain-extender ability=misty-surge nature=None moves=[356, 89] mega=None
+side=0 P11 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[281, 89] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[86, 65] mega=None
+side=1 P17 Lv50 ('fairy', 'dragon') item=None ability=levitate nature=None moves=[86, 85] mega=None
+side=1 P27 Lv50 ('flying',) item=None ability=None nature=None moves=[281, 17] mega=None
+AbilityField side=0 pokemon='P8' ability='misty-surge' terrain='misty-terrain'
+Action turn=1 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=74 move_id=65
+Action turn=1 side=0 attacker='P8' defender='P9' move='중력' attacker_hp=74 effect='gravity' move_id=356
+Action turn=2 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=46 move_id=65
+Action turn=2 side=0 attacker='P8' defender='P9' move='지진' defender_hp=61 attacker_hp=46 move_id=89
+Action turn=3 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=16 attacker_hp=61 move_id=65
+Action turn=3 side=0 attacker='P8' defender='P9' move='지진' defender_hp=24 attacker_hp=16 move_id=89
+Action turn=4 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=0 knockout=True attacker_hp=24 move_id=65
+SendOut turn=4 side=0 pokemon='P11' member=1
+Action turn=5 side=1 attacker='P9' defender='P11' move='회전부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=24 move_id=65
+result winner=1 turns=5 remaining=((0, 0), (24, None, None)) statuses=((None, None), (None, None, None))
+## focus gravity-terrain 6
+side=0 P8 Lv50 ('ground', 'ice') item=terrain-extender ability=misty-surge nature=None moves=[356, 89] mega=None
+side=0 P11 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[281, 89] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[86, 65] mega=None
+side=1 P17 Lv50 ('fairy', 'dragon') item=None ability=levitate nature=None moves=[86, 85] mega=None
+side=1 P27 Lv50 ('flying',) item=None ability=None nature=None moves=[281, 17] mega=None
+AbilityField side=0 pokemon='P8' ability='misty-surge' terrain='misty-terrain'
+Action turn=1 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=66 move_id=65
+Action turn=1 side=0 attacker='P8' defender='P9' move='중력' attacker_hp=66 effect='gravity' move_id=356
+Action turn=2 side=1 attacker='P9' defender='P8' move='회전부리' critical=True defender_hp=21 move_id=65
+Action turn=2 side=0 attacker='P8' defender='P9' move='지진' defender_hp=50 attacker_hp=21 move_id=89
+Action turn=3 side=1 attacker='P9' defender='P8' move='회전부리' critical=True defender_hp=0 knockout=True attacker_hp=50 move_id=65
+SendOut turn=3 side=0 pokemon='P11' member=1
+Action turn=4 side=1 attacker='P9' defender='P11' move='회전부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=50 move_id=65
+result winner=1 turns=4 remaining=((0, 0), (50, None, None)) statuses=((None, None), (None, None, None))
+## focus gravity-terrain 7
+side=0 P8 Lv50 ('ground', 'ice') item=terrain-extender ability=misty-surge nature=None moves=[356, 89] mega=None
+side=0 P11 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[281, 89] mega=None
+side=1 P9 Lv50 ('flying',) item=None ability=None nature=None moves=[86, 65] mega=None
+side=1 P17 Lv50 ('fairy', 'dragon') item=None ability=levitate nature=None moves=[86, 85] mega=None
+side=1 P27 Lv50 ('flying',) item=None ability=None nature=None moves=[281, 17] mega=None
+AbilityField side=0 pokemon='P8' ability='misty-surge' terrain='misty-terrain'
+Action turn=1 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=69 move_id=65
+Action turn=1 side=0 attacker='P8' defender='P9' move='중력' attacker_hp=69 effect='gravity' move_id=356
+Action turn=2 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=34 move_id=65
+Action turn=2 side=0 attacker='P8' defender='P9' move='지진' defender_hp=56 attacker_hp=34 move_id=89
+Action turn=3 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=3 attacker_hp=56 move_id=65
+Action turn=3 side=0 attacker='P8' defender='P9' move='지진' defender_hp=14 attacker_hp=3 move_id=89
+Action turn=4 side=1 attacker='P9' defender='P8' move='회전부리' defender_hp=0 knockout=True attacker_hp=14 move_id=65
+SendOut turn=4 side=0 pokemon='P11' member=1
+Action turn=5 side=1 attacker='P9' defender='P11' move='회전부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=14 move_id=65
+result winner=1 turns=5 remaining=((0, 0), (14, None, None)) statuses=((None, None), (None, None, None))
+## focus terrain-moves 0
+side=0 P8 Lv50 ('ground', 'ice') item=None ability=electric-surge nature=None moves=[804, 875] mega=None
+side=0 P17 Lv50 ('fairy', 'dragon') item=None ability=psychic-surge nature=None moves=[797, 857] mega=None
+side=0 P20 Lv50 ('water', 'fairy') item=None ability=misty-surge nature=None moves=[802, 805] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=grassy-surge nature=None moves=[803, 89] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=grass-pelt nature=None moves=[798, 830] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=hadron-engine nature=None moves=[805, 85] mega=None
+AbilityField side=0 pokemon='P8' ability='electric-surge' terrain='electric-terrain'
+AbilityField side=1 pokemon='P5' ability='grassy-surge' terrain='grassy-terrain'
+Action turn=1 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=70 move_id=803
+Action turn=1 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=68 attacker_hp=70 move_id=804
+TerrainHeal turn=1 side=0 pokemon='P8' hp=76
+TerrainHeal turn=1 side=1 pokemon='P5' hp=74
+Action turn=2 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=47 attacker_hp=74 move_id=803
+Action turn=2 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=45 attacker_hp=47 move_id=804
+TerrainHeal turn=2 side=0 pokemon='P8' hp=54
+TerrainHeal turn=2 side=1 pokemon='P5' hp=51
+Action turn=3 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=27 attacker_hp=51 move_id=803
+Action turn=3 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=22 attacker_hp=27 move_id=804
+TerrainHeal turn=3 side=0 pokemon='P8' hp=33
+TerrainHeal turn=3 side=1 pokemon='P5' hp=28
+Action turn=4 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=4 attacker_hp=28 move_id=803
+Action turn=4 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=4 move_id=804
+TerrainHeal turn=4 side=0 pokemon='P8' hp=10
+SendOut turn=4 side=1 pokemon='P23' member=1
+Action turn=5 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=57 attacker_hp=10 move_id=804
+Action turn=5 side=1 attacker='P23' defender='P8' move='아이언롤러' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=57 move_id=798
+FieldEnd turn=5 kind='grassy-terrain' move='아이언롤러'
+SendOut turn=5 side=0 pokemon='P17' member=1
+AbilityField side=0 pokemon='P17' ability='psychic-surge' terrain='psychic-terrain'
+Action turn=6 side=0 attacker='P17' defender='P23' move='와이드포스' defender_hp=20 move_id=797
+Action turn=6 side=1 attacker='P23' defender='P17' move='아이언롤러' multiplier=2.0 defender_hp=63 attacker_hp=20 move_id=798
+FieldEnd turn=6 kind='psychic-terrain' move='아이언롤러'
+Action turn=7 side=0 attacker='P17' defender='P23' move='와이드포스' defender_hp=0 knockout=True attacker_hp=63 move_id=797
+SendOut turn=7 side=1 pokemon='P2' member=2
+AbilityField side=1 pokemon='P2' ability='hadron-engine' terrain='electric-terrain'
+Action turn=8 side=1 attacker='P2' defender='P17' move='대지의파동' multiplier=0.5 defender_hp=36 move_id=805
+Action turn=8 side=0 attacker='P17' defender='P2' move='와이드포스' defender_hp=76 attacker_hp=36 move_id=797
+Action turn=9 side=1 attacker='P2' defender='P17' move='대지의파동' multiplier=0.5 defender_hp=6 attacker_hp=76 move_id=805
+Action turn=9 side=0 attacker='P17' defender='P2' move='와이드포스' defender_hp=49 attacker_hp=6 move_id=797
+Action turn=10 side=1 attacker='P2' defender='P17' move='대지의파동' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=49 move_id=805
+SendOut turn=10 side=0 pokemon='P20' member=2
+AbilityField side=0 pokemon='P20' ability='misty-surge' terrain='misty-terrain'
+Action turn=11 side=1 attacker='P2' defender='P20' move='10만볼트' multiplier=2.0 defender_hp=63 attacker_hp=49 move_id=85
+Action turn=11 side=0 attacker='P20' defender='P2' move='대지의파동' defender_hp=0 knockout=True attacker_hp=63 move_id=805
+result winner=0 turns=11 remaining=((0, 0, 63), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus terrain-moves 1
+side=0 P8 Lv50 ('ground', 'ice') item=None ability=electric-surge nature=None moves=[804, 875] mega=None
+side=0 P17 Lv50 ('fairy', 'dragon') item=None ability=psychic-surge nature=None moves=[797, 857] mega=None
+side=0 P20 Lv50 ('water', 'fairy') item=None ability=misty-surge nature=None moves=[802, 805] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=grassy-surge nature=None moves=[803, 89] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=grass-pelt nature=None moves=[798, 830] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=hadron-engine nature=None moves=[805, 85] mega=None
+AbilityField side=1 pokemon='P5' ability='grassy-surge' terrain='grassy-terrain'
+AbilityField side=0 pokemon='P8' ability='electric-surge' terrain='electric-terrain'
+Action turn=1 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=81 move_id=803
+Action turn=1 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=13 attacker_hp=81 move_id=804
+Action turn=2 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=60 attacker_hp=13 move_id=803
+Action turn=2 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=60 move_id=804
+SendOut turn=2 side=1 pokemon='P23' member=1
+Action turn=3 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=60 move_id=804
+SendOut turn=3 side=1 pokemon='P2' member=2
+Action turn=4 side=1 attacker='P2' defender='P8' move='대지의파동' multiplier=0 defender_hp=60 move_id=805
+Action turn=4 side=0 attacker='P8' defender='P2' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=60 move_id=804
+result winner=0 turns=4 remaining=((60, None, None), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus terrain-moves 2
+side=0 P8 Lv50 ('ground', 'ice') item=None ability=electric-surge nature=None moves=[804, 875] mega=None
+side=0 P17 Lv50 ('fairy', 'dragon') item=None ability=psychic-surge nature=None moves=[797, 857] mega=None
+side=0 P20 Lv50 ('water', 'fairy') item=None ability=misty-surge nature=None moves=[802, 805] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=grassy-surge nature=None moves=[803, 89] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=grass-pelt nature=None moves=[798, 830] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=hadron-engine nature=None moves=[805, 85] mega=None
+AbilityField side=1 pokemon='P5' ability='grassy-surge' terrain='grassy-terrain'
+AbilityField side=0 pokemon='P8' ability='electric-surge' terrain='electric-terrain'
+Action turn=1 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=81 move_id=803
+Action turn=1 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=21 attacker_hp=81 move_id=804
+Action turn=2 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=59 attacker_hp=21 move_id=803
+Action turn=2 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+SendOut turn=2 side=1 pokemon='P23' member=1
+Action turn=3 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+SendOut turn=3 side=1 pokemon='P2' member=2
+Action turn=4 side=1 attacker='P2' defender='P8' move='대지의파동' multiplier=0 defender_hp=59 move_id=805
+Action turn=4 side=0 attacker='P8' defender='P2' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+result winner=0 turns=4 remaining=((59, None, None), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus terrain-moves 3
+side=0 P8 Lv50 ('ground', 'ice') item=None ability=electric-surge nature=None moves=[804, 875] mega=None
+side=0 P17 Lv50 ('fairy', 'dragon') item=None ability=psychic-surge nature=None moves=[797, 857] mega=None
+side=0 P20 Lv50 ('water', 'fairy') item=None ability=misty-surge nature=None moves=[802, 805] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=grassy-surge nature=None moves=[803, 89] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=grass-pelt nature=None moves=[798, 830] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=hadron-engine nature=None moves=[805, 85] mega=None
+AbilityField side=1 pokemon='P5' ability='grassy-surge' terrain='grassy-terrain'
+AbilityField side=0 pokemon='P8' ability='electric-surge' terrain='electric-terrain'
+Action turn=1 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=80 move_id=803
+Action turn=1 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=24 attacker_hp=80 move_id=804
+Action turn=2 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=59 attacker_hp=24 move_id=803
+Action turn=2 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+SendOut turn=2 side=1 pokemon='P23' member=1
+Action turn=3 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+SendOut turn=3 side=1 pokemon='P2' member=2
+Action turn=4 side=1 attacker='P2' defender='P8' move='대지의파동' multiplier=0 defender_hp=59 move_id=805
+Action turn=4 side=0 attacker='P8' defender='P2' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+result winner=0 turns=4 remaining=((59, None, None), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus terrain-moves 4
+side=0 P8 Lv50 ('ground', 'ice') item=None ability=electric-surge nature=None moves=[804, 875] mega=None
+side=0 P17 Lv50 ('fairy', 'dragon') item=None ability=psychic-surge nature=None moves=[797, 857] mega=None
+side=0 P20 Lv50 ('water', 'fairy') item=None ability=misty-surge nature=None moves=[802, 805] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=grassy-surge nature=None moves=[803, 89] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=grass-pelt nature=None moves=[798, 830] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=hadron-engine nature=None moves=[805, 85] mega=None
+AbilityField side=1 pokemon='P5' ability='grassy-surge' terrain='grassy-terrain'
+AbilityField side=0 pokemon='P8' ability='electric-surge' terrain='electric-terrain'
+Action turn=1 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=78 move_id=803
+Action turn=1 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=36 attacker_hp=78 move_id=804
+Action turn=2 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=59 attacker_hp=36 move_id=803
+Action turn=2 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+SendOut turn=2 side=1 pokemon='P23' member=1
+Action turn=3 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+SendOut turn=3 side=1 pokemon='P2' member=2
+Action turn=4 side=1 attacker='P2' defender='P8' move='대지의파동' multiplier=0 defender_hp=59 move_id=805
+Action turn=4 side=0 attacker='P8' defender='P2' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=804
+result winner=0 turns=4 remaining=((59, None, None), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus terrain-moves 5
+side=0 P8 Lv50 ('ground', 'ice') item=None ability=electric-surge nature=None moves=[804, 875] mega=None
+side=0 P17 Lv50 ('fairy', 'dragon') item=None ability=psychic-surge nature=None moves=[797, 857] mega=None
+side=0 P20 Lv50 ('water', 'fairy') item=None ability=misty-surge nature=None moves=[802, 805] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=grassy-surge nature=None moves=[803, 89] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=grass-pelt nature=None moves=[798, 830] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=hadron-engine nature=None moves=[805, 85] mega=None
+AbilityField side=1 pokemon='P5' ability='grassy-surge' terrain='grassy-terrain'
+AbilityField side=0 pokemon='P8' ability='electric-surge' terrain='electric-terrain'
+Action turn=1 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=82 move_id=803
+Action turn=1 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=18 attacker_hp=82 move_id=804
+Action turn=2 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=64 attacker_hp=18 move_id=803
+Action turn=2 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=64 move_id=804
+SendOut turn=2 side=1 pokemon='P23' member=1
+Action turn=3 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=64 move_id=804
+SendOut turn=3 side=1 pokemon='P2' member=2
+Action turn=4 side=1 attacker='P2' defender='P8' move='대지의파동' multiplier=0 defender_hp=64 move_id=805
+Action turn=4 side=0 attacker='P8' defender='P2' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=64 move_id=804
+result winner=0 turns=4 remaining=((64, None, None), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus terrain-moves 6
+side=0 P8 Lv50 ('ground', 'ice') item=None ability=electric-surge nature=None moves=[804, 875] mega=None
+side=0 P17 Lv50 ('fairy', 'dragon') item=None ability=psychic-surge nature=None moves=[797, 857] mega=None
+side=0 P20 Lv50 ('water', 'fairy') item=None ability=misty-surge nature=None moves=[802, 805] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=grassy-surge nature=None moves=[803, 89] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=grass-pelt nature=None moves=[798, 830] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=hadron-engine nature=None moves=[805, 85] mega=None
+AbilityField side=1 pokemon='P5' ability='grassy-surge' terrain='grassy-terrain'
+AbilityField side=0 pokemon='P8' ability='electric-surge' terrain='electric-terrain'
+Action turn=1 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=78 move_id=803
+Action turn=1 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=78 move_id=804
+SendOut turn=1 side=1 pokemon='P23' member=1
+Action turn=2 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=78 move_id=804
+SendOut turn=2 side=1 pokemon='P2' member=2
+Action turn=3 side=1 attacker='P2' defender='P8' move='대지의파동' multiplier=0 defender_hp=78 move_id=805
+Action turn=3 side=0 attacker='P8' defender='P2' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=78 move_id=804
+result winner=0 turns=3 remaining=((78, None, None), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus terrain-moves 7
+side=0 P8 Lv50 ('ground', 'ice') item=None ability=electric-surge nature=None moves=[804, 875] mega=None
+side=0 P17 Lv50 ('fairy', 'dragon') item=None ability=psychic-surge nature=None moves=[797, 857] mega=None
+side=0 P20 Lv50 ('water', 'fairy') item=None ability=misty-surge nature=None moves=[802, 805] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=grassy-surge nature=None moves=[803, 89] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=grass-pelt nature=None moves=[798, 830] mega=None
+side=1 P2 Lv50 ('water', 'fairy') item=None ability=hadron-engine nature=None moves=[805, 85] mega=None
+AbilityField side=1 pokemon='P5' ability='grassy-surge' terrain='grassy-terrain'
+AbilityField side=0 pokemon='P8' ability='electric-surge' terrain='electric-terrain'
+Action turn=1 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=82 move_id=803
+Action turn=1 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=18 attacker_hp=82 move_id=804
+Action turn=2 side=1 attacker='P5' defender='P8' move='그래스슬라이더' multiplier=2.0 defender_hp=62 attacker_hp=18 move_id=803
+Action turn=2 side=0 attacker='P8' defender='P5' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=62 move_id=804
+SendOut turn=2 side=1 pokemon='P23' member=1
+Action turn=3 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=2 attacker_hp=62 move_id=804
+Action turn=3 side=1 attacker='P23' defender='P8' move='아이언롤러' multiplier=2.0 defender_hp=20 attacker_hp=2 move_id=798
+FieldEnd turn=3 kind='electric-terrain' move='아이언롤러'
+Action turn=4 side=0 attacker='P8' defender='P23' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=20 move_id=804
+SendOut turn=4 side=1 pokemon='P2' member=2
+AbilityField side=1 pokemon='P2' ability='hadron-engine' terrain='electric-terrain'
+Action turn=5 side=1 attacker='P2' defender='P8' move='대지의파동' multiplier=0 defender_hp=20 move_id=805
+Action turn=5 side=0 attacker='P8' defender='P2' move='라이징볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=20 move_id=804
+result winner=0 turns=5 remaining=((20, None, None), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus sand-force 0
+side=0 P9 Lv50 ('flying',) item=None ability=sand-force nature=None moves=[89, 65] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=sand-stream nature=None moves=[58] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[57] mega=None
+AbilityTrigger side=1 pokemon='P5' ability='sand-stream' weather='sandstorm'
+Action turn=1 side=0 attacker='P9' defender='P5' move='지진' defender_hp=71 move_id=89
+Action turn=1 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=21 attacker_hp=71 move_id=58
+WeatherDamage turn=1 side=1 pokemon='P5' hp=65 fainted=False weather='sandstorm'
+Action turn=2 side=0 attacker='P9' defender='P5' move='지진' defender_hp=34 attacker_hp=21 move_id=89
+Action turn=2 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=34 move_id=58
+result winner=1 turns=2 remaining=((0,), (34, None)) statuses=((None,), (None, None))
+## focus sand-force 1
+side=0 P9 Lv50 ('flying',) item=None ability=sand-force nature=None moves=[89, 65] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=sand-stream nature=None moves=[58] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[57] mega=None
+AbilityTrigger side=1 pokemon='P5' ability='sand-stream' weather='sandstorm'
+Action turn=1 side=0 attacker='P9' defender='P5' move='지진' defender_hp=71 move_id=89
+Action turn=1 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=17 attacker_hp=71 move_id=58
+WeatherDamage turn=1 side=1 pokemon='P5' hp=65 fainted=False weather='sandstorm'
+Action turn=2 side=0 attacker='P9' defender='P5' move='지진' defender_hp=31 attacker_hp=17 move_id=89
+Action turn=2 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=31 move_id=58
+result winner=1 turns=2 remaining=((0,), (31, None)) statuses=((None,), (None, None))
+## focus sand-force 2
+side=0 P9 Lv50 ('flying',) item=None ability=sand-force nature=None moves=[89, 65] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=sand-stream nature=None moves=[58] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[57] mega=None
+AbilityTrigger side=1 pokemon='P5' ability='sand-stream' weather='sandstorm'
+Action turn=1 side=0 attacker='P9' defender='P5' move='지진' defender_hp=74 move_id=89
+Action turn=1 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=27 attacker_hp=74 move_id=58
+WeatherDamage turn=1 side=1 pokemon='P5' hp=68 fainted=False weather='sandstorm'
+Action turn=2 side=0 attacker='P9' defender='P5' move='지진' defender_hp=40 attacker_hp=27 move_id=89
+Action turn=2 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=40 move_id=58
+result winner=1 turns=2 remaining=((0,), (40, None)) statuses=((None,), (None, None))
+## focus sand-force 3
+side=0 P9 Lv50 ('flying',) item=None ability=sand-force nature=None moves=[89, 65] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=sand-stream nature=None moves=[58] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[57] mega=None
+AbilityTrigger side=1 pokemon='P5' ability='sand-stream' weather='sandstorm'
+Action turn=1 side=0 attacker='P9' defender='P5' move='지진' defender_hp=67 move_id=89
+Action turn=1 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=30 attacker_hp=67 move_id=58
+WeatherDamage turn=1 side=1 pokemon='P5' hp=61 fainted=False weather='sandstorm'
+Action turn=2 side=0 attacker='P9' defender='P5' move='지진' defender_hp=30 attacker_hp=30 move_id=89
+Action turn=2 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=30 move_id=58
+result winner=1 turns=2 remaining=((0,), (30, None)) statuses=((None,), (None, None))
+## focus sand-force 4
+side=0 P9 Lv50 ('flying',) item=None ability=sand-force nature=None moves=[89, 65] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=sand-stream nature=None moves=[58] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[57] mega=None
+AbilityTrigger side=1 pokemon='P5' ability='sand-stream' weather='sandstorm'
+Action turn=1 side=0 attacker='P9' defender='P5' move='지진' defender_hp=69 move_id=89
+Action turn=1 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=26 attacker_hp=69 move_id=58
+WeatherDamage turn=1 side=1 pokemon='P5' hp=62 fainted=False weather='sandstorm'
+Action turn=2 side=0 attacker='P9' defender='P5' move='지진' defender_hp=35 attacker_hp=26 move_id=89
+Action turn=2 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=35 move_id=58
+result winner=1 turns=2 remaining=((0,), (35, None)) statuses=((None,), (None, None))
+## focus sand-force 5
+side=0 P9 Lv50 ('flying',) item=None ability=sand-force nature=None moves=[89, 65] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=sand-stream nature=None moves=[58] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[57] mega=None
+AbilityTrigger side=1 pokemon='P5' ability='sand-stream' weather='sandstorm'
+Action turn=1 side=0 attacker='P9' defender='P5' move='지진' defender_hp=69 move_id=89
+Action turn=1 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=22 attacker_hp=69 move_id=58
+WeatherDamage turn=1 side=1 pokemon='P5' hp=63 fainted=False weather='sandstorm'
+Action turn=2 side=0 attacker='P9' defender='P5' move='지진' defender_hp=27 attacker_hp=22 move_id=89
+Action turn=2 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=27 move_id=58
+result winner=1 turns=2 remaining=((0,), (27, None)) statuses=((None,), (None, None))
+## focus sand-force 6
+side=0 P9 Lv50 ('flying',) item=None ability=sand-force nature=None moves=[89, 65] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=sand-stream nature=None moves=[58] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[57] mega=None
+AbilityTrigger side=1 pokemon='P5' ability='sand-stream' weather='sandstorm'
+Action turn=1 side=0 attacker='P9' defender='P5' move='지진' defender_hp=63 move_id=89
+Action turn=1 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=63 move_id=58
+result winner=1 turns=1 remaining=((0,), (63, None)) statuses=((None,), (None, None))
+## focus sand-force 7
+side=0 P9 Lv50 ('flying',) item=None ability=sand-force nature=None moves=[89, 65] mega=None
+side=1 P5 Lv50 ('ice', 'water') item=None ability=sand-stream nature=None moves=[58] mega=None
+side=1 P23 Lv50 ('ice', 'water') item=None ability=None nature=None moves=[57] mega=None
+AbilityTrigger side=1 pokemon='P5' ability='sand-stream' weather='sandstorm'
+Action turn=1 side=0 attacker='P9' defender='P5' move='지진' defender_hp=75 move_id=89
+Action turn=1 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=16 attacker_hp=75 move_id=58
+WeatherDamage turn=1 side=1 pokemon='P5' hp=69 fainted=False weather='sandstorm'
+Action turn=2 side=0 attacker='P9' defender='P5' move='지진' defender_hp=43 attacker_hp=16 move_id=89
+Action turn=2 side=1 attacker='P5' defender='P9' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=43 move_id=58
+result winner=1 turns=2 remaining=((0,), (43, None)) statuses=((None,), (None, None))
+## focus hazards 0
+side=0 P54 Lv50 ('normal',) item=None ability=None nature=None moves=[191, 390, 564, 446] mega=None
+side=0 P36 Lv50 ('normal',) item=light-clay ability=None nature=None moves=[115, 113, 280] mega=None
+side=0 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[366, 432, 89] mega=None
+side=1 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[89] mega=None
+side=1 P7 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[866, 89] mega=None
+side=1 P54 Lv50 ('normal',) item=heavy-duty-boots ability=screen-cleaner nature=None moves=[756, 89] mega=None
+Action turn=1 side=1 attacker='P18' defender='P54' move='지진' defender_hp=46 move_id=89
+Action turn=1 side=0 attacker='P54' defender='P18' move='스텔스록' attacker_hp=46 effect='stealth-rock' move_id=446
+Action turn=2 side=1 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True move_id=89
+SendOut turn=2 side=0 pokemon='P36' member=1
+Action turn=3 side=1 attacker='P18' defender='P36' move='지진' defender_hp=57 move_id=89
+Action turn=3 side=0 attacker='P36' defender='P18' move='리플렉터' attacker_hp=57 effect='reflect' move_id=115
+Action turn=4 side=1 attacker='P18' defender='P36' move='지진' defender_hp=36 move_id=89
+Action turn=4 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=41 attacker_hp=36 move_id=280
+Action turn=5 side=1 attacker='P18' defender='P36' move='지진' defender_hp=16 attacker_hp=41 move_id=89
+Action turn=5 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=16 move_id=280
+SendOut turn=5 side=1 pokemon='P7' member=1
+HazardDamage turn=5 side=1 pokemon='P7' hp=94 fainted=False
+Action turn=6 side=0 attacker='P36' defender='P7' move='깨뜨리다' defender_hp=76 attacker_hp=16 move_id=280
+Action turn=6 side=1 attacker='P7' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=76 move_id=89
+SendOut turn=6 side=0 pokemon='P18' member=2
+Action turn=7 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
+SendOut turn=7 side=1 pokemon='P54' member=2
+AbilityField side=1 pokemon='P54' ability='screen-cleaner' cleared=('reflect',)
+Action turn=8 side=0 attacker='P18' defender='P54' move='지진' defender_hp=54 move_id=89
+Action turn=8 side=1 attacker='P54' defender='P18' move='지진' defender_hp=62 attacker_hp=54 move_id=89
+Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=3 attacker_hp=62 move_id=89
+Action turn=9 side=1 attacker='P54' defender='P18' move='지진' defender_hp=23 attacker_hp=3 move_id=89
+Action turn=10 side=0 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True attacker_hp=23 move_id=89
+result winner=0 turns=10 remaining=((0, 0, 23), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus hazards 1
+side=0 P54 Lv50 ('normal',) item=None ability=None nature=None moves=[191, 390, 564, 446] mega=None
+side=0 P36 Lv50 ('normal',) item=light-clay ability=None nature=None moves=[115, 113, 280] mega=None
+side=0 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[366, 432, 89] mega=None
+side=1 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[89] mega=None
+side=1 P7 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[866, 89] mega=None
+side=1 P54 Lv50 ('normal',) item=heavy-duty-boots ability=screen-cleaner nature=None moves=[756, 89] mega=None
+Action turn=1 side=1 attacker='P18' defender='P54' move='지진' defender_hp=47 move_id=89
+Action turn=1 side=0 attacker='P54' defender='P18' move='스텔스록' attacker_hp=47 effect='stealth-rock' move_id=446
+Action turn=2 side=1 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True move_id=89
+SendOut turn=2 side=0 pokemon='P36' member=1
+Action turn=3 side=1 attacker='P18' defender='P36' move='지진' defender_hp=54 move_id=89
+Action turn=3 side=0 attacker='P36' defender='P18' move='리플렉터' attacker_hp=54 effect='reflect' move_id=115
+Action turn=4 side=1 attacker='P18' defender='P36' move='지진' critical=True defender_hp=0 knockout=True move_id=89
+SendOut turn=4 side=0 pokemon='P18' member=2
+Action turn=5 side=0 attacker='P18' defender='P18' move='지진' defender_hp=53 move_id=89
+Action turn=5 side=1 attacker='P18' defender='P18' move='지진' defender_hp=80 attacker_hp=53 move_id=89
+Action turn=6 side=0 attacker='P18' defender='P18' move='지진' defender_hp=1 attacker_hp=80 move_id=89
+Action turn=6 side=1 attacker='P18' defender='P18' move='지진' critical=True defender_hp=24 attacker_hp=1 move_id=89
+Action turn=7 side=0 attacker='P18' defender='P18' move='지진' defender_hp=0 knockout=True attacker_hp=24 move_id=89
+SendOut turn=7 side=1 pokemon='P7' member=1
+HazardDamage turn=7 side=1 pokemon='P7' hp=94 fainted=False
+Action turn=8 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=0 knockout=True attacker_hp=24 move_id=89
+SendOut turn=8 side=1 pokemon='P54' member=2
+AbilityField side=1 pokemon='P54' ability='screen-cleaner' cleared=('reflect',)
+Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=41 attacker_hp=24 move_id=89
+Action turn=9 side=1 attacker='P54' defender='P18' move='지진' defender_hp=0 knockout=True attacker_hp=41 move_id=89
+result winner=1 turns=9 remaining=((0, 0, 0), (0, 0, 41)) statuses=((None, None, None), (None, None, None))
+## focus hazards 2
+side=0 P54 Lv50 ('normal',) item=None ability=None nature=None moves=[191, 390, 564, 446] mega=None
+side=0 P36 Lv50 ('normal',) item=light-clay ability=None nature=None moves=[115, 113, 280] mega=None
+side=0 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[366, 432, 89] mega=None
+side=1 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[89] mega=None
+side=1 P7 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[866, 89] mega=None
+side=1 P54 Lv50 ('normal',) item=heavy-duty-boots ability=screen-cleaner nature=None moves=[756, 89] mega=None
+Action turn=1 side=1 attacker='P18' defender='P54' move='지진' defender_hp=50 move_id=89
+Action turn=1 side=0 attacker='P54' defender='P18' move='스텔스록' attacker_hp=50 effect='stealth-rock' move_id=446
+Action turn=2 side=1 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True move_id=89
+SendOut turn=2 side=0 pokemon='P36' member=1
+Action turn=3 side=1 attacker='P18' defender='P36' move='지진' defender_hp=51 move_id=89
+Action turn=3 side=0 attacker='P36' defender='P18' move='리플렉터' attacker_hp=51 effect='reflect' move_id=115
+Action turn=4 side=1 attacker='P18' defender='P36' move='지진' defender_hp=29 move_id=89
+Action turn=4 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=42 attacker_hp=29 move_id=280
+Action turn=5 side=1 attacker='P18' defender='P36' move='지진' defender_hp=4 attacker_hp=42 move_id=89
+Action turn=5 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=4 move_id=280
+SendOut turn=5 side=1 pokemon='P7' member=1
+HazardDamage turn=5 side=1 pokemon='P7' hp=94 fainted=False
+Action turn=6 side=1 attacker='P7' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=94 move_id=89
+SendOut turn=6 side=0 pokemon='P18' member=2
+Action turn=7 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
+SendOut turn=7 side=1 pokemon='P54' member=2
+AbilityField side=1 pokemon='P54' ability='screen-cleaner' cleared=('reflect',)
+Action turn=8 side=0 attacker='P18' defender='P54' move='지진' defender_hp=41 move_id=89
+Action turn=8 side=1 attacker='P54' defender='P18' move='지진' defender_hp=68 attacker_hp=41 move_id=89
+Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True attacker_hp=68 move_id=89
+result winner=0 turns=9 remaining=((0, 0, 68), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus hazards 3
+side=0 P54 Lv50 ('normal',) item=None ability=None nature=None moves=[191, 390, 564, 446] mega=None
+side=0 P36 Lv50 ('normal',) item=light-clay ability=None nature=None moves=[115, 113, 280] mega=None
+side=0 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[366, 432, 89] mega=None
+side=1 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[89] mega=None
+side=1 P7 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[866, 89] mega=None
+side=1 P54 Lv50 ('normal',) item=heavy-duty-boots ability=screen-cleaner nature=None moves=[756, 89] mega=None
+Action turn=1 side=1 attacker='P18' defender='P54' move='지진' defender_hp=44 move_id=89
+Action turn=1 side=0 attacker='P54' defender='P18' move='스텔스록' attacker_hp=44 effect='stealth-rock' move_id=446
+Action turn=2 side=1 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True move_id=89
+SendOut turn=2 side=0 pokemon='P36' member=1
+Action turn=3 side=1 attacker='P18' defender='P36' move='지진' defender_hp=45 move_id=89
+Action turn=3 side=0 attacker='P36' defender='P18' move='리플렉터' attacker_hp=45 effect='reflect' move_id=115
+Action turn=4 side=1 attacker='P18' defender='P36' move='지진' defender_hp=18 move_id=89
+Action turn=4 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=28 attacker_hp=18 move_id=280
+Action turn=5 side=1 attacker='P18' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=28 move_id=89
+SendOut turn=5 side=0 pokemon='P18' member=2
+Action turn=6 side=0 attacker='P18' defender='P18' move='지진' defender_hp=0 knockout=True move_id=89
+SendOut turn=6 side=1 pokemon='P7' member=1
+HazardDamage turn=6 side=1 pokemon='P7' hp=94 fainted=False
+Action turn=7 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=7 move_id=89
+Action turn=7 side=1 attacker='P7' defender='P18' move='킬러스핀' critical=True changes=(Change(side=0, pokemon='P18', kind='poison', stages=0),) defender_hp=68 attacker_hp=7 move_id=866
+FieldEnd turn=7 kind='stealth-rock' side=1 move='킬러스핀'
+StatusDamage turn=7 side=0 pokemon='P18' hp=56 fainted=False kind='poison'
+Action turn=8 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=0 knockout=True attacker_hp=56 move_id=89
+StatusDamage turn=8 side=0 pokemon='P18' hp=43 fainted=False kind='poison'
+SendOut turn=8 side=1 pokemon='P54' member=2
+AbilityField side=1 pokemon='P54' ability='screen-cleaner' cleared=('reflect',)
+Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=47 attacker_hp=43 move_id=89
+Action turn=9 side=1 attacker='P54' defender='P18' move='지진' defender_hp=1 attacker_hp=47 move_id=89
+StatusDamage turn=9 side=0 pokemon='P18' hp=0 fainted=True kind='poison'
+result winner=1 turns=9 remaining=((0, 0, 0), (0, 0, 47)) statuses=((None, None, 'poison'), (None, None, None))
+## focus hazards 4
+side=0 P54 Lv50 ('normal',) item=None ability=None nature=None moves=[191, 390, 564, 446] mega=None
+side=0 P36 Lv50 ('normal',) item=light-clay ability=None nature=None moves=[115, 113, 280] mega=None
+side=0 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[366, 432, 89] mega=None
+side=1 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[89] mega=None
+side=1 P7 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[866, 89] mega=None
+side=1 P54 Lv50 ('normal',) item=heavy-duty-boots ability=screen-cleaner nature=None moves=[756, 89] mega=None
+Action turn=1 side=1 attacker='P18' defender='P54' move='지진' defender_hp=43 move_id=89
+Action turn=1 side=0 attacker='P54' defender='P18' move='스텔스록' attacker_hp=43 effect='stealth-rock' move_id=446
+Action turn=2 side=1 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True move_id=89
+SendOut turn=2 side=0 pokemon='P36' member=1
+Action turn=3 side=1 attacker='P18' defender='P36' move='지진' defender_hp=57 move_id=89
+Action turn=3 side=0 attacker='P36' defender='P18' move='리플렉터' attacker_hp=57 effect='reflect' move_id=115
+Action turn=4 side=1 attacker='P18' defender='P36' move='지진' defender_hp=34 move_id=89
+Action turn=4 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=29 attacker_hp=34 move_id=280
+Action turn=5 side=1 attacker='P18' defender='P36' move='지진' defender_hp=11 attacker_hp=29 move_id=89
+Action turn=5 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=11 move_id=280
+SendOut turn=5 side=1 pokemon='P7' member=1
+HazardDamage turn=5 side=1 pokemon='P7' hp=94 fainted=False
+Action turn=6 side=1 attacker='P7' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=94 move_id=89
+SendOut turn=6 side=0 pokemon='P18' member=2
+Action turn=7 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
+SendOut turn=7 side=1 pokemon='P54' member=2
+AbilityField side=1 pokemon='P54' ability='screen-cleaner' cleared=('reflect',)
+Action turn=8 side=0 attacker='P18' defender='P54' move='지진' defender_hp=37 move_id=89
+Action turn=8 side=1 attacker='P54' defender='P18' move='지진' defender_hp=62 attacker_hp=37 move_id=89
+Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True attacker_hp=62 move_id=89
+result winner=0 turns=9 remaining=((0, 0, 62), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus hazards 5
+side=0 P54 Lv50 ('normal',) item=None ability=None nature=None moves=[191, 390, 564, 446] mega=None
+side=0 P36 Lv50 ('normal',) item=light-clay ability=None nature=None moves=[115, 113, 280] mega=None
+side=0 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[366, 432, 89] mega=None
+side=1 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[89] mega=None
+side=1 P7 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[866, 89] mega=None
+side=1 P54 Lv50 ('normal',) item=heavy-duty-boots ability=screen-cleaner nature=None moves=[756, 89] mega=None
+Action turn=1 side=1 attacker='P18' defender='P54' move='지진' defender_hp=57 move_id=89
+Action turn=1 side=0 attacker='P54' defender='P18' move='스텔스록' attacker_hp=57 effect='stealth-rock' move_id=446
+Action turn=2 side=1 attacker='P18' defender='P54' move='지진' defender_hp=9 move_id=89
+Action turn=2 side=0 attacker='P54' defender='P18' move='압정뿌리기' attacker_hp=9 effect='spikes' move_id=191
+Action turn=3 side=1 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True move_id=89
+SendOut turn=3 side=0 pokemon='P36' member=1
+Action turn=4 side=1 attacker='P18' defender='P36' move='지진' defender_hp=53 move_id=89
+Action turn=4 side=0 attacker='P36' defender='P18' move='리플렉터' attacker_hp=53 effect='reflect' move_id=115
+Action turn=5 side=1 attacker='P18' defender='P36' move='지진' defender_hp=33 move_id=89
+Action turn=5 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=30 attacker_hp=33 move_id=280
+Action turn=6 side=1 attacker='P18' defender='P36' move='지진' defender_hp=11 attacker_hp=30 move_id=89
+Action turn=6 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=11 move_id=280
+SendOut turn=6 side=1 pokemon='P7' member=1
+HazardDamage turn=6 side=1 pokemon='P7' hp=94 fainted=False
+HazardHit turn=6 side=1 pokemon='P7' hazard='spikes' hp=82
+Action turn=7 side=0 attacker='P36' defender='P7' move='깨뜨리다' defender_hp=63 attacker_hp=11 move_id=280
+Action turn=7 side=1 attacker='P7' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=63 move_id=89
+SendOut turn=7 side=0 pokemon='P18' member=2
+Action turn=8 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
+SendOut turn=8 side=1 pokemon='P54' member=2
+AbilityField side=1 pokemon='P54' ability='screen-cleaner' cleared=('reflect',)
+Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=50 move_id=89
+Action turn=9 side=1 attacker='P54' defender='P18' move='지진' defender_hp=65 attacker_hp=50 move_id=89
+Action turn=10 side=0 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True attacker_hp=65 move_id=89
+result winner=0 turns=10 remaining=((0, 0, 65), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus hazards 6
+side=0 P54 Lv50 ('normal',) item=None ability=None nature=None moves=[191, 390, 564, 446] mega=None
+side=0 P36 Lv50 ('normal',) item=light-clay ability=None nature=None moves=[115, 113, 280] mega=None
+side=0 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[366, 432, 89] mega=None
+side=1 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[89] mega=None
+side=1 P7 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[866, 89] mega=None
+side=1 P54 Lv50 ('normal',) item=heavy-duty-boots ability=screen-cleaner nature=None moves=[756, 89] mega=None
+Action turn=1 side=1 attacker='P18' defender='P54' move='지진' defender_hp=46 move_id=89
+Action turn=1 side=0 attacker='P54' defender='P18' move='스텔스록' attacker_hp=46 effect='stealth-rock' move_id=446
+Action turn=2 side=1 attacker='P18' defender='P54' move='지진' critical=True defender_hp=0 knockout=True move_id=89
+SendOut turn=2 side=0 pokemon='P36' member=1
+Action turn=3 side=1 attacker='P18' defender='P36' move='지진' defender_hp=49 move_id=89
+Action turn=3 side=0 attacker='P36' defender='P18' move='리플렉터' attacker_hp=49 effect='reflect' move_id=115
+Action turn=4 side=1 attacker='P18' defender='P36' move='지진' critical=True defender_hp=0 knockout=True move_id=89
+SendOut turn=4 side=0 pokemon='P18' member=2
+Action turn=5 side=0 attacker='P18' defender='P18' move='지진' defender_hp=53 move_id=89
+Action turn=5 side=1 attacker='P18' defender='P18' move='지진' defender_hp=78 attacker_hp=53 move_id=89
+Action turn=6 side=0 attacker='P18' defender='P18' move='지진' defender_hp=9 attacker_hp=78 move_id=89
+Action turn=6 side=1 attacker='P18' defender='P18' move='지진' defender_hp=56 attacker_hp=9 move_id=89
+Action turn=7 side=0 attacker='P18' defender='P18' move='지진' defender_hp=0 knockout=True attacker_hp=56 move_id=89
+SendOut turn=7 side=1 pokemon='P7' member=1
+HazardDamage turn=7 side=1 pokemon='P7' hp=94 fainted=False
+Action turn=8 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=0 knockout=True attacker_hp=56 move_id=89
+SendOut turn=8 side=1 pokemon='P54' member=2
+AbilityField side=1 pokemon='P54' ability='screen-cleaner' cleared=('reflect',)
+Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=42 attacker_hp=56 move_id=89
+Action turn=9 side=1 attacker='P54' defender='P18' move='지진' defender_hp=16 attacker_hp=42 move_id=89
+Action turn=10 side=0 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True attacker_hp=16 move_id=89
+result winner=0 turns=10 remaining=((0, 0, 16), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
+## focus hazards 7
+side=0 P54 Lv50 ('normal',) item=None ability=None nature=None moves=[191, 390, 564, 446] mega=None
+side=0 P36 Lv50 ('normal',) item=light-clay ability=None nature=None moves=[115, 113, 280] mega=None
+side=0 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[366, 432, 89] mega=None
+side=1 P18 Lv50 ('normal',) item=None ability=None nature=None moves=[89] mega=None
+side=1 P7 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[866, 89] mega=None
+side=1 P54 Lv50 ('normal',) item=heavy-duty-boots ability=screen-cleaner nature=None moves=[756, 89] mega=None
+Action turn=1 side=1 attacker='P18' defender='P54' move='지진' defender_hp=51 move_id=89
+Action turn=1 side=0 attacker='P54' defender='P18' move='스텔스록' attacker_hp=51 effect='stealth-rock' move_id=446
+Action turn=2 side=1 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True move_id=89
+SendOut turn=2 side=0 pokemon='P36' member=1
+Action turn=3 side=1 attacker='P18' defender='P36' move='지진' defender_hp=56 move_id=89
+Action turn=3 side=0 attacker='P36' defender='P18' move='리플렉터' attacker_hp=56 effect='reflect' move_id=115
+Action turn=4 side=1 attacker='P18' defender='P36' move='지진' defender_hp=35 move_id=89
+Action turn=4 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=46 attacker_hp=35 move_id=280
+Action turn=5 side=1 attacker='P18' defender='P36' move='지진' defender_hp=12 attacker_hp=46 move_id=89
+Action turn=5 side=0 attacker='P36' defender='P18' move='깨뜨리다' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=12 move_id=280
+SendOut turn=5 side=1 pokemon='P7' member=1
+HazardDamage turn=5 side=1 pokemon='P7' hp=94 fainted=False
+Action turn=6 side=1 attacker='P7' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=94 move_id=89
+SendOut turn=6 side=0 pokemon='P18' member=2
+Action turn=7 side=0 attacker='P18' defender='P7' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
+SendOut turn=7 side=1 pokemon='P54' member=2
+AbilityField side=1 pokemon='P54' ability='screen-cleaner' cleared=('reflect',)
+Action turn=8 side=0 attacker='P18' defender='P54' move='지진' defender_hp=46 move_id=89
+Action turn=8 side=1 attacker='P54' defender='P18' move='지진' defender_hp=59 attacker_hp=46 move_id=89
+Action turn=9 side=0 attacker='P18' defender='P54' move='지진' defender_hp=0 knockout=True attacker_hp=59 move_id=89
+result winner=0 turns=9 remaining=((0, 0, 59), (0, 0, 0)) statuses=((None, None, None), (None, None, None))
