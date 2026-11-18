@@ -27,6 +27,9 @@ struct UnownedSpeciesDetailView: View {
                     identityHeader
                     SpeciesFlavorCard(speciesID: species.id, language: store.language, provider: flavorProvider)
                     howToGetCard
+                    ForEach(store.evolutionCards(for: species.id)) {
+                        EvolutionCardView(store: store, card: $0)
+                    }
                     evolutionLineCard
                 }
                 .padding(.bottom, 8)

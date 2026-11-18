@@ -21,18 +21,18 @@ extension CompanionStore {
         await loadSpeciesIndexIfNeeded()
     }
 
-    /// The step into `speciesID`. Without an `individual` that is all there is (the Pokédex page is about the
-    /// species). For the raised Pokémon it also carries its progress and its waiting step; for a graduated
-    /// individual, the trade steps it can take. A raised graduate whose form can still evolve gets its step too.
+    /// The step into `speciesID`. Without an `individual` (the Pokédex page) also the steps out of it, with the raised
+    /// Pokémon's progress on the step it waits for. For the raised Pokémon's Box page it also carries its progress
+    /// and its waiting step; for a graduated individual, the trade steps it can take. A raised graduate whose form
+    /// can still evolve gets its step too.
     func evolutionCards(for speciesID: Int, individual: DexEntry? = nil) -> [EvolutionCard] {
-        let raised = individual.map {
-            $0.finalID == speciesID && (isLineParked ? $0.id == state.raisedEntryID : isActiveDexEntry($0))
-        } ?? false
+        guard let individual else { return speciesEvolutionCards(for: speciesID) }
+        let raised = individual.finalID == speciesID
+            && (isLineParked ? individual.id == state.raisedEntryID : isActiveDexEntry(individual))
         let pending = raised ? pendingEvolutionGate() : nil
         let skippable = raised && !isLineParked && canSkipEvolution
         var cards: [EvolutionCard] = []
-        if let rule = EvolutionRules.rule(for: speciesID),
-           !rule.paths.isEmpty || rule.selector != nil || rule.trade != nil {
+        if let rule = EvolutionRules.rule(for: speciesID), rule.hasCard {
             let live = pending?.rule.species == speciesID ? pending?.context : nil
             cards.append(EvolutionCard(rule: rule, context: live, isNextStep: false))
         }
@@ -40,7 +40,7 @@ extension CompanionStore {
             cards.append(EvolutionCard(rule: pending.rule, context: pending.context, isNextStep: true,
                                        offersSkip: skippable))
         }
-        if let individual, individual.releasedAt == nil, state.storedLines[individual.id] == nil,
+        if individual.releasedAt == nil, state.storedLines[individual.id] == nil,
            individual.profile != nil, individual.finalID == speciesID,
            !isActiveDexEntry(individual), individual.id != state.raisedEntryID {
             for rule in tradeSteps(from: speciesID) {
@@ -50,7 +50,24 @@ extension CompanionStore {
         return cards
     }
 
+    private func speciesEvolutionCards(for speciesID: Int) -> [EvolutionCard] {
+        let pending = pendingEvolutionGate()
+        let live = { (rule: EvolutionRule) in pending?.rule.species == rule.species ? pending?.context : nil }
+        var cards: [EvolutionCard] = []
+        if let rule = EvolutionRules.rule(for: speciesID), rule.hasCard {
+            cards.append(EvolutionCard(rule: rule, context: live(rule), isNextStep: false))
+        }
+        for rule in EvolutionRules.all where rule.from == speciesID && rule.hasCard {
+            cards.append(EvolutionCard(rule: rule, context: live(rule), isNextStep: true))
+        }
+        return cards
+    }
+
     func tradeSteps(from speciesID: Int) -> [EvolutionRule] {
         EvolutionRules.table.filter { $0.trade != nil && $0.from == speciesID }
     }
+}
+
+private extension EvolutionRule {
+    var hasCard: Bool { !paths.isEmpty || selector != nil || trade != nil }
 }

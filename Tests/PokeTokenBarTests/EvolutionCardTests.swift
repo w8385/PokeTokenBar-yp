@@ -77,15 +77,19 @@ final class EvolutionCardTests: XCTestCase {
         s.recordFlip()
         let after = try XCTUnwrap(s.evolutionCards(for: 686, individual: raised).first)
         XCTAssertTrue(flip.isMet(in: try XCTUnwrap(after.context)))
-        XCTAssertTrue(s.evolutionCards(for: 686).isEmpty, "the Pokédex page is about the species, not this individual")
+        let page = try XCTUnwrap(s.evolutionCards(for: 686).first)
+        XCTAssertEqual(page.rule.species, 687)
+        XCTAssertTrue(flip.isMet(in: try XCTUnwrap(page.context)), "the Pokédex page shows the raised one's progress")
+        XCTAssertFalse(page.offersSkip)
+        XCTAssertNil(page.individualID)
     }
 
-    func testPokedexPageShowsTheStepIntoASpeciesButNeverAnyonesProgress() async throws {
+    func testPokedexPageOfTheNextSpeciesShowsTheRaisedOnesProgressOnTheStepIntoIt() async throws {
         let raised = try inkay()
         await loadLine(raised)
         let info = try XCTUnwrap(raised.evolutionCards(for: 687).first)
         XCTAssertFalse(info.isNextStep)
-        XCTAssertNil(info.context, "progress belongs to an individual, so it lives in the Box")
+        XCTAssertNotNil(info.context)
     }
 
     func testGraduatedOnixShowsTheSteelixStepWithAnEquipRowThatFollowsItsHeldItem() async throws {
@@ -107,7 +111,9 @@ final class EvolutionCardTests: XCTestCase {
         XCTAssertTrue(s.equip(.metalCoat, to: "o"))
         XCTAssertEqual(s.heldItem(of: "o"), .metalCoat)
 
-        XCTAssertTrue(s.evolutionCards(for: 95).isEmpty, "no individual, no trade step")
+        let onixPage = try XCTUnwrap(s.evolutionCards(for: 95).first)
+        XCTAssertEqual(onixPage.rule.species, 208)
+        XCTAssertNil(onixPage.individualID, "the Pokédex page shows the step, not anyone's held item")
         let steelix = try XCTUnwrap(s.evolutionCards(for: 208).first)
         XCTAssertFalse(steelix.isNextStep)
         XCTAssertNil(steelix.individualID)

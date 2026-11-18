@@ -50,7 +50,7 @@ final class EvolutionRulesTests: XCTestCase {
         XCTAssertEqual(unmapped, [], "special evolution steps without an app condition")
     }
 
-    func testEveryTradeStepKnowsItsParentAndItsHeldItemOrPartner() throws {
+    func testEveryStepKnowsItsParentAndEveryTradeItsHeldItemOrPartner() throws {
         let steps = Dictionary(uniqueKeysWithValues: try loadSteps().map { ($0.species, $0) })
         let raw = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().appendingPathComponent("Fixtures/evolution-steps.json")))
@@ -58,9 +58,10 @@ final class EvolutionRulesTests: XCTestCase {
             (entry["species"] as? Int).flatMap { id in (entry["parent"] as? Int).map { (id, $0) } }
         })
         for rule in EvolutionRules.all {
-            guard let trade = rule.trade else { continue }
             let step = try XCTUnwrap(steps[rule.species])
+            XCTAssertNotNil(rule.from, "\(rule.species) \(step.name)")
             XCTAssertEqual(rule.from, parents[rule.species], "\(rule.species) \(step.name)")
+            guard let trade = rule.trade else { continue }
             let tradeDetails = step.details.filter { $0["trigger"] as? String == "trade" }
             XCTAssertFalse(tradeDetails.isEmpty, "\(rule.species) lists no trade")
             switch trade {

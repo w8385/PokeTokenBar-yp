@@ -520,14 +520,17 @@ struct EvoLineView: View {
     // MARK: 라인 본체
 
     /// Which dex page a node opens: owned or unowned species page, whichever `links` holds. The `?`
-    /// placeholder has none. Pure function (regression-tested).
-    static func dexLinkTarget(for node: EvoLineItem, links: [Int: String]) -> String? {
-        guard case .species(let id) = node.content else { return nil }
+    /// placeholder opens the `.current` node's page, which lists each branch's condition. Pure function
+    /// (regression-tested).
+    static func dexLinkTarget(for node: EvoLineItem, links: [Int: String], line: [EvoLineItem] = []) -> String? {
+        guard case .species(let id) = node.content else {
+            return line.first { $0.state == .current }.flatMap { dexLinkTarget(for: $0, links: links) }
+        }
         return links[id]
     }
 
     private func dexLinkModifier(for node: EvoLineItem) -> DexEntryLink {
-        let target = onOpenDexEntry == nil ? nil : Self.dexLinkTarget(for: node, links: dexLinks)
+        let target = onOpenDexEntry == nil ? nil : Self.dexLinkTarget(for: node, links: dexLinks, line: nodes)
         var name: String?
         if case .species(let id) = node.content, let names, let raw = names[id] {
             name = PokemonForm.displayName(raw, speciesID: id, form: form, label: nil)
@@ -636,7 +639,7 @@ struct LabeledProgressBar: View {
     }
 }
 
-/// Makes a sprite open its Pokédex detail page. With no target (egg, uncaught species, `?` node)
+/// Makes a sprite open its Pokédex detail page. With no target (egg, a species outside the index)
 /// the content is returned untouched — no button, hover highlight or tooltip — so only real links
 /// look clickable. The hover highlight is a background, so it never changes the sprite's layout.
 @MainActor

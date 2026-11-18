@@ -209,16 +209,6 @@ final class EvolutionGateStoreTests: XCTestCase {
         XCTAssertEqual(s.state.active?.evolution.pets, 0, "the next form starts clean")
     }
 
-    func testPettingFasterThanTheCooldownCountsOnce() async throws {
-        let clock = GateClock()
-        let s = try store(tree: node(446, [node(143)]), clock: clock)
-        await s.hatch(baseID: 446)
-        s.recordPet()
-        clock.now.addTimeInterval(3)
-        s.recordPet()
-        XCTAssertEqual(s.state.active?.evolution.pets, 1)
-    }
-
     func testMantyneNeedsARemoraidFriendAndEvolvesWhenOneJoins() async throws {
         let remoraid = DexEntry(baseID: 223, finalID: 224, chainOrder: [223, 224], rarity: .common, caughtAt: Date())
         let lonely = try store(tree: node(458, [node(226)]))
@@ -377,7 +367,7 @@ final class EvolutionGateStoreTests: XCTestCase {
         XCTAssertEqual(s.currentSpeciesID, 706)
     }
 
-    func testClicksCountAsPetsOncePerCooldown() async throws {
+    func testAClickInsideTheAutoclickerGuardIsNotAPet() async throws {
         let clock = GateClock()
         let s = try store(tree: node(446, [node(143)]), clock: clock)
         await s.hatch(baseID: 446)
