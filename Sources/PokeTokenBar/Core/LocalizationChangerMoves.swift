@@ -168,6 +168,79 @@ extension L {
               "Fait tomber la neige pendant 5 tours, puis se retire",
               "Faz nevar por 5 turnos e sai", "Lässt 5 Runden lang Schnee fallen und wird ausgetauscht",
               "Вызывает снег на 5 ходов и уходит")
+        case 118:
+            t("무작위 기술 하나를 씀", "Uses a random move", "ランダムな技を 1つ出す", "Usa un movimiento al azar",
+              "Utilise une capacité au hasard", "Usa um golpe aleatório", "Setzt eine zufällige Attacke ein",
+              "Использует случайный приём")
+        case 119:
+            t("상대가 마지막에 쓴 기술을 그대로 씀", "Uses the move the target used last",
+              "相手が 最後に出した技を出す", "Usa el último movimiento que usó el objetivo",
+              "Utilise la dernière capacité employée par la cible", "Usa o último golpe que o alvo usou",
+              "Setzt die zuletzt vom Ziel eingesetzte Attacke ein",
+              "Использует приём, который цель применила последним")
+        case 383:
+            t("배틀에서 마지막에 쓰인 기술을 따라 씀", "Uses the last move used in the battle",
+              "バトルで 最後に出された技を出す", "Usa el último movimiento usado en el combate",
+              "Utilise la dernière capacité employée dans le combat", "Usa o último golpe usado na batalha",
+              "Setzt die zuletzt im Kampf eingesetzte Attacke ein",
+              "Использует последний приём, применённый в бою")
+        case 214:
+            t("잠든 동안 자기 다른 기술 하나를 무작위로 씀", "While asleep, uses one of its other moves at random",
+              "眠っている間 自分の ほかの技を ランダムに出す",
+              "Mientras duerme, usa al azar otro de sus movimientos",
+              "Pendant son sommeil, utilise une autre de ses capacités au hasard",
+              "Enquanto dorme, usa outro de seus golpes ao acaso",
+              "Setzt im Schlaf eine seiner anderen Attacken zufällig ein",
+              "Во сне использует случайный другой свой приём")
+        case 274:
+            t("같은 팀 다른 포켓몬의 기술 하나를 무작위로 씀", "Uses a random move of another Pokémon on its team",
+              "手持ちの ほかのポケモンの技を ランダムに出す",
+              "Usa al azar un movimiento de otro Pokémon de su equipo",
+              "Utilise au hasard une capacité d'un autre Pokémon de l'équipe",
+              "Usa ao acaso um golpe de outro Pokémon da equipe",
+              "Setzt eine zufällige Attacke eines anderen Pokémon im Team ein",
+              "Использует случайный приём другого покемона из команды")
+        case 382:
+            t("상대가 고른 공격 기술을 먼저 1.5배 위력으로 씀", "Uses the target's chosen attack first, at 1.5× power",
+              "相手が選んだ 攻撃技を 先に 1.5倍の威力で出す",
+              "Usa primero el ataque que eligió el objetivo, con 1,5 veces su potencia",
+              "Utilise d'abord l'attaque choisie par la cible, avec 1,5 fois sa puissance",
+              "Usa primeiro o ataque escolhido pelo alvo, com 1,5× o poder",
+              "Setzt zuerst den vom Ziel gewählten Angriff mit 1,5-facher Stärke ein",
+              "Первым использует выбранную целью атаку с силой ×1,5")
+        case 267:
+            t("필드에 따라 다른 기술로 바뀜 (필드가 없으면 트라이어택)",
+              "Becomes a move that depends on the terrain (Tri Attack without one)",
+              "フィールドに応じた技に変わる (フィールドがなければ トライアタック)",
+              "Se convierte en un movimiento según el campo (Triataque si no hay)",
+              "Devient une capacité selon le terrain (Triplattaque sans terrain)",
+              "Vira um golpe conforme o campo (Ataque Triplo sem campo)",
+              "Wird je nach Feld zu einer anderen Attacke (ohne Feld Triplette)",
+              "Становится приёмом в зависимости от поля (без поля — Тройная атака)")
+        case 102:
+            t("교체될 때까지 상대가 마지막에 쓴 기술을 배움", "Learns the target's last move until it switches out",
+              "交代するまで 相手が最後に出した技を覚える",
+              "Aprende el último movimiento del objetivo hasta que se retire",
+              "Apprend la dernière capacité de la cible jusqu'à ce qu'il soit remplacé",
+              "Aprende o último golpe do alvo até sair",
+              "Lernt die letzte Attacke des Ziels, bis es ausgetauscht wird",
+              "Выучивает последний приём цели, пока не уйдёт")
+        case 166:
+            t("이번 배틀 동안 상대가 마지막에 쓴 기술을 배움", "Learns the target's last move for the rest of the battle",
+              "このバトルの間 相手が最後に出した技を覚える",
+              "Aprende el último movimiento del objetivo durante el resto del combate",
+              "Apprend la dernière capacité de la cible pour le reste du combat",
+              "Aprende o último golpe do alvo pelo resto da batalha",
+              "Lernt die letzte Attacke des Ziels für den Rest des Kampfes",
+              "Выучивает последний приём цели до конца боя")
+        case 144:
+            t("교체될 때까지 상대로 변신함 (기술마다 PP 5)", "Transforms into the target until it switches out (5 PP per move)",
+              "交代するまで 相手に変身する (技ごとに PP 5)",
+              "Se transforma en el objetivo hasta que se retire (5 PP por movimiento)",
+              "Se transforme en la cible jusqu'à ce qu'il soit remplacé (5 PP par capacité)",
+              "Transforma-se no alvo até sair (5 PP por golpe)",
+              "Verwandelt sich bis zum Austausch in das Ziel (5 AP pro Attacke)",
+              "Превращается в цель, пока не уйдёт (5 PP на приём)")
         default: nil
         }
     }

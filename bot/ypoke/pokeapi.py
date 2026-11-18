@@ -297,21 +297,35 @@ def move_from(move: dict) -> dict:
     """
     names = {entry["language"]["name"]: entry["name"] for entry in move["names"]}
     meta = move.get("meta") or {}
-    ailment = (meta.get("ailment") or {}).get("name")
-    if ailment == "poison" and move["id"] in _TOXIC_MOVE_IDS:
-        ailment = "toxic"
-    category = (meta.get("category") or {}).get("name")
-    stat_changes = [
-        {"stat": _STAT_KEYS[entry["stat"]["name"]], "change": entry["change"]}
-        for entry in move.get("stat_changes", [])
-        if category in _STAT_CATEGORIES and entry["stat"]["name"] in _BATTLE_STAT_KEYS
-    ]
+    changes = [(_STAT_KEYS[entry["stat"]["name"]], entry["change"]) for entry in move.get("stat_changes", [])
+               if entry["stat"]["name"] in _BATTLE_STAT_KEYS]
+    flat = {**meta, "ailment": (meta.get("ailment") or {}).get("name"),
+            "category": (meta.get("category") or {}).get("name")}
+    return _battle_move(move["id"], names.get("ko") or names.get("en") or move["name"], move["type"]["name"],
+                        move["damage_class"]["name"], move, flat, changes)
+
+
+def data_move(move_id: int) -> dict:
+    """`move_from` for a move read from `data/battle/moves.json`, as a move that calls another (Metronome) gets it."""
+    entry = battle_data.table("moves")[str(move_id)]
+    changes = [(key, change) for key, change in entry["meta"]["stat_changes"] if key != "hp"]
+    return _battle_move(move_id, entry["names"].get("ko") or entry["names"]["en"], entry["type"], entry["class"],
+                        entry, entry["meta"], changes)
+
+
+def _battle_move(move_id: int, name: str, kind: str, damage_class: str, move: dict, meta: dict,
+                 changes: list[tuple[str, int]]) -> dict:
+    """`move` holds the power, accuracy, priority and PP; `meta` the flat PokéAPI meta with `ailment` and `category`
+    as names."""
+    ailment = "toxic" if meta.get("ailment") == "poison" and move_id in _TOXIC_MOVE_IDS else meta.get("ailment")
+    category = meta.get("category")
+    stat_changes = [{"stat": key, "change": change} for key, change in changes if category in _STAT_CATEGORIES]
     return {
-        "id": move["id"],
-        "name": names.get("ko") or names.get("en") or move["name"],
-        "type": move["type"]["name"],
+        "id": move_id,
+        "name": name,
+        "type": kind,
         "power": move["power"] or 0,
-        "damage_class": move["damage_class"]["name"],
+        "damage_class": damage_class,
         "accuracy": move["accuracy"],
         "priority": move["priority"],
         "pp": move["pp"] or 1,
@@ -321,8 +335,8 @@ def move_from(move: dict) -> dict:
         "stat_changes": stat_changes,
         "stat_target": _STAT_CATEGORIES.get(category, "target"),
         "stat_chance": (meta.get("stat_chance") or 0) if stat_changes else 0,
-        "weather": WEATHER_MOVES.get(move["id"]),
-        "always_hits_in": _ALWAYS_HITS_IN.get(move["id"], []),
+        "weather": WEATHER_MOVES.get(move_id),
+        "always_hits_in": _ALWAYS_HITS_IN.get(move_id, []),
         "drain": meta.get("drain") or 0,
         "min_hits": meta.get("min_hits") or 1,
         "max_hits": meta.get("max_hits") or 1,

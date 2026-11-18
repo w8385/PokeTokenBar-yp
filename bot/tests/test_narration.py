@@ -48,6 +48,7 @@ def lines_of(entry):
     (act(1, 0, defender_hp=31, critical=True, multiplier=2.0), ["🔵 피카츄 › 10만볼트 → 꼬부기 31% 급소 효과 굉장"]),
     (act(1, 1, move="물대포", multiplier=0.5, defender_hp=88), ["🔴 꼬부기 › 물대포 → 피카츄 88% 효과 별로"]),
     (act(1, 0, move="번개", missed=True), ["🔵 피카츄 › 번개 → 빗나감"]),
+    (act(1, 0, via="손가락흔들기", defender_hp=60), ["🔵 피카츄 › 손가락흔들기: 10만볼트 → 꼬부기 60%"]),
     (act(1, 0, move="몸통박치기", multiplier=0), ["🔵 피카츄 › 몸통박치기 → 꼬부기 무효"]),
     (act(1, 0, move="지진", multiplier=0, ability="levitate"), ["🔵 피카츄 › 지진 → 꼬부기 무효 [부유]"]),
     (act(1, 0, move="지진", ability="sturdy", defender_hp=1), ["🔵 피카츄 › 지진 → 꼬부기 1% [옹골참]"]),
