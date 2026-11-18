@@ -177,8 +177,17 @@ Open a Pokémon in the <b>Box</b> to inspect it: level, gender, nature, ability,
 <td width="55%" valign="middle">
 <h3>📚 Exp. Share for the Pokémon in the Box</h3>
 Attach an <b>Exp. Share</b> from the Bag to one Pokémon in the Box, from its detail page. It then gets 50% of the EXP your current Pokémon or egg earns, so a graduate keeps growing while you raise the next one. Detach it there too. When a <b>Pokémon Egg</b> sends your current Pokémon to the Box, one Exp. Share from your Bag goes on it.
+<br><br>
+An Exp. Share can also move between Pokémon: <b>Move here</b> on a Box page picks the holder to take it from, even when the Bag is empty. A holder in the Box evolves there through steps that need only EXP, a level, friends or a type. Steps that need an item, a trade, pets or a battle wait, and the Box page shows the next step.
 </td>
-<td width="45%" align="center"><img src="assets/screenshot-exp-share.png" width="300" alt="Exp. Share attached to a Pikachu in the Box"></td>
+<td width="45%" align="center"><img src="assets/screenshot-exp-share.png" width="300" alt="A stored Bulbasaur's Box page with Move here and Attach for the Exp. Share"></td>
+</tr>
+<tr>
+<td width="45%" align="center"><img src="assets/screenshot-stored-friends.png" width="300" alt="The friend picker offering a stored Bulbasaur, and Home with that Bulbasaur walking beside Charizard"></td>
+<td width="55%" valign="middle">
+<h3>🤝 Box Pokémon walk with you too</h3>
+A Pokémon waiting in the Box can be a friend, not only a graduate. The picker marks it <b>Stored</b>. It walks beside your Pokémon on Home and with the floating pet in its current form, and it leaves the friend list when you raise it again. When a Pokémon Egg or a scout sends your Pokémon to the Box while a friend slot is free, it joins as a friend.
+</td>
 </tr>
 <tr>
 <td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab — an entry of up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, Elite Four, hideout and the badge case"></td>
@@ -258,7 +267,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 
 <img src="assets/screenshot-usage-recap.png" width="360" alt="Usage recap for a selected period">
 
-<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, gym, replay, champion, floating-friends, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
+<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, gym, replay, champion, floating-friends, stored-friends, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
 
 ## Agent activity
 
