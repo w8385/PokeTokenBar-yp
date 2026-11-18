@@ -8,6 +8,7 @@ from dataclasses import replace
 from ypoke import abilities, battle, items
 from ypoke import field_states as fs
 from ypoke.effects import Handler, hooks, register, stats
+from ypoke.effects.item_moves import burdens
 from ypoke.effects.moves import StatusMove
 from ypoke.type_chart import effectiveness
 
@@ -186,6 +187,47 @@ class Gravity(StatusMove):
 
     def bans_move(self, name, move, fighter):
         return self.key if move.id in fs.GRAVITY_MOVES else None
+
+
+@register("moves", "magic-room", "wonder-room")
+class Room(StatusMove):
+    """For five turns held items do nothing (Magic Room), or each Pokémon's raw Defense and Special Defense trade
+    places, stages staying put (Wonder Room); using it again ends it early. Magic Room is picked while the foe's item
+    helps it and the user's does not; Wonder Room when the swap guards the user against the foe's attacks more than it
+    guards the foe."""
+
+    SWAPPED = {"defense": "special_defense", "special_defense": "defense"}
+
+    def wanted(self, move, team, foes, side, arena, weather):
+        user, foe = team.active, foes.active
+        if self.key in arena.rooms:
+            return False
+        if self.key == "magic-room":
+            return (foe.item is not None and not burdens(foe.item, foe)
+                    and (user.item is None or burdens(user.item, user)))
+        gain = self._guard(user, foe)
+        return gain >= stats.SWAP_WORTH and gain > self._guard(foe, user)
+
+    def _apply(self, move, user, foe, side, turn, arena, rng):
+        if self.key in arena.rooms:
+            del arena.rooms[self.key]
+            return f"{self.key}-off", ()
+        arena.rooms[self.key] = fs.ROOM_TURNS
+        return self.key, ()
+
+    def _guard(self, defender, attacker) -> float:
+        """How much the swap raises the defense the attacker's damaging moves hit, 1.0 when they hit both."""
+        kinds = {known.physical for known in attacker.combatant.moves if known.power}
+        if len(kinds) != 1:
+            return 1.0
+        key = "defense" if kinds.pop() else "special_defense"
+        return defender.stats[self.SWAPPED[key]] / defender.stats[key]
+
+    def suppresses_items(self, name):
+        return True if name == "magic-room" else None
+
+    def swaps_stat(self, name, key):
+        return self.SWAPPED.get(key) if name == "wonder-room" else None
 
 
 @register("moves", "haze")

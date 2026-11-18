@@ -121,6 +121,23 @@ extension L {
               "Mange sa Baie et augmente de 2 niveaux sa Défense", "Come sua fruta e aumenta 2 estágios a Defesa",
               "Isst seine Beere und erhöht die Verteidigung um 2 Stufen",
               "Съедает свою ягоду и повышает Защиту на 2 ступени")
+        case 478:
+            t("5턴 동안 모든 도구가 효과를 잃음 (다시 쓰면 풀림)", "Held items do nothing for 5 turns (using it again ends it)",
+              "5ターン 全員の持ち物が効果を失う (もう一度使うと解除)",
+              "Los objetos no tienen efecto durante 5 turnos (usarlo otra vez lo termina)",
+              "Les objets tenus n'ont aucun effet pendant 5 tours (le relancer y met fin)",
+              "Os itens não têm efeito por 5 turnos (usar de novo encerra)",
+              "Getragene Items wirken 5 Runden lang nicht (erneuter Einsatz beendet es)",
+              "Предметы не действуют 5 ходов (повторное применение отменяет)")
+        case 472:
+            t("5턴 동안 모두의 방어와 특방이 뒤바뀜 (다시 쓰면 풀림)",
+              "Swaps everyone's Defense and Sp. Def for 5 turns (using it again ends it)",
+              "5ターン 全員の防御と特防が入れ替わる (もう一度使うと解除)",
+              "Intercambia la Defensa y la Def. Esp. de todos durante 5 turnos (usarlo otra vez lo termina)",
+              "Échange la Défense et la Déf. Spé. de tous pendant 5 tours (le relancer y met fin)",
+              "Troca a Defesa e a Def. Esp. de todos por 5 turnos (usar de novo encerra)",
+              "Tauscht 5 Runden lang Verteidigung und Spezial-Verteidigung aller (erneuter Einsatz beendet es)",
+              "Меняет местами Защиту и Особую защиту у всех на 5 ходов (повторное применение отменяет)")
         default: nil
         }
     }

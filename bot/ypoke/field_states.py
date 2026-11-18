@@ -12,6 +12,7 @@ MAX_LAYERS = {"stealth-rock": 1, "spikes": 3, "toxic-spikes": 2, "sticky-web": 1
 STATE_TURNS = 5
 TAILWIND_TURNS = 4
 GRAVITY_TURNS = 5
+ROOM_TURNS = 5
 EXTENDED_TURNS = 8
 SCREEN_MULTIPLIER = 0.5
 TAILWIND_SPEED = 2
