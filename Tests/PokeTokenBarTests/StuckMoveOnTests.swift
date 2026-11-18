@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 @testable import PokeTokenBar
 
@@ -295,5 +296,26 @@ final class MoveOnCandidateTests: XCTestCase {
         XCTAssertTrue(dusk.waitsOnPlayer(in: ctx), "pets unmet")
         ctx.progress.pets = 30
         XCTAssertFalse(dusk.waitsOnPlayer(in: ctx), "only the clock is left")
+    }
+}
+
+@MainActor
+final class MoveOnCountdownLayoutTests: XCTestCase {
+    func testTheCountdownLineIsNeverTruncatedInEveryLanguage() {
+        for language in AppLanguage.allCases {
+            let l = L(language)
+            let needs = [EvolutionRequirement.pets(30), .holds(.expShare)]
+                .map { l.evolutionRequirementText($0, speciesName: { _ in "Fletchinder" }, shopDifficulty: 1) }
+                .joined(separator: " + ")
+            let text = l.moveOnCountdown(needs, minutes: 30, next: .raise("Fletchinder"), toGraduates: true)
+            let button = LayoutMeasure.size(Button(l.keepWaiting) {}.buttonStyle(.bordered).controlSize(.mini).fixedSize())
+            for width: CGFloat in [180, 240, PopoverMetrics.contentWidth] {
+                let textWidth = width - button.width - 6 - 4
+                let wrapped = LayoutMeasure.size(Text(text).font(.caption2), width: textWidth).height
+                let row = LayoutMeasure.size(MoveOnCountdownRow(text: text, keepWaiting: l.keepWaiting) {}, width: width)
+                XCTAssertGreaterThanOrEqual(row.height, wrapped - 0.5, "\(language) at \(width)pt")
+                XCTAssertLessThanOrEqual(row.width, width + 0.5, "\(language) at \(width)pt")
+            }
+        }
     }
 }
