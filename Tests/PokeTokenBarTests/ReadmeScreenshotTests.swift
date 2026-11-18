@@ -79,8 +79,8 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await waitUntil("the raised Pokémon's line to load") { store.currentLine != nil }
 
             func popover(_ usage: UsageStore = usage, store: CompanionStore = store, entry: BattleEntryStore = entry,
+                         nav: PopoverNavigation = PopoverNavigation(),
                          _ configure: (PopoverNavigation) -> Void) -> some View {
-                let nav = PopoverNavigation()
                 configure(nav)
                 return PopoverView(screenHeight: 5000)
                     .environment(usage).environment(store).environment(updater).environment(nav)
@@ -119,6 +119,11 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await waitUntil("the battle store's line to load") { battleStore.currentLine != nil }
             try await shot(popover(store: battleStore, entry: battleEntry) { $0.tab = .battle; $0.battleSubTab = .entry },
                            "screenshot-battle\(suffix)", in: dir, height: 482)
+            let chipsNav = PopoverNavigation(boxFilters: BoxFilterStore(defaults: battleDefaults), defaults: battleDefaults)
+            try await shot(popover(store: battleStore, entry: battleEntry, nav: chipsNav) {
+                $0.tab = .box
+                $0.boxFilters.filter.rarity = .rare
+            }, "screenshot-box-chips\(suffix)", in: dir, height: 420)
             try await shot(gyms(store: store, uploader: uploader, entry: entry, catalog: catalog),
                            "screenshot-gyms\(suffix)", in: dir, height: nil)
             try await shot(replay(language: language, catalog: catalog), "screenshot-gym-replay\(suffix)", in: dir,
