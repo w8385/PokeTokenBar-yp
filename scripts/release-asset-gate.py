@@ -52,7 +52,7 @@ SCREENS = (
                                         "screenshot-dex-next-evolution")),
     ("FloatingPetPanel.swift", ("screenshot-pet-interactions", "floating-pet", "screenshot-floating-friends")),
     ("PetCrowdViews.swift", ("screenshot-home", "screenshot-pet-interactions", "floating-pet",
-                             "screenshot-floating-friends")),
+                             "screenshot-floating-friends", "screenshot-stored-friends")),
     ("MenuBarContent.swift", ("menubar", "screenshot-menu-growth")),
 )
 

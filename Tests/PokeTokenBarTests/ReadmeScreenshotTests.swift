@@ -10,7 +10,7 @@ import XCTest
 @MainActor
 final class ReadmeScreenshotTests: XCTestCase {
     private static let server = "http://bot-host:8790"
-    private static let species = [4, 5, 6, 25, 95, 133]
+    private static let species = [1, 4, 5, 6, 25, 95, 133]
     private let languages: [(AppLanguage, String)] = [(.en, ""), (.ko, "-ko"), (.ja, "-ja")]
 
     func testDrawReadmeImages() async throws {
@@ -78,13 +78,16 @@ final class ReadmeScreenshotTests: XCTestCase {
                     .environment(uploader).environment(entry)
             }
             if language == .en {
-                store.removeFriend(entryID: BoxDexFixture.pikachuID)
                 try await shot(popover(home) { $0.tab = .home }, "screenshot-home", in: dir, height: nil)
-                XCTAssertTrue(store.addFriend(entryID: BoxDexFixture.pikachuID))
+                XCTAssertTrue(store.addFriend(entryID: StoredFriendScreenshotTests.bulbasaurID))
                 try await shot(await floatingFriends(usage: usage, store: store, sprites: scratch), "screenshot-floating-friends",
                                in: dir, height: nil)
+                store.removeFriend(entryID: StoredFriendScreenshotTests.bulbasaurID)
             }
-            try await shot(popover { $0.tab = .shop }, "screenshot-shop\(suffix)", in: dir, height: 548)
+            try await shot(try await storedFriends(store: store, language: language, usage: usage, defaults: defaults,
+                                                   sprites: scratch),
+                           "screenshot-stored-friends\(suffix)", in: dir, height: nil)
+            try await shot(popover { $0.tab = .shop }, "screenshot-shop\(suffix)", in: dir, height: 640)
             try await shot(popover { $0.tab = .bag }, "screenshot-bag\(suffix)", in: dir, height: 420)
             try await shot(heldItems(store: store), "screenshot-held-items\(suffix)", in: dir, height: nil)
             try await shot(popover { $0.tab = .dex }, "screenshot-collection-pokedex\(suffix)", in: dir, height: 420)
@@ -93,8 +96,8 @@ final class ReadmeScreenshotTests: XCTestCase {
                            "screenshot-pokemon-profile\(suffix)", in: dir, height: 560)
             try await shot(statusMoves(store: store, uploader: uploader, entry: entry),
                            "screenshot-status-moves\(suffix)", in: dir, height: nil)
-            try await shot(popover { $0.openBoxDetail(id: BoxDexFixture.pikachuID) },
-                           "screenshot-exp-share\(suffix)", in: dir, height: 372)
+            try await shot(popover { $0.openBoxDetail(id: StoredFriendScreenshotTests.bulbasaurID) },
+                           "screenshot-exp-share\(suffix)", in: dir, height: 380)
             let (battleStore, battleCleanup) = try BoxDexFixture.makeStore(
                 language: language, mutate: { Self.sample(&$0); Self.addKyogre(&$0) }, defaults: defaults)
             defer { battleCleanup() }
@@ -148,7 +151,8 @@ final class ReadmeScreenshotTests: XCTestCase {
         state.inventory["shiny-egg:150"] = 1
         state.inventory[ItemKind.punchingGlove.rawValue] = 1
         state.expShareHolders = [BoxDexFixture.pikachuID]
-        state.friendEntryIDs = [BoxDexFixture.charizardID, BoxDexFixture.pikachuID]
+        state.friendEntryIDs = [BoxDexFixture.charizardID]
+        StoredFriendScreenshotTests.addBulbasaur(&state)
         state.gymBadges.update("kanto") { $0.gyms = [1, 2, 3] }
     }
 
@@ -221,6 +225,38 @@ final class ReadmeScreenshotTests: XCTestCase {
             .frame(width: panel.width, height: panel.height)
             .frame(maxWidth: .infinity)
             .padding(.vertical, Spacing.lg)
+    }
+
+    /// The friend picker offering the stored Bulbasaur, and Home's header once it walks beside the raised Pokémon.
+    private func storedFriends(store: CompanionStore, language: AppLanguage, usage: UsageStore, defaults: UserDefaults,
+                               sprites: URL) async throws -> some View {
+        let (walking, cleanup) = try BoxDexFixture.makeStore(language: language, mutate: Self.sample, defaults: defaults)
+        addTeardownBlock { @MainActor in cleanup() }
+        XCTAssertTrue(walking.addFriend(entryID: StoredFriendScreenshotTests.bulbasaurID))
+        for id in Self.species { await walking.loadPokemonDetails(speciesID: id) }
+        walking.update(todayTokensByProvider: ["claude_code": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
+                       limitWarning: false, hasUsageData: true)
+        try await waitUntil("the walking store's line to load") { walking.currentLine != nil }
+        let spriteStore = SpriteStore(directory: sprites.appendingPathComponent("sprites"))
+        for entry in store.state.dex {
+            let friend = FriendSubject(entry)
+            _ = await spriteStore.data(speciesID: friend.megaSpriteID ?? friend.speciesID, animated: false,
+                                       shiny: friend.isShiny, form: friend.megaSpriteID == nil ? friend.form : nil,
+                                       female: friend.megaSpriteID == nil && friend.isFemale)
+        }
+        return VStack(alignment: .leading, spacing: 18) {
+            FriendPicker(store: store, spriteStore: spriteStore) {}
+                .frame(height: 96, alignment: .top)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .ptbCard()
+                .environment(store)
+            CompanionHeader(store: walking, spriteStore: spriteStore)
+                .padding(12)
+                .ptbCard()
+                .environment(walking).environment(usage)
+        }
+        .padding(PopoverMetrics.padding)
     }
 
     /// The gym list and the badge case, each on the card the Battle tab draws it on.
