@@ -216,7 +216,7 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 <td width="45%" align="center"><img src="assets/screenshot-nature-picker-ko.png" width="300" alt="5×5 성격표가 열린 롱스톤의 박스 페이지와 특성캡슐·특성패치·금색병뚜껑, 개체값마다 붙은 은색병뚜껑"></td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-battle-ko.png" width="300" alt="대결 탭 엔트리 — 나갈 순서대로 선 최대 여섯 마리"><br><br><img src="assets/screenshot-gyms-ko.png" width="300" alt="체육관 관장·사천왕·아지트와 배지 케이스"></td>
+<td width="45%" align="center"><img src="assets/screenshot-battle-ko.png" width="300" alt="대결 탭 엔트리 — 나갈 순서대로 선 최대 여섯 마리"><br><br><img src="assets/screenshot-gyms-ko.png" width="300" alt="체육관 관장·아지트·사천왕과 배지 케이스"></td>
 <td width="55%" valign="middle">
 <h3>⚔️ 체육관, 사천왕, 배지 케이스</h3>
 <a href="bot/README.md">YPoke</a> 연결을 마치면 <b>대결</b> 탭은 하위 탭 셋으로 나뉘어요. <b>엔트리</b>에는 나갈 포켓몬을 최대 여섯 마리까지 순서대로 세우고, <b>배틀</b>에는 체육관이, <b>기록</b>에는 최근 대결이 있어요. 쓰러지면 다음 포켓몬이 나오고, 중간에 바꿀 수는 없어요. <b>자동</b>이면 지금 키우는 포켓몬이 나가요. 줄마다 대결 레벨에서 실제로 싸우는 능력치를 보여 주고, 성격이 올리는 능력치에는 ↑, 내리는 능력치에는 ↓가 붙어요. 능력치와 타입은 그 개체의 폼을 따라요.

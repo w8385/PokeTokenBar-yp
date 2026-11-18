@@ -215,7 +215,7 @@ The Shop's Growth tab adds the <b>Ability Capsule</b> (the other regular ability
 <td width="45%" align="center"><img src="assets/screenshot-nature-picker.png" width="300" alt="An Onix's Box page with the 5×5 nature chart open, the Ability Capsule, Ability Patch and Gold Bottle Cap, and a Bottle Cap on each IV"></td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab, Entry sub-tab — up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, Elite Four, hideout and the badge case"></td>
+<td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab, Entry sub-tab — up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, hideout, Elite Four and the badge case"></td>
 <td width="55%" valign="middle">
 <h3>⚔️ Gyms, the Elite Four, and a badge case</h3>
 With the <a href="bot/README.md">YPoke</a> link set up, the <b>Battle</b> tab has three sub-tabs. <b>Entry</b> holds up to six Pokémon that fight in order, <b>Battle</b> holds the gyms, and <b>History</b> lists your recent battles. When one faints the next comes in; nothing switches mid-battle. <b>Auto</b> sends the Pokémon you're raising. Each row shows the stats it fights with at its battle level, with ↑ and ↓ on the stats its nature raises and lowers, and follows the Pokémon's form.

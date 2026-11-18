@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Battle tab, Battle sub-tab: gyms by region, the Elite Four run, the hideout run, the badge case and the
+/// Battle tab, Battle sub-tab: gyms by region, the hideout run, the Elite Four run, the badge case and the
 /// result of the last battle. Everything runs on the bot; the app sends the entry and keeps the rewards.
 @MainActor
 struct GymSection: View {
@@ -78,18 +78,15 @@ struct GymSection: View {
                 }
                 Divider()
             }
-            eliteRow(region, badges: badges, team: team)
-            Divider()
-            if let hidden = region.hidden {
-                let progress = badges.region(region.id)
-                GymHiddenRow(opponent: hidden, language: language, l: l, unlocked: progress.hallOfFame,
-                             beaten: progress.hiddenBeaten, fighting: service.inFlight == hidden.id,
-                             disabled: service.inFlight != nil) {
-                    Task { await service.fightGym(hidden, region: region, team: team) }
+            ForEach(Array(Self.runRows(region).enumerated()), id: \.element) { index, row in
+                if index > 0 { Divider() }
+                switch row {
+                case .hideout: hideoutRow(region, badges: badges, team: team)
+                case .elite: eliteRow(region, badges: badges, team: team)
+                case .hidden:
+                    if let hidden = region.hidden { hiddenRow(hidden, region: region, badges: badges, team: team) }
                 }
-                Divider()
             }
-            hideoutRow(region, badges: badges, team: team)
             if let failure = service.failure { failureLine(failure) }
         }
     }
@@ -123,6 +120,24 @@ struct GymSection: View {
             }
         }
         .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
+    }
+
+    enum RunRow {
+        case hideout, elite, hidden
+    }
+
+    /// The rows under a region's gyms, easiest first.
+    static func runRows(_ region: GymRegion) -> [RunRow] {
+        region.hidden == nil ? [.hideout, .elite] : [.hideout, .elite, .hidden]
+    }
+
+    private func hiddenRow(_ hidden: GymOpponent, region: GymRegion, badges: GymBadges, team: GymTeam.Team) -> some View {
+        let progress = badges.region(region.id)
+        return GymHiddenRow(opponent: hidden, language: language, l: l, unlocked: progress.hallOfFame,
+                            beaten: progress.hiddenBeaten, fighting: service.inFlight == hidden.id,
+                            disabled: service.inFlight != nil) {
+            Task { await service.fightGym(hidden, region: region, team: team) }
+        }
     }
 
     private func eliteRow(_ region: GymRegion, badges: GymBadges, team: GymTeam.Team) -> some View {
