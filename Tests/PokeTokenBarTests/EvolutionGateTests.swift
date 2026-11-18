@@ -367,16 +367,11 @@ final class EvolutionGateStoreTests: XCTestCase {
         XCTAssertEqual(s.currentSpeciesID, 706)
     }
 
-    func testAClickInsideTheAutoclickerGuardIsNotAPet() async throws {
-        let clock = GateClock()
-        let s = try store(tree: node(446, [node(143)]), clock: clock)
+    func testEveryClickIsAPetEvenWithNoTimePassing() async throws {
+        let s = try store(tree: node(446, [node(143)]))
         await s.hatch(baseID: 446)
-        for _ in 0..<3 {
-            clock.now.addTimeInterval(11)
-            s.growByClick()
-        }
-        s.growByClick()
-        XCTAssertEqual(s.state.active?.evolution.pets, 3)
+        for _ in 0..<4 { s.growByClick() }
+        XCTAssertEqual(s.state.active?.evolution.pets, 4)
     }
 
     func testEvolvingNincadaAlsoRegistersAShedinjaThatIsNeverPlanned() async throws {

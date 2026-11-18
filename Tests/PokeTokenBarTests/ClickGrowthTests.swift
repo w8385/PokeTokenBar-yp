@@ -24,21 +24,10 @@ final class ClickGrowthTests: XCTestCase {
                               rng: SeededRNG(seed: 7))
     }
 
-    /// Clicks spaced past the rate limit; returns how many counted.
-    @discardableResult
-    private func click(_ store: CompanionStore, _ clock: Clock, times: Int) -> Int {
-        var counted = 0
-        for _ in 0..<times {
-            clock.now += ClickGrowth.minInterval + 0.01
-            if case .counted = store.growByClick() { counted += 1 }
-        }
-        return counted
-    }
-
     func testClickGrowsTheEggWithoutTouchingUsageOrWallet() {
         let clock = Clock()
         let store = freshEgg(clock: clock)
-        XCTAssertEqual(store.growByClick(), .counted(ClickGrowth.tokensPerClick))
+        XCTAssertEqual(store.growByClick(), ClickGrowth.tokensPerClick)
         XCTAssertEqual(store.state.eggUsage, ClickGrowth.tokensPerClick)
         XCTAssertEqual(store.state.clickGrowth, ClickGrowth.tokensPerClick)
         XCTAssertEqual(store.state.usedSinceInstall, 0)
@@ -47,19 +36,31 @@ final class ClickGrowthTests: XCTestCase {
     func testClicksKeepCountingPastTheOldDailyLimit() {
         let clock = Clock()
         let store = freshEgg(clock: clock)
-        XCTAssertEqual(click(store, clock, times: 250), 250)
+        for _ in 0..<250 { store.growByClick() }
         XCTAssertEqual(store.state.clickGrowth, 250 * ClickGrowth.tokensPerClick)
     }
 
-    func testClicksFasterThanTheIntervalDoNotCount() {
+    func testRapidClicksWithNoTimePassingAllCount() {
         let clock = Clock()
         let store = freshEgg(clock: clock)
-        XCTAssertEqual(store.growByClick(), .counted(ClickGrowth.tokensPerClick))
-        clock.now += ClickGrowth.minInterval / 2
-        XCTAssertEqual(store.growByClick(), .tooSoon)
-        clock.now += ClickGrowth.minInterval / 2 + 0.01
-        XCTAssertEqual(store.growByClick(), .counted(ClickGrowth.tokensPerClick))
-        XCTAssertEqual(store.state.clickGrowth, 2 * ClickGrowth.tokensPerClick)
+        for click in 1...10 {
+            XCTAssertEqual(store.growByClick(), ClickGrowth.tokensPerClick, "click \(click)")
+        }
+        XCTAssertEqual(store.state.eggUsage, 10 * ClickGrowth.tokensPerClick)
+        XCTAssertEqual(store.state.clickGrowth, 10 * ClickGrowth.tokensPerClick)
+    }
+
+    func testOverlappingXPFlashesAddUpAndOnlyTheLastOneHides() {
+        var flash = XPFlash()
+        let first = flash.show(ClickGrowth.tokensPerClick)
+        let second = flash.show(ClickGrowth.tokensPerClick)
+        XCTAssertEqual(flash.amount, 2 * ClickGrowth.tokensPerClick)
+        flash.hide(first)
+        XCTAssertTrue(flash.isShown, "an older flash must not hide a newer one")
+        flash.hide(second)
+        XCTAssertFalse(flash.isShown)
+        _ = flash.show(500)
+        XCTAssertEqual(flash.amount, 500, "a flash after the badge hid starts from zero")
     }
 
     func testSaveWithTheOldDailyCountStillLoadsAndKeepsCounting() throws {
@@ -72,7 +73,7 @@ final class ClickGrowthTests: XCTestCase {
         let store = CompanionStore(provider: StubProvider(value: line), clock: { clock.now }, fileURL: url,
                                    rng: SeededRNG(seed: 7))
         XCTAssertEqual(store.state.clickGrowth, 540_000)
-        XCTAssertEqual(store.growByClick(), .counted(ClickGrowth.tokensPerClick))
+        XCTAssertEqual(store.growByClick(), ClickGrowth.tokensPerClick)
 
         let reloaded = CompanionStore(provider: StubProvider(value: line), clock: { clock.now }, fileURL: url,
                                       rng: SeededRNG(seed: 7))
@@ -99,7 +100,6 @@ final class ClickGrowthTests: XCTestCase {
         var clicks = 0
         while store.state.dex.isEmpty, clicks < 5_000 {
             clicks += 1
-            clock.now += ClickGrowth.minInterval + 0.01
             store.growByClick()
             if store.state.active == nil, store.state.eggUsage >= store.eggHatchThreshold {
                 await store.hatchIfNeeded()
@@ -107,6 +107,13 @@ final class ClickGrowthTests: XCTestCase {
         }
         XCTAssertLessThan(clicks, 5_000)
         XCTAssertEqual(store.state.dex.first?.finalID, 3)
+    }
+
+    func testRapidClicksKeepOnlyTheNewestParticles() {
+        let burst = PrayerBurst()
+        for i in 0..<20 { burst.spawn(xFraction: Double(i) / 20) }
+        XCTAssertEqual(burst.particles.count, PrayerBurst.maxParticles)
+        XCTAssertEqual(burst.particles.last?.xFraction, 19.0 / 20)
     }
 
     func testHeartParticleKeepsItsGlyph() {

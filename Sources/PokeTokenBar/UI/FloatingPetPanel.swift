@@ -515,15 +515,12 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     /// A click answers waiting/done agents, then prays over an egg or pets a hatched pet.
     func petClicked() {
         if tracker.dismissBubble() { agentDidChange() }
-        let growth = companion.growByClick()
+        companion.growByClick()
         let subject = companion.representativeSubject
         CryPlayer.shared.play(speciesID: subject.speciesID, form: subject.form)
         crowd.clicked(slot: 0)
         clickRouter.handle(subjectIsEgg: subject.speciesID == nil)
-        switch growth {
-        case .counted: prayerBurst.spawn(glyph: PrayerBurst.heart)
-        case .tooSoon: break
-        }
+        prayerBurst.spawn(glyph: PrayerBurst.heart)
     }
 
     /// Context-menu Open always opens, including when the representative is an egg.
@@ -1326,6 +1323,7 @@ final class PrayerBurst {
 
     /// A little longer than the 1 s float-and-fade, so a particle is gone only once it is invisible.
     static let lifetime: Duration = .milliseconds(1100)
+    static let maxParticles = 8
 
     private(set) var particles: [Particle] = []
     /// Bumped on every prayer; the egg wobbles once per change.
@@ -1334,6 +1332,7 @@ final class PrayerBurst {
     func spawn(glyph: String = PrayerBurst.prayer, xFraction: Double = .random(in: 0...1)) {
         let particle = Particle(xFraction: min(max(xFraction, 0), 1), glyph: glyph)
         particles.append(particle)
+        particles.removeFirst(max(0, particles.count - Self.maxParticles))
         wobbleCount += 1
         Task {
             try? await Task.sleep(for: Self.lifetime)

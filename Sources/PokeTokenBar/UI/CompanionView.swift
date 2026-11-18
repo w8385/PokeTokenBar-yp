@@ -730,6 +730,26 @@ extension DexEntryLink {
     }
 }
 
+/// The "+XP" badge over the Home sprite. Flashes that land while it is up add to it and keep it up.
+struct XPFlash: Equatable {
+    private(set) var amount = 0
+    private(set) var isShown = false
+    private var generation = 0
+
+    /// Returns the token to pass to `hide` once this flash has been up long enough.
+    mutating func show(_ xp: Int) -> Int {
+        amount = isShown ? amount + xp : xp
+        isShown = true
+        generation += 1
+        return generation
+    }
+
+    /// Hides only if no newer flash arrived after `token`.
+    mutating func hide(_ token: Int) {
+        if token == generation { isShown = false }
+    }
+}
+
 /// Lifts on hover and squeezes while pressed.
 @MainActor
 struct ClickGrowthSprite: ViewModifier {
@@ -770,8 +790,7 @@ struct CompanionHeader: View {
     @State private var eggWiggle = false
     // 사탕 "+XP" 순간 표시 (진화 없이 부분 진행일 때도 피드백)
     @State private var seenCandySeq = -1
-    @State private var candyXPShown = false
-    @State private var candyXPAmount = 0     // 표시 순간 캡처(consume 후에도 텍스트 유지)
+    @State private var xpFlash = XPFlash()
     // 민트 사용 시 "반짝" 스파클 (성격 변경 피드백 — 텍스트 없이 짧은 이펙트)
     @State private var seenMintSeq = -1
     @State private var mintSparkle = false
@@ -833,8 +852,8 @@ struct CompanionHeader: View {
                 }
             }
             .overlay(alignment: .top) {
-                if candyXPShown {
-                    Text("+\(TokenFormatter.compact(candyXPAmount)) XP")
+                if xpFlash.isShown {
+                    Text("+\(TokenFormatter.compact(xpFlash.amount)) XP")
                         .font(.caption.weight(.bold)).foregroundStyle(.orange)
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(.regularMaterial, in: Capsule())
@@ -1084,21 +1103,20 @@ struct CompanionHeader: View {
         crowd.configure(order: order, motionAllowed: !reduceMotion, active: true)
     }
 
-    /// A press always bounces the sprite; only a counted click shows "+XP".
     private func pet() {
         crowd.clicked(slot: 0)
         celebScale = 0.9
         withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) { celebScale = 1 }
         cryPlayer.play(speciesID: store.currentSpeciesID, form: store.currentForm)
-        if case .counted(let xp) = store.growByClick() { flashXP(xp) }
+        flashXP(store.growByClick())
     }
 
     private func flashXP(_ amount: Int) {
-        candyXPAmount = amount
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { candyXPShown = true }
+        var shown = 0
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { shown = xpFlash.show(amount) }
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 1_300_000_000)
-            withAnimation(.easeOut(duration: 0.4)) { candyXPShown = false }
+            withAnimation(.easeOut(duration: 0.4)) { xpFlash.hide(shown) }
         }
     }
 
