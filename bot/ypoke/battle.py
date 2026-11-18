@@ -1692,7 +1692,8 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
     exposed = set(_field(defender, "exposes", move.type))
     if exposed:
         types = tuple(kind for kind in types if kind not in exposed or effectiveness(move.type, (kind,)) > 0)
-    return effectiveness(move.type, types) * math.prod(_field(defender, "weakens", move.type))
+    return (effectiveness(move.type, types) * hooks.move(move, "type_multiplier", types, default=1.0)
+            * math.prod(_field(defender, "weakens", move.type)))
 
 
 def _field(fighter: _Fighter, hook: str, *args) -> list:

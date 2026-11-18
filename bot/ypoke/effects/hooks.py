@@ -25,7 +25,8 @@ HOOKS = {
     "craves": "item: eating the berry now would help its holder",
     "burdens": "item: the item only hurts or hinders the given holder, so a move chooser hands it over",
     "bars_status_moves": "item: its holder only picks damaging moves",
-    "modify_type": "move: the move as this weather or terrain changes it: its type, or its accuracy (Thunder in sun)",
+    "modify_type": "move: the move as this weather, terrain or user changes it: its type, or its accuracy (Thunder in "
+                   "sun)",
     "modify_priority": "ability, move: added to the move's priority",
     "moves_first": "item: a draw that puts its holder first in its priority bracket (holders only draw)",
     "swaps_stat": "state: the stat whose raw value stands in for another (Wonder Room)",
@@ -73,6 +74,8 @@ HOOKS = {
     "accuracy_as_target": "item: multiplies the accuracy of a move used on its holder",
     "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
     "exposes": "state: the type of its holder whose immunity a move type ignores, and its raised evasion (Foresight)",
+    "type_multiplier": "move: multiplies how well it hits these types, after the type chart (Freeze-Dry on Water, "
+                       "Flying Press's added Flying)",
     "weakens": "state: multiplies how well a move type hits its holder (Tar Shot)",
     "sure_hit": "state: the moves of the given user hit its holder without an accuracy draw (Lock-On)",
     "grounds": "state: grounds every Pokémon, so Ground moves hit Flying types and Levitate",
