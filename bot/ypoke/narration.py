@@ -48,7 +48,10 @@ FORM_CAPTION = {
     "mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼", "origin": "오리진폼", "crowned-sword": "검왕의모습",
     "crowned-shield": "방패왕의모습",
 }
-ITEM_EFFECT_TEXT = {"cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독"}
+ITEM_EFFECT_TEXT = {
+    "cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독",
+    "got": "손에 넣음", "eaten": "먹음", "lost": "녹아 없어짐",
+}
 TRICK_ROOM_ICON = "🔀"
 ROCK_ICON = "🪨"
 EFFECT_TEXT = {
@@ -80,6 +83,8 @@ EFFECT_TEXT = {
     "conversion": "🔀첫 기술의 타입이 됐다", "conversion-2": "🔀상대 기술에 강한 타입이 됐다",
     "camouflage": "🎨주변에 맞는 타입이 됐다", "reflect-type": "🪞상대와 같은 타입이 됐다",
     "role-play": "🎭상대의 특성을 따라 했다", "doodle": "🎨상대의 특성을 따라 그렸다",
+    "recycle": "♻️다 쓴 도구를 되살렸다", "teatime": "🍵모두 나무열매를 먹었다",
+    "stuff-cheeks": "🐿️나무열매를 먹었다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
@@ -104,6 +109,8 @@ ON_FOE_TEXT = {
     "soak": "💧물 타입이 됐다", "magic-powder": "✨에스퍼 타입이 됐다", "trick-or-treat": "🎃고스트 타입이 더해졌다",
     "forests-curse": "🌳풀 타입이 더해졌다", "skill-swap": "🔄특성을 맞바꿨다", "entrainment": "💃특성을 옮겼다",
     "simple-beam": "🌀특성이 단순이 됐다", "worry-seed": "😟특성이 불면이 됐다", "gastro-acid": "🧪특성이 사라졌다",
+    "trick": "🎁도구를 맞바꿨다", "switcheroo": "🎁도구를 맞바꿨다", "bestow": "🎁도구를 건넸다",
+    "corrosive-gas": "🧪도구를 녹였다",
 }
 VOLATILE_LABEL = {
     "wish": "🌠소원", "aqua-ring": "💧물의고리", "ingrain": "🌱뿌리박기", "healing-wish": "🌙치유소원",

@@ -38,19 +38,37 @@ class SitrusBerry(Handler):
     def between_hits(self, name, fighter):
         if fighter.hp * items.SITRUS_THRESHOLD_FRACTION > fighter.max_hp:
             return False
+        self._eat(fighter)
+        return True
+
+    def eaten(self, name, fighter, side, turn):
+        self._eat(fighter)
+        return battle.ItemHeal(turn, side, fighter.combatant.name, name, fighter.hp_percent)
+
+    def craves(self, name, fighter):
+        return (fighter.max_hp - fighter.hp) * items.SITRUS_HEAL_FRACTION >= fighter.max_hp
+
+    @staticmethod
+    def _eat(fighter):
         fighter.hp = min(fighter.max_hp, fighter.hp + max(1, fighter.max_hp // items.SITRUS_HEAL_FRACTION))
         fighter.item = None
-        return True
 
 
 @register("items", "lum-berry")
 class LumBerry(Handler):
     def on_update(self, name, fighter, side, turn):
-        if fighter.status is None and fighter.confusion_left == 0:
+        if not self.craves(name, fighter):
             return None
+        return self.eaten(name, fighter, side, turn)
+
+    def eaten(self, name, fighter, side, turn):
+        cured = self.craves(name, fighter)
         fighter.status, fighter.confusion_left, fighter.sleep_left = None, 0, 0
         fighter.item = None
-        return battle.ItemEffect(turn, side, fighter.combatant.name, name, "cure")
+        return battle.ItemEffect(turn, side, fighter.combatant.name, name, "cure" if cured else "eaten")
+
+    def craves(self, name, fighter):
+        return fighter.status is not None or fighter.confusion_left > 0
 
 
 @register("items", "white-herb")
@@ -67,6 +85,9 @@ class WhiteHerb(Handler):
 class ChoiceItem(Handler):
     def bars_status_moves(self, name):
         return True
+
+    def burdens(self, name, holder):
+        return any(not move.power for move in holder.combatant.moves)
 
     def modify_stat(self, name, stat, weather, statused, can_evolve):
         return items.CHOICE_MULTIPLIER if CHOICE_STATS[name] == stat else 1.0
@@ -169,6 +190,10 @@ class ResistBerry(Handler):
         kind = items.RESIST_BERRIES[name]
         return kind == move_type and (effectiveness > 1 or kind == "normal")
 
+    def eaten(self, name, fighter, side, turn):
+        fighter.item = None
+        return battle.ItemEffect(turn, side, fighter.combatant.name, name, "eaten")
+
 
 @register("items", "focus-sash")
 class FocusSash(Handler):
@@ -240,15 +265,22 @@ class BlackSludge(Leftovers):
         fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // items.BLACK_SLUDGE_HURT_FRACTION))
         return battle.ItemHeal(turn, side, fighter.combatant.name, name, fighter.hp_percent, fighter.hp == 0)
 
+    def burdens(self, name, holder):
+        return "poison" not in holder.combatant.types
+
 
 @register("items", "status-orb")
 class StatusOrb(Handler):
     def end_of_turn(self, name, fighter, side, turn, rng):
-        ailment = items.ORB_AILMENTS[name]
-        if not battle._open_to(ailment, fighter) or hooks.ability(fighter, "blocks_ailment", ailment, default=False):
+        if not self.burdens(name, fighter):
             return None
+        ailment = items.ORB_AILMENTS[name]
         battle._inflict(ailment, fighter, side, rng)
         return battle.ItemEffect(turn, side, fighter.combatant.name, name, ailment)
+
+    def burdens(self, name, holder):
+        ailment = items.ORB_AILMENTS[name]
+        return battle._open_to(ailment, holder) and not hooks.ability(holder, "blocks_ailment", ailment, default=False)
 
 
 elsewhere("items", "mega_stones: sets Combatant.mega, which battle._mega_evolve applies on entry",
