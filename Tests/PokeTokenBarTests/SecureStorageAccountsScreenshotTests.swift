@@ -102,4 +102,74 @@ final class SecureStorageAccountsScreenshotTests: XCTestCase {
             }
         }
     }
+
+    private struct Scripted: ClaudeLimitsProviding {
+        let result: Result<LimitStatus, LimitsError>
+        func fetch(allowKeychainPrompt: Bool) async throws -> LimitStatus { try result.get() }
+    }
+
+    private struct ClaudeUsage: UsageProvider {
+        let id = "claude_code"
+        let displayName = "Claude Code"
+        var reportsCost = true
+        func fetchDaily() async throws -> DailyUsage? {
+            DailyUsage(date: LocalUsageReader.todayKey(), inputTokens: 400_000, outputTokens: 200_000,
+                       cacheCreationTokens: 300_000, cacheReadTokens: 1_100_000, totalTokens: 2_000_000, totalCost: 4.8)
+        }
+        func fetchEnrichment() async -> ProviderEnrichment { ProviderEnrichment() }
+    }
+
+    func testCaptureARateLimitedAccountTab() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_SLOT_ACCOUNTS_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_SLOT_ACCOUNTS_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("slot-paused-shot-\(UUID())")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let slot = URL(fileURLWithPath: "/Users/example/.claude-acct-team-standby", isDirectory: true)
+        let json = #"{"five_hour":{"utilization":42},"seven_day":{"utilization":18}}"#
+        var main = try JSONDecoder().decode(LimitStatus.self, from: Data(json.utf8))
+        main.accountEmail = "me@example.com"
+
+        for language in [AppLanguage.ko, .en] {
+            for (stage, detected) in [("before", [URL]()), ("after", [slot])] {
+                let defaults = UserDefaults(suiteName: "slot-paused-shot-\(UUID())")!
+                let usage = UsageStore(
+                    providers: [ClaudeUsage()], claudeLimitsProvider: Scripted(result: .success(main)),
+                    additionalClaudeLimitsProvider: { _ in Scripted(result: .failure(.rateLimited(retryAfter: 3600))) },
+                    discoverClaudeConfigDirs: { detected },
+                    readDefaultIdentity: { nil }, readLastPrompt: { _ in nil },
+                    claudeUsageEntries: { _ in [] }, readPromptHistory: { _ in [:] },
+                    codexLimitsProvider: NoCodex(), antigravityLimitsProvider: NoAntigravity(),
+                    statusProvider: NoStatuses(), sessionKeys: NoSessionKey(),
+                    accountSessionKeys: { _ in NoSessionKey() }, autoRefresh: false, defaults: defaults)
+                await usage.refresh(scheduleEmptyRetry: false)
+                XCTAssertEqual(usage.claudeAccounts.count, detected.count + 1)
+                let (store, cleanup) = try BoxDexFixture.makeStore(language: language, defaults: defaults)
+                defer { cleanup() }
+                let uploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch)
+                let nav = PopoverNavigation()
+                nav.tab = .home
+                nav.claudeAccountID = usage.claudeAccounts.last?.id
+                let view = PopoverView(screenHeight: 5000)
+                    .environment(usage).environment(store).environment(nav).environment(uploader)
+                    .environment(UpdateChecker(currentVersion: "3.0.0", defaults: defaults, fetchLatest: { nil }))
+                    .environment(BattleEntryStore(defaults: defaults))
+                    .frame(width: PopoverMetrics.width, alignment: .top)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(Color(nsColor: .windowBackgroundColor))
+                    .environment(\.colorScheme, .light)
+                let host = OffscreenRender.host(view, size: CGSize(width: PopoverMetrics.width, height: 2_000),
+                                                appearance: .aqua)
+                try await OffscreenRender.settle(host)
+                host.frame.size.height = host.fittingSize.height
+                try await OffscreenRender.settle(host)
+                try OffscreenRender.writePNG(
+                    of: host, to: directory.appendingPathComponent("popover-paused-account-\(stage)-\(language.rawValue).png"),
+                    scale: 2)
+            }
+        }
+    }
 }

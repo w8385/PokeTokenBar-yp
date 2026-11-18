@@ -275,15 +275,64 @@ struct AdditionalClaudeLimits: Sendable {
     /// The rejected credential is the folder's own session key: the fix is a fresh key in Settings,
     /// not Claude Code, and a retry would only read the Keychain the key is there to avoid.
     var sessionKeyExpired: Bool
+    /// The server rate limited this folder: automatic polls skip it until then.
+    var pausedUntil: Date?
+    /// The values were saved by an earlier run and not fetched since launch.
+    var isRestored = false
 
     init(rootPath: String, status: LimitStatus, isExpired: Bool = false, sessionKeyExpired: Bool = false,
-         updatedAt: Date? = nil) {
+         updatedAt: Date? = nil, pausedUntil: Date? = nil) {
         self.rootPath = rootPath
         self.key = ClaudeAccountRoots.pathKey(for: URL(fileURLWithPath: rootPath))
         self.status = status
         self.isExpired = isExpired
         self.sessionKeyExpired = sessionKeyExpired
         self.updatedAt = updatedAt
+        self.pausedUntil = pausedUntil
+    }
+}
+
+/// What an additional folder showed and its rate-limit backoff, kept across launches in UserDefaults.
+struct SavedAdditionalClaudeLimits: Codable {
+    static let defaultsKey = "additionalClaudeLimitsSaved"
+
+    let rootPath: String
+    var status: LimitStatus?
+    var email: String?
+    var organizationName: String?
+    var planDisplayName: String?
+    var subscriptionType: String?
+    var rateLimitTier: String?
+    var updatedAt: Date?
+    var pausedUntil: Date?
+    var backoffInterval: TimeInterval?
+
+    init(rootPath: String, values: AdditionalClaudeLimits?, pausedUntil: Date?, backoffInterval: TimeInterval?) {
+        self.rootPath = rootPath
+        if let values, values.updatedAt != nil, !values.isExpired {
+            status = values.status
+            email = values.status.accountEmail
+            organizationName = values.status.accountOrganizationName
+            planDisplayName = values.status.planDisplayName
+            subscriptionType = values.status.subscriptionType
+            rateLimitTier = values.status.rateLimitTier
+            updatedAt = values.updatedAt
+        }
+        self.pausedUntil = pausedUntil
+        self.backoffInterval = backoffInterval
+    }
+
+    /// The saved values as a stale tab, nil when only the backoff was saved.
+    var restored: AdditionalClaudeLimits? {
+        guard var status, let updatedAt else { return nil }
+        status.accountEmail = email
+        status.accountOrganizationName = organizationName
+        status.planDisplayName = planDisplayName
+        status.subscriptionType = subscriptionType
+        status.rateLimitTier = rateLimitTier
+        var account = AdditionalClaudeLimits(rootPath: rootPath, status: status, updatedAt: updatedAt)
+        account.isRestored = true
+        return account
     }
 }
 
@@ -304,6 +353,8 @@ struct ClaudeAccountLimits: Sendable, Identifiable {
     var updatedAt: Date? = nil
     /// See `AdditionalClaudeLimits.sessionKeyExpired`. The default account keeps `UsageStore.limitsAuthExpiry`.
     var sessionKeyExpired = false
+    var pausedUntil: Date? = nil
+    var isRestored = false
 
     static func defaultAccount(_ status: LimitStatus, isExpired: Bool = false,
                                updatedAt: Date? = nil) -> ClaudeAccountLimits {
@@ -315,7 +366,8 @@ struct ClaudeAccountLimits: Sendable, Identifiable {
         ClaudeAccountLimits(id: account.key, windowKeyPrefix: "claude.\(account.key)",
                             fallbackTitle: (account.rootPath as NSString).abbreviatingWithTildeInPath,
                             status: account.status, isDefault: false, isExpired: account.isExpired,
-                            updatedAt: account.updatedAt, sessionKeyExpired: account.sessionKeyExpired)
+                            updatedAt: account.updatedAt, sessionKeyExpired: account.sessionKeyExpired,
+                            pausedUntil: account.pausedUntil, isRestored: account.isRestored)
     }
 
     /// The account has at least one official window to show (a placeholder tab has none).
@@ -324,7 +376,7 @@ struct ClaudeAccountLimits: Sendable, Identifiable {
     /// Same 15-minute rule as the default account's stale label.
     func isStale(now: Date = Date()) -> Bool {
         guard hasLimits, !isExpired, let updatedAt else { return false }
-        return now.timeIntervalSince(updatedAt) > 15 * 60
+        return isRestored || now.timeIntervalSince(updatedAt) > 15 * 60
     }
 
     /// Short tab title: the organization for a team plan, the email for a personal plan

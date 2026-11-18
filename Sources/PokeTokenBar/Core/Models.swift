@@ -225,7 +225,7 @@ enum LimitWindowSpan {
 
 // MARK: - OAuth limits (api.anthropic.com/api/oauth/usage)
 
-struct LimitWindow: Decodable, Sendable {
+struct LimitWindow: Codable, Sendable {
     var utilization: Double?
     var resetsAt: String?
 
@@ -243,7 +243,7 @@ struct LimitWindow: Decodable, Sendable {
     }
 }
 
-struct LimitStatus: Decodable, Sendable {
+struct LimitStatus: Codable, Sendable {
     var fiveHour: LimitWindow?
     var sevenDay: LimitWindow?
     var sevenDayOpus: LimitWindow?
@@ -337,7 +337,7 @@ struct LimitStatus: Decodable, Sendable {
 /// oauth/usage 신형 `limits[]` 엔트리 — 레거시 five_hour/seven_day 를 일반화한 목록.
 /// 구 seven_day_opus/seven_day_sonnet 는 null 로 바뀌었고, 모델별 주간 한도는
 /// kind=weekly_scoped + scope.model.displayName 으로 여기에만 온다.
-struct OAuthLimitEntry: Decodable, Sendable {
+struct OAuthLimitEntry: Codable, Sendable {
     var kind: String?
     var group: String?
     var percent: Double?
@@ -346,9 +346,9 @@ struct OAuthLimitEntry: Decodable, Sendable {
     var scope: Scope?
     var isActive: Bool?
 
-    struct Scope: Decodable, Sendable {
+    struct Scope: Codable, Sendable {
         var model: Model?
-        struct Model: Decodable, Sendable {
+        struct Model: Codable, Sendable {
             var displayName: String?
             private enum CodingKeys: String, CodingKey { case displayName = "display_name" }
         }
