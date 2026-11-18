@@ -87,6 +87,12 @@ extension L {
 
     func expShareMovedLine(_ from: String, to: String) -> String { "\(from) → \(to)" }
 
+    func boxGraduatedLine(_ name: String) -> String {
+        t("\(KoreanParticle.subject.attach(to: name)) 박스에서 졸업했어요.", "\(name) graduated in the Box.",
+          "\(name)がボックスで卒業しました。", "\(name) se graduó en la Caja.", "\(name) a obtenu son diplôme dans la Boîte.",
+          "\(name) se formou na Caixa.", "\(name) hat in der Box seinen Abschluss gemacht.", "\(name) выпустился в Коробке.")
+    }
+
     func expShareBaggedLine(_ from: String) -> String {
         t("\(from) → 가방", "\(from) → Bag", "\(from) → バッグ", "\(from) → Mochila", "\(from) → Sac", "\(from) → Mochila",
           "\(from) → Beutel", "\(from) → Сумка")

@@ -1895,12 +1895,18 @@ final class CompanionStore {
             guard let line = expShareLines[entry.baseID] else { continue }
             if evolveGraduateIfReady(id: entry.id, in: line, celebrate: false) { evolved = true }
         }
+        var graduated: [String] = []
         for holder in expShareStoredLines {
             guard let line = expShareLines[holder.baseID] else { continue }
             if evolveStoredLineIfReady(id: holder.id, in: line) { evolved = true }
+            if isStoredLineGraduating(id: holder.id, in: line),
+               let name = graduateStoredLine(id: holder.id, in: line) { graduated.append(l.boxGraduatedLine(name)) }
         }
-        if evolved { save() }
-        moveIdleExpShares()
+        let moved = moveIdleExpShares()
+        if evolved || !graduated.isEmpty || !moved.isEmpty { save() }
+        guard !graduated.isEmpty || !moved.isEmpty else { return }
+        notifyCompanionEvent(graduated.isEmpty ? l.expShareMovedTitle : l.notifGraduateTitle,
+                             (graduated + moved).joined(separator: "\n"))
     }
 
     /// The step a stored line takes in the Box now: the one the raised line would choose, through a path that asks
@@ -1919,7 +1925,31 @@ final class CompanionStore {
         return (node, step.next, step.replans)
     }
 
-    /// Takes every step a stored holder can take in the Box. It never graduates there. The caller saves.
+    /// A stored holder at its graduation point, as the raised line would graduate: no growth option left and its stage
+    /// XP full. An Everstone doesn't stop it there.
+    private func isStoredLineGraduating(id: String, in line: EvoLine) -> Bool {
+        guard let mon = state.storedLines[id]?.mon, line.baseID == mon.baseID, !isTradeLocked(id),
+              mon.dittoDisguise == nil || mon.dittoRevealed, mon.usedAtStage >= stageThreshold(for: mon),
+              let node = line.tree.node(withID: mon.currentID) else { return false }
+        return growthOptions(of: node, gender: mon.profile?.gender).isEmpty
+    }
+
+    /// Moves a stored line to the graduates under the same id: it keeps its friend slot, held items and Exp. Share.
+    /// Returns its name for the notice. The caller saves.
+    private func graduateStoredLine(id: String, in line: EvoLine) -> String? {
+        guard let stored = state.storedLines.removeValue(forKey: id) else { return nil }
+        state.dex.removeAll { $0.id == id && $0.isReleased }
+        var record = graduateRecord(of: stored.mon, in: line)
+        record.id = id
+        state.dex.append(record)
+        let storedKey = CompanionState.friendKey(storedLine: id)
+        state.friendEntryIDs = state.friendEntryIDs.map { $0 == storedKey ? id : $0 }
+        return formDisplayName(line.localizedName(record.finalID, state.language), speciesID: record.finalID,
+                               form: record.form)
+    }
+
+    /// Takes every step a stored holder can take in the Box. The caller graduates it once it can't go further.
+    /// The caller saves.
     private func evolveStoredLineIfReady(id: String, in line: EvoLine) -> Bool {
         var evolved = false
         for _ in 0..<5 {
@@ -2222,21 +2252,11 @@ final class CompanionStore {
     /// Returns the new dex entry's id.
     @discardableResult
     private func graduate() -> String? {
-        guard var a = state.active else { return nil }
-        a.profile?.advanceGrowth(to: PokemonBalance.graduationTotal(a.rarity), rarity: a.rarity)
-        if let details = pokemonDetailsByID[a.currentID] { a.profile?.enrich(with: details) }
-        let finalID = a.currentID
-        let entryID = a.profile?.instanceID ?? UUID().uuidString
-        state.collectedFinals.insert("\(a.baseID):\(finalID)")
-        state.dex.append(DexEntry(id: entryID,
-                                  baseID: a.baseID, finalID: finalID,
-                                  chainOrder: a.pathIDs, rarity: a.rarity, caughtAt: clock(),
-                                  isShiny: a.isShiny, nature: a.nature,
-                                  profile: a.profile,
-                                  names: currentLine.map { line in   // 체인 각 종의 다국어 이름 저장(표시 즉시)
-                                      Dictionary(uniqueKeysWithValues:
-                                          a.pathIDs.compactMap { id in line.names[id].map { (id, $0) } })
-                                  }, form: a.form, prayers: a.prayers))
+        guard let a = state.active else { return nil }
+        let record = graduateRecord(of: a, in: currentLine)
+        let finalID = record.finalID
+        let entryID = record.id
+        state.dex.append(record)
         let name = formDisplayName(currentLine?.localizedName(finalID, state.language) ?? "",
                                    speciesID: finalID, form: a.form)
         justGraduated = name
@@ -2255,6 +2275,22 @@ final class CompanionStore {
         // "알을 받는 순간" 즉시 프리패칭 시작 — 다음 부화의 종·라인·스프라이트 예열.
         Task { await self.ensureEggPrefetch() }
         return entryID
+    }
+
+    /// The graduate `a` becomes, wherever it graduates. Records its final in `collectedFinals`; the caller adds it.
+    private func graduateRecord(of mon: MonState, in line: EvoLine?) -> DexEntry {
+        var a = mon
+        a.profile?.advanceGrowth(to: PokemonBalance.graduationTotal(a.rarity), rarity: a.rarity)
+        if let details = pokemonDetailsByID[a.currentID] { a.profile?.enrich(with: details) }
+        state.collectedFinals.insert("\(a.baseID):\(a.currentID)")
+        return DexEntry(id: a.profile?.instanceID ?? UUID().uuidString,
+                        baseID: a.baseID, finalID: a.currentID,
+                        chainOrder: a.pathIDs, rarity: a.rarity, caughtAt: clock(),
+                        isShiny: a.isShiny, nature: a.nature,
+                        profile: a.profile,
+                        names: line.map { line in
+                            Dictionary(uniqueKeysWithValues: a.pathIDs.compactMap { id in line.names[id].map { (id, $0) } })
+                        }, form: a.form, prayers: a.prayers)
     }
 
     // MARK: 인벤토리 / 이상한 사탕

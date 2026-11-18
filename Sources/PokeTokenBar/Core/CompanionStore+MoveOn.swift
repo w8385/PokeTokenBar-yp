@@ -168,9 +168,10 @@ extension CompanionStore {
 
     // MARK: Idle Exp. Share holders
 
-    /// A holder that can't use more XP passes its copy to the closest candidate, or back to the bag.
-    func moveIdleExpShares() {
-        guard autoMoveOn else { return }
+    /// A holder that can't use more XP passes its copy to the closest candidate, or back to the bag. Returns the
+    /// notice lines; the caller posts them.
+    func moveIdleExpShares() -> [String] {
+        guard autoMoveOn else { return [] }
         var lines: [String] = []
         for holder in state.expShareHolders where holder != state.raisedEntryID && isIdleExpShareHolder(holder) {
             let from = candidateName(holder)
@@ -181,8 +182,7 @@ extension CompanionStore {
                 lines.append(l.expShareBaggedLine(from))
             }
         }
-        guard !lines.isEmpty else { return }
-        notifyCompanionEvent(l.expShareMovedTitle, lines.joined(separator: "\n"))
+        return lines
     }
 
     /// Unknown (its line not loaded yet) counts as busy.
@@ -192,8 +192,7 @@ extension CompanionStore {
             guard let line = expShareLines[mon.baseID], let node = line.tree.node(withID: mon.currentID),
                   mon.dittoDisguise == nil || mon.dittoRevealed, !holdsEverstone(id) else { return false }
             let options = growthOptions(of: node, gender: mon.profile?.gender)
-            if options.isEmpty { return (mon.profile?.level ?? 5) >= 100 }
-            guard mon.usedAtStage >= stageThreshold(for: mon) else { return false }
+            guard !options.isEmpty, mon.usedAtStage >= stageThreshold(for: mon) else { return false }
             let next = lineStep(of: mon, at: node, among: options).next
             guard let rule = EvolutionRules.rule(for: next.speciesID), !rule.paths.isEmpty else { return false }
             let context = storedLineContext(stored)
@@ -202,9 +201,10 @@ extension CompanionStore {
             }
         }
         guard let entry = state.dex.first(where: { $0.id == id && !$0.isReleased }),
-              let line = expShareLines[entry.baseID], !holdsEverstone(id) else { return false }
+              let line = expShareLines[entry.baseID] else { return false }
         let options = graduateOptions(entry, in: line)
         if options.isEmpty { return (entry.profile?.level ?? 5) >= 100 }
+        guard !holdsEverstone(id) else { return false }
         let context = graduateContext(entry)
         return options.allSatisfy { EvolutionRules.rule(for: $0.speciesID)?.waitsOnPlayer(in: context) == true }
     }
