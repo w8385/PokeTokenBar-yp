@@ -195,6 +195,13 @@ Gym leaders field three to six Pokémon of their own type from their region, eac
 </td>
 </tr>
 <tr>
+<td width="55%" valign="middle">
+<h3>✨ The hidden boss</h3>
+Beat the champion and each region's <b>hidden boss</b> opens below the Elite Four: one battle against six Pokémon and an unrevealed finale. The first win pays a TM with 100+ power, a guaranteed-shiny egg of the region's legendary, 16 Rare Candies and the region's signature items, and adds an emblem to the badge case. The Shop now sells every item an NPC trainer holds, such as the Red and Blue Orbs, plates, resist berries and the Punching Glove.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-hidden-boss.png" width="300" alt="The hidden boss beaten, with its first-clear prize"></td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-difficulty.png" width="300" alt="Choose your growth pace"></td>
 <td width="55%" valign="middle">
 <h3>Choose your growth pace</h3>

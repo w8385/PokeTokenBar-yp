@@ -196,6 +196,13 @@ Pi は複数のモデルを一つのセッションログに流すことがあ�
 </td>
 </tr>
 <tr>
+<td width="55%" valign="middle">
+<h3>✨ 隠れた強者</h3>
+チャンピオンに勝つと、各地方の四天王の下に<b>隠れた強者</b>が現れます。6匹と正体を隠した最後の1匹を相手に、1回だけ戦います。初めて勝つと、威力100以上のわざマシン、その地方の伝説のポケモンの色違いのタマゴ、ふしぎなアメ16個、その地方の専用道具がもらえ、バッジケースに紋章が加わります。ショップでは NPC トレーナーが持つ道具をすべて売っています。べにいろのたま・あいいろのたま、プレート、半減きのみ、パンチグローブなどです。
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-hidden-boss-ja.png" width="300" alt="隠れた強者に勝って受け取った初回クリアの報酬"></td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-difficulty-ja.png" width="300" alt="自分のペースで育てる"></td>
 <td width="55%" valign="middle">
 <h3>自分のペースで育てる</h3>

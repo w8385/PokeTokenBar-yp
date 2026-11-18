@@ -196,6 +196,13 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 </td>
 </tr>
 <tr>
+<td width="55%" valign="middle">
+<h3>✨ 숨겨진 강자</h3>
+챔피언을 이기면 지방마다 사천왕 아래에 <b>숨겨진 강자</b>가 열려요. 여섯 마리와 정체를 숨긴 마지막 포켓몬을 상대로 한 번 싸워요. 처음 이기면 위력 100 이상의 기술머신, 그 지방 전설 포켓몬의 빛나는 알, 이상한사탕 16개, 그 지방의 전용 도구를 받고, 배지 케이스에 문장이 생겨요. 상점에서는 NPC 트레이너가 지닌 도구를 모두 팔아요. 주홍구슬·쪽빛구슬, 플레이트, 반감 열매, 펀치글러브 같은 것들이에요.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-hidden-boss-ko.png" width="300" alt="숨겨진 강자를 이기고 받은 첫 클리어 보상"></td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-difficulty-ko.png" width="300" alt="내 페이스에 맞춰 키우기"></td>
 <td width="55%" valign="middle">
 <h3>내 페이스에 맞춰 키우기</h3>
