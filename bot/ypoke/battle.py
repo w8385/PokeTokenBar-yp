@@ -1148,8 +1148,9 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     accuracy = (move.accuracy or 0) * _accuracy_stages(attacker, defender) * (
         hooks.item(attacker, "accuracy_as_user", default=1.0)
         * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy"))
-    if (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
-            and not _sure_hit(attacker, defender) and rng.random() * 100 >= accuracy):
+    checks_accuracy = (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
+                       and not _sure_hit(attacker, defender))
+    if checks_accuracy and rng.random() * 100 >= accuracy:
         crash = _crash(attacker, move)
         return Action(turn, side, *names, move.name, missed=True, multiplier=multiplier, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=crash,
@@ -1168,7 +1169,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                   + sum(_field(attacker, "crit_stage")))
     no_crit = any(_field(defender, "guards_crit"))
     hit_count = _hit_count(move, rng)
+    rolls_each_hit = checks_accuracy and hooks.move(move, "rolls_each_hit", default=False)
     for hit in range(hit_count):
+        if hit > 0 and rolls_each_hit and rng.random() * 100 >= accuracy:
+            break
         hit_critical = rng.random() < CRITICAL_CHANCES[min(crit_stage, len(CRITICAL_CHANCES) - 1)] and not no_crit
         damage = _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng, hit)
         if resisted and hit == 0:
@@ -1536,11 +1540,19 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
     accuracy = 100 if skips else move.accuracy
     multiplier = _multiplier(move, defender, weather)
     return (
-        _power(attacker, defender, move, weather, multiplier) * move.expected_hits * _stab(attacker, move) * multiplier
+        _power(attacker, defender, move, weather, multiplier) * _expected_hits(move, accuracy)
+        * _stab(attacker, move) * multiplier
         * _weather_boost(move, weather) * _damage_taken(defender, move)
         * _item_boost(attacker, move, multiplier)
         * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False)
     )
+
+
+def _expected_hits(move: Move, accuracy: float) -> float:
+    """Hits that each draw for accuracy count only while every earlier one landed."""
+    if accuracy < 100 and hooks.move(move, "rolls_each_hit", default=False):
+        return sum((accuracy / 100) ** hit for hit in range(move.max_hits))
+    return move.expected_hits
 
 
 def _ignores_burn(move: Move) -> bool:
