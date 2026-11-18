@@ -6,6 +6,11 @@ import XCTest
 /// Reusing raw Data alone does not prevent View.init from reopening files and creating NSImages.
 @MainActor
 final class SpriteImageCacheTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        SpriteLoader.imageCache.removeAllObjects()
+    }
+
     func testSynchronousLoadsReuseImagesAndKeepVariantsSeparate() throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("sprite-cache-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)

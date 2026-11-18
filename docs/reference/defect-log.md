@@ -1789,6 +1789,14 @@ read_when:
   `PinnedSpriteGuardTests.testNoTestSeedsTheEvictableSpriteCache` fails on any `imageCache.setObject`
   under `Tests/`, and `testAPinnedSpriteSurvivesACacheEviction` clears the cache after pinning.
 
+- **Cache-identity tests start from an empty `imageCache`.** `UnownSpriteCacheTests` compares
+  `NSImage` objects with `===`. In a ~190-class filtered run it failed (one test, a different
+  assertion on different runs) while it passed alone and passed in the same run on main. Filling the
+  cache with 64 dummy entries first did not reproduce it, so the cause is open: some earlier suite
+  leaves state in the shared `imageCache` that changes what a lookup returns. Clearing the cache in
+  `setUp` of `UnownSpriteCacheTests` and `SpriteImageCacheTests` makes the run green; taking the clear
+  out again turns it red. A new test that asserts image identity clears the cache in `setUp` too.
+
 ## Repo-wide tests outside a leaf's filter
 
 - **Every test that reads `Sources/` or `Tests/`, reflects over a model or sweeps languages is in
