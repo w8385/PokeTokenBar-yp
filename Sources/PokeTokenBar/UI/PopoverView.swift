@@ -111,6 +111,10 @@ final class PopoverNavigation {
     }
     /// The Battle tab's fighter picker replaces the tab's content while open.
     var battlePicker: BattlePickerTarget?
+    /// The Battle tab's sub-tab. Kept across openings and launches, like `settingsTab`.
+    var battleSubTab: BattleSubTab {
+        didSet { battleSubTab.store(in: defaults) }
+    }
     /// The Box's sort, filters and search text; kept here so leaving the tab does not reset them.
     let boxFilters: BoxFilterStore
 
@@ -153,6 +157,13 @@ final class PopoverNavigation {
         self.boxFilters = boxFilters
         self.defaults = defaults
         settingsTab = SettingsTab.stored(in: defaults)
+        battleSubTab = BattleSubTab.stored(in: defaults)
+    }
+
+    /// The picker is opened from the lineup, so closing it lands back on Entry.
+    func closeBattlePicker() {
+        battlePicker = nil
+        battleSubTab = .entry
     }
 
     /// The YPoke link and upload token live on Settings' YPoke tab.

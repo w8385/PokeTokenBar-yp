@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Battle tab, below the entry: gyms by region, the Elite Four run, the hideout run, the badge case and the
+/// Battle tab, Battle sub-tab: gyms by region, the Elite Four run, the hideout run, the badge case and the
 /// result of the last battle. Everything runs on the bot; the app sends the entry and keeps the rewards.
 @MainActor
 struct GymSection: View {
@@ -14,14 +14,18 @@ struct GymSection: View {
     init(store: CompanionStore, uploader: PartyUploader, entry: BattleEntryStore, service: GymService? = nil) {
         self.store = store
         self.entry = entry
-        _service = State(initialValue: service ?? GymService(
+        _service = State(initialValue: service ?? Self.makeService(store: store, uploader: uploader))
+    }
+
+    static func makeService(store: CompanionStore, uploader: PartyUploader) -> GymService {
+        GymService(
             link: { uploader.gymLink },
             badges: { store.state.gymBadges },
             ownedTMs: { MachineMove.ownedIDs(in: store.state.inventory) },
             applyReward: { reward, opponent, region in
                 store.applyGymReward(reward, trainer: opponent.trainer.displayName(store.language),
                                      region: store.l.gymRegionName(region))
-            }))
+            })
     }
 
     var body: some View {

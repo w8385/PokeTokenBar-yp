@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Battle tab: the battle entry and the recent battles. The YPoke link lives in Settings; this tab only
-/// points there while it is missing. Trade and the coworkers list live on the Coworkers tab.
+/// Battle tab, in three sub-tabs: the entry, the gyms and the recent battles. The YPoke link lives in Settings;
+/// this tab only points there while it is missing. Trade and the coworkers list live on the Coworkers tab.
 @MainActor
 struct BattleView: View {
     let store: CompanionStore
@@ -10,6 +10,8 @@ struct BattleView: View {
     @Environment(BattleEntryStore.self) private var entry: BattleEntryStore?
 
     private let initialPickerQuery: String
+    /// One gym service for the whole tab, so a result on screen survives a trip to another sub-tab.
+    @State private var gym = GymServiceHolder()
 
     private var l: L { store.l }
 
@@ -32,46 +34,79 @@ struct BattleView: View {
                 initialQuery: initialPickerQuery,
                 onPick: { id in
                     pick(id, target: target, entry: entry)
-                    navigation.battlePicker = nil
+                    navigation.closeBattlePicker()
                     Task { await uploader.tick() }
                 },
-                onBack: { navigation.battlePicker = nil })
+                onBack: { navigation.closeBattlePicker() })
             .frame(height: 520)
         } else {
+            let layout = Self.layout(navigation.battleSubTab, uploader: uploader, hasEntry: entry != nil)
             VStack(spacing: 0) {
+                Picker(l.battle, selection: Bindable(navigation).battleSubTab) {
+                    ForEach(BattleSubTab.allCases, id: \.self) { Text(l.title(of: $0)).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(.bottom, Spacing.md)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
-                        if let uploader {
-                            if uploader.hasToken, uploader.hasServer, let entry {
-                                section(nil) {
-                                    BattleEntrySection(entry: entry, uploader: uploader) {
-                                        navigation.battlePicker = $0
-                                    }
-                                }
-                            }
-                            if let entry {
-                                section(l.gymSectionTitle) { GymSection(store: store, uploader: uploader, entry: entry) }
-                            }
-                            if uploader.hasToken, uploader.hasServer {
-                                BattleInfoSections(info: uploader.battleInfo, l: l, parts: [.recent])
-                            }
-                        }
+                        ForEach(layout.sections, id: \.self) { content(of: $0) }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .reservesScrollerLane()
                 }
-                if Self.needsConnection(uploader) {
-                    Button { navigation.openYPokeSettings() } label: {
-                        Text(l.ypokeBattleLinkLine).font(.caption2).foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 6)
+                .id(navigation.battleSubTab)
+                if layout.bottomLinkLine {
+                    linkLine.padding(.top, 6)
                 }
             }
             .frame(height: 520)
         }
+    }
+
+    struct Layout: Equatable {
+        let sections: [BattleSection]
+        let bottomLinkLine: Bool
+    }
+
+    static func layout(_ tab: BattleSubTab, uploader: PartyUploader?, hasEntry: Bool) -> Layout {
+        guard let uploader else { return Layout(sections: [], bottomLinkLine: false) }
+        let sections = tab.sections(linked: uploader.hasToken && uploader.hasServer, hasEntry: hasEntry)
+        return Layout(sections: sections, bottomLinkLine: needsConnection(uploader) && !sections.contains(.linkLine))
+    }
+
+    @ViewBuilder
+    private func content(of section: BattleSection) -> some View {
+        switch section {
+        case .entry:
+            if let entry, let uploader {
+                self.section(nil) {
+                    BattleEntrySection(entry: entry, uploader: uploader) { navigation.battlePicker = $0 }
+                }
+            }
+        case .gyms:
+            if let entry, let uploader {
+                self.section(l.gymSectionTitle) {
+                    GymSection(store: store, uploader: uploader, entry: entry,
+                               service: gym.resolve { GymSection.makeService(store: store, uploader: uploader) })
+                }
+            }
+        case .recent:
+            if let uploader {
+                BattleInfoSections(info: uploader.battleInfo, l: l, parts: [.recent])
+            }
+        case .linkLine:
+            linkLine
+        }
+    }
+
+    private var linkLine: some View {
+        Button { navigation.openYPokeSettings() } label: {
+            Text(l.ypokeBattleLinkLine).font(.caption2).foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     /// Not linked, link rejected, or no server address: nothing else on this tab can work yet.
@@ -105,5 +140,17 @@ struct BattleView: View {
             VStack(spacing: 0) { content() }
                 .ptbCard()
         }
+    }
+}
+
+@MainActor
+final class GymServiceHolder {
+    private var service: GymService?
+
+    func resolve(_ make: () -> GymService) -> GymService {
+        if let service { return service }
+        let made = make()
+        service = made
+        return made
     }
 }

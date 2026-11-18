@@ -117,7 +117,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             battleStore.update(todayTokensByProvider: ["claude_code": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
                                limitWarning: false, hasUsageData: true)
             try await waitUntil("the battle store's line to load") { battleStore.currentLine != nil }
-            try await shot(popover(store: battleStore, entry: battleEntry) { $0.tab = .battle },
+            try await shot(popover(store: battleStore, entry: battleEntry) { $0.tab = .battle; $0.battleSubTab = .entry },
                            "screenshot-battle\(suffix)", in: dir, height: 482)
             try await shot(gyms(store: store, uploader: uploader, entry: entry, catalog: catalog),
                            "screenshot-gyms\(suffix)", in: dir, height: nil)
