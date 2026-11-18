@@ -43,7 +43,7 @@ BLOCKED_TAG = {
     "quick-guard": "🛡️퍼스트가드에 막힘", "crafty-shield": "🛡️트릭가드에 막힘", "substitute": "🧸대타에 막힘",
     "taunt": "😤도발 때문에 못 씀", "disable": "🚫사슬묶기로 못 씀", "torment": "😈트집 때문에 연달아 못 씀",
     "heal-block": "🚫회복봉인으로 못 씀", "imprison": "🔒봉인되어 못 씀", "powder": "💥분진이 터졌다",
-    "flinch": "😖풀죽어서 못 움직임",
+    "flinch": "😖풀죽어서 못 움직임", "throat-chop": "🤐소리 기술을 못 씀",
 }
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {
@@ -52,7 +52,7 @@ FORM_CAPTION = {
 }
 ITEM_EFFECT_TEXT = {
     "cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독",
-    "got": "손에 넣음", "eaten": "먹음", "lost": "녹아 없어짐",
+    "got": "손에 넣음", "eaten": "먹음", "lost": "녹아 없어짐", "burnt": "불타 없어짐",
 }
 TRICK_ROOM_ICON = "🔀"
 ROCK_ICON = "🪨"
@@ -130,6 +130,14 @@ VOLATILE_LABEL = {
     "miracle-eye": "👁️간파", "torment": "😈트집", "imprison": "🔒봉인", "electrify": "⚡전자화", "powder": "💥분진",
     "tar-shot": "🛢️타르", "focus-energy": "🎯기충전", "laser-focus": "🎯레이저포커스",
     "baton-pass": "🪄바통 이어받음", "transform": "🔄변신",
+    "throat-chop": "🤐지옥찌르기", "salt-cure": "🧂소금절이", "syrup-bomb": "🍯사탕범벅 스피드↓",
+}
+# Changes an attack left on a Pokémon beyond a status or a stat stage.
+CHANGE_TEXT = {
+    "reset": "🌫️능력 변화 사라짐", "grounded": "⬇️땅에 떨어짐", "throat-chop": "🤐소리 기술 봉인",
+    "salt-cure": "🧂소금절이", "syrup-bomb": "🍯사탕범벅", "heal-block": "🚫회복봉인", "leech-seed": "🌱씨뿌리기",
+    "spite": "마지막 기술 PP↓", "ability-lost": "🧪특성 사라짐", "lost-fire": "🔥불꽃 타입 잃음",
+    "lost-electric": "⚡전기 타입 잃음",
 }
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)"}
@@ -528,5 +536,7 @@ def _change_tag(change: Change | None, acting_side: int) -> str:
         return "🧊해동"
     if change.kind == "revive":
         return f"{change.pokemon} 부활"
+    if change.kind in CHANGE_TEXT:
+        return f"{'자신 ' if change.side == acting_side else ''}{CHANGE_TEXT[change.kind]}"
     arrows = ("↑" if change.stages > 0 else "↓") * (2 if abs(change.stages) >= 2 else 1)
     return f"{'자신 ' if change.side == acting_side else ''}{STAT_SHORT[change.kind]}{arrows}"
