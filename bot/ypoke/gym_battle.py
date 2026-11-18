@@ -12,7 +12,7 @@ from functools import partial
 from ypoke import gyms
 from ypoke.battle import (
     CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal,
-    MegaEvolution, SendOut, StatusDamage, TerrainHeal, WeatherDamage, YawnSleep, simulate,
+    MegaEvolution, SendOut, StatusDamage, TerrainHeal, VolatileTick, WeatherDamage, YawnSleep, simulate,
 )
 from ypoke.combatants import combatant
 from ypoke.gym_data import FINALE_LINE
@@ -132,7 +132,7 @@ def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: 
             replay.switch(turn, event.side, starts[position] if event.side == 0 else None)
         elif isinstance(event, Action):
             replay.action(event)
-        elif isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage, TerrainHeal)):
+        elif isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage, TerrainHeal, VolatileTick)):
             replay.hp(turn, event.side, event.hp)
         elif isinstance(event, HazardHit):
             replay.hp(turn, event.side, event.hp)
@@ -182,7 +182,7 @@ class _Replay:
         for change in action.changes:
             if change.kind in CARRIED_STATUSES:
                 self.status(action.turn, change.side, change.kind)
-            elif change.kind == "thaw":
+            elif change.kind in ("thaw", "cure"):
                 self.status(action.turn, change.side, None)
 
     def hp(self, turn: int, side: int, hp: int) -> None:

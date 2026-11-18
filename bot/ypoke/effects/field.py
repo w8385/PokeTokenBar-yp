@@ -184,7 +184,7 @@ class Gravity(StatusMove):
     def modify_accuracy(self, name):
         return fs.GRAVITY_ACCURACY
 
-    def bans_move(self, name, move):
+    def bans_move(self, name, move, fighter):
         return self.key if move.id in fs.GRAVITY_MOVES else None
 
 
@@ -197,7 +197,7 @@ class Haze(StatusMove):
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         for fighter in (user, foe):
-            fighter.stages = dict.fromkeys(battle.BATTLE_STATS, 0)
+            fighter.stages = dict.fromkeys(battle.STAGES, 0)
         return self.key, ()
 
 

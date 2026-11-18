@@ -8,13 +8,30 @@ from ypoke.effects import Handler, elsewhere, hooks, register
 
 
 class StatusMove(Handler):
-    """A status move draws for accuracy, then acts; `_apply` returns what it did ("" when it failed) and the changes."""
+    """A status move draws for accuracy, then acts; `_apply` returns what it did ("" when it failed) and the changes.
+    One aimed at the foe (`hits_foe`) meets the foe's Substitute and Magic Coat; one aimed at its user can be taken by
+    the foe's Snatch (`snatchable`)."""
+
+    hits_foe = False
+    snatchable = False
 
     def use(self, move, user, foe, side, turn, weather, arena, rng):
-        if move.accuracy is not None and rng.random() * 100 >= move.accuracy:
+        if (move.accuracy is not None and not battle._sure_hit(user, foe)
+                and rng.random() * 100 >= move.accuracy * battle._accuracy_stages(user, foe)):
             return {"missed": True}
+        if self.hits_foe:
+            shield = next(iter(battle._field(foe, "shields", move, user)), "")
+            if shield:
+                return {"failed": True, "blocked": shield}
+            if any(battle._field(foe, "reflects", move)):
+                user, foe, side = foe, user, 1 - side
+        elif self.snatchable and any(battle._field(foe, "snatches", move)):
+            user, foe, side = foe, user, 1 - side
         effect, changes = self._apply(move, user, foe, side, turn, arena, rng)
         return {"failed": not effect, "effect": effect, "changes": changes}
+
+    def targets_foe(self, move):
+        return self.hits_foe
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         raise NotImplementedError
@@ -37,6 +54,8 @@ class TrickRoom(StatusMove):
 
 @register("moves", "swords-dance")
 class SwordsDance(StatusMove):
+    snatchable = True
+
     def wanted(self, move, team, foes, side, arena, weather):
         user = team.active
         return not user.danced and user.hp * 2 > user.max_hp and user.stages["attack"] < battle.MAX_STAGE
@@ -52,6 +71,8 @@ class SwordsDance(StatusMove):
 
 @register("moves", "yawn")
 class Yawn(StatusMove):
+    hits_foe = True
+
     def wanted(self, move, team, foes, side, arena, weather):
         return battle._yawnable(foes.active)
 
@@ -64,6 +85,8 @@ class Yawn(StatusMove):
 
 @register("moves", "thunder-wave")
 class ThunderWave(StatusMove):
+    hits_foe = True
+
     def wanted(self, move, team, foes, side, arena, weather):
         user, foe = team.active, foes.active
         return foe.stat("speed", weather) > user.stat("speed", weather) and battle._paralyzable(move, foe)

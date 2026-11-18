@@ -7,7 +7,7 @@ from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
     BATTLE_LEVEL, AbilityField, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, FieldEnd, FieldStart,
     FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal,
-    TrickRoomEnd, WeatherDamage, WeatherEnd, YawnSleep,
+    TrickRoomEnd, VolatileEnd, VolatileTick, WeatherDamage, WeatherEnd, YawnSleep,
 )
 from ypoke.dex import bar, sprite_url
 from ypoke.items import ITEM_NAMES, known
@@ -59,7 +59,11 @@ EFFECT_TEXT = {
 FORM_CHANGE = {"mega": ("메가진화", "메가"), "primal": ("원시회귀", "원시"), "ultra": ("울트라버스트", "울트라")}
 STAT_SHORT = {
     "attack": "공격", "defense": "방어", "special_attack": "특공", "special_defense": "특방", "speed": "스피드",
+    "accuracy": "명중", "evasion": "회피",
 }
+CHANGES_IN_TEXT = frozenset({"swords-dance", "tidy-up"})
+VOLATILE_LABEL: dict[str, str] = {}
+VOLATILE_END_TEXT: dict[str, str] = {}
 
 
 Image = tuple[str, str]
@@ -177,6 +181,8 @@ def _decisive_text(event: Event) -> str:
         return f"{event.pokemon} {ROCK_ICON}스텔스록"
     if isinstance(event, HazardHit):
         return f"{event.pokemon} {STATE_LABEL[event.hazard]}"
+    if isinstance(event, VolatileTick):
+        return f"{event.pokemon} {VOLATILE_LABEL[event.kind]}"
     icon = RESIDUAL_ICON[event.kind] if isinstance(event, StatusDamage) else WEATHER_ICON[event.weather]
     return f"{event.pokemon} {icon}"
 
@@ -187,7 +193,7 @@ def _faint_side(event: Event) -> int | None:
         if event.knockout:
             return 1 - event.side
         return event.side if event.attacker_fainted else None
-    if isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage, HazardHit)) and event.fainted:
+    if isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage, HazardHit, VolatileTick)) and event.fainted:
         return event.side
     return None
 
@@ -352,6 +358,12 @@ def _event_lines(event: Event) -> list[str]:
                 *([_faint_line(event.pokemon)] if event.fainted else [])]
     if isinstance(event, ItemEffect):
         return [f"{marker} {event.pokemon} @{ITEM_NAMES[event.item]} {ITEM_EFFECT_TEXT[event.effect]}"]
+    if isinstance(event, VolatileTick):
+        shown = f"{event.count}" if event.count is not None else f"{event.hp}%"
+        return [f"{marker} {event.pokemon} {VOLATILE_LABEL[event.kind]} {shown}",
+                *([_faint_line(event.pokemon)] if event.fainted else [])]
+    if isinstance(event, VolatileEnd):
+        return [f"{marker} {event.pokemon} {VOLATILE_LABEL[event.kind]} {VOLATILE_END_TEXT.get(event.kind, '끝')}"]
     lines = [_action_line(event, marker)]
     if event.attacker_fainted:
         lines.append(_faint_line(event.attacker))
@@ -374,7 +386,8 @@ def _action_line(event: Action, marker: str) -> str:
     if event.blocked == "confusion":
         return f"{head} 💫혼란 자해 {event.attacker_hp}%"
     if event.blocked and event.move:
-        return f"{head} › {event.move} → {BLOCKED_TAG[event.blocked]}"
+        tags = [_change_tag(change, event.side) for change in event.changes]
+        return " ".join([f"{head} › {event.move} → {BLOCKED_TAG[event.blocked]}", *tags])
     if event.blocked:
         return f"{head} {BLOCKED_TAG[event.blocked]}"
     head = f"{head} › {event.move}"
@@ -386,8 +399,11 @@ def _action_line(event: Action, marker: str) -> str:
         return f"{head} → {event.defender} 졸음"
     if event.effect == "thunder-wave":
         return f"{head} → {event.defender} {STATUS_ICON['paralysis']}"
-    if event.effect:
+    if event.effect in CHANGES_IN_TEXT or event.effect and not event.changes:
         return f"{head} {EFFECT_TEXT[event.effect]}"
+    if event.effect:
+        tags = [_change_tag(change, event.side) for change in event.changes]
+        return " ".join(filter(None, [head, EFFECT_TEXT.get(event.effect, "→"), *tags]))
     if event.failed:
         return f"{head} → 실패"
     if event.missed:
@@ -430,6 +446,8 @@ def _change_tag(change: Change | None, acting_side: int) -> str:
         return ""
     if change.kind in STATUS_ICON:
         return STATUS_ICON[change.kind]
+    if change.kind == "cure":
+        return f"{'자신 ' if change.side == acting_side else ''}상태 회복"
     if change.kind == "thaw":
         return "🧊해동"
     arrows = ("↑" if change.stages > 0 else "↓") * (2 if abs(change.stages) >= 2 else 1)
