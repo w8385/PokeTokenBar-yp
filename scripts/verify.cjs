@@ -106,7 +106,7 @@ async function capture(page,name,full=false) {
        await p.locator('#themeBtn').click();
        await capture(p,`${lang}-${width}-expanded`,true);
        const native = await p.locator('[data-i18n-image]').evaluateAll(images => images.map(i=>({src:i.getAttribute('src'),loaded:i.complete&&i.naturalWidth>0,width:i.naturalWidth,height:i.naturalHeight,caption:i.closest('figure').querySelector('figcaption').textContent})));
-       assert.equal(native.length,13);
+       assert.equal(native.length,15);
        const suffix=lang==='en'?'':'-'+lang;
        for(const i of native) {assert.ok(i.loaded,JSON.stringify(i));assert.ok(i.src.endsWith(suffix+'.png'),JSON.stringify(i));assert.equal(i.width,720);assert.ok(i.caption.trim());}
        await layout(p);

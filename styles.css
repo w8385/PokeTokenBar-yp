@@ -127,6 +127,7 @@ h4 { margin: 0; font-size: 1.0625rem; line-height: 1.3; overflow-wrap: anywhere;
 .fork-card h3 { font-size: 1.1875rem; }
 .fork-card figure { margin-top: var(--space-md); }
 .fork-card .crop img { max-height: 520px; object-fit: cover; object-position: top; }
+.fork-card .crop-low img { object-position: 50% 90%; }
 .fork-card .text-link { display: inline-block; margin-top: var(--space-sm); }
 @media (max-width: 1000px) { .group-body { grid-template-columns: minmax(0,1fr); } .group-media { max-width: 420px; } .fork-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 .companion { background: var(--color-soft); }
