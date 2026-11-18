@@ -87,6 +87,8 @@ struct BattleEntrySection: View {
         let tera = companion.teraForm(of: fighter.id, speciesID: speciesID)
         let megaSprite = mega?.spriteID ?? tera?.id
         let name = fighterName(fighter)
+        let statLines = BattleStatPreview.lines(for: fighter, speciesID: speciesID, in: companion)
+        let changesForm = mega != nil || tera?.stats != nil
         return VStack(alignment: .leading, spacing: 4) {
             row {
                 SpriteView(speciesID: megaSprite ?? speciesID, size: 56, animated: true, shiny: fighter.member.shiny,
@@ -140,13 +142,21 @@ struct BattleEntrySection: View {
                     .buttonStyle(.borderless).font(.caption)
                     .help(l.battleTraining)                }
             }
-            if let stats = mega?.stats ?? tera?.stats {
+            if !statLines.isEmpty || changesForm {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(l.megaStatLine(stats)).monospacedDigit()
+                    ForEach(statLines, id: \.form) { line in
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            if changesForm {
+                                Text(l.battleStatFormLabel(line.form)).fontWeight(.semibold)
+                            }
+                            statText(line).monospacedDigit()
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                     if let ability = mega?.abilityName(in: companion.language) {
                         Text("\(l.megaAbilityLabel): \(ability)")
                     }
-                    if let megaLead, megaLead != index {
+                    if changesForm, let megaLead, megaLead != index {
                         Text(l.megaOncePerBattle).foregroundStyle(.orange)
                     }
                 }
@@ -156,6 +166,16 @@ struct BattleEntrySection: View {
             }
         }
         .task(id: speciesID) { await companion.loadPokemonDetails(speciesID: speciesID) }
+    }
+
+    private func statText(_ line: BattleStatLine) -> Text {
+        line.stats.enumerated().reduce(Text(verbatim: "")) { text, item in
+            let (index, stat) = item
+            let mark = line.mark(of: stat.name)
+            var piece = Text(verbatim: "\(l.battleStatName(stat.name))\u{00A0}\(stat.value)\(mark?.rawValue ?? "")")
+            if mark == .raised { piece = piece.foregroundStyle(Color.accentColor) }
+            return text + Text(verbatim: index == 0 ? "" : "\u{00A0}· ") + piece
+        }
     }
 
     private func iconButton(_ symbol: String, _ label: String, disabled: Bool,

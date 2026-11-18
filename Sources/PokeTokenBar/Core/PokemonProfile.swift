@@ -268,13 +268,18 @@ enum PokemonStatCalculator {
 
     static func stats(details: PokemonDetails, profile: PokemonProfile,
                       nature: PokemonNature?) -> [PokemonComputedStat] {
+        stats(baseStats: details.baseStats, speciesID: details.speciesID, level: profile.level, ivs: profile.ivs,
+              nature: nature)
+    }
+
+    static func stats(baseStats: [String: Int], speciesID: Int, level: Int, ivs: PokemonIVs,
+                      nature: PokemonNature?) -> [PokemonComputedStat] {
         order.compactMap { name in
-            guard let base = details.baseStats[name] else { return nil }
-            let iv = profile.ivs[name]
-            let level = profile.level
+            guard let base = baseStats[name] else { return nil }
+            let iv = ivs[name]
             let value: Int
             if name == "hp" {
-                value = details.speciesID == shedinjaSpeciesID ? 1 : ((2 * base + iv) * level) / 100 + level + 10
+                value = speciesID == shedinjaSpeciesID ? 1 : ((2 * base + iv) * level) / 100 + level + 10
             } else {
                 let neutral = ((2 * base + iv) * level) / 100 + 5
                 value = Int((Double(neutral) * (nature?.modifier(for: name) ?? 1)).rounded(.down))
