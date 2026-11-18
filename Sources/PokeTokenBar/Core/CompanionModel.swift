@@ -101,9 +101,8 @@ enum Rarity: String, Codable, Sendable, CaseIterable {
     }
 }
 
-/// Growth from clicking the pet. No daily limit; `minInterval` is the only guard against autoclickers.
+/// Growth from clicking the pet. Every click counts: no daily limit and no interval.
 enum ClickGrowth {
-    static let minInterval: TimeInterval = 0.3
     /// About 2,800 clicks take a common line from a new egg to graduation.
     static let tokensPerClick = 54_000
 }

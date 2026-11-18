@@ -395,6 +395,8 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         }
         XCTAssertEqual(opened, 0, "single, double and triple clicks all pet")
         XCTAssertTrue(fixture.controller.hearts.isShowing)
+        XCTAssertEqual(fixture.companion.state.clickGrowth, 6 * ClickGrowth.tokensPerClick)
+        XCTAssertEqual(fixture.companion.state.active?.evolution.pets, 6)
         hosting.handleOpen(nil)
         XCTAssertEqual(opened, 1, "the context menu Open still opens a hatched pet")
     }

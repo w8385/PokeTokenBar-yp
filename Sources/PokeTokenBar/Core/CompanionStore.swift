@@ -2997,17 +2997,9 @@ final class CompanionStore {
 
     // MARK: 클릭 성장
 
-    enum ClickGrowthResult: Equatable { case counted(Int), tooSoon }
-
-    /// In memory only: a restart allows one extra click inside the interval, which is harmless.
-    private var lastCountedClickAt: Date?
-
-    /// One click or pat on the pet. Grows the egg or Pokémon like tokens do, at most once per `ClickGrowth.minInterval`.
+    /// One click or pat on the pet. Grows the egg or Pokémon like tokens do and returns the XP it added.
     @discardableResult
-    func growByClick() -> ClickGrowthResult {
-        let now = clock()
-        if let last = lastCountedClickAt, now.timeIntervalSince(last) < ClickGrowth.minInterval { return .tooSoon }
-        lastCountedClickAt = now
+    func growByClick() -> Int {
         let xp = ClickGrowth.tokensPerClick
         state.clickGrowth += xp
         if state.raisedEntry != nil {
@@ -3022,7 +3014,7 @@ final class CompanionStore {
             recordPet()
             applyUsage(xp)
         }
-        return .counted(xp)
+        return xp
     }
 
     /// Pray over the egg. A placebo: it only counts, and never touches an RNG or a roll — the species is

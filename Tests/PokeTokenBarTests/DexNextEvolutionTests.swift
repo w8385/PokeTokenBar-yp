@@ -69,7 +69,7 @@ final class DexNextEvolutionTests: XCTestCase {
         await s.hatch(baseID: 446)
         for _ in 0..<3 {
             clock.now.addTimeInterval(1)
-            XCTAssertEqual(s.growByClick(), .counted(ClickGrowth.tokensPerClick))
+            XCTAssertEqual(s.growByClick(), ClickGrowth.tokensPerClick)
         }
         let next = try XCTUnwrap(s.evolutionCards(for: 446).first { $0.rule.species == 143 })
         XCTAssertTrue(next.isNextStep)
@@ -113,18 +113,13 @@ final class DexNextEvolutionTests: XCTestCase {
         XCTAssertLessThanOrEqual(cards.filter { $0.context != nil }.count, 1, "only the planned branch is live")
     }
 
-    func testTenClicksJustPastTheAutoclickerGuardGiveTenPets() async throws {
-        let clock = FakeClock()
-        let s = try store(clock: clock)
+    func testTenRapidClicksWithNoTimePassingGiveTenPets() async throws {
+        let s = try store()
         await s.hatch(baseID: 446)
-        let step = ClickGrowth.minInterval + 0.01
         for click in 1...10 {
-            XCTAssertEqual(s.growByClick(), .counted(ClickGrowth.tokensPerClick), "click \(click)")
-            clock.now.addTimeInterval(step)
+            XCTAssertEqual(s.growByClick(), ClickGrowth.tokensPerClick, "click \(click)")
         }
         XCTAssertEqual(pets(s), 10)
-        clock.now.addTimeInterval(-step + ClickGrowth.minInterval / 2)
-        XCTAssertEqual(s.growByClick(), .tooSoon, "the autoclicker guard stays")
-        XCTAssertEqual(pets(s), 10)
+        XCTAssertEqual(s.state.clickGrowth, 10 * ClickGrowth.tokensPerClick)
     }
 }

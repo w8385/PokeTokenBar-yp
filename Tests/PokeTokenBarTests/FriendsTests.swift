@@ -121,7 +121,7 @@ final class FriendsTests: XCTestCase {
 
     // MARK: Click
 
-    func testFriendClickGivesNoGrowthAndKeepsTheMainPetClickInterval() throws {
+    func testFriendClickGivesNoGrowthAndLeavesTheMainPetClickAlone() throws {
         let suite = "FriendsTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         let clock = Clock()
@@ -149,9 +149,7 @@ final class FriendsTests: XCTestCase {
         XCTAssertEqual(companion.state.clickGrowth, 0)
         XCTAssertEqual(companion.state.eggUsage, 0)
 
-        let result = companion.growByClick()
-        XCTAssertEqual(result, CompanionStore.ClickGrowthResult.counted(ClickGrowth.tokensPerClick),
-                       "friend clicks must not start the main pet's click interval")
+        XCTAssertEqual(companion.growByClick(), ClickGrowth.tokensPerClick)
         XCTAssertEqual(companion.state.clickGrowth, ClickGrowth.tokensPerClick)
         controller.friendClicked(0)
         XCTAssertEqual(companion.state.clickGrowth, ClickGrowth.tokensPerClick)
