@@ -35,8 +35,10 @@ STATUS_EFFECTS = (
     "conversion", "conversion-2", "camouflage", "reflect-type", "soak", "magic-powder", "trick-or-treat",
     "forests-curse", "gastro-acid", "simple-beam", "worry-seed", "entrainment", "skill-swap", "role-play", "doodle",
     "trick", "switcheroo", "bestow", "recycle", "corrosive-gas", "teatime", "stuff-cheeks", "magic-room", "wonder-room",
+    "teleport", "parting-shot", "chilly-reception",
     "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
     "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
+    "baton-pass",
 )
 # Damaging moves the chooser may pick for their effect, like a status move.
 CHOSEN_DAMAGE_EFFECTS = ("rapid-spin", "mortal-spin")

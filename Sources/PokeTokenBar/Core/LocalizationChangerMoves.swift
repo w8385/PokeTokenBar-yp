@@ -138,6 +138,36 @@ extension L {
               "Troca a Defesa e a Def. Esp. de todos por 5 turnos (usar de novo encerra)",
               "Tauscht 5 Runden lang Verteidigung und Spezial-Verteidigung aller (erneuter Einsatz beendet es)",
               "Меняет местами Защиту и Особую защиту у всех на 5 ходов (повторное применение отменяет)")
+        case 100:
+            t("물러나고 다음 포켓몬이 나옴 (가장 늦게 씀)", "Switches out for the next Pokémon (moves last)",
+              "引っ込んで 次のポケモンが出る (最後に出す)", "Se retira y sale el siguiente Pokémon (actúa el último)",
+              "Se retire pour le Pokémon suivant (agit en dernier)",
+              "Sai e entra o próximo Pokémon (age por último)",
+              "Wird gegen das nächste Pokémon ausgetauscht (handelt zuletzt)",
+              "Уходит, выходит следующий покемон (действует последним)")
+        case 226:
+            t("물러나며 능력 변화·대타출동을 다음 포켓몬에게 넘김",
+              "Switches out and passes its stat changes and Substitute to the next Pokémon",
+              "引っ込んで 能力変化と みがわりを 次のポケモンに引き継ぐ",
+              "Se retira y pasa sus cambios de características y Sustituto al siguiente Pokémon",
+              "Se retire et transmet ses changements de stats et son Clonage au Pokémon suivant",
+              "Sai e passa as mudanças de atributos e o Substituto ao próximo Pokémon",
+              "Wird ausgetauscht und gibt Statuswertänderungen und Delegator an das nächste Pokémon weiter",
+              "Уходит и передаёт изменения характеристик и Замену следующему покемону")
+        case 575:
+            t("상대의 공격·특공을 1랭크 내리고 물러남", "Lowers the target's Attack and Sp. Atk by 1 stage, then switches out",
+              "相手の攻撃と特攻を1段階下げて 引っ込む",
+              "Baja 1 nivel el Ataque y el Ataque Esp. del objetivo y se retira",
+              "Baisse d'un niveau l'Attaque et l'Atq. Spé. de la cible, puis se retire",
+              "Diminui 1 estágio o Ataque e o Atq. Esp. do alvo e sai",
+              "Senkt Angriff und Spezial-Angriff des Ziels um 1 Stufe und wird ausgetauscht",
+              "Понижает Атаку и Особую атаку цели на 1 ступень и уходит")
+        case 881:
+            t("5턴 동안 눈을 내리게 하고 물러남", "Starts snow for 5 turns, then switches out",
+              "5ターン 雪を降らせて 引っ込む", "Hace nevar durante 5 turnos y se retira",
+              "Fait tomber la neige pendant 5 tours, puis se retire",
+              "Faz nevar por 5 turnos e sai", "Lässt 5 Runden lang Schnee fallen und wird ausgetauscht",
+              "Вызывает снег на 5 ходов и уходит")
         default: nil
         }
     }

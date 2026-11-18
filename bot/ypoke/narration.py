@@ -88,6 +88,8 @@ EFFECT_TEXT = {
     "magic-room": "🪄지닌 도구가 효과를 잃었다", "magic-room-off": "🪄매직룸이 풀렸다",
     "wonder-room": "🌀방어와 특방이 뒤바뀌었다", "wonder-room-off": "🌀원더룸이 풀렸다",
     "stuff-cheeks": "🐿️나무열매를 먹었다",
+    "teleport": "✨순간이동으로 물러났다", "baton-pass": "🪄바통을 넘겼다",
+    "chilly-reception": "❄️눈을 부르고 물러났다", "chilly-reception-dry": "🥶썰렁한 농담을 하고 물러났다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
@@ -113,7 +115,7 @@ ON_FOE_TEXT = {
     "forests-curse": "🌳풀 타입이 더해졌다", "skill-swap": "🔄특성을 맞바꿨다", "entrainment": "💃특성을 옮겼다",
     "simple-beam": "🌀특성이 단순이 됐다", "worry-seed": "😟특성이 불면이 됐다", "gastro-acid": "🧪특성이 사라졌다",
     "trick": "🎁도구를 맞바꿨다", "switcheroo": "🎁도구를 맞바꿨다", "bestow": "🎁도구를 건넸다",
-    "corrosive-gas": "🧪도구를 녹였다",
+    "corrosive-gas": "🧪도구를 녹였다", "parting-shot": "💬버리기 대사를 남기고 물러났다",
 }
 VOLATILE_LABEL = {
     "wish": "🌠소원", "aqua-ring": "💧물의고리", "ingrain": "🌱뿌리박기", "healing-wish": "🌙치유소원",
@@ -125,6 +127,7 @@ VOLATILE_LABEL = {
     "magic-coat": "🪞매직코트", "snatch": "🫳가로채기", "lock-on": "🎯조준", "foresight": "👁️간파",
     "miracle-eye": "👁️간파", "torment": "😈트집", "imprison": "🔒봉인", "electrify": "⚡전자화", "powder": "💥분진",
     "tar-shot": "🛢️타르", "focus-energy": "🎯기충전", "laser-focus": "🎯레이저포커스",
+    "baton-pass": "🪄바통 이어받음",
 }
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)"}
