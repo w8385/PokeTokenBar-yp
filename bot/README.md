@@ -91,6 +91,7 @@ Created from [deploy/slack-manifest.json](deploy/slack-manifest.json); icon is
 | What | Where |
 |---|---|
 | Code | `~/ypoke/bot` (copy of this folder) with `.venv` from `uv sync` |
+| Battle rules | `~/ypoke/data/battle` (copy of [../data/battle](../data/battle)) |
 | Secrets | `~/ypoke/.env` (mode 600), from [.env.example](.env.example) |
 | Data | `~/ypoke/data/ypoke.sqlite3` |
 | Logs | `~/ypoke/logs/bot.log` |
@@ -101,6 +102,8 @@ Install or update:
 ```bash
 rsync -a --delete --exclude .venv --exclude __pycache__ --exclude '*.sqlite3*' --exclude .env \
   bot/ <user>@<bot-host>:ypoke/bot/
+ssh <user>@<bot-host> 'mkdir -p ~/ypoke/data/battle'
+rsync -a --delete data/battle/ <user>@<bot-host>:ypoke/data/battle/
 ssh <user>@<bot-host> 'bash ~/ypoke/bot/deploy/install.sh'
 ```
 

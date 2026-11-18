@@ -1,114 +1,26 @@
 """Mega Stones: held-item slug -> (base `/pokemon` id, Mega form `/pokemon` id). One stone per Pokémon with a Mega form."""
 
-MEGA_STONES: dict[str, tuple[int, int]] = {
-    "venusaurite": (3, 10033),
-    "charizardite-x": (6, 10034),
-    "charizardite-y": (6, 10035),
-    "blastoisinite": (9, 10036),
-    "beedrillite": (15, 10090),
-    "pidgeotite": (18, 10073),
-    "raichunite-x": (26, 10304),
-    "raichunite-y": (26, 10305),
-    "clefablite": (36, 10278),
-    "alakazite": (65, 10037),
-    "victreebelite": (71, 10279),
-    "slowbronite": (80, 10071),
-    "gengarite": (94, 10038),
-    "kangaskhanite": (115, 10039),
-    "starminite": (121, 10280),
-    "pinsirite": (127, 10040),
-    "gyaradosite": (130, 10041),
-    "aerodactylite": (142, 10042),
-    "dragoninite": (149, 10281),
-    "mewtwonite-x": (150, 10043),
-    "mewtwonite-y": (150, 10044),
-    "meganiumite": (154, 10282),
-    "feraligite": (160, 10283),
-    "ampharosite": (181, 10045),
-    "steelixite": (208, 10072),
-    "scizorite": (212, 10046),
-    "heracronite": (214, 10047),
-    "skarmorite": (227, 10284),
-    "houndoominite": (229, 10048),
-    "tyranitarite": (248, 10049),
-    "sceptilite": (254, 10065),
-    "blazikenite": (257, 10050),
-    "swampertite": (260, 10064),
-    "gardevoirite": (282, 10051),
-    "sablenite": (302, 10066),
-    "mawilite": (303, 10052),
-    "aggronite": (306, 10053),
-    "medichamite": (308, 10054),
-    "manectite": (310, 10055),
-    "sharpedonite": (319, 10070),
-    "cameruptite": (323, 10087),
-    "altarianite": (334, 10067),
-    "banettite": (354, 10056),
-    "chimechite": (358, 10306),
-    "absolite": (359, 10057),
-    "absolite-z": (359, 10307),
-    "glalitite": (362, 10074),
-    "salamencite": (373, 10089),
-    "metagrossite": (376, 10076),
-    "latiasite": (380, 10062),
-    "latiosite": (381, 10063),
-    "staraptite": (398, 10308),
-    "lopunnite": (428, 10088),
-    "garchompite": (445, 10058),
-    "garchompite-z": (445, 10309),
-    "lucarionite": (448, 10059),
-    "lucarionite-z": (448, 10310),
-    "abomasite": (460, 10060),
-    "galladite": (475, 10068),
-    "froslassite": (478, 10285),
-    "heatranite": (485, 10311),
-    "darkranite": (491, 10312),
-    "emboarite": (500, 10286),
-    "excadrite": (530, 10287),
-    "audinite": (531, 10069),
-    "scolipite": (545, 10288),
-    "scraftinite": (560, 10289),
-    "eelektrossite": (604, 10290),
-    "chandelurite": (609, 10291),
-    "golurkite": (623, 10313),
-    "chesnaughtite": (652, 10292),
-    "delphoxite": (655, 10293),
-    "greninjite": (658, 10294),
-    "pyroarite": (668, 10295),
-    "floettite": (670, 10296),
-    "meowsticite": (678, 10314),
-    "malamarite": (687, 10297),
-    "barbaracite": (689, 10298),
-    "dragalgite": (691, 10299),
-    "hawluchanite": (701, 10300),
-    "zygardite": (718, 10301),
-    "diancite": (719, 10075),
-    "crabominite": (740, 10315),
-    "golisopite": (768, 10316),
-    "drampanite": (780, 10302),
-    "magearnite": (801, 10317),
-    "zeraorite": (807, 10319),
-    "falinksite": (870, 10303),
-    "scovillainite": (952, 10320),
-    "glimmoranite": (970, 10321),
-    "tatsugirinite": (978, 10322),
-    "baxcalibrite": (998, 10325),
-}
+from ypoke import battle_data
+
+MEGA_STONE = "mega-stone"
+PRIMAL_ORB = "primal-orb"
+ULTRA_BURST = "ultra-burst"
+DRAGON_ASCENT = "dragon-ascent"
+ITEM_EFFECT_KEYS = frozenset({MEGA_STONE, PRIMAL_ORB, ULTRA_BURST})
 
 
+def _forms(kind: str, key: str) -> dict:
+    return {name: (entry["args"]["species"], entry["args"]["form"])
+            for name, entry in battle_data.with_key(kind, key).items()}
+
+
+MEGA_STONES: dict[str, tuple[int, int]] = _forms("items", MEGA_STONE)
 # Primal Reversion works like a Mega Evolution here and takes the same once-per-battle slot.
-PRIMAL_ORBS: dict[str, tuple[int, int]] = {
-    "red-orb": (383, 10078),
-    "blue-orb": (382, 10077),
-}
-
-
+PRIMAL_ORBS: dict[str, tuple[int, int]] = _forms("items", PRIMAL_ORB)
 # Ultra Burst also takes the Mega Evolution slot.
-ULTRA_BURSTS: dict[str, tuple[int, int]] = {"ultranecrozium-z": (800, 10157)}
-
-
+ULTRA_BURSTS: dict[str, tuple[int, int]] = _forms("items", ULTRA_BURST)
 # species -> (the move that lets it Mega Evolve with no stone, its Mega form `/pokemon` id)
-MOVE_MEGAS = {384: (620, 10079)}
+MOVE_MEGAS = {species: (move_id, form) for move_id, (species, form) in _forms("moves", DRAGON_ASCENT).items()}
 
 
 def move_mega_form_id(pokemon_id: int, move_ids: tuple[int, ...], item: str | None) -> int | None:

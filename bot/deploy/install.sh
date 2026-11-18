@@ -7,6 +7,7 @@ PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 UV="$(command -v uv || echo /opt/homebrew/bin/uv)"
 
 test -f "$ROOT/.env" || { echo "missing $ROOT/.env (copy bot/.env.example)" >&2; exit 1; }
+test -f "$ROOT/data/battle/items.json" || { echo "missing $ROOT/data/battle (copy data/battle/)" >&2; exit 1; }
 chmod 600 "$ROOT/.env"
 mkdir -p "$ROOT/logs" "$ROOT/data" "$HOME/Library/LaunchAgents"
 (cd "$ROOT/bot" && "$UV" sync -q --locked)

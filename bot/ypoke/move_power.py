@@ -4,7 +4,7 @@ PokéAPI's. `user` and `target` are `battle._Fighter`s."""
 
 from dataclasses import dataclass, replace
 
-from ypoke import items, tera_forms
+from ypoke import battle_data, items, tera_forms
 from ypoke.mega_stones import mega_form_id
 
 SOLAR_BEAM = 76
@@ -47,8 +47,10 @@ STAT_BOOST_POWER = 20
 RAGE_FIST_MAX_POWER = 350
 KNOCK_OFF_BOOST = 1.5
 SUPER_EFFECTIVE_BOOST = 5461 / 4096
-IGNORES_BURN = frozenset({FACADE})
-SUN_BOOST = {HYDRO_STEAM: 1.5}
+FACADE_KEY = "facade"
+HYDRO_STEAM_KEY = "hydro-steam"
+IGNORES_BURN = battle_data.ids("moves", FACADE_KEY)
+SUN_BOOST = dict.fromkeys(battle_data.ids("moves", HYDRO_STEAM_KEY), 1.5)
 
 
 def typed(move, weather: str | None):
@@ -110,35 +112,27 @@ def _by_hit(base: int, scene: _Scene) -> float:
     return base * (scene.hit + 1)
 
 
-_RULES = {
-    LAST_RESPECTS: lambda base, scene: base + base * scene.user.fallen_allies,
-    ERUPTION: _by_hp,
-    WATER_SPOUT: _by_hp,
-    DRAGON_ENERGY: _by_hp,
-    HEX: lambda base, scene: _doubled(base, scene.target.status is not None),
-    FACADE: lambda base, scene: _doubled(base, scene.user.status in FACADE_STATUSES),
-    BRINE: lambda base, scene: _doubled(base, scene.target.hp * 2 <= scene.target.max_hp),
-    VENOSHOCK: lambda base, scene: _doubled(base, scene.target.status in POISONED),
-    BARB_BARRAGE: lambda base, scene: _doubled(base, scene.target.status in POISONED),
-    ACROBATICS: lambda base, scene: _doubled(base, not _holds_item(scene.user)),
-    WEATHER_BALL: lambda base, scene: _doubled(base, scene.weather in WEATHER_BALL_TYPES),
-    STORED_POWER: _by_boosts,
-    POWER_TRIP: _by_boosts,
-    RAGE_FIST: lambda base, scene: min(RAGE_FIST_MAX_POWER, base + base * scene.user.times_hit),
-    AVALANCHE: lambda base, scene: _doubled(base, scene.user.hit_by_foe),
-    REVENGE: lambda base, scene: _doubled(base, scene.user.hit_by_foe),
-    PAYBACK: lambda base, scene: _doubled(base, scene.target.acted),
-    BOLT_BEAK: lambda base, scene: _doubled(base, not scene.target.acted),
-    FISHIOUS_REND: lambda base, scene: _doubled(base, not scene.target.acted),
-    RETALIATE: lambda base, scene: _doubled(base, scene.user.ally_fell_last_turn),
-    STOMPING_TANTRUM: lambda base, scene: _doubled(base, scene.user.flopped_last),
-    TEMPER_FLARE: lambda base, scene: _doubled(base, scene.user.flopped_last),
-    LASH_OUT: lambda base, scene: _doubled(base, scene.user.lowered),
-    KNOCK_OFF: lambda base, scene: base * KNOCK_OFF_BOOST if holds_removable_item(scene.target) else base,
-    COLLISION_COURSE: lambda base, scene: base * SUPER_EFFECTIVE_BOOST if scene.multiplier > 1 else base,
-    ELECTRO_DRIFT: lambda base, scene: base * SUPER_EFFECTIVE_BOOST if scene.multiplier > 1 else base,
-    SOLAR_BEAM: lambda base, scene: base / 2 if scene.weather in SOLAR_WEAK_WEATHERS else base,
-    SOLAR_BLADE: lambda base, scene: base / 2 if scene.weather in SOLAR_WEAK_WEATHERS else base,
-    TRIPLE_KICK: _by_hit,
-    TRIPLE_AXEL: _by_hit,
+_RULE_BY_KEY = {
+    "power-last-respects": lambda base, scene: base + base * scene.user.fallen_allies,
+    "power-by-user-hp": _by_hp,
+    "power-hex": lambda base, scene: _doubled(base, scene.target.status is not None),
+    FACADE_KEY: lambda base, scene: _doubled(base, scene.user.status in FACADE_STATUSES),
+    "power-brine": lambda base, scene: _doubled(base, scene.target.hp * 2 <= scene.target.max_hp),
+    "power-vs-poisoned": lambda base, scene: _doubled(base, scene.target.status in POISONED),
+    "power-acrobatics": lambda base, scene: _doubled(base, not _holds_item(scene.user)),
+    "weather-ball": lambda base, scene: _doubled(base, scene.weather in WEATHER_BALL_TYPES),
+    "power-stored": _by_boosts,
+    "power-rage-fist": lambda base, scene: min(RAGE_FIST_MAX_POWER, base + base * scene.user.times_hit),
+    "power-revenge": lambda base, scene: _doubled(base, scene.user.hit_by_foe),
+    "power-payback": lambda base, scene: _doubled(base, scene.target.acted),
+    "power-moves-first": lambda base, scene: _doubled(base, not scene.target.acted),
+    "power-retaliate": lambda base, scene: _doubled(base, scene.user.ally_fell_last_turn),
+    "power-after-fail": lambda base, scene: _doubled(base, scene.user.flopped_last),
+    "power-lash-out": lambda base, scene: _doubled(base, scene.user.lowered),
+    "knock-off": lambda base, scene: base * KNOCK_OFF_BOOST if holds_removable_item(scene.target) else base,
+    "power-super-effective": lambda base, scene: base * SUPER_EFFECTIVE_BOOST if scene.multiplier > 1 else base,
+    "power-solar": lambda base, scene: base / 2 if scene.weather in SOLAR_WEAK_WEATHERS else base,
+    "power-by-hit": _by_hit,
 }
+_RULES = {move_id: rule for key, rule in _RULE_BY_KEY.items() for move_id in battle_data.with_key("moves", key)}
+EFFECT_KEYS = frozenset({*_RULE_BY_KEY, HYDRO_STEAM_KEY})

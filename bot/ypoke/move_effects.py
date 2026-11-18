@@ -1,4 +1,7 @@
-"""Moves the battle gives an effect beyond damage, by PokéAPI id. A status move not listed here is never offered."""
+"""Moves the battle gives an effect beyond damage, by PokéAPI id (`data/battle/moves.json`). A status move without a
+status effect key is never offered."""
+
+from ypoke import battle_data
 
 TRICK_ROOM = 433
 STEALTH_ROCK = 446
@@ -13,17 +16,15 @@ EXPLOSION = 153
 JUDGMENT = 449
 IVY_CUDGEL = 904
 DRAGON_ASCENT = 620
+STATUS_EFFECTS = ("trick-room", "stealth-rock", "swords-dance", "yawn", "thunder-wave")
+DAMAGE_EFFECTS = ("pivot", "self-ko")
+EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, "damage", "struggle", "judgment", "ivy-cudgel"})
 # Punching Glove boosts these.
-PUNCH_MOVES = frozenset({5, 7, 8, 9, 183, 223, 264, 309, 325, 359, 409, 418, 612, 665, 721, 742, 817, 838, 857, 889})
+PUNCH_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
+                        if "punch" in entry.get("flags", ()))
 
-STATUS_MOVES = {
-    TRICK_ROOM: "trick-room", STEALTH_ROCK: "stealth-rock", SWORDS_DANCE: "swords-dance", YAWN: "yawn",
-    THUNDER_WAVE: "thunder-wave",
-}
-EFFECTS = {
-    **STATUS_MOVES, U_TURN: "pivot", VOLT_SWITCH: "pivot", FLIP_TURN: "pivot", SELF_DESTRUCT: "self-ko",
-    EXPLOSION: "self-ko",
-}
+STATUS_MOVES = {move_id: key for key in STATUS_EFFECTS for move_id in battle_data.with_key("moves", key)}
+EFFECTS = {**STATUS_MOVES, **{move_id: key for key in DAMAGE_EFFECTS for move_id in battle_data.with_key("moves", key)}}
 
 
 def wants_status_moves(move_ids) -> bool:
