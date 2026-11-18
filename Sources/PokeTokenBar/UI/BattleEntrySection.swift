@@ -76,7 +76,7 @@ struct BattleEntrySection: View {
     }
 
     private func speciesID(of fighter: BattleCandidate) -> Int {
-        companion.dexEntry(for: fighter)?.finalID ?? fighter.member.pokemonID
+        BattleStatPreview.speciesID(of: fighter, in: companion)
     }
 
     private func entryRow(fighter: BattleCandidate, index: Int, count: Int, megaLead: Int?) -> some View {
@@ -113,10 +113,8 @@ struct BattleEntrySection: View {
                             Text(l.battleEntryRaising).font(.caption2).foregroundStyle(Color.accentColor)
                         }
                     }
-                    if let types = mega?.types ?? tera?.types {
+                    if let types = BattleStatPreview.types(for: fighter, speciesID: speciesID, in: companion) {
                         TypeBadges(types: types, language: companion.language)
-                    } else if let details = companion.pokemonDetailsByID[speciesID] {
-                        TypeBadges(types: details.types, language: companion.language)
                     }
                 }
                 Spacer(minLength: 4)
