@@ -13,7 +13,7 @@ from ypoke.gym_battle import GymBattles
 from ypoke.mega_stones import mega_form_id
 from ypoke.narration import split_side
 from ypoke.store import Store
-from ypoke.upload_server import GYM_BATTLE_INTERVAL, serve
+from ypoke.upload_server import GYM_BATTLE_INTERVAL, serve, validate_members
 
 STATS = {"hp": 60, "attack": 60, "defense": 60, "special_attack": 60, "special_defense": 60, "speed": 60}
 STRONG = {"hp": 150, "attack": 150, "defense": 150, "special_attack": 150, "special_defense": 150, "speed": 150}
@@ -283,6 +283,15 @@ def test_a_won_run_battle_points_to_the_next_one_and_carries_every_members_state
         member["hp"] if member["hp"] is not None else 100 for member in body["player_team"]
     ]
     assert all(set(entry) == {"hp", "status"} for entry in body["carry"])
+
+
+def test_a_run_win_that_leaves_nobody_standing_ends_the_run(pokeapi, monkeypatch):
+    foes = len(gyms.foe_members(gyms.find("kanto-elite-1")))
+    pyrrhic = BattleResult(winner=0, turns=1, events=[], remaining=((0, 0), (0,) * foes),
+                           statuses=((None, None), (None,) * foes))
+    monkeypatch.setattr(gym_battle, "simulate", lambda *args, **kwargs: pyrrhic)
+    body = GymBattles(pokeapi, new_seed=lambda: 1).battle("kanto-elite-1", validate_members(strong_team(2), "team"))
+    assert body["won"] is True and body["run"]["next"] is None and body["carry"] is None
 
 
 def test_the_last_battle_of_a_run_and_a_lost_one_carry_nothing(server, clock):
