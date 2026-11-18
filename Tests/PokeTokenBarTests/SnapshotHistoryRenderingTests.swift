@@ -92,12 +92,7 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
             return true
         }
         let key = SpriteLoader.cacheDir.appendingPathComponent("1-s.png").path as NSString
-        let previous = SpriteLoader.imageCache.object(forKey: key)
-        SpriteLoader.imageCache.setObject(image, forKey: key)
-        addTeardownBlock { @MainActor in
-            if let previous { SpriteLoader.imageCache.setObject(previous, forKey: key) }
-            else { SpriteLoader.imageCache.removeObject(forKey: key) }
-        }
+        pinSprite(image, at: key)
         return (CompanionStore(provider: SnapshotHistoryOfflineProvider(), clock: { now },
                                fileURL: file, defaults: defaults),
                 UsageStore(providers: [], autoRefresh: false, defaults: defaults))

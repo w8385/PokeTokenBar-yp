@@ -1758,6 +1758,19 @@ read_when:
   Not covered: `Date().timeIntervalSince(` stays allowed because only print-only parity probes and
   the opt-in 512 MiB performance budget use it.
 
+- **A test must not rely on an `NSCache` keeping what it put there.** Five render tests drew a solid
+  sprite by writing it into `SpriteLoader.imageCache` and then counted or sampled those pixels.
+  `NSCache` may drop any entry at any time, under memory pressure or past `countLimit = 64`. On the
+  shared CI Mac, train 19 lost the red squares before `BoxView` drew, so the cells showed real
+  sprites and `BoxTests.testTheFirstBoxCellSitsInTheFirstColumn` waited out the 60 s ceiling. Why
+  tests and review missed it: on an idle Mac the entries survive, so the test passed alone and after
+  every suite that runs before it, and main and trains 12–18 were green. Clearing the cache after
+  seeding (`removeAllObjects()`) reproduced the exact CI failure. Tests now call
+  `pinSprite(_:at:)`, which writes `SpriteLoader.pinnedImages`; the sprite loaders read that before
+  the cache, and it is empty in the app. Guard:
+  `PinnedSpriteGuardTests.testNoTestSeedsTheEvictableSpriteCache` fails on any `imageCache.setObject`
+  under `Tests/`, and `testAPinnedSpriteSurvivesACacheEviction` clears the cache after pinning.
+
 ## Repo-wide tests outside a leaf's filter
 
 - **Every test that reads `Sources/` or `Tests/`, reflects over a model or sweeps languages is in

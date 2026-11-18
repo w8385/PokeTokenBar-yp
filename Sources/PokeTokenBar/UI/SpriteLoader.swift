@@ -148,6 +148,13 @@ enum SpriteLoader {
         return cache
     }()
 
+    /// Never evicted, unlike `imageCache`; empty in the app.
+    static var pinnedImages: [NSString: NSImage] = [:]
+
+    private static func memoryImage(_ key: NSString) -> NSImage? {
+        pinnedImages[key] ?? imageCache.object(forKey: key)
+    }
+
     /// 메모리·디스크 캐시에 이미 있으면 동기 반환(네트워크 없음). 없으면 nil.
     /// shiny 캐시 미스는 일반 캐시로 폴백 — 오프라인에서 live mon 이 알 글리프로 보이는 것 방지.
     /// back 캐시 미스는 앞모습으로 폴백 — 뒷모습이 없어도 화면이 비지 않게.
@@ -159,7 +166,7 @@ enum SpriteLoader {
                                        back: back, female: female)
         let f = directory.appendingPathComponent("\(key).\(ext)")
         let imageKey = f.path as NSString
-        if let img = imageCache.object(forKey: imageKey) { return img }
+        if let img = memoryImage(imageKey) { return img }
         if let d = try? Data(contentsOf: f), let img = SpriteFrame.decodeStill(d) {
             imageCache.setObject(img, forKey: imageKey)
             return img
@@ -300,11 +307,11 @@ enum SpriteLoader {
                                            back: back, female: female)
             let ext = moving ? "gif" : "png"
             let imageKey = store.directory.appendingPathComponent("\(key).\(ext)").path as NSString
-            if let img = imageCache.object(forKey: imageKey) { return img }
+            if let img = memoryImage(imageKey) { return img }
             guard let d = await store.data(speciesID: speciesID, animated: moving,
                                           shiny: shiny, form: form, back: back, female: female) else { continue }
             // await 중 같은 종의 다른 행이 로드를 끝냈으면 그 객체를 재사용한다.
-            if let img = imageCache.object(forKey: imageKey) { return img }
+            if let img = memoryImage(imageKey) { return img }
             guard let img = SpriteFrame.decodeStill(d) else { continue }
             imageCache.setObject(img, forKey: imageKey)
             return img
@@ -329,7 +336,7 @@ enum SpriteLoader {
     static func cachedItemImage(name: String, directory: URL = cacheDir) -> NSImage? {
         let f = directory.appendingPathComponent("item-\(name).png")
         let imageKey = f.path as NSString
-        if let img = imageCache.object(forKey: imageKey) { return img }
+        if let img = memoryImage(imageKey) { return img }
         if let d = try? Data(contentsOf: f), let img = NSImage(data: d) {
             imageCache.setObject(img, forKey: imageKey)
             return img
@@ -340,9 +347,9 @@ enum SpriteLoader {
     /// 아이템 스프라이트 — 런타임 로드(+캐시). 미제공/실패면 nil(뷰가 이모지로 폴백).
     static func itemImage(name: String, store: SpriteStore = .shared) async -> NSImage? {
         let imageKey = store.directory.appendingPathComponent("item-\(name).png").path as NSString
-        if let img = imageCache.object(forKey: imageKey) { return img }
+        if let img = memoryImage(imageKey) { return img }
         guard let d = await store.data(itemName: name) else { return nil }
-        if let img = imageCache.object(forKey: imageKey) { return img }
+        if let img = memoryImage(imageKey) { return img }
         guard let img = NSImage(data: d) else { return nil }
         imageCache.setObject(img, forKey: imageKey)
         return img

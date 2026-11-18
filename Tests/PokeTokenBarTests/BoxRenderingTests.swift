@@ -40,12 +40,7 @@ final class BoxRenderingTests: XCTestCase {
         NSRect(x: 0, y: 0, width: 96, height: 96).fill()
         image.unlockFocus()
         let key = SpriteLoader.cacheDir.appendingPathComponent("25-s.png").path as NSString
-        let previous = SpriteLoader.imageCache.object(forKey: key)
-        SpriteLoader.imageCache.setObject(image, forKey: key)
-        defer {
-            if let previous { SpriteLoader.imageCache.setObject(previous, forKey: key) }
-            else { SpriteLoader.imageCache.removeObject(forKey: key) }
-        }
+        pinSprite(image, at: key)
 
         for attempt in 1...3 {
             autoreleasepool {

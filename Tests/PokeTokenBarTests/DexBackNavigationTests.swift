@@ -77,12 +77,7 @@ final class DexBackNavigationTests: XCTestCase {
             swatch.color.setFill()
             NSRect(x: 0, y: 0, width: 96, height: 96).fill()
             image.unlockFocus()
-            let previous = SpriteLoader.imageCache.object(forKey: key)
-            SpriteLoader.imageCache.setObject(image, forKey: key)
-            addTeardownBlock { @MainActor in
-                if let previous { SpriteLoader.imageCache.setObject(previous, forKey: key) }
-                else { SpriteLoader.imageCache.removeObject(forKey: key) }
-            }
+            pinSprite(image, at: key)
         }
     }
 
