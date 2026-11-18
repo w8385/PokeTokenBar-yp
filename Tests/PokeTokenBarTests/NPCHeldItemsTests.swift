@@ -1,57 +1,37 @@
 import XCTest
 @testable import PokeTokenBar
 
-/// Reads the bot's Python item tables so the app's item list can be checked against them.
+/// The items NPC teams hold, read from the bot's team data and item picker.
 enum BotItemSource {
+    /// The `ypoke.items` tables `foe_items.py` can pick from, by the effect key their entries run in `items.json`.
+    static let tableKeys = [
+        "TYPE_BOOST_ITEMS": "type-boost", "RESIST_BERRIES": "resist-berry", "PLATES": "plate",
+        "WEATHER_ROCKS": "weather-rock", "OGERPON_MASKS": "ogerpon-mask", "ORIGIN_BOOSTS": "origin-boost",
+        "ORB_AILMENTS": "status-orb",
+    ]
+
     static func read(_ path: String) throws -> String {
         try String(contentsOf: URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent(path), encoding: .utf8)
     }
 
-    /// The keys of `ITEM_NAMES` in `bot/ypoke/items.py`, string literals and module constants alike.
-    static func itemNames() throws -> Set<String> {
-        try names(of: "ITEM_NAMES", in: read("bot/ypoke/items.py"))
-    }
-
-    /// The keys of `MEGA_STONES` in `bot/ypoke/mega_stones.py`.
-    static func megaStones() throws -> Set<String> {
-        try names(of: "MEGA_STONES", in: read("bot/ypoke/mega_stones.py"))
-    }
-
     /// Every item an NPC can hold: the held item of each fixed team row in `gym_data.py`, and every item
-    /// `foe_items.py` (which picks the items of the generated gym, Elite Four and org teams) refers to.
+    /// `foe_items.py` (which picks the items of the generated gym, Elite Four and org teams) refers to, a
+    /// constant (`items.LEFTOVERS` is "leftovers") or a table.
     static func npcHeldItems() throws -> Set<String> {
         let teams = try read("bot/ypoke/gym_data.py")
         var slugs = Set(teams.matches(of: /\(\d+, "([a-z0-9-]+)", \(/).map { String($0.1) })
-        let items = try read("bot/ypoke/items.py")
         let picker = try read("bot/ypoke/foe_items.py")
         for name in Set(picker.matches(of: /\bitems\.([A-Z][A-Z0-9_]*)\b/).map { String($0.1) }) {
-            slugs.formUnion(try names(of: name, in: items))
-        }
-        return slugs
-    }
-
-    /// The item slugs a top-level `name = ...` statement holds: a string constant, a dict's keys, or a
-    /// collection's members. Module constants inside resolve to their strings.
-    private static func names(of name: String, in source: String) throws -> Set<String> {
-        let constants = Dictionary(source.matches(of: /(?m)^([A-Z][A-Z0-9_]*) = "([a-z0-9-]+)"$/)
-            .map { (String($0.1), String($0.2)) }, uniquingKeysWith: { first, _ in first })
-        if let slug = constants[name] { return [slug] }
-        let head = try XCTUnwrap(source.firstMatch(of: try Regex("(?m)^\(name)(?::[^=]*)? = ")), "no \(name)")
-        let rest = source[head.range.upperBound...]
-        let statement = rest[..<(rest.firstMatch(of: /\n(?=\S)/)?.range.lowerBound ?? rest.endIndex)]
-        let isDict = statement.hasPrefix("{")
-        var slugs = Set<String>()
-        let pattern = isDict ? /(?:"([a-z0-9-]+)"|\b([A-Z][A-Z0-9_]*))\s*:/ : /(?:"([a-z0-9-]+)"|\b([A-Z][A-Z0-9_]*))\b/
-        for match in statement.matches(of: pattern) {
-            if let literal = match.1 {
-                slugs.insert(String(literal))
-            } else if let constant = match.2 {
-                slugs.insert(try XCTUnwrap(constants[String(constant)], "unknown constant \(constant)"))
+            if let key = tableKeys[name] {
+                let table = try BattleData.items(running: key)
+                XCTAssertFalse(table.isEmpty, "no item runs \(key)")
+                slugs.formUnion(table)
+            } else {
+                slugs.insert(name.lowercased().replacingOccurrences(of: "_", with: "-"))
             }
         }
-        XCTAssertFalse(slugs.isEmpty, "\(name) holds no item")
         return slugs
     }
 }
@@ -109,15 +89,16 @@ final class NPCHeldItemsTests: XCTestCase {
         let slugs = try BotItemSource.npcHeldItems()
         XCTAssertTrue(slugs.contains("dragoninite"), "a champion row's literal item")
         XCTAssertTrue(slugs.contains("eviolite"), "a constant the picker names")
-        XCTAssertTrue(slugs.contains("charcoal"), "a TYPE_BOOST_ITEMS key that is a constant")
-        XCTAssertTrue(slugs.contains("fairy-feather"), "a TYPE_BOOST_ITEMS key that is a literal")
+        XCTAssertTrue(slugs.contains("charcoal"), "a type-boost item")
+        XCTAssertTrue(slugs.contains("fairy-feather"), "a type-boost item")
+        XCTAssertTrue(slugs.contains("stellar-crystal"), "a constant with an underscore")
         for slug in ["rusted-sword", "rusted-shield", "ultranecrozium-z", "floettite"] {
             XCTAssertTrue(slugs.contains(slug), "an Ace row's item \(slug)")
         }
     }
 
     private func assertSoldAndKnown(_ slugs: Set<String>, sold: Set<ShopEntry>, known: Set<String>? = nil) throws {
-        let known = try known ?? BotItemSource.itemNames().union(BotItemSource.megaStones())
+        let known = try known ?? BattleData.knownItems()
         for slug in slugs.sorted() {
             XCTAssertTrue(known.contains(slug), "the bot has no item \(slug)")
             guard let entry = entry(for: slug) else {
