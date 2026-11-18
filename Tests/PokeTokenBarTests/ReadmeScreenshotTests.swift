@@ -45,6 +45,13 @@ final class ReadmeScreenshotTests: XCTestCase {
         for id in [BoxDexFixture.pikachuID, BoxDexFixture.charizardID, BoxDexFixture.onixID, BoxDexFixture.eeveeID] {
             _ = entry.add(id)
         }
+        let battleSuite = "readme-battle-\(UUID())"
+        let battleDefaults = try XCTUnwrap(UserDefaults(suiteName: battleSuite))
+        defer { battleDefaults.removePersistentDomain(forName: battleSuite) }
+        let battleEntry = BattleEntryStore(defaults: battleDefaults)
+        for id in [BoxDexFixture.pikachuID, Self.kyogreID, BoxDexFixture.charizardID, BoxDexFixture.onixID] {
+            _ = battleEntry.add(id)
+        }
 
         let home = try await sampleUsage(defaults: defaults)
 
@@ -56,7 +63,8 @@ final class ReadmeScreenshotTests: XCTestCase {
                          limitWarning: false, hasUsageData: true)
             try await waitUntil("the raised Pokémon's line to load") { store.currentLine != nil }
 
-            func popover(_ usage: UsageStore = usage, _ configure: (PopoverNavigation) -> Void) -> some View {
+            func popover(_ usage: UsageStore = usage, store: CompanionStore = store, entry: BattleEntryStore = entry,
+                         _ configure: (PopoverNavigation) -> Void) -> some View {
                 let nav = PopoverNavigation()
                 configure(nav)
                 return PopoverView(screenHeight: 5000)
@@ -79,7 +87,15 @@ final class ReadmeScreenshotTests: XCTestCase {
                            "screenshot-pokemon-profile\(suffix)", in: dir, height: 560)
             try await shot(popover { $0.openBoxDetail(id: BoxDexFixture.pikachuID) },
                            "screenshot-exp-share\(suffix)", in: dir, height: 372)
-            try await shot(popover { $0.tab = .battle }, "screenshot-battle\(suffix)", in: dir, height: 482)
+            let (battleStore, battleCleanup) = try BoxDexFixture.makeStore(
+                language: language, mutate: { Self.sample(&$0); Self.addKyogre(&$0) }, defaults: defaults)
+            defer { battleCleanup() }
+            for id in Self.species + [382] { await battleStore.loadPokemonDetails(speciesID: id) }
+            battleStore.update(todayTokensByProvider: ["claude_code": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
+                               limitWarning: false, hasUsageData: true)
+            try await waitUntil("the battle store's line to load") { battleStore.currentLine != nil }
+            try await shot(popover(store: battleStore, entry: battleEntry) { $0.tab = .battle },
+                           "screenshot-battle\(suffix)", in: dir, height: 482)
             try await shot(gyms(store: store, uploader: uploader, entry: entry, catalog: catalog),
                            "screenshot-gyms\(suffix)", in: dir, height: nil)
             try await shot(replay(language: language, catalog: catalog), "screenshot-gym-replay\(suffix)", in: dir,
@@ -96,6 +112,18 @@ final class ReadmeScreenshotTests: XCTestCase {
         state.expShareHolders = [BoxDexFixture.pikachuID]
         state.friendEntryIDs = [BoxDexFixture.charizardID, BoxDexFixture.pikachuID]
         state.gymBadges.update("kanto") { $0.gyms = [1, 2, 3] }
+    }
+
+    private static let kyogreID = "kyogre"
+
+    /// A Kyogre holding the Blue Orb, picked ahead of the Mega Charizard in the battle shot.
+    private static func addKyogre(_ state: inout CompanionState) {
+        var profile = PokemonProfile.generate(seed: 382, instanceID: kyogreID)
+        profile.level = 55
+        state.dex.append(DexEntry(id: kyogreID, baseID: 382, finalID: 382, chainOrder: [382], rarity: .legendary,
+                                  caughtAt: Date(timeIntervalSince1970: 1_700_000_500), isShiny: false,
+                                  profile: profile, names: [382: ["ko": "가이오가", "en": "Kyogre"]]))
+        state.heldItems[kyogreID] = ItemKind.blueOrb.rawValue
     }
 
     /// Two weeks of Claude Code and Codex use, ending with a busy today.
@@ -202,7 +230,7 @@ final class ReadmeScreenshotTests: XCTestCase {
     }
 
     private func preloadSprites() async throws {
-        for id in Self.species + ReplayCast.all.map(\.id) {
+        for id in Self.species + [382] + ReplayCast.all.map(\.id) {
             _ = await SpriteLoader.image(speciesID: id)
             _ = await SpriteLoader.image(speciesID: id, back: true)
         }
