@@ -199,7 +199,7 @@ extension L {
               "Les capacités Feu ont 1/3 de puissance pendant 5 tours",
               "Golpes Fogo têm 1/3 do poder por 5 turnos", "Feuer-Attacken haben 5 Runden lang 1/3 Stärke",
               "Огненные приёмы 5 ходов имеют 1/3 силы")
-        default: nil
+        default: changerMoveEffect(moveID)
         }
     }
 

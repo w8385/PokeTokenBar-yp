@@ -32,6 +32,8 @@ STATUS_EFFECTS = (
     "torment", "spite", "heal-block", "embargo", "foresight", "miracle-eye", "lock-on", "telekinesis", "magnet-rise",
     "imprison", "electrify", "powder", "ion-deluge", "magic-coat", "snatch", "octolock", "tar-shot", "mud-sport",
     "water-sport", "focus-energy", "laser-focus",
+    "conversion", "conversion-2", "camouflage", "reflect-type", "soak", "magic-powder", "trick-or-treat",
+    "forests-curse", "gastro-acid", "simple-beam", "worry-seed", "entrainment", "skill-swap", "role-play", "doodle",
     "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
     "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
 )
