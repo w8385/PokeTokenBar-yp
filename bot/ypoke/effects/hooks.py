@@ -34,6 +34,7 @@ HOOKS = {
     "retypes_move": "state: the type its holder's move takes, after the weather or terrain (Electrify)",
     "backfires": "state: a used move fails on its own user, after PP (Powder)",
     "targets_foe": "move: a status move aimed at the foe, which Protect stops",
+    "never_misses": "move: a status move skips its accuracy draw for this user (Toxic from a Poison type)",
     "stops_move": "state: a used move fails on a target on its side, after PP",
     "punishes": "state: acts on the user of a move it stopped (Spiky Shield)",
     "use": "move: a status or weather move acts instead of dealing damage",

@@ -16,7 +16,7 @@ class StatusMove(Handler):
     snatchable = False
 
     def use(self, move, user, foe, side, turn, weather, arena, rng):
-        if (move.accuracy is not None and not battle._sure_hit(user, foe)
+        if (move.accuracy is not None and not battle._sure_hit(user, foe) and not self.never_misses(move, user)
                 and rng.random() * 100 >= move.accuracy * battle._accuracy_stages(user, foe)):
             return {"missed": True}
         attacker = user
@@ -33,6 +33,9 @@ class StatusMove(Handler):
 
     def targets_foe(self, move):
         return self.hits_foe
+
+    def never_misses(self, move, user):
+        return False
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         raise NotImplementedError

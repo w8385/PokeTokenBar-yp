@@ -292,6 +292,28 @@ extension L {
               "Paga 1/2 dos PS por um substituto e troca pelo próximo Pokémon",
               "Zahlt 1/2 KP für einen Delegator und wechselt zum nächsten Pokémon",
               "Платит 1/2 ОЗ за заменителя и передаёт его следующему покемону")
+        case 47, 95, 142, 320, 464: ailmentLine("sleep")
+        case 79, 147: ailmentLine("sleep", note: powderNote)
+        case 48, 109, 186, 298: ailmentLine("confusion")
+        case 137: ailmentLine("paralysis")
+        case 78: ailmentLine("paralysis", note: powderNote)
+        case 139: ailmentLine("poison")
+        case 77: ailmentLine("poison", note: powderNote)
+        case 261: ailmentLine("burn")
+        case 92:
+            ailmentLine("toxic", note: t("독 타입이 쓰면 반드시 명중", "never misses from a Poison type",
+                                         "どくタイプが使うと必ず命中", "nunca falla si lo usa un tipo Veneno",
+                                         "ne rate jamais lancé par un type Poison", "nunca erra se usado por um tipo Veneno",
+                                         "trifft immer, wenn ein Gift-Pokémon es einsetzt",
+                                         "не промахивается у ядовитого типа"))
+        case 207: stageEffect([("attack", 2)], foe: true, note: ailmentLine("confusion"))
+        case 260: stageEffect([("special_attack", 1)], foe: true, note: ailmentLine("confusion"))
+        case 672: stageEffect([("speed", -1)], foe: true, note: ailmentLine("poison"))
+        case 375:
+            t("자신의 상태 이상을 상대에게 옮김", "Passes the user's status to the target", "自分の状態異常を相手にうつす",
+              "Pasa el problema de estado del usuario al objetivo", "Transfère le statut du lanceur à la cible",
+              "Passa o problema de status do usuário ao alvo", "Überträgt den Statuszustand des Anwenders auf das Ziel",
+              "Передаёт свой статус цели")
         default: nil
         }
     }
@@ -356,6 +378,38 @@ extension L {
     private func healShare(_ share: Int) -> String {
         t("HP 1/\(share) 회복", "Heals 1/\(share) of its HP", "HPを1/\(share)回復", "Cura 1/\(share) de sus PS",
           "Soigne 1/\(share) de ses PV", "Cura 1/\(share) dos PS", "Heilt 1/\(share) der KP", "Восстанавливает 1/\(share) ОЗ")
+    }
+
+    private var powderNote: String {
+        t("풀 타입에는 무효", "no effect on Grass types", "くさタイプには効かない", "no afecta a los tipo Planta",
+          "sans effet sur les types Plante", "não afeta tipos Planta", "wirkungslos gegen Pflanzen-Pokémon",
+          "не действует на травяной тип")
+    }
+
+    private func ailmentLine(_ ailment: String, note: String? = nil) -> String {
+        let base = switch ailment {
+        case "sleep":
+            t("상대를 잠재움", "Puts the target to sleep", "相手をねむらせる", "Duerme al objetivo", "Endort la cible",
+              "Faz o alvo dormir", "Lässt das Ziel einschlafen", "Усыпляет цель")
+        case "confusion":
+            t("상대를 혼란", "Confuses the target", "相手をこんらんさせる", "Confunde al objetivo", "Rend la cible confuse",
+              "Confunde o alvo", "Verwirrt das Ziel", "Сбивает цель с толку")
+        case "paralysis":
+            t("상대를 마비", "Paralyzes the target", "相手をまひさせる", "Paraliza al objetivo", "Paralyse la cible",
+              "Paralisa o alvo", "Paralysiert das Ziel", "Парализует цель")
+        case "burn":
+            t("상대를 화상", "Burns the target", "相手をやけどにする", "Quema al objetivo", "Brûle la cible",
+              "Queima o alvo", "Verbrennt das Ziel", "Обжигает цель")
+        case "toxic":
+            t("상대를 맹독", "Badly poisons the target", "相手をもうどくにする", "Envenena gravemente al objetivo",
+              "Empoisonne gravement la cible", "Envenena gravemente o alvo", "Vergiftet das Ziel schwer",
+              "Сильно отравляет цель")
+        default:
+            t("상대를 독", "Poisons the target", "相手をどくにする", "Envenena al objetivo", "Empoisonne la cible",
+              "Envenena o alvo", "Vergiftet das Ziel", "Отравляет цель")
+        }
+        guard let note else { return base }
+        return base + t(", ", ", ", "、", ", ", ", ", ", ", ", ", ", ") + note
     }
 
     private func allFive(_ delta: Int) -> [(String, Int)] {

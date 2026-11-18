@@ -80,6 +80,7 @@ STAT_SHORT = {
     "accuracy": "명중", "evasion": "회피",
 }
 CHANGES_IN_TEXT = frozenset({"swords-dance", "tidy-up"})
+AT_FOE = frozenset({"inflict", "swagger", "toxic-thread", "psycho-shift"})
 VOLATILE_LABEL = {
     "wish": "🌠소원", "aqua-ring": "💧물의고리", "ingrain": "🌱뿌리박기", "healing-wish": "🌙치유소원",
     "substitute": "🧸대타", "shed-tail": "🧸대타 이어받음",
@@ -420,6 +421,8 @@ def _action_line(event: Action, marker: str) -> str:
         return f"{head} → {event.defender} 졸음"
     if event.effect == "thunder-wave":
         return f"{head} → {event.defender} {STATUS_ICON['paralysis']}"
+    if event.effect in AT_FOE:
+        return " ".join([f"{head} → {event.defender}", *(_change_tag(change, event.side) for change in event.changes)])
     if event.effect in HP_TEXT:
         text = HP_TEXT[event.effect].format(attacker=event.attacker_hp, defender=event.defender_hp, foe=event.defender)
         return " ".join([head, text, *(_change_tag(change, event.side) for change in event.changes)])

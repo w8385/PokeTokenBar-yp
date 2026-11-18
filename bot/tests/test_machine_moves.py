@@ -37,7 +37,7 @@ MOVES = {
     85: move_body(85, 90, "special"),      # level-up at 36, also a TM
     87: move_body(87, 110, "special"),     # TM in Sword/Shield only
     89: move_body(89, 100),                # TM
-    92: move_body(92, None, "status"),     # status-only TM the battle does not implement
+    213: move_body(213, None, "status"),   # Attract, a status TM the battle never offers
     86: move_body(86, None, "status"),     # Thunder Wave, a status TM the battle implements
     281: move_body(281, None, "status"),   # Yawn, an egg move
     33: move_body(33, 40),                 # an attacking egg move
@@ -56,7 +56,7 @@ POKEMON = {
     entry(85, detail(SV, "level-up", 36), detail(SV, "machine")),
     entry(87, detail(SWSH, "machine")),
     entry(89, detail(SV, "machine")),
-    entry(92, detail(SV, "machine")),
+    entry(213, detail(SV, "machine")),
     entry(86, detail(SV, "machine")),
     entry(240, detail(SV, "machine")),
     entry(281, detail(SV, "egg")),
@@ -103,7 +103,7 @@ def test_the_level_gate_applies_to_level_up_moves_only(api):
 
 def test_status_only_machine_moves_are_filtered_but_weather_ones_stay(api):
     ids = [move["id"] for move in api.attacking_moves(25, 50, None)]
-    assert 86 not in ids and 92 not in ids and 240 in ids
+    assert 86 not in ids and 213 not in ids and 240 in ids
 
 
 def test_a_machine_move_taught_only_in_another_version_group_is_not_learnable(api):
@@ -176,7 +176,7 @@ def test_an_upload_may_choose_a_machine_move_at_any_level(server):
     assert store.party("U1").party[0]["moves"] == [89, 85]
 
 
-@pytest.mark.parametrize("move_id", [87, 92, 33, 999, 433])
+@pytest.mark.parametrize("move_id", [87, 213, 33, 999, 433])
 def test_an_upload_rejects_a_move_of_another_group_a_status_move_or_an_unknown_one(server, move_id):
     store, base = server
     status, body = call(f"{base}/v1/party", store.issue_token("U1"),
@@ -200,7 +200,7 @@ def test_status_moves_count_egg_moves_but_attacking_moves_do_not(api):
         (240, "machine"), (14, "egg"), (86, "machine"), (281, "egg"),
     ]
     assert 33 not in [move["id"] for move in moves]
-    assert 92 not in [move["id"] for move in moves]
+    assert 213 not in [move["id"] for move in moves]
 
 
 def test_an_egg_only_status_move_is_offered_without_any_machine_ids(api):

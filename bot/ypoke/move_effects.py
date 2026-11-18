@@ -27,6 +27,7 @@ STATUS_EFFECTS = (
     "healing-wish", "memento", "revival-blessing", "heal", "weather-heal", "roost", "swallow", "strength-sap",
     "pain-split", "purify", "rest", "wish", "heal-bell", "refresh", "aqua-ring", "ingrain", "heal-foe",
     "substitute", "shed-tail",
+    "inflict", "swagger", "toxic-thread", "psycho-shift",
     "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
     "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
 )
@@ -46,6 +47,9 @@ PUNCH_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("mo
 # They pass a Substitute.
 SOUND_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
                         if "sound" in entry.get("flags", ()))
+# Grass types are immune to them.
+POWDER_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
+                         if "powder" in entry.get("flags", ()))
 
 STATUS_MOVES = {move_id: key for key in STATUS_EFFECTS for move_id in battle_data.with_key("moves", key)}
 EFFECTS = {**STATUS_MOVES, **{move_id: key for key in DAMAGE_EFFECTS for move_id in battle_data.with_key("moves", key)}}
