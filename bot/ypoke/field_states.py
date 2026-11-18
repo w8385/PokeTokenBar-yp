@@ -34,6 +34,7 @@ TERRAIN_POWER = {
 }
 HAZARD_ON_HIT = {"stone-axe": "stealth-rock", "ceaseless-edge": "spikes"}
 DEFOGGED = (*SCREENS, "safeguard", "mist")
+DEFOG_EVASION = -1
 VEIL_WEATHERS = ("hail", "snow")
 AI_AILMENT_CHANCE = 30
 AI_DROP_CHANCE = 50

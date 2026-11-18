@@ -253,6 +253,10 @@ def test_an_upload_may_choose_a_status_move_the_battle_implements(server):
 
 
 def test_every_offered_status_move_has_an_effect_line_in_the_app():
-    source = (Path(__file__).resolve().parents[2] / "Sources/PokeTokenBar/Core/LocalizationBox.swift").read_text()
-    body = source.split("func statusMoveEffect", 1)[1].split("default: nil", 1)[0]
-    assert {int(found) for found in re.findall(r"case (\d+):", body)} == set(STATUS_MOVES)
+    core = Path(__file__).resolve().parents[2] / "Sources/PokeTokenBar/Core"
+    bodies = [(core / "LocalizationBox.swift").read_text().split("func statusMoveEffect", 1)[1].split("default:", 1)[0],
+              (core / "LocalizationStatusMoves.swift").read_text().split("func moreStatusMoveEffect", 1)[1]
+              .split("default: nil", 1)[0]]
+    cases = [case for body in bodies for case in re.findall(r"case ([\d, ]+):", body)]
+    listed = [int(found) for case in cases for found in case.split(",")]
+    assert sorted(listed) == sorted(set(listed)) and set(listed) == set(STATUS_MOVES)

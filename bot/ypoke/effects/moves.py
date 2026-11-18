@@ -19,7 +19,7 @@ class StatusMove(Handler):
         if (move.accuracy is not None and not battle._sure_hit(user, foe)
                 and rng.random() * 100 >= move.accuracy * battle._accuracy_stages(user, foe)):
             return {"missed": True}
-        if self.hits_foe:
+        if self.targets_foe(move):
             shield = next(iter(battle._field(foe, "shields", move, user)), "")
             if shield:
                 return {"failed": True, "blocked": shield}

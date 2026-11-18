@@ -55,6 +55,8 @@ EFFECT_TEXT = {
     "safeguard": "✨상태이상을 막는다", "mist": "🌁능력이 떨어지지 않는다", "lucky-chant": "🍀급소를 막는다",
     "gravity": "🌍중력이 강해졌다", "haze": "🌫️모든 능력 변화가 사라졌다", "defog": "💨안개를 걷어냈다",
     "court-change": "🔄양쪽 필드를 바꿨다", "tidy-up": "🧹주변을 정리했다 (공격·스피드↑)",
+    "psych-up": "🪞상대의 능력 변화를 따라 했다", "topsy-turvy": "🙃상대의 능력 변화가 뒤집혔다",
+    "stage-swap": "🔁상대와 능력 변화를 바꿨다", "stat-swap": "🔁능력치가 바뀌었다",
 }
 FORM_CHANGE = {"mega": ("메가진화", "메가"), "primal": ("원시회귀", "원시"), "ultra": ("울트라버스트", "울트라")}
 STAT_SHORT = {
