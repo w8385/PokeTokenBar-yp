@@ -63,9 +63,13 @@ final class TrainingRig {
     let navigation = PopoverNavigation()
     let posts = TrainingLog()
     let fetches = TrainingLog()
+    let names = PokemonNameDisplayStore()
+    let nameProvider: any PokemonNameProviding
     private var windows: [NSWindow] = []
 
-    init(movesJSON: String = trainingMovesJSON, language: AppLanguage = .en) async throws {
+    init(movesJSON: String = trainingMovesJSON, language: AppLanguage = .en,
+         nameProvider: any PokemonNameProviding = StubMoveNames()) async throws {
+        self.nameProvider = nameProvider
         scratch = FileManager.default.temporaryDirectory.appendingPathComponent("training-\(UUID())")
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
         var state = CompanionState()
@@ -131,6 +135,7 @@ final class TrainingRig {
     func mount<V: View>(_ view: V, height: CGFloat = 1400) async throws -> NSView {
         let size = CGSize(width: PopoverMetrics.contentWidth, height: height)
         let host = OffscreenRender.host(view.frame(width: size.width, height: size.height, alignment: .top)
+            .environment(\.pokemonNameProvider, nameProvider).environment(\.pokemonNameStore, names)
             .background(Color.white).environment(\.colorScheme, .light), size: size, appearance: .aqua)
         windows.append(OffscreenRender.windowHosting(host, appearance: .aqua))
         try await OffscreenRender.settle(host)

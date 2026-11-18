@@ -7,6 +7,10 @@ struct GymReplayView: View {
     let outcome: GymBattleOutcome
     let l: L
     var autoplay = true
+    @Environment(\.pokemonNameProvider) private var nameProvider
+    @Environment(\.pokemonNameStore) private var injectedNames
+
+    private var names: PokemonNameDisplayStore { injectedNames ?? .shared }
 
     var body: some View {
         let frame = player.frame
@@ -39,6 +43,9 @@ struct GymReplayView: View {
         .task {
             guard autoplay else { return }
             await player.play { withAnimation(.easeOut(duration: 0.25)) { player.advance() } }
+        }
+        .task {
+            await MoveName.load(ids: (outcome.events ?? []).compactMap(\.moveId), store: names, provider: nameProvider)
         }
     }
 
@@ -109,13 +116,19 @@ struct GymReplayView: View {
     }
 
     private func moveLine(_ frame: GymReplay.Frame) -> some View {
-        let fighters = [outcome.playerTeam, outcome.foeTeam]
-        let text = frame.lastMove.map { "\(fighters[$0.side][$0.member].name) › \($0.name)" } ?? " "
-        return Text(text).font(.caption.weight(.semibold))
+        Text(Self.moveText(frame.lastMove, outcome: outcome, language: l.lang, names: names.names))
+            .font(.caption.weight(.semibold))
             .foregroundStyle(frame.lastMove.map { Self.sideColor($0.side) } ?? .secondary)
             .lineLimit(1)
             .frame(maxWidth: .infinity)
             .contentTransition(.opacity)
+    }
+
+    static func moveText(_ move: GymReplay.Move?, outcome: GymBattleOutcome, language: AppLanguage,
+                         names: [PokemonNameResource: [String: String]]) -> String {
+        guard let move else { return " " }
+        let fighter = [outcome.playerTeam, outcome.foeTeam][move.side][move.member]
+        return "\(fighter.name) › \(MoveName.text(id: move.id, botName: move.name, language: language, names: names))"
     }
 
     private static func sideColor(_ side: Int) -> Color { side == 0 ? .accentColor : .orange }
