@@ -2179,7 +2179,7 @@ enum LocalUsageReader {
         return f.string(from: date)
     }
 
-    static func todayKey() -> String { localDayFormatter().string(from: Date()) }
+    static func todayKey(_ now: Date = Date()) -> String { localDayFormatter().string(from: now) }
 
     static func localDayFormatter(timeZone: TimeZone = .current) -> DateFormatter {
         let f = DateFormatter()

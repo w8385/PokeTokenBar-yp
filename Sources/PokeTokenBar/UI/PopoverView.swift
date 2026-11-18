@@ -443,7 +443,7 @@ struct PopoverView: View {
                           showsCost: store.showsCost,
                           window: Binding(get: { store.dailyTrendWindow }, set: { store.dailyTrendWindow = $0 }),
                           hasAvailableHistory: store.hasDailyTrendHistory,
-                          today: LocalUsageReader.todayKey(),
+                          today: LocalUsageReader.todayKey(store.now()),
                           l: l,
                           onCycle: { store.activityVisualization = store.activityVisualization.next })
 
@@ -1290,6 +1290,18 @@ struct PopoverView: View {
         return f
     }()
 
+    /// `Text(_:style: .relative)` measured from `now` instead of the wall clock: "1 min, 5 sec".
+    static func age(of date: Date, at now: Date, locale: Locale) -> String {
+        let f = DateComponentsFormatter()
+        var calendar = Calendar.current
+        calendar.locale = locale
+        f.calendar = calendar
+        f.unitsStyle = .short
+        f.allowedUnits = [.day, .hour, .minute, .second]
+        f.maximumUnitCount = 2
+        return f.string(from: max(0, now.timeIntervalSince(date))) ?? ""
+    }
+
     // MARK: 푸터
 
     private var footer: some View {
@@ -1307,7 +1319,11 @@ struct PopoverView: View {
                 }
                 .buttonStyle(.borderless)
                 .help(l.refreshNow)
-                if let updated = store.lastUpdated {
+                if let updated = store.lastUpdated, let now = store.pinnedNow {
+                    Text("\(l.updated) \(Self.age(of: updated, at: now, locale: companion.language.displayLocale))")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                } else if let updated = store.lastUpdated {
                     (Text("\(l.updated) ") + Text(updated, style: .relative))
                         .font(.caption)
                         .foregroundStyle(.tertiary)

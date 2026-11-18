@@ -118,6 +118,18 @@ struct SpriteVisibleTopKey: PreferenceKey {
     static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) { value = nextValue() ?? value }
 }
 
+private struct AnimatesSpritesKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    /// False holds every `SpriteView` on its first GIF frame (or its still sprite) and drops the bob.
+    var animatesSprites: Bool {
+        get { self[AnimatesSpritesKey.self] }
+        set { self[AnimatesSpritesKey.self] = newValue }
+    }
+}
+
 /// 스프라이트 1개(런타임 로드 + 캐시). 없으면 알 글리프. bob 으로 가벼운 상하 움직임.
 /// animated=true 면 Gen-V GIF 프레임을 순환(미지원/오프라인이면 정적+bob 으로 폴백).
 @MainActor
@@ -139,6 +151,7 @@ struct SpriteView: View {
     /// Emit `SpriteVisibleTopKey` so an overlay can sit on the visible sprite instead of its box.
     var reportsVisibleTop = false
     private let spriteStore: SpriteStore
+    @Environment(\.animatesSprites) private var animatesSprites
     @State private var subject: SpriteSubject
     @State private var up = false
     @State private var frames: [(image: NSImage, delay: TimeInterval)] = []
@@ -319,6 +332,7 @@ struct SpriteView: View {
             guard !frames.isEmpty, !Task.isCancelled else { return }
             // The seeded image may be a front or non-shiny fallback; the GIF is sized against the exact variant.
             async let _: Void = loadStaticImage(for: id)
+            guard animatesSprites else { return }
             // delay 기반 프레임 advance. .task 취소 시(speciesID 변경/뷰 소멸) 루프 종료 — 누수 없음
             while !Task.isCancelled {
                 let delay = frames[frameIndex % frames.count].delay
@@ -334,7 +348,7 @@ struct SpriteView: View {
             }
         }
         .onAppear {
-            guard bob else { return }
+            guard bob, animatesSprites else { return }
             withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { up = true }
         }
         .preference(key: SpriteVisibleTopKey.self, value: visibleTop)
