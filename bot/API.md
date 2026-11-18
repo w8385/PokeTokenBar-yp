@@ -46,7 +46,7 @@ Replaces the caller's stored party.
 | `shiny` | bool | optional, default `false`. Shown as ✨ in the battle log |
 | `rental` | bool | optional, default `false`. A loaner: it fights at the opponent's level, capped at 50 (both keep their own when both are rentals) and is announced as "대여 포켓몬 …" |
 | `nature` | string | optional, lowercase English nature name from the app (`"adamant"`). Raises one non-HP stat 10% and lowers another 10%, main-series table. Missing, empty or unknown names are neutral and never rejected |
-| `ability` | string | optional, the individual's PokéAPI ability name, lowercase with dashes (`"huge-power"`, max 40 chars). Missing or malformed names are dropped, never rejected. Battles know 27 abilities (Blaze, Torrent, Overgrow, Swarm, Intimidate, Levitate, Huge Power, Pure Power, Thick Fat, Technician, Sturdy, Adaptability, Guts, Swift Swim, Chlorophyll, Sand Rush, Drizzle, Drought, Sand Stream, Snow Warning, Static, Flame Body, Poison Point, Immunity, Limber, Insomnia, Water Veil); any other name does nothing. A physical move counts as contact for Static, Flame Body and Poison Point (30%) |
+| `ability` | string | optional, the individual's PokéAPI ability name, lowercase with dashes (`"huge-power"`, max 40 chars). Missing or malformed names are dropped, never rejected. Battles know 28 abilities (Blaze, Torrent, Overgrow, Swarm, Intimidate, Levitate, Huge Power, Pure Power, Thick Fat, Technician, Sturdy, Adaptability, Guts, Swift Swim, Chlorophyll, Sand Rush, Drizzle, Drought, Sand Stream, Snow Warning, Static, Flame Body, Poison Point, Immunity, Limber, Insomnia, Water Veil, Supreme Overlord); any other name does nothing. A physical move counts as contact for Static, Flame Body and Poison Point (30%) |
 | `held_item` | string | optional, lowercase PokéAPI item slug. Known: `leftovers` (heals 1/16 each turn), `choice-scarf` (Speed ×1.5), `choice-band` (Attack ×1.5), `choice-specs` (Sp. Atk ×1.5), the three Choice items lock into the first move, `focus-sash` (survives one KO hit from full HP), `focus-band` (10% to survive a KO hit), `life-orb` (damage ×1.3, 10% max HP recoil), `expert-belt` (super-effective ×1.2), `assault-vest` (Sp. Def ×1.5, no weather moves), `eviolite` (Def and Sp. Def ×1.5 while the species can still evolve), `rocky-helmet` (1/6 max HP to a physical attacker per hit), `sitrus-berry` (heals 1/4 once at 50% HP or less), `lum-berry` (cures a status once), `white-herb` (resets lowered stats once), `black-sludge` (Poison types heal 1/16, others lose 1/8 each turn), `shell-bell` (heals 1/8 of damage dealt), `big-root` (drain heals ×1.3), `muscle-band` / `wise-glasses` (physical / special moves ×1.1), `scope-lens` and `razor-claw` (critical stage +1), `quick-claw` (20% to move first), `bright-powder` (attackers' accuracy ×0.9), `wide-lens` (own accuracy ×1.1), `weakness-policy` (+2 Attack and Sp. Atk after a surviving super-effective hit), `flame-orb` / `toxic-orb` (burn / badly poison the holder at end of turn), `heat-rock` / `damp-rock` / `smooth-rock` / `icy-rock` (own weather lasts 8 turns), and one type-boost item per type (damage ×1.2): `charcoal` (Fire), `mystic-water`, `miracle-seed`, `magnet`, `never-melt-ice`, `black-belt`, `poison-barb`, `soft-sand`, `sharp-beak`, `twisted-spoon`, `silver-powder`, `hard-stone`, `spell-tag`, `dragon-fang`, `black-glasses`, `metal-coat`, `silk-scarf`, `fairy-feather`. `everstone` is app-only (it stops evolution) and does nothing in battle. A Mega Stone slug (`venusaurite`, `charizardite-x`, …) on a member whose `pokemon_id` is that stone's Pokémon makes it Mega Evolve before turn 1 with the Mega form's base stats, types and ability name from PokéAPI; on any other member it does nothing. The Ogerpon masks (`teal-mask`, `wellspring-mask`, `hearthflame-mask`, `cornerstone-mask`) work only on Ogerpon (`pokemon_id` 1017): it takes the mask's type (Grass plus Water, Fire or Rock; teal stays Grass), its moves do ×1.2 damage, and each time it enters it gets +1 Speed, Sp. Def, Attack or Defense (teal, wellspring, hearthflame, cornerstone). Terapagos (1024) always enters in its Terastal form; `stellar-crystal` (app-only, Terapagos only) makes it enter in the Stellar form instead and shares the once-per-battle slot with Mega Evolution (the first holder on a side in line takes it). Masks and the crystal on any other Pokémon do nothing. With a mask, Ivy Cudgel takes the mask's type. `punching-glove` makes punching moves ×1.1. The 17 plates (`flame-plate` … `pixie-plate`, no Legend Plate) make moves of their type ×1.2 on any holder; on Arceus (493) the plate also sets its type and Judgment's. The resist berries (`occa-berry` … `roseli-berry`, 18) halve the first super-effective hit of their type and are used up; `chilan-berry` halves the first Normal hit. `adamant-crystal`, `lustrous-globe` and `griseous-core` work only on Dialga (483), Palkia (484) and Giratina (487): it enters as its Origin Forme (its stats and types; Giratina gets Levitate) and its Dragon and second-type moves do ×1.2. `rusted-sword` and `rusted-shield` work only on Zacian (888) and Zamazenta (889): it enters in its Crowned form (its stats and types). `ultranecrozium-z` works only on Necrozma (800): it Ultra Bursts before turn 1 like a Mega Evolution and takes the Mega slot. A Rayquaza (384) that knows Dragon Ascent and holds no Mega Stone Mega Evolves with no stone, using the Mega slot; its Delta Stream replaces any weather with strong winds, which stop weather moves and abilities, take away Flying's weaknesses and end when it faints or leaves. Missing, empty or unknown slugs do nothing and are never rejected |
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
 | `moves` | array | optional, up to 4 distinct PokéAPI move ids, each a move from `GET /v1/moves` at that level, level-up or machine (TM), or one of its `status=1` status moves (learnable as described there, egg moves included). Any other move is rejected with `400`. Missing or empty: the 4 most recently learned level-up moves |
@@ -170,6 +170,37 @@ never miss.
 | `always_hits_in` | Weathers in which the move never misses (Thunder and Hurricane in `"rain"`, Blizzard in `"hail"`, `"snow"`) |
 
 Other secondary effects (flinch, trapping) are not simulated. `400` for a missing or out-of-range query, `503 pokeapi_unavailable` when PokéAPI is down.
+
+### Variable power
+
+`power` is the listed (PokéAPI) power. These moves change it in battle by the Gen 9 rules; abilities such as
+Technician then apply to the changed power. Every other move hits at its listed power.
+
+| Move | Power in battle |
+|---|---|
+| Last Respects (854) | 50 + 50 per fainted teammate of the user in this battle |
+| Eruption (284), Water Spout (323), Dragon Energy (820) | 150 × the user's HP share, at least 1 |
+| Hex (506) | ×2 if the target has a status |
+| Facade (263) | ×2 if the user is burned, poisoned or paralyzed; a burn does not halve its damage |
+| Brine (362) | ×2 if the target is at half HP or less |
+| Venoshock (474), Barb Barrage (839) | ×2 if the target is poisoned |
+| Acrobatics (512) | ×2 if the user holds no item (used up or knocked off) |
+| Weather Ball (311) | 100 and the weather's type in sun (Fire), rain (Water), sandstorm (Rock), hail or snow (Ice); 50 Normal otherwise |
+| Stored Power (500), Power Trip (681) | 20 + 20 per raised stat stage of the user |
+| Rage Fist (889) | 50 + 50 per hit the user took this battle (switching out keeps the count), up to 350 |
+| Avalanche (419), Revenge (279) | ×2 if the target's move hurt the user earlier this turn |
+| Payback (371) | ×2 if the target already moved this turn |
+| Bolt Beak (754), Fishious Rend (755) | ×2 if the target has not moved yet this turn |
+| Retaliate (514) | ×2 if a teammate fainted during the last turn |
+| Stomping Tantrum (707), Temper Flare (915) | ×2 if the user's move last turn missed, failed or hit an immune target |
+| Lash Out (808) | ×2 if one of the user's stats was lowered this turn |
+| Knock Off (282) | ×1.5 if the target holds an item it can lose, and the hit takes the item for the rest of the battle (not a Mega Stone on its Pokémon, a plate on Arceus, a mask, an origin or rusted item, or the Stellar Crystal) |
+| Collision Course (878), Electro Drift (879) | ×5461/4096 on a super-effective hit |
+| Triple Kick (167), Triple Axel (813) | 10/20/30 and 20/40/60 on the first, second and third hit |
+| Hydro Steam (876) | ×1.5 in sun instead of the Water ×0.5 |
+| Solar Beam (76), Solar Blade (669) | ×0.5 in rain, sandstorm, hail or snow |
+
+The ability Supreme Overlord multiplies its holder's moves by 1 + 0.1 per fainted teammate (at most ×1.5).
 
 ### Status moves in battle
 

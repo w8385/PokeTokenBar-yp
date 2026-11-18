@@ -262,7 +262,8 @@ def test_a_contact_ability_does_not_trigger_when_the_hit_knocks_out():
 def test_the_confusion_self_hit_is_not_boosted_by_technician_or_low_hp_abilities():
     technician = fighter("technician")
     plain = fighter()
-    assert _power(technician, CONFUSION_HIT) == _power(plain, CONFUSION_HIT) == CONFUSION_HIT.power
+    assert (_power(technician, plain, CONFUSION_HIT, None, 1.0) == _power(plain, plain, CONFUSION_HIT, None, 1.0)
+            == CONFUSION_HIT.power)
 
 
 def test_sturdy_only_saves_the_first_hit_of_a_multi_hit_move():

@@ -11,7 +11,7 @@ import random
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 
-from ypoke import abilities, items, tera_forms
+from ypoke import abilities, items, move_power, tera_forms
 from ypoke.move_effects import PUNCH_MOVES, STATUS_MOVES
 from ypoke.type_chart import effectiveness
 
@@ -372,8 +372,10 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     loser: int | None = None
     while loser is None and turn < TURN_LIMIT:
         turn += 1
+        for team in teams:
+            team.start_turn()
         fighters = (teams[0].active, teams[1].active)
-        choices = (_choose(teams, 0, arena, weather.kind), _choose(teams, 1, arena, weather.kind))
+        choices =(_choose(teams, 0, arena, weather.kind), _choose(teams, 1, arena, weather.kind))
         trick_room = arena.trick_room > 0
         claws = _quick_claws(turn, fighters, choices, weather.kind, rng, events, trick_room)
         for side in _turn_order(fighters, choices, rng, weather.kind, claws, trick_room):
@@ -382,6 +384,8 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
                 continue
             fighters[side].fresh = False
             action = _act(turn, side, fighters, choices[side], weather, rng, arena)
+            fighters[side].acted = True
+            fighters[side].flopped = bool(action.move) and (action.missed or action.failed or action.multiplier == 0)
             _note_effect(teams[side], action)
             if action.move and _pivots(teams[side], action, choices[side]):
                 action = replace(action, pivoted=True)
@@ -592,10 +596,22 @@ class _Team:
         self.finale = finale
         self.trick_room_used = False
         self.rocks_used = False
+        self.fallen_before = 0
 
     @property
     def active(self) -> "_Fighter":
         return self.fighters[self.current]
+
+    def start_turn(self) -> None:
+        """Clears the active member's this-turn state and tells it how many teammates have fainted so far and
+        whether one fainted during the last turn."""
+        fallen = sum(fighter.hp == 0 for fighter in self.fighters.values())
+        fighter = self.active
+        fighter.acted = fighter.hit_by_foe = fighter.lowered = False
+        fighter.flopped_last, fighter.flopped = fighter.flopped, False
+        fighter.fallen_allies = fallen
+        fighter.ally_fell_last_turn = fallen > self.fallen_before
+        self.fallen_before = fallen
 
     @property
     def has_next(self) -> bool:
@@ -659,14 +675,25 @@ class _Fighter:
     drowsy_at: int = 0
     fresh: bool = True
     danced: bool = False
+    acted: bool = False
+    hit_by_foe: bool = False
+    lowered: bool = False
+    flopped: bool = False
+    flopped_last: bool = False
+    times_hit: int = 0
+    fallen_allies: int = 0
+    ally_fell_last_turn: bool = False
+    item_lost: bool = False
 
     def leave(self) -> None:
-        """Switching out clears stat stages, the Choice lock, confusion, the toxic count and drowsiness."""
+        """Switching out clears stat stages, the Choice lock, confusion, the toxic count, drowsiness and what this
+        and the last turn did to it; the times it was hit stay."""
         self.stages = dict.fromkeys(BATTLE_STATS, 0)
         self.locked = None
         self.confusion_left = self.toxic_ticks = self.drowsy_at = 0
         self.fresh = True
         self.danced = False
+        self.acted = self.hit_by_foe = self.lowered = self.flopped = self.flopped_last = False
 
     @classmethod
     def enter(cls, combatant: Combatant, carry: Carry | None = None) -> "_Fighter":
@@ -727,7 +754,8 @@ def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: r
         name, ability = fighter.combatant.name, fighter.ability
         if ability == "intimidate" and foe.stages["attack"] > -MAX_STAGE:
             foe.stages["attack"] -= 1
-            change = Change(1 - side, foe.combatant.name, "attack", -1)
+            foe.lowered = True
+            change =Change(1 - side, foe.combatant.name, "attack", -1)
             triggers.append(AbilityTrigger(side, name, ability, change=change))
         elif (ability in abilities.WEATHER_ON_ENTRY and weather.kind != abilities.WEATHER_ON_ENTRY[ability]
               and (weather.kind != STRONG_WINDS or ability == "delta-stream")):
@@ -880,6 +908,7 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
             turn, side, *names, move="", defender_hp=defender.hp_percent, blocked=blocked, recovered=recovered,
             attacker_hp=attacker.hp_percent, attacker_fainted=attacker.hp == 0,
         )
+    move = move_power.typed(move, weather.kind)
     if index is not None:
         attacker.pp[index] -= 1
         if attacker.item in items.CHOICE_ITEMS:
@@ -918,7 +947,7 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
     hit_count = _hit_count(move, rng)
     for hit in range(hit_count):
         hit_critical = rng.random() < CRITICAL_CHANCES[min(crit_stage, len(CRITICAL_CHANCES) - 1)]
-        damage = _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng)
+        damage = _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng, hit)
         if resisted and hit == 0:
             damage, defender.item = max(1, int(damage * items.RESIST_BERRY_MULTIPLIER)), None
         damage = min(defender.hp, damage)
@@ -930,6 +959,8 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
         elif lethal and defender.item == items.FOCUS_BAND and rng.random() < items.FOCUS_BAND_CHANCE:
             damage, endured = defender.hp - 1, items.FOCUS_BAND
         defender.hp -= damage
+        defender.times_hit += 1
+        defender.hit_by_foe = defender.hit_by_foe or damage > 0
         critical, hits, dealt = critical or hit_critical, hits + 1, dealt + damage
         if helmet and damage > 0:
             attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // items.ROCKY_HELMET_FRACTION))
@@ -955,6 +986,8 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
         attacker.hp = min(attacker.max_hp, attacker.hp + items.drain_heal(attacker.item, max(1, dealt * move.drain // 100)))
     attacker_item = _attacker_item_effect(attacker, move, dealt, drained)
     defender_item = endured or _defender_item_effect(defender, move, multiplier, dealt, helmet) or berry or resisted
+    if move.id == move_power.KNOCK_OFF and dealt > 0 and attacker.hp > 0 and move_power.holds_removable_item(defender):
+        defender.item, defender.item_lost, defender.locked = None, True, None
     return Action(
         turn, side, *names, move.name, multiplier=multiplier, critical=critical, changes=changes, recoil=recoil,
         defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
@@ -1068,17 +1101,19 @@ def _hit_count(move: Move, rng: random.Random) -> int:
 
 
 def _damage(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float, critical: bool,
-            weather: str | None, rng: random.Random) -> int:
-    damage = _unrolled_damage(attacker, defender, move, multiplier, weather)
+            weather: str | None, rng: random.Random, hit: int | None = None) -> int:
+    damage = _unrolled_damage(attacker, defender, move, multiplier, weather, hit)
     damage *= (CRITICAL_MULTIPLIER if critical else 1.0) * rng.randint(85, 100) / 100
     return max(1, int(damage))
 
 
 def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float,
-                     weather: str | None) -> float:
-    attack, defense = _stats_for(attacker, defender, move.physical, weather)
+                     weather: str | None, hit: int | None = None) -> float:
+    """`move` is already `move_power.typed`; `hit` is the 0-based hit of a multi-hit move (None: the mean hit)."""
+    attack, defense = _stats_for(attacker, defender, move.physical, weather, move.id in move_power.IGNORES_BURN)
     level = attacker.combatant.level
-    damage = ((2 * level // 5 + 2) * _power(attacker, move, weather) * attack / max(1, defense)) // 50 + 2
+    power = _power(attacker, defender, move, weather, multiplier, hit)
+    damage = ((2 * level // 5 + 2) * power * attack / max(1, defense)) // 50 + 2
     return (
         damage * _stab(attacker, move) * multiplier * _weather_boost(move, weather)
         * abilities.damage_taken_multiplier(defender.ability, move.type) * _item_boost(attacker, move, multiplier)
@@ -1103,6 +1138,7 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
         for key, stages in move.stat_changes:
             before = target.stages[key]
             target.stages[key] = max(-MAX_STAGE, min(MAX_STAGE, before + stages))
+            target.lowered = target.lowered or target.stages[key] < before
             if target.stages[key] != before:
                 changes.append(Change(target_side, target.combatant.name, key, target.stages[key] - before))
     return tuple(changes), blocked_by
@@ -1195,7 +1231,8 @@ def _usable(fighter: _Fighter, effect: str) -> int | None:
 
 def _threatened(fighter: _Fighter, foe: _Fighter, weather: str | None) -> bool:
     """Whether `foe` has a super-effective damaging move with PP against `fighter`."""
-    return any(_multiplier(move, fighter, weather) > 1 for index, move in enumerate(foe.combatant.moves)
+    return any(_multiplier(move_power.typed(move, weather), fighter, weather) > 1
+               for index, move in enumerate(foe.combatant.moves)
                if foe.pp[index] > 0 and move.power and not move.weather and move.effect not in STATUS_EFFECTS)
 
 
@@ -1232,6 +1269,7 @@ def _best_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> i
 
 def _surely_finishes(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> bool:
     """Whether a hit with the lowest damage roll that cannot miss knocks the defender out."""
+    move = move_power.typed(move, weather)
     never_misses = move.accuracy in (None, 100) or weather in move.always_hits_in
     damage = _unrolled_damage(attacker, defender, move, _multiplier(move, defender, weather), weather)
     return never_misses and damage * 0.85 >= defender.hp
@@ -1266,12 +1304,14 @@ def _best_score(attacker: _Fighter, defender: _Fighter, weather: str | None) -> 
 
 def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
     """Power × STAB × type × weather × accuracy × attack/defense."""
-    attack, defense = _stats_for(attacker, defender, move.physical, weather)
+    move = move_power.typed(move, weather)
+    attack, defense = _stats_for(attacker, defender, move.physical, weather, move.id in move_power.IGNORES_BURN)
     accuracy = 100 if move.accuracy is None or weather in move.always_hits_in else move.accuracy
+    multiplier = _multiplier(move, defender, weather)
     return (
-        _power(attacker, move, weather) * move.expected_hits * _stab(attacker, move) * _multiplier(move, defender, weather)
+        _power(attacker, defender, move, weather, multiplier) * move.expected_hits * _stab(attacker, move) * multiplier
         * _weather_boost(move, weather) * abilities.damage_taken_multiplier(defender.ability, move.type)
-        * _item_boost(attacker, move, _multiplier(move, defender, weather))
+        * _item_boost(attacker, move, multiplier)
         * accuracy * attack / max(1, defense)
     )
 
@@ -1283,14 +1323,20 @@ def _item_boost(attacker: _Fighter, move: Move, multiplier: float) -> float:
 
 
 def _weather_boost(move: Move, weather: str | None) -> float:
+    if weather == "sun" and move.id in move_power.SUN_BOOST:
+        return move_power.SUN_BOOST[move.id]
     return WEATHER_MOVE_BOOST.get(weather, {}).get(move.type, 1.0)
 
 
-def _power(attacker: _Fighter, move: Move, weather: str | None = None) -> float:
+def _power(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None, multiplier: float,
+           hit: int | None = None) -> float:
+    """The move's power in this battle state (`move_power`), then the attacker's ability on that power."""
     if move is STRUGGLE or move is CONFUSION_HIT:
         return move.power
+    power = move_power.power(move, attacker, defender, weather, multiplier, hit)
     low_hp = attacker.hp * abilities.LOW_HP_FRACTION <= attacker.max_hp
-    return move.power * abilities.power_multiplier(attacker.ability, move.type, move.power, low_hp, weather)
+    return power * abilities.power_multiplier(attacker.ability, move.type, power, low_hp, weather,
+                                              attacker.fallen_allies)
 
 
 def _stab(attacker: _Fighter, move: Move) -> float:
@@ -1312,11 +1358,12 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
 
 
 def _stats_for(attacker: _Fighter, defender: _Fighter, physical: bool,
-               weather: str | None = None) -> tuple[float, float]:
+               weather: str | None = None, ignores_burn: bool = False) -> tuple[float, float]:
     boosted = (DEFENSE_BOOSTED_TYPE if physical else SPECIAL_DEFENSE_BOOSTED_TYPE).get(weather)
     boost = 1.5 if boosted in defender.combatant.types else 1.0
     if physical:
-        burned = 0.5 if attacker.status == "burn" and attacker.ability != "guts" else 1.0
+        halved = attacker.status == "burn" and attacker.ability != "guts" and not ignores_burn
+        burned = 0.5 if halved else 1.0
         return attacker.stat("attack", weather) * burned, defender.stat("defense", weather) * boost
     return attacker.stat("special_attack", weather), defender.stat("special_defense", weather) * boost
 
