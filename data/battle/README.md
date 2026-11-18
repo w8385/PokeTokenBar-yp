@@ -71,19 +71,24 @@ The hooks in the order a turn reaches them (`HOOKS` in `effects/hooks.py` says w
 1. Entry: `hazard` (each hazard on the side, in the order it was set, unless `ignores_hazards`), `on_entry_form`
    (item forms, after the hazards and Mega Evolution), `on_entry` (abilities, the faster Pokémon first; a Surge sets
    its terrain for `state_turns`), `on_update` (one-use items).
-2. Choosing: `forces_move` (Encore), `wanted`, `bars_status_moves`.
+2. Choosing: `forces_move` (Encore), `wanted` (item moves ask the items' `burdens` and `craves`),
+   `bars_status_moves`. A sleeping Pokémon still acts with a move whose `acts_asleep` holds (Sleep Talk).
 3. Order: `modify_type`, `modify_priority`, `moves_first`, `modify_stat` (item, then ability; paralysis halves Speed
    in between; `swaps_stat` picks the raw stat under Wonder Room), then `field_stat` (ability under a state) and
    `side_stat` (Tailwind). `suppresses_items` (Magic Room, Embargo) idles every item hook of the Pokémon it covers.
-4. The move: `bans_move` (Gravity, Taunt) and the foe's `bans_foe_move` (Imprison), `retypes_move` (Electrify),
+4. The move: `bans_move` (Gravity, Taunt; Heal Block bans the moves whose `heals` holds) and the foe's
+   `bans_foe_move` (Imprison), after PP `calls` (Metronome: the called move runs the rest of this step in its place
+   and the action names the caller in `via`), `retypes_move` (Electrify),
    `locks_move`, `backfires` (Powder), `stops_move` (Psychic Terrain, Protect, with its `punishes` on the user;
    `targets_foe` says which status moves it stops), `use` (status and weather moves, with `weather_turns` and
    `state_turns`; a status move aimed at the foe meets its `shields` (Substitute) and `reflects` (Magic Coat), one aimed
-   at its user the foe's `snatches`), `before_hit` (Brick Break), `skips_accuracy` or the target's `sure_hit`
+   at its user the foe's `snatches`; `never_misses` skips its accuracy draw; Teatime and Stuff Cheeks run the
+   item's `eaten`), `before_hit` (Brick Break), `skips_accuracy` or the target's `sure_hit`
    (Lock-On), the accuracy and evasion stages (unless `exposes`) × `accuracy_as_user` × `accuracy_as_target` ×
    `modify_accuracy` (Gravity), `grounds`, `lifts` and `airborne` before `immune_to` and `exposes` (Foresight),
    `crit_stage` (move, item, then state: Focus Energy) unless `guards_crit` (Lucky Chant).
-5. Damage, in this multiplication order: `ignores_burn` (on the Attack stat), `base_power`, `modify_power` ×
+5. Damage, in this multiplication order (type effectiveness × the target's `weakens`, Tar Shot):
+   `ignores_burn` (on the Attack stat), `base_power`, `modify_power` ×
    `field_power` (terrain), `modify_stab`, `modify_weather_boost`, `modify_damage_taken`, `modify_damage`, `screen`
    (passed by a crit or `infiltrates`).
 6. Each hit: `resists` (first hit), `takes_hit` (Substitute: the target and its secondary effects are spared),

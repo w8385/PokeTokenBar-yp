@@ -132,11 +132,10 @@ with `machine=1`, which apps that know TMs send) every move it learns by machine
 Without `machine=1` the list is level-up moves only. Both come from the newest main game that has level-up moves
 for it. Attacking moves only, plus the weather moves (Sunny Day, Rain Dance, Sandstorm,
 Hail, Snowscape), which come with `"power": 0` and `"damage_class": "status"`. With `status=1` (apps that show
-status moves send it) the battle's status moves follow, by id: Swords Dance (14), Mist (54), Thunder Wave (86),
-Light Screen (113), Haze (114), Reflect (115), Spikes (191), Safeguard (219), Yawn (281), Gravity (356), Tailwind (366),
-Lucky Chant (381), Toxic Spikes (390), Defog (432), Trick Room (433), Stealth Rock (446), Sticky Web (564), Grassy
-Terrain (580), Misty Terrain (581), Electric Terrain (604), Psychic Terrain (678), Aurora Veil (694), Court Change
-(756) and Tidy Up (882). They also come with `"power": 0` and `"damage_class": "status"`, and
+status moves send it) the battle's status moves follow, by id: every status move whose `effect` in
+`data/battle/moves.json` is one of `STATUS_EFFECTS` in `ypoke/move_effects.py`. Status moves marked `inert` there
+(doubles-only moves, forced switching and trapping, Z and G-Max moves) and the weather moves above are never in this
+part. They also come with `"power": 0` and `"damage_class": "status"`, and
 `"accuracy"` is `null` for the ones that never miss. A status move is listed when the Pokémon learns it by level-up at
 or below `level`, by machine (only with `machine=1`), or as an egg move of the Pokémon or any species it evolved from
 (`"source": "egg"`, `"level": 0`). A move learnable several ways is listed once, as the first of level-up, egg,
@@ -213,16 +212,26 @@ The ability Supreme Overlord multiplies its holder's moves by 1 + 0.1 per fainte
 ### Status moves in battle
 
 Both sides pick moves by one rule: a player's Pokémon uses its status moves exactly as a trainer's does. Each turn the
-Pokémon first uses a damaging move that surely knocks the foe out. Otherwise it tries its status moves in this order
-and uses the first whose moment has come:
+Pokémon first uses a damaging move that surely knocks the foe out. Otherwise it tries its status moves in the order of
+`STATUS_EFFECTS` and uses the first whose moment has come. Each move's handler under `ypoke/effects/` states its
+moment in `wanted`. The rules every moment follows:
 
-| Move | Used when | Effect |
-|---|---|---|
-| Trick Room (433) | On the user's first turn in, when its team's mean Speed is below the foe's, Trick Room is not up, and its team has not set it yet this battle | For 5 turns the slower Pokémon moves first within a priority bracket. Using it while up ends it |
-| Stealth Rock (446) | Its team has not set rocks yet, the foe's side has none, and the foe has a member left to come in | Each foe that comes in after loses 1/8 of its max HP times its Rock weakness (1/32 to 1/2) |
-| Swords Dance (14) | Once per time in, above half HP, and Attack below +6 | Attack +2 stages (to +6 at most) |
-| Yawn (281) | The foe has no status, is not already drowsy, and no ability blocks sleep | The foe falls asleep at the end of the next turn unless it switches out |
-| Thunder Wave (86) | The foe is faster and can be paralyzed (no status, not Electric, not immune to Electric moves, no ability that blocks it) | Paralysis |
+| Kind | Used when |
+|---|---|
+| Terrains, screens, side states, rooms | The state is not up, and it swings the exchange or covers the class of the foe's best move; side states once per team |
+| Hazards | Once per team, below the most layers, while the foe has members left to come in |
+| Stat raises | Once per time in, while the user is above the move's HP cost (half HP without one) and the raised stat helps |
+| Stat drops | While the foe's stage is above −2 and the stat matters to it |
+| Healing | At a third of max HP or below, when the heal outweighs the foe's best hit |
+| Status conditions | Only when it would land and the condition hurts this foe |
+| Guards (Protect and kin) | The user did not guard last turn, and a guarded turn gains something: the user's Wish lands, or the foe takes damage at the end of it |
+| Type, ability and item changers | The change makes the foe weaker or the user stronger against this foe |
+| Self-switching (Teleport, Parting Shot, Chilly Reception, Baton Pass) | The user has a teammate to switch to and is threatened; Baton Pass only with at least +2 stages in total or a Substitute, and no Curse, Leech Seed or Perish Song on it |
+| Callers and copiers | The move they would use scores higher than the user's best damaging move; Metronome and Assist only when no damaging move hurts the foe; Me First only when the user moves first; Sleep Talk while asleep; Transform once, into a foe with higher total stats |
+
+The battle never picks a move that would fail: a state already up, a target already hit, a copy of a move the user
+knows. A move that changes nothing in singles is marked `inert` in `data/battle/moves.json` with the reason and is
+not offered.
 
 A Pokémon holding a Choice item or an Assault Vest, or locked into a move, never uses a status move. With none of these
 moments, it attacks as before. A status move uses PP like any other move.
