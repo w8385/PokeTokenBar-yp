@@ -29,6 +29,30 @@ let trainingMovesJSON = """
 ]}
 """
 
+/// What a bot with status moves answers for `status=1`, shaped like its `move_from` output: Korean names, power 0,
+/// accuracy null for the moves that never miss.
+let statusMovesJSON = """
+{"ok":true,"default":[84,209],"moves":[
+ {"id":84,"name":"전기쇼크","type":"electric","power":40,"damage_class":"special","accuracy":100,"level":1,"pp":30,"source":"level","crit_rate":0,"ailment":"paralysis","ailment_chance":10,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":209,"name":"스파크","type":"electric","power":65,"damage_class":"physical","accuracy":100,"level":20,"pp":20,"source":"level","crit_rate":0,"ailment":"paralysis","ailment_chance":30,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":85,"name":"10만볼트","type":"electric","power":90,"damage_class":"special","accuracy":100,"level":0,"pp":15,"source":"machine","crit_rate":0,"ailment":"paralysis","ailment_chance":10,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":14,"name":"칼춤","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":20,"source":"egg","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":86,"name":"전기자석파","type":"electric","power":0,"damage_class":"status","accuracy":90,"level":0,"pp":20,"source":"machine","crit_rate":0,"ailment":"paralysis","ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":281,"name":"하품","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":10,"source":"egg","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":433,"name":"트릭룸","type":"psychic","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":5,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":-7,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":446,"name":"스텔스록","type":"rock","power":0,"damage_class":"status","accuracy":null,"level":34,"pp":20,"source":"level","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]}
+]}
+"""
+
+/// The same Pikachu from a bot that predates status moves (or ignores `status=1`).
+let noStatusMovesJSON = """
+{"ok":true,"default":[84,209],"moves":[
+ {"id":84,"name":"전기쇼크","type":"electric","power":40,"damage_class":"special","accuracy":100,"level":1,"pp":30,"source":"level","crit_rate":0,"ailment":"paralysis","ailment_chance":10,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":209,"name":"스파크","type":"electric","power":65,"damage_class":"physical","accuracy":100,"level":20,"pp":20,"source":"level","crit_rate":0,"ailment":"paralysis","ailment_chance":30,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":85,"name":"10만볼트","type":"electric","power":90,"damage_class":"special","accuracy":100,"level":0,"pp":15,"source":"machine","crit_rate":0,"ailment":"paralysis","ailment_chance":10,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]}
+]}
+"""
+
 /// A synthetic save with the real Box page and Battle tab mounted in a window that is never on screen.
 @MainActor
 final class TrainingRig {
@@ -41,11 +65,11 @@ final class TrainingRig {
     let fetches = TrainingLog()
     private var windows: [NSWindow] = []
 
-    init(movesJSON: String = trainingMovesJSON) async throws {
+    init(movesJSON: String = trainingMovesJSON, language: AppLanguage = .en) async throws {
         scratch = FileManager.default.temporaryDirectory.appendingPathComponent("training-\(UUID())")
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
         var state = CompanionState()
-        state.language = .en
+        state.language = language
         state.usedSinceInstall = 1_000_000_000
         state.active = MonState(baseID: 4, pathIDs: [4, 5], stageIndex: 1, usedAtStage: 0, rarity: .common,
                                 totalForms: 2, profile: PokemonProfile.generate(seed: 5, instanceID: "raised"))
@@ -425,5 +449,108 @@ final class LearnableMoveSourceTests: XCTestCase {
         _ = await rig.uploader.learnableMoves(pokemonID: 25, level: 42)
 
         XCTAssertEqual(rig.fetches.all.count, 2)
+    }
+}
+
+final class StatusMoveGroupingTests: XCTestCase {
+    func testStatusMovesGetTheirOwnGroupWhateverTheirSourceAndWeatherStaysWithTMs() throws {
+        let weather = #"{"id":241,"name":"쾌청","type":"fire","power":0,"damage_class":"status","accuracy":null,"level":0,"source":"machine","weather":"sun"}"#
+        let json = statusMovesJSON.replacingOccurrences(of: "\n]}", with: ",\n \(weather)\n]}")
+        let moves = try LearnableMoves.decode(Data(json.utf8))
+
+        XCTAssertEqual(moves.levelUpMoves.map(\.id), [84, 209])
+        XCTAssertEqual(moves.machineMoves.map(\.id), [85, 241])
+        XCTAssertEqual(moves.statusMoves.map(\.id), [14, 86, 281, 433, 446])
+        XCTAssertEqual(moves.statusMoves.filter(\.isEgg).map(\.id), [14, 281])
+        XCTAssertEqual(moves.statusMoves.filter(\.isMachine).map(\.id), [86, 433])
+        XCTAssertEqual(moves.default, [84, 209])
+    }
+
+    func testABotWithoutStatusMovesDecodesToTodaysGroups() throws {
+        let moves = try LearnableMoves.decode(Data(noStatusMovesJSON.utf8))
+
+        XCTAssertEqual(moves.levelUpMoves.map(\.id), [84, 209])
+        XCTAssertEqual(moves.machineMoves.map(\.id), [85])
+        XCTAssertTrue(moves.statusMoves.isEmpty)
+    }
+
+    func testEveryOfferedStatusMoveHasItsOwnEffectLineInEveryLanguage() {
+        for language in AppLanguage.allCases {
+            let lines = [14, 86, 281, 433, 446].map { L(language).statusMoveEffect($0) }
+            XCTAssertFalse(lines.contains(nil), "\(language)")
+            XCTAssertEqual(Set(lines).count, 5, "\(language)")
+            XCTAssertNil(L(language).statusMoveEffect(92), "a status move the bot does not offer")
+        }
+    }
+}
+
+@MainActor
+final class StatusMoveTrainingTests: XCTestCase {
+    private func party(_ rig: TrainingRig) -> [PartyMember] {
+        BattleEntry.party(state: rig.store.state, slots: [BattleEntrySlot(instanceID: "pikachu")],
+                          moveChoices: rig.battle.moveChoices, rentalSpeciesID: 4)
+    }
+
+    func testAnEggStatusMoveIsChoosableFromItsGroupAndTheUploadCarriesIt() async throws {
+        let rig = try await TrainingRig(movesJSON: statusMovesJSON)
+        defer { rig.close() }
+        let host = try await rig.mount(rig.section("pikachu"))
+
+        // Spark and Thunder Shock, then the status group: Swords Dance, Yawn, Stealth Rock. The unowned TMs
+        // (Thunderbolt, Thunder Wave, Trick Room) are locked and have no choose row.
+        let rows = try await rig.chooseRows(in: host, count: 5)
+        try await rig.press(rows[2], in: host, until: { !rig.posts.all.isEmpty })
+
+        XCTAssertEqual(rig.battle.chosenMoves(for: "pikachu", pokemonID: 25), [14, 209])
+        XCTAssertEqual(party(rig).first?.moves, [14, 209])
+        XCTAssertEqual(rig.posts.all.count, 1)
+    }
+
+    func testAStatusTMIsLockedUntilOwnedAndNeverReachesTheUploadBefore() async throws {
+        let rig = try await TrainingRig(movesJSON: statusMovesJSON)
+        defer { rig.close() }
+        let host = try await rig.mount(rig.section("pikachu"))
+        _ = try await rig.chooseRows(in: host, count: 5)
+        rig.battle.chooseMove(86, at: 0, for: "pikachu", pokemonID: 25, current: [84, 209], isMachine: true)
+        XCTAssertEqual(party(rig).first?.moves, [209], "the unowned Thunder Wave TM is dropped")
+
+        XCTAssertTrue(rig.store.grantTM(moveID: 86))
+
+        _ = try await rig.chooseRows(in: host, count: 6)
+        XCTAssertEqual(party(rig).first?.moves, [86, 209])
+    }
+
+    func testABotWithoutStatusMovesShowsTodaysPicker() async throws {
+        let rig = try await TrainingRig(movesJSON: noStatusMovesJSON)
+        defer { rig.close() }
+        let host = try await rig.mount(rig.section("pikachu"))
+
+        _ = try await rig.chooseRows(in: host, count: 2)
+        XCTAssertEqual(rig.fetches.all.filter { $0.contains("status=1") }.count, 1)
+    }
+}
+
+/// Writes the status-move PR screenshots from synthetic data (nothing is read from or written to the real save):
+///
+///     PTB_TM_SCREENSHOT_DIR=/tmp/shots swift test --filter StatusMoveScreenshotTests
+@MainActor
+final class StatusMoveScreenshotTests: XCTestCase {
+    func testThePickerWithAndWithoutStatusMoves() async throws {
+        guard let path = ProcessInfo.processInfo.environment["PTB_TM_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_TM_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: path)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        for (language, suffix) in [(AppLanguage.ko, "ko"), (.en, "en")] {
+            for (json, name, rows, height) in [(noStatusMovesJSON, "before", 2, CGFloat(490)),
+                                               (statusMovesJSON, "after", 5, CGFloat(830))] {
+                let rig = try await TrainingRig(movesJSON: json, language: language)
+                let host = try await rig.mount(rig.section("pikachu"), height: height)
+                _ = try await rig.chooseRows(in: host, count: rows)
+                try OffscreenRender.writePNG(of: host, to: directory.appendingPathComponent(
+                    "status-moves-picker-\(name)-\(suffix).png"), scale: 2)
+                rig.close()
+            }
+        }
     }
 }

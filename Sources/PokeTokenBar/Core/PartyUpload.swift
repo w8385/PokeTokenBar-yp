@@ -432,6 +432,7 @@ final class PartyUploader {
             URLQueryItem(name: "pokemon_id", value: String(pokemonID)),
             URLQueryItem(name: "level", value: String(level)),
             URLQueryItem(name: "machine", value: "1"),
+            URLQueryItem(name: "status", value: "1"),
         ])
         var request = URLRequest(url: url, timeoutInterval: 30)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -457,13 +458,15 @@ final class PartyUploader {
     }
 }
 
-/// `GET /v1/moves`: the attacking moves usable at a level, level-up ones oldest first, then machine (TM) ones.
+/// `GET /v1/moves`: the attacking moves usable at a level, level-up ones oldest first, then machine (TM) ones,
+/// then the battle's status moves. A bot that predates status moves sends none.
 struct LearnableMoves: Decodable, Equatable, Sendable {
     let moves: [LearnableMove]
     let `default`: [Int]
 
-    var levelUpMoves: [LearnableMove] { moves.filter { !$0.isMachine } }
-    var machineMoves: [LearnableMove] { moves.filter(\.isMachine) }
+    var levelUpMoves: [LearnableMove] { moves.filter { !$0.isMachine && !$0.isStatus } }
+    var machineMoves: [LearnableMove] { moves.filter { $0.isMachine && !$0.isStatus } }
+    var statusMoves: [LearnableMove] { moves.filter(\.isStatus) }
 
     static func decode(_ data: Data) throws -> LearnableMoves {
         let decoder = JSONDecoder()
@@ -480,7 +483,8 @@ struct LearnableMove: Decodable, Equatable, Sendable, Identifiable {
     let damageClass: String
     let accuracy: Int?
     let level: Int
-    /// `"level"` or `"machine"`; nil from bots that predate TM moves, where every move is a level-up move.
+    /// `"level"`, `"machine"` or `"egg"` (status moves only); nil from bots that predate TM moves, where every move
+    /// is a level-up move.
     var source: String? = nil
     /// The fields below are nil from bots older than yp8.
     var pp: Int? = nil
@@ -499,7 +503,9 @@ struct LearnableMove: Decodable, Equatable, Sendable, Identifiable {
     var weather: String? = nil
 
     var isMachine: Bool { source == "machine" }
+    var isEgg: Bool { source == "egg" }
     var isWeather: Bool { weather != nil }
+    var isStatus: Bool { damageClass == "status" && !isWeather }
 
     struct StatChange: Decodable, Equatable, Sendable {
         let stat: String

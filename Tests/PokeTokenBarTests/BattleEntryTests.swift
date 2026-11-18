@@ -353,12 +353,12 @@ final class BattleEntryStoreTests: XCTestCase {
 
 @MainActor
 final class LearnableMovesTests: XCTestCase {
-    func testRequestAsksForThePokemonAtItsLevelAndOptsIntoMachineMoves() throws {
+    func testRequestAsksForThePokemonAtItsLevelAndOptsIntoMachineAndStatusMoves() throws {
         let request = try XCTUnwrap(PartyUploader.movesRequest(
             serverURL: "http://example.local:8790", token: "secret", pokemonID: 25, level: 42))
 
         XCTAssertEqual(request.httpMethod, "GET")
-        XCTAssertEqual(request.url?.absoluteString, "http://example.local:8790/v1/moves?pokemon_id=25&level=42&machine=1")
+        XCTAssertEqual(request.url?.absoluteString, "http://example.local:8790/v1/moves?pokemon_id=25&level=42&machine=1&status=1")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer secret")
     }
 
