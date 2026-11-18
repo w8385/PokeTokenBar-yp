@@ -293,12 +293,11 @@ extension L {
               "Zahlt 1/2 KP für einen Delegator und wechselt zum nächsten Pokémon",
               "Платит 1/2 ОЗ за заменителя и передаёт его следующему покемону")
         case 47, 95, 142, 320, 464: ailmentLine("sleep")
-        case 79, 147: ailmentLine("sleep", note: powderNote)
+        case 79, 147: ailmentLine("sleep", note: grassNote)
         case 48, 109, 186, 298: ailmentLine("confusion")
-        case 137: ailmentLine("paralysis")
-        case 78: ailmentLine("paralysis", note: powderNote)
+        case 78: ailmentLine("paralysis", note: grassNote)
         case 139: ailmentLine("poison")
-        case 77: ailmentLine("poison", note: powderNote)
+        case 77: ailmentLine("poison", note: grassNote)
         case 261: ailmentLine("burn")
         case 92:
             ailmentLine("toxic", note: t("독 타입이 쓰면 반드시 명중", "never misses from a Poison type",
@@ -314,7 +313,7 @@ extension L {
               "Pasa el problema de estado del usuario al objetivo", "Transfère le statut du lanceur à la cible",
               "Passa o problema de status do usuário ao alvo", "Überträgt den Statuszustand des Anwenders auf das Ziel",
               "Передаёт свой статус цели")
-        default: nil
+        default: stateMoveEffect(moveID)
         }
     }
 
@@ -380,7 +379,7 @@ extension L {
           "Soigne 1/\(share) de ses PV", "Cura 1/\(share) dos PS", "Heilt 1/\(share) der KP", "Восстанавливает 1/\(share) ОЗ")
     }
 
-    private var powderNote: String {
+    var grassNote: String {
         t("풀 타입에는 무효", "no effect on Grass types", "くさタイプには効かない", "no afecta a los tipo Planta",
           "sans effet sur les types Plante", "não afeta tipos Planta", "wirkungslos gegen Pflanzen-Pokémon",
           "не действует на травяной тип")

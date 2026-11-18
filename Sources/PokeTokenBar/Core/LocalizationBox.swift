@@ -132,7 +132,7 @@ extension L {
         case 14:
             t("공격 2랭크 상승", "Attack +2 stages", "こうげき2段階アップ", "Ataque +2 niveles", "Attaque +2 niveaux",
               "Ataque +2 estágios", "Angriff +2 Stufen", "Атака +2 ступени")
-        case 86:
+        case 86, 137:
             t("상대를 마비", "Paralyzes the target", "相手をまひさせる", "Paraliza al objetivo", "Paralyse la cible",
               "Paralisa o alvo", "Paralysiert das Ziel", "Парализует цель")
         case 281:

@@ -28,6 +28,10 @@ STATUS_EFFECTS = (
     "pain-split", "purify", "rest", "wish", "heal-bell", "refresh", "aqua-ring", "ingrain", "heal-foe",
     "substitute", "shed-tail",
     "inflict", "swagger", "toxic-thread", "psycho-shift",
+    "destiny-bond", "grudge", "perish-song", "leech-seed", "curse", "nightmare", "taunt", "encore", "disable",
+    "torment", "spite", "heal-block", "embargo", "foresight", "miracle-eye", "lock-on", "telekinesis", "magnet-rise",
+    "imprison", "electrify", "powder", "ion-deluge", "magic-coat", "snatch", "octolock", "tar-shot", "mud-sport",
+    "water-sport", "focus-energy", "laser-focus",
     "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
     "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
 )

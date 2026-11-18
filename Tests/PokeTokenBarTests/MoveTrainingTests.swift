@@ -475,6 +475,17 @@ final class LearnableMoveSourceTests: XCTestCase {
 }
 
 final class StatusMoveGroupingTests: XCTestCase {
+    /// The first move of each `case` in the app's status move effect switches; moves sharing a case share a line.
+    static let oneMovePerLine = [
+        14, 28, 39, 45, 47, 48, 50, 54, 73, 74, 77, 78, 79, 81, 86, 92, 96, 97, 103, 104, 105, 106, 107, 112, 113, 114,
+        115, 116, 133, 139, 156, 164, 171, 174, 180, 182, 187, 191, 193, 194, 195, 199, 203, 204, 207, 215, 219,
+        220, 227, 230, 234, 244, 254, 256, 259, 260, 261, 262, 268, 269, 273, 277, 281, 286, 287, 288, 289, 294, 300,
+        313, 321, 322, 339, 346, 347, 349, 355, 356, 357, 361, 366, 367, 373, 375, 377, 379, 381, 384, 385, 390, 391,
+        392, 393, 417, 432, 433, 446, 468, 470, 471, 477, 483, 489, 501, 504, 505, 508, 526, 538, 561, 564, 568, 569,
+        576, 578, 579, 580, 581, 582, 588, 590, 596, 598, 599, 600, 601, 602, 604, 659, 661, 668, 672, 673, 678, 683,
+        685, 694, 748, 749, 753, 756, 775, 777, 791, 792, 816, 837, 850, 852, 858, 863, 868, 880, 882, 908,
+    ]
+
     func testStatusMovesGetTheirOwnGroupWhateverTheirSourceAndWeatherStaysWithTMs() throws {
         let weather = #"{"id":241,"name":"쾌청","type":"fire","power":0,"damage_class":"status","accuracy":null,"level":0,"source":"machine","weather":"sun"}"#
         let json = statusMovesJSON.replacingOccurrences(of: "\n]}", with: ",\n \(weather)\n]}")
@@ -498,12 +509,12 @@ final class StatusMoveGroupingTests: XCTestCase {
 
     func testEveryOfferedStatusMoveHasItsOwnEffectLineInEveryLanguage() {
         for language in AppLanguage.allCases {
-            let offered = [14, 54, 86, 113, 114, 115, 191, 219, 281, 356, 366, 381, 390, 432, 433, 446, 564, 580, 581,
-                           604, 678, 694, 756, 882]
-            let lines = offered.map { L(language).statusMoveEffect($0) }
+            let lines = Self.oneMovePerLine.map { L(language).statusMoveEffect($0) }
             XCTAssertFalse(lines.contains(nil), "\(language)")
-            XCTAssertEqual(Set(lines).count, offered.count, "\(language)")
-            XCTAssertNil(L(language).statusMoveEffect(92), "a status move the bot does not offer")
+            let shared = Dictionary(grouping: Self.oneMovePerLine, by: { L(language).statusMoveEffect($0) })
+                .values.filter { $0.count > 1 }
+            XCTAssertEqual(shared, [], "\(language)")
+            XCTAssertNil(L(language).statusMoveEffect(213), "a status move the bot does not offer")
         }
     }
 }
