@@ -895,6 +895,7 @@ class _Fighter:
     fallen_allies: int = 0
     ally_fell_last_turn: bool = False
     item_lost: bool = False
+    ate_berry: bool = False
     volatiles: dict[str, object] = field(default_factory=dict)
     memory: dict[str, object] = field(default_factory=dict)
     entered_as: Combatant | None = None
@@ -1208,6 +1209,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
             hit_critical, damage = False, fixed
         if resisted and hit == 0:
             damage, defender.item = max(1, int(damage * items.RESIST_BERRY_MULTIPLIER)), None
+            defender.ate_berry = True
         if any(_field(defender, "takes_hit", damage, attacker, defender, move)):
             hits, critical, shielded = hits + 1, critical or hit_critical, True
             continue
@@ -1349,7 +1351,7 @@ def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multipl
     return (
         damage * _stab(attacker, move) * multiplier * _weather_boost(move, weather)
         * _damage_taken(defender, move) * _item_boost(attacker, move, multiplier)
-        * _screen(attacker, defender, move, critical)
+        * _screen(attacker, defender, move, critical) * _exposed(attacker, defender)
     )
 
 
@@ -1360,6 +1362,10 @@ def _screen(attacker: _Fighter, defender: _Fighter, move: Move, critical: bool) 
     if not screens or critical or attacker is defender or _infiltrates(attacker):
         return 1.0
     return min(screens)
+
+
+def _exposed(attacker: _Fighter, defender: _Fighter) -> float:
+    return 1.0 if attacker is defender else math.prod(_field(defender, "takes_more", attacker))
 
 
 def _infiltrates(fighter: _Fighter) -> bool:
@@ -1572,11 +1578,13 @@ def _best_score(attacker: _Fighter, defender: _Fighter, weather: str | None) -> 
 
 def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
     """Power × STAB × type × weather × accuracy × attack/defense × the share a turn gets of a move that takes two
-    (`score_share`); 0 for a move a state bans or stops, or one that cannot reach the hiding foe. A move with set
-    damage scores the power that would deal that damage at even attack and defense."""
+    (`score_share`); 0 for a move a state bans or stops, one that cannot reach the hiding foe, one expected to fail,
+    or one a sleeping user cannot use while it knows one it can (Snore). A move with set damage scores the power that
+    would deal that damage at even attack and defense."""
     move = move_power.typed(move, weather, attacker)
     if (_banned(attacker, move) or _stopped(attacker, defender, move) or _dodges(attacker, defender, move)
-            or hooks.move(move, "fails", attacker, defender, default=False)):
+            or hooks.move(move, "fails", attacker, defender, default=False)
+            or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)):
         return 0.0
     return _damage_score(attacker, defender, move, weather) * hooks.move(move, "score_share", weather, default=1.0)
 
@@ -1594,8 +1602,18 @@ def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: s
         * _stab(attacker, move) * multiplier
         * _weather_boost(move, weather) * _damage_taken(defender, move)
         * _item_boost(attacker, move, multiplier)
-        * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False)
+        * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False) * _exposed(attacker, defender)
     )
+
+
+def _sleeps_through(attacker: _Fighter, move: Move) -> bool:
+    if attacker.status != "sleep" or attacker.sleep_left == 0 or _acts_asleep(move):
+        return False
+    return any(_acts_asleep(known) for known in attacker.combatant.moves)
+
+
+def _acts_asleep(move: Move) -> bool:
+    return hooks.move(move, "acts_asleep", default=False)
 
 
 def _expected_hits(move: Move, attacker: _Fighter, accuracy: float) -> float:

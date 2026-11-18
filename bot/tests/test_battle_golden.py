@@ -241,6 +241,8 @@ FOCUS_CASES = {
                    ((9, None, None, [503]), (134, None, None, [503, 815]), (1013, None, None, [902]))),
     "false-swipe": (((68, None, None, [206]),), ((65, None, None, [33]),)),
     "syrup-bomb": (((25, None, None, [903]),), ((143, None, None, [33]),)),
+    "rage": (((56, None, None, [99]),), ((143, None, None, [33]),)),
+    "stone-axe": (((900, None, None, [830]),), ((143, None, None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

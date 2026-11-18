@@ -44,6 +44,7 @@ BLOCKED_TAG = {
     "taunt": "😤도발 때문에 못 씀", "disable": "🚫사슬묶기로 못 씀", "torment": "😈트집 때문에 연달아 못 씀",
     "heal-block": "🚫회복봉인으로 못 씀", "imprison": "🔒봉인되어 못 씀", "powder": "💥분진이 터졌다",
     "flinch": "😖풀죽어서 못 움직임", "throat-chop": "🤐소리 기술을 못 씀", "recharge": "😮‍💨반동으로 못 움직임",
+    "lost-focus": "😵집중이 흐트러졌다", "shell-trap": "🐚트랩이 터지지 않았다",
 }
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {
