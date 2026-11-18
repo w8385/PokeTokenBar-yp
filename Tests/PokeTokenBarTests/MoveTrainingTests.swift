@@ -53,6 +53,20 @@ let fieldStatusMovesJSON = statusMovesJSON.replacingOccurrences(of: "\n]}", with
 ]}
 """)
 
+/// `statusMovesJSON` from a bot that offers every status move it runs: guards, healing, conditions, callers, switching.
+let everyStatusMoveJSON = statusMovesJSON.replacingOccurrences(of: "\n]}", with: """
+,
+ {"id":182,"name":"방어","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":10,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":4,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":164,"name":"대타출동","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":10,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":156,"name":"잠자기","type":"psychic","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":5,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":104,"name":"그림자분신","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":15,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":92,"name":"맹독","type":"poison","power":0,"damage_class":"status","accuracy":90,"level":0,"pp":10,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":269,"name":"도발","type":"dark","power":0,"damage_class":"status","accuracy":100,"level":0,"pp":20,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":118,"name":"손가락흔들기","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":10,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]},
+ {"id":226,"name":"바톤터치","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":40,"source":"machine","crit_rate":0,"ailment":null,"ailment_chance":0,"priority":0,"drain":0,"min_hits":1,"max_hits":1,"stat_changes":[],"stat_target":"target","stat_chance":0,"weather":null,"always_hits_in":[]}
+]}
+""")
+
 /// The same Pikachu from a bot that predates status moves (or ignores `status=1`).
 let noStatusMovesJSON = """
 {"ok":true,"default":[84,209],"moves":[
@@ -583,7 +597,8 @@ final class StatusMoveScreenshotTests: XCTestCase {
         for (language, suffix) in [(AppLanguage.ko, "ko"), (.en, "en")] {
             for (json, name, rows, height) in [(noStatusMovesJSON, "before", 2, CGFloat(490)),
                                                (statusMovesJSON, "after", 5, CGFloat(830)),
-                                               (fieldStatusMovesJSON, "field", 5, CGFloat(1080))] {
+                                               (fieldStatusMovesJSON, "field", 5, CGFloat(1080)),
+                                               (everyStatusMoveJSON, "every", 5, CGFloat(1500))] {
                 let rig = try await TrainingRig(movesJSON: json, language: language)
                 let host = try await rig.mount(rig.section("pikachu"), height: height)
                 _ = try await rig.chooseRows(in: host, count: rows)
