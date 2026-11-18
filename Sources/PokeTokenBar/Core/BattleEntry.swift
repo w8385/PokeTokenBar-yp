@@ -280,6 +280,12 @@ final class BattleEntryStore {
         moveChoices[instanceID] = MoveChoice(pokemonID: pokemonID, moves: moves, machine: machine)
     }
 
+    /// Swaps move positions `a` and `b` (0-based) of `current`, saving it as the custom list.
+    func swapMoves(_ a: Int, _ b: Int, for instanceID: String, pokemonID: Int, current: [Int]) {
+        guard a != b, current.indices.contains(a), current.indices.contains(b) else { return }
+        chooseMove(current[b], at: a, for: instanceID, pokemonID: pokemonID, current: current)
+    }
+
     func resetMoves(for instanceID: String) {
         moveChoices[instanceID] = nil
     }
