@@ -87,7 +87,7 @@ class ChoiceItem(Handler):
         return True
 
     def burdens(self, name, holder):
-        return any(not move.power for move in holder.combatant.moves)
+        return any(not move.damaging for move in holder.combatant.moves)
 
     def modify_stat(self, name, stat, weather, statused, can_evolve):
         return items.CHOICE_MULTIPLIER if CHOICE_STATS[name] == stat else 1.0

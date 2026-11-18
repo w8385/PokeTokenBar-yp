@@ -339,7 +339,7 @@ class Foresight(State):
     def _worth(self, move, user, foe, team, foes, weather):
         kind, types = self.EXPOSED[self.key]
         return foe.stages["evasion"] > 0 or kind in foe.combatant.types and any(
-            known.power and known.type in types for known in user.combatant.moves)
+            known.damaging and known.type in types for known in user.combatant.moves)
 
     def exposes(self, name, move_type):
         kind, types = self.EXPOSED[name]
@@ -358,9 +358,9 @@ class LockOn(State):
         return self.key == "lock-on" or not any(battle._field(foe, "grounds"))
 
     def _worth(self, move, user, foe, team, foes, weather):
-        shaky = any(known.power and known.accuracy is not None and known.accuracy <= LOW_ACCURACY
+        shaky = any(known.damaging and known.accuracy is not None and known.accuracy <= LOW_ACCURACY
                     for known in user.combatant.moves)
-        return shaky and (self.key == "lock-on" or not any(known.power and known.type == "ground"
+        return shaky and (self.key == "lock-on" or not any(known.damaging and known.type == "ground"
                                                            for known in user.combatant.moves))
 
     def _turns(self, user, foe):
@@ -385,7 +385,7 @@ class MagnetRise(State):
         return not any(battle._field(user, "grounds"))
 
     def _worth(self, move, user, foe, team, foes, weather):
-        return battle._grounded(user) and any(known.power and known.type == "ground"
+        return battle._grounded(user) and any(known.damaging and known.type == "ground"
                                               and effectiveness("ground", user.combatant.types) > 0
                                               for known in foe.combatant.moves)
 
@@ -494,7 +494,7 @@ class TarShot(State):
     def wanted(self, move, team, foes, side, arena, weather):
         user, foe = team.active, foes.active
         return (self.key not in foe.volatiles and reaches(move, user, foe)
-                and any(known.power and known.type == "fire" for known in user.combatant.moves))
+                and any(known.damaging and known.type == "fire" for known in user.combatant.moves))
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         slowed = () if guarded(user, foe) else shift_all(foe, 1 - side, TAR_DROP)
@@ -524,8 +524,8 @@ class Sport(StatusMove):
             return (faster(user, foe, weather) and last is not None and attacking(last) and last.type == "normal"
                     and effectiveness("electric", user.combatant.types) < effectiveness("normal", user.combatant.types))
         kind = self.WEAKENED[self.key]
-        return (any(known.power and known.type == kind for known in foe.combatant.moves)
-                and not any(known.power and known.type == kind for known in user.combatant.moves))
+        return (any(known.damaging and known.type == kind for known in foe.combatant.moves)
+                and not any(known.damaging and known.type == kind for known in user.combatant.moves))
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         if self.key in arena.rooms:
@@ -552,7 +552,7 @@ class FocusEnergy(State):
     def _worth(self, move, user, foe, team, foes, weather):
         if self.key == "laser-focus":
             return foe.stages["defense"] > 0 or foe.stages["special_defense"] > 0
-        return user.hp * 2 > user.max_hp and any(known.power for known in user.combatant.moves)
+        return user.hp * 2 > user.max_hp and any(known.damaging for known in user.combatant.moves)
 
     def _turns(self, user, foe):
         return 2 if self.key == "laser-focus" else True

@@ -49,7 +49,7 @@ MOVES = {
 POKEMON = {
     "species": {"url": "https://pokeapi.co/api/v2/pokemon-species/25/"},
     "types": [{"slot": 1, "type": {"name": "ground"}}],
-    "stats": [{"stat": {"name": "hp"}, "base_stat": 35}],
+    "stats": [{"stat": {"name": "hp"}, "base_stat": 35}], "weight": 60,
     "name": "pikachu",
     "moves": [
     entry(84, detail(SV, "level-up", 1)),

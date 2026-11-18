@@ -93,12 +93,12 @@ def useful(fighter, other, key: str, weather) -> bool:
     if key == "speed":
         return other.stat("speed", weather) >= fighter.stat("speed", weather)
     if key == "accuracy":
-        return any(move.power and (move.accuracy or 100) < 100 for move in fighter.combatant.moves)
+        return any(move.damaging and (move.accuracy or 100) < 100 for move in fighter.combatant.moves)
     return True
 
 
 def _attacks(fighter, physical: bool) -> bool:
-    return any(move.power and move.physical == physical for move in fighter.combatant.moves)
+    return any(move.damaging and move.physical == physical for move in fighter.combatant.moves)
 
 
 def boost_wanted(changes, user, foe, weather) -> bool:
@@ -149,7 +149,7 @@ class Charge(Stages):
     def wanted(self, move, team, foes, side, arena, weather):
         user = team.active
         return super().wanted(move, team, foes, side, arena, weather) and any(
-            other.power and other.type == "electric" for other in user.combatant.moves)
+            other.damaging and other.type == "electric" for other in user.combatant.moves)
 
     def _after(self, move, user, side):
         user.volatiles[self.key] = 2

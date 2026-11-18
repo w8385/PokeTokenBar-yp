@@ -15,7 +15,7 @@ from dataclasses import dataclass, field, replace
 
 from ypoke import abilities, items, move_power, tera_forms
 from ypoke.effects import hooks
-from ypoke.move_effects import CHOSEN_DAMAGE_EFFECTS, PUNCH_MOVES, STATUS_MOVES
+from ypoke.move_effects import CHOSEN_DAMAGE_EFFECTS, POWERLESS_ATTACKS, PUNCH_MOVES, STATUS_MOVES
 from ypoke.type_chart import effectiveness
 
 STAB_MULTIPLIER = 1.5
@@ -112,6 +112,12 @@ class Move:
             return sum(hits * odds for hits, odds in MULTI_HIT_ODDS.items()) / 100
         return (self.min_hits + self.max_hits) / 2
 
+    @property
+    def damaging(self) -> bool:
+        """An attack, counting one whose effect sets its power or damage (Low Kick, Seismic Toss)."""
+        return (bool(self.power or self.id in POWERLESS_ATTACKS) and not self.weather
+                and self.effect not in STATUS_EFFECTS)
+
 
 STRUGGLE = Move("발버둥", None, 50, physical=True, id=165)
 CONFUSION_HIT = Move("혼란", None, CONFUSION_SELF_HIT_POWER, physical=True)
@@ -147,6 +153,7 @@ class Combatant:
     pokemon_id: int | None = None
     can_evolve: bool = False
     tera: bool = False
+    weight: int = field(default=0, repr=False)
 
     @property
     def label(self) -> str:
@@ -746,7 +753,7 @@ class _Arena:
     state (a screen, Tailwind, Safeguard, Mist, Lucky Chant) to its turns left and `hazards[side]` each hazard to
     its layers, in the order they were set. `rooms` maps each other whole-field state (Magic Room, Wonder Room, Mud
     Sport) to its turns left. `log` collects the events a move's handlers make mid-action. `teams` are the two sides
-    of a `simulate` run (None outside one); `last_move` is the last move anyone used."""
+    of a `simulate` run (None outside one); `last_move` is the last move anyone used, in `last_move_turn`."""
 
     trick_room: int = 0
     gravity: int = 0
@@ -759,6 +766,7 @@ class _Arena:
     rooms: dict[str, int] = field(default_factory=dict)
     teams: tuple | None = None
     last_move: Move | None = None
+    last_move_turn: int = -1
     weather: _Weather = field(default_factory=_Weather)
 
     def states(self, side: int) -> tuple[str, ...]:
@@ -1082,7 +1090,7 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         action = replace(action, move_id=used.id)
         fighters[side].last_used = index
         if arena is not None:
-            arena.last_move = used
+            arena.last_move, arena.last_move_turn = used, turn
         paid = hooks.move(used, "pays_hp", fighters[side]) if not action.failed or action.blocked else None
         if paid is not None:
             action = replace(action, changes=(*action.changes, paid), attacker_hp=fighters[side].hp_percent,
@@ -1170,13 +1178,14 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                       ability=defender.ability if granted else None, changes=crash,
                       attacker_fainted=attacker.hp == 0)
     critical, hits, dealt, sturdy, endured, berry, shielded = False, 0, 0, False, "", "", False
+    hooks.move(move, "draws", attacker, rng)
     fixed = hooks.move(move, "fixed_damage", attacker, defender, rng)
     resisted = defender.item if fixed is None and hooks.item(defender, "resists", move.type, multiplier,
                                                              default=False) else ""
     crit_stage = (hooks.move(move, "crit_stage", default=move.crit_stage) + hooks.item(attacker, "crit_stage", default=0)
                   + sum(_field(attacker, "crit_stage")))
     no_crit = any(_field(defender, "guards_crit"))
-    hit_count = _hit_count(move, rng)
+    hit_count = _hit_count(move, attacker, rng)
     rolls_each_hit = checks_accuracy and hooks.move(move, "rolls_each_hit", default=False)
     for hit in range(hit_count):
         if hit > 0 and rolls_each_hit and rng.random() * 100 >= accuracy:
@@ -1301,7 +1310,10 @@ def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tupl
     return tuple(recovered), ""
 
 
-def _hit_count(move: Move, rng: random.Random) -> int:
+def _hit_count(move: Move, attacker: _Fighter, rng: random.Random) -> int:
+    counted = hooks.move(move, "hit_count", attacker)
+    if counted is not None:
+        return counted
     if move.max_hits <= 1:
         return 1
     if (move.min_hits, move.max_hits) == (2, 5):
@@ -1471,7 +1483,7 @@ def _threatened(fighter: _Fighter, foe: _Fighter, weather: str | None) -> bool:
     """Whether `foe` has a super-effective damaging move with PP against `fighter`."""
     return any(_multiplier(move_power.typed(move, weather, foe), fighter, weather) > 1
                for index, move in enumerate(foe.combatant.moves)
-               if foe.pp[index] > 0 and move.power and not move.weather and move.effect not in STATUS_EFFECTS)
+               if foe.pp[index] > 0 and move.damaging)
 
 
 def _team_speed(team: "_Team") -> float:
@@ -1562,7 +1574,7 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
     if fixed is not None:
         return fixed * (multiplier > 0) * accuracy * DAMAGE_DIVISOR / (2 * attacker.combatant.level // 5 + 2)
     return (
-        _power(attacker, defender, move, weather, multiplier) * _expected_hits(move, accuracy)
+        _power(attacker, defender, move, weather, multiplier) * _expected_hits(move, attacker, accuracy)
         * _stab(attacker, move) * multiplier
         * _weather_boost(move, weather) * _damage_taken(defender, move)
         * _item_boost(attacker, move, multiplier)
@@ -1570,11 +1582,11 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
     )
 
 
-def _expected_hits(move: Move, accuracy: float) -> float:
+def _expected_hits(move: Move, attacker: _Fighter, accuracy: float) -> float:
     """Hits that each draw for accuracy count only while every earlier one landed."""
     if accuracy < 100 and hooks.move(move, "rolls_each_hit", default=False):
         return sum((accuracy / 100) ** hit for hit in range(move.max_hits))
-    return move.expected_hits
+    return hooks.move(move, "hit_count", attacker, default=move.expected_hits)
 
 
 def _ignores_burn(move: Move) -> bool:

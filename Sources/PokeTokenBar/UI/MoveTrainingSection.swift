@@ -309,7 +309,7 @@ struct MoveTrainingSection: View {
     private func stats(_ move: LearnableMove) -> String {
         var parts = move.isStatus
             ? [l.moveStatusClass]
-            : [move.damageClass == "physical" ? l.movePhysical : l.moveSpecial, "\(l.movePower) \(move.power)"]
+            : [move.damageClass == "physical" ? l.movePhysical : l.moveSpecial, l.movePowerLine(move.power)]
         parts.append("\(l.moveAccuracy) \(move.accuracy.map(String.init) ?? "—")")
         if let pp = move.pp { parts.append("PP \(pp)") }
         return parts.joined(separator: " · ")

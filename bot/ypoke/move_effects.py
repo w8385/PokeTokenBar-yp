@@ -55,6 +55,9 @@ ID_KEYS = frozenset({
     *("crash", "hp-cost", "hp-cost-on-hit"),
     "rolls-each-hit",
     *("fixed-hp", "level-damage", "psywave", "half-hp", "endeavor", "final-gambit", "retaliate", "ohko"),
+    *("power-by-target-weight", "power-by-weight-ratio", "power-by-low-hp", "power-by-target-hp", "power-friendship",
+      "power-by-speed-ratio", "gyro-ball", "trump-card", "punishment", "spit-up", "hidden-power", "magnitude",
+      "present", "fickle-beam", "fury-cutter", "echoed-voice", "assurance", "fusion", "beat-up"),
 })
 EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "struggle", "judgment",
                          "ivy-cudgel"})
@@ -70,10 +73,10 @@ POWDER_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("m
 
 STATUS_MOVES = {move_id: key for key in STATUS_EFFECTS for move_id in battle_data.with_key("moves", key)}
 EFFECTS = {**STATUS_MOVES, **{move_id: key for key in DAMAGE_EFFECTS for move_id in battle_data.with_key("moves", key)}}
-# Attacks without PokéAPI power whose effect sets their damage (Seismic Toss), once that effect works.
-SET_DAMAGE_MOVES = frozenset(
+# Attacks without PokéAPI power whose effect sets their damage or power (Seismic Toss, Low Kick), once it works.
+POWERLESS_ATTACKS = frozenset(
     int(move_id) for move_id, entry in battle_data.table("moves").items()
-    if entry["power"] is None and entry["class"] != "status" and battle_data.keys(entry)
+    if not entry["power"] and entry["class"] != "status" and battle_data.keys(entry)
     and not battle_data.is_todo(entry))
 
 
@@ -83,5 +86,5 @@ def wants_status_moves(move_ids) -> bool:
 
 
 def attacks(move_id: int, power: int | None, damage_class: str) -> bool:
-    """A damaging move the battle can use: one with power, or one whose effect sets its damage."""
-    return damage_class != "status" and bool(power or move_id in SET_DAMAGE_MOVES)
+    """A damaging move the battle can use: one with power, or one whose effect sets its damage or power."""
+    return damage_class != "status" and bool(power or move_id in POWERLESS_ATTACKS)

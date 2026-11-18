@@ -902,6 +902,8 @@ struct L {
     var movePhysical: String { t("물리", "Physical", "物理", "Físico", "Physique", "Físico", "Physisch", "Физ.") }
     var moveSpecial: String { t("특수", "Special", "特殊", "Especial", "Spéciale", "Especial", "Speziell", "Спец.") }
     var movePower: String { t("위력", "Power", "威力", "Potencia", "Puissance", "Poder", "Stärke", "Сила") }
+    /// Power 0 is an attack whose effect sets its power or damage in battle (Low Kick, Seismic Toss).
+    func movePowerLine(_ power: Int) -> String { "\(movePower) \(power > 0 ? String(power) : "—")" }
     var moveAccuracy: String { t("명중", "Acc", "命中", "Prec", "Préc", "Prec", "Genau", "Точн") }
     var moveBurn: String { t("화상", "Burn", "やけど", "Quemadura", "Brûlure", "Queimadura", "Verbrennung", "Ожог") }
     var moveParalysis: String { t("마비", "Paralysis", "まひ", "Parálisis", "Paralysie", "Paralisia", "Paralyse", "Паралич") }

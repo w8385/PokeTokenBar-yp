@@ -38,8 +38,9 @@ def test_a_sure_hit_draws_for_no_hit():
 
 
 def test_the_ai_counts_a_hit_only_while_every_earlier_one_landed():
-    assert battle._expected_hits(TRIPLE_AXEL, 90) == pytest.approx(1 + 0.9 + 0.81)
-    assert battle._expected_hits(TRIPLE_AXEL, 100) == 3
+    user, _, _ = duel()
+    assert battle._expected_hits(TRIPLE_AXEL, user, 90) == pytest.approx(1 + 0.9 + 0.81)
+    assert battle._expected_hits(TRIPLE_AXEL, user, 100) == 3
 
 
 def _strike(user, foe, move, arena, rng):

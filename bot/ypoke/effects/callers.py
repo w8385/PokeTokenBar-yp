@@ -74,7 +74,7 @@ class MeFirst(Caller):
 
     def _pick(self, move, user, foe, side, arena, rng):
         picked = None if foe.acted or foe.choice is None else foe.combatant.moves[foe.choice]
-        return boosted(picked) if picked is not None and picked.power else None
+        return boosted(picked) if picked is not None and picked.damaging else None
 
     def _expected(self, move, user, foe, side, arena, weather):
         faster = (user.stat("speed", weather) > foe.stat("speed", weather)) != bool(arena.trick_room)
@@ -210,7 +210,7 @@ class Transform(StatusMove):
 
 
 def worth(called, user, foe, weather) -> bool:
-    return (called is not None and called.power > 0 and callable_move(called)
+    return (called is not None and called.damaging and callable_move(called)
             and battle._move_score(user, foe, called, weather) > battle._best_score(user, foe, weather))
 
 

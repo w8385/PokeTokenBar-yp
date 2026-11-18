@@ -90,7 +90,7 @@ struct MachineShopCard: View {
                         TypeBadges(types: [move.type], language: store.language)
                         Spacer(minLength: 4)
                     }
-                    Text(move.isWeather ? l.moveWeatherMove : "\(l.movePower) \(move.power)")
+                    Text(move.isWeather ? l.moveWeatherMove : l.movePowerLine(move.power))
                         .font(.caption).foregroundStyle(.secondary)
                     if mine > 0 { Badge(l.shopMachineMine(mine), tint: .accent) }
                 }

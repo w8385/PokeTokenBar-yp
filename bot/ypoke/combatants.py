@@ -47,6 +47,7 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
         pokemon_id=pokemon_id,
         can_evolve=_can_evolve(pokeapi, member),
         tera=pokemon_id == tera_forms.TERAPAGOS,
+        weight=data.get("weight", 0),
     )
 
 
