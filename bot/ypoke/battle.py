@@ -1048,8 +1048,10 @@ def _item_triggers(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[
             _append(events, hooks.item(fighter, "on_update", fighter, side, turn))
 
 
-def _append(events: list[Event], event: Event | None) -> None:
-    if event is not None:
+def _append(events: list[Event], event: Event | tuple[Event, ...] | None) -> None:
+    if isinstance(event, tuple):
+        events.extend(event)
+    elif event is not None:
         events.append(event)
 
 
@@ -1551,7 +1553,7 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
     exposed = set(_field(defender, "exposes", move.type))
     if exposed:
         types = tuple(kind for kind in types if kind not in exposed or effectiveness(move.type, (kind,)) > 0)
-    return effectiveness(move.type, types)
+    return effectiveness(move.type, types) * math.prod(_field(defender, "weakens", move.type))
 
 
 def _field(fighter: _Fighter, hook: str, *args) -> list:
@@ -1573,7 +1575,8 @@ def _grounded(fighter: _Fighter) -> bool:
 
 def _banned(fighter: _Fighter, move: Move) -> str:
     """The state that keeps `fighter` from using `move` at all ("gravity", "taunt"), or ""."""
-    return next(iter((*_field(fighter, "bans_move", move, fighter), *_foe_field(fighter, "bans_foe_move", move))), "")
+    return next(iter((*_field(fighter, "bans_move", move, fighter),
+                      *_foe_field(fighter, "bans_foe_move", move, fighter))), "")
 
 
 def _foe_field(fighter: _Fighter, hook: str, *args) -> list:

@@ -31,6 +31,7 @@ STATE_LABEL = {
     "misty-terrain": "🌫️미스트필드", "reflect": "🛡️리플렉터", "light-screen": "🛡️빛의장막", "aurora-veil": "🛡️오로라베일",
     "stealth-rock": "🪨스텔스록", "spikes": "📌압정", "toxic-spikes": "☠️독압정", "sticky-web": "🕸️끈적끈적네트",
     "tailwind": "🍃순풍", "safeguard": "✨신비의부적", "mist": "🌁흰안개", "lucky-chant": "🍀주술", "gravity": "🌍중력",
+    "mud-sport": "🟫흙놀이", "water-sport": "💦물놀이", "ion-deluge": "⚡플라스마샤워",
 }
 BLOCKED_TAG = {
     "paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임",
@@ -39,6 +40,8 @@ BLOCKED_TAG = {
     "baneful-bunker": "☠️토치카에 막힘", "obstruct": "🛡️블로킹에 막힘", "silk-trap": "🕸️실크트랩에 막힘",
     "burning-bulwark": "🔥화염의수호에 막힘", "mat-block": "🛡️마룻바닥세워막기에 막힘",
     "quick-guard": "🛡️퍼스트가드에 막힘", "crafty-shield": "🛡️트릭가드에 막힘", "substitute": "🧸대타에 막힘",
+    "taunt": "😤도발 때문에 못 씀", "disable": "🚫사슬묶기로 못 씀", "torment": "😈트집 때문에 연달아 못 씀",
+    "heal-block": "🚫회복봉인으로 못 씀", "imprison": "🔒봉인되어 못 씀", "powder": "💥분진이 터졌다",
 }
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {
@@ -68,6 +71,12 @@ EFFECT_TEXT = {
                      "burning-bulwark", "mat-block"), "🛡️방어 태세"),
     "quick-guard": "🛡️선제공격을 막는다", "crafty-shield": "🛡️변화 기술을 막는다", "endure": "💪버티기 태세",
     "substitute": "🧸대타를 세웠다", "shed-tail": "🧸꼬리를 잘라 대타를 남겼다",
+    "destiny-bond": "👻쓰러뜨린 상대를 길동무로 삼는다", "grudge": "👻쓰러뜨린 기술의 PP를 없앤다",
+    "perish-song": "🎵멸망의 노래 (3턴 뒤 모두 기절)", "magnet-rise": "🧲공중에 떴다",
+    "imprison": "🔒같은 기술을 봉인했다", "ion-deluge": "⚡노말 기술이 전기 타입이 된다",
+    "magic-coat": "🪞변화 기술을 되받아친다", "snatch": "🫳상대의 변화 기술을 가로챈다",
+    "mud-sport": "🟫전기 기술이 약해졌다", "water-sport": "💦불꽃 기술이 약해졌다",
+    "focus-energy": "🎯급소에 맞히기 쉬워졌다", "laser-focus": "🎯다음 공격이 급소에 맞는다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
@@ -80,12 +89,27 @@ STAT_SHORT = {
     "accuracy": "명중", "evasion": "회피",
 }
 CHANGES_IN_TEXT = frozenset({"swords-dance", "tidy-up"})
-AT_FOE = frozenset({"inflict", "swagger", "toxic-thread", "psycho-shift"})
+# Effects whose line names the foe, then this text and the changes.
+ON_FOE_TEXT = {
+    "inflict": "", "swagger": "", "toxic-thread": "", "psycho-shift": "",
+    "leech-seed": "🌱씨앗을 심었다", "nightmare": "😱악몽", "curse": "👻저주 (자신 HP 1/2)", "taunt": "😤도발",
+    "encore": "👏앙코르", "disable": "🚫마지막 기술을 묶었다", "torment": "😈트집", "spite": "마지막 기술 PP 4 감소",
+    "heal-block": "🚫회복을 막았다", "embargo": "🚫도구를 막았다", "foresight": "👁️정체를 간파했다",
+    "miracle-eye": "👁️정체를 간파했다", "lock-on": "🎯조준했다", "telekinesis": "🌀띄웠다",
+    "electrify": "⚡기술이 전기 타입이 된다", "powder": "💥분진을 뿌렸다", "octolock": "🐙문어굳히기",
+    "tar-shot": "🛢️타르 (불꽃에 약해짐)",
+}
 VOLATILE_LABEL = {
     "wish": "🌠소원", "aqua-ring": "💧물의고리", "ingrain": "🌱뿌리박기", "healing-wish": "🌙치유소원",
     "substitute": "🧸대타", "shed-tail": "🧸대타 이어받음",
+    "leech-seed": "🌱씨뿌리기", "leech-seed-heal": "🌱씨뿌리기 흡수", "nightmare": "😱악몽", "curse": "👻저주",
+    "perish-song": "🎵멸망 카운트", "taunt": "😤도발", "encore": "👏앙코르", "disable": "🚫사슬묶기",
+    "heal-block": "🚫회복봉인", "embargo": "🚫금제", "magnet-rise": "🧲전자부유", "telekinesis": "🌀텔레키네시스",
+    "octolock": "🐙문어굳히기 방어·특방↓", "destiny-bond": "👻길동무", "grudge": "👻원념",
+    "magic-coat": "🪞매직코트", "snatch": "🫳가로채기",
 }
-VOLATILE_END_TEXT = {"substitute": "부서졌다"}
+VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
+                     "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)"}
 
 
 Image = tuple[str, str]
@@ -421,8 +445,10 @@ def _action_line(event: Action, marker: str) -> str:
         return f"{head} → {event.defender} 졸음"
     if event.effect == "thunder-wave":
         return f"{head} → {event.defender} {STATUS_ICON['paralysis']}"
-    if event.effect in AT_FOE:
-        return " ".join([f"{head} → {event.defender}", *(_change_tag(change, event.side) for change in event.changes)])
+    if event.effect in ON_FOE_TEXT:
+        tags = [("자신 " if change.kind in STATUS_ICON and change.side == event.side else "")
+                + _change_tag(change, event.side) for change in event.changes]
+        return " ".join(filter(None, [f"{head} → {event.defender}", ON_FOE_TEXT[event.effect], *tags]))
     if event.effect in HP_TEXT:
         text = HP_TEXT[event.effect].format(attacker=event.attacker_hp, defender=event.defender_hp, foe=event.defender)
         return " ".join([head, text, *(_change_tag(change, event.side) for change in event.changes)])
