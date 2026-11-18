@@ -71,24 +71,32 @@ The hooks in the order a turn reaches them (`HOOKS` in `effects/hooks.py` says w
 1. Entry: `hazard` (each hazard on the side, in the order it was set, unless `ignores_hazards`), `on_entry_form`
    (item forms, after the hazards and Mega Evolution), `on_entry` (abilities, the faster Pokémon first; a Surge sets
    its terrain for `state_turns`), `on_update` (one-use items).
-2. Choosing: `wanted`, `bars_status_moves`.
+2. Choosing: `forces_move` (Encore), `wanted`, `bars_status_moves`.
 3. Order: `modify_type`, `modify_priority`, `moves_first`, `modify_stat` (item, then ability; paralysis halves Speed
-   in between), then `field_stat` (ability under a state) and `side_stat` (Tailwind).
-4. The move: `bans_move` (Gravity), `locks_move`, `stops_move` (Psychic Terrain), `use` (status and weather moves,
-   with `weather_turns` and `state_turns`), `before_hit` (Brick Break), `skips_accuracy`, `accuracy_as_user` ×
-   `accuracy_as_target` × `modify_accuracy` (Gravity), `grounds` and `airborne` before `immune_to`, `crit_stage`
-   unless `guards_crit` (Lucky Chant).
+   in between; `swaps_stat` picks the raw stat under Wonder Room), then `field_stat` (ability under a state) and
+   `side_stat` (Tailwind). `suppresses_items` (Magic Room, Embargo) idles every item hook of the Pokémon it covers.
+4. The move: `bans_move` (Gravity, Taunt) and the foe's `bans_foe_move` (Imprison), `retypes_move` (Electrify),
+   `locks_move`, `backfires` (Powder), `stops_move` (Psychic Terrain, Protect, with its `punishes` on the user;
+   `targets_foe` says which status moves it stops), `use` (status and weather moves, with `weather_turns` and
+   `state_turns`; a status move aimed at the foe meets its `shields` (Substitute) and `reflects` (Magic Coat), one aimed
+   at its user the foe's `snatches`), `before_hit` (Brick Break), `skips_accuracy` or the target's `sure_hit`
+   (Lock-On), the accuracy and evasion stages (unless `exposes`) × `accuracy_as_user` × `accuracy_as_target` ×
+   `modify_accuracy` (Gravity), `grounds`, `lifts` and `airborne` before `immune_to` and `exposes` (Foresight),
+   `crit_stage` (move, item, then state: Focus Energy) unless `guards_crit` (Lucky Chant).
 5. Damage, in this multiplication order: `ignores_burn` (on the Attack stat), `base_power`, `modify_power` ×
    `field_power` (terrain), `modify_stab`, `modify_weather_boost`, `modify_damage_taken`, `modify_damage`, `screen`
    (passed by a crit or `infiltrates`).
-6. Each hit: `resists` (first hit), `endures` (ability, then item), `on_contact_hit`, `between_hits`.
+6. Each hit: `resists` (first hit), `takes_hit` (Substitute: the target and its secondary effects are spared),
+   `endures` (state, ability, then item), `on_contact_hit`, `between_hits`; `on_knocked_out` (Destiny Bond) once the
+   target faints.
 7. After the hits: `guards_ailment` (terrain, Safeguard) and `blocks_ailment`, `guards_stats` (Mist), `on_contact`,
    then recoil or `modify_drain`, then `after_move_as_user`, `after_move_as_target`, `after_move`; `faints_user`,
    `switches_user_out`, `remember`.
 8. End of turn, `battle.END_OF_TURN`: residual status damage, weather chip (`blocks_weather_chip`), terrain
-   (`end_of_turn`: Grassy Terrain's heal), items (`end_of_turn`, then `on_update`), Yawn, the side states' turns,
-   Trick Room, the terrain's and Gravity's turns, strong winds (`keeps_weather`), replacing fainted Pokémon (who take
-   the hazards).
+   (`end_of_turn`: Grassy Terrain's heal), items (`end_of_turn`, then `on_update`), each Pokémon's own states
+   (`volatile_end`: Leech Seed, Perish Song, the countdowns), Yawn, the side states' turns, Trick Room, the rooms'
+   turns, the terrain's and Gravity's turns, strong winds (`keeps_weather`), replacing fainted Pokémon (who take the
+   hazards).
 
 ### Where the order differs from Gen 9
 

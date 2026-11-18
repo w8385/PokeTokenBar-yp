@@ -17,28 +17,43 @@ HOOKS = {
     "on_entry": "ability: acts as its holder enters, the faster entering Pokémon first",
     "state_turns": "item: how long a field or side state its holder sets lasts",
     "on_update": "item: a one-use item reacts to its holder's state after an entry, an action or the end of a turn",
+    "forces_move": "state: the move index its holder must pick (Encore)",
     "wanted": "move: whether the move chooser picks this effect move now",
     "bars_status_moves": "item: its holder only picks damaging moves",
     "modify_type": "move: the move's type in this weather or terrain",
     "modify_priority": "ability, move: added to the move's priority",
     "moves_first": "item: a draw that puts its holder first in its priority bracket (holders only draw)",
+    "swaps_stat": "state: the stat whose raw value stands in for another (Wonder Room)",
+    "suppresses_items": "state: the held items of the Pokémon it covers do nothing (Magic Room, Embargo)",
     "modify_stat": "item, then ability: multiplies a stat after its stage (paralysis halves Speed in between)",
     "field_stat": "ability: multiplies a stat in a weather or terrain, after `modify_stat`",
     "side_stat": "state: multiplies a stat of the Pokémon on its side, last",
     "bans_move": "state: a move that cannot be used at all, after sleep and freeze and before confusion and PP",
+    "bans_foe_move": "state: a move the foe facing its holder cannot use (Imprison), with `bans_move`",
     "locks_move": "item: its holder repeats the move it used",
+    "retypes_move": "state: the type its holder's move takes, after the weather or terrain (Electrify)",
+    "backfires": "state: a used move fails on its own user, after PP (Powder)",
+    "targets_foe": "move: a status move aimed at the foe, which Protect stops",
     "stops_move": "state: a used move fails on a target on its side, after PP",
+    "punishes": "state: acts on the user of a move it stopped (Spiky Shield)",
     "use": "move: a status or weather move acts instead of dealing damage",
+    "heals": "move: a healing move, which Heal Block bans",
+    "shields": "state: a foe's status move fails on its holder (Substitute)",
+    "reflects": "state: a foe's status move bounces back to its user (Magic Coat)",
+    "snatches": "state: the foe's self-targeting status move acts for its holder instead (Snatch)",
     "weather_turns": "item: how long a weather its holder starts lasts",
     "before_hit": "move: acts before the accuracy draw and the target's immunity",
     "skips_accuracy": "move: hits without an accuracy draw",
     "accuracy_as_user": "item: multiplies the user's accuracy, before the target's item",
     "accuracy_as_target": "item: multiplies the accuracy of a move used on its holder",
     "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
+    "exposes": "state: the type of its holder whose immunity a move type ignores, and its raised evasion (Foresight)",
+    "sure_hit": "state: the moves of the given user hit its holder without an accuracy draw (Lock-On)",
     "grounds": "state: grounds every Pokémon, so Ground moves hit Flying types and Levitate",
+    "lifts": "state: its holder floats over Ground moves and is not grounded (Magnet Rise)",
     "airborne": "ability: its holder is not grounded",
     "immune_to": "ability: a move type that does nothing to its holder",
-    "crit_stage": "move, then item: the move's critical-hit stage, then added to it",
+    "crit_stage": "move, then item, then state: the move's critical-hit stage, then added to it",
     "guards_crit": "state: no critical hit lands on its side (the draw still happens)",
     "ignores_burn": "ability, move: a burn does not halve the user's Attack",
     "base_power": "move: the move's power in this battle state",
@@ -51,7 +66,9 @@ HOOKS = {
     "screen": "state: multiplies damage to its side; the lowest one counts, and a critical hit passes it",
     "infiltrates": "ability: its holder's moves pass screens, Safeguard and Mist",
     "resists": "item: halves the first hit and is used up",
-    "endures": "ability, then item: a hit that would knock its holder out leaves it 1 HP",
+    "takes_hit": "state: takes a hit's damage in its holder's place (Substitute)",
+    "endures": "state, then ability, then item: a hit that would knock its holder out leaves it 1 HP",
+    "on_knocked_out": "state: acts as a foe's move knocks its holder out (Destiny Bond, Grudge)",
     "on_contact_hit": "item: hurts the user of each physical hit on its holder",
     "between_hits": "item: acts between the hits of a multi-hit move",
     "guards_ailment": "state: an ailment a Pokémon on its side cannot get, from anyone or only from a foe",
@@ -67,6 +84,7 @@ HOOKS = {
     "remember": "move: the team notes an effect move that worked, so it is not picked again",
     "blocks_weather_chip": "ability: weather does not chip its holder",
     "end_of_turn": "state, then item: heals, hurts or inflicts at the end of a turn, after weather",
+    "volatile_end": "state: a Pokémon's own state acts or counts down at the end of a turn, after the items",
     "keeps_weather": "ability: the weather lasts only while a holder is out",
 }
 
@@ -76,7 +94,11 @@ def ability(fighter, hook: str, *args, default=None):
 
 
 def item(fighter, hook: str, *args, default=None):
-    return call("items", fighter.item, hook, *args, default=default)
+    """A state that suppresses held items (Magic Room, Embargo) leaves the holder's item idle."""
+    from ypoke import battle
+
+    held = None if fighter.item is None or any(battle._field(fighter, "suppresses_items")) else fighter.item
+    return call("items", held, hook, *args, default=default)
 
 
 def call(kind: str, name: str | None, hook: str, *args, default=None):
