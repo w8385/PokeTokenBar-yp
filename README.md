@@ -88,6 +88,13 @@ The <b>Box</b> tab holds every Pokémon you own — the one you're raising, your
 <td width="45%" align="center"><img src="assets/screenshot-collection-pokedex.png" width="300" alt="Pokédex — one cell per species"><br><br><img src="assets/screenshot-collection-box.png" width="300" alt="Box — every Pokémon you own, with level and held item"></td>
 </tr>
 <tr>
+<td width="45%" align="center"><img src="assets/screenshot-dex-next-evolution.png" width="300" alt="Snorlax's Pokédex page with the pet condition and a raised Munchlax's 3/30 progress"></td>
+<td width="55%" valign="middle">
+<h3>See what comes next</h3>
+A species' Pokédex page lists its special evolutions, both into it and out of it: Munchlax's page says "Next: Snorlax · Pet it 30 times". When the species is the one you're raising or the form it's waiting to become, the card shows your live progress, such as 3/30. Pages for species you don't own show the same cards. On Home, a branching line's <b>?</b> opens the raised species' page, which lists every branch's condition.
+</td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-regional-dex.png" width="300" alt="Native regional collection counts and completion-badge component samples"><br><small>Native UI components · sample states</small></td>
 <td width="55%" valign="middle">
 <h3>Complete a region, keep a badge</h3>
@@ -251,7 +258,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 
 <img src="assets/screenshot-usage-recap.png" width="360" alt="Usage recap for a selected period">
 
-<small>The Home, Settings, form, Shop, Bag, Pokédex, Box, profile, Exp. Share, Battle, gym, replay, champion, floating-friends, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
+<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, gym, replay, champion, floating-friends, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
 
 ## Agent activity
 
