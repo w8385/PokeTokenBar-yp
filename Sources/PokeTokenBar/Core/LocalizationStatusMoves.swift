@@ -133,6 +133,93 @@ extension L {
             t("자신의 공격과 방어 실수치를 바꿈", "Swaps its own Attack and Defense", "自分の こうげきと ぼうぎょを入れ替える",
               "Intercambia su Ataque y su Defensa", "Échange son Attaque et sa Défense", "Troca seu Ataque e sua Defesa",
               "Tauscht eigenen Angriff und Verteidigung", "Меняет местами свою атаку и защиту")
+        case 105, 135, 208, 303, 456: healShare(2)
+        case 791: healShare(4)
+        case 816, 849:
+            healShare(4) + t(", 상태이상 회복", ", cures its status", "、状態異常を治す", ", cura su estado", ", soigne son statut",
+                             ", cura seu status", ", heilt Statusprobleme", ", лечит статус")
+        case 234, 235, 236:
+            t("HP 1/2 회복 (쾌청 2/3, 다른 날씨 1/4)", "Heals 1/2 HP (2/3 in sun, 1/4 in other weather)",
+              "HPを1/2回復(晴れ2/3、ほかの天気1/4)", "Cura 1/2 de PS (2/3 con sol, 1/4 con otro clima)",
+              "Soigne 1/2 des PV (2/3 au soleil, 1/4 sous un autre climat)",
+              "Cura 1/2 dos PS (2/3 com sol, 1/4 em outro clima)", "Heilt 1/2 KP (2/3 bei Sonne, 1/4 bei anderem Wetter)",
+              "Восстанавливает 1/2 ОЗ (2/3 при солнце, 1/4 при другой погоде)")
+        case 659:
+            t("HP 1/2 회복 (모래바람 2/3)", "Heals 1/2 HP (2/3 in a sandstorm)", "HPを1/2回復(すなあらし2/3)",
+              "Cura 1/2 de PS (2/3 en tormenta de arena)", "Soigne 1/2 des PV (2/3 dans une tempête de sable)",
+              "Cura 1/2 dos PS (2/3 em tempestade de areia)", "Heilt 1/2 KP (2/3 im Sandsturm)",
+              "Восстанавливает 1/2 ОЗ (2/3 в песчаную бурю)")
+        case 355:
+            healShare(2) + t(", 그 턴 비행 타입을 잃음", ", loses its Flying type that turn", "、そのターン ひこうタイプを失う",
+                             ", pierde el tipo Volador ese turno", ", perd le type Vol ce tour-ci",
+                             ", perde o tipo Voador nesse turno", ", verliert in der Runde den Typ Flug",
+                             ", теряет летающий тип на этот ход")
+        case 256:
+            t("비축한 만큼 HP 회복 후 비축 해제", "Heals HP by its Stockpile count, then spends it",
+              "たくわえた分だけHPを回復し たくわえを解く", "Cura PS según lo Reservado y lo gasta",
+              "Soigne des PV selon la Stockage et la dépense", "Cura PS conforme o Estocado e o gasta",
+              "Heilt KP je nach Horter-Zahl und verbraucht sie", "Лечит ОЗ по числу запасов и тратит их")
+        case 273:
+            t("다음 턴 끝에 HP 1/2 회복", "Heals 1/2 HP at the end of next turn", "次のターンの終わりにHPを1/2回復",
+              "Cura 1/2 de PS al final del siguiente turno", "Soigne 1/2 des PV à la fin du tour suivant",
+              "Cura 1/2 dos PS no fim do próximo turno", "Heilt 1/2 KP am Ende der nächsten Runde",
+              "Восстанавливает 1/2 ОЗ в конце следующего хода")
+        case 505, 666:
+            t("상대의 HP를 1/2 회복", "Heals the target by 1/2 of its HP", "相手のHPを1/2回復", "Cura 1/2 de PS al objetivo",
+              "Soigne la cible de 1/2 de ses PV", "Cura 1/2 dos PS do alvo", "Heilt das Ziel um 1/2 seiner KP",
+              "Восстанавливает цели 1/2 ОЗ")
+        case 685:
+            t("상대의 상태이상을 고치고 HP 1/2 회복", "Cures the target's status and heals 1/2 HP",
+              "相手の状態異常を治し HPを1/2回復", "Cura el estado del objetivo y recupera 1/2 de PS",
+              "Soigne le statut de la cible et récupère 1/2 des PV", "Cura o status do alvo e recupera 1/2 dos PS",
+              "Heilt den Status des Ziels und 1/2 eigene KP", "Лечит статус цели и восстанавливает 1/2 ОЗ")
+        case 668:
+            t("상대 공격만큼 HP 회복, 상대 공격 1랭크 하락", "Heals by the target's Attack; Target: Attack −1 stage",
+              "相手のこうげき分HPを回復、相手のこうげき1段階ダウン", "Cura según el Ataque del objetivo; Objetivo: Ataque −1 nivel",
+              "Soigne selon l'Attaque de la cible ; Cible : Attaque −1 niveau",
+              "Cura conforme o Ataque do alvo; Alvo: Ataque −1 estágio",
+              "Heilt um den Angriff des Ziels; Ziel: Angriff −1 Stufe", "Лечит на атаку цели; Цель: атака −1 ступень")
+        case 220:
+            t("상대와 HP를 똑같이 나눔", "Shares HP evenly with the target", "相手とHPを等しく分け合う",
+              "Reparte los PS a partes iguales con el objetivo", "Partage équitablement les PV avec la cible",
+              "Divide os PS igualmente com o alvo", "Teilt die KP gleichmäßig mit dem Ziel", "Делит ОЗ поровну с целью")
+        case 156:
+            t("HP 전부 회복 후 2턴 잠듦", "Fully heals, then sleeps 2 turns", "HPを全回復し 2ターン眠る",
+              "Se cura por completo y duerme 2 turnos", "Récupère tous ses PV et dort 2 tours",
+              "Cura tudo e dorme 2 turnos", "Heilt alle KP und schläft 2 Runden", "Полностью лечится и спит 2 хода")
+        case 392, 275:
+            t("매 턴 HP 1/16 회복", "Heals 1/16 HP every turn", "毎ターンHPを1/16回復", "Cura 1/16 de PS cada turno",
+              "Soigne 1/16 des PV à chaque tour", "Cura 1/16 dos PS a cada turno", "Heilt jede Runde 1/16 KP",
+              "Восстанавливает 1/16 ОЗ каждый ход")
+              + (moveID == 275
+                 ? t(", 땅에 뿌리박음", ", roots it to the ground", "、地面に根を張る", ", echa raíces en el suelo",
+                     ", s'enracine au sol", ", cria raízes no chão", ", schlägt Wurzeln", ", пускает корни")
+                 : "")
+        case 215, 312:
+            t("우리 편 전원의 상태이상 회복", "Cures the status of the whole team", "味方全員の状態異常を治す",
+              "Cura el estado de todo el equipo", "Soigne le statut de toute l'équipe", "Cura o status de toda a equipe",
+              "Heilt den Status des ganzen Teams", "Лечит статус всей команды")
+        case 287:
+            t("화상·독·마비 회복", "Cures a burn, poison or paralysis", "やけど・どく・まひを治す",
+              "Cura quemadura, veneno o parálisis", "Soigne brûlure, poison ou paralysie",
+              "Cura queimadura, veneno ou paralisia", "Heilt Verbrennung, Gift oder Paralyse",
+              "Лечит ожог, отравление или паралич")
+        case 361, 461:
+            t("기절하고 다음 포켓몬의 HP·상태이상 회복", "Faints to fully heal the next Pokémon",
+              "ひんしになり 次のポケモンを全回復", "Se debilita para curar del todo al siguiente Pokémon",
+              "Tombe K.O. pour soigner entièrement le Pokémon suivant",
+              "Desmaia para curar totalmente o próximo Pokémon", "Wird besiegt und heilt das nächste Pokémon voll",
+              "Падает, полностью исцеляя следующего покемона")
+        case 863:
+            t("기절한 동료 하나를 HP 1/2로 부활", "Revives a fainted teammate at 1/2 HP", "ひんしの仲間をHP1/2で復活",
+              "Revive a un compañero debilitado con 1/2 de PS", "Ranime un allié K.O. avec 1/2 des PV",
+              "Revive um aliado desmaiado com 1/2 dos PS", "Belebt ein besiegtes Teammitglied mit 1/2 KP wieder",
+              "Оживляет павшего союзника с 1/2 ОЗ")
+        case 262:
+            stageEffect([("attack", -2), ("special_attack", -2)], foe: true,
+                        note: t("자신은 기절", "the user faints", "自分は ひんし", "el usuario se debilita",
+                                "le lanceur tombe K.O.", "o usuário desmaia", "der Anwender wird besiegt",
+                                "пользователь падает"))
         default: nil
         }
     }
@@ -181,6 +268,11 @@ extension L {
     private func hpCost(_ share: Int) -> String {
         t("HP 1/\(share) 소모", "costs 1/\(share) of its HP", "HPを1/\(share)消費", "cuesta 1/\(share) de sus PS",
           "coûte 1/\(share) de ses PV", "custa 1/\(share) dos PS", "kostet 1/\(share) der KP", "стоит 1/\(share) ОЗ")
+    }
+
+    private func healShare(_ share: Int) -> String {
+        t("HP 1/\(share) 회복", "Heals 1/\(share) of its HP", "HPを1/\(share)回復", "Cura 1/\(share) de sus PS",
+          "Soigne 1/\(share) de ses PV", "Cura 1/\(share) dos PS", "Heilt 1/\(share) der KP", "Восстанавливает 1/\(share) ОЗ")
     }
 
     private func allFive(_ delta: Int) -> [(String, Int)] {
