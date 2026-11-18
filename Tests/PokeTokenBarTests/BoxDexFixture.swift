@@ -90,9 +90,9 @@ enum BoxDexFixture {
 
     /// A bot link that answers every sync with `botReply`; `connected: false` leaves the token and server empty.
     @MainActor
-    /// `moves` is the `GET /v1/moves` reply by `pokemon_id`; other Pokémon learn nothing.
+    /// `moves` is the `GET /v1/moves` reply by `pokemon_id`, `eggMoves` the `egg=1` one; other Pokémon learn nothing.
     static func makeUploader(defaults: UserDefaults, scratch: URL, connected: Bool = true,
-                             moves: [Int: String] = [:]) async -> PartyUploader {
+                             moves: [Int: String] = [:], eggMoves: [Int: String] = [:]) async -> PartyUploader {
         let uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token-\(UUID())")),
             defaults: defaults, appVersion: "test",
@@ -100,7 +100,8 @@ enum BoxDexFixture {
             fetch: { request in
                 let query = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems ?? []
                 let id = query.first { $0.name == "pokemon_id" }?.value.flatMap { Int($0) }
-                return (Data((id.flatMap { moves[$0] } ?? #"{"moves":[],"default":[]}"#).utf8), 200)
+                let replies = query.contains(URLQueryItem(name: "egg", value: "1")) ? eggMoves : moves
+                return (Data((id.flatMap { replies[$0] } ?? #"{"moves":[],"default":[]}"#).utf8), 200)
             },
             partySource: { [PartyMember(pokemonID: 25, level: 42, shiny: false, ivs: nil)] })
         if connected {

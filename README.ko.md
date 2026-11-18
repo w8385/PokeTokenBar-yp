@@ -225,6 +225,13 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 <td width="45%" align="center"><img src="assets/screenshot-nature-picker-ko.png" width="300" alt="5×5 성격표가 열린 롱스톤의 박스 페이지와 특성캡슐·특성패치·금색병뚜껑, 개체값마다 붙은 은색병뚜껑"></td>
 </tr>
 <tr>
+<td width="55%" valign="middle">
+<h3>🌱 흉내허브로 알 기술 배우기</h3>
+기술 선택에서 기술머신 다음에 그 포켓몬의 공격 <b>알 기술</b>이 보여요. 그 포켓몬에 <b>흉내허브</b>를 쓰기 전까지는 잠겨 있어요. 허브 하나면 계속 배울 수 있고, 진화 전 모습의 알 기술도 들어가요. 기술 선택에서 <b>흉내허브 쓰기</b>를 누르거나 가방에서 쓰면 돼요. 가방에 없으면 확인할 때 하나를 사서 바로 써요.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-egg-moves-ko.png" width="300" alt="잠긴 알 기술 두 개와 흉내허브 필요, 흉내허브 쓰기 버튼이 보이는 리자몽의 기술 선택"></td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-battle-ko.png" width="300" alt="대결 탭 엔트리 — 나갈 순서대로 선 최대 여섯 마리"><br><br><img src="assets/screenshot-gyms-ko.png" width="300" alt="체육관 관장·아지트·사천왕과 배지 케이스"></td>
 <td width="55%" valign="middle">
 <h3>⚔️ 체육관, 사천왕, 배지 케이스</h3>

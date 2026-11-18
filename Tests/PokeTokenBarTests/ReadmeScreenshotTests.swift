@@ -127,6 +127,9 @@ final class ReadmeScreenshotTests: XCTestCase {
         let updater = UpdateChecker(currentVersion: "3.5.0", defaults: defaults, fetchLatest: { nil })
         let uploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch,
                                                         moves: [6: Self.charizardMoves])
+        let eggUploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch,
+                                                           moves: [6: Self.charizardMoves],
+                                                           eggMoves: [6: Self.charizardEggMoves])
         let entry = BattleEntryStore(defaults: defaults)
         for id in [BoxDexFixture.pikachuID, BoxDexFixture.charizardID, BoxDexFixture.onixID, BoxDexFixture.eeveeID] {
             _ = entry.add(id)
@@ -184,6 +187,8 @@ final class ReadmeScreenshotTests: XCTestCase {
                            "screenshot-status-moves\(suffix)", in: dir, height: nil)
             try await shot(moveOrder(store: store, uploader: uploader, entry: entry),
                            "screenshot-move-order\(suffix)", in: dir, height: nil)
+            try await shot(statusMoves(store: store, uploader: eggUploader, entry: entry),
+                           "screenshot-egg-moves\(suffix)", in: dir, height: nil)
             try await shot(popover { $0.openBoxDetail(id: StoredFriendScreenshotTests.bulbasaurID) },
                            "screenshot-exp-share\(suffix)", in: dir, height: 380)
             let (battleStore, battleCleanup) = try BoxDexFixture.makeStore(
@@ -432,6 +437,21 @@ final class ReadmeScreenshotTests: XCTestCase {
      {"id":225,"name":"용의숨결","type":"dragon","power":60,"damage_class":"special","accuracy":100,"level":12,"pp":20,"source":"level","ailment":"paralysis","ailment_chance":30},
      {"id":53,"name":"화염방사","type":"fire","power":90,"damage_class":"special","accuracy":100,"level":30,"pp":15,"source":"level","ailment":"burn","ailment_chance":10},
      {"id":337,"name":"드래곤크루","type":"dragon","power":80,"damage_class":"physical","accuracy":100,"level":36,"pp":15,"source":"level"},
+     {"id":14,"name":"칼춤","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":20,"source":"egg"},
+     {"id":446,"name":"스텔스록","type":"rock","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":20,"source":"egg"},
+     {"id":86,"name":"전기자석파","type":"electric","power":0,"damage_class":"status","accuracy":90,"level":0,"pp":20,"source":"machine","ailment":"paralysis","ailment_chance":0}
+    ]}
+    """
+
+    /// Charizard's `egg=1` reply: its two attacking egg moves stay locked until it gets a Mirror Herb.
+    private static let charizardEggMoves = """
+    {"ok":true,"default":[52,225,53,337],"moves":[
+     {"id":52,"name":"불꽃세례","type":"fire","power":40,"damage_class":"special","accuracy":100,"level":1,"pp":25,"source":"level","ailment":"burn","ailment_chance":10},
+     {"id":225,"name":"용의숨결","type":"dragon","power":60,"damage_class":"special","accuracy":100,"level":12,"pp":20,"source":"level","ailment":"paralysis","ailment_chance":30},
+     {"id":53,"name":"화염방사","type":"fire","power":90,"damage_class":"special","accuracy":100,"level":30,"pp":15,"source":"level","ailment":"burn","ailment_chance":10},
+     {"id":337,"name":"드래곤크루","type":"dragon","power":80,"damage_class":"physical","accuracy":100,"level":36,"pp":15,"source":"level"},
+     {"id":246,"name":"원시의힘","type":"rock","power":60,"damage_class":"special","accuracy":100,"level":0,"pp":5,"source":"egg"},
+     {"id":407,"name":"드래곤다이브","type":"dragon","power":100,"damage_class":"physical","accuracy":75,"level":0,"pp":10,"source":"egg"},
      {"id":14,"name":"칼춤","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":20,"source":"egg"},
      {"id":446,"name":"스텔스록","type":"rock","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":20,"source":"egg"},
      {"id":86,"name":"전기자석파","type":"electric","power":0,"damage_class":"status","accuracy":90,"level":0,"pp":20,"source":"machine","ailment":"paralysis","ailment_chance":0}

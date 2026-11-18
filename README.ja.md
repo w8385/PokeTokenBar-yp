@@ -225,6 +225,13 @@ Pi は複数のモデルを一つのセッションログに流すことがあ�
 <td width="45%" align="center"><img src="assets/screenshot-nature-picker-ja.png" width="300" alt="5×5のせいかく表を開いたボックスページと、とくせいカプセル・とくせいパッチ・きんのおうかん、個体値ごとのぎんのおうかん"></td>
 </tr>
 <tr>
+<td width="55%" valign="middle">
+<h3>🌱 ものまねハーブでタマゴわざ</h3>
+技の選択で、わざマシンの次にそのポケモンの攻撃の<b>タマゴわざ</b>が並びます。そのポケモンに<b>ものまねハーブ</b>を使うまではロックされています。ハーブ1つでずっとおぼえられ、進化前の姿のタマゴわざも入ります。技の選択で<b>ものまねハーブを使う</b>を押すか、バッグから使います。バッグになければ、確定のときに1つ買ってそのまま使います。
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-egg-moves-ja.png" width="300" alt="ロックされたタマゴわざ2つと、ものまねハーブが必要・ものまねハーブを使うボタンが見えるリザードンの技の選択"></td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-battle-ja.png" width="300" alt="バトルタブのエントリー — 出る順に並んだ最大6匹"><br><br><img src="assets/screenshot-gyms-ja.png" width="300" alt="ジムリーダー・アジト・四天王とバッジケース"></td>
 <td width="55%" valign="middle">
 <h3>⚔️ ジム、四天王、バッジケース</h3>

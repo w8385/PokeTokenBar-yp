@@ -224,6 +224,13 @@ The Shop's Growth tab adds the <b>Ability Capsule</b> (the other regular ability
 <td width="45%" align="center"><img src="assets/screenshot-nature-picker.png" width="300" alt="An Onix's Box page with the 5×5 nature chart open, the Ability Capsule, Ability Patch and Gold Bottle Cap, and a Bottle Cap on each IV"></td>
 </tr>
 <tr>
+<td width="55%" valign="middle">
+<h3>🌱 Egg moves with the Mirror Herb</h3>
+The move picker now lists a Pokémon's attacking <b>egg moves</b> after its TMs. They stay locked until you use a <b>Mirror Herb</b> on that Pokémon. One herb unlocks them for good, along with the egg moves of what it evolved from. Press <b>Use Mirror Herb</b> in the picker, or use one from the Bag. With none in the Bag, the confirm buys one and uses it.
+</td>
+<td width="45%" align="center"><img src="assets/screenshot-egg-moves.png" width="300" alt="Charizard's move picker with two locked egg moves, Needs a Mirror Herb and the Use Mirror Herb button"></td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab, Entry sub-tab — up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, hideout, Elite Four and the badge case"></td>
 <td width="55%" valign="middle">
 <h3>⚔️ Gyms, the Elite Four, and a badge case</h3>
