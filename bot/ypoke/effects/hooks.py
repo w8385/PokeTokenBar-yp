@@ -98,7 +98,8 @@ HOOKS = {
     "ignores_evasion": "ability: the target's evasion stage does nothing to its holder's moves (Keen Eye)",
     "ignores_foe_stages": "ability: the foe's stat stages do nothing against its holder (Unaware)",
     "sure_hits": "ability: every move its holder uses or is aimed at hits without an accuracy draw (No Guard)",
-    "exposes": "state: the type of its holder whose immunity a move type ignores, and its raised evasion (Foresight)",
+    "exposes": "state, then the foe's ability: the type of its holder whose immunity a move type ignores, and its "
+               "raised evasion (Foresight, Scrappy)",
     "type_multiplier": "move: multiplies how well it hits these types, after the type chart (Freeze-Dry on Water, "
                        "Flying Press's added Flying)",
     "weakens": "state: multiplies how well a move type hits its holder (Tar Shot)",

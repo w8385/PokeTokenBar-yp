@@ -2034,6 +2034,9 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
     if forced_down or weather == STRONG_WINDS and effectiveness(move.type, ("flying",)) > 1:
         types = tuple(kind for kind in types if kind != "flying")
     exposed = set(_field(defender, "exposes", move.type))
+    foe = defender.arena.foe_of(defender) if defender.arena is not None else None
+    if foe is not None and foe is not defender:
+        exposed |= {hooks.ability(foe, "exposes", move.type)} - {None}
     if exposed:
         types = tuple(kind for kind in types if kind not in exposed or effectiveness(move.type, (kind,)) > 0)
     return (effectiveness(move.type, types) * hooks.move(move, "type_multiplier", types, default=1.0)
@@ -2136,8 +2139,10 @@ def _stats_for(attacker: _Fighter, defender: _Fighter, move: Move, weather: str 
     boost = 1.5 if boosted in defender.combatant.types else 1.0
     halved = (attack_key != "special_attack" and attacker.status == "burn"
               and not hooks.ability(attacker, "ignores_burn", default=False) and not _ignores_burn(move))
-    defense = defender.stat(defense_key, weather, staged=not _ignores_stages(move))
-    return source.stat(attack_key, weather) * (0.5 if halved else 1.0), defense * boost
+    unaware = hooks.ability(attacker, "ignores_foe_stages", default=False)
+    defense = defender.stat(defense_key, weather, staged=not _ignores_stages(move) and not unaware)
+    attack = source.stat(attack_key, weather, staged=not hooks.ability(defender, "ignores_foe_stages", default=False))
+    return attack * (0.5 if halved else 1.0), defense * boost
 
 
 def _ignores_burn(move: Move) -> bool:

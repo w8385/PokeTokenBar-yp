@@ -386,6 +386,9 @@ def _turns(events: list[Event], shiny: frozenset[tuple[int, str]] = frozenset())
                     (sprite_url(event.form_id, (event.side, event.pokemon) in shiny),
                      f"{event.pokemon} {FORM_CHANGE[event.kind][0]}"))
             continue
+        if isinstance(event, AbilityAct) and not turns:
+            opening += _event_lines(event)
+            continue
         if not isinstance(event, SendOut):
             sent = {}
         if not turns or turns[-1].number != event.turn:
@@ -434,7 +437,7 @@ def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
                                         *(_change_tag(change, event.side) for change in event.changes)]))
     else:
         effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
-    return f"[{ABILITY_NAMES[event.ability]}] {effect}"
+    return " ".join(filter(None, [f"[{ABILITY_NAMES[event.ability]}]", effect]))
 
 
 def _direction_particle(name: str) -> str:

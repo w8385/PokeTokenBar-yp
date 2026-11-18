@@ -4,8 +4,8 @@ import pytest
 
 from ypoke import effects, items
 from ypoke.battle import (
-    AbilityTransform, AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, FormShift, ItemHeal,
-    MegaEvolution, Move, SendOut, StatusDamage, WeatherDamage, WeatherEnd, simulate,
+    AbilityAct, AbilityTransform, AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, FormShift,
+    ItemHeal, MegaEvolution, Move, SendOut, StatusDamage, WeatherDamage, WeatherEnd, simulate,
 )
 from ypoke.dex import NO_SHINY_ART, bar, sprite_url
 from ypoke.mega_stones import MEGA_STONES, PRIMAL_ORBS, ULTRA_BURSTS
@@ -146,6 +146,15 @@ def test_start_of_battle_abilities_and_mega_are_lines_of_the_first_turn():
     assert lines_of(entry) == [
         "🔵 피카츄 메가진화 [단단한발톱]", "🔵 피카츄 [위협] 공격↓", "🔴 꼬부기 [잔비] ☔",
         "🔵 피카츄 › 10만볼트 → 꼬부기 80%",
+    ]
+
+
+def test_an_ability_that_answers_intimidate_at_the_start_opens_the_first_turn():
+    intimidate = AbilityTrigger(0, "피카츄", "intimidate")
+    guard = AbilityAct(0, 1, "꼬부기", "scrappy", effect="guard")
+    [entry] = log_for(intimidate, guard, act(1, 0, defender_hp=80))
+    assert entry.splitlines() == [
+        "*1턴*", "🔵 피카츄 [위협]", "🔴 꼬부기 [배짱] 능력이 떨어지지 않는다", "🔵 피카츄 › 10만볼트 → 꼬부기 80%",
     ]
 
 
