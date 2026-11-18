@@ -1961,6 +1961,12 @@ struct L {
           "Starte Claude Code einmal mit CLAUDE_CONFIG_DIR=\(folder) und versuch es dann erneut.",
           "Один раз запустите Claude Code с CLAUDE_CONFIG_DIR=\(folder), затем повторите попытку.")
     }
+    func limitsPausedUntil(_ time: String) -> String {
+        t("요청 제한 — \(time)까지 갱신 멈춤", "Rate limited — refresh paused until \(time)",
+          "リクエスト制限 — \(time)まで更新を停止", "Límite de solicitudes — actualización en pausa hasta las \(time)",
+          "Trop de requêtes — actualisation en pause jusqu’à \(time)", "Limite de requisições — atualização pausada até \(time)",
+          "Anfragelimit — Aktualisierung pausiert bis \(time)", "Лимит запросов — обновление приостановлено до \(time)")
+    }
     var retry: String { t("다시 시도", "Retry", "再試行", "Reintentar", "Réessayer", "Tentar de novo", "Erneut versuchen", "Повторить") }
 
     // MARK: Antigravity 세션 만료(401) 안내 — Claude 쪽과 동일 문안 구조로 통일

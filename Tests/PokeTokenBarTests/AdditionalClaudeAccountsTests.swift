@@ -782,6 +782,68 @@ final class AdditionalClaudeAccountsStoreTests: XCTestCase {
         XCTAssertEqual(workLimits.promptFlags, [false, false, true, false], "a success lifts the pause")
     }
 
+    func testAColdStartRateLimitKeepsAPausedTab() async throws {
+        let primary = ScriptedLimits([.success(limitStatus(fiveHour: 10, email: "main@example.com"))])
+        let folder = ScriptedLimits([.failure(.rateLimited(retryAfter: 3600))])
+        let store = makeStore(primary: primary, folders: [work: folder])
+
+        for _ in 0..<2 {
+            await store.refresh(scheduleEmptyRetry: false)
+            let tab = try XCTUnwrap(store.claudeAccounts.first { !$0.isDefault })
+            XCTAssertEqual(tab.id, ClaudeAccountRoots.pathKey(for: URL(fileURLWithPath: work)))
+            XCTAssertFalse(tab.hasLimits)
+            XCTAssertEqual(try XCTUnwrap(tab.pausedUntil).timeIntervalSinceNow, 3600, accuracy: 60)
+            XCTAssertFalse(store.additionalLimitsPending)
+        }
+        XCTAssertEqual(folder.promptFlags, [false])
+    }
+
+    func testARelaunchInsideRetryAfterRestoresTheValuesWithoutARequest() async throws {
+        let main = { ScriptedLimits([.success(limitStatus(fiveHour: 10, email: "main@example.com"))]) }
+        let before = makeStore(primary: main(), folders: [work: ScriptedLimits([
+            .success(fullStatus(fiveHour: 20, sevenDay: 40, email: "work@example.com", org: "Team")),
+            .failure(.rateLimited(retryAfter: 3600)),
+        ])])
+        await before.refresh(scheduleEmptyRetry: false)
+        await before.refresh(scheduleEmptyRetry: false)
+
+        let relaunched = ScriptedLimits([.success(limitStatus(fiveHour: 99, email: "work@example.com"))])
+        let after = makeStore(primary: main(), folders: [work: relaunched])
+        await after.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(relaunched.promptFlags, [])
+        let tab = try XCTUnwrap(after.claudeAccounts.first { !$0.isDefault })
+        XCTAssertEqual(tab.title, "Team")
+        XCTAssertEqual(tab.status.fiveHour?.utilization, 20)
+        XCTAssertEqual(tab.status.sevenDay?.utilization, 40)
+        XCTAssertTrue(tab.isStale())
+        XCTAssertEqual(try XCTUnwrap(tab.pausedUntil).timeIntervalSinceNow, 3600, accuracy: 60)
+        XCTAssertFalse(after.buildLimitWindows().windows.contains { $0.key.hasPrefix(tab.windowKeyPrefix) })
+        XCTAssertFalse(after.candyEligibleWindows.contains { $0.key.hasPrefix(tab.windowKeyPrefix) })
+    }
+
+    func testRestoredValuesStayStaleUntilAFreshFetchLands() async throws {
+        let main = { ScriptedLimits([.success(limitStatus(fiveHour: 10, email: "main@example.com"))]) }
+        let before = makeStore(primary: main(), folders: [work: ScriptedLimits([
+            .success(limitStatus(fiveHour: 20, email: "work@example.com")),
+        ])])
+        await before.refresh(scheduleEmptyRetry: false)
+
+        let after = makeStore(primary: main(), folders: [work: ScriptedLimits([
+            .failure(.keychainInteractionNotAllowed),
+            .success(limitStatus(fiveHour: 25, email: "work@example.com")),
+        ])])
+        await after.refresh(scheduleEmptyRetry: false)
+        var tab = try XCTUnwrap(after.claudeAccounts.first { !$0.isDefault })
+        XCTAssertEqual(tab.status.fiveHour?.utilization, 20)
+        XCTAssertTrue(tab.isStale())
+        XCTAssertNil(tab.pausedUntil)
+
+        await after.refresh(scheduleEmptyRetry: false)
+        tab = try XCTUnwrap(after.claudeAccounts.first { !$0.isDefault })
+        XCTAssertEqual(tab.status.fiveHour?.utilization, 25)
+        XCTAssertFalse(tab.isStale())
+    }
+
     func testRemovingTheFoldersClearsTheAccounts() async {
         let primary = ScriptedLimits([.success(limitStatus(fiveHour: 10, email: "main@example.com"))])
         let folder = ScriptedLimits([.failure(.keychainInteractionNotAllowed)])

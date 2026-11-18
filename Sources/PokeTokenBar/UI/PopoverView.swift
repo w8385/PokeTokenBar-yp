@@ -893,12 +893,15 @@ struct PopoverView: View {
     /// 며칠 뒤(주간 한도 등)면 요일·일자까지 — "in 2 days, 9 hr" 만으론 언제 풀리는지 감이 안 와서다.
     /// 요일명은 팝오버 로케일(companion.language)로 현지화하고, 시각은 항상 24시간 표기.
     private func resetClockSuffix(_ reset: Date) -> Text {
+        Text(" (\(clockString(reset)))")
+    }
+    private func clockString(_ date: Date) -> String {
         let f = DateFormatter()
         f.locale = companion.language.displayLocale
-        let nearby = Calendar.current.isDateInToday(reset)
-            || reset.timeIntervalSinceNow <= Self.resetClockWindow
+        let nearby = Calendar.current.isDateInToday(date)
+            || date.timeIntervalSinceNow <= Self.resetClockWindow
         f.setLocalizedDateFormatFromTemplate(nearby ? "HHmm" : "EEEEdHHmm")
-        return Text(" (\(f.string(from: reset)))")
+        return f.string(from: date)
     }
     private func resetLabel(_ reset: Date) -> Text {
         Text("\(reset, style: .relative)") + resetClockSuffix(reset)
@@ -1135,6 +1138,11 @@ struct PopoverView: View {
         } else if !account.isDefault, account.isStale() {
             // The default account's stale label lives in the refresh row above the tabs.
             staleBadge(updatedAt: account.updatedAt)
+        }
+        if !account.isDefault, !account.isExpired, let until = account.pausedUntil, until > Date() {
+            Text(l.limitsPausedUntil(clockString(until)))
+                .font(.caption)
+                .foregroundStyle(.orange)
         }
         // 플랜(계정 속성) — Codex codexMetaRow 와 동일 스타일. 구독 정보 있을 때만 노출.
         // 계정 라벨 — 두 계정이 한 Keychain 항목을 번갈아 쓰는 기기에서 이 한도가

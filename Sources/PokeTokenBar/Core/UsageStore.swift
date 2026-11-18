@@ -294,6 +294,8 @@ final class UsageStore {
     /// Rate limits apply per account: one folder's 429 pauses that folder only, never the default
     /// account (which keeps its own backoff) nor the other folders.
     private var additionalBackoff: [String: (until: Date, interval: TimeInterval)] = [:]
+    /// Values saved by the previous run, used until the first refresh decides each folder.
+    private var restoredAdditionalLimits: [String: AdditionalClaudeLimits] = [:]
     /// One provider per folder, kept across polls: each owns the in-memory token the automatic path relies on.
     private var additionalProviders: [String: any ClaudeLimitsProviding] = [:]
     /// 세션 키 저장·조직 조회. 조회 체인과 같은 인스턴스를 공유한다(기본값은 `.shared`).
@@ -838,6 +840,7 @@ final class UsageStore {
 
     /// `named`: next to other accounts, the notification says whose limit it is.
     private func claudeCandyWindows(_ account: ClaudeAccountLimits, named: Bool, _ l: L) -> [CandyWindow] {
+        guard !account.isRestored else { return [] }
         let suffix = named ? " (\(account.title))" : ""
         var windows: [CandyWindow] = []
         if let fiveHour = account.status.fiveHour, let u = fiveHour.utilization {
@@ -990,6 +993,14 @@ final class UsageStore {
         claudeTrackedAccountMode = ClaudeTrackedAccountMode(storedValue: d.string(forKey: ClaudeTrackedAccountMode.defaultsKey))
         armedCandyWindows = Set(d.stringArray(forKey: Self.armedCandyWindowsKey) ?? [])
         dailyLedger = UsageLedger.load(from: d)
+        let saved = d.data(forKey: SavedAdditionalClaudeLimits.defaultsKey)
+            .flatMap { try? JSONDecoder().decode([SavedAdditionalClaudeLimits].self, from: $0) } ?? []
+        for entry in saved {
+            restoredAdditionalLimits[entry.rootPath] = entry.restored
+            if let until = entry.pausedUntil, until > Date() {
+                additionalBackoff[entry.rootPath] = (until, entry.backoffInterval ?? 0)
+            }
+        }
 
         if let credential = sessionKeys.credential() {
             sessionKeyConfigured = true
@@ -1535,12 +1546,14 @@ final class UsageStore {
 
         var promptAllowed = allowKeychainPrompt
         var refreshed: [AdditionalClaudeLimits] = []
+        var latest: [String: AdditionalClaudeLimits] = [:]
         var pending = false
         for root in roots {
             let id = ClaudeAccountRoots.pathKey(for: root)
-            let previous = additionalLimits.first { $0.rootPath == root.path }
+            let previous = additionalLimits.first { $0.rootPath == root.path } ?? restoredAdditionalLimits[root.path]
             let mayPrompt = !sessionKeyConfigured || found.listed.contains(root.path)
             func keep(_ account: AdditionalClaudeLimits) {
+                latest[root.path] = account
                 if let key = accountKey(account.status) {
                     if let owner = owners[key] {
                         aliases[id] = owner
@@ -1551,8 +1564,15 @@ final class UsageStore {
                 refreshed.append(account)
             }
             // A manual refresh bypasses the backoff, as it does for the default account.
+            // A rate-limited folder keeps its tab, with the last values or empty, until the pause ends.
+            func keepPaused() {
+                var account = previous ?? AdditionalClaudeLimits(rootPath: root.path, status: LimitStatus())
+                account.status.fillIdentity(from: found.saved[root.path])
+                account.pausedUntil = additionalBackoff[root.path]?.until
+                keep(account)
+            }
             if !allowKeychainPrompt, let backoff = additionalBackoff[root.path], Date() < backoff.until {
-                if let previous { keep(previous) }
+                keepPaused()
                 continue
             }
             do {
@@ -1580,6 +1600,8 @@ final class UsageStore {
                         || (!Self.isAuthRejection(error) && previous?.sessionKeyExpired == true)
                     keep(AdditionalClaudeLimits(rootPath: root.path, status: status, isExpired: true,
                                                 sessionKeyExpired: sessionKeyExpired, updatedAt: previous?.updatedAt))
+                } else if case LimitsError.rateLimited = error {
+                    keepPaused()
                 } else {
                     // Only a refresh allowed to prompt for this folder can fix it.
                     if mayPrompt { pending = true }
@@ -1590,6 +1612,12 @@ final class UsageStore {
         }
         additionalLimits = refreshed
         additionalLimitsPending = pending
+        restoredAdditionalLimits = [:]
+        saveAdditionalLimits(roots.map { root in
+            SavedAdditionalClaudeLimits(rootPath: root.path, values: latest[root.path],
+                                        pausedUntil: additionalBackoff[root.path]?.until,
+                                        backoffInterval: additionalBackoff[root.path]?.interval)
+        })
         armCandyWindows()
 
         // A folder hidden as a duplicate adds its prompts to the tab showing its account.
@@ -1608,6 +1636,13 @@ final class UsageStore {
             return dates
         }.value
         await refreshClaudeAccountUsage(folders: folders)
+    }
+
+    private func saveAdditionalLimits(_ entries: [SavedAdditionalClaudeLimits]) {
+        let kept = entries.filter { $0.updatedAt != nil || $0.pausedUntil != nil }
+        guard let data = try? JSONEncoder().encode(kept),
+              data != defaults.data(forKey: SavedAdditionalClaudeLimits.defaultsKey) else { return }
+        defaults.set(data, forKey: SavedAdditionalClaudeLimits.defaultsKey)
     }
 
     /// `kept`: folders with their own session key, which still load while the Keychain is off.
@@ -2199,7 +2234,8 @@ final class UsageStore {
         var windows: [(key: String, name: String, utilization: Double)] = []
         var titles: [String: String] = [:]
         let accounts = claudeAccounts
-        for account in accounts {
+        // Values saved by the previous run were already alerted on then.
+        for account in accounts where !account.isRestored {
             let limits = account.status
             let prefix = account.windowKeyPrefix
             let first = windows.count
