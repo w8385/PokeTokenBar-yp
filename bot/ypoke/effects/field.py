@@ -371,7 +371,7 @@ class RapidSpin(Handler):
 
     def after_move(self, move, user, target, dealt):
         if dealt > 0 and user.hp > 0:
-            _clear_hazards(user, move)
+            _spun_free(user, move)
 
 
 @register("moves", "mortal-spin")
@@ -381,7 +381,7 @@ class MortalSpin(RapidSpin):
     def after_move(self, move, user, target, dealt):
         if dealt <= 0:
             return None
-        _clear_hazards(user, move)
+        _spun_free(user, move)
         if target.hp == 0 or not battle._open_to("poison", target, not battle._infiltrates(user)) or hooks.ability(
                 target, "blocks_ailment", "poison", default=False):
             return None
@@ -549,7 +549,9 @@ def _layers(arena, side):
     return sum(arena.hazards[side].values())
 
 
-def _clear_hazards(user, move):
+def _spun_free(user, move):
+    """Rapid Spin and Mortal Spin clear the hazards on the user's side and free it from a bind."""
+    user.volatiles.pop("binding", None)
     if user.arena is not None:
         _cleared(user.arena, user.side, fs.HAZARDS, move.name, "hazards")
 

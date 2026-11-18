@@ -59,6 +59,7 @@ ID_KEYS = frozenset({
       "power-by-speed-ratio", "gyro-ball", "trump-card", "punishment", "spit-up", "hidden-power", "magnitude",
       "present", "fickle-beam", "fury-cutter", "echoed-voice", "assurance", "fusion", "beat-up"),
     *("charge-turn", "semi-invulnerable", "reaches-hidden", "recharge"),
+    *("rampage", "uproar", "rollout", "bide", "rage", "binding"),
 })
 EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "struggle", "judgment",
                          "ivy-cudgel"})
