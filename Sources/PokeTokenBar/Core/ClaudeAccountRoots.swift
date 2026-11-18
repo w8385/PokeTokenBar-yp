@@ -42,6 +42,7 @@ enum ClaudeAccountRoots {
     /// Folders found without any setting: the `CLAUDE_CONFIG_DIR` entries the login shell exports,
     /// then the `~/.claude-*` and `~/.claude_*` folders Claude Code is logged in to. Default roots
     /// are never returned, they are the primary account.
+    /// A `CLAUDE_SECURESTORAGE_CONFIG_DIR` folder has no `.claude.json`, only its `.credentials.json`.
     static func discovered(home: URL, configDirValue: String?) -> [URL] {
         let excluded = defaultRootPaths(home: home)
         var seen = Set<String>()
@@ -49,10 +50,17 @@ enum ClaudeAccountRoots {
         let names = (try? FileManager.default.contentsOfDirectory(atPath: home.path)) ?? []
         for name in names.sorted() where name.hasPrefix(".claude-") || name.hasPrefix(".claude_") {
             let url = home.appendingPathComponent(name, isDirectory: true).standardizedFileURL
-            guard !excluded.contains(url.path), hasLogin(url), seen.insert(url.path).inserted else { continue }
+            guard !excluded.contains(url.path), hasLogin(url) || hasOAuthCredentialFile(url),
+                  seen.insert(url.path).inserted else { continue }
             out.append(url)
         }
         return out
+    }
+
+    /// The folder's `.credentials.json` holds a Claude account token, expired or not. Read only.
+    static func hasOAuthCredentialFile(_ root: URL) -> Bool {
+        guard let data = try? Data(contentsOf: credentialsFileURL(for: root)) else { return false }
+        return OAuthCredentialData.credential(from: data) != nil
     }
 
     /// The folder holds a `.claude.json` with an `oauthAccount` object, as every config folder

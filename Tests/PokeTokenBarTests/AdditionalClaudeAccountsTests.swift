@@ -1964,3 +1964,269 @@ final class FiveHourNotStartedTests: XCTestCase {
         XCTAssertFalse(try window(#"{"resets_at":null}"#).hasNotStarted, "no value, no row")
     }
 }
+
+// MARK: CLAUDE_SECURESTORAGE_CONFIG_DIR slots
+
+private func credentialsJSON(token: String, expiresIn: TimeInterval) -> String {
+    let expiresAt = Int(Date().addingTimeInterval(expiresIn).timeIntervalSince1970 * 1000)
+    return "{\"claudeAiOauth\":{\"accessToken\":\"\(token)\",\"expiresAt\":\(expiresAt)}}"
+}
+
+final class SecureStorageSlotDiscoveryTests: XCTestCase {
+    private var home: URL!
+
+    override func setUpWithError() throws {
+        home = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ptb-slots-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        KeychainReader.resetQueryCountForTesting()
+    }
+
+    override func tearDownWithError() throws {
+        KeychainReader.copyMatchingForTesting = nil
+        try? FileManager.default.removeItem(at: home)
+    }
+
+    private func folder(_ name: String, files: [String: String] = [:]) throws {
+        let url = home.appendingPathComponent(name, isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        for (file, text) in files { try Data(text.utf8).write(to: url.appendingPathComponent(file)) }
+    }
+
+    private func found() -> [String] {
+        ClaudeAccountRoots.discovered(home: home, configDirValue: nil).map(\.lastPathComponent)
+    }
+
+    func testASlotWithOnlyACredentialsFileIsDetected() throws {
+        try folder(".claude-acct-team-standby",
+                   files: [".credentials.json": credentialsJSON(token: "t", expiresIn: 3600)])
+        XCTAssertEqual(found(), [".claude-acct-team-standby"])
+    }
+
+    func testASlotWhoseFileTokenExpiredIsStillDetected() throws {
+        try folder(".claude-acct-old", files: [".credentials.json": credentialsJSON(token: "t", expiresIn: -3600)])
+        XCTAssertEqual(found(), [".claude-acct-old"])
+    }
+
+    func testAKeychainOnlySlotIsSkippedWithoutAnyKeychainQuery() throws {
+        try folder(".claude-acct-keychain")
+        let item = Data(credentialsJSON(token: "t", expiresIn: 3600).utf8)
+        KeychainReader.copyMatchingForTesting = { _, result in
+            result = item as CFData
+            return errSecSuccess
+        }
+        XCTAssertEqual(found(), [])
+        XCTAssertEqual(KeychainReader.queryCount, 0, "automatic detection never reads the Keychain")
+    }
+
+    func testFoldersWithoutAUsableCredentialAreSkipped() throws {
+        try folder(".claude-empty")
+        try folder(".claude-broken", files: [".credentials.json": "{not json"])
+        try folder(".claude-mcp", files: [".credentials.json": #"{"mcpOAuth":{}}"#])
+        try folder(".claude-loggedout", files: [".credentials.json": #"{"claudeAiOauth":null}"#])
+        try folder(".claude-acct-x.lock")
+        try Data().write(to: home.appendingPathComponent(".claude-acct-y.lock"))
+        try Data(credentialsJSON(token: "t", expiresIn: 3600).utf8)
+            .write(to: home.appendingPathComponent(".claude-notafolder"))
+        XCTAssertEqual(found(), [])
+    }
+
+    func testConfigFoldersAndSlotsAreDetectedTogetherInNameOrder() throws {
+        try folder(".claude-work", files: [".claude.json": #"{"oauthAccount":{"emailAddress":"me@example.com"}}"#])
+        try folder(".claude-acct-team-standby",
+                   files: [".credentials.json": credentialsJSON(token: "t", expiresIn: 3600)])
+        try folder(".claude", files: [".credentials.json": credentialsJSON(token: "t", expiresIn: 3600)])
+        XCTAssertEqual(found(), [".claude-acct-team-standby", ".claude-work"], "the default root stays the primary")
+    }
+}
+
+/// Real detection over a temp home, scripted limits per folder. No reader touches the real home.
+@MainActor
+final class SecureStorageSlotStoreTests: XCTestCase {
+    nonisolated(unsafe) private var testDefaults: UserDefaults!
+    nonisolated(unsafe) private var suiteName: String!
+    nonisolated(unsafe) private var home: URL!
+
+    override func setUpWithError() throws {
+        suiteName = "ptb-slots-store-\(UUID().uuidString)"
+        testDefaults = UserDefaults(suiteName: suiteName)
+        KeychainAccessGate.isDisabled = false
+        KeychainReader.resetQueryCountForTesting()
+        home = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ptb-slots-store-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+    }
+
+    override func tearDownWithError() throws {
+        KeychainReader.copyMatchingForTesting = nil
+        testDefaults.removePersistentDomain(forName: suiteName)
+        try? FileManager.default.removeItem(at: home)
+    }
+
+    @discardableResult
+    private func slot(_ name: String, expiresIn: TimeInterval = 3600) throws -> String {
+        let url = home.appendingPathComponent(name, isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        try Data(credentialsJSON(token: "token-\(name)", expiresIn: expiresIn).utf8)
+            .write(to: url.appendingPathComponent(".credentials.json"))
+        return url.standardizedFileURL.path
+    }
+
+    private func key(_ path: String) -> String { ClaudeAccountRoots.pathKey(for: URL(fileURLWithPath: path)) }
+
+    private func makeStore(primary: LimitStatus,
+                           folders: [String: LimitStatus],
+                           entries: [LocalUsageReader.Entry] = [],
+                           defaultHistory: ClaudeAccountUsageAttribution.Prompts = [:]) -> UsageStore {
+        let home = home!
+        let defaultDir = ClaudeAccountRoots.defaultConfigDir().standardizedFileURL.path
+        return UsageStore(
+            providers: [NilDailyProvider()],
+            claudeLimitsProvider: ScriptedLimits([.success(primary)]),
+            additionalClaudeLimitsProvider: { root in
+                ScriptedLimits([folders[root.path].map { .success($0) } ?? .failure(.keychainInteractionNotAllowed)])
+            },
+            discoverClaudeConfigDirs: { ClaudeAccountRoots.discovered(home: home, configDirValue: nil) },
+            readDefaultIdentity: { nil },
+            readLastPrompt: { _ in nil },
+            claudeUsageEntries: { _ in entries },
+            readPromptHistory: { $0.standardizedFileURL.path == defaultDir ? defaultHistory : [:] },
+            codexLimitsProvider: NoCodex(),
+            antigravityLimitsProvider: NoAntigravity(),
+            statusProvider: NoStatuses(),
+            sessionKeys: SessionKeys(nil),
+            accountSessionKeys: { _ in SessionKeys(nil) },
+            autoRefresh: false,
+            defaults: testDefaults)
+    }
+
+    private let team = fullStatus(fiveHour: 10, sevenDay: 1, email: "me@corp.example", org: "Corp")
+    private let personal = fullStatus(fiveHour: 30, sevenDay: 2, email: "me@example.com",
+                                      org: "me@example.com's Organization")
+
+    func testADetectedSlotGetsItsOwnTabNamedFromItsProfile() async throws {
+        let path = try slot(".claude-acct-personal-standby")
+        let store = makeStore(primary: team, folders: [path: personal])
+
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(store.detectedClaudeConfigDirs, [path])
+        XCTAssertEqual(store.claudeAccounts.map(\.id), [ClaudeAccountLimits.defaultID, key(path)])
+        XCTAssertEqual(store.claudeAccounts.last?.title, "me@example.com")
+        XCTAssertNil(testDefaults.string(forKey: ClaudeAccountRoots.defaultsKey), "detection writes no setting")
+    }
+
+    func testASlotOfTheDefaultAccountIsFolded() async throws {
+        let teamSlot = try slot(".claude-acct-team-standby")
+        let store = makeStore(primary: team, folders: [teamSlot: team])
+
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(store.detectedClaudeConfigDirs, [teamSlot])
+        XCTAssertEqual(store.claudeAccounts.map(\.id), [ClaudeAccountLimits.defaultID])
+    }
+
+    func testTwoSlotsOfOneAccountShowOnceUnderTheFirstName() async throws {
+        let first = try slot(".claude-acct-personal")
+        let second = try slot(".claude-acct-personal-standby")
+        let store = makeStore(primary: team, folders: [first: personal, second: personal])
+
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(store.detectedClaudeConfigDirs, [first, second])
+        XCTAssertEqual(store.claudeAccounts.map(\.id), [ClaudeAccountLimits.defaultID, key(first)])
+    }
+
+    func testAFolderBothTypedAndDetectedShowsOnce() async throws {
+        let path = try slot(".claude-acct-personal-standby")
+        testDefaults.set("\(path)/", forKey: ClaudeAccountRoots.defaultsKey)
+        let store = makeStore(primary: team, folders: [path: limitStatus(fiveHour: 30, email: nil)])
+
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(store.claudeAccounts.map(\.id), [ClaudeAccountLimits.defaultID, key(path)])
+    }
+
+    func testATypedFolderOfADetectedSlotsAccountShowsOnce() async throws {
+        let detected = try slot(".claude-acct-personal-standby")
+        let typed = home.appendingPathComponent("elsewhere/personal", isDirectory: true).standardizedFileURL
+        try FileManager.default.createDirectory(at: typed, withIntermediateDirectories: true)
+        testDefaults.set(typed.path, forKey: ClaudeAccountRoots.defaultsKey)
+        let store = makeStore(primary: team, folders: [detected: personal, typed.path: personal])
+
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(store.claudeAccounts.map(\.id), [ClaudeAccountLimits.defaultID, key(detected)])
+    }
+
+    /// A slot pins only the token: its sessions log to the default `projects/` and `history.jsonl`.
+    func testASlotsTurnsCountOnceUnderTheDefaultLogin() async throws {
+        let path = try slot(".claude-acct-personal-standby")
+        let now = Date()
+        let today = LocalUsageReader.todayKey()
+        let store = makeStore(
+            primary: team, folders: [path: personal],
+            entries: [entry("1", session: "main", at: now, tokens: 100, day: today),
+                      entry("2", session: "pinned", at: now, tokens: 30, day: today)],
+            defaultHistory: ["main": [now.addingTimeInterval(-60)], "pinned": [now.addingTimeInterval(-60)]])
+
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(store.claudeAccounts.map(\.id), [ClaudeAccountLimits.defaultID, key(path)])
+        XCTAssertEqual(store.claudeAccountUsage[ClaudeAccountLimits.defaultID]?.todayTokens, 130)
+        XCTAssertNil(store.claudeAccountUsage[key(path)])
+        XCTAssertEqual(store.unattributedClaudeUsage.todayTokens, 0)
+    }
+
+    private struct FileState: Equatable {
+        let size: Int?
+        let modified: Date?
+        let bytes: Data?
+    }
+
+    private func snapshot() throws -> [String: FileState] {
+        var out: [String: FileState] = [:]
+        let keys: Set<URLResourceKey> = [.fileSizeKey, .contentModificationDateKey, .isDirectoryKey]
+        func record(_ url: URL) throws {
+            let values = try url.resourceValues(forKeys: keys)
+            let isFile = values.isDirectory != true
+            out[url.path] = FileState(size: isFile ? values.fileSize : nil,
+                                      modified: values.contentModificationDate,
+                                      bytes: isFile ? try Data(contentsOf: url) : nil)
+        }
+        try record(home)
+        for path in try FileManager.default.subpathsOfDirectory(atPath: home.path) {
+            try record(home.appendingPathComponent(path))
+        }
+        return out
+    }
+
+    func testPollingNeverWritesToASlot() async throws {
+        try slot(".claude-acct-live")
+        try slot(".claude-acct-expired", expiresIn: -3600)
+        let state = home.appendingPathComponent("app-state", isDirectory: true)
+        try FileManager.default.createDirectory(at: state, withIntermediateDirectories: true)
+        KeychainReader.copyMatchingForTesting = { _, _ in errSecItemNotFound }
+        let home = home!
+        let inHome: @Sendable (URL) -> Bool = { $0.standardizedFileURL.path.hasPrefix(home.path + "/") }
+        let store = UsageStore(
+            providers: [NilDailyProvider()],
+            claudeLimitsProvider: ScriptedLimits([.success(team)]),
+            additionalClaudeLimitsProvider: { ChainedLimitsProvider.forConfigRoot($0, sessionKeyDirectory: state) },
+            discoverClaudeConfigDirs: { ClaudeAccountRoots.discovered(home: home, configDirValue: nil) },
+            readDefaultIdentity: { nil },
+            readLastPrompt: { inHome($0) ? ClaudeAccountRoots.lastPromptDate(configDir: $0) : nil },
+            claudeUsageEntries: { _ in [] },
+            readPromptHistory: { inHome($0) ? ClaudePromptHistory.prompts(configDir: $0) : [:] },
+            codexLimitsProvider: NoCodex(),
+            antigravityLimitsProvider: NoAntigravity(),
+            statusProvider: NoStatuses(),
+            sessionKeys: SessionKeys(nil),
+            accountSessionKeys: { SessionKeyLimitsProvider(store: .forConfigRoot($0, directory: state)) },
+            autoRefresh: false,
+            defaults: testDefaults)
+        let before = try snapshot()
+
+        await store.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(store.detectedClaudeConfigDirs.count, 2)
+        XCTAssertEqual(KeychainReader.queryCount, 0, "the automatic poll never reads the Keychain")
+        await store.refreshLimitTokenFromKeychain()
+        XCTAssertGreaterThan(KeychainReader.queryCount, 0, "the manual refresh reached the expired slot's lookup")
+
+        XCTAssertEqual(try snapshot(), before)
+    }
+}
