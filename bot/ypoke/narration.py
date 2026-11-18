@@ -144,6 +144,7 @@ CHANGE_TEXT = {
     "lost-electric": "⚡전기 타입 잃음", "crash": "💥크래시 데미지", "hp-cost": "💥HP 절반 소모",
     "ohko": "💀일격필살", "healed": "💚HP 회복", "binding": "🪢조여졌다", "rampage": "🔒날뛰기 시작",
     "uproar": "📢소란 시작", "rollout": "🔒구르기 시작", "fatigue": "💫지쳐서 혼란", "woke": "⏰잠에서 깼다",
+    "guard-lifted": "🛡️방어가 풀렸다",
 }
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)", "binding": "풀려났다"}

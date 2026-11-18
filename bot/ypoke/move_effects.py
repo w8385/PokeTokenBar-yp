@@ -64,6 +64,7 @@ ID_KEYS = frozenset({
       "target-item", "target-asleep", "user-asleep", "no-repeat", "glaive-rush"),
     *("stat-source", "best-category", "ignores-stages", "ignores-ability"),
     *("item-type", "user-type", "adds-type", "super-vs"),
+    "breaks-guard",
 })
 EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "struggle", "judgment",
                          "ivy-cudgel"})

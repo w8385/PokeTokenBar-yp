@@ -1,12 +1,12 @@
 """Status moves that guard the user for the turn (the Protect family, Endure, Quick Guard, Crafty Shield, Mat Block)
-and Substitute. A guard used again on the next turn works with a 1/3 chance per straight success (Gen 9); the
+and Substitute, and the attacks that break through them (Feint). A guard used again on the next turn works with a 1/3 chance per straight success (Gen 9); the
 chooser never uses one two turns in a row. `user`, `foe` and `fighter` are `battle._Fighter`s."""
 
 from ypoke import battle
-from ypoke.effects import hooks, register
+from ypoke.effects import REGISTRY, Handler, hooks, register
 from ypoke.effects.healing import foe_hit
 from ypoke.effects.moves import StatusMove
-from ypoke.effects.stats import shift
+from ypoke.effects.stats import arg, shift
 from ypoke.move_effects import SOUND_MOVES
 
 STREAK_ODDS = 3
@@ -69,7 +69,13 @@ class Protect(Guard):
     blocks_status = True
 
     def stops_move(self, name, move, priority, target):
+        if breaks_guard(move):
+            return None
         return name if attacking(move) or self.blocks_status and aimed(move) else None
+
+
+def breaks_guard(move) -> bool:
+    return hooks.move(move, "breaks_guard", default=False)
 
 
 def attacking(move) -> bool:
@@ -143,7 +149,7 @@ class QuickGuard(Guard):
         return last is not None and last.priority > 0 and attacking(last)
 
     def stops_move(self, name, move, priority, target):
-        return name if priority > 0 and (attacking(move) or aimed(move)) else None
+        return name if priority > 0 and (attacking(move) or aimed(move)) and not breaks_guard(move) else None
 
 
 @register("moves", "crafty-shield")
@@ -220,7 +226,31 @@ class Substitute(StatusMove):
 
 
 def bypasses(move, user) -> bool:
-    return move.id in SOUND_MOVES or battle._infiltrates(user)
+    return (move.id in SOUND_MOVES or battle._infiltrates(user)
+            or hooks.move(move, "passes_substitute", default=False))
+
+
+@register("moves", "breaks-guard")
+class BreaksGuard(Handler):
+    """Passes the Protect family and Quick Guard. With `args.lifts` a hit also takes the target's guard down (Feint),
+    and with `args.substitute` the move passes a Substitute too (Hyperspace Hole)."""
+
+    by_id = True
+
+    def breaks_guard(self, move):
+        return True
+
+    def passes_substitute(self, move):
+        return arg(move, "substitute", False)
+
+    def after_move(self, move, user, target, dealt):
+        guards = [name for name in target.volatiles if isinstance(REGISTRY["moves"].get(name), (Protect, QuickGuard,
+                                                                                                CraftyShield))]
+        if not arg(move, "lifts", False) or not guards:
+            return ()
+        for name in guards:
+            del target.volatiles[name]
+        return (battle.Change(target.side, target.combatant.name, "guard-lifted"),)
 
 
 @register("moves", "shed-tail")
