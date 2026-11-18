@@ -90,14 +90,14 @@ final class UnownTests: XCTestCase {
     }
 
     private func store(_ state: CompanionState = CompanionState(), seed: UInt64 = 7,
-                       at url: URL? = nil,
+                       at url: URL? = nil, rng: (any RandomNumberGenerator)? = nil,
                        provider: any PokeProviding = UnownTestProvider()) throws -> CompanionStore {
         let destination = try url ?? stateURL()
         try JSONEncoder().encode(state).write(to: destination)
-        return reload(at: destination, seed: seed, provider: provider)
+        return reload(at: destination, seed: seed, rng: rng, provider: provider)
     }
 
-    private func reload(at url: URL, seed: UInt64 = 7,
+    private func reload(at url: URL, seed: UInt64 = 7, rng: (any RandomNumberGenerator)? = nil,
                         provider: any PokeProviding = UnownTestProvider()) -> CompanionStore {
         let date = now
         let suite = "unown-tests-\(UUID().uuidString)"
@@ -106,7 +106,7 @@ final class UnownTests: XCTestCase {
         defaults.set(1.0, forKey: "shopDifficulty")
         addTeardownBlock { UserDefaults.standard.removePersistentDomain(forName: suite) }
         return CompanionStore(provider: provider, clock: { date },
-                              fileURL: url, rng: SeededRNG(seed: seed),
+                              fileURL: url, rng: rng ?? SeededRNG(seed: seed),
                               dittoDisguiseRollingEnabled: false, defaults: defaults)
     }
 
@@ -356,24 +356,20 @@ final class UnownTests: XCTestCase {
         }
     }
 
-    /// 다른 종에는 추가 폼 롤이 없어야 이후 민트 등 기존 난수 결과도 바뀌지 않는다.
     func testNonUnownHatchDoesNotConsumeAnExtraRandomDraw() async throws {
-        var original = CompanionState()
-        original.inventory = ["mint": 1]
-        let s = try store(original, seed: 17)
+        let counter = CountingRNG(seed: 17)
+        let s = try store(rng: counter)
         var rng = SeededRNG(seed: 17)
         let shiny = rng.next() % PokemonOdds.shinyDenominator == 0
         let nature = PokemonNature.allCases[Int(rng.next() % UInt64(PokemonNature.allCases.count))]
         let profileSeed = rng.next()
-        let mintPool = PokemonNature.allCases.filter { $0 != nature }
-        let nextNature = mintPool[Int(rng.next() % UInt64(mintPool.count))]
 
         await s.hatch(baseID: 25)
         XCTAssertNil(s.currentForm)
         XCTAssertEqual(s.currentIsShiny, shiny)
         XCTAssertEqual(s.currentNature, nature)
         XCTAssertEqual(s.state.active?.profile?.seed, profileSeed)
-        XCTAssertEqual(s.useMint(), nextNature)
+        XCTAssertEqual(counter.callCount, 3)
     }
 
     func testDexDeduplicatesPerLetterAndScopesShinyAndRaisingFlags() throws {

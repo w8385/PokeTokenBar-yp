@@ -13,6 +13,8 @@ struct BoxDetailView: View {
     @Environment(PartyUploader.self) private var uploader: PartyUploader?
     @State private var cordMessage: String?
     @State private var tradePanelOpen = false
+    @State private var naturePickerOpen = false
+    @State private var trainingMessage: String?
     /// Capture hooks: open the trade panel on appear, optionally with a friend already picked.
     var opensTradePanel = false
     var initialTradeTarget: String?
@@ -44,7 +46,8 @@ struct BoxDetailView: View {
                     ForEach(store.evolutionCards(for: individual.speciesID, individual: entry)) {
                         EvolutionCardView(store: store, card: $0)
                     }
-                    if let details = store.pokemonDetailsByID[individual.speciesID], let profile = entry.profile {
+                    if let details = store.pokemonDetails(speciesID: individual.speciesID, form: entry.form),
+                       let profile = entry.profile {
                         individualSection(profile: profile, details: details)
                     } else if entry.profile != nil {
                         PokemonDetailsPlaceholder(store: store, speciesID: individual.speciesID)
@@ -57,8 +60,19 @@ struct BoxDetailView: View {
         .task {
             await store.loadPokemonDetails(speciesID: individual.speciesID)
             await store.loadEvolutionCardNames(for: individual.speciesID, individual: entry)
+            if FormTool.tool(forSpecies: individual.speciesID) != nil {
+                await store.loadFormNames(PokemonForm.nameResources(speciesID: individual.speciesID))
+            }
+        }
+        .onAppear {
+            if navigation.boxDetailOpensNaturePicker {
+                naturePickerOpen = true
+                navigation.boxDetailOpensNaturePicker = false
+            }
         }
     }
+
+    private func syncParty() { Task { await uploader?.tick() } }
 
     // MARK: Identity
 
@@ -84,7 +98,7 @@ struct BoxDetailView: View {
                 if let types = stone?.types ?? tera?.types {
                     TypeBadges(types: types, language: store.language, size: 11,
                                horizontalPadding: 7, verticalPadding: 2)
-                } else if let details = store.pokemonDetailsByID[individual.speciesID] {
+                } else if let details = store.pokemonDetails(speciesID: individual.speciesID, form: entry.form) {
                     TypeBadges(types: details.types, language: store.language, size: 11,
                                horizontalPadding: 7, verticalPadding: 2)
                 }
@@ -267,10 +281,21 @@ struct BoxDetailView: View {
     private func individualSection(profile: PokemonProfile, details: PokemonDetails) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             DetailTitle(l.pokemonIndividual)
-            HStack(spacing: 12) {
+            HStack(alignment: .bottom, spacing: 12) {
                 DetailValuePair(l.level, "\(profile.level)")
                 DetailValuePair(l.gender, l.genderLabel(profile.gender))
                 DetailValuePair(l.nature, entry.nature?.name(store.language) ?? "—")
+                if canTrain {
+                    Button { naturePickerOpen.toggle() } label: {
+                        Label { Text(l.mintChange) } icon: { ItemIconView(kind: .mint, size: 14) }
+                    }
+                    .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                    .help(l.mintChangeHelp)
+                }
+            }
+            if naturePickerOpen, canTrain {
+                NaturePicker(store: store, individualID: individual.id, pokemonName: name, current: entry.nature,
+                             onClose: { naturePickerOpen = false }, onChange: syncParty)
             }
             if let trainer = entry.originalTrainer {
                 Text(l.originalTrainerLine(trainer)).font(.caption).foregroundStyle(.secondary)
@@ -288,13 +313,18 @@ struct BoxDetailView: View {
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text(l.ability).font(.ptb(.body)).foregroundStyle(.secondary)
-                if let abilityName = profile.abilityName {
+                if let abilityName = FormBattleData.abilityName(speciesID: individual.speciesID, form: entry.form,
+                                                                profile: profile) {
                     PokemonNameLabel(.ability, abilityName, language: store.language,
                                      suffix: profile.abilityIsHidden ? " · " + l.hiddenAbility : "")
                         .font(.callout.weight(.semibold))
                 } else {
                     Text("—").font(.callout.weight(.semibold))
                 }
+            }
+            if canTrain {
+                BoxTrainingControls(store: store, individualID: individual.id, speciesID: individual.speciesID,
+                                    message: $trainingMessage, onChange: syncParty)
             }
             statsSection(PokemonStatCalculator.stats(details: details, profile: profile, nature: entry.nature))
             DetailTitle(l.activeMoves)
@@ -314,14 +344,26 @@ struct BoxDetailView: View {
         .detailCard()
     }
 
+    /// Trade-locked Pokémon keep what they were offered with.
+    private var canTrain: Bool {
+        store.trainable(id: individual.id) != nil && !store.isTradeLocked(individual.id)
+    }
+
     private func statsSection(_ stats: [PokemonComputedStat]) -> some View {
         let scaleMaximum = PokemonStatCalculator.displayScaleMaximum(for: stats.map(\.value))
+        let capsOwned = canTrain && store.itemCount(.bottleCap) > 0
         return VStack(alignment: .leading, spacing: 5) {
             DetailTitle(l.actualStats)
             ForEach(stats) { stat in
-                PokemonStatRow(l: l, name: stat.name, value: stat.value, iv: stat.iv, scaleMaximum: scaleMaximum)
+                PokemonStatRow(l: l, name: stat.name, value: stat.value, iv: stat.iv, scaleMaximum: scaleMaximum,
+                               onCap: capsOwned && (stat.iv ?? BottleCap.maxIV) < BottleCap.maxIV ? { useBottleCap(stat.name) } : nil)
             }
         }
+    }
+
+    private func useBottleCap(_ stat: String) {
+        trainingMessage = nil
+        if store.useBottleCap(on: individual.id, stat: stat) == .changed { syncParty() }
     }
 }
 

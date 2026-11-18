@@ -39,16 +39,17 @@ actor SpriteStore {
     }
 
     /// PokeAPI names form GIFs `201-b`/`492-sky`; static PNGs of separate varieties use the variety
-    /// id (`10006.png`). Cache files keep the `<id>-<form>` name either way.
+    /// id (`10006.png`), and so do Showdown GIFs (`10193.gif`). Cache files keep the `<id>-<form>` name either way.
     /// Back sprites sit in a `back/` folder in front of `shiny/`, for both GIFs and PNGs.
     static func spriteURL(speciesID: Int, animated: Bool, shiny: Bool, form: PokemonForm? = nil,
                           back: Bool = false, female: Bool = false) -> URL {
-        let name = animated ? PokemonForm.assetName(speciesID: speciesID, form: form)
-                            : PokemonForm.staticAssetName(speciesID: speciesID, form: form)
+        let blackWhite = PokemonAssets.blackWhiteAnimatedIDs.contains(speciesID)
+        let name = animated && blackWhite ? PokemonForm.assetName(speciesID: speciesID, form: form)
+                                          : PokemonForm.staticAssetName(speciesID: speciesID, form: form)
         let path: String
         if !animated {
             path = ""
-        } else if PokemonAssets.blackWhiteAnimatedIDs.contains(speciesID) {
+        } else if blackWhite {
             path = "versions/generation-v/black-white/animated/"
         } else {
             path = "other/showdown/"

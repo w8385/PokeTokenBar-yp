@@ -201,12 +201,16 @@ final class PopoverNavigation {
     }
 
     /// One individual's Box page — the only place a held item is equipped.
-    func openBoxDetail(id: String) {
+    func openBoxDetail(id: String, naturePicker: Bool = false) {
         showSettings = false
         showingRecap = false
         tab = .box
         boxDetailID = id
+        boxDetailOpensNaturePicker = naturePicker
     }
+
+    /// The next Box page opens with its nature picker; the page clears it once shown.
+    var boxDetailOpensNaturePicker = false
 
     func openBattle() {
         showSettings = false
@@ -368,7 +372,8 @@ struct PopoverView: View {
     private var homeContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             IdleTokenHintBanner(store: companion)
-            CompanionHeader(store: companion) { nav.openDexEntry(collectionID: $0) }
+            CompanionHeader(store: companion, onOpenDexEntry: { nav.openDexEntry(collectionID: $0) },
+                            onChangeNature: { nav.openBoxDetail(id: $0, naturePicker: true) })
             Divider()
             header
             Divider()

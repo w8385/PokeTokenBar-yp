@@ -60,7 +60,7 @@ enum PartyBuilder {
                            shiny: shiny,
                            ivs: profile?.ivs,
                            nature: nature?.rawValue,
-                           ability: profile?.abilityName,
+                           ability: profile.flatMap { FormBattleData.abilityName(speciesID: speciesID, form: form, profile: $0) },
                            heldItem: heldItem)
     }
 

@@ -46,6 +46,8 @@ struct PokemonStatRow: View {
     let value: Int
     let iv: Int?
     let scaleMaximum: Int
+    /// Raises this IV to the maximum with a Bottle Cap; nil hides the button.
+    var onCap: (() -> Void)? = nil
 
     var body: some View {
         HStack(spacing: 6) {
@@ -53,6 +55,12 @@ struct PokemonStatRow: View {
             ProgressView(value: Double(value), total: Double(scaleMaximum)).tint(Color.accentColor)
             Text("\(value)").monospacedDigit().frame(width: 30, alignment: .trailing)
             if let iv { Text("IV \(iv)").foregroundStyle(.secondary).frame(width: 38, alignment: .trailing) }
+            if let onCap {
+                Button(action: onCap) { ItemIconView(kind: .bottleCap, size: 14) }
+                    .buttonStyle(.borderless)
+                    .help(l.bottleCapUse(l.statLabel(name)))
+                    .accessibilityLabel(l.bottleCapUse(l.statLabel(name)))
+            }
         }
         .font(.ptb(.label))
     }

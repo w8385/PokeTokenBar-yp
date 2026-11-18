@@ -264,6 +264,10 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     /// Items a Pokémon holds when it evolves by trade. They travel with it and are used up by the evolution.
     case metalCoat, kingsRock, dragonScale, upGrade, dubiousDisc, electirizer, magmarizer, protector
     case reaperCloth, deepSeaTooth, deepSeaScale, sachet, whippedDream, prismScale
+    /// Change one owned individual's ability or IVs; used up.
+    case abilityCapsule, abilityPatch, bottleCap, goldBottleCap
+    /// Key items: bought once, never used up. Each switches the forms of its own species.
+    case revealGlass, dnaSplicers, reinsOfUnity
 
     /// 봇에 보내는 지닌 도구 슬러그(PokéAPI 아이템 이름, `bot/API.md` `held_item`). nil = 지닌 도구 아님.
     var heldItemSlug: String? {
@@ -429,6 +433,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     var evolutionItemName: String? {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .expShare, .linkingCord: return nil
+        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity: return nil
         case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal, .everstone: return nil
         case .choiceSpecs, .assaultVest, .eviolite, .rockyHelmet, .sitrusBerry, .lumBerry, .whiteHerb, .blackSludge,
              .shellBell, .bigRoot, .muscleBand, .wiseGlasses, .scopeLens, .quickClaw, .brightPowder, .wideLens,
@@ -487,6 +492,8 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .shinyCharm: return "shiny-charm"
         case .expShare: return "exp-share"
         case .linkingCord: return "linking-cord"
+        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity:
+            return trainingSlug
         case .stellarCrystal: return nil   // drawn in the app (`StellarCrystalArt`)
         case .ultranecroziumZ: return loreSlug
         default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName
@@ -500,6 +507,12 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .shinyCharm: return "✨"
         case .expShare: return "📡"
         case .linkingCord: return "🔗"
+        case .abilityCapsule: return "💊"
+        case .abilityPatch: return "🩹"
+        case .bottleCap, .goldBottleCap: return "🧢"
+        case .revealGlass: return "🪞"
+        case .dnaSplicers: return "🧬"
+        case .reinsOfUnity: return "🪢"
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return "🎒"
         case _ where isHeldItem || isTradeEvolutionItem: return "🎒"
         default: return "💎"
@@ -513,6 +526,11 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .shinyCharm: return ShinyCharm.price
         case .expShare: return ExpShare.price(owned: 0)
         case .stellarCrystal: return MegaStone.price
+        case .abilityCapsule: return AbilityCapsule.price
+        case .abilityPatch: return AbilityPatch.price
+        case .bottleCap: return BottleCap.price
+        case .goldBottleCap: return BottleCap.goldPrice
+        case .revealGlass, .dnaSplicers, .reinsOfUnity: return FormTool.price
         case _ where isHeldItem: return HeldItem.price
         default: return EvolutionStone.price
         }
@@ -524,6 +542,9 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         default: return false
         }
     }
+    /// Bought once and never used up, like `isPassive`, but used by hand on one Pokémon.
+    var isKeyItem: Bool { FormTool.species(of: self) != nil }
+    var isBoughtOnce: Bool { isPassive || isKeyItem }
 }
 
 /// 진화의 돌 밸런스 상수 — 소모품. 쓰면 그 돌로 진화하는 갈래로 바로 진화한다(현재 단계 XP는 그대로 이어진다).
@@ -545,6 +566,8 @@ extension ItemKind {
     var category: ItemCategory {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .expShare: return .growth
+        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity:
+            return .growth
         case .stellarCrystal: return .megaStone
         case _ where isHeldItem: return .heldItem
         default: return .evolution
@@ -555,6 +578,7 @@ extension ItemKind {
     var battleGroup: BattleItemGroup? {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .expShare, .linkingCord: return nil
+        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity: return nil
         case .fireStone, .waterStone, .thunderStone, .leafStone, .moonStone,
              .sunStone, .shinyStone, .duskStone, .dawnStone, .iceStone: return nil
         case .tartApple, .sweetApple, .syrupyApple, .crackedPot, .chippedPot, .auspiciousArmor, .maliciousArmor,

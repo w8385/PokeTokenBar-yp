@@ -33,7 +33,7 @@ extension ItemKind {
         case .expShare: return "exp-share"
         case .linkingCord: return "linking-cord"
         case .ultranecroziumZ: return "ultranecrozium-z--held"
-        default: return heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName ?? rawValue
+        default: return trainingSlug ?? heldItemSlug ?? evolutionHeldSlug ?? evolutionItemName ?? rawValue
         }
     }
 }

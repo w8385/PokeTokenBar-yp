@@ -178,7 +178,7 @@ private struct ItemCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(l.itemName(kind)).font(.callout.weight(.semibold))
-                        if !kind.isPassive {   // 보유형은 개수 개념이 없음(1회 구매·영구)
+                        if !kind.isBoughtOnce {   // 보유형은 개수 개념이 없음(1회 구매·영구)
                             Text("×\(count)").font(.caption.weight(.bold))
                                 .foregroundStyle(.secondary).monospacedDigit()
                         }
@@ -234,7 +234,6 @@ private struct ItemCard: View {
     private var canUse: Bool {
         switch kind {
         case .rareCandy: return store.canUseRareCandy
-        case .mint:      return store.canUseMint
         case .shinyCharm, .expShare: return false
         default:         return store.canUseStone(kind)
         }
@@ -243,7 +242,6 @@ private struct ItemCard: View {
     private func effectHint(_ l: L) -> String {
         switch kind {
         case .rareCandy: return "+\(TokenFormatter.compact(selectedCandyCount * RareCandy.xp)) XP"
-        case .mint:      return l.mintEffectHint
         case .shinyCharm: return l.shinyCharmEffectHint
         case .expShare: return l.expShareBagHint
         default:         return l.stoneEffectHint
@@ -253,7 +251,6 @@ private struct ItemCard: View {
     private func performUse() -> Bool {
         switch kind {
         case .rareCandy: _ = store.useRareCandy(count: selectedCandyCount)
-        case .mint:      _ = store.useMint()
         case .shinyCharm, .expShare: break
         default:
             let result = store.useEvolutionStone(kind)
@@ -273,6 +270,8 @@ private struct ItemCard: View {
                 Text(l.shinyCharmEffectHint).font(.caption2.weight(.semibold)).foregroundStyle(.green)
                 Spacer()
             }
+        } else if kind.isTrainingItem {
+            TrainingTargetPicker(store: store, nav: nav, kind: kind)
         } else if kind.isLinkingCord {
             Text(l.linkingCordBagHint).font(.caption2).foregroundStyle(.tertiary)
         } else if kind == .expShare {
@@ -314,5 +313,73 @@ private struct ItemCard: View {
         stoneRejected = false
         guard performUse() else { stoneRejected = true; return }
         nav.tab = .home
+    }
+}
+
+/// A training item's use from the Bag: pick the Pokémon, then its Box page does the rest (a Mint opens the
+/// nature picker there).
+@MainActor
+struct TrainingTargetPicker: View {
+    let store: CompanionStore
+    let nav: PopoverNavigation
+    let kind: ItemKind
+    @State private var open = false
+
+    var body: some View {
+        let l = store.l
+        let targets = store.trainingTargets(for: kind)
+        if targets.isEmpty {
+            Text(l.trainingNoTarget).font(.caption2).foregroundStyle(.tertiary)
+        } else if open {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                HStack {
+                    Text(l.trainingPickTarget).font(.caption2).foregroundStyle(.secondary)
+                    Spacer()
+                    Button(l.cancel) { open = false }.buttonStyle(.borderless).controlSize(.small)
+                }
+                ScrollView {
+                    VStack(spacing: Spacing.xxs) {
+                        ForEach(targets) { target in row(target) }
+                    }
+                    .reservesScrollerLane()
+                }
+                .frame(maxHeight: 156)
+            }
+        } else {
+            HStack {
+                Text(l.trainingBagHint(kind)).font(.caption2).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer()
+                Button(l.useItem) { open = true }.buttonStyle(.bordered).controlSize(.small)
+            }
+        }
+    }
+
+    static func use(_ kind: ItemKind, on target: BoxIndividual, nav: PopoverNavigation) {
+        nav.openBoxDetail(id: target.id, naturePicker: kind == .mint)
+    }
+
+    private func row(_ target: BoxIndividual) -> some View {
+        Button {
+            open = false
+            Self.use(kind, on: target, nav: nav)
+        } label: {
+            HStack(spacing: Spacing.sm) {
+                SpriteView(speciesID: target.speciesID, size: 26, animated: false, shiny: target.entry.isShiny,
+                           form: target.entry.form)
+                    .frame(width: 26, height: 26)
+                Text(store.dexEntryName(target.entry)).font(.callout).lineLimit(1)
+                if kind == .mint, let nature = target.entry.nature {
+                    Text(nature.name(store.language)).font(.caption2).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text("Lv\(target.level)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, Spacing.sm).padding(.vertical, Spacing.xxs)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(store.dexEntryName(target.entry))
     }
 }

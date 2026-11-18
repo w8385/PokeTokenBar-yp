@@ -23,7 +23,7 @@ STAT_ORDER = ["hp", "attack", "defense", "special-attack", "special-defense", "s
 
 # Gen I, plus the species other fixtures use. Keep ascending.
 SPECIES_IDS = sorted(set(range(1, 152)) | {
-    106, 114, 172, 177, 178, 208, 236, 265, 266, 267, 287, 292, 382, 446, 447, 448, 492, 592, 593, 686, 687, 1017, 1024,
+    106, 114, 172, 177, 178, 208, 236, 265, 266, 267, 287, 292, 382, 446, 447, 448, 492, 592, 593, 641, 642, 645, 646, 686, 687, 898, 905, 1017, 1024,
 })
 
 

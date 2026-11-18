@@ -97,14 +97,27 @@ struct PokemonIVs: Codable, Sendable, Equatable {
     var speed: Int
 
     subscript(stat: String) -> Int {
-        switch stat {
-        case "hp": return hp
-        case "attack": return attack
-        case "defense": return defense
-        case "special-attack": return specialAttack
-        case "special-defense": return specialDefense
-        case "speed": return speed
-        default: return 0
+        get {
+            switch stat {
+            case "hp": return hp
+            case "attack": return attack
+            case "defense": return defense
+            case "special-attack": return specialAttack
+            case "special-defense": return specialDefense
+            case "speed": return speed
+            default: return 0
+            }
+        }
+        set {
+            switch stat {
+            case "hp": hp = newValue
+            case "attack": attack = newValue
+            case "defense": defense = newValue
+            case "special-attack": specialAttack = newValue
+            case "special-defense": specialDefense = newValue
+            case "speed": speed = newValue
+            default: break
+            }
         }
     }
 }

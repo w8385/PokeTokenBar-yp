@@ -40,8 +40,8 @@ struct PokemonForm: RawRepresentable, Codable, Hashable, Sendable {
     }
 
     /// Every catalogued species lists its default appearance first; that one keeps the plain
-    /// `<id>.png`/`<id>.gif` sprites. Only forms with a Gen V animated sprite are listed, the same
-    /// source that bounds hatchable species. Gender differences are not forms.
+    /// `<id>.png`/`<id>.gif` sprites. Only forms with an animated sprite are listed: Gen V GIFs, or
+    /// Showdown GIFs named by the variety id. Gender differences are not forms.
     static let catalog: [Int: [Entry]] = {
         let letters = "abcdefghijklmnopqrstuvwxyz".map(String.init) + ["exclamation", "question"]
         let unown = letters.enumerated().map { index, letter in
@@ -85,6 +85,9 @@ struct PokemonForm: RawRepresentable, Codable, Hashable, Sendable {
             648: [.init("aria", formID: 648), .init("pirouette", formID: 10074, pokemonID: 10018)],
             649: [.init("normal", formID: 649), .init("douse", formID: 10075), .init("shock", formID: 10076),
                   .init("burn", formID: 10077), .init("chill", formID: 10078)],
+            898: [.init("normal", formID: 898), .init("ice", formID: 10362, pokemonID: 10193),
+                  .init("shadow", formID: 10363, pokemonID: 10194)],
+            905: [.init("incarnate", formID: 905), .init("therian", formID: 10418, pokemonID: 10249)],
         ]
     }()
 
@@ -203,9 +206,9 @@ extension PokemonForm {
 }
 
 extension PokemonForm {
-    /// Castform, Rotom, Kyurem and Genesect have no official name for their usual look:
+    /// Castform, Rotom, Kyurem, Genesect and Calyrex have no official name for their usual look:
     /// PokéAPI only says "Forme de Motisma" or nothing at all.
-    private static let unnamedDefaultSpecies: Set<Int> = [351, 479, 646, 649]
+    private static let unnamedDefaultSpecies: Set<Int> = [351, 479, 646, 649, 898]
 
     private static func hasUnnamedDefault(speciesID: Int, form: PokemonForm?) -> Bool {
         unnamedDefaultSpecies.contains(speciesID) && isDefault(form, speciesID: speciesID)
