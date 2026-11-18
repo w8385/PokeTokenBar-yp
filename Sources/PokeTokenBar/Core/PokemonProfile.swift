@@ -142,6 +142,8 @@ struct PokemonProfile: Codable, Sendable, Equatable {
     /// Earned growth in standard-balance units, independent of difficulty and repeat boosts.
     var growthTokens: Int
     var moves: [PokemonKnownMove]
+    /// True once a Mirror Herb is used on it: its attacking egg moves stay learnable for good, also after it evolves.
+    var mirrorHerb: Bool?
 
     static func generate(seed: UInt64, growthTokens: Int = 0,
                          instanceID: String = UUID().uuidString) -> PokemonProfile {
@@ -244,6 +246,28 @@ struct PokemonProfile: Codable, Sendable, Equatable {
             PokemonKnownMove(name: String($0.name.prefix(80)), learnedAtLevel: min(100, max(0, $0.learnedAtLevel)))
         }
         if instanceID.isEmpty { instanceID = UUID().uuidString }
+    }
+}
+
+extension PokemonProfile {
+    private enum CodingKeys: String, CodingKey {
+        case instanceID, seed, gender, ivs, abilitySlot, abilityName, abilityIsHidden, level, growthTokens, moves
+        case mirrorHerb
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        instanceID = try c.decode(String.self, forKey: .instanceID)
+        seed = try c.decode(UInt64.self, forKey: .seed)
+        gender = try c.decodeIfPresent(PokemonGender.self, forKey: .gender)
+        ivs = try c.decode(PokemonIVs.self, forKey: .ivs)
+        abilitySlot = try c.decodeIfPresent(Int.self, forKey: .abilitySlot)
+        abilityName = try c.decodeIfPresent(String.self, forKey: .abilityName)
+        abilityIsHidden = try c.decode(Bool.self, forKey: .abilityIsHidden)
+        level = try c.decode(Int.self, forKey: .level)
+        growthTokens = try c.decode(Int.self, forKey: .growthTokens)
+        moves = try c.decode([PokemonKnownMove].self, forKey: .moves)
+        mirrorHerb = c.lenientOptional(Bool.self, forKey: .mirrorHerb)
     }
 }
 

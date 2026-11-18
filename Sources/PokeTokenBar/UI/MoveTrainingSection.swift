@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// The Box page's move training: the four moves a Pokémon takes into battle, each swapped from the list
-/// the bot says it can use now: level-up moves up to its level, TM moves at any level once the TM is owned, and the
-/// battle's status moves in their own group. An unowned TM is listed locked with its price and an inline buy button.
+/// the bot says it can use now: level-up moves up to its level, TM moves at any level once the TM is owned, attacking
+/// egg moves once a Mirror Herb is used, and the battle's status moves in their own group. An unowned TM is listed
+/// locked with its price and an inline buy button; egg moves are listed locked under one Mirror Herb button.
 @MainActor
 struct MoveTrainingSection: View {
     let store: CompanionStore
@@ -16,6 +17,9 @@ struct MoveTrainingSection: View {
     @State private var loadedSpecies: Int?
     @State private var unavailable = false
     @State private var editing: Int?
+    /// Attacking egg moves shown locked until a Mirror Herb is used; empty with the herb, where `learnable` has them.
+    @State private var lockedEggMoves: [LearnableMove] = []
+    @State private var confirmingHerb = false
     @Environment(\.pokemonNameStore) private var injectedNames
 
     init(store: CompanionStore, battleEntry: BattleEntryStore, uploader: PartyUploader,
@@ -30,7 +34,8 @@ struct MoveTrainingSection: View {
 
     private var l: L { store.l }
     private var member: PartyMember { candidate.member }
-    private var fetchKey: String { "\(member.pokemonID)-\(member.level)" }
+    private var hasHerb: Bool { member.mirrorHerb == true }
+    private var fetchKey: String { "\(member.pokemonID)-\(member.level)-\(hasHerb)" }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -48,8 +53,10 @@ struct MoveTrainingSection: View {
         .task(id: fetchKey) {
             if learnable != nil { editing = nil }
             unavailable = false
+            confirmingHerb = false
             if loadedSpecies != member.pokemonID { learnable = nil }
-            if let moves = await uploader.learnableMoves(pokemonID: member.pokemonID, level: member.level) {
+            if let moves = await uploader.learnableMoves(pokemonID: member.pokemonID, level: member.level, egg: hasHerb) {
+                lockedEggMoves = await herbLessEggMoves(besides: moves)
                 learnable = moves
                 loadedSpecies = member.pokemonID
             } else {
@@ -57,6 +64,16 @@ struct MoveTrainingSection: View {
                 unavailable = true
             }
         }
+    }
+
+    /// The egg moves a Mirror Herb would add, from a display-only `egg=1` reply; the herb-less list stays today's.
+    private func herbLessEggMoves(besides moves: LearnableMoves) async -> [LearnableMove] {
+        guard !hasHerb, !store.isTradeLocked(candidate.id), let individual = store.trainable(id: candidate.id),
+              store.canUseMirrorHerb(on: individual),
+              let withEggs = await uploader.learnableMoves(pokemonID: member.pokemonID, level: member.level, egg: true)
+        else { return [] }
+        let listed = Set(moves.moves.map(\.id))
+        return withEggs.eggMoves.filter { !listed.contains($0.id) }
     }
 
     private func content(_ moves: LearnableMoves) -> some View {
@@ -142,7 +159,63 @@ struct MoveTrainingSection: View {
     private func picker(_ moves: LearnableMoves, editing index: Int, selected: [Int]) -> some View {
         group(l.moveGroupLevelUp, moves.levelUpMoves.reversed(), index: index, selected: selected, moves: moves)
         group(l.moveGroupMachine, moves.machineMoves, index: index, selected: selected, moves: moves)
+        if hasHerb {
+            group(l.moveGroupEgg, moves.eggMoves, index: index, selected: selected, moves: moves)
+        } else if !lockedEggMoves.isEmpty {
+            lockedEggGroup
+        }
         group(l.moveGroupStatus, moves.statusMoves, index: index, selected: selected, moves: moves)
+    }
+
+    @ViewBuilder
+    private var lockedEggGroup: some View {
+        Text(l.moveGroupEgg).font(.caption).fontWeight(.semibold).foregroundStyle(.secondary).padding(.top, Spacing.sm)
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            ForEach(Array(lockedEggMoves.enumerated()), id: \.element.id) { offset, move in
+                if offset > 0 { Divider() }
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Image(systemName: "lock.fill").foregroundStyle(.secondary)
+                    moveLabel(move)
+                }
+            }
+            Divider()
+            herbUnlock
+        }
+    }
+
+    @ViewBuilder
+    private var herbUnlock: some View {
+        let payment = store.mirrorHerbPayment
+        if confirmingHerb {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(l.mirrorHerbPaymentLine(payment)).font(.caption2).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    Spacer()
+                    Button(l.cancel) { confirmingHerb = false }.buttonStyle(.borderless).controlSize(.small)
+                    if case .short = payment {} else {
+                        Button(l.mintConfirmButton(payment)) {
+                            confirmingHerb = false
+                            if store.useMirrorHerb(on: candidate.id) == .changed { onChange() }
+                        }
+                        .buttonStyle(.borderedProminent).controlSize(.small)
+                    }
+                }
+            }
+        } else {
+            HStack(spacing: 6) {
+                ItemIconView(kind: .mirrorHerb, size: 14)
+                Text(l.mirrorHerbNeeded).font(.caption2).foregroundStyle(.secondary)
+                Spacer()
+                if case .short = payment {
+                    Text(l.notEnoughTokens).font(.caption2).foregroundStyle(.tertiary)
+                } else {
+                    Button(l.mirrorHerbUse) { confirmingHerb = true }
+                        .buttonStyle(.bordered).controlSize(.small)
+                        .help(l.mirrorHerbEffect)
+                }
+            }
+        }
     }
 
     @ViewBuilder

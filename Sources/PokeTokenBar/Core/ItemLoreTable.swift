@@ -1561,6 +1561,18 @@ enum ItemLoreTable {
                 "fr": "Une courroie faite d’un tissu qui scintille à la lumière. Les humains en offraient autrefois au Seigneur des récoltes en gage de leur gratitude.",
                 "de": "Zügel gewoben aus Stoff, der leuchtet, wenn man ihn ins Licht hält. Einst schenkten die Menschen sie dem König der reichen Ernte als Zeichen ihrer Dankbarkeit.",
             ]),
+        "mirror-herb": Entry(appOriginalLanguages: ["ko", "en", "ja", "es", "fr", "pt", "de", "ru"],
+            names: ["ko": "흉내허브", "en": "Mirror Herb", "ja": "ものまねハーブ", "es": "Hierba Copia", "fr": "Feuille Copieuse", "de": "Kopierkraut"],
+            texts: [
+                "ko": "흉내 내기를 돕는 신기한 허브. 먹은 포켓몬은 알에서만 배우는 기술을 익힐 수 있게 된다.",
+                "en": "A curious herb that helps a Pokémon mimic others. One that eats it becomes able to learn the moves its kind learns only as an Egg.",
+                "ja": "まねを　たすける　ふしぎな　ハーブ。たべた　ポケモンは　タマゴでしか　おぼえない　わざを　おぼえられるように　なる。",
+                "es": "Una hierba curiosa que ayuda a imitar. El Pokémon que la come puede aprender los movimientos que su especie solo aprende como Huevo.",
+                "fr": "Une herbe étrange qui aide à imiter. Le Pokémon qui la mange peut apprendre les capacités que son espèce n'apprend que dans l'Œuf.",
+                "pt": "Uma erva curiosa que ajuda a imitar. O Pokémon que a come passa a aprender os golpes que sua espécie só aprende como Ovo.",
+                "de": "Ein seltsames Kraut, das beim Nachahmen hilft. Ein Pokémon, das es frisst, kann Attacken erlernen, die seine Art nur als Ei lernt.",
+                "ru": "Странная трава, помогающая подражать. Съевший её покемон может учить приёмы, которые его вид учит только в яйце.",
+            ]),
         "venusaurite": Entry(appOriginalLanguages: [],
             names: ["ko": "이상해꽃나이트", "en": "Venusaurite", "ja": "フシギバナイト", "es": "Venusaurita", "fr": "Florizarrite", "de": "Bisaflornit"],
             texts: [

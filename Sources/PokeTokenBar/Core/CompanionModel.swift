@@ -268,6 +268,8 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case abilityCapsule, abilityPatch, bottleCap, goldBottleCap
     /// Key items: bought once, never used up. Each switches the forms of its own species.
     case revealGlass, dnaSplicers, reinsOfUnity
+    /// Unlocks one individual's attacking egg moves for good; used up.
+    case mirrorHerb
 
     /// 봇에 보내는 지닌 도구 슬러그(PokéAPI 아이템 이름, `bot/API.md` `held_item`). nil = 지닌 도구 아님.
     var heldItemSlug: String? {
@@ -433,7 +435,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     var evolutionItemName: String? {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .expShare, .linkingCord: return nil
-        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity: return nil
+        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity, .mirrorHerb: return nil
         case .leftovers, .choiceScarf, .choiceBand, .focusSash, .lifeOrb, .expertBelt, .charcoal, .everstone: return nil
         case .choiceSpecs, .assaultVest, .eviolite, .rockyHelmet, .sitrusBerry, .lumBerry, .whiteHerb, .blackSludge,
              .shellBell, .bigRoot, .muscleBand, .wiseGlasses, .scopeLens, .quickClaw, .brightPowder, .wideLens,
@@ -492,7 +494,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .shinyCharm: return "shiny-charm"
         case .expShare: return "exp-share"
         case .linkingCord: return "linking-cord"
-        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity:
+        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity, .mirrorHerb:
             return trainingSlug
         case .stellarCrystal: return nil   // drawn in the app (`StellarCrystalArt`)
         case .ultranecroziumZ: return loreSlug
@@ -513,6 +515,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .revealGlass: return "🪞"
         case .dnaSplicers: return "🧬"
         case .reinsOfUnity: return "🪢"
+        case .mirrorHerb: return "🌱"
         case .ovalStone, .razorClaw, .razorFang, .strawberrySweet: return "🎒"
         case _ where isHeldItem || isTradeEvolutionItem: return "🎒"
         default: return "💎"
@@ -531,6 +534,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .bottleCap: return BottleCap.price
         case .goldBottleCap: return BottleCap.goldPrice
         case .revealGlass, .dnaSplicers, .reinsOfUnity: return FormTool.price
+        case .mirrorHerb: return MirrorHerb.price
         case _ where isHeldItem: return HeldItem.price
         default: return EvolutionStone.price
         }
@@ -566,7 +570,7 @@ extension ItemKind {
     var category: ItemCategory {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .expShare: return .growth
-        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity:
+        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity, .mirrorHerb:
             return .growth
         case .stellarCrystal: return .megaStone
         case _ where isHeldItem: return .heldItem
@@ -578,7 +582,7 @@ extension ItemKind {
     var battleGroup: BattleItemGroup? {
         switch self {
         case .rareCandy, .mint, .shinyCharm, .expShare, .linkingCord: return nil
-        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity: return nil
+        case .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap, .revealGlass, .dnaSplicers, .reinsOfUnity, .mirrorHerb: return nil
         case .fireStone, .waterStone, .thunderStone, .leafStone, .moonStone,
              .sunStone, .shinyStone, .duskStone, .dawnStone, .iceStone: return nil
         case .tartApple, .sweetApple, .syrupyApple, .crackedPot, .chippedPot, .auspiciousArmor, .maliciousArmor,

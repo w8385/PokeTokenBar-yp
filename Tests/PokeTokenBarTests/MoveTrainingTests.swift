@@ -67,7 +67,8 @@ final class TrainingRig {
     let nameProvider: any PokemonNameProviding
     private var windows: [NSWindow] = []
 
-    init(movesJSON: String = trainingMovesJSON, language: AppLanguage = .en,
+    /// `eggMovesJSON` answers the requests that carry `egg=1`; without it every request gets `movesJSON`.
+    init(movesJSON: String = trainingMovesJSON, eggMovesJSON: String? = nil, language: AppLanguage = .en,
          nameProvider: any PokemonNameProviding = StubMoveNames()) async throws {
         self.nameProvider = nameProvider
         scratch = FileManager.default.temporaryDirectory.appendingPathComponent("training-\(UUID())")
@@ -92,14 +93,18 @@ final class TrainingRig {
         store = CompanionStore(provider: TrainingProvider(), fileURL: file, defaults: defaults)
         battle = BattleEntryStore(defaults: defaults)
         let posts = self.posts, fetches = self.fetches
-        let body = Data(movesJSON.utf8)
+        let body = Data(movesJSON.utf8), eggBody = Data((eggMovesJSON ?? movesJSON).utf8)
         uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,
             appVersion: "test", send: { request in
                 posts.add(String(decoding: request.httpBody ?? Data(), as: UTF8.self))
                 return 200
             },
-            fetch: { request in fetches.add(request.url?.absoluteString ?? ""); return (body, 200) },
+            fetch: { request in
+                let url = request.url?.absoluteString ?? ""
+                fetches.add(url)
+                return (url.contains("egg=1") ? eggBody : body, 200)
+            },
             partySource: { [store, battle] in
                 BattleEntry.party(state: store.state, slots: battle.slots, moveChoices: battle.moveChoices,
                                   rentalSpeciesID: 4)
@@ -221,7 +226,7 @@ final class MoveTrainingTests: XCTestCase {
         XCTAssertEqual(rig.battle.chosenMoves(for: "snorlax", pokemonID: 143), [], "choices are per instance")
         XCTAssertEqual(rig.battle.slots, [], "a Box edit never changes the lineup")
         XCTAssertEqual(rig.posts.all.count, 1)
-        XCTAssertEqual(rig.fetches.all.filter { $0.contains("/v1/moves") && $0.contains("machine=1") }.count, 1)
+        XCTAssertEqual(rig.fetches.all.filter { $0.contains("/v1/moves") && $0.contains("machine=1") && !$0.contains("egg=1") }.count, 1)
     }
 
     func testAnUnownedTMHasNoChooseRowUntilItIsBought() async throws {
@@ -258,7 +263,7 @@ final class MoveTrainingTests: XCTestCase {
         rig.store.grantTM(moveID: 89)
         let host = try await rig.mount(rig.boxDetail("snorlax"))
         _ = try await rig.autoReset(in: host)
-        XCTAssertEqual(rig.fetches.all.filter { $0.contains("pokemon_id=143") }.count, 1)
+        XCTAssertEqual(rig.fetches.all.filter { $0.contains("pokemon_id=143") && !$0.contains("egg=1") }.count, 1)
     }
 
     func testBattleTabHasNoMoveOrHeldItemRowsAndLinksToTraining() async throws {
@@ -534,7 +539,7 @@ final class StatusMoveTrainingTests: XCTestCase {
         let host = try await rig.mount(rig.section("pikachu"))
 
         _ = try await rig.chooseRows(in: host, count: 2)
-        XCTAssertEqual(rig.fetches.all.filter { $0.contains("status=1") }.count, 1)
+        XCTAssertEqual(rig.fetches.all.filter { $0.contains("status=1") && !$0.contains("egg=1") }.count, 1)
     }
 }
 

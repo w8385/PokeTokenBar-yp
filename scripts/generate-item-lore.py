@@ -56,7 +56,7 @@ ITEMS = [
     "earth-plate", "sky-plate", "mind-plate", "insect-plate", "stone-plate", "spooky-plate", "draco-plate",
     "dread-plate", "iron-plate", "pixie-plate",
     "ability-capsule", "ability-patch", "bottle-cap", "gold-bottle-cap",
-    "reveal-glass", "dna-splicers", "reins-of-unity",
+    "reveal-glass", "dna-splicers", "reins-of-unity", "mirror-herb",
 ]
 
 # Items that are not in the games: hand-written in the same in-game voice, all eight app languages.
@@ -134,6 +134,16 @@ NO_TEXT_YET = {
 # Evolution items PokéAPI has names for but no flavor text yet: hand-written in the in-game voice, all eight
 # languages, with the official name from PokéAPI. They are not flagged appOriginal because the item is real.
 ITEM_FALLBACK = {
+    "mirror-herb": {
+        "ko": "흉내 내기를 돕는 신기한 허브. 먹은 포켓몬은 알에서만 배우는 기술을 익힐 수 있게 된다.",
+        "en": "A curious herb that helps a Pokémon mimic others. One that eats it becomes able to learn the moves its kind learns only as an Egg.",
+        "ja": "まねを　たすける　ふしぎな　ハーブ。たべた　ポケモンは　タマゴでしか　おぼえない　わざを　おぼえられるように　なる。",
+        "es": "Una hierba curiosa que ayuda a imitar. El Pokémon que la come puede aprender los movimientos que su especie solo aprende como Huevo.",
+        "fr": "Une herbe étrange qui aide à imiter. Le Pokémon qui la mange peut apprendre les capacités que son espèce n'apprend que dans l'Œuf.",
+        "pt": "Uma erva curiosa que ajuda a imitar. O Pokémon que a come passa a aprender os golpes que sua espécie só aprende como Ovo.",
+        "de": "Ein seltsames Kraut, das beim Nachahmen hilft. Ein Pokémon, das es frisst, kann Attacken erlernen, die seine Art nur als Ei lernt.",
+        "ru": "Странная трава, помогающая подражать. Съевший её покемон может учить приёмы, которые его вид учит только в яйце.",
+    },
     "fairy-feather": {
         "ko": "지니게 하면 페어리타입 기술의 위력이 올라가는 깃털.",
         "en": "An item to be held by a Pokémon. It is a feather that boosts the power of Fairy-type moves.",

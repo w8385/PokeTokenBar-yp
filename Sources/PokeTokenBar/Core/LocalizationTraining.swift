@@ -25,6 +25,7 @@ extension L {
         case .reinsOfUnity:
             t("유대의고삐", "Reins of Unity", "キズナのタヅナ", "Riendas Unión", "Rênes de l’Unité", "Rédeas da União",
               "Zügel des Bundes", "Поводья единства")
+        case .mirrorHerb: mirrorHerbName
         default: nil
         }
     }
@@ -104,6 +105,7 @@ extension L {
               "Troca Calyrex entre a forma normal, Cavaleiro Glacial e Cavaleiro Espectral. Nunca se gasta.",
               "Wechselt Coronospa zwischen normaler Form, Schimmel- und Rappenreiter. Wird nicht verbraucht.",
               "Переключает Каляйрекса между обычной формой, Ледяным и Теневым всадником. Не расходуется.")
+        case .mirrorHerb: mirrorHerbEffect
         default: nil
         }
     }

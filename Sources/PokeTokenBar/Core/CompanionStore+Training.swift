@@ -43,11 +43,20 @@ extension CompanionStore {
     /// Box id of the Pokémon on Home: the raised graduate, else the line Pokémon.
     var homeBoxID: String? { state.raisedEntryID ?? state.active?.profile?.instanceID }
 
-    var mintPayment: MintPayment {
-        let stock = itemCount(.mint)
+    var mintPayment: MintPayment { payment(for: .mint, listPrice: Mint.price) }
+
+    var mirrorHerbPayment: MintPayment { payment(for: .mirrorHerb, listPrice: MirrorHerb.price) }
+
+    private func payment(for kind: ItemKind, listPrice: Int) -> MintPayment {
+        let stock = itemCount(kind)
         if stock > 0 { return .stock(stock) }
-        let price = price(of: .mint) ?? Mint.price
+        let price = price(of: kind) ?? listPrice
         return availableTokens >= price ? .buy(price: price) : .short(price: price)
+    }
+
+    /// A Mirror Herb does something only once per individual, and only for a species with attacking egg moves.
+    func canUseMirrorHerb(on individual: TrainableIndividual) -> Bool {
+        individual.profile.mirrorHerb != true && EggMoves.hasAttacking(speciesID: individual.speciesID)
     }
 
     /// The abilities of the individual's current form, or nil until the species details are loaded.
@@ -80,12 +89,13 @@ extension CompanionStore {
     }
 
     /// Who a training item can be used on from the Bag: the raised Pokémon first, then the Box. A form key item
-    /// lists only its own species.
+    /// lists only its own species, a Mirror Herb only those it would unlock egg moves for.
     func trainingTargets(for kind: ItemKind) -> [BoxIndividual] {
         let species = FormTool.species(of: kind)
         return boxIndividuals.filter { individual in
-            !isTradeLocked(individual.id) && trainable(id: individual.id) != nil
-                && species.map { $0.contains(individual.speciesID) } ?? true
+            guard !isTradeLocked(individual.id), let trainable = trainable(id: individual.id) else { return false }
+            if kind == .mirrorHerb { return canUseMirrorHerb(on: trainable) }
+            return species.map { $0.contains(individual.speciesID) } ?? true
         }
     }
 }
