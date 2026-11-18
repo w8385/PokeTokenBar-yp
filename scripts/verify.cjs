@@ -55,8 +55,7 @@ function appBalance(source) {
     timeIdleLimitSeconds:constant(balance,'timeIdleLimit'),
     timeMaxStepSeconds:constant(balance,'timeMaxStep'),
     idleTokenHintAfterSeconds:constant(balance,'idleTokenHintAfter'),
-    tokensPerClick:constant(click,'tokensPerClick'),
-    clickMinIntervalSeconds:constant(click,'minInterval')
+    tokensPerClick:constant(click,'tokensPerClick')
   };
 }
 async function layout(page) {
@@ -433,7 +432,7 @@ async function dictionaries(browser) {
       'modes.timeRate':[formatTokens(b.timeTokensPerActiveHour),formatTokens(b.timeWalletTokensPerActiveHour)],
       'modes.timeIdle':[String(b.timeIdleLimitSeconds/60),String(b.timeMaxStepSeconds/60)],
       'modes.hint':[String(b.idleTokenHintAfterSeconds/86400)],
-      'modes.clickD':[formatTokens(b.tokensPerClick),String(b.clickMinIntervalSeconds),(Math.round((b.graduationTotal.common+b.eggHatchThreshold)/b.tokensPerClick/100)*100).toLocaleString('en')],
+      'modes.clickD':[formatTokens(b.tokensPerClick),(Math.round((b.graduationTotal.common+b.eggHatchThreshold)/b.tokensPerClick/100)*100).toLocaleString('en')],
       'p1.t':b.difficultyRange.map(pct),
       'k3.d':[formatTokens(b.graduationTotal.common),formatTokens(b.graduationTotal.legendary)]
      };

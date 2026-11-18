@@ -10,8 +10,7 @@ const BALANCE = {
   timeIdleLimitSeconds: 5 * 60,
   timeMaxStepSeconds: 2 * 60,
   idleTokenHintAfterSeconds: 3 * 86400,
-  tokensPerClick: 54e3,
-  clickMinIntervalSeconds: 0.3
+  tokensPerClick: 54e3
 };
 function formatTokens(n) {
   const [unit, size] = n >= 1e9 ? ['B', 1e9] : n >= 1e6 ? ['M', 1e6] : ['k', 1e3];
@@ -79,7 +78,7 @@ const I18N = {
     "modes.timeFit": "Suits light users, or anyone without an AI coding tool.",
     "modes.hint": "No token usage for 3 days? The app suggests time mode in Settings.",
     "modes.clickT": "Click to help.",
-    "modes.clickD": "In either mode, clicking the big sprite on Home or the floating pet adds 54k growth tokens, at most one click every 0.3 s. About 2,800 clicks take a Normal line from egg to graduation.",
+    "modes.clickD": "In either mode, clicking the big sprite on Home or the floating pet adds 54k growth tokens. About 2,800 clicks take a Normal line from egg to graduation.",
     "badge.fork": "Only in PokeTokenBar-yp",
     "usage.title": "Less checking.\nMore coding.",
     "usage.desc": "Today’s tokens, usage trends and provider limits live together. Open the menu bar when you need the details; keep working when you don’t.",
@@ -115,6 +114,7 @@ const I18N = {
     "p6.t": "Representative Pokémon",
     "p6.d": "Pin an owned species and form to the menu bar and the desktop pet. Your current partner keeps growing on Home.",
     "alt.petInteractions": "Separate native pet samples for egg prayer, petting, sulking and agent waiting",
+    "alt.petXp": "Native Home header sample with one +270K XP badge after five fast clicks",
     "native.current": "Native UI renders · sample states",
     "c1.t": "Pokédex",
     "c1.d": "One cell per species you have owned, 16 per page. Search, sort, filter by rarity, Shiny or region, and earn completion badges.",
@@ -351,7 +351,7 @@ const I18N = {
     "modes.timeFit": "가볍게 쓰는 분이나 AI 코딩 도구가 없는 분께 맞아요.",
     "modes.hint": "3일 동안 토큰 사용이 없으면 앱이 설정에서 시간 모드를 권해요.",
     "modes.clickT": "클릭으로 거들기.",
-    "modes.clickD": "어느 모드든 홈의 큰 스프라이트나 플로팅 펫을 클릭하면 성장 토큰 54k가 더해져요. 클릭은 0.3초에 한 번까지 셉니다. 기본 등급 라인은 2,800번쯤 클릭하면 알에서 졸업까지 가요.",
+    "modes.clickD": "어느 모드든 홈의 큰 스프라이트나 플로팅 펫을 클릭하면 성장 토큰 54k가 더해져요. 기본 등급 라인은 2,800번쯤 클릭하면 알에서 졸업까지 가요.",
     "badge.fork": "PokeTokenBar-yp에만 있어요",
     "usage.title": "사용량은 한눈에.\n코딩은 하던 대로.",
     "usage.desc": "오늘의 토큰, 사용량 추이, 프로바이더 한도를 한곳에서 확인하세요. 자세히 볼 때만 메뉴바를 열면 됩니다.",
@@ -387,6 +387,7 @@ const I18N = {
     "p6.t": "대표 포켓몬",
     "p6.d": "가진 종과 폼을 메뉴바와 바탕화면 펫에 고정하세요. 지금 키우는 파트너는 홈에서 계속 자라요.",
     "alt.petInteractions": "알 기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 실제 펫 샘플",
+    "alt.petXp": "빠르게 다섯 번 클릭한 뒤 +270K XP 배지 하나가 뜬 홈 헤더 샘플",
     "native.current": "실제 UI 렌더 · 샘플 상태",
     "c1.t": "도감",
     "c1.d": "가졌던 종마다 한 칸씩, 한 페이지에 16마리. 검색·정렬, 희귀도·이로치·지방 필터, 완성 배지가 있어요.",
@@ -623,7 +624,7 @@ const I18N = {
     "modes.timeFit": "ライトに使う人や、AIコーディングツールを使わない人向け。",
     "modes.hint": "3日間トークンの使用がないと、アプリが設定で時間モードを提案します。",
     "modes.clickT": "クリックで手伝う。",
-    "modes.clickD": "どちらのモードでも、ホームの大きなスプライトやデスクトップペットをクリックすると成長トークンが54k増えます。数えるのは0.3秒に1回までです。ノーマルの進化ラインなら、約2,800回のクリックでタマゴから卒業まで進みます。",
+    "modes.clickD": "どちらのモードでも、ホームの大きなスプライトやデスクトップペットをクリックすると成長トークンが54k増えます。ノーマルの進化ラインなら、約2,800回のクリックでタマゴから卒業まで進みます。",
     "badge.fork": "PokeTokenBar-yp だけ",
     "usage.title": "使用量はひと目で。\nコードに集中。",
     "usage.desc": "今日のトークン、使用量の推移、プロバイダーの上限をひとつの場所に。詳しく知りたいときだけメニューバーを開けばOK。",
@@ -659,6 +660,7 @@ const I18N = {
     "p6.t": "代表ポケモン",
     "p6.d": "所有する種族と姿を、メニューバーとデスクトップペットに固定できます。いま育てているパートナーはホームで育ち続けます。",
     "alt.petInteractions": "タマゴへのお祈り・なでる動作・すねる姿・エージェントの入力待ちを個別に描画した実際のペットサンプル",
+    "alt.petXp": "すばやく5回クリックしたあと、+270K XP のバッジが1つだけ出ているホームヘッダーのサンプル",
     "native.current": "実際の UI レンダー · サンプル状態",
     "c1.t": "図鑑",
     "c1.d": "持ったことのある種族を1マスずつ、1ページ16匹。検索・並べ替え、レア度・色違い・地方の絞り込み、完成バッジがあります。",
