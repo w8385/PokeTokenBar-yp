@@ -1,10 +1,13 @@
 import json
+import re
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 import pytest
 
 from ypoke import pokeapi
+from ypoke.move_effects import STATUS_MOVES
 from ypoke.moves import battle_moves, default_move_ids
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
@@ -247,3 +250,9 @@ def test_an_upload_may_choose_a_status_move_the_battle_implements(server):
     store, base = server
     party = {"party": [{"pokemon_id": 25, "level": 5, "moves": [84, 281, 86]}]}
     assert call(f"{base}/v1/party", store.issue_token("U1"), party)[0] == 200
+
+
+def test_every_offered_status_move_has_an_effect_line_in_the_app():
+    source = (Path(__file__).resolve().parents[2] / "Sources/PokeTokenBar/Core/LocalizationBox.swift").read_text()
+    body = source.split("func statusMoveEffect", 1)[1].split("default: nil", 1)[0]
+    assert {int(found) for found in re.findall(r"case (\d+):", body)} == set(STATUS_MOVES)
