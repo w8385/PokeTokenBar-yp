@@ -25,7 +25,7 @@ Action turn=9 side=0 attacker='P806' defender='P195' move='칼춤' changes=(Chan
 Action turn=10 side=1 attacker='P195' defender='P806' move='스톤에지' multiplier=2.0 defender_hp=17 attacker_hp=26 move_id=444
 Action turn=10 side=0 attacker='P806' defender='P195' move='섀도스틸' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=17 move_id=712
 result winner=0 turns=10 remaining=((0, 100, 0, 0, 100, 17), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=12efe7ffeb3560d643a2a6efbfe2aaea64c70a897b39f4126e906b56374a7c87
+won=True carry=null body=f00e3e3939af67c9532ebfff8b13b6a761e7f73afd6159f0f1d807faf39c191e
 ## johto-2 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P198' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=49 move_id=620
@@ -57,7 +57,7 @@ Action turn=11 side=1 attacker='P227' defender='P910' move='드릴라이너' mul
 SendOut turn=11 side=0 pokemon='P322' member=2
 Action turn=12 side=0 attacker='P322' defender='P227' move='대폭발' defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 move_id=153
 result winner=0 turns=12 remaining=((0, 0, 0, 0, 100, 0), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=4a14eca5a0bd847a73ceeae15c08120431924dfe758ca91e3aa5e830e845ed84
+won=True carry=null body=aa4aca02d49c5efe8eb79b5573e0f11b4a250a9733cdeb5d7ce1035c50f9a4f4
 ## johto-3 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P168' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=20 move_id=620
@@ -94,7 +94,7 @@ Action turn=14 side=0 attacker='P910' defender='P213' move='볼트체인지' def
 SendOut turn=14 side=0 pokemon='P524' member=4
 Action turn=15 side=0 attacker='P524' defender='P213' move='퀵턴' defender_hp=0 knockout=True attacker_hp=81 pivoted=True move_id=812
 result winner=0 turns=15 remaining=((0, 40, 0, 0, 81, 0), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-won=True carry=null body=a425bee7a8a299e10d6a86f6c270d9d6b3c948482e5c6126f94cdbc2026608b2
+won=True carry=null body=9bd68d0b29286f9c882bb3e80a1a17e4e7638bb70a623eef0bfcb205889a1c67
 ## johto-4 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P153' move='눈보라' multiplier=2.0 defender_hp=33 move_id=59
@@ -129,7 +129,7 @@ SendOut turn=11 side=0 pokemon='P806' member=5
 Action turn=11 side=1 attacker='P182' defender='P806' move='꽃잎댄스' multiplier=0.25 defender_hp=87 attacker_hp=15 move_id=80
 Action turn=12 side=0 attacker='P806' defender='P182' move='섀도스틸' defender_hp=0 knockout=True attacker_hp=87 move_id=712
 result winner=0 turns=12 remaining=((0, 50, 83, 0, 100, 87), (0, 0, 0, 0)) statuses=(('poison', None, None, 'poison', None, None), (None, None, None, None))
-won=True carry=null body=2ab9a0433f6e34832d4c2a69dc056a6fda1be65f5a4361eb1e328906f96a4f52
+won=True carry=null body=1451b008fd8ed3c4fb55f43762002345867ae17e471d35de01894abce997f2f2
 ## johto-5 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P185' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=66 move_id=620
@@ -170,7 +170,7 @@ Action turn=15 side=1 attacker='P213' defender='P524' move='오물폭탄' multip
 StatusDamage turn=15 side=0 pokemon='P524' hp=53 fainted=False kind='poison'
 Action turn=16 side=0 attacker='P524' defender='P213' move='퀵턴' defender_hp=0 knockout=True attacker_hp=53 move_id=812
 result winner=0 turns=16 remaining=((0, 0, 0, 0, 53, 0), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, 'poison', 'poison'), (None, None, None, None, None))
-won=True carry=null body=3e9f0ed46dad16fcbfae85525fabb169d2e47e728b0352df06253fac4633af7e
+won=True carry=null body=6f37140822d9a3a0ed078941581c3db791d3fd56d98ac97b5dfa057ef608369a
 ## johto-6 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P201' move='탁쳐서떨구기' defender_hp=49 move_id=282
@@ -211,7 +211,7 @@ Action turn=15 side=0 attacker='P524' defender='P196' move='불꽃채찍' multip
 Action turn=15 side=1 attacker='P196' defender='P524' move='사이코키네시스' defender_hp=33 attacker_hp=24 move_id=94
 Action turn=16 side=0 attacker='P524' defender='P196' move='불꽃채찍' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=33 move_id=680
 result winner=0 turns=16 remaining=((0, 0, 1, 0, 33, 0), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=True carry=null body=41a44ab48a2cef843fbf40598a89d02b339749c6b4c563ebfb89b519244a6105
+won=True carry=null body=62fa69682316ab4619c95d1e07c296ba9587388b21eec54e8fd336d773bc5b25
 ## johto-7 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P164' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=70 move_id=620
@@ -259,7 +259,7 @@ Action turn=16 side=1 attacker='P217' defender='P322' move='지진' multiplier=4
 SendOut turn=16 side=0 pokemon='P524' member=4
 Action turn=17 side=1 attacker='P217' defender='P524' move='난동부리기' defender_hp=0 knockout=True attacker_hp=4 move_id=37
 result winner=1 turns=17 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 4, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=10b448e63bc14ca9f81f2ebd24bfed78cb062ce7cb8489e03f367639923fc64a
+won=False carry=null body=b4ff9bbf8d6a956b5dd2a74c105021a793e45ce14f9e578d6216cd4b46d331f8
 ## johto-8 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P247' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=1 move_id=620
@@ -307,7 +307,7 @@ Action turn=16 side=1 attacker='P232' defender='P524' move='더스트슈트' mul
 SendOut turn=16 side=0 pokemon='P322' member=2
 Action turn=17 side=1 attacker='P232' defender='P322' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
 result winner=1 turns=17 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 100, None)) statuses=((None, None, None, None, None, 'poison'), (None, None, None, None, None, None))
-won=False carry=null body=1e3702e733ad826180e043766a4f31a995f5fe1644853901313be06c17090270
+won=False carry=null body=14bf6703081629b653fd0c9a46e79425a4446bc74bcd962936f4d6b53827ce07
 ## johto-elite-1 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P227' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=13 move_id=620
@@ -349,7 +349,7 @@ Action turn=15 side=1 attacker='P242' defender='P524' move='하이퍼보이스' 
 ItemHeal turn=15 side=1 pokemon='P242' item='leftovers' hp=31
 Action turn=16 side=0 attacker='P524' defender='P242' move='퀵턴' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=77 move_id=812
 result winner=0 turns=16 remaining=((0, 0, 0, 0, 77, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 77, "status": null}, {"hp": 0, "status": null}] body=cdf430c283ca8a38c514d35a14dd0460cf711ab3a5bd4f8daac74b7b8918d88b
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 77, "status": null}, {"hp": 0, "status": null}] body=16057014d497c069115f8c3357db9b9fbd8dd251610814fcd28c7fa8e698dab2
 ## johto-elite-2 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 77, "status": null}, {"hp": 0, "status": null}]
 Action turn=1 side=0 attacker='P524' defender='P219' move='퀵턴' defender_hp=29 attacker_hp=77 move_id=812
 Action turn=1 side=1 attacker='P219' defender='P524' move='대지의힘' defender_hp=53 attacker_hp=29 move_id=414
@@ -396,7 +396,7 @@ Action turn=14 side=0 attacker='P524' defender='P186' move='퀵턴' critical=Tru
 SendOut turn=14 side=1 pokemon='P229' member=2
 Action turn=15 side=1 attacker='P229' defender='P524' move='오물폭탄' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=90 attacker_item='life-orb' defender_item='kebia-berry' move_id=188
 result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 90, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=7006e531130d4f3da9676e5c273ba7fb66d8d7b2a1e5ec79feda6b6b66ea5ba4
+won=False carry=null body=e66ee1260619b5536779ee04607015fb9918c7bf5dbd80e5975627ed2e5cf6fb
 ## johto-elite-4 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P176' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=58 move_id=620
@@ -443,7 +443,7 @@ SendOut turn=15 side=0 pokemon='P524' member=4
 SendOut turn=15 side=1 pokemon='P241' member=5
 Action turn=16 side=0 attacker='P524' defender='P241' move='불꽃채찍' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=89 move_id=680
 result winner=0 turns=16 remaining=((0, 0, 35, 0, 89, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 35, "status": null}, {"hp": 0, "status": null}, {"hp": 89, "status": null}, {"hp": 0, "status": null}] body=b90e153f68da7557950df6d2f8a8b65c0f8f1a3f402c1cdd040fc71de8202d9c
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 35, "status": null}, {"hp": 0, "status": null}, {"hp": 89, "status": null}, {"hp": 0, "status": null}] body=ebaf498ace02d7d7a6cc5acefafb28e7f5405af94624b42f11fce25c955a2ee4
 ## johto-champion party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 35, "status": null}, {"hp": 0, "status": null}, {"hp": 89, "status": null}, {"hp": 0, "status": null}]
 MegaEvolution turn=1 side=1 pokemon='P181' ability='맹화' form_id=10045
 Action turn=1 side=1 attacker='P181' defender='P322' move='10만볼트' defender_hp=1 move_id=85
@@ -464,7 +464,7 @@ SendOut turn=6 side=1 pokemon='P169' member=3
 Action turn=7 side=0 attacker='P524' defender='P169' move='불꽃채찍' multiplier=2.0 changes=(Change(side=1, pokemon='P169', kind='defense', stages=-1),) defender_hp=40 attacker_hp=26 move_id=680
 Action turn=7 side=1 attacker='P169' defender='P524' move='오물폭탄' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=40 defender_item='kebia-berry' move_id=188
 result winner=1 turns=7 remaining=((0, 0), (0, 0, 0, 40, None, None, None)) statuses=((None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=1275e9574fea8e9452fbed83fec0476a7f972dd28023750f7d432001a7174466
+won=False carry=null body=0c274a9dd288256d229129bf3939998f98bf468faf8f0bc5a2316da89f877de2
 ## johto-hideout-1 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P168' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=21 move_id=620
@@ -504,7 +504,7 @@ Action turn=15 side=1 attacker='P171' defender='P524' move='10만볼트' multipl
 Action turn=15 side=0 attacker='P524' defender='P171' move='퀵턴' defender_hp=45 attacker_hp=33 move_id=812
 Action turn=16 side=1 attacker='P171' defender='P524' move='10만볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=45 move_id=85
 result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 45, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=5b9105e62515e656b56251e3018e0ac55d013ab7a4fa1f3140571c1075745ab2
+won=False carry=null body=0ebc400022e5f1cecf72f1663e29a35c295cc61f3d00313dc4a24fa4ab4670ec
 ## johto-hideout-2 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P168' move='화룡점정' multiplier=2.0 critical=True defender_hp=0 knockout=True move_id=620
@@ -536,7 +536,7 @@ Action turn=11 side=1 attacker='P181' defender='P613' move='파워젬' multiplie
 SendOut turn=11 side=0 pokemon='P524' member=4
 Action turn=12 side=0 attacker='P524' defender='P181' move='퀵턴' multiplier=2.0 defender_hp=0 knockout=True pivoted=True move_id=812
 result winner=0 turns=12 remaining=((0, 39, 0, 0, 100, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 39, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}] body=2822b46ba835eb0d561b1f9208494f07242190a7d0586eac0586d48fdfd972b2
+won=True carry=[{"hp": 0, "status": null}, {"hp": 39, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}] body=c6e4c152e9df02e525a9f5e354f40a4d230b2115da86628151a4a36072d828f6
 ## johto-hideout-3 party 0 carried [{"hp": 0, "status": null}, {"hp": 39, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}]
 Action turn=1 side=1 attacker='P171' defender='P910' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True move_id=57
 SendOut turn=1 side=0 pokemon='P524' member=1
@@ -587,7 +587,7 @@ Action turn=12 side=1 attacker='P197' defender='P322' move='속임수' defender_
 SendOut turn=12 side=0 pokemon='P524' member=4
 Action turn=13 side=1 attacker='P197' defender='P524' move='매혹의보이스' defender_hp=0 knockout=True move_id=914
 result winner=1 turns=13 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 100, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=00def4e9745f49db515a8c49aaa483f7c792ebd5790b8119c432b6e7984d8bcd
+won=False carry=null body=d5ddf7664a80d7a7e2b172b483d172e35093b90488addfc747159477a01355c8
 ## johto-hidden party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability=None form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P233' move='눈보라' multiplier=2.0 defender_hp=15 move_id=59
@@ -649,7 +649,7 @@ SendOut turn=21 side=1 pokemon='P250' member=6
 Action turn=22 side=0 attacker='P524' defender='P250' move='불꽃채찍' multiplier=2.0 changes=(Change(side=1, pokemon='P250', kind='defense', stages=-1),) defender_hp=36 attacker_hp=36 move_id=680
 Action turn=22 side=1 attacker='P250' defender='P524' move='브레이브버드' recoil=True defender_hp=0 knockout=True attacker_hp=18 attacker_item='life-orb' move_id=413
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 18, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None, None))
-won=False carry=null body=70538b25768500b6641da522b0498b1301b476e9fe6d0838a33283d6d3dc1290
+won=False carry=null body=530a76cf6d24775e04b280538ee12b3a81fd39c2566935f82b2be7d94675dbc6
 ## johto-1 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P159' move='사과산' changes=(Change(side=1, pokemon='P159', kind='special_defense', stages=-1),) defender_hp=77 move_id=787
@@ -676,7 +676,7 @@ Action turn=8 side=0 attacker='P1017' defender='P195' move='분화' defender_hp=
 Action turn=8 side=1 attacker='P195' defender='P1017' move='냉동펀치' multiplier=2.0 defender_hp=56 attacker_hp=11 move_id=8
 Action turn=9 side=0 attacker='P1017' defender='P195' move='성묘' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=56 move_id=854
 result winner=0 turns=9 remaining=((0, 0, 0, 72, 56, None), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=5a6870885bf6c11eaee4ede630a150dabeb0f297cb538cccfa2b8c63f5a8173f
+won=True carry=null body=82e0cf24b5aea05e32437feebfc5d160b6799a73a2a3bdda180e8b0fa8dc2343
 ## johto-2 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P198' move='사과산' changes=(Change(side=1, pokemon='P198', kind='special_defense', stages=-1),) defender_hp=42 move_id=787
@@ -702,7 +702,7 @@ SendOut turn=7 side=1 pokemon='P227' member=2
 Action turn=8 side=0 attacker='P1017' defender='P227' move='분화' multiplier=2.0 defender_hp=1 defender_item='focus-sash' move_id=284
 Action turn=8 side=1 attacker='P227' defender='P1017' move='브레이브버드' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 move_id=413
 result winner=0 turns=8 remaining=((0, 0, 0, 51, 0, None), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=88271995c1c0a8f9de95f7c52327c6c8d3bc6273a0e543b8fd8e09b00129f5e7
+won=True carry=null body=159a8b51240542e89cbeb1fe35b1a81a19655c01cb0829d836ca6b7007a73f3c
 ## johto-3 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=1 attacker='P168' defender='P976' move='속임수' multiplier=2.0 defender_hp=0 knockout=True move_id=492
@@ -737,7 +737,7 @@ MegaEvolution turn=12 side=0 pokemon='P740' ability='요가파워' form_id=10315
 Action turn=13 side=1 attacker='P213' defender='P740' move='지진' multiplier=2.0 defender_hp=70 attacker_hp=20 move_id=89
 Action turn=13 side=0 attacker='P740' defender='P213' move='매지컬액셀' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=70 move_id=900
 result winner=0 turns=13 remaining=((0, 0, 0, 0, 0, 70), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-won=True carry=null body=8e9dd01d624c8b1aebc9751c22992c28f8dbee02675f89d127868ef31e0595e5
+won=True carry=null body=adb41543c9d75815fedeb690332fa3dd6c8c456766afec4c6873252494deecbc
 ## johto-4 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P153' move='사과산' multiplier=0.5 changes=(Change(side=1, pokemon='P153', kind='special_defense', stages=-1),) defender_hp=84 move_id=787
@@ -768,7 +768,7 @@ Action turn=10 side=0 attacker='P1017' defender='P182' move='성묘' defender_hp
 Action turn=10 side=1 attacker='P182' defender='P1017' move='문포스' defender_hp=63 attacker_hp=36 move_id=585
 Action turn=11 side=0 attacker='P1017' defender='P182' move='성묘' defender_hp=0 knockout=True attacker_hp=63 move_id=854
 result winner=0 turns=11 remaining=((0, 0, 0, 20, 63, None), (0, 0, 0, 0)) statuses=((None, None, None, 'poison', None, None), (None, None, None, None))
-won=True carry=null body=265cba40fb44e3579bd941c7fc37a3cd99b356cf39e9c40d7c200d8a30641116
+won=True carry=null body=43091f5ffc7c36eaff4e0e16419f70f6ef8c2cc06a477b208098072e51a78a32
 ## johto-5 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P185' move='사과산' multiplier=2.0 changes=(Change(side=1, pokemon='P185', kind='special_defense', stages=-1),) defender_hp=32 move_id=787
@@ -811,7 +811,7 @@ MegaEvolution turn=14 side=0 pokemon='P740' ability='요가파워' form_id=10315
 Action turn=15 side=1 attacker='P213' defender='P740' move='지진' multiplier=2.0 defender_hp=66 attacker_hp=40 move_id=89
 Action turn=15 side=0 attacker='P740' defender='P213' move='매지컬액셀' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=66 move_id=900
 result winner=0 turns=15 remaining=((0, 0, 0, 65, 0, 66), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, 'poison', None), (None, None, None, None, None))
-won=True carry=null body=63b38ccfc26104848980ac7bcda4091adcb720c804cbad73e8796d90e10036fe
+won=True carry=null body=3ca03835f917d908d99028aa3d397bea4af01bc1c514c021c2342e0e2a4cb035
 ## johto-6 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P201' move='사과산' changes=(Change(side=1, pokemon='P201', kind='special_defense', stages=-1),) defender_hp=63 move_id=787
@@ -845,7 +845,7 @@ SendOut turn=11 side=1 pokemon='P178' member=2
 Action turn=12 side=0 attacker='P859' defender='P178' move='폴터가이스트' defender_hp=63 attacker_hp=41 move_id=809
 Action turn=12 side=1 attacker='P178' defender='P859' move='섀도볼' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=63 move_id=247
 result winner=1 turns=12 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 63, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=False carry=null body=2ef70014d13b72f0e6f9ca7d9a4ce296506fc6aa8add256c0bc22e6ba14a1cbb
+won=False carry=null body=d2ff6e0ff73b18a08f177d06b8a5542b0dcdfc04de8e9d0c8071619ebbddf360
 ## johto-7 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P164' move='사과산' multiplier=2.0 changes=(Change(side=1, pokemon='P164', kind='special_defense', stages=-1),) defender_hp=31 move_id=787
@@ -891,7 +891,7 @@ TrickRoomEnd turn=16
 SendOut turn=16 side=0 pokemon='P859' member=3
 Action turn=17 side=1 attacker='P233' defender='P859' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=32 move_id=58
 result winner=1 turns=17 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 32)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=6e79e1355f53cb26b2dc02961f6d71eff0cfd60f65247bfbf7edc5d66a5ec95e
+won=False carry=null body=14381909960992a57ade10fda85c2eb8de601eae76b59a65f4aa994b98223b07
 ## johto-8 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P247' move='분노의주먹' multiplier=2.0 defender_hp=58 move_id=889
@@ -931,7 +931,7 @@ Action turn=13 side=1 attacker='P221' defender='P859' move='고드름침' multip
 Action turn=13 side=0 attacker='P859' defender='P221' move='폴터가이스트' defender_hp=60 attacker_hp=13 move_id=809
 Action turn=14 side=1 attacker='P221' defender='P859' move='고드름침' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=60 move_id=333
 result winner=1 turns=14 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 60, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=f965d8c3e1a6c60b1561aef16760e1cd24fc24a9a5487cd85d85e754f9cbef66
+won=False carry=null body=6abc1e0302908c45a994311845d9e0cec0af51ef2179785f30b7b8d43f78e467
 ## johto-elite-1 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P227' move='사과산' changes=(Change(side=1, pokemon='P227', kind='special_defense', stages=-1),) defender_hp=65 move_id=787
@@ -977,7 +977,7 @@ StatusDamage turn=15 side=1 pokemon='P242' hp=1 fainted=False
 ItemHeal turn=15 side=1 pokemon='P242' item='leftovers' hp=6
 Action turn=16 side=1 attacker='P242' defender='P740' move='하이퍼보이스' defender_hp=0 knockout=True attacker_hp=6 move_id=304
 result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 6)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, 'burn'))
-won=False carry=null body=2f286accea22f8ae448a4da614e00b979112c25a3262b04bbd6964cf63af396d
+won=False carry=null body=624330c777315b1987d10fd570d07e8b20a60578bd1f8c9005a1ca7e97d7bbd6
 ## johto-elite-2 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P219' move='사과산' changes=(Change(side=1, pokemon='P219', kind='special_defense', stages=-1),) defender_hp=50 move_id=787
@@ -1016,7 +1016,7 @@ Action turn=14 side=0 attacker='P740' defender='P197' move='트릭룸' defender_
 Action turn=15 side=0 attacker='P740' defender='P197' move='매지컬액셀' multiplier=2.0 defender_hp=9 attacker_hp=46 move_id=900
 Action turn=15 side=1 attacker='P197' defender='P740' move='속임수' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=9 move_id=492
 result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 9, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=d43221a96732cc9b74133f55691c88546e1c7f3edbe6b486ddd780680f677025
+won=False carry=null body=c80c288f0112b1d8863a9e09a8e7ac8553eb815e7ae508fc32145ca32796895a
 ## johto-elite-3 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=1 attacker='P215' defender='P976' move='속임수' multiplier=2.0 defender_hp=0 knockout=True move_id=492
@@ -1050,7 +1050,7 @@ Action turn=12 side=1 attacker='P229' defender='P740' move='악의파동' multip
 SendOut turn=12 side=0 pokemon='P859' member=3
 Action turn=13 side=1 attacker='P229' defender='P859' move='오버히트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=80 attacker_item='life-orb' move_id=315
 result winner=1 turns=13 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 80, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=677c41cc16585eb1ecdbf1f03003c6681bfa0266542f4b9fddf3c547a5671bb5
+won=False carry=null body=f0eb71f16ae65b2c6407f5de381d6accb463e9675cf5b4185bd65401c1f0521b
 ## johto-elite-4 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P176' move='분노의주먹' defender_hp=90 move_id=889
@@ -1102,7 +1102,7 @@ Action turn=19 side=1 attacker='P199' defender='P859' move='불대문자' missed
 TrickRoomEnd turn=19
 Action turn=20 side=1 attacker='P199' defender='P859' move='불대문자' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=12 move_id=126
 result winner=1 turns=20 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 12, None)) statuses=((None, None, None, None, None, 'poison'), (None, None, None, None, None, None))
-won=False carry=null body=503bc251bc682d76587c4ac3c5f24ce71d2f2f95baf9ca41d6829e4b90adf0c6
+won=False carry=null body=eba8690f38806e50a2c3cce394b92de59f3625b50d55403eb8a1913b6bd45bb0
 ## johto-champion party 1 carried null
 MegaEvolution turn=1 side=1 pokemon='P181' ability='맹화' form_id=10045
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
@@ -1145,7 +1145,7 @@ SendOut turn=15 side=0 pokemon='P740' member=5
 MegaEvolution turn=15 side=0 pokemon='P740' ability='요가파워' form_id=10315
 Action turn=16 side=1 attacker='P250' defender='P740' move='플레어드라이브' multiplier=0.5 recoil=True defender_hp=73 attacker_fainted=True attacker_hp=0 move_id=394
 result winner=0 turns=16 remaining=((0, 0, 0, 55, 0, 73), (0, 0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=True carry=null body=535ea4605040f226fb4b196e06527535b593f947f7ff33f3af0ff9ac0b4b1654
+won=True carry=null body=0140e033f5ea851a524111230251b2fa499b42cd45c585a5998935f65a676b4b
 ## johto-hideout-1 party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=1 attacker='P168' defender='P976' move='속임수' multiplier=2.0 defender_hp=1 move_id=492
@@ -1190,7 +1190,7 @@ Action turn=16 side=0 attacker='P859' defender='P181' move='폴터가이스트' 
 Action turn=17 side=1 attacker='P181' defender='P859' move='매지컬샤인' defender_hp=13 attacker_hp=1 move_id=605
 Action turn=17 side=0 attacker='P859' defender='P181' move='폴터가이스트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=13 move_id=809
 result winner=0 turns=17 remaining=((0, 0, 0, 13, 0, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 13, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=7140f3adc7fff8b818f72474eea8dc3bb50391a5c087f263e39f81fd5446d117
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 13, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=4b724fa750ceac3e18e91791c84a867cca28681070da0ef2c7132b5a7d1c1bfd
 ## johto-hideout-2 party 1 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 13, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}]
 Action turn=1 side=1 attacker='P168' defender='P859' move='속임수' multiplier=2.0 critical=True defender_hp=0 knockout=True move_id=492
 result winner=1 turns=1 remaining=((0,), (100, None, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
@@ -1231,7 +1231,7 @@ Action turn=14 side=0 attacker='P1017' defender='P169' move='분화' multiplier=
 Action turn=14 side=1 attacker='P169' defender='P1017' move='제비반환' multiplier=2.0 defender_hp=21 attacker_hp=14 move_id=332
 Action turn=15 side=0 attacker='P1017' defender='P169' move='성묘' defender_hp=0 knockout=True attacker_hp=21 move_id=854
 result winner=0 turns=15 remaining=((0, 0, 0, 0, 21, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 21, "status": null}, {"hp": 100, "status": null}] body=69d83f797b88d5a837558a1d7c8c3a650b83937e66e8acce59c68310503d8ce5
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 21, "status": null}, {"hp": 100, "status": null}] body=2c114cafdcbd368bcb8a7a93bd70071bae631141a8d79070fd417b0cf99e95d2
 ## johto-hideout-4 party 1 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 21, "status": null}, {"hp": 100, "status": null}]
 FormShift turn=1 side=0 pokemon='P1017' kind='mask' form_id=10273 change=Change(side=0, pokemon='P1017', kind='special_defense', stages=1)
 Action turn=1 side=1 attacker='P171' defender='P1017' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True move_id=58
@@ -1243,7 +1243,7 @@ Action turn=3 side=0 attacker='P740' defender='P171' move='매지컬액셀' crit
 ItemHeal turn=3 side=1 pokemon='P171' item='sitrus-berry' hp=69
 Action turn=3 side=1 attacker='P171' defender='P740' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=69 move_id=57
 result winner=1 turns=3 remaining=((0, 0), (69, None, None, None, None, None)) statuses=((None, None), (None, None, None, None, None, None))
-won=False carry=null body=009a390ae96c8075c0e27fec8284e997eab6befe8c57014deb4d9effcce385a7
+won=False carry=null body=f3ecf10d111f03d357e17de2d8bd4fc1587fe3542a891330a8306bcd700f860e
 ## johto-hidden party 1 carried null
 AbilityTrigger side=0 pokemon='P976' ability='drizzle' weather='rain'
 Action turn=1 side=0 attacker='P976' defender='P233' move='사과산' multiplier=0.5 changes=(Change(side=1, pokemon='P233', kind='special_defense', stages=-1),) defender_hp=80 move_id=787
@@ -1300,4 +1300,4 @@ Action turn=19 side=0 attacker='P1017' defender='P249' move='분화' defender_hp
 Action turn=20 side=1 attacker='P249' defender='P1017' move='에어로블라스트' multiplier=2.0 defender_hp=14 attacker_hp=54 move_id=177
 Action turn=20 side=0 attacker='P1017' defender='P249' move='심판의뭉치' defender_hp=0 knockout=True attacker_hp=14 move_id=449
 result winner=0 turns=20 remaining=((0, 0, 0, 0, 14, None), (0, 0, 0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None, None))
-won=True carry=null body=5ad0b2536fed0f33b4bd6ce799365069b8ad80ccba8e06151510ffb832476ca5
+won=True carry=null body=dfb0052cb3d285f207c07a30746fa576c64b66334341a93627e2aeb9a6801595

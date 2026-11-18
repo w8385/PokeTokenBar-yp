@@ -16,7 +16,7 @@ Action turn=7 side=1 attacker='P654' defender='P978' move='오버히트' multipl
 SendOut turn=7 side=0 pokemon='P634' member=1
 Action turn=8 side=0 attacker='P634' defender='P654' move='맹독엄니' defender_hp=0 knockout=True move_id=305
 result winner=0 turns=8 remaining=((0, 100, None, None, None, None), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=35158d815d5d677d162cc085b04d0d91b2457aeda3e89e07e14a32759e547ee5
+won=True carry=null body=f840b099aacc98c16a27ae3926795ff04421b0cce7d377b6a6f370ac12725c54
 ## kalos-2 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=1 attacker='P651' defender='P978' move='우드해머' multiplier=2.0 recoil=True defender_hp=64 attacker_hp=82 move_id=452
@@ -47,7 +47,7 @@ Action turn=10 side=1 attacker='P711' defender='P411' move='섀도볼' multiplie
 YawnSleep turn=10 side=1 pokemon='P711'
 Action turn=11 side=0 attacker='P411' defender='P711' move='찌리리따끔따끔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=22 move_id=716
 result winner=0 turns=11 remaining=((0, 0, 100, 22, None, None), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, 'sleep'))
-won=True carry=null body=77b83c82e78c4c27a749ab621900f12e8706606c92c03ea346604ce7745bbd83
+won=True carry=null body=d4385138609fe2648562edfcdc819d7f6239d4612c51347dbe4afa8f973dfd5b
 ## kalos-3 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P660' move='진흙폭탄' multiplier=2.0 defender_hp=22 move_id=426
@@ -74,7 +74,7 @@ Action turn=9 side=0 attacker='P4' defender='P668' move='독침천발' multiplie
 SendOut turn=9 side=1 pokemon='P676' member=1
 Action turn=10 side=0 attacker='P4' defender='P676' move='바크아웃' multiplier=2.0 defender_hp=0 knockout=True move_id=555
 result winner=0 turns=10 remaining=((0, 0, 100, None, None, None), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, 'toxic'))
-won=True carry=null body=128fe15d37da18de58e79ecac6c5b570d4963e4d209848d2946fa7a259b5bf24
+won=True carry=null body=6485d0b0b3c866df57fcf7ec48ec748f0e66f558855b426c477489878d5efa7a
 ## kalos-4 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P689' move='진흙폭탄' defender_hp=44 move_id=426
@@ -115,7 +115,7 @@ SendOut turn=14 side=0 pokemon='P1017' member=5
 FormShift turn=14 side=0 pokemon='P1017' kind='mask' form_id=10273 change=Change(side=0, pokemon='P1017', kind='special_defense', stages=1)
 Action turn=15 side=0 attacker='P1017' defender='P699' move='두번차기' multiplier=2.0 defender_hp=0 knockout=True hits=2 move_id=24
 result winner=0 turns=15 remaining=((0, 0, 55, 0, 0, 100), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), ('sleep', None, None, None))
-won=True carry=null body=4e92e500f096f0081b27b107581eea1eeafd23cea80c52ac8b610859fb91d614
+won=True carry=null body=1e31ba2fd29d621ed36a0c698f112b5163fc155a828a3e6a560b7937367acc19
 ## kalos-5 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P705' move='진흙폭탄' multiplier=2.0 defender_hp=41 move_id=426
@@ -158,7 +158,7 @@ Action turn=16 side=1 attacker='P706' defender='P1017' move='용성군' changes=
 Action turn=16 side=0 attacker='P1017' defender='P706' move='트리플악셀' missed=True multiplier=2.0 defender_hp=17 attacker_hp=75 move_id=813
 Action turn=17 side=1 attacker='P706' defender='P1017' move='발버둥' recoil=True defender_hp=46 attacker_fainted=True attacker_hp=0 move_id=165
 result winner=0 turns=17 remaining=((0, 0, 100, 0, 0, 46), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=True carry=null body=19a9dc496987a24b5368cd90aac0bd67853a2dd0be2e59ed712bd8beb82e5077
+won=True carry=null body=56dced71a7ada912dfeb698095b9d18e6c41378e471194aa7e0703f94988df17
 ## kalos-6 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P662' move='병상첨병' defender_hp=84 move_id=506
@@ -199,7 +199,7 @@ SendOut turn=13 side=0 pokemon='P4' member=2
 Action turn=14 side=1 attacker='P715' defender='P4' move='폭풍' missed=True multiplier=2.0 attacker_hp=1 move_id=542
 Action turn=14 side=0 attacker='P4' defender='P715' move='바크아웃' multiplier=2.0 defender_hp=0 knockout=True move_id=555
 result winner=0 turns=14 remaining=((0, 0, 100, 0, 0, 0), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, 'sleep', None, None, None))
-won=True carry=null body=e71d6b1b5b3bd617d9390b9eae99cdcec21536d76270a310d6b3fee57321798c
+won=True carry=null body=c2000acb1b4c4dbc74e795ac6309b8cd9a298b5cb8413c10fd5dba48cbaa7c1a
 ## kalos-7 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P690' move='진흙폭탄' defender_hp=67 move_id=426
@@ -248,7 +248,7 @@ Action turn=17 side=1 attacker='P693' defender='P4' move='오물웨이브' defen
 Action turn=18 side=0 attacker='P4' defender='P693' move='역린' defender_hp=4 attacker_hp=22 move_id=200
 Action turn=18 side=1 attacker='P693' defender='P4' move='오물웨이브' defender_hp=0 knockout=True attacker_hp=4 move_id=482
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 4, None)) statuses=((None, None, None, None, None, None), (None, None, 'toxic', None, None, None))
-won=False carry=null body=b535f90167e03acbcd1c2368ae69a6c87948a84dbddb32b5d5624f13ebc84f87
+won=False carry=null body=ab5f334abade2fa4c6e78d60eea015037f060efa1b43ee2fdc21c28303dbeb86
 ## kalos-8 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=1 attacker='P683' defender='P978' move='에너지볼' multiplier=2.0 defender_hp=63 move_id=412
@@ -302,7 +302,7 @@ Action turn=20 side=1 attacker='P703' defender='P1017' move='문포스' critical
 SendOut turn=20 side=0 pokemon='P4' member=2
 Action turn=21 side=1 attacker='P703' defender='P4' move='문포스' defender_hp=0 knockout=True attacker_hp=65 move_id=585
 result winner=1 turns=21 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 65, None, None)) statuses=((None, None, None, None, None, None), (None, 'sleep', None, None, None, None))
-won=False carry=null body=f837750d8184db77309b197966c7d95b3a38ec57cf6b91082681123c07ae0704
+won=False carry=null body=c7a0113d650b558a163abfdeed94a74d680b6326e7db722410e700d8399693a6
 ## kalos-elite-1 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P675' move='병상첨병' defender_hp=73 move_id=506
@@ -360,7 +360,7 @@ Action turn=21 side=1 attacker='P671' defender='P4' move='문포스' changes=(Ch
 Action turn=22 side=0 attacker='P4' defender='P671' move='역린' defender_hp=30 attacker_hp=7 move_id=200
 Action turn=22 side=1 attacker='P671' defender='P4' move='문포스' defender_hp=0 knockout=True attacker_hp=30 move_id=585
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 30)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=7f1343703eae37492812344f49e5adb9aec916db867e43ab484ce86549377e2e
+won=False carry=null body=4698346c4d0d832791a284b804d3fa35286f3da2ab3e92d8b0e557b2b3d974ab
 ## kalos-elite-2 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P678' move='진흙폭탄' multiplier=2.0 defender_hp=49 move_id=426
@@ -405,7 +405,7 @@ Action turn=17 side=0 attacker='P715' defender='P715' move='불새' multiplier=2
 Action turn=17 side=1 attacker='P715' defender='P715' move='화염방사' multiplier=2.0 defender_hp=40 attacker_hp=1 move_id=53
 Action turn=18 side=0 attacker='P715' defender='P715' move='불새' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=40 move_id=143
 result winner=0 turns=18 remaining=((0, 0, 100, 0, 40, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, 'sleep', None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 40, "status": null}, {"hp": 100, "status": null}] body=83969992ef5440da68199b5ed5fa34cf3cc0ddc4033baa3bcef7cb7a06a8e65e
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 40, "status": null}, {"hp": 100, "status": null}] body=4bb145445b0c6a3ab67f31c168c4c11380cd55a5b0208c1dc79697b46b0d0745
 ## kalos-elite-3 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 40, "status": null}, {"hp": 100, "status": null}]
 Action turn=1 side=0 attacker='P4' defender='P687' move='퀵턴' defender_hp=81 pivoted=True move_id=812
 SendOut turn=1 side=0 pokemon='P715' member=1
@@ -422,7 +422,7 @@ Action turn=5 side=1 attacker='P675' defender='P4' move='속임수' multiplier=2
 Action turn=5 side=0 attacker='P4' defender='P675' move='바크아웃' changes=(Change(side=1, pokemon='P675', kind='special_attack', stages=-1),) defender_hp=69 attacker_hp=19 move_id=555
 Action turn=6 side=1 attacker='P675' defender='P4' move='속임수' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=69 move_id=492
 result winner=1 turns=6 remaining=((0, 0, 0), (0, 69, None, None, None, None)) statuses=((None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=f00bbac8935c69db36f12fc42baa916e920f7e11b73d43948171bf9d72c51cef
+won=False carry=null body=f118d7b393bccd2e16377c6adea6359ebd55cb3f0a465c189b549376be7bf667
 ## kalos-elite-4 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=1 attacker='P709' defender='P978' move='우드해머' multiplier=2.0 recoil=True defender_hp=46 attacker_hp=70 attacker_item='life-orb' move_id=452
@@ -472,7 +472,7 @@ Action turn=17 side=0 attacker='P1017' defender='P693' move='트리플악셀' mu
 Action turn=17 side=1 attacker='P693' defender='P1017' move='오물웨이브' defender_hp=81 attacker_hp=2 move_id=482
 Action turn=18 side=0 attacker='P1017' defender='P693' move='트리플악셀' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=81 move_id=813
 result winner=0 turns=18 remaining=((0, 0, 100, 0, 0, 81), (0, 0, 0, 0, 0, 0)) statuses=((None, 'poison', None, None, None, None), (None, None, 'sleep', 'sleep', 'sleep', None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 81, "status": null}] body=e438fc19328d6ee19fa597fa9d0c57b6fc2ac841e0bc6232d7f545fef47a1075
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 81, "status": null}] body=11af7a1bad970c198c94ac6d1d7510fc7e3d0448c23950338e8ac4483921ea54
 ## kalos-champion party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 81, "status": null}]
 MegaEvolution turn=1 side=1 pokemon='P701' ability='끝의대지' form_id=10300
 AbilityTrigger side=1 pokemon='P701' ability='desolate-land' weather='sun'
@@ -484,7 +484,7 @@ SendOut turn=1 side=0 pokemon='P4' member=0
 Action turn=2 side=0 attacker='P4' defender='P701' move='바크아웃' multiplier=2.0 changes=(Change(side=1, pokemon='P701', kind='special_attack', stages=-1),) defender_hp=41 move_id=555
 Action turn=2 side=1 attacker='P701' defender='P4' move='브레이브버드' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=15 move_id=413
 result winner=1 turns=2 remaining=((0, 0), (15, None, None, None, None, None, None)) statuses=((None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=cffb0a53f53605b6a1128fa2d538f41be761f72e687d889b85c62e41fd4f6b59
+won=False carry=null body=a7ce870cd57c2afd13c01c47bacf0cb707909a7720fd499d25ef4ddaef3cddaa
 ## kalos-hideout-1 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P666' move='진흙폭탄' defender_hp=72 move_id=426
@@ -546,7 +546,7 @@ Action turn=24 side=0 attacker='P715' defender='P695' move='칼춤' changes=(Cha
 Action turn=24 side=1 attacker='P695' defender='P715' move='' blocked='sleep' attacker_hp=57
 Action turn=25 side=0 attacker='P715' defender='P695' move='불새' multiplier=2.0 defender_hp=0 knockout=True move_id=143
 result winner=0 turns=25 remaining=((0, 0, 100, 0, 100, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, 'sleep', 'sleep', 'sleep'))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}] body=9520072937fcf9083f354f77d6100f9c25e6a49d211543a9eaf0c39c0d5f83f9
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}] body=a8c8b49c37ba35d4fc3a5d6804a5c4f4ef18db8b55ae3fa99988f9a16b567c44
 ## kalos-hideout-2 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}]
 Action turn=1 side=0 attacker='P4' defender='P702' move='역린' critical=True defender_hp=41 move_id=200
 Action turn=1 side=1 attacker='P702' defender='P4' move='씨폭탄' multiplier=0.5 defender_hp=83 attacker_hp=41 move_id=402
@@ -571,7 +571,7 @@ Action turn=9 side=1 attacker='P683' defender='P1017' move='문포스' defender_
 Action turn=9 side=0 attacker='P1017' defender='P683' move='트리플악셀' multiplier=2.0 defender_hp=17 hits=3 attacker_hp=30 move_id=813
 Action turn=10 side=1 attacker='P683' defender='P1017' move='문포스' defender_hp=0 knockout=True attacker_hp=17 move_id=585
 result winner=1 turns=10 remaining=((0, 0, 0), (0, 17, None, None, None, None)) statuses=((None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=ab11da9a848a287c6b76dd1db6747962d7ed78500b466e7bd8952be6c186b73b
+won=False carry=null body=bf002fa5dc11c502cd74dd666134898324d9636b2845b01d5979d3eebac7a445
 ## kalos-hideout-3 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P978' ability='총대장' form_id=10322
 Action turn=1 side=0 attacker='P978' defender='P707' move='덩굴채찍' multiplier=2.0 defender_hp=75 move_id=22
@@ -629,7 +629,7 @@ Action turn=21 side=0 attacker='P4' defender='P689' move='바크아웃' changes=
 Action turn=22 side=1 attacker='P689' defender='P4' move='스톤에지' missed=True defender_hp=41 attacker_hp=10 move_id=444
 Action turn=22 side=0 attacker='P4' defender='P689' move='바크아웃' defender_hp=0 knockout=True attacker_hp=41 move_id=555
 result winner=0 turns=22 remaining=((0, 0, 41, 0, 0, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), ('toxic', 'sleep', None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 41, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=948f5029ca7bff73531d499dc2be321ea7170e25fb7ab50f2e6e7e6ce93fb09e
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 41, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=09c8414f4afb0f1d4e5ee1487b82961b0efb8e57dda59aab092d9f141b9bb622
 ## kalos-hideout-4 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 41, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}]
 Action turn=1 side=1 attacker='P707' defender='P4' move='속임수' multiplier=2.0 defender_hp=0 knockout=True move_id=492
 result winner=1 turns=1 remaining=((0,), (100, None, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
@@ -681,7 +681,7 @@ Action turn=18 side=1 attacker='P658' defender='P1017' move='악의파동' multi
 Action turn=18 side=0 attacker='P1017' defender='P658' move='트리플악셀' multiplier=0.5 defender_hp=34 hits=3 attacker_hp=13 move_id=813
 Action turn=19 side=1 attacker='P658' defender='P1017' move='악의파동' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=34 move_id=399
 result winner=1 turns=19 remaining=((0, 0, 0, 0, 0, 0), (34, 0, 0, 0, 0, 0, None, None)) statuses=((None, None, None, None, None, None), (None, None, 'sleep', None, None, None, None, None))
-won=False carry=null body=11e88b1ded85b2e9d6b442206b1b8b86a48e91ab07881eae83b7f1c626429d27
+won=False carry=null body=bb7725619ac2b167fd1a31fe9f70bdf0afa6ce512c218506105de6cdfb38401d
 ## kalos-1 party 1 carried null
 Action turn=1 side=1 attacker='P667' defender='P364' move='오버히트' multiplier=2.0 changes=(Change(side=1, pokemon='P667', kind='special_attack', stages=-2),) defender_hp=48 move_id=315
 Action turn=1 side=0 attacker='P364' defender='P667' move='다크액셀' multiplier=2.0 defender_hp=44 attacker_hp=48 move_id=897
@@ -715,7 +715,7 @@ SendOut turn=11 side=0 pokemon='P384' member=3
 Action turn=12 side=1 attacker='P654' defender='P384' move='번개펀치' defender_hp=47 attacker_hp=43 move_id=9
 Action turn=12 side=0 attacker='P384' defender='P654' move='화룡점정' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=47 move_id=620
 result winner=0 turns=12 remaining=((0, 0, 0, 47, None, None), (0, 0, 0)) statuses=((None, 'burn', None, None, None, None), (None, None, None))
-won=True carry=null body=e70c278def399a1ed64eb701a36d4aae5b7dc29692f47debd6cbb885b92df75b
+won=True carry=null body=260a47223b060717af71f4407616391f7919ce9298c6197492de8de15d2806b0
 ## kalos-2 party 1 carried null
 Action turn=1 side=1 attacker='P651' defender='P364' move='스톤에지' missed=True move_id=444
 Action turn=1 side=0 attacker='P364' defender='P651' move='소금물' defender_hp=84 move_id=362
@@ -760,7 +760,7 @@ Action turn=18 side=1 attacker='P711' defender='P668' move='파워휩' multiplie
 SendOut turn=18 side=0 pokemon='P955' member=5
 Action turn=19 side=0 attacker='P955' defender='P711' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True move_id=754
 result winner=0 turns=19 remaining=((0, 0, 0, 0, 0, 100), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=8b9e187e1359a85dc340c946b905e7eb369ede86a256112cae98823d22043f2b
+won=True carry=null body=1b1aaea25bf46ea848f5816aade81690abaca5f5fa9002aacc22b5876cc8851f
 ## kalos-3 party 1 carried null
 Action turn=1 side=1 attacker='P660' defender='P364' move='더스트슈트' defender_hp=58 move_id=441
 Action turn=1 side=0 attacker='P364' defender='P660' move='소금물' multiplier=2.0 defender_hp=57 attacker_hp=58 move_id=362
@@ -800,7 +800,7 @@ Action turn=15 side=0 attacker='P384' defender='P676' move='화룡점정' change
 Action turn=16 side=1 attacker='P676' defender='P384' move='돌진' missed=True defender_hp=43 attacker_hp=26 move_id=36
 Action turn=16 side=0 attacker='P384' defender='P676' move='화룡점정' defender_hp=0 knockout=True attacker_hp=43 move_id=620
 result winner=0 turns=16 remaining=((0, 0, 0, 43, None, None), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-won=True carry=null body=0cf062280cb02dbed741f2fd49a612e1b3e5c8d37ac1cb1ef4666c6f7a046c75
+won=True carry=null body=27bb5819ee8123f9d35a7b7a8443e8a32cba6a910c6273a76e0963b8c9af3051
 ## kalos-4 party 1 carried null
 Action turn=1 side=1 attacker='P689' defender='P364' move='스톤에지' critical=True defender_hp=32 attacker_hp=90 attacker_item='life-orb' move_id=444
 Action turn=1 side=0 attacker='P364' defender='P689' move='성스러운칼' multiplier=2.0 defender_hp=56 attacker_hp=32 move_id=533
@@ -838,7 +838,7 @@ SendOut turn=13 side=1 pokemon='P699' member=3
 Action turn=14 side=0 attacker='P955' defender='P699' move='전격부리' defender_hp=44 attacker_hp=11 move_id=754
 Action turn=14 side=1 attacker='P699' defender='P955' move='대지의힘' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=44 move_id=414
 result winner=1 turns=14 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 44)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-won=False carry=null body=33bb1c77456b423524f5b8bb094fcf50f22f9f0eca6acf71c02e4935ae61244c
+won=False carry=null body=9c8e5e235e2900f8286918627ebec573f7b00de19b8c3ff7595dc1a0d5e2d621
 ## kalos-5 party 1 carried null
 Action turn=1 side=1 attacker='P705' defender='P364' move='냉동빔' multiplier=2.0 defender_hp=76 move_id=58
 Action turn=1 side=0 attacker='P364' defender='P705' move='소금물' defender_hp=81 attacker_hp=76 move_id=362
@@ -883,7 +883,7 @@ SendOut turn=17 side=0 pokemon='P955' member=5
 Action turn=18 side=0 attacker='P955' defender='P697' move='냉동빔' multiplier=2.0 defender_hp=12 move_id=58
 Action turn=18 side=1 attacker='P697' defender='P955' move='양날박치기' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 attacker_item='life-orb' move_id=457
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=False carry=null body=6ce44d3c1f35a8b35cd51b9efea2ac759092dd2162f24045063e2e75856f9be7
+won=False carry=null body=ab4c731322d08066f2634af7d9453d94f68eff5835a6ed8f05321c6a5096ebdd
 ## kalos-6 party 1 carried null
 Action turn=1 side=1 attacker='P662' defender='P364' move='플레어드라이브' multiplier=2.0 recoil=True defender_hp=30 attacker_hp=69 move_id=394
 Action turn=1 side=0 attacker='P364' defender='P662' move='다크액셀' defender_hp=57 attacker_hp=30 move_id=897
@@ -929,7 +929,7 @@ Action turn=17 side=1 attacker='P715' defender='P955' move='폭음파' defender_
 Action turn=18 side=0 attacker='P955' defender='P715' move='전격부리' multiplier=0.5 defender_hp=10 attacker_hp=24 move_id=754
 Action turn=18 side=1 attacker='P715' defender='P955' move='폭음파' defender_hp=0 knockout=True attacker_hp=10 move_id=586
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 10)) statuses=((None, None, None, None, 'poison', None), (None, None, None, None, None))
-won=False carry=null body=f69779761438b982e7e0fb90eb733953bea6d4f6e9a47ba3b1886839149324ce
+won=False carry=null body=0d8abcb777046c3e1cfec7bf20edcf2503f8cc024075200a51e4c6f51d3775c6
 ## kalos-7 party 1 carried null
 Action turn=1 side=1 attacker='P690' defender='P364' move='역린' defender_hp=66 move_id=200
 Action turn=1 side=0 attacker='P364' defender='P690' move='소금물' defender_hp=76 attacker_hp=66 move_id=362
@@ -981,7 +981,7 @@ Action turn=21 side=1 attacker='P658' defender='P955' move='파도타기' multip
 Action turn=22 side=0 attacker='P955' defender='P658' move='전격부리' defender_hp=7 attacker_hp=12 move_id=754
 Action turn=22 side=1 attacker='P658' defender='P955' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=7 move_id=57
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 7)) statuses=((None, None, None, 'poison', None, None), (None, None, None, None, None, None))
-won=False carry=null body=3bde269bbad4364944cd328f13ef4078064c8fe04eb1965487d9a2fb0b1f9011
+won=False carry=null body=69a30e8e75a56e904c71e1af2d8de653587ed5b5f4a18505c418cd1e27c4ffbd
 ## kalos-8 party 1 carried null
 Action turn=1 side=1 attacker='P683' defender='P364' move='문포스' changes=(Change(side=0, pokemon='P364', kind='special_attack', stages=-1),) defender_hp=67 move_id=585
 Action turn=1 side=0 attacker='P364' defender='P683' move='원수갚기' defender_hp=92 attacker_hp=67 move_id=514
@@ -1024,7 +1024,7 @@ Action turn=17 side=1 attacker='P703' defender='P955' move='대지의힘' multip
 Action turn=17 side=0 attacker='P955' defender='P703' move='전격부리' defender_hp=69 attacker_hp=17 move_id=754
 Action turn=18 side=1 attacker='P703' defender='P955' move='대지의힘' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=69 move_id=414
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 69, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=d5c9c8176925d8cc454abea7e0ef94dcb0093490dfb600c9816b18e8d451f6e2
+won=False carry=null body=323ae84688a7a5ed14ed237f6b3bca6d15d0f49aa90ee97223944ba0bd864832
 ## kalos-elite-1 party 1 carried null
 Action turn=1 side=1 attacker='P675' defender='P364' move='속임수' multiplier=2.0 defender_hp=48 move_id=492
 Action turn=1 side=0 attacker='P364' defender='P675' move='소금물' defender_hp=71 attacker_hp=48 move_id=362
@@ -1073,7 +1073,7 @@ SendOut turn=19 side=1 pokemon='P671' member=5
 Action turn=20 side=0 attacker='P955' defender='P671' move='전격부리' multiplier=2.0 defender_hp=1 attacker_hp=5 defender_item='focus-sash' move_id=754
 Action turn=20 side=1 attacker='P671' defender='P955' move='꽃가루경단' defender_hp=0 knockout=True attacker_hp=1 move_id=676
 result winner=1 turns=20 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 1)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=035c9e2600357a2ef8572c940001e9943f60e9a14572371996690d6ef115590e
+won=False carry=null body=45a760b0596015167cb5b74fc9aaf14b8ed5fa10e27ab948813848ff781f545f
 ## kalos-elite-2 party 1 carried null
 Action turn=1 side=1 attacker='P678' defender='P364' move='섀도볼' multiplier=2.0 defender_hp=77 move_id=247
 Action turn=1 side=0 attacker='P364' defender='P678' move='성스러운칼' multiplier=2.0 defender_hp=62 attacker_hp=77 move_id=533
@@ -1125,7 +1125,7 @@ Action turn=20 side=0 attacker='P955' defender='P715' move='전격부리' multip
 Action turn=20 side=1 attacker='P715' defender='P955' move='폭음파' defender_hp=66 attacker_hp=22 move_id=586
 Action turn=21 side=0 attacker='P955' defender='P715' move='전격부리' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=66 move_id=754
 result winner=0 turns=21 remaining=((0, 0, 0, 0, 0, 66), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 66, "status": null}] body=190f4a576ac2c14dfdd0bb8d3913f864ed3ab09c1e3818be6f28a2a3e941b385
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 66, "status": null}] body=400cb2764bcc41bd278b6af896e621e58497cae0de0a099672eb73894a450d8d
 ## kalos-elite-3 party 1 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 66, "status": null}]
 Action turn=1 side=0 attacker='P955' defender='P687' move='전격부리' multiplier=0.5 defender_hp=51 attacker_hp=66 move_id=754
 Action turn=1 side=1 attacker='P687' defender='P955' move='속임수' multiplier=2.0 defender_hp=5 attacker_hp=51 move_id=492
@@ -1175,7 +1175,7 @@ SendOut turn=15 side=1 pokemon='P693' member=5
 Action turn=16 side=0 attacker='P955' defender='P693' move='전격부리' multiplier=2.0 defender_hp=4 attacker_hp=21 move_id=754
 Action turn=16 side=1 attacker='P693' defender='P955' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=4 move_id=57
 result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 4)) statuses=((None, None, None, None, None, None), (None, None, 'burn', None, None, None))
-won=False carry=null body=812db08b2f1dc6a4e407b3fe8c6677cdba82e15c0895f4b667ae216f1951409c
+won=False carry=null body=193f3340585d706a2bd15d3da1ddbd9c8cfe2207db294ad5be3712ef7da6b75a
 ## kalos-champion party 1 carried null
 MegaEvolution turn=1 side=1 pokemon='P701' ability='끝의대지' form_id=10300
 AbilityTrigger side=1 pokemon='P701' ability='desolate-land' weather='sun'
@@ -1229,7 +1229,7 @@ Action turn=20 side=0 attacker='P955' defender='P716' move='냉동빔' multiplie
 Action turn=20 side=1 attacker='P716' defender='P955' move='' defender_hp=24 blocked='freeze' attacker_hp=11
 Action turn=21 side=0 attacker='P955' defender='P716' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=24 move_id=58
 result winner=0 turns=21 remaining=((0, 0, 0, 0, 0, 24), (0, 0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, 'freeze'))
-won=True carry=null body=f8cf7be651b973495d5c97fe0be8a0e9f307fb3b7c2106648a9f1bbc80a19ffa
+won=True carry=null body=e976bb22b1327434922ee59641789ed9dcad302f29db4a933849718c8f188c78
 ## kalos-hideout-1 party 1 carried null
 Action turn=1 side=1 attacker='P666' defender='P364' move='폭풍' multiplier=2.0 changes=(Change(side=0, pokemon='P364', kind='confusion', stages=0),) defender_hp=66 move_id=542
 Action turn=1 side=0 attacker='P364' defender='P666' move='' blocked='confusion' attacker_hp=59
@@ -1276,7 +1276,7 @@ SendOut turn=18 side=1 pokemon='P695' member=5
 Action turn=19 side=0 attacker='P955' defender='P695' move='냉동빔' multiplier=2.0 defender_hp=45 attacker_hp=25 move_id=58
 Action turn=19 side=1 attacker='P695' defender='P955' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=45 move_id=57
 result winner=1 turns=19 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 45)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=485e357dfac0c11d89f4ef1ca26f1414df0eb47e81ae4b992eb4c27a006890cf
+won=False carry=null body=2a71fa77b269be6e18ec71c7504c38d14ce13cb7e2070c301b3e1a1b0a1c90f9
 ## kalos-hideout-2 party 1 carried null
 Action turn=1 side=1 attacker='P702' defender='P364' move='씨폭탄' multiplier=0.5 critical=True defender_hp=84 move_id=402
 Action turn=1 side=0 attacker='P364' defender='P702' move='성스러운칼' multiplier=2.0 defender_hp=51 attacker_hp=84 move_id=533
@@ -1323,7 +1323,7 @@ SendOut turn=17 side=1 pokemon='P676' member=4
 Action turn=18 side=0 attacker='P955' defender='P676' move='전격부리' defender_hp=49 attacker_hp=22 move_id=754
 Action turn=18 side=1 attacker='P676' defender='P955' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=49 move_id=57
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 49, None)) statuses=((None, None, None, None, None, None), (None, 'burn', None, None, None, None))
-won=False carry=null body=5b7ed49c016c52a905fcb7d60a5844c9b37e651f4995518fba74f2f43034aa1e
+won=False carry=null body=bcf10ebb496e4cfda757dba12d119c201a0c8a77227821256285899844cf9a22
 ## kalos-hideout-3 party 1 carried null
 Action turn=1 side=1 attacker='P707' defender='P364' move='속임수' multiplier=2.0 defender_hp=36 move_id=492
 Action turn=1 side=0 attacker='P364' defender='P707' move='성스러운칼' multiplier=2.0 critical=True defender_hp=65 attacker_hp=36 move_id=533
@@ -1369,7 +1369,7 @@ Action turn=16 side=1 attacker='P687' defender='P955' move='속임수' multiplie
 Action turn=17 side=0 attacker='P955' defender='P687' move='전격부리' multiplier=0.5 defender_hp=4 attacker_hp=41 move_id=754
 Action turn=17 side=1 attacker='P687' defender='P955' move='속임수' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=4 move_id=492
 result winner=1 turns=17 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 4, None, None)) statuses=((None, None, None, None, None, None), (None, None, 'burn', None, None, None))
-won=False carry=null body=ca4e493c523f7b8376afe4075dfcd8a4d3630ef1294d3c939afbe487b3f53ea0
+won=False carry=null body=5dcbb084a81131e588018754b7975a79e9d59e327f0d64f816eb7ca393d69673
 ## kalos-hideout-4 party 1 carried null
 Action turn=1 side=1 attacker='P707' defender='P364' move='속임수' multiplier=2.0 defender_hp=36 move_id=492
 Action turn=1 side=0 attacker='P364' defender='P707' move='성스러운칼' multiplier=2.0 defender_hp=77 attacker_hp=36 move_id=533
@@ -1408,7 +1408,7 @@ SendOut turn=14 side=1 pokemon='P658' member=3
 Action turn=15 side=0 attacker='P955' defender='P658' move='전격부리' defender_hp=54 attacker_hp=10 move_id=754
 Action turn=15 side=1 attacker='P658' defender='P955' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=44 attacker_item='life-orb' move_id=57
 result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 44, None, None)) statuses=((None, None, None, None, 'paralysis', None), (None, 'burn', None, None, None, None))
-won=False carry=null body=d7829915ad412fca803cc6c4c25b6d13abf0740377540df349618aeba4a55ae5
+won=False carry=null body=177c2fbcceed8c7edf7eefb01f6869668a5c743c12389226cebf02300690ff56
 ## kalos-hidden party 1 carried null
 Action turn=1 side=1 attacker='P658' defender='P364' move='유턴' defender_hp=85 pivoted=True move_id=369
 SendOut turn=1 side=1 pokemon='P663' member=1
@@ -1464,4 +1464,4 @@ SendOut turn=21 side=1 pokemon='P670' member=6
 MegaEvolution turn=21 side=1 pokemon='P670' ability='적응력' form_id=10296
 Action turn=22 side=1 attacker='P670' defender='P955' move='문포스' multiplier=0.5 defender_hp=0 knockout=True move_id=585
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 100, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None, None))
-won=False carry=null body=44849c30a38844686aabe1d01ffd55b65ac582b2983c78e78c66e89f6a773f00
+won=False carry=null body=809c970fcd260afa3998686989ff86633e65256f63999223e9f4964b06f3da43

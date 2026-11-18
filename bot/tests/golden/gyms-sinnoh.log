@@ -92,7 +92,7 @@ Action turn=18 side=0 attacker='P1024' defender='P428' move='맹독엄니' defen
 Action turn=18 side=1 attacker='P428' defender='P1024' move='무릎차기' defender_hp=4 recovered=('sleep',) attacker_hp=23 move_id=136
 Action turn=19 side=0 attacker='P1024' defender='P428' move='맹독엄니' defender_hp=0 knockout=True attacker_hp=4 move_id=305
 result winner=0 turns=19 remaining=((0, 0, 0, 4, None, None), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, 'sleep', None))
-won=True carry=null body=c75aee2414c92ebcb001c95e6e733ea569b77981dd6d3a683c210becb1edd9ac
+won=True carry=null body=cc2ce1061fe6d75ccccdf12372dd2b8deb47b522f9e744a157b2ef545a328723
 ## sinnoh-4 party 0 carried null
 Action turn=1 side=1 attacker='P423' defender='P360' move='지진' defender_hp=53 move_id=89
 Action turn=1 side=0 attacker='P360' defender='P423' move='더블어택' defender_hp=51 hits=2 attacker_hp=53 move_id=458
@@ -129,7 +129,7 @@ Action turn=12 side=1 attacker='P389' defender='P187' move='들이받기' multip
 SendOut turn=12 side=0 pokemon='P354' member=5
 Action turn=13 side=1 attacker='P389' defender='P354' move='들이받기' multiplier=2.0 defender_hp=0 knockout=True move_id=838
 result winner=1 turns=13 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 100, None)) statuses=((None, None, None, None, None, None), (None, 'sleep', None, None))
-won=False carry=null body=c071613f698594c398a649ed180347a98845b67b1a0f976e799cb6148a10a316
+won=False carry=null body=c4ac8496c4dda2a3a7c679d55b1b34ef07ee52bc7fb782518374ed28f070c290
 ## sinnoh-5 party 0 carried null
 Action turn=1 side=1 attacker='P411' defender='P360' move='속임수' defender_hp=38 move_id=492
 Action turn=1 side=0 attacker='P360' defender='P411' move='더블어택' defender_hp=63 hits=2 attacker_hp=38 move_id=458
@@ -167,7 +167,7 @@ Action turn=12 side=0 attacker='P354' defender='P448' move='엑셀브레이크' 
 SendOut turn=12 side=1 pokemon='P395' member=3
 Action turn=13 side=1 attacker='P395' defender='P354' move='웨이브태클' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=90 attacker_item='life-orb' move_id=834
 result winner=1 turns=13 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 90, None)) statuses=((None, None, None, None, None, None), (None, None, 'sleep', None, None))
-won=False carry=null body=54074607bfcced92ccc93250a2321d1ce6ea1f2b8f24061c9ff66ef7a782acfc
+won=False carry=null body=042aa6bdd4b0b8f6aabc5b254d32237455980c69c90cae5532b7003f15b20a41
 ## sinnoh-6 party 0 carried null
 Action turn=1 side=1 attacker='P400' defender='P360' move='엄청난힘' multiplier=2.0 defender_hp=0 knockout=True move_id=276
 SendOut turn=1 side=0 pokemon='P504' member=1
@@ -212,7 +212,7 @@ Action turn=17 side=1 attacker='P423' defender='P354' move='지진' multiplier=2
 Action turn=17 side=0 attacker='P354' defender='P423' move='승부굳히기' defender_hp=67 attacker_hp=6 move_id=372
 Action turn=18 side=1 attacker='P423' defender='P354' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=67 move_id=89
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 67, None, None)) statuses=((None, None, None, None, None, None), ('toxic', None, None, None, None))
-won=False carry=null body=6edb9ffdb6835e8eafc910524980010664a179543b7dffd9a23bb6aa16e75e27
+won=False carry=null body=6c2c5dc8c738c7559eed7dfbd9f9808f5f2bc3198bd5405766aaf43615a8a4b5
 ## sinnoh-7 party 0 carried null
 Action turn=1 side=0 attacker='P360' defender='P479' move='더블어택' defender_hp=44 hits=2 move_id=458
 Action turn=1 side=1 attacker='P479' defender='P360' move='10만볼트' changes=(Change(side=0, pokemon='P360', kind='paralysis', stages=0),) defender_hp=44 attacker_hp=44 move_id=85
@@ -280,7 +280,7 @@ Action turn=25 side=1 attacker='P477' defender='P354' move='지진' multiplier=2
 Action turn=26 side=0 attacker='P354' defender='P477' move='분노의주먹' defender_hp=6 attacker_hp=34 move_id=889
 Action turn=26 side=1 attacker='P477' defender='P354' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=6 move_id=89
 result winner=1 turns=26 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 6)) statuses=(('paralysis', None, None, None, None, None), (None, None, 'toxic', 'paralysis', 'paralysis', None))
-won=False carry=null body=976693c4f6f282bc191b594e692692e5505bdbd14e025051bd3287e96fea0b38
+won=False carry=null body=38381607d5c49de6d1c3f8587a906ea3153e7f16e6dfb329b41155625bff87d3
 ## sinnoh-8 party 0 carried null
 Action turn=1 side=0 attacker='P360' defender='P451' move='더블어택' defender_hp=55 hits=2 move_id=458
 Action turn=1 side=1 attacker='P451' defender='P360' move='깨뜨리다' multiplier=2.0 defender_hp=62 attacker_hp=55 move_id=280
@@ -346,7 +346,7 @@ Action turn=23 side=0 attacker='P187' defender='P469' move='전기자석파' cha
 WeatherEnd turn=23 weather='rain'
 Action turn=24 side=0 attacker='P187' defender='P469' move='쑥쑥봄버' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=31 attacker_item='shell-bell' move_id=738
 result winner=0 turns=24 remaining=((0, 0, 0, 0, 31, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, 'toxic', 'paralysis'))
-won=True carry=null body=8a19470831ce9a5eed8d6498d61130a89d66aa8972f3704e63573bf8468e77e8
+won=True carry=null body=116ae8aef1eda67f6f262befe31465be9caf22307a8aa73027017622dfb6d273
 ## sinnoh-elite-1 party 0 carried null
 Action turn=1 side=0 attacker='P360' defender='P405' move='더블어택' defender_hp=35 hits=2 move_id=458
 Action turn=1 side=1 attacker='P405' defender='P360' move='이판사판태클' recoil=True defender_hp=74 attacker_hp=26 move_id=38
@@ -397,7 +397,7 @@ Action turn=18 side=1 attacker='P466' defender='P354' move='지진' multiplier=2
 Action turn=18 side=0 attacker='P354' defender='P466' move='엑셀브레이크' defender_hp=66 attacker_hp=28 move_id=878
 Action turn=19 side=1 attacker='P466' defender='P354' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=66 move_id=89
 result winner=1 turns=19 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 66, None)) statuses=((None, None, None, None, None, None), (None, None, 'sleep', 'toxic', None, None))
-won=False carry=null body=9b55454af44a3d2cc7c496f5397be99c78441a315252d3d876629de32fb9d006
+won=False carry=null body=f38876d767c11da6370327cd470dec8f60e89905a41f087719542216c620e95b
 ## sinnoh-elite-2 party 0 carried null
 Action turn=1 side=1 attacker='P452' defender='P360' move='깨뜨리다' multiplier=2.0 defender_hp=35 move_id=280
 Action turn=1 side=0 attacker='P360' defender='P452' move='더블어택' critical=True defender_hp=50 hits=2 attacker_hp=35 move_id=458
@@ -445,7 +445,7 @@ Action turn=15 side=0 attacker='P354' defender='P476' move='엑셀브레이크' 
 SendOut turn=15 side=1 pokemon='P395' member=4
 Action turn=16 side=1 attacker='P395' defender='P354' move='웨이브태클' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=91 attacker_item='life-orb' move_id=834
 result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 91, None)) statuses=((None, None, None, None, None, None), (None, None, 'toxic', None, None, None))
-won=False carry=null body=194fc4be1440d9c0c18d2b641f037fc19ac4d1bf7a084e5f76ce8a7819ac48d5
+won=False carry=null body=9dcbd2908ac5f77910769a4876bb3fb413dbc87dd20ffba8a064379600b534dc
 ## sinnoh-elite-3 party 0 carried null
 Action turn=1 side=0 attacker='P360' defender='P461' move='더블어택' defender_hp=76 hits=2 move_id=458
 Action turn=1 side=1 attacker='P461' defender='P360' move='깨뜨리다' multiplier=2.0 defender_hp=54 attacker_hp=76 move_id=280
@@ -496,7 +496,7 @@ Action turn=17 side=1 attacker='P477' defender='P354' move='지진' multiplier=2
 Action turn=18 side=0 attacker='P354' defender='P477' move='분노의주먹' critical=True defender_hp=35 attacker_hp=12 move_id=889
 Action turn=18 side=1 attacker='P477' defender='P354' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=35 move_id=89
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 35, None)) statuses=((None, None, None, None, None, None), (None, None, 'toxic', 'sleep', None, None))
-won=False carry=null body=4509ecb0429ce01a16ba3156546a6509d6233b89e93211e8722a0016620cf2cb
+won=False carry=null body=2ef1200045b686a72d0d5fad3dc7cac49b6566d27628747e4cc920bafc9b8fb9
 ## sinnoh-elite-4 party 0 carried null
 Action turn=1 side=1 attacker='P463' defender='P360' move='기합구슬' multiplier=2.0 defender_hp=0 knockout=True move_id=411
 SendOut turn=1 side=0 pokemon='P504' member=1
@@ -529,7 +529,7 @@ WeatherEnd turn=11 weather='rain'
 SendOut turn=11 side=1 pokemon='P469' member=1
 Action turn=12 side=1 attacker='P469' defender='P354' move='사이코키네시스' defender_hp=0 knockout=True move_id=94
 result winner=1 turns=12 remaining=((0, 0, 0, 0, 0, 0), (0, 100, None, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=fd76b3f99c9b377186e7cea64e1e4421d9cb3d3a57bf86eaad1b9910432e5ed1
+won=False carry=null body=5aeca7b6b02e17837a8cd31010dd262978f044bf57fc40740aae6cd116775456
 ## sinnoh-champion party 0 carried null
 MegaEvolution turn=1 side=1 pokemon='P448' ability='유연' form_id=10059
 Action turn=1 side=1 attacker='P448' defender='P360' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P448', kind='defense', stages=-1), Change(side=1, pokemon='P448', kind='special_defense', stages=-1)) defender_hp=28 move_id=370
@@ -593,7 +593,7 @@ WeatherEnd turn=21 weather='rain'
 Action turn=22 side=0 attacker='P354' defender='P407' move='분노의주먹' defender_hp=56 attacker_hp=21 move_id=889
 Action turn=22 side=1 attacker='P407' defender='P354' move='꽃잎댄스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=56 move_id=80
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 56, None, None)) statuses=((None, None, None, None, None, None), (None, 'sleep', 'sleep', 'sleep', None, None, None))
-won=False carry=null body=c1c798b5511a082474c49d9ce055f69f2963c43f5ee7ba7d904accf31f7100ff
+won=False carry=null body=abbbc6da26672a96fc0897281b3ea6343875980ee2a837722b928286a3944e3f
 ## sinnoh-hideout-1 party 0 carried null
 Action turn=1 side=0 attacker='P360' defender='P413' move='더블어택' defender_hp=64 hits=2 move_id=458
 Action turn=1 side=1 attacker='P413' defender='P360' move='리프스톰' changes=(Change(side=1, pokemon='P413', kind='special_attack', stages=-2),) defender_hp=9 attacker_hp=64 move_id=437
@@ -651,7 +651,7 @@ SendOut turn=20 side=1 pokemon='P454' member=4
 Action turn=21 side=0 attacker='P354' defender='P454' move='분노의주먹' multiplier=2.0 defender_hp=33 attacker_hp=62 move_id=889
 Action turn=21 side=1 attacker='P454' defender='P354' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=33 move_id=370
 result winner=1 turns=21 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 33, None)) statuses=((None, None, None, 'paralysis', None, None), (None, None, 'sleep', None, None, None))
-won=False carry=null body=969ba063ba29a322d53f05147b82365336fa6256c2034bf59cb7af61400bff58
+won=False carry=null body=c17d115c03febb61a665cd0f86f6166d2c1274f4a2ec4e4e7b0932ffac442c4c
 ## sinnoh-hideout-2 party 0 carried null
 Action turn=1 side=0 attacker='P360' defender='P441' move='더블어택' missed=True move_id=458
 Action turn=1 side=1 attacker='P441' defender='P360' move='소란피기' defender_hp=50 move_id=253
@@ -711,7 +711,7 @@ Action turn=21 side=0 attacker='P354' defender='P411' move='엑셀브레이크' 
 WeatherEnd turn=21 weather='rain'
 Action turn=22 side=1 attacker='P411' defender='P354' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=12 move_id=89
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 12)) statuses=((None, None, None, None, None, None), (None, None, None, 'toxic', 'sleep', None))
-won=False carry=null body=91732b9de2e5f661efac8cf67b3fa455fa3b7598461da1538d3e31c6787712af
+won=False carry=null body=8af63845009690a2bf4ef699276532f40591da92988db464a88f7bda081ce5cd
 ## sinnoh-hideout-3 party 0 carried null
 Action turn=1 side=0 attacker='P360' defender='P435' move='더블어택' defender_hp=57 hits=2 move_id=458
 Action turn=1 side=1 attacker='P435' defender='P360' move='더스트슈트' missed=True attacker_hp=57 move_id=441
@@ -764,7 +764,7 @@ Action turn=18 side=1 attacker='P411' defender='P354' move='지진' multiplier=2
 Action turn=18 side=0 attacker='P354' defender='P411' move='엑셀브레이크' multiplier=2.0 defender_hp=13 attacker_hp=6 move_id=878
 Action turn=19 side=1 attacker='P411' defender='P354' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=13 move_id=89
 result winner=1 turns=19 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 13, None)) statuses=(('poison', None, None, None, None, None), (None, None, None, 'sleep', None, None))
-won=False carry=null body=61610f90c7e0bce947b18613ac5965f2d9048d6ad4ee3e0835e2b2a0efe59890
+won=False carry=null body=d78322c88a25fc1dbc1cdf8900411767b4f4ef77bf03746753c2ea25f873292d
 ## sinnoh-hideout-4 party 0 carried null
 Action turn=1 side=1 attacker='P411' defender='P360' move='속임수' defender_hp=28 move_id=492
 Action turn=1 side=0 attacker='P360' defender='P411' move='더블어택' defender_hp=66 hits=2 attacker_hp=28 move_id=458
@@ -805,7 +805,7 @@ Action turn=12 side=0 attacker='P354' defender='P392' move='승부굳히기' def
 WeatherEnd turn=12 weather='rain'
 Action turn=13 side=1 attacker='P392' defender='P354' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=54 move_id=370
 result winner=1 turns=13 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 54, None)) statuses=((None, None, 'poison', None, None, None), (None, None, None, 'sleep', None, None))
-won=False carry=null body=3fd9b7ee6e102fffbc547489daaa06503d8d8dce7ee1ffc4308f6d7b039bcace
+won=False carry=null body=f25d5a35aecde89fa31e67148d9114d68f3af43e4c280dccd36d1cc1f496ae93
 ## sinnoh-hidden party 0 carried null
 MegaEvolution turn=1 side=1 pokemon='P448' ability='유연' form_id=10059
 Action turn=1 side=1 attacker='P448' defender='P360' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P448', kind='defense', stages=-1), Change(side=1, pokemon='P448', kind='special_defense', stages=-1)) defender_hp=7 move_id=370
@@ -876,7 +876,7 @@ Action turn=21 side=1 attacker='P483' defender='P354' move='러스터캐논' mul
 Action turn=22 side=0 attacker='P354' defender='P483' move='분노의주먹' defender_hp=9 attacker_hp=26 move_id=889
 Action turn=22 side=1 attacker='P483' defender='P354' move='러스터캐논' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=9 move_id=430
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 9, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, 'sleep', None, None, None, None))
-won=False carry=null body=78a29e69d4f53fa634bc2add00d9d88dc5b93683ff985aed902c0d17198aeb86
+won=False carry=null body=bbc9e68593f3301907bc0996f45c19c6279100e1a01654fbcea6c22c1fb66e9c
 ## sinnoh-1 party 1 carried null
 Action turn=1 side=0 attacker='P307' defender='P441' move='찌리리따끔따끔' multiplier=2.0 defender_hp=16 move_id=716
 Action turn=1 side=1 attacker='P441' defender='P307' move='유턴' defender_hp=68 attacker_hp=16 pivoted=True move_id=369
@@ -1391,7 +1391,7 @@ Action turn=15 side=1 attacker='P407' defender='P406' move='섀도볼' multiplie
 Action turn=16 side=0 attacker='P406' defender='P407' move='파멸의빛' recoil=True defender_hp=11 attacker_hp=6 move_id=617
 Action turn=16 side=1 attacker='P407' defender='P406' move='섀도볼' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=11 move_id=247
 result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 11, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=907cae9d397cb64ac865c3b8175d604c064b31efc1aa1a40f2431ccb6c4f5b7d
+won=False carry=null body=f7e25ffdffde37cd8f6d3a4ae7ca36cb7662785df30abcc0ea7388f4c379719d
 ## sinnoh-hideout-1 party 1 carried null
 Action turn=1 side=0 attacker='P307' defender='P413' move='박치기' defender_hp=73 move_id=29
 Action turn=1 side=1 attacker='P413' defender='P307' move='섀도볼' multiplier=2.0 defender_hp=53 attacker_hp=73 move_id=247
@@ -1603,4 +1603,4 @@ Action turn=17 side=1 attacker='P487' defender='P406' move='지진' multiplier=2
 Action turn=17 side=0 attacker='P406' defender='P487' move='하품' attacker_hp=30 effect='yawn' move_id=281
 Action turn=18 side=1 attacker='P487' defender='P406' move='지진' multiplier=2.0 defender_hp=0 knockout=True move_id=89
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 100, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None, None))
-won=False carry=null body=f0f0fe2659be639255edc8162a42097c8b5c388ee5ca74428615f2783bad5401
+won=False carry=null body=75c42f16996032da1e1bc122ac01e62b2702943994888de00c6c097e0ddd0347

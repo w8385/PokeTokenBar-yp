@@ -18,7 +18,7 @@ Action turn=6 side=1 attacker='P943' defender='P384' move='치근거리기' miss
 WeatherEnd turn=6 weather='rain'
 Action turn=7 side=0 attacker='P384' defender='P943' move='집게해머' defender_hp=0 knockout=True attacker_hp=83 move_id=152
 result winner=0 turns=7 remaining=((0, 73, 0, 83, None, None), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=3d2bfa4ac4959d22d4a1ffc87330124f692f60e7dd712aeca16540ffe27c79ae
+won=True carry=null body=4d9ca00e741978a82686c3d310388ccfbb5a79f594d6ee9187b91e95ab1e621c
 ## paldea-2 party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P954' move='플라잉프레스' missed=True multiplier=2.0 move_id=560
 Action turn=1 side=1 attacker='P954' defender='P192' move='대지의힘' multiplier=2.0 defender_hp=29 move_id=414
@@ -39,7 +39,7 @@ Action turn=6 side=0 attacker='P384' defender='P956' move='덩굴방망이' mult
 Action turn=6 side=1 attacker='P956' defender='P384' move='매지컬샤인' multiplier=2.0 defender_hp=73 attacker_hp=1 move_id=605
 Action turn=7 side=0 attacker='P384' defender='P956' move='덩굴방망이' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=73 move_id=904
 result winner=0 turns=7 remaining=((0, 100, 0, 73, None, None), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=2f1632eb49073770ca85b921239582351aec2ca9af643ceb5b441d31b19f8458
+won=True carry=null body=7e25f67ba0e45eb3bfac34b7563211cfc48eff1958995b993065f3f7eb34d58e
 ## paldea-3 party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P997' move='플라잉프레스' defender_hp=43 move_id=560
 Action turn=1 side=1 attacker='P997' defender='P192' move='아이언헤드' multiplier=2.0 defender_hp=14 attacker_hp=43 move_id=442
@@ -84,7 +84,7 @@ SendOut turn=16 side=0 pokemon='P676' member=1
 Action turn=17 side=1 attacker='P967' defender='P676' move='역린' defender_hp=6 attacker_hp=4 move_id=200
 Action turn=17 side=0 attacker='P676' defender='P967' move='리프스톰' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=6 move_id=437
 result winner=0 turns=17 remaining=((0, 6, 0, 0, 0, 0), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-won=True carry=null body=ae524c7d976191f48897cb787967f9abc0f4a7d8575e5c0e6dca21beb5752f6b
+won=True carry=null body=752ee8cbbd048ee87c8c5840a6ade61664a2c807500e4b4f16071f290d4fe503
 ## paldea-4 party 0 carried null
 Action turn=1 side=1 attacker='P923' defender='P192' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P923', kind='defense', stages=-1), Change(side=1, pokemon='P923', kind='special_defense', stages=-1)) defender_hp=2 move_id=370
 Action turn=1 side=0 attacker='P192' defender='P923' move='플라잉프레스' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=2 move_id=560
@@ -116,7 +116,7 @@ Action turn=10 side=0 attacker='P384' defender='P979' move='집게해머' defend
 Action turn=10 side=1 attacker='P979' defender='P384' move='지진' defender_hp=44 attacker_hp=25 move_id=89
 Action turn=11 side=0 attacker='P384' defender='P979' move='집게해머' defender_hp=0 knockout=True attacker_hp=44 move_id=152
 result winner=0 turns=11 remaining=((0, 46, 0, 44, None, None), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-won=True carry=null body=489910e1bb9ed4beaf594935626e6232a1a5176ba573c35f5dc85d33a8c3db44
+won=True carry=null body=5fa0d4b9f5c81ad42906b36f8c9e1a0d6ef70bd13e029d1d025a054eaaf1282c
 ## paldea-5 party 0 carried null
 Action turn=1 side=1 attacker='P961' defender='P192' move='아쿠아브레이크' multiplier=2.0 defender_hp=17 move_id=710
 Action turn=1 side=0 attacker='P192' defender='P961' move='플라잉프레스' defender_hp=80 attacker_hp=17 move_id=560
@@ -153,7 +153,7 @@ Action turn=13 side=0 attacker='P164' defender='P977' move='클로로블라스�
 Action turn=13 side=1 attacker='P977' defender='P164' move='얼음엄니' multiplier=0.5 defender_hp=87 attacker_hp=14 move_id=423
 Action turn=14 side=0 attacker='P164' defender='P977' move='클로로블라스트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=87 move_id=835
 result winner=0 turns=14 remaining=((0, 41, 0, 0, 87, None), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=True carry=null body=e395b4e6e11088e201a9715644d52d1dc8daf9a50925db649dab1f8883a6b060
+won=True carry=null body=6993aae0b77c04146ed7a2d740306be27a52186f6139557bc3f07019697a808b
 ## paldea-6 party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P947' move='쪼기' multiplier=2.0 defender_hp=82 move_id=64
 Action turn=1 side=1 attacker='P947' defender='P192' move='파워휩' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=82 move_id=438
@@ -187,7 +187,7 @@ Action turn=12 side=0 attacker='P384' defender='P937' move='집게해머' multip
 SendOut turn=12 side=1 pokemon='P911' member=4
 Action turn=13 side=0 attacker='P384' defender='P911' move='집게해머' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=76 move_id=152
 result winner=0 turns=13 remaining=((0, 0, 0, 76, None, None), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=True carry=null body=6a263117714c0d60bbd9caddf5540fb6b67729519b96d5f9b059f5041fdf3ddd
+won=True carry=null body=913f10809340c7dcecd0b4e7393e0fcf7e0bc15be52a04d72f9b577d7b804dd3
 ## paldea-7 party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P925' move='플라잉프레스' defender_hp=74 move_id=560
 Action turn=1 side=1 attacker='P925' defender='P192' move='씨폭탄' multiplier=2.0 defender_hp=59 attacker_hp=74 move_id=402
@@ -226,7 +226,7 @@ WeatherEnd turn=13 weather='rain'
 Action turn=14 side=1 attacker='P981' defender='P384' move='사이코키네시스' defender_hp=32 attacker_hp=40 move_id=94
 Action turn=14 side=0 attacker='P384' defender='P981' move='화룡점정' defender_hp=0 knockout=True attacker_hp=32 move_id=620
 result winner=0 turns=14 remaining=((0, 100, 0, 32, None, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=null body=370aea9adc0c39162c2b7db43bc1abe169169e86fdadbe5a2a5ffc02b8acf367
+won=True carry=null body=7afceaa252f3a1aaca44cf4bf8c4d749ed90ea78d6983b7608e2d47dc78e9c5e
 ## paldea-8 party 0 carried null
 Action turn=1 side=1 attacker='P952' defender='P192' move='분함의발구르기' multiplier=2.0 defender_hp=29 move_id=707
 Action turn=1 side=0 attacker='P192' defender='P952' move='플라잉프레스' defender_hp=66 attacker_hp=29 move_id=560
@@ -260,7 +260,7 @@ Action turn=11 side=1 attacker='P949' defender='P354' move='리프스톰' multip
 SendOut turn=11 side=0 pokemon='P676' member=1
 Action turn=12 side=1 attacker='P949' defender='P676' move='대지의힘' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=73 move_id=414
 result winner=1 turns=12 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 73, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=9a28bae365f8f514f3eb47a513840bb1c89e9c9bcfa51d3802ddb8879c7b8280
+won=False carry=null body=4c1846dc3e64b75e9b398b068f7f5bced61d64c76dca6d71303fd62025ba659d
 ## paldea-elite-1 party 0 carried null
 Action turn=1 side=1 attacker='P923' defender='P192' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P923', kind='defense', stages=-1), Change(side=1, pokemon='P923', kind='special_defense', stages=-1)) defender_hp=21 move_id=370
 Action turn=1 side=0 attacker='P192' defender='P923' move='플라잉프레스' multiplier=2.0 defender_hp=1 attacker_hp=21 defender_item='focus-sash' move_id=560
@@ -303,7 +303,7 @@ Action turn=14 side=1 attacker='P979' defender='P354' move='지진' multiplier=2
 SendOut turn=14 side=0 pokemon='P676' member=1
 Action turn=15 side=1 attacker='P979' defender='P676' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=18 move_id=89
 result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 100, 0, 0, 18, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=d535c5279e2a80b157fa54f44e3503205213adbf6745c848a0e27078f4278779
+won=False carry=null body=01026256892c6787a743c167d83f966b9bba602a3ba1638a6270bfe5ba23fdb9
 ## paldea-elite-2 party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P959' move='플라잉프레스' multiplier=2.0 defender_hp=23 move_id=560
 Action turn=1 side=1 attacker='P959' defender='P192' move='러스터캐논' multiplier=2.0 defender_hp=60 attacker_hp=23 move_id=430
@@ -351,7 +351,7 @@ Action turn=17 side=1 attacker='P1018' defender='P354' move='지진' multiplier=
 SendOut turn=17 side=0 pokemon='P676' member=1
 Action turn=18 side=0 attacker='P676' defender='P1018' move='퀵턴' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=63 move_id=812
 result winner=0 turns=18 remaining=((0, 63, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 63, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=5023dc6b28c76a922a24dd0c63d4072d5e5ffea02e698f6274e5596bb901597c
+won=True carry=[{"hp": 0, "status": null}, {"hp": 63, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=99fc2e932c32ad3e335818323ff3cd5a6235bbac4659f007461dbb9b254ca949
 ## paldea-elite-3 party 0 carried [{"hp": 0, "status": null}, {"hp": 63, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}]
 Action turn=1 side=1 attacker='P949' defender='P676' move='대지의힘' multiplier=2.0 defender_hp=0 knockout=True move_id=414
 result winner=1 turns=1 remaining=((0,), (100, None, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
@@ -403,13 +403,13 @@ SendOut turn=16 side=0 pokemon='P676' member=1
 Action turn=17 side=1 attacker='P1013' defender='P676' move='섀도볼' multiplier=2.0 defender_hp=11 attacker_hp=97 move_id=247
 Action turn=17 side=0 attacker='P676' defender='P1013' move='리프스톰' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=11 move_id=437
 result winner=0 turns=17 remaining=((0, 11, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 11, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=342f3fd00461dcade7201b2820eb6a0b580f345dedd76328ffb251c64086dd5f
+won=True carry=[{"hp": 0, "status": null}, {"hp": 11, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=6c6c9cf4a7f11f2c503ad68bbd19bbf7b19c6d1ed86fa743f3961f41c6c4deb9
 ## paldea-champion party 0 carried [{"hp": 0, "status": null}, {"hp": 11, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}]
 MegaEvolution turn=1 side=1 pokemon='P970' ability='옹골참' form_id=10321
 Action turn=1 side=0 attacker='P676' defender='P970' move='볼트체인지' defender_hp=84 attacker_hp=11 move_id=521
 Action turn=1 side=1 attacker='P970' defender='P676' move='대지의힘' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=84 move_id=414
 result winner=1 turns=1 remaining=((0,), (84, None, None, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None, None))
-won=False carry=null body=9d46e54d0b105575a5468d9d7a7deb5185f0889940afad3d085aa0f81d403f53
+won=False carry=null body=35bc508081d1abac959346db7218a4ccdcd5cf1d9271a4765335a55172a0f868
 ## paldea-hideout-1 party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P918' move='플라잉프레스' multiplier=2.0 defender_hp=18 move_id=560
 Action turn=1 side=1 attacker='P918' defender='P192' move='깨뜨리다' multiplier=2.0 defender_hp=59 attacker_hp=18 move_id=280
@@ -448,7 +448,7 @@ Action turn=13 side=0 attacker='P384' defender='P920' move='덩굴방망이' mul
 SendOut turn=13 side=1 pokemon='P931' member=1
 Action turn=14 side=0 attacker='P384' defender='P931' move='화룡점정' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=52 move_id=620
 result winner=0 turns=14 remaining=((0, 100, 0, 52, None, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 52, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}] body=4e3e0b7a892fffb252b447356e892fbec66a6ae611bd46457186ed7d607ba637
+won=True carry=[{"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 52, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}] body=3e5007e31e6be8aa8cf92e52350b7a17b4a280de8e2ef07483682b6214826380
 ## paldea-hideout-2 party 0 carried [{"hp": 0, "status": null}, {"hp": 100, "status": null}, {"hp": 0, "status": null}, {"hp": 52, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}]
 Action turn=1 side=1 attacker='P918' defender='P676' move='지옥찌르기' multiplier=2.0 critical=True defender_hp=59 move_id=675
 Action turn=1 side=0 attacker='P676' defender='P918' move='볼트체인지' defender_hp=66 attacker_hp=59 pivoted=True move_id=521
@@ -478,7 +478,7 @@ Action turn=8 side=1 attacker='P950' defender='P354' move='10만마력' multipli
 SendOut turn=8 side=0 pokemon='P676' member=0
 Action turn=9 side=1 attacker='P950' defender='P676' move='10만마력' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=667
 result winner=1 turns=9 remaining=((0, 0, 0, 0), (0, 0, 0, 82, None, None)) statuses=((None, 'poison', None, None), (None, None, None, None, None, None))
-won=False carry=null body=014df1cd553e745597fd00c1eb5d8e6eb0c39179d5eea524b19461e626be7cf9
+won=False carry=null body=71dedd49afc176a07b0c6b85a97d2373518dd1037f66fa8451cc13ecb35dd2da
 ## paldea-hideout-3 party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P954' move='플라잉프레스' multiplier=2.0 defender_hp=41 move_id=560
 Action turn=1 side=1 attacker='P954' defender='P192' move='대지의힘' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=41 move_id=414
@@ -522,7 +522,7 @@ Action turn=15 side=1 attacker='P973' defender='P676' move='아쿠아브레이�
 Action turn=15 side=0 attacker='P676' defender='P973' move='퀵턴' multiplier=2.0 defender_hp=51 attacker_hp=36 move_id=812
 Action turn=16 side=1 attacker='P973' defender='P676' move='아쿠아브레이크' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=51 move_id=710
 result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 86, 51)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=8ed9f09d9eb725fc160c67ac87f624d486a9a238e1ef3ca91ae1e6f0f7277752
+won=False carry=null body=fcc34e7a44c2bddb111e3290fc653d1ec4c64d295781aa3117b3b49a0babfb27
 ## paldea-hideout-4 party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P962' move='플라잉프레스' multiplier=2.0 defender_hp=5 move_id=560
 Action turn=1 side=1 attacker='P962' defender='P192' move='드릴라이너' multiplier=2.0 defender_hp=2 attacker_hp=5 move_id=529
@@ -556,7 +556,7 @@ SendOut turn=12 side=1 pokemon='P914' member=5
 Action turn=13 side=0 attacker='P384' defender='P914' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=18 attacker_hp=79 move_id=620
 Action turn=13 side=1 attacker='P914' defender='P384' move='브레이브버드' recoil=True defender_hp=54 attacker_fainted=True attacker_hp=0 attacker_item='life-orb' move_id=413
 result winner=0 turns=13 remaining=((0, 1, 0, 54, None, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=null body=7496fd06c0f12adfcc6d446fe9dbfc362f803a5d7e430cf1e90d025023cf9ed1
+won=True carry=null body=3cfb31bf8c932b190cb7358ca5e3be8b10946070b4d4dd27ff0f59c5df46ed1a
 ## paldea-hidden party 0 carried null
 Action turn=1 side=0 attacker='P192' defender='P998' move='플라잉프레스' multiplier=2.0 defender_hp=36 move_id=560
 Action turn=1 side=1 attacker='P998' defender='P192' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=36 move_id=89
@@ -610,7 +610,7 @@ Action turn=19 side=1 attacker='P987' defender='P354' move='문포스' defender_
 Action turn=20 side=0 attacker='P354' defender='P987' move='얼음뭉치' defender_hp=16 attacker_hp=9 move_id=420
 Action turn=20 side=1 attacker='P987' defender='P354' move='문포스' defender_hp=0 knockout=True attacker_hp=16 move_id=585
 result winner=1 turns=20 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 16, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=33df174f5c3ab54bf63629efec3c2ca5519aff86037e1b7dee97bedc09a1569b
+won=False carry=null body=e3a97c974cd7c1af2fd1a17c0f64f1391486f9c11193d6ddc273767b4eede3fa
 ## paldea-1 party 1 carried null
 Action turn=1 side=1 attacker='P920' defender='P836' move='발꿈치찍기' multiplier=2.0 defender_hp=1 ability='sturdy' move_id=853
 Action turn=1 side=0 attacker='P836' defender='P920' move='퀵턴' multiplier=0.5 defender_hp=91 attacker_hp=1 pivoted=True move_id=812
@@ -741,7 +741,7 @@ Action turn=11 side=1 attacker='P979' defender='P142' move='지진' multiplier=4
 SendOut turn=11 side=0 pokemon='P836' member=0
 Action turn=12 side=1 attacker='P979' defender='P836' move='지진' defender_hp=0 knockout=True attacker_hp=1 move_id=89
 result winner=1 turns=12 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 1)) statuses=((None, None, None, None, None, None), ('burn', None, None, None))
-won=False carry=null body=be218f246b7d4f7c391ed3c993b23c5c74a85387dc9fb44d53eeb8a8f8315dfd
+won=False carry=null body=bd1291f754c7b547b754ae33113eebf604791a58f3b5db4f75c57ddf918de483
 ## paldea-5 party 1 carried null
 Action turn=1 side=1 attacker='P961' defender='P836' move='아쿠아브레이크' multiplier=2.0 defender_hp=37 move_id=710
 Action turn=1 side=0 attacker='P836' defender='P961' move='퀵턴' defender_hp=91 attacker_hp=37 pivoted=True move_id=812
@@ -785,7 +785,7 @@ Action turn=16 side=1 attacker='P977' defender='P836' move='지진' defender_hp=
 Action turn=16 side=0 attacker='P836' defender='P977' move='심판의뭉치' defender_hp=70 attacker_hp=9 move_id=449
 Action turn=17 side=1 attacker='P977' defender='P836' move='지진' critical=True defender_hp=0 knockout=True attacker_hp=70 move_id=89
 result winner=1 turns=17 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 70)) statuses=((None, None, None, None, None, None), ('burn', None, None, None, None))
-won=False carry=null body=48bb0d4e8a2df54855f4f0d939cc93f66288a6d3472899e6f0ba1584abc6f8c0
+won=False carry=null body=03186fe59db9c3fd1e2e1f0d55c2dad2b78a0b71159e84d0ddf4f7ea13e79132
 ## paldea-6 party 1 carried null
 Action turn=1 side=1 attacker='P947' defender='P836' move='파워휩' multiplier=2.0 defender_hp=31 move_id=438
 Action turn=1 side=0 attacker='P836' defender='P947' move='퀵턴' multiplier=2.0 critical=True defender_hp=69 attacker_hp=31 pivoted=True move_id=812
@@ -816,7 +816,7 @@ SendOut turn=11 side=0 pokemon='P142' member=5
 MegaEvolution turn=11 side=0 pokemon='P142' ability='pressure' form_id=10042
 Action turn=12 side=0 attacker='P142' defender='P911' move='레이디얼에지스톰' defender_hp=0 knockout=True move_id=727
 result winner=0 turns=12 remaining=((31, 0, 0, 0, 0, 100), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=True carry=null body=97d5bc54c3865801a57039b075756177d92cc2e64c25604d09cd1036e5180e86
+won=True carry=null body=105d4e6311d2071568e9c6957e2396aa2935112835358b311b8f74087f7d92f0
 ## paldea-7 party 1 carried null
 Action turn=1 side=1 attacker='P925' defender='P836' move='씨폭탄' multiplier=2.0 defender_hp=73 move_id=402
 Action turn=1 side=0 attacker='P836' defender='P925' move='퀵턴' defender_hp=86 attacker_hp=73 pivoted=True move_id=812
@@ -864,7 +864,7 @@ Action turn=17 side=0 attacker='P836' defender='P981' move='콜드플레어' mul
 Action turn=18 side=1 attacker='P981' defender='P836' move='지진' defender_hp=22 attacker_hp=28 move_id=89
 Action turn=18 side=0 attacker='P836' defender='P981' move='콜드플레어' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=22 move_id=554
 result winner=0 turns=18 remaining=((22, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, 'burn', None, None, None))
-won=True carry=null body=6e367fd45060048b57657c2cb2a3e6152c5c56879065fe603be991d078738172
+won=True carry=null body=dbc70ee62997b39960f3cd9588cf2aaa91e13cf95411d31fac9ab9d9ab862962
 ## paldea-8 party 1 carried null
 Action turn=1 side=1 attacker='P952' defender='P836' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P952', kind='special_attack', stages=-2),) defender_hp=35 move_id=437
 Action turn=1 side=0 attacker='P836' defender='P952' move='퀵턴' defender_hp=84 attacker_hp=35 pivoted=True move_id=812
@@ -907,7 +907,7 @@ Action turn=15 side=1 attacker='P1019' defender='P142' move='대지의힘' multi
 SendOut turn=15 side=0 pokemon='P836' member=0
 Action turn=16 side=1 attacker='P1019' defender='P836' move='대지의힘' defender_hp=0 knockout=True move_id=414
 result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 100)) statuses=((None, None, None, None, None, None), (None, 'burn', None, None, None, None))
-won=False carry=null body=75c4724d4cec9ae2491485479a7fff4baeab5b10a1ebb2e376de002cab44032a
+won=False carry=null body=a9dc1acbc866bf1709e10bd45163539fa7e5c661f959ebe61088908986adc1b7
 ## paldea-elite-1 party 1 carried null
 Action turn=1 side=1 attacker='P923' defender='P836' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P923', kind='defense', stages=-1), Change(side=1, pokemon='P923', kind='special_defense', stages=-1)) defender_hp=39 move_id=370
 Action turn=1 side=0 attacker='P836' defender='P923' move='퀵턴' multiplier=0.5 defender_hp=87 attacker_hp=39 pivoted=True move_id=812
@@ -949,7 +949,7 @@ Action turn=14 side=1 attacker='P979' defender='P142' move='지진' multiplier=4
 SendOut turn=14 side=0 pokemon='P836' member=0
 Action turn=15 side=1 attacker='P979' defender='P836' move='지진' defender_hp=0 knockout=True attacker_hp=59 move_id=89
 result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 80, 0, 0, 59, None)) statuses=((None, None, None, None, None, None), ('burn', None, None, None, None, None))
-won=False carry=null body=898f8eb76bcc8c62132da8826c66681b7b118a59eef48749fa369691042aa207
+won=False carry=null body=2d2e086f4396f0308711cc4854d1307689494051bcc30ab6d7b0c17b583e5bfa
 ## paldea-elite-2 party 1 carried null
 Action turn=1 side=1 attacker='P959' defender='P836' move='러스터캐논' multiplier=2.0 defender_hp=53 move_id=430
 Action turn=1 side=0 attacker='P836' defender='P959' move='퀵턴' multiplier=0.5 defender_hp=91 attacker_hp=53 pivoted=True move_id=812
@@ -988,7 +988,7 @@ Action turn=14 side=1 attacker='P911' defender='P142' move='대지의힘' multip
 SendOut turn=14 side=0 pokemon='P836' member=0
 Action turn=15 side=1 attacker='P911' defender='P836' move='대지의힘' defender_hp=0 knockout=True attacker_hp=62 move_id=414
 result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 62, None, None, None)) statuses=((None, None, None, None, None, None), ('burn', None, None, None, None, None))
-won=False carry=null body=814cda35ea742dea1ed896165b8a5fe161d4a801368425a6f468edb7bbe6a1ba
+won=False carry=null body=1e9975dbbf073d3b37ce1b1c459fba5c9b545df886261371599282206ac4a5e0
 ## paldea-elite-3 party 1 carried null
 Action turn=1 side=1 attacker='P949' defender='P836' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P949', kind='special_attack', stages=-2),) defender_hp=1 ability='sturdy' move_id=437
 Action turn=1 side=0 attacker='P836' defender='P949' move='퀵턴' multiplier=0.5 defender_hp=92 attacker_hp=1 pivoted=True move_id=812
@@ -1024,7 +1024,7 @@ Action turn=13 side=1 attacker='P975' defender='P142' move='지진' multiplier=4
 SendOut turn=13 side=0 pokemon='P836' member=0
 Action turn=14 side=1 attacker='P975' defender='P836' move='지진' defender_hp=0 knockout=True attacker_hp=29 move_id=89
 result winner=1 turns=14 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 29, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=6f816da078adea33177549a0044a1d27d6b58c05d9a49e614346456969d94a3d
+won=False carry=null body=8010e3ff0e8469435bdd537df5c9991bfb4b88137b7f5e70aac48dfb223cfe1d
 ## paldea-elite-4 party 1 carried null
 Action turn=1 side=1 attacker='P927' defender='P836' move='바디프레스' multiplier=2.0 defender_hp=46 move_id=776
 Action turn=1 side=0 attacker='P836' defender='P927' move='퀵턴' critical=True defender_hp=70 attacker_hp=46 pivoted=True move_id=812
@@ -1075,7 +1075,7 @@ Action turn=18 side=1 attacker='P1013' defender='P142' move='열탕' defender_hp
 SendOut turn=18 side=0 pokemon='P836' member=0
 Action turn=19 side=1 attacker='P1013' defender='P836' move='열탕' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=24 move_id=503
 result winner=1 turns=19 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 24)) statuses=((None, None, None, None, None, 'burn'), (None, None, None, None, None, None))
-won=False carry=null body=fe0eec024cc5974bbd4c4aff9a36c66cd06328a7abe52dcab8da058028ef65ad
+won=False carry=null body=293868004a565391892b99de634e2319c087a08e971ec714868666455a4dcee5
 ## paldea-champion party 1 carried null
 MegaEvolution turn=1 side=1 pokemon='P970' ability='옹골참' form_id=10321
 Action turn=1 side=1 attacker='P970' defender='P836' move='에너지볼' multiplier=2.0 defender_hp=47 move_id=412
@@ -1130,7 +1130,7 @@ Action turn=20 side=1 attacker='P1002' defender='P142' move='성스러운칼' de
 SendOut turn=20 side=0 pokemon='P836' member=0
 Action turn=21 side=1 attacker='P1002' defender='P836' move='성스러운칼' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=48 move_id=533
 result winner=1 turns=21 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 48, None)) statuses=((None, None, None, None, None, None), ('burn', None, None, None, None, None, None))
-won=False carry=null body=d911b73bad92d150a495769f2710c59e9edd266c2b8ab5eb8447ff798e92feae
+won=False carry=null body=b854e3136650ea52f1ad4071a0b041bd59f322df106c3e90a6f67043a296b948
 ## paldea-hideout-1 party 1 carried null
 Action turn=1 side=1 attacker='P918' defender='P836' move='깨뜨리다' multiplier=2.0 defender_hp=67 move_id=280
 Action turn=1 side=0 attacker='P836' defender='P918' move='퀵턴' defender_hp=83 attacker_hp=67 pivoted=True move_id=812
@@ -1180,7 +1180,7 @@ Action turn=18 side=0 attacker='P142' defender='P931' move='레이디얼에지�
 Action turn=18 side=1 attacker='P931' defender='P142' move='속임수' critical=True defender_hp=70 attacker_hp=12 move_id=492
 Action turn=19 side=0 attacker='P142' defender='P931' move='열불내기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=70 move_id=915
 result winner=0 turns=19 remaining=((67, 0, 0, 0, 0, 70), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, 'burn', None, None, 'paralysis'))
-won=True carry=[{"hp": 67, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 70, "status": null}] body=0d5b0e1f91bfb2bc79de22e64bffecb6f2c2c7675c12d82291dce6387a469c5a
+won=True carry=[{"hp": 67, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 70, "status": null}] body=71dfdac09aa793bf99d3323dc39f0420c49852df8a471a54a4552fcfb231bca8
 ## paldea-hideout-2 party 1 carried [{"hp": 67, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 70, "status": null}]
 Action turn=1 side=1 attacker='P918' defender='P836' move='깨뜨리다' multiplier=2.0 critical=True defender_hp=22 move_id=280
 Action turn=1 side=0 attacker='P836' defender='P918' move='퀵턴' defender_hp=83 attacker_hp=22 pivoted=True move_id=812
@@ -1199,7 +1199,7 @@ Action turn=6 side=1 attacker='P920' defender='P142' move='발꿈치찍기' defe
 SendOut turn=6 side=0 pokemon='P836' member=0
 Action turn=7 side=1 attacker='P920' defender='P836' move='발꿈치찍기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=81 attacker_item='life-orb' move_id=853
 result winner=1 turns=7 remaining=((0, 0), (0, 60, 81, None, None, None)) statuses=((None, None), (None, None, None, None, None, None))
-won=False carry=null body=5519aed168f79399183bbed7b4904c6e465be2e6d87311be793334c796ad2056
+won=False carry=null body=2a0ceea513030fe19f1aa23e5055a478ffd127a23b97581db8e051ef63706287
 ## paldea-hideout-3 party 1 carried null
 Action turn=1 side=1 attacker='P954' defender='P836' move='에너지볼' multiplier=2.0 defender_hp=1 ability='sturdy' move_id=412
 Action turn=1 side=0 attacker='P836' defender='P954' move='퀵턴' defender_hp=87 attacker_hp=1 pivoted=True move_id=812
@@ -1260,7 +1260,7 @@ Action turn=6 side=1 attacker='P941' defender='P142' move='10만볼트' defender
 Action turn=6 side=0 attacker='P142' defender='P941' move='열불내기' defender_hp=32 attacker_hp=16 move_id=915
 Action turn=7 side=1 attacker='P941' defender='P142' move='10만볼트' defender_hp=0 knockout=True attacker_hp=32 move_id=85
 result winner=1 turns=7 remaining=((0, 0, 0), (0, 32, None, None, None, None)) statuses=((None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=668cf8b2c981c5c66ba8daaa35d666f38ebb369085bf39ebd5938ba364c78bb9
+won=False carry=null body=c91a039f9ff790a8aa40ceceedd4f1ef34bc856437302303cbf1a750dbbf2e3a
 ## paldea-hidden party 1 carried null
 Action turn=1 side=0 attacker='P836' defender='P998' move='퀵턴' multiplier=2.0 defender_hp=71 pivoted=True move_id=812
 SendOut turn=1 side=0 pokemon='P580' member=1
@@ -1301,4 +1301,4 @@ SendOut turn=14 side=0 pokemon='P836' member=0
 HazardDamage turn=14 side=0 pokemon='P836' hp=88 fainted=False
 Action turn=15 side=1 attacker='P1007' defender='P836' move='역린' defender_hp=0 knockout=True attacker_hp=75 move_id=200
 result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 75, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=28bb307e4119430747839ae3a54d88d7ba6acb8b7b408b72350814198a094a3d
+won=False carry=null body=c441da7ce183f9771a8f9705f3641e35ab5d5a78a5501184e94a7271bde32250
