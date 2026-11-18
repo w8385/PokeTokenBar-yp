@@ -119,7 +119,7 @@ class AilmentShield(Protect):
     def punishes(self, name, move, attacker, side, rng):
         ailment = self.AILMENTS[name]
         if (not attacking(move) or not battle.makes_contact(attacker, move) or not battle._open_to(ailment, attacker, True)
-                or hooks.ability(attacker, "blocks_ailment", ailment, default=False)):
+                or battle._blocks_ailment(attacker, ailment)):
             return ()
         return (battle._inflict(ailment, attacker, side, rng),)
 

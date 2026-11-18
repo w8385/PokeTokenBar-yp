@@ -3,7 +3,7 @@ whose users never miss with it (`sure_for`, Toxic). `user` and `foe` are `battle
 when it would land and the condition hurts this foe."""
 
 from ypoke import battle
-from ypoke.effects import hooks, register
+from ypoke.effects import register
 from ypoke.effects.healing import cure
 from ypoke.effects.moves import StatusMove
 from ypoke.effects.stats import arg, guarded, shift_all, useful
@@ -42,7 +42,7 @@ def reaches(move, user, foe) -> bool:
 
 def lands(move, ailment: str, user, foe) -> bool:
     return (battle._open_to(ailment, foe, not battle._infiltrates(user))
-            and not hooks.ability(foe, "blocks_ailment", ailment, default=False)
+            and not battle._blocks_ailment(foe, ailment)
             and not (move.id in POWDER_MOVES and "grass" in foe.combatant.types))
 
 

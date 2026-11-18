@@ -2,7 +2,7 @@
 `ypoke.items`; `fighter` is the holder, a `battle._Fighter`."""
 
 from ypoke import battle, items, tera_forms
-from ypoke.effects import Handler, elsewhere, hooks, register
+from ypoke.effects import Handler, elsewhere, register
 from ypoke.move_effects import PUNCH_MOVES
 
 CHOICE_STATS = {"choice-scarf": "speed", "choice-band": "attack", "choice-specs": "special_attack"}
@@ -287,7 +287,7 @@ class StatusOrb(Handler):
 
     def burdens(self, name, holder):
         ailment = items.ORB_AILMENTS[name]
-        return battle._open_to(ailment, holder) and not hooks.ability(holder, "blocks_ailment", ailment, default=False)
+        return battle._open_to(ailment, holder) and not battle._blocks_ailment(holder, ailment)
 
 
 elsewhere("items", "mega_stones: sets Combatant.mega, which battle._mega_evolve applies at the start "

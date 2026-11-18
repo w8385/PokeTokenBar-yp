@@ -18,7 +18,7 @@ from typing import NamedTuple
 
 from ypoke import abilities, items, move_power, tera_forms
 from ypoke.effects import hooks
-from ypoke.move_effects import CHOSEN_DAMAGE_EFFECTS, CONTACT_MOVES, POWERLESS_ATTACKS, PUNCH_MOVES, STATUS_MOVES
+from ypoke.move_effects import CHOSEN_DAMAGE_EFFECTS, FLAGS, POWERLESS_ATTACKS, PUNCH_MOVES, STATUS_MOVES
 from ypoke.type_chart import effectiveness
 
 STAB_MULTIPLIER = 1.5
@@ -64,8 +64,8 @@ TRICK_ROOM_TURNS = 5
 STEALTH_ROCK_FRACTION = 8
 STATUS_EFFECTS = tuple(dict.fromkeys(STATUS_MOVES.values()))
 SWORDS_DANCE_STAGES = 2
-END_OF_TURN = ("cures", "status", "weather", "terrain", "items", "volatiles", "yawn", "sides", "trick-room", "rooms",
-               "field", "winds", "replace")
+END_OF_TURN = ("cures", "status", "weather", "terrain", "items", "abilities", "volatiles", "yawn", "sides", "trick-room",
+               "rooms", "field", "winds", "replace")
 _NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
 _NATURE_NAMES = (
     "hardy lonely brave adamant naughty bold docile relaxed impish lax timid hasty serious jolly naive "
@@ -121,6 +121,10 @@ class Move:
         """An attack, counting one whose effect sets its power or damage (Low Kick, Seismic Toss)."""
         return (bool(self.power or self.id in POWERLESS_ATTACKS) and not self.weather
                 and self.effect not in STATUS_EFFECTS)
+
+    def flagged(self, flag: str) -> bool:
+        """A `data/battle/moves.json` flag of the move ("contact", "sound", "punch")."""
+        return flag in FLAGS.get(self.id, ())
 
 
 STRUGGLE = Move("발버둥", None, 50, physical=True, id=165)
@@ -248,6 +252,35 @@ class AbilityRetype(AbilityTrigger):
     """Protean, Libero: the Pokémon became the type `into` as it used a move; logged after the move."""
 
     into: str = ""
+
+
+@dataclass(frozen=True)
+class AbilityEntry(AbilityTrigger):
+    """Any other entry ability: what it did (`effect`, a `narration.ABILITY_EFFECT_TEXT` key, about `detail`) and the
+    `changes` it made."""
+
+    effect: str = ""
+    detail: str = ""
+    changes: tuple[Change, ...] = ()
+
+
+@dataclass(frozen=True)
+class AbilityAct:
+    """An ability acting during a turn: the `changes` it made, the HP share it left its holder (`hp`) or the foe
+    (`foe_hp`) with, or what else it did (`effect`, a `narration.ABILITY_EFFECT_TEXT` key, about `detail`)."""
+
+    turn: int
+    side: int
+    pokemon: str
+    ability: str
+    changes: tuple[Change, ...] = ()
+    hp: int | None = None
+    fainted: bool = False
+    foe: str = ""
+    foe_hp: int | None = None
+    foe_fainted: bool = False
+    effect: str = ""
+    detail: str = ""
 
 
 @dataclass(frozen=True)
@@ -431,7 +464,7 @@ class FormShift:
 Event = (
     Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | ItemEffect | MegaEvolution
     | FormShift | TrickRoomEnd | HazardDamage | YawnSleep | FieldStart | FieldEnd | HazardHit | TerrainHeal
-    | VolatileTick | VolatileEnd
+    | VolatileTick | VolatileEnd | AbilityAct
 )
 
 
@@ -480,6 +513,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     arena.teams = teams
     events: list[Event] = []
     weather = arena.weather = _Weather()
+    weather.teams = teams
     for side in (0, 1):
         _enter_forms(teams[side], side, 1, events)
     events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng))
@@ -537,6 +571,8 @@ def _end_of_turn(turn: int, teams: tuple["_Team", "_Team"], weather: "_Weather",
     fighters = (teams[0].active, teams[1].active)
     for step in END_OF_TURN:
         loser = _end_of_turn_step(step, turn, teams, fighters, weather, arena, rng, events)
+        events.extend(arena.log)
+        arena.log.clear()
         if loser is not None:
             return loser
     return None
@@ -554,6 +590,9 @@ def _end_of_turn_step(step: str, turn: int, teams: tuple["_Team", "_Team"], figh
         return _exhausted(teams, (0, 1))
     if step == "items":
         _item_upkeep(turn, fighters, events, rng)
+        return _exhausted(teams, (0, 1))
+    if step == "abilities":
+        _ability_upkeep(turn, fighters, events, rng)
         return _exhausted(teams, (0, 1))
     if step == "volatiles":
         _volatile_upkeep(turn, fighters, events, rng)
@@ -599,12 +638,12 @@ def _status_upkeep(turn: int, teams: tuple["_Team", "_Team"], fighters: tuple["_
 
 
 def _calm_winds(turn: int, teams: tuple["_Team", "_Team"], weather: "_Weather", events: list[Event]) -> None:
-    """Strong winds end once no Pokémon holding them up is out; no other weather comes back."""
-    if weather.kind == STRONG_WINDS and not any(
-            team.active.hp > 0 and hooks.ability(team.active, "keeps_weather", weather.kind, default=False)
+    """Strong winds and lasting weather end once no Pokémon holding them up is out; no other weather comes back."""
+    if (weather.current == STRONG_WINDS or weather.lasting) and not any(
+            team.active.hp > 0 and hooks.ability(team.active, "keeps_weather", weather.current, default=False)
             for team in teams):
-        events.append(WeatherEnd(turn, STRONG_WINDS))
-        weather.kind = None
+        events.append(WeatherEnd(turn, weather.current))
+        weather.kind, weather.lasting = None, False
 
 
 def _roster(side: Combatant | Sequence[Combatant]) -> tuple[Combatant, ...]:
@@ -679,8 +718,7 @@ def _yawn_upkeep(turn: int, fighters: tuple["_Fighter", "_Fighter"], events: lis
         if fighter.drowsy_at != turn:
             continue
         fighter.drowsy_at = 0
-        if fighter.hp > 0 and _open_to("sleep", fighter) and not hooks.ability(fighter, "blocks_ailment", "sleep",
-                                                                                default=False):
+        if fighter.hp > 0 and _open_to("sleep", fighter) and not _blocks_ailment(fighter, "sleep"):
             _inflict("sleep", fighter, side, rng)
             events.append(YawnSleep(turn, side, fighter.combatant.name))
 
@@ -802,10 +840,26 @@ def _mega_evolutions(teams: tuple["_Team", "_Team"], turn: int, weather: "_Weath
     _item_triggers(turn, (teams[0].active, teams[1].active), events)
 
 
-@dataclass
 class _Weather:
-    kind: str | None = None
-    turns_left: int = 0
+    """`kind` is the weather that acts: None while an ability that clears it is out (Air Lock); `current` is the one
+    set, which keeps counting down. `lasting` weather (Desolate Land's) has no countdown and no other weather replaces
+    it; it ends when no Pokémon holding it up is out."""
+
+    def __init__(self, kind: str | None = None, turns_left: int = 0):
+        self.current, self.turns_left = kind, turns_left
+        self.lasting = False
+        self.teams: tuple | None = None
+
+    @property
+    def kind(self) -> str | None:
+        if self.current is not None and self.teams and any(
+                team.active.hp > 0 and hooks.ability(team.active, "clears_weather", default=False) for team in self.teams):
+            return None
+        return self.current
+
+    @kind.setter
+    def kind(self, value: str | None) -> None:
+        self.current = value
 
 
 @dataclass
@@ -976,6 +1030,9 @@ class _Fighter:
     form_id: int | None = None
     last_used: int | None = None
     choice: int | None = None
+    entered_turn: int = 0
+    berry: str | None = None
+    once: set[str] = field(default_factory=set)
     arena: _Arena | None = field(default=None, repr=False, compare=False)
     side: int = field(default=0, repr=False, compare=False)
 
@@ -1019,7 +1076,15 @@ class _Fighter:
 
     @property
     def ability(self) -> str | None:
-        return None if self.ability_ignored else self.combatant.ability
+        """None while a move ignores its breakable ability (Mold Breaker) or the foe's Neutralizing Gas is out."""
+        ability = self.combatant.ability
+        if self.ability_ignored and ability in abilities.BREAKABLE:
+            return None
+        foe = self.arena.foe_of(self) if self.arena is not None else None
+        if foe is not None and foe is not self and foe.hp > 0 and ability not in abilities.UNSUPPRESSED and hooks.call(
+                "abilities", foe.combatant.ability, "suppresses_abilities", default=False):
+            return None
+        return ability
 
     def residual_damage(self) -> int:
         due = self.residual_due()
@@ -1042,7 +1107,7 @@ class _Fighter:
         if key == "speed" and self.status == "paralysis":
             value /= 2
         terrain = self.arena.terrain if self.arena is not None else None
-        return (value * hooks.ability(self, "modify_stat", *context, default=1.0)
+        return (value * hooks.ability(self, "modify_stat", key, weather, self, default=1.0)
                 * hooks.ability(self, "field_stat", key, weather, terrain, default=1.0)
                 * math.prod(_field(self, "side_stat", key)))
 
@@ -1061,20 +1126,25 @@ def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: r
     speeds = [fighter.stat("speed") for fighter in fighters]
     if len(entering) == 2 and all(hooks.has("abilities", fighter.ability, "on_entry") for fighter in fighters):
         order = (0, 1) if speeds[0] > speeds[1] or (speeds[0] == speeds[1] and rng.random() < 0.5) else (1, 0)
-    triggers: list[AbilityTrigger] = []
+    triggers: list = []
     for side in order:
         trigger = hooks.ability(fighters[side], "on_entry", fighters[side], fighters[1 - side], side, weather)
         if trigger is not None:
             triggers.append(trigger)
+        log = fighters[side].arena.log if fighters[side].arena is not None else []
+        triggers.extend(log)
+        log.clear()
     return triggers
 
 
 def _turn_order(fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
                 rng: random.Random, weather: str | None = None,
                 claws: tuple[bool, bool] = (False, False), trick_room: bool = False) -> tuple[int, int]:
-    """Higher priority first, then a Quick Claw, then the faster Pokémon (the slower one under Trick Room)."""
+    """Higher priority first, then one not held back to the end of its bracket (Stall), then a Quick Claw, then the
+    faster Pokémon (the slower one under Trick Room)."""
     keys = [
-        (_priority(fighter, choice), claw, fighter.stat("speed", weather) * (-1 if trick_room else 1))
+        (_priority(fighter, choice), not _moves_last(fighter, choice), claw,
+         fighter.stat("speed", weather) * (-1 if trick_room else 1))
         for fighter, choice, claw in zip(fighters, choices, claws)
     ]
     if keys[0] != keys[1]:
@@ -1088,6 +1158,10 @@ def _priority(fighter: _Fighter, choice: int | None) -> int:
     return _move_priority(fighter, fighter.combatant.moves[choice])
 
 
+def _moves_last(fighter: _Fighter, choice: int | None) -> bool:
+    return hooks.ability(fighter, "moves_last", _chosen(fighter, choice), default=False)
+
+
 def _move_priority(fighter: _Fighter, move: Move) -> int:
     return (move.priority + hooks.ability(fighter, "modify_priority", move, fighter, default=0)
             + hooks.move(move, "modify_priority", fighter, default=0))
@@ -1099,19 +1173,28 @@ def _quick_claws(turn: int, fighters: tuple[_Fighter, _Fighter], choices: tuple[
     """Which Quick Claw holders may move first this turn (20% each; no draw without the item). Only a claw that
     puts a holder that would move second ahead of a foe in the same priority bracket is logged."""
     claws = tuple(hooks.item(fighter, "moves_first", rng, default=False) for fighter in fighters)
-    if claws[0] and claws[1] or _priority(fighters[0], choices[0]) != _priority(fighters[1], choices[1]):
-        return claws
+    drawn = tuple(not claw and hooks.ability(fighter, "moves_first", _chosen(fighter, choice), rng, default=False)
+                  for fighter, choice, claw in zip(fighters, choices, claws))
+    firsts = (claws[0] or drawn[0], claws[1] or drawn[1])
+    if firsts[0] and firsts[1] or _priority(fighters[0], choices[0]) != _priority(fighters[1], choices[1]):
+        return firsts
     for side, fighter in enumerate(fighters):
         mine, theirs = fighter.stat("speed", weather), fighters[1 - side].stat("speed", weather)
-        if claws[side] and (mine >= theirs if trick_room else mine <= theirs):
-            events.append(ItemEffect(turn, side, fighter.combatant.name, fighter.item, "first"))
-    return claws
+        if firsts[side] and (mine >= theirs if trick_room else mine <= theirs):
+            events.append(ItemEffect(turn, side, fighter.combatant.name, fighter.item, "first") if claws[side] else
+                          AbilityAct(turn, side, fighter.combatant.name, fighter.ability, effect="first"))
+    return firsts
+
+
+def _chosen(fighter: _Fighter, choice: int | None) -> Move:
+    return STRUGGLE if choice is None else fighter.combatant.moves[choice]
 
 
 def _weather_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], weather: _Weather,
                     events: list[Event]) -> int | None:
-    """Chip damage to both sides, then the countdown. Returns the first side that fainted, if any."""
-    if weather.kind is None:
+    """Chip damage to both sides, then the countdown, which runs on while an ability clears the weather. Returns the
+    first side that fainted, if any."""
+    if weather.current is None:
         return None
     fainted = None
     for side, fighter in enumerate(fighters):
@@ -1123,11 +1206,11 @@ def _weather_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], weather: _We
             ))
             if fighter.hp == 0 and fainted is None:
                 fainted = side
-    if weather.kind == STRONG_WINDS:
+    if weather.current == STRONG_WINDS or weather.lasting:
         return fainted
     weather.turns_left -= 1
     if weather.turns_left == 0:
-        events.append(WeatherEnd(turn, weather.kind))
+        events.append(WeatherEnd(turn, weather.current))
         weather.kind = None
     return fainted
 
@@ -1138,6 +1221,12 @@ def _item_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[Ev
         if fighter.hp > 0:
             _append(events, hooks.item(fighter, "end_of_turn", fighter, side, turn, rng))
     _item_triggers(turn, fighters, events)
+
+
+def _ability_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[Event], rng: random.Random) -> None:
+    for side, fighter in enumerate(fighters):
+        if fighter.hp > 0:
+            _append(events, hooks.ability(fighter, "end_of_turn", fighter, side, turn, rng))
 
 
 def _item_triggers(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[Event]) -> None:
@@ -1180,7 +1269,7 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         if paid is not None:
             action = replace(action, changes=(*action.changes, paid), attacker_hp=fighters[side].hp_percent,
                              attacker_fainted=fighters[side].hp == 0)
-    if action.move and _self_ko(fighters[side], index):
+    if action.move and _self_ko(fighters[side], index) and not _damped(fighters[side]):
         fighters[side].hp = 0
         return replace(action, attacker_hp=0, attacker_fainted=True)
     return action
@@ -1188,6 +1277,12 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
 
 def _self_ko(fighter: _Fighter, index: int | None) -> bool:
     return index is not None and hooks.move(fighter.combatant.moves[index], "faints_user", default=False)
+
+
+def _damped(fighter: _Fighter) -> bool:
+    """A foe's ability keeps self-KO moves from working at all (Damp)."""
+    foe = fighter.arena.foe_of(fighter) if fighter.arena is not None else None
+    return foe is not None and foe.hp > 0 and hooks.ability(foe, "prevents_self_ko", default=False)
 
 
 def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, weather: _Weather,
@@ -1198,6 +1293,8 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
     readied = next(iter(_field(attacker, "readied", attacker)), None)
     move = readied or (STRUGGLE if index is None else attacker.combatant.moves[index])
     recovered, blocked = _start_of_action(attacker, move, rng)
+    if not blocked and hooks.ability(attacker, "skips_turn", attacker, default=False):
+        blocked = attacker.ability
     if blocked:
         if blocked == "confusion":
             attacker.hp = max(0, attacker.hp - _damage(attacker, attacker, CONFUSION_HIT, 1.0, False, None, rng))
@@ -1207,7 +1304,10 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
         )
     if index is not None and readied is None:
         attacker.pp[index] -= 1
-        if hooks.item(attacker, "locks_move", default=False):
+        extra = hooks.ability(defender, "pp_cost", move, default=0)
+        if extra:
+            attacker.pp[index] = max(0, attacker.pp[index] - extra)
+        if hooks.item(attacker, "locks_move", default=False) or hooks.ability(attacker, "locks_move", default=False):
             attacker.locked = index
     stage = arena if arena is not None else _Arena(weather=weather)
     called = hooks.move(move, "calls", attacker, defender, side, stage, rng, default=move)
@@ -1218,7 +1318,7 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
     if effect:
         return Action(turn, side, *names, called.name, effect=effect, changes=charged, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
-    with _ability_ignored(defender, called):
+    with _ability_ignored(attacker, defender, called):
         action = _strike(turn, side, attacker, defender,
                          _retyped(attacker, move_power.typed(called, weather.kind, attacker)), recovered, weather, rng,
                          stage)
@@ -1227,9 +1327,11 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
 
 
 @contextmanager
-def _ability_ignored(defender: _Fighter, move: Move) -> Iterator[None]:
-    """A move that ignores abilities (Sunsteel Strike) leaves the target's out until its contact ability acts."""
-    defender.ability_ignored = hooks.move(move, "ignores_ability", default=False)
+def _ability_ignored(attacker: _Fighter, defender: _Fighter, move: Move) -> Iterator[None]:
+    """A move that ignores abilities (Sunsteel Strike) or a user's ability that does (Mold Breaker) leaves the
+    target's breakable ability out until its contact ability acts."""
+    defender.ability_ignored = (hooks.move(move, "ignores_ability", default=False)
+                                or hooks.ability(attacker, "breaks_abilities", move, default=False))
     try:
         yield
     finally:
@@ -1248,9 +1350,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     if hooks.move(move, "fails", attacker, defender, default=False):
         return Action(turn, side, *names, move.name, failed=True, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
-    retyped = hooks.ability(attacker, "before_move", move, attacker, side, turn)
-    if retyped is not None:
-        arena.log.append(retyped)
+    _announce(attacker, hooks.ability(attacker, "before_move", move, attacker, side, turn))
+    if move.damaging and _weather_boost(move, weather.kind) == 0:
+        return Action(turn, side, *names, move.name, failed=True, blocked=weather.current, recovered=recovered,
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     stopped = _stopped(attacker, defender, move)
     if stopped:
         changes = tuple(change for answer in _field(defender, "punishes", move, attacker, side, rng)
@@ -1270,10 +1373,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     multiplier = _multiplier(move, defender, weather.kind)
     accuracy = hooks.move(move, "own_accuracy", attacker, defender)
     if accuracy is None:
-        accuracy = (move.accuracy or 0) * _accuracy_stages(attacker, defender, move) * (
-            hooks.item(attacker, "accuracy_as_user", default=1.0)
-            * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy")) * (
-            hooks.ability(defender, "accuracy_as_target", move, defender, default=1.0))
+        accuracy = _accuracy(attacker, defender, move)
     checks_accuracy = (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
                        and not _sure_hit(attacker, defender))
     if checks_accuracy and rng.random() * 100 >= accuracy:
@@ -1282,12 +1382,13 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=crash,
                       attacker_fainted=attacker.hp == 0)
     if multiplier == 0:
-        granted = hooks.ability(defender, "immune_to", move.type, default=False) and effectiveness(
+        granted = hooks.ability(defender, "immune_to", move, defender, default=False) and effectiveness(
             move.type, defender.combatant.types) > 0
+        absorbed = tuple(hooks.ability(defender, "absorbs", move, defender, 1 - side, default=())) if granted else ()
         crash = _crash(attacker, move)
         return Action(turn, side, *names, move.name, multiplier=0, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent,
-                      ability=defender.ability if granted else None, changes=crash,
+                      ability=defender.ability if granted else None, changes=(*absorbed, *crash),
                       attacker_fainted=attacker.hp == 0)
     critical, hits, dealt, sturdy, endured, berry, shielded = False, 0, 0, False, "", "", False
     hooks.move(move, "draws", attacker, rng)
@@ -1295,8 +1396,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     resisted = defender.item if fixed is None and hooks.item(defender, "resists", move.type, multiplier,
                                                              default=False) else ""
     crit_stage = (hooks.move(move, "crit_stage", default=move.crit_stage) + hooks.item(attacker, "crit_stage", default=0)
-                  + sum(_field(attacker, "crit_stage")))
-    no_crit = any(_field(defender, "guards_crit"))
+                  + sum(_field(attacker, "crit_stage")) + hooks.ability(attacker, "crit_stage", default=0))
+    if hooks.ability(attacker, "always_crits", defender, default=False):
+        crit_stage = len(CRITICAL_CHANCES) - 1
+    no_crit = any(_field(defender, "guards_crit")) or hooks.ability(defender, "guards_crit", default=False)
     hit_count = _hit_count(move, attacker, rng)
     rolls_each_hit = checks_accuracy and hooks.move(move, "rolls_each_hit", default=False)
     for hit in range(hit_count):
@@ -1312,6 +1415,9 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
             defender.ate_berry = True
         if any(_field(defender, "takes_hit", damage, attacker, defender, move)):
             hits, critical, shielded = hits + 1, critical or hit_critical, True
+            continue
+        if hooks.ability(defender, "takes_hit", damage, attacker, defender, move, default=False):
+            hits, critical = hits + 1, critical or hit_critical
             continue
         damage = min(defender.hp, damage)
         lethal, from_full, held = damage >= defender.hp, defender.hp == defender.max_hp > 1, defender.item
@@ -1349,12 +1455,20 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     recoil, drained = move is STRUGGLE, move.drain > 0
     if recoil:
         attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // STRUGGLE_RECOIL_FRACTION))
-    elif move.drain < 0:
+    elif move.drain < 0 and not _recoil_free(attacker):
         attacker.hp = max(0, attacker.hp - max(1, dealt * -move.drain // 100))
         recoil = True
     elif drained:
         healed = max(1, dealt * move.drain // 100)
-        attacker.hp = min(attacker.max_hp, attacker.hp + hooks.item(attacker, "modify_drain", healed, default=healed))
+        healed = hooks.item(attacker, "modify_drain", healed, default=healed)
+        if hooks.ability(defender, "inverts_drain", default=False):
+            drained = False
+            attacker.hp = max(0, attacker.hp - (0 if _chip_free(attacker) else healed))
+            _announce(defender, AbilityAct(turn, 1 - side, defender.combatant.name, defender.ability,
+                                           foe=attacker.combatant.name, foe_hp=attacker.hp_percent,
+                                           foe_fainted=attacker.hp == 0))
+        else:
+            attacker.hp = min(attacker.max_hp, attacker.hp + healed)
     attacker_item = _attacker_item_effect(attacker, move, dealt, drained)
     defender_item = endured or _defender_item_effect(defender, attacker, move, multiplier, dealt) or berry or resisted
     changes = (*changes, *(hooks.move(move, "after_move", attacker, defender, dealt) or ()))
@@ -1365,8 +1479,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         attacker_item=attacker_item, defender_item=defender_item,
     )
     if hits:
+        defender.ability_ignored = False
         hit = Hit(side, turn, attacker, defender, move, dealt, hits, critical, multiplier, shielded, rng)
         _announce(defender, hooks.ability(defender, "after_hit", hit))
+        _announce(attacker, hooks.ability(attacker, "after_hit_as_user", hit))
     return action
 
 
@@ -1396,6 +1512,15 @@ def _announce(fighter: "_Fighter", event) -> None:
     """Logs what an ability did mid-action, shown after the action."""
     if event is not None and fighter.arena is not None:
         _append(fighter.arena.log, event)
+
+
+def _chip_free(fighter: "_Fighter") -> bool:
+    """Only a move's own hits hurt the Pokémon: no status, weather, hazard, recoil or item chip (Magic Guard)."""
+    return hooks.ability(fighter, "blocks_indirect", default=False)
+
+
+def _recoil_free(fighter: "_Fighter") -> bool:
+    return _chip_free(fighter) or hooks.ability(fighter, "blocks_recoil", default=False)
 
 
 def _weather_of(fighter: "_Fighter") -> str | None:
@@ -1430,7 +1555,7 @@ def _defender_item_effect(defender: _Fighter, attacker: _Fighter, move: Move, mu
 
 def makes_contact(attacker: _Fighter, move: Move) -> bool:
     """The move touches its target (Showdown's contact flag), unless the user's ability or item says it does not."""
-    return (move.id in CONTACT_MOVES and not hooks.ability(attacker, "drops_contact", default=False)
+    return (move.flagged("contact") and not hooks.ability(attacker, "drops_contact", default=False)
             and not hooks.item(attacker, "drops_contact", move, default=False))
 
 
@@ -1493,7 +1618,7 @@ def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multipl
     damage = ((2 * level // 5 + 2) * power * attack / max(1, defense)) // DAMAGE_DIVISOR + 2
     return (
         damage * _stab(attacker, move) * multiplier * _weather_boost(move, weather)
-        * _damage_taken(defender, move) * _item_boost(attacker, move, multiplier)
+        * _damage_taken(attacker, defender, move, multiplier, critical) * _item_boost(attacker, move, multiplier)
         * _screen(attacker, defender, move, critical) * _exposed(attacker, defender)
     )
 
@@ -1521,7 +1646,7 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
     changes: list[Change] = []
     blocked_by = None
     if _ailment_lands(move, attacker, defender, rng):
-        if hooks.ability(defender, "blocks_ailment", move.ailment, default=False):
+        if _blocks_ailment(defender, move.ailment):
             blocked_by = defender.ability
         else:
             changes.append(_inflict(move.ailment, defender, 1 - side, rng))
@@ -1633,12 +1758,17 @@ def _paralyzable(move: Move, fighter: _Fighter, by_foe: bool = True) -> bool:
     """Thunder Wave fails on a Pokémon with a status, an Electric type, one its type cannot touch (Ground), one a
     state guards or an ability that blocks paralysis."""
     return (_open_to("paralysis", fighter, by_foe) and effectiveness(move.type, fighter.combatant.types) > 0
-            and not hooks.ability(fighter, "blocks_ailment", "paralysis", default=False))
+            and not _blocks_ailment(fighter, "paralysis"))
 
 
 def _yawnable(fighter: _Fighter, by_foe: bool = True) -> bool:
     return (_open_to("sleep", fighter, by_foe) and not fighter.drowsy_at
-            and not hooks.ability(fighter, "blocks_ailment", "sleep", default=False))
+            and not _blocks_ailment(fighter, "sleep"))
+
+
+def _blocks_ailment(fighter: _Fighter, ailment: str) -> bool:
+    """`fighter`'s ability keeps `ailment` off it (Insomnia; Leaf Guard in sun)."""
+    return hooks.ability(fighter, "blocks_ailment", ailment, fighter, default=False)
 
 
 def _usable(fighter: _Fighter, effect: str) -> int | None:
@@ -1728,11 +1858,11 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
     or one a sleeping user cannot use while it knows one it can (Snore). A move with set damage scores the power that
     would deal that damage at even attack and defense."""
     move = move_power.typed(move, weather, attacker)
-    if (_banned(attacker, move) or _stopped(attacker, defender, move) or _dodges(attacker, defender, move)
-            or hooks.move(move, "fails", attacker, defender, default=False)
-            or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)):
-        return 0.0
-    with _ability_ignored(defender, move):
+    with _ability_ignored(attacker, defender, move):
+        if (_banned(attacker, move) or _stopped(attacker, defender, move) or _dodges(attacker, defender, move)
+                or hooks.move(move, "fails", attacker, defender, default=False)
+                or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)):
+            return 0.0
         return (_damage_score(attacker, defender, move, weather) * hooks.move(move, "score_share", weather, default=1.0)
                 * _hp_kept(attacker, defender, move, weather))
 
@@ -1748,7 +1878,7 @@ def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: s
     return (
         _power(attacker, defender, move, weather, multiplier) * _expected_hits(move, attacker, accuracy)
         * _stab(attacker, move) * multiplier
-        * _weather_boost(move, weather) * _damage_taken(defender, move)
+        * _weather_boost(move, weather) * _damage_taken(attacker, defender, move, multiplier, False)
         * _item_boost(attacker, move, multiplier)
         * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False) * _exposed(attacker, defender)
     )
@@ -1781,8 +1911,12 @@ def _expected_hits(move: Move, attacker: _Fighter, accuracy: float) -> float:
     return hooks.move(move, "hit_count", attacker, default=move.expected_hits)
 
 
-def _damage_taken(defender: _Fighter, move: Move) -> float:
-    return hooks.ability(defender, "modify_damage_taken", move.type, default=1.0)
+def _damage_taken(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float, critical: bool) -> float:
+    if attacker is defender:
+        return 1.0
+    return (hooks.ability(defender, "modify_damage_taken", move, multiplier, defender, attacker, default=1.0)
+            * hooks.ability(attacker, "modify_damage_dealt", move, multiplier, critical, attacker, defender,
+                            default=1.0))
 
 
 def _item_boost(attacker: _Fighter, move: Move, multiplier: float) -> float:
@@ -1804,10 +1938,9 @@ def _power(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | No
     if move is STRUGGLE or move is CONFUSION_HIT:
         return move.power
     power = move_power.power(move, attacker, defender, weather, multiplier, hit)
-    low_hp = attacker.hp * abilities.LOW_HP_FRACTION <= attacker.max_hp
-    return power * hooks.ability(attacker, "modify_power", move.type, power, low_hp, weather, attacker.fallen_allies,
-                                 default=1.0) * math.prod(_field(attacker, "field_power", move, attacker, defender)) * (
-        _hidden(defender, move) or 1.0)
+    return power * (hooks.ability(attacker, "modify_power", move, power, attacker, defender, weather, default=1.0)
+                    * hooks.ability(defender, "modify_foe_power", move, defender, default=1.0)) * math.prod(
+        _field(attacker, "field_power", move, attacker, defender)) * (_hidden(defender, move) or 1.0)
 
 
 def _stab(attacker: _Fighter, move: Move) -> float:
@@ -1823,7 +1956,7 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
         return 1.0
     forced_down = move.type == "ground" and (any(_field(defender, "grounds"))
                                              or hooks.move(move, "hits_airborne", default=False))
-    if not forced_down and hooks.ability(defender, "immune_to", move.type, default=False):
+    if not forced_down and hooks.ability(defender, "immune_to", move, defender, default=False):
         return 0.0
     if not forced_down and move.type == "ground" and any(_field(defender, "lifts")):
         return 0.0
@@ -1868,13 +2001,26 @@ def _foe_field(fighter: _Fighter, hook: str, *args) -> list:
     return [answer for state in foe.volatiles if (answer := hooks.key("moves", state, hook, *args)) is not None]
 
 
+def _accuracy(attacker: _Fighter, defender: _Fighter, move: Move) -> float:
+    return ((move.accuracy or 0) * _accuracy_stages(attacker, defender, move)
+            * (hooks.item(attacker, "accuracy_as_user", default=1.0)
+               * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy"))
+            * hooks.ability(attacker, "accuracy_as_user", move, default=1.0)
+            * hooks.ability(defender, "accuracy_as_target", move, defender, default=1.0))
+
+
 def _accuracy_stages(attacker: _Fighter, defender: _Fighter, move: Move | None = None) -> float:
     """The user's accuracy stage less the target's evasion stage, on the Gen 9 thirds table. A state that exposes the
-    target (Foresight) drops its raised evasion, and a move that ignores stages (Sacred Sword) any evasion."""
-    evasion = 0 if move is not None and _ignores_stages(move) else defender.stages["evasion"]
+    target (Foresight) drops its raised evasion, and a move that ignores stages (Sacred Sword) any evasion, and so does
+    a user's ability that ignores evasion (Keen Eye) or every foe stage (Unaware). A target's Unaware ignores the
+    user's accuracy stage."""
+    ignores = (move is not None and _ignores_stages(move) or hooks.ability(attacker, "ignores_evasion", default=False)
+               or hooks.ability(attacker, "ignores_foe_stages", default=False))
+    evasion = 0 if ignores else defender.stages["evasion"]
     if evasion > 0 and any(_field(defender, "exposes", None)):
         evasion = 0
-    stage = max(-MAX_STAGE, min(MAX_STAGE, attacker.stages["accuracy"] - evasion))
+    accuracy = 0 if hooks.ability(defender, "ignores_foe_stages", default=False) else attacker.stages["accuracy"]
+    stage = max(-MAX_STAGE, min(MAX_STAGE, accuracy - evasion))
     return (3 + stage) / 3 if stage >= 0 else 3 / (3 - stage)
 
 
@@ -1890,13 +2036,24 @@ def _hidden(defender: _Fighter, move: Move) -> float:
 
 
 def _sure_hit(attacker: _Fighter, defender: _Fighter) -> bool:
-    """A state on the target makes the user's move hit without a draw (Lock-On, Telekinesis)."""
-    return any(_field(defender, "sure_hit", attacker))
+    """A state on the target makes the user's move hit without a draw (Lock-On, Telekinesis), and so does No Guard on
+    either side."""
+    return (any(_field(defender, "sure_hit", attacker)) or hooks.ability(attacker, "sure_hits", default=False)
+            or hooks.ability(defender, "sure_hits", default=False))
 
 
 def _stopped(attacker: _Fighter, defender: _Fighter, move: Move) -> str:
-    """The state that makes `move` fail on `defender` once used ("psychic-terrain"), or ""."""
-    return next(iter(_field(defender, "stops_move", move, _move_priority(attacker, move), defender)), "")
+    """The state or ability that makes `move` fail on `defender` once used ("psychic-terrain", "soundproof"), or
+    ""."""
+    priority = _move_priority(attacker, move)
+    stopped = next(iter(_field(defender, "stops_move", move, priority, defender)), "")
+    if stopped or attacker is defender:
+        return stopped
+    if hooks.ability(defender, "stops_move", move, priority, defender, attacker, default=False):
+        return defender.ability
+    if hooks.ability(attacker, "fails_against", move, defender, default=False):
+        return attacker.ability
+    return ""
 
 
 def _stats_for(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None = None) -> tuple[float, float]:

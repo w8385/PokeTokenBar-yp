@@ -68,11 +68,11 @@ ID_KEYS = frozenset({
 })
 EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "struggle", "judgment",
                          "ivy-cudgel"})
+FLAGS = {int(move_id): frozenset(entry["flags"]) for move_id, entry in battle_data.table("moves").items()
+         if entry.get("flags")}
 # Punching Glove boosts these.
 PUNCH_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
                         if "punch" in entry.get("flags", ()))
-CONTACT_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
-                          if "contact" in entry.get("flags", ()))
 # They pass a Substitute.
 SOUND_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
                         if "sound" in entry.get("flags", ()))

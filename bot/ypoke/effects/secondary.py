@@ -2,7 +2,7 @@
 hook once the hits left the target standing. `user` and `target` are `battle._Fighter`s."""
 
 from ypoke import battle, battle_data, pokeapi
-from ypoke.effects import Handler, hooks, register
+from ypoke.effects import Handler, register
 from ypoke.effects.stats import arg, shift
 
 SECRET_POWER = {"electric-terrain": ("paralysis", None), "grassy-terrain": ("sleep", None),
@@ -16,8 +16,7 @@ class Flinch(Handler):
     by_id = True
 
     def secondary(self, move, user, target, side, rng):
-        if not target.acted and chance(move, rng, "flinch_chance") and not hooks.ability(
-                target, "blocks_ailment", "flinch", default=False):
+        if not target.acted and chance(move, rng, "flinch_chance") and not battle._blocks_ailment(target, "flinch"):
             target.volatiles["flinch"] = True
         return ()
 
@@ -72,7 +71,7 @@ def afflict(ailment: str, user, target, side: int, rng):
     """The ailment lands on the target unless its type, a state or its ability keeps it off; None when it does not."""
     if not battle._open_to(ailment, target, not battle._infiltrates(user)):
         return None
-    if hooks.ability(target, "blocks_ailment", ailment, default=False):
+    if battle._blocks_ailment(target, ailment):
         return None
     return battle._inflict(ailment, target, 1 - side, rng)
 

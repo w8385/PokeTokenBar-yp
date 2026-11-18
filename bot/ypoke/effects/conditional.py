@@ -5,7 +5,7 @@ that judges a hit taken this turn does so in `use`, and `wasted` is the chooser'
 are `battle._Fighter`s."""
 
 from ypoke import battle
-from ypoke.effects import Handler, hooks, register
+from ypoke.effects import Handler, register
 from ypoke.effects.stats import arg
 
 GLAIVE_RUSH_TURNS = 2
@@ -63,7 +63,7 @@ class BeakBlast(Condition):
 
     def after_move(self, move, user, target, dealt):
         if (user.hurt is None or not user.hurt.contact or target.hp == 0 or not battle._open_to("burn", target, True)
-                or hooks.ability(target, "blocks_ailment", "burn", default=False)):
+                or battle._blocks_ailment(target, "burn")):
             return ()
         return (battle._inflict("burn", target, target.side, None),)
 
