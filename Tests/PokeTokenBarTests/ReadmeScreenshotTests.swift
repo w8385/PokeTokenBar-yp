@@ -38,7 +38,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             let nav = PopoverNavigation()
             nav.tab = .home
             return try await hosted(Self.popover(usage: usage, store: store, updater: updater, uploader: uploader,
-                                                 entry: entry, nav: nav), height: nil)
+                                                 entry: entry, nav: nav), "home", height: nil)
         }
         func render(_ name: String) async throws -> Data { try OffscreenRender.png(of: try await render(), scale: 2) }
 
@@ -60,6 +60,20 @@ final class ReadmeScreenshotTests: XCTestCase {
         XCTAssertNotEqual(first, laterTonight, "the day/night dial ignores the companion's clock")
     }
 
+    func testStoredFriendsShotPreloadsEverySprite() async throws {
+        let suite = "readme-stored-friends-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("readme-stored-friends-\(UUID())")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let usage = try await sampleUsage(defaults: defaults)
+        let (store, cleanup) = try await homeStore(language: .en, defaults: defaults, clock: { Self.pinnedNow })
+        defer { cleanup() }
+        _ = try await hosted(try await storedFriends(store: store, language: .en, usage: usage, defaults: defaults,
+                                                     sprites: scratch), "stored-friends", height: nil)
+    }
+
     /// The en/ko/ja store every popover shot draws, with the raised Pokémon's line loaded.
     private func homeStore(language: AppLanguage, defaults: UserDefaults,
                            clock: @escaping () -> Date) async throws -> (CompanionStore, cleanup: () -> Void) {
@@ -73,13 +87,19 @@ final class ReadmeScreenshotTests: XCTestCase {
         return (store, cleanup)
     }
 
-    /// Loads the still and the GIF of the raised Pokémon and each walking friend, so a shot never draws mid-load.
+    /// Loads the still and the GIF of the raised Pokémon, each walking friend and each species in the evolution
+    /// strip, so a shot never draws mid-load.
     static func preloadHeaderSprites(of store: CompanionStore, into sprites: SpriteStore = .shared) async {
         let main = store.representativeSubject
         var shown = store.friendSubjects.map {
             ($0.spriteSpeciesID, $0.isShiny, $0.spriteForm, $0.megaSpriteID == nil && $0.isFemale)
         }
         if let id = main.spriteSpeciesID { shown.append((id, main.isShiny, main.spriteForm, main.spriteIsFemale)) }
+        for node in store.lineNodes {
+            if case .species(let id) = node.content {
+                shown.append((id, store.currentIsShiny, store.currentForm, store.currentIsFemale))
+            }
+        }
         for (id, shiny, form, female) in shown {
             _ = await SpriteLoader.image(speciesID: id, shiny: shiny, store: sprites, form: form, female: female)
             _ = await SpriteLoader.animationFrames(speciesID: id, shiny: shiny, store: sprites, form: form,
@@ -396,9 +416,11 @@ final class ReadmeScreenshotTests: XCTestCase {
         let spriteStore = SpriteStore(directory: sprites.appendingPathComponent("sprites"))
         for entry in store.state.dex {
             let friend = FriendSubject(entry)
-            _ = await spriteStore.data(speciesID: friend.megaSpriteID ?? friend.speciesID, animated: false,
-                                       shiny: friend.isShiny, form: friend.megaSpriteID == nil ? friend.form : nil,
-                                       female: friend.megaSpriteID == nil && friend.isFemale)
+            for animated in [false, true] {
+                _ = await spriteStore.data(speciesID: friend.megaSpriteID ?? friend.speciesID, animated: animated,
+                                           shiny: friend.isShiny, form: friend.megaSpriteID == nil ? friend.form : nil,
+                                           female: friend.megaSpriteID == nil && friend.isFemale)
+            }
         }
         await Self.preloadHeaderSprites(of: walking, into: spriteStore)
         return VStack(alignment: .leading, spacing: 18) {
@@ -608,11 +630,11 @@ final class ReadmeScreenshotTests: XCTestCase {
 
     /// `height: nil` draws the view at its own height.
     private func shot<V: View>(_ view: V, _ name: String, in dir: URL, height: CGFloat?) async throws {
-        let host = try await hosted(view, height: height)
+        let host = try await hosted(view, name, height: height)
         try OffscreenRender.writePNG(of: host, to: dir.appendingPathComponent("\(name).png"), scale: 2)
     }
 
-    private func hosted<V: View>(_ view: V, height: CGFloat?) async throws -> NSView {
+    private func hosted<V: View>(_ view: V, _ name: String, height: CGFloat?) async throws -> NSView {
         let width = PopoverMetrics.width
         let styled = view
             .frame(width: width, height: height, alignment: .top)
@@ -622,14 +644,46 @@ final class ReadmeScreenshotTests: XCTestCase {
             .environment(\.controlActiveState, .active)
             .environment(\.animatesSprites, false)
             .environment(\.pokemonNameProvider, StubMoveNames()).environment(\.pokemonNameStore, moveNames)
+        LateSpriteRequests.arm()
+        defer { _ = LateSpriteRequests.disarm() }
         let host = OffscreenRender.host(styled, size: CGSize(width: width, height: height ?? 2_000), appearance: .darkAqua)
         try await OffscreenRender.settle(host)
         if height == nil {
             host.frame.size.height = host.fittingSize.height
             try await OffscreenRender.settle(host)
         }
+        XCTAssertEqual(LateSpriteRequests.disarm(), [], "\(name) fetched sprites the test did not preload")
         return host
     }
+}
+
+/// Fails and lists every sprite download made while a shot is on screen: a shot that has to fetch a sprite
+/// draws whatever has arrived by the time it settles.
+private final class LateSpriteRequests: URLProtocol, @unchecked Sendable {
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var armed = false
+    nonisolated(unsafe) private static var paths: Set<String> = []
+
+    static func arm() {
+        lock.withLock { armed = true; paths = [] }
+        URLProtocol.registerClass(LateSpriteRequests.self)
+    }
+
+    static func disarm() -> [String] {
+        URLProtocol.unregisterClass(LateSpriteRequests.self)
+        return lock.withLock { armed = false; return paths.sorted() }
+    }
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        lock.withLock { armed } && request.url?.host == "raw.githubusercontent.com"
+    }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        let path = request.url?.path ?? "?"
+        Self.lock.withLock { _ = Self.paths.insert(path) }
+        client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet))
+    }
+    override func stopLoading() {}
 }
 
 /// The Box fixture with Onix's abilities, so the Ability Capsule and Patch have something to switch.
