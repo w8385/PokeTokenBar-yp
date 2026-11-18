@@ -220,13 +220,13 @@ The Shop's Growth tab adds the <b>Ability Capsule</b> (the other regular ability
 <h3>⚔️ Gyms, the Elite Four, and a badge case</h3>
 With the <a href="bot/README.md">YPoke</a> link set up, the <b>Battle</b> tab has three sub-tabs. <b>Entry</b> holds up to six Pokémon that fight in order, <b>Battle</b> holds the gyms, and <b>History</b> lists your recent battles. When one faints the next comes in; nothing switches mid-battle. <b>Auto</b> sends the Pokémon you're raising. Each row shows the stats it fights with at its battle level, with ↑ and ↓ on the stats its nature raises and lowers, and follows the Pokémon's form.
 <br><br>
-Under <b>Gyms</b>, each region has eight leaders with their own type and team. Your entry fights at Lv50 or below, and nothing is posted to Slack. A win earns the badge and can grant a TM. Eight badges open the <b>Elite Four</b> run, and the <b>hideout</b> is a run of battles in a row: your team is fully healed before each one, and a loss starts the run again. The <b>badge case</b> shows each region's badges.
+Under <b>Gyms</b>, each region has eight leaders with their own type and team, in a two-column grid. Your entry fights at Lv50 or below, and nothing is posted to Slack. A win earns the badge and can grant a TM. Below the gyms, the <b>hideout</b> is a run of battles in a row: your team is fully healed before each one, and a loss starts the run again. Eight badges open the <b>Elite Four</b> run below it. The <b>badge case</b> shows each region's badges.
 </td>
 </tr>
 <tr>
 <td width="55%" valign="middle">
 <h3>▶️ Watch the battle play out</h3>
-A gym fight plays back turn by turn: moves, damage, HP bars, and each side's remaining Pokémon. Moves are named in the app's language. Fast-forward, step to the next turn, or skip to the result.
+A gym fight plays back turn by turn: moves, damage, HP bars, and each side's remaining Pokémon. Moves are named in the app's language. A Pokémon that Mega Evolves or changes form shows that form, in the replay and in the result's team rows. Fast-forward, step to the next turn, or skip to the result. When the replay ends, the next step (for example, Start over) takes the place of Skip.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-gym-replay.png" width="300" alt="A gym battle replay stopped mid-fight"></td>
 </tr>
