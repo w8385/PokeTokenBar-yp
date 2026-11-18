@@ -77,7 +77,7 @@ final class GymRunOrderTests: XCTestCase {
         }
         let directory = URL(fileURLWithPath: output)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        for language in [AppLanguage.ko, .en] {
+        for language in [AppLanguage.ko, .en, .de] {
             _ = try await OffscreenRender.capture(
                 try section(language), size: CGSize(width: PopoverMetrics.contentWidth, height: height),
                 appearance: .aqua, to: directory.appendingPathComponent("battle-run-order-\(language.rawValue).png"))
