@@ -32,6 +32,7 @@ STATE_LABEL = {
     "stealth-rock": "🪨스텔스록", "spikes": "📌압정", "toxic-spikes": "☠️독압정", "sticky-web": "🕸️끈적끈적네트",
     "tailwind": "🍃순풍", "safeguard": "✨신비의부적", "mist": "🌁흰안개", "lucky-chant": "🍀주술", "gravity": "🌍중력",
     "mud-sport": "🟫흙놀이", "water-sport": "💦물놀이", "ion-deluge": "⚡플라스마샤워",
+    "magic-room": "🪄매직룸", "wonder-room": "🌀원더룸",
 }
 BLOCKED_TAG = {
     "paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임",
@@ -84,6 +85,8 @@ EFFECT_TEXT = {
     "camouflage": "🎨주변에 맞는 타입이 됐다", "reflect-type": "🪞상대와 같은 타입이 됐다",
     "role-play": "🎭상대의 특성을 따라 했다", "doodle": "🎨상대의 특성을 따라 그렸다",
     "recycle": "♻️다 쓴 도구를 되살렸다", "teatime": "🍵모두 나무열매를 먹었다",
+    "magic-room": "🪄지닌 도구가 효과를 잃었다", "magic-room-off": "🪄매직룸이 풀렸다",
+    "wonder-room": "🌀방어와 특방이 뒤바뀌었다", "wonder-room-off": "🌀원더룸이 풀렸다",
     "stuff-cheeks": "🐿️나무열매를 먹었다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
