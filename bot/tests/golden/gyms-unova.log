@@ -620,7 +620,7 @@ SendOut turn=20 side=1 pokemon='P534' member=4
 Action turn=21 side=0 attacker='P576' defender='P534' move='퀵턴' multiplier=2.0 defender_hp=82 attacker_hp=21 move_id=812
 Action turn=21 side=1 attacker='P534' defender='P576' move='엄청난힘' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=276
 result winner=1 turns=21 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 82, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=d5668e9be457d870657da023aa42c1273bf5b3e0cbc4ee13a517de2a3fd149db
+won=False carry=null body=af138c20248c2677b984cc4376c7a42422557d88f4bfedca29220e91ab512e04
 ## unova-hideout-1 party 0 carried null
 Action turn=1 side=1 attacker='P505' defender='P948' move='기합구슬' multiplier=2.0 defender_hp=38 move_id=411
 Action turn=1 side=0 attacker='P948' defender='P505' move='퀵턴' multiplier=2.0 defender_hp=39 attacker_hp=38 pivoted=True move_id=812
@@ -925,7 +925,7 @@ Action turn=12 side=0 attacker='P590' defender='P591' move='투닥투닥프렌�
 Action turn=13 side=1 attacker='P591' defender='P590' move='속임수' defender_hp=51 recovered=('sleep',) attacker_hp=7 move_id=492
 Action turn=13 side=0 attacker='P590' defender='P591' move='심판의뭉치' defender_hp=0 knockout=True attacker_hp=51 move_id=449
 result winner=0 turns=13 remaining=((81, 100, 0, 0, 0, 51), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=64bdb735475a08c342524ec36333ed9275905a851e098d8f30bb4bdb91dc4b94
+won=True carry=null body=397774d804869d1ecdb3202b3d90a7dd7cb706fde10324fe8efbd7cfbb4e3bbd
 ## unova-2 party 1 carried null
 Action turn=1 side=1 attacker='P505' defender='P373' move='깨물어부수기' multiplier=2.0 changes=(Change(side=0, pokemon='P373', kind='defense', stages=-1),) defender_hp=57 move_id=242
 Action turn=1 side=0 attacker='P373' defender='P505' move='볼트체인지' defender_hp=80 attacker_hp=57 pivoted=True move_id=521
@@ -983,7 +983,7 @@ Action turn=12 side=1 attacker='P561' defender='P6' move='열풍' missed=True mu
 YawnSleep turn=12 side=1 pokemon='P561'
 Action turn=13 side=0 attacker='P6' defender='P561' move='맹독엄니' defender_hp=0 knockout=True move_id=305
 result winner=0 turns=13 remaining=((65, 70, 0, 0, 100, None), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, 'sleep'))
-won=True carry=null body=f6da34d1c109aa79ff95ebf07a40cf6b824638273757e01d438551e6347687db
+won=True carry=null body=9216d824bdb2f8f79edb9c85e4e4d0792fa35edc582d11bd5372ec87a7697fa5
 ## unova-4 party 1 carried null
 Action turn=1 side=1 attacker='P596' defender='P373' move='벌레의야단법석' defender_hp=71 move_id=405
 Action turn=1 side=0 attacker='P373' defender='P596' move='볼트체인지' multiplier=2.0 critical=True defender_hp=59 attacker_hp=71 pivoted=True move_id=521
@@ -1061,7 +1061,7 @@ Action turn=18 side=0 attacker='P660' defender='P516' move='시드플레어' mis
 Action turn=18 side=1 attacker='P516' defender='P660' move='파도타기' multiplier=2.0 defender_hp=38 attacker_hp=35 move_id=57
 Action turn=19 side=0 attacker='P660' defender='P516' move='시드플레어' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=38 move_id=465
 result winner=0 turns=19 remaining=((0, 38, 0, 0, 0, 0), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=True carry=null body=fc45694ddd722c9ce07e828928a81c421c214bc36f6f81f1e089a56dc97c1abc
+won=True carry=null body=96d57a972ee4b14b83e403083dc7d25156957441abe77c2a66200a36ba65a025
 ## unova-6 party 1 carried null
 Action turn=1 side=1 attacker='P634' defender='P373' move='깨물어부수기' multiplier=2.0 defender_hp=58 move_id=242
 Action turn=1 side=0 attacker='P373' defender='P634' move='볼트체인지' multiplier=0.5 defender_hp=94 attacker_hp=58 pivoted=True move_id=521
@@ -1104,7 +1104,7 @@ Action turn=17 side=1 attacker='P510' defender='P590' move='치근거리기' mul
 SendOut turn=17 side=0 pokemon='P373' member=0
 Action turn=18 side=1 attacker='P510' defender='P373' move='속임수' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=8 move_id=492
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 8, None, None, None)) statuses=((None, None, None, None, None, None), ('sleep', None, None, None, None))
-won=False carry=null body=3a814a906dba09221800b17f63ad3565c987922c5c72f31c211cf5ec4b383e00
+won=False carry=null body=1d4baf4c5252992c76a01286ea2f44d1c7b0c6a9a4cb5d8208ebbacdf06de546
 ## unova-7 party 1 carried null
 Action turn=1 side=1 attacker='P636' defender='P373' move='플레어드라이브' multiplier=2.0 changes=(Change(side=0, pokemon='P373', kind='burn', stages=0),) recoil=True defender_hp=81 attacker_hp=96 move_id=394
 Action turn=1 side=0 attacker='P373' defender='P636' move='볼트체인지' defender_hp=86 attacker_hp=81 pivoted=True move_id=521
@@ -1161,7 +1161,7 @@ Action turn=20 side=0 attacker='P373' defender='P500' move='누르기' defender_
 StatusDamage turn=20 side=0 pokemon='P373' hp=7 fainted=False
 Action turn=21 side=1 attacker='P500' defender='P373' move='플레어드라이브' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=38 move_id=394
 result winner=1 turns=21 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 38)) statuses=(('burn', None, None, None, None, None), (None, None, None, 'sleep', None, None))
-won=False carry=null body=30e06685d400a505da29a4d9ac85348c6309b79fcd2635298cbd16a2753f3d0d
+won=False carry=null body=a9b097146aa04b3d1e45f21bc0064e3dc88439a2e3cf0e473aa1654083dbc2fc
 ## unova-8 party 1 carried null
 Action turn=1 side=1 attacker='P538' defender='P373' move='독찌르기' changes=(Change(side=0, pokemon='P373', kind='poison', stages=0),) defender_hp=81 move_id=398
 Action turn=1 side=0 attacker='P373' defender='P538' move='볼트체인지' defender_hp=77 attacker_hp=81 pivoted=True move_id=521
@@ -1217,7 +1217,7 @@ SendOut turn=20 side=1 pokemon='P500' member=5
 Action turn=21 side=0 attacker='P660' defender='P500' move='메가톤킥' defender_hp=64 attacker_hp=18 move_id=25
 Action turn=21 side=1 attacker='P500' defender='P660' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=64 move_id=370
 result winner=1 turns=21 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 64)) statuses=(('poison', None, None, None, None, None), (None, None, 'sleep', None, None, None))
-won=False carry=null body=95a197c077d100ff6b5e0b0d34c1e4308538c62c9d9a50b6458c4fb19aaa10c7
+won=False carry=null body=0ab30826c2dc860f5cca05a10d7803ca0e1d51401f1790c22ef3d5ccefc020ea
 ## unova-elite-1 party 1 carried null
 Action turn=1 side=1 attacker='P606' defender='P373' move='섀도볼' multiplier=2.0 changes=(Change(side=0, pokemon='P373', kind='special_defense', stages=-1),) defender_hp=35 move_id=247
 Action turn=1 side=0 attacker='P373' defender='P606' move='볼트체인지' defender_hp=85 attacker_hp=35 pivoted=True move_id=521
@@ -1256,7 +1256,7 @@ SendOut turn=15 side=1 pokemon='P503' member=3
 Action turn=16 side=0 attacker='P660' defender='P503' move='메가톤킥' defender_hp=66 attacker_hp=42 move_id=25
 Action turn=16 side=1 attacker='P503' defender='P660' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=66 move_id=57
 result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 66, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=24e3ed23774b9a56c70b2590c9bf7b97a9300dc0dc1be302f4f60d72f3df1d0a
+won=False carry=null body=d41e07d6b674d447ae1c3127800c97a7297d22cf079863b6bba96ea807e16d2c
 ## unova-elite-2 party 1 carried null
 Action turn=1 side=1 attacker='P598' defender='P373' move='아이언헤드' defender_hp=78 move_id=442
 Action turn=1 side=0 attacker='P373' defender='P598' move='볼트체인지' multiplier=0.5 defender_hp=93 attacker_hp=78 pivoted=True move_id=521
@@ -1305,7 +1305,7 @@ Action turn=18 side=0 attacker='P590' defender='P584' move='투닥투닥프렌�
 Action turn=19 side=1 attacker='P584' defender='P590' move='' blocked='sleep' attacker_hp=18
 Action turn=19 side=0 attacker='P590' defender='P584' move='생생버블' multiplier=2.0 defender_hp=0 knockout=True drained=True move_id=733
 result winner=0 turns=19 remaining=((78, 0, 0, 0, 0, 100), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, 'sleep'))
-won=True carry=[{"hp": 78, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}] body=34017c3a141a33cccd5602d4d6fbde473db68f916f79cd23358f68fefaa464cd
+won=True carry=[{"hp": 78, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}] body=3d625dba0dcaa6f568df9c6e2fde872429e91cc04e3889d5dab50b08d9598aeb
 ## unova-elite-3 party 1 carried [{"hp": 78, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}]
 Action turn=1 side=1 attacker='P618' defender='P373' move='오물웨이브' defender_hp=38 move_id=482
 Action turn=1 side=0 attacker='P373' defender='P618' move='누르기' defender_hp=82 attacker_hp=38 move_id=34
@@ -1374,7 +1374,7 @@ Action turn=22 side=0 attacker='P373' defender='P615' move='누르기' critical=
 SendOut turn=22 side=1 pokemon='P609' member=5
 Action turn=23 side=1 attacker='P609' defender='P373' move='섀도볼' multiplier=2.0 defender_hp=0 knockout=True move_id=247
 result winner=1 turns=23 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 100)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=b6c1023a6c8b42a7a192efbe45c73cecc86064bed2a9e1ba2aa12468ff1ee5f8
+won=False carry=null body=d2f3ae06e39bc6dba593bc5634e9fccbe02d0f586d5832e5bf8b8e547bad3056
 ## unova-champion party 1 carried null
 MegaEvolution turn=1 side=1 pokemon='P530' ability='벌레의알림' form_id=10287
 Action turn=1 side=1 attacker='P530' defender='P373' move='아이언헤드' defender_hp=85 move_id=442
@@ -1436,7 +1436,7 @@ SendOut turn=23 side=1 pokemon='P534' member=4
 Action turn=24 side=0 attacker='P660' defender='P534' move='시드플레어' multiplier=2.0 defender_hp=46 attacker_hp=18 move_id=465
 Action turn=24 side=1 attacker='P534' defender='P660' move='엄청난힘' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=46 move_id=276
 result winner=1 turns=24 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 46, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=305d76fb3f4a1437073e1cb7a95720db1c53c71c1a5b911ad04a478cd7823556
+won=False carry=null body=22ca01cb5361079b23616d2cd1d087d1d7a41083d93e0d7bbb46ae5e025b67d6
 ## unova-hideout-1 party 1 carried null
 Action turn=1 side=1 attacker='P505' defender='P373' move='깨물어부수기' multiplier=2.0 defender_hp=54 move_id=242
 Action turn=1 side=0 attacker='P373' defender='P505' move='볼트체인지' defender_hp=79 attacker_hp=54 pivoted=True move_id=521
@@ -1492,7 +1492,7 @@ SendOut turn=21 side=1 pokemon='P623' member=4
 Action turn=22 side=0 attacker='P660' defender='P623' move='시드플레어' changes=(Change(side=1, pokemon='P623', kind='special_defense', stages=-2),) defender_hp=49 attacker_hp=55 move_id=465
 Action turn=22 side=1 attacker='P623' defender='P660' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=40 attacker_item='life-orb' move_id=89
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 40, None)) statuses=((None, None, None, None, None, None), (None, None, 'sleep', 'paralysis', None, None))
-won=False carry=null body=aec2e0b8913e65ac91decb6a0f2b95d2908151ef11faa767ef9bd71c43c30ff3
+won=False carry=null body=dad7d03a72f02b540e74219f424af0fd5f19242b71ec04214e97b704bc641e20
 ## unova-hideout-2 party 1 carried null
 Action turn=1 side=1 attacker='P634' defender='P373' move='깨물어부수기' multiplier=2.0 critical=True changes=(Change(side=0, pokemon='P373', kind='defense', stages=-1),) defender_hp=48 move_id=242
 Action turn=1 side=0 attacker='P373' defender='P634' move='볼트체인지' multiplier=0.5 critical=True defender_hp=91 attacker_hp=48 pivoted=True move_id=521
@@ -1540,7 +1540,7 @@ Action turn=19 side=1 attacker='P618' defender='P373' move='오물웨이브' def
 Action turn=19 side=0 attacker='P373' defender='P618' move='누르기' defender_hp=39 attacker_hp=11 move_id=34
 Action turn=20 side=1 attacker='P618' defender='P373' move='오물웨이브' defender_hp=0 knockout=True attacker_hp=39 move_id=482
 result winner=1 turns=20 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 39, None, None)) statuses=((None, None, None, None, None, None), (None, None, 'sleep', None, None, None))
-won=False carry=null body=d2a171357c09ff5bc7bcdd5b07df26df5e34a41198f6ca57e44ad66f7ae0f1f4
+won=False carry=null body=d26a7b024775f62bc1a107945c4734753193d483a33a679e43afa64579c9badd
 ## unova-hideout-3 party 1 carried null
 Action turn=1 side=1 attacker='P618' defender='P373' move='오물웨이브' defender_hp=60 move_id=482
 Action turn=1 side=0 attacker='P373' defender='P618' move='누르기' changes=(Change(side=1, pokemon='P618', kind='paralysis', stages=0),) defender_hp=82 attacker_hp=60 move_id=34
@@ -1605,7 +1605,7 @@ Action turn=8 side=1 attacker='P537' defender='P590' move='오물웨이브' defe
 Action turn=8 side=0 attacker='P590' defender='P537' move='심판의뭉치' critical=True defender_hp=37 attacker_hp=17 move_id=449
 Action turn=9 side=1 attacker='P537' defender='P590' move='오물웨이브' defender_hp=0 knockout=True attacker_hp=37 move_id=482
 result winner=1 turns=9 remaining=((0, 0, 0, 0), (0, 37, None, None, None, None)) statuses=((None, None, None, None), ('sleep', None, None, None, None, None))
-won=False carry=null body=f78860fa831d1e9f186bf4f1fad16d7d6037211a2394fce18a663855907da73a
+won=False carry=null body=494f794b209b0d18c4c4ce5e960465517e57d9a59c0929e9289df980b18b4ed0
 ## unova-hidden party 1 carried null
 AbilityTrigger side=1 pokemon='P10021' ability='intimidate' change=Change(side=0, pokemon='P373', kind='attack', stages=-1)
 Action turn=1 side=1 attacker='P10021' defender='P373' move='스톤에지' defender_hp=60 move_id=444
@@ -1652,4 +1652,4 @@ Action turn=17 side=1 attacker='P635' defender='P590' move='용성군' multiplie
 SendOut turn=17 side=0 pokemon='P373' member=0
 Action turn=18 side=1 attacker='P635' defender='P373' move='용성군' defender_hp=0 knockout=True move_id=434
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 100, None, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, 'sleep', None, None, None, None, None))
-won=False carry=null body=540b84f68456d28e7110347d04c49381c1336c6e3c6adc5d616a342dbac9d4a3
+won=False carry=null body=f95ab109cf79ef65e83d91c8bbebc42c4616cebda470bbe7b2951aa0b921c869
