@@ -31,6 +31,8 @@ private struct GymTeamStrip: View {
     let title: String
     let fighters: [GymFighter]
     let l: L
+    /// The `/pokemon` id each member ended the battle as (a Mega, a form); empty or nil shows the roster id.
+    var forms: [Int?] = []
     /// Members from this index on stay a "?" unless they came out: the champion's finale.
     var hiddenFrom = Int.max
 
@@ -44,7 +46,7 @@ private struct GymTeamStrip: View {
                             .frame(width: 36, height: 36)
                             .accessibilityLabel(l.gymFinaleHidden(1))
                     } else {
-                        member(fighter)
+                        member(fighter, spriteID: (index < forms.count ? forms[index] : nil) ?? fighter.pokemonId)
                     }
                 }
                 Spacer(minLength: 0)
@@ -52,9 +54,9 @@ private struct GymTeamStrip: View {
         }
     }
 
-    private func member(_ fighter: GymFighter) -> some View {
+    private func member(_ fighter: GymFighter, spriteID: Int) -> some View {
         VStack(spacing: Spacing.xxs) {
-            SpriteView(speciesID: fighter.pokemonId, size: 36, shiny: fighter.shiny)
+            SpriteView(speciesID: spriteID, size: 36, shiny: fighter.shiny)
                 .frame(width: 36, height: 36)
                 .grayscale(fighter.hp == 0 ? 1 : 0)
             GymHPBar(hp: fighter.hp).frame(width: 34)
@@ -147,8 +149,9 @@ struct GymResultView: View {
         if let reward = record.reward { rewardLines(reward) }
         if outcome.won, outcome.run != nil, outcome.run?.next == nil { Text(l.gymRunCleared).font(.caption) }
         if !outcome.won, outcome.run != nil { Text(l.gymRunLostHint).font(.caption2).foregroundStyle(.secondary) }
-        GymTeamStrip(title: l.gymYourTeam, fighters: outcome.playerTeam, l: l)
-        GymTeamStrip(title: l.gymTheirTeam, fighters: outcome.foeTeam, l: l,
+        let forms = replay?.replay.last.form ?? []
+        GymTeamStrip(title: l.gymYourTeam, fighters: outcome.playerTeam, l: l, forms: forms.first ?? [])
+        GymTeamStrip(title: l.gymTheirTeam, fighters: outcome.foeTeam, l: l, forms: forms.last ?? [],
                      hiddenFrom: (record.opponent.finale ?? 0) > 0 ? record.opponent.team.count : .max)
     }
 

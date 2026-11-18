@@ -19,9 +19,15 @@ struct GymReplay: Equatable, Sendable {
         var active: [Int?] = [nil, nil]
         var hp: [[Int?]]
         var status: [[String?]]
+        /// The `/pokemon` id a member fights as after a `form` event; nil shows its roster id.
+        var form: [[Int?]]
         var lastMove: Move?
         /// The champion's hidden member came out this turn.
         var finale = false
+
+        func spriteID(side: Int, member: Int, roster: [GymFighter]) -> Int {
+            form[side][member] ?? roster[member].pokemonId
+        }
     }
 
     let events: [GymBattleEvent]
@@ -42,17 +48,26 @@ struct GymReplay: Equatable, Sendable {
         eventsPerTurn = Dictionary(known.map { ($0.turn, 1) }, uniquingKeysWith: +)
     }
 
-    private static let types: Set<String> = ["switch", "move", "damage", "faint", "status", GymBattleEvent.finale]
+    private static let types: Set<String> = ["switch", "move", "damage", "faint", "status", GymBattleEvent.finale,
+                                             GymBattleEvent.form]
+
+    /// Both sides when the battle ended: each member's last HP share and the form it ended in.
+    var last: Frame { frame(after: events.count) }
 
     func frame(after count: Int) -> Frame {
         var frame = Frame(hp: sizes.map { Array(repeating: nil, count: $0) },
-                          status: sizes.map { Array(repeating: nil, count: $0) })
+                          status: sizes.map { Array(repeating: nil, count: $0) },
+                          form: sizes.map { Array(repeating: nil, count: $0) })
         for event in events.prefix(count) {
             if event.turn != frame.turn { frame.finale = false }
             frame.turn = event.turn
             switch event.type {
             case GymBattleEvent.finale:
                 frame.finale = true
+            case GymBattleEvent.form:
+                if let id = event.pokemonId, !MegaStone.missingSpriteIDs.contains(id) {
+                    frame.form[event.side][event.member] = id
+                }
             case "switch":
                 frame.active[event.side] = event.member
                 frame.hp[event.side][event.member] = event.hp ?? 100

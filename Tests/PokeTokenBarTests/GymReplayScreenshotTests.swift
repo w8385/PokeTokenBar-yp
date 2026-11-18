@@ -50,6 +50,29 @@ final class GymReplayScreenshotTests: XCTestCase {
         try await captureTheBotsKantoLineups(to: directory)
     }
 
+    /// The foe's Charizard right after it Mega Evolves: "before" drops the `form` event, as an app without forms shows it.
+    func testCaptureTheMegaReplay() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_GYM_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_GYM_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        for (species, _) in mine { _ = await SpriteLoader.image(speciesID: species, back: true) }
+        for species in theirs.map(\.0) + [10034] { _ = await SpriteLoader.image(speciesID: species) }
+        let teams = (fighters(mine, hp: [0, 100, nil]), fighters(theirs, hp: [0, 0]))
+        for (name, events, shown) in [("before", GymFixtures.replayEvents, 10), ("after", GymFixtures.megaReplayEvents, 11)] {
+            let outcome = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+                gymID: "kanto-1", kind: "gym", won: true, turns: 5, events: events, teams: teams))
+            let player = GymReplayPlayer(try XCTUnwrap(GymReplay(outcome)), shown: shown)
+            for language in [AppLanguage.ko, .en] {
+                try write(GymReplayView(player: player, outcome: outcome, l: L(language), autoplay: false)
+                    .padding(Spacing.lg),
+                          language: language, height: 260,
+                          to: directory.appendingPathComponent("gym-replay-mega-\(name)-\(language.rawValue).png"))
+            }
+        }
+    }
+
     /// The bot's gym 1 (three foes) as a result, and a champion loss with the hidden partner unseen.
     private func captureTheBotsKantoLineups(to directory: URL) async throws {
         let kanto = try XCTUnwrap(try GymCatalog.decode(Data(contentsOf: GymRepo.kantoCatalog)).region("kanto"))
