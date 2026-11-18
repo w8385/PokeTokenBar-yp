@@ -73,6 +73,32 @@ final class GymReplayScreenshotTests: XCTestCase {
         }
     }
 
+    /// A lost Elite Four step right after Skip: the replay's last frame and its next step.
+    func testCaptureTheLostRunStepAfterSkip() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_GYM_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_GYM_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        for (species, _) in mine { _ = await SpriteLoader.image(speciesID: species, back: true) }
+        for (species, _) in theirs { _ = await SpriteLoader.image(speciesID: species) }
+        let catalog = try GymCatalog.decode(GymFixtures.catalogData())
+        let opponent = try XCTUnwrap(catalog.region("kanto")?.elite.battles[1])
+        let outcome = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+            gymID: opponent.id, kind: "elite", won: false, run: ("kanto-elite", 2, 5, "kanto-elite-1", "kanto-elite-3"), turns: 5,
+            events: GymFixtures.replayEvents,
+            teams: (fighters(mine, hp: [0, 0, 0]), fighters(theirs, hp: [0, 40]))))
+        for language in [AppLanguage.ko, .en] {
+            let l = L(language)
+            try write(GymResultView(record: GymFightRecord(opponent: opponent, outcome: outcome, reward: nil),
+                                    language: language, l: l, regionName: "Kanto", tmName: { _ in nil },
+                                    primaryTitle: l.gymRestartRun, busy: false, onPrimary: {}, onClose: {},
+                                    replayShown: Int.max),
+                      language: language, height: 560,
+                      to: directory.appendingPathComponent("gym-run-lost-skipped-\(language.rawValue).png"))
+        }
+    }
+
     /// The bot's gym 1 (three foes) as a result, and a champion loss with the hidden partner unseen.
     private func captureTheBotsKantoLineups(to directory: URL) async throws {
         let kanto = try XCTUnwrap(try GymCatalog.decode(Data(contentsOf: GymRepo.kantoCatalog)).region("kanto"))

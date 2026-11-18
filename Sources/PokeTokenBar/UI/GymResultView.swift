@@ -92,7 +92,8 @@ struct GymResultView: View {
     @State private var replay: GymReplayPlayer?
 
     init(record: GymFightRecord, language: AppLanguage, l: L, regionName: String, tmName: @escaping (Int) -> String?,
-         primaryTitle: String?, busy: Bool, onPrimary: @escaping () -> Void, onClose: @escaping () -> Void) {
+         primaryTitle: String?, busy: Bool, onPrimary: @escaping () -> Void, onClose: @escaping () -> Void,
+         replayShown: Int? = nil) {
         self.record = record
         self.language = language
         self.l = l
@@ -102,11 +103,12 @@ struct GymResultView: View {
         self.busy = busy
         self.onPrimary = onPrimary
         self.onClose = onClose
-        _replay = State(initialValue: GymReplay(record.outcome).map { GymReplayPlayer($0) })
+        _replay = State(initialValue: GymReplay(record.outcome).map { GymReplayPlayer($0, shown: replayShown) })
     }
 
     private var outcome: GymBattleOutcome { record.outcome }
     private var revealed: Bool { replay?.finished ?? true }
+    private var primaryLabel: String? { primaryTitle.map { busy ? l.gymFighting : $0 } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
@@ -123,15 +125,18 @@ struct GymResultView: View {
                 }
                 Spacer(minLength: 0)
             }
-            if let replay { GymReplayView(player: replay, outcome: outcome, l: l) }
+            if let replay {
+                GymReplayView(player: replay, outcome: outcome, l: l,
+                              next: primaryLabel.map { GymReplayView.Next(title: $0, busy: busy, action: onPrimary) })
+            }
             if revealed { summary }
             logToggle
             HStack {
                 Button(l.gymClose, action: onClose).controlSize(.small)
                 Spacer()
-                if revealed, let primaryTitle {
-                    Button(busy ? l.gymFighting : primaryTitle, action: onPrimary)
-                        .controlSize(.small).keyboardShortcut(.defaultAction).disabled(busy)
+                if revealed, let primaryLabel {
+                    Button(primaryLabel, action: onPrimary)
+                        .controlSize(.small).keyboardShortcut(replay == nil ? .defaultAction : nil).disabled(busy)
                 }
             }
         }
