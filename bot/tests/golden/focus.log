@@ -4769,3 +4769,874 @@ VolatileTick turn=4 side=1 pokemon='P143' kind='leech-seed' hp=7
 VolatileTick turn=4 side=0 pokemon='P1' kind='leech-seed-heal'
 Action turn=5 side=0 attacker='P1' defender='P143' move='쑥쑥봄버' multiplier=0.5 defender_hp=0 knockout=True move_id=738
 result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
+## focus assist 0
+side=0 P52 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[274] mega=None
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=95 move_id=33
+Action turn=1 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=87 attacker_hp=95 move_id=274 via='조수'
+Action turn=2 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=91 attacker_hp=87 move_id=33
+Action turn=2 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=75 attacker_hp=91 move_id=274 via='조수'
+Action turn=3 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=87 attacker_hp=75 move_id=33
+Action turn=3 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=62 attacker_hp=87 move_id=274 via='조수'
+Action turn=4 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=83 attacker_hp=62 move_id=33
+Action turn=4 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=50 attacker_hp=83 move_id=274 via='조수'
+Action turn=5 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 critical=True defender_hp=77 attacker_hp=50 move_id=33
+Action turn=5 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=37 attacker_hp=77 move_id=274 via='조수'
+Action turn=6 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=73 attacker_hp=37 move_id=33
+Action turn=6 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='paralysis', stages=0),) defender_hp=23 attacker_hp=73 move_id=274 via='조수'
+Action turn=7 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=9 attacker_hp=73 move_id=274 via='조수'
+Action turn=7 side=1 attacker='P143' defender='P52' move='' defender_hp=73 blocked='paralysis' attacker_hp=9
+Action turn=8 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=73 move_id=274 via='조수'
+result winner=0 turns=8 remaining=((73, None), (0,)) statuses=((None, None), ('paralysis',))
+## focus assist 1
+side=0 P52 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[274] mega=None
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=95 move_id=33
+Action turn=1 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=86 attacker_hp=95 move_id=274 via='조수'
+Action turn=2 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=92 attacker_hp=86 move_id=33
+Action turn=2 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=75 attacker_hp=92 move_id=274 via='조수'
+Action turn=3 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=87 attacker_hp=75 move_id=33
+Action turn=3 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 critical=True defender_hp=58 attacker_hp=87 move_id=274 via='조수'
+Action turn=4 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=82 attacker_hp=58 move_id=33
+Action turn=4 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=44 attacker_hp=82 move_id=274 via='조수'
+Action turn=5 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=78 attacker_hp=44 move_id=33
+Action turn=5 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=32 attacker_hp=78 move_id=274 via='조수'
+Action turn=6 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=73 attacker_hp=32 move_id=33
+Action turn=6 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=19 attacker_hp=73 move_id=274 via='조수'
+Action turn=7 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=69 attacker_hp=19 move_id=33
+Action turn=7 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=7 attacker_hp=69 move_id=274 via='조수'
+Action turn=8 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=64 attacker_hp=7 move_id=33
+Action turn=8 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=64 move_id=274 via='조수'
+result winner=0 turns=8 remaining=((64, None), (0,)) statuses=((None, None), (None,))
+## focus assist 2
+side=0 P52 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[274] mega=None
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=96 move_id=33
+Action turn=1 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=87 attacker_hp=96 move_id=274 via='조수'
+Action turn=2 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 critical=True defender_hp=91 attacker_hp=87 move_id=33
+Action turn=2 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=73 attacker_hp=91 move_id=274 via='조수'
+Action turn=3 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=87 attacker_hp=73 move_id=33
+Action turn=3 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=59 attacker_hp=87 move_id=274 via='조수'
+Action turn=4 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=83 attacker_hp=59 move_id=33
+Action turn=4 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=47 attacker_hp=83 move_id=274 via='조수'
+Action turn=5 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=80 attacker_hp=47 move_id=33
+Action turn=5 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=33 attacker_hp=80 move_id=274 via='조수'
+Action turn=6 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=76 attacker_hp=33 move_id=33
+Action turn=6 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=19 attacker_hp=76 move_id=274 via='조수'
+Action turn=7 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=72 attacker_hp=19 move_id=33
+Action turn=7 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=6 attacker_hp=72 move_id=274 via='조수'
+Action turn=8 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=68 attacker_hp=6 move_id=33
+Action turn=8 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=68 move_id=274 via='조수'
+result winner=0 turns=8 remaining=((68, None), (0,)) statuses=((None, None), (None,))
+## focus assist 3
+side=0 P52 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[274] mega=None
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=95 move_id=33
+Action turn=1 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=89 attacker_hp=95 move_id=274 via='조수'
+Action turn=2 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=90 attacker_hp=89 move_id=33
+Action turn=2 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=77 attacker_hp=90 move_id=274 via='조수'
+Action turn=3 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=85 attacker_hp=77 move_id=33
+Action turn=3 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=66 attacker_hp=85 move_id=274 via='조수'
+Action turn=4 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=80 attacker_hp=66 move_id=33
+Action turn=4 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=54 attacker_hp=80 move_id=274 via='조수'
+Action turn=5 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=75 attacker_hp=54 move_id=33
+Action turn=5 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=43 attacker_hp=75 move_id=274 via='조수'
+Action turn=6 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=70 attacker_hp=43 move_id=33
+Action turn=6 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=31 attacker_hp=70 move_id=274 via='조수'
+Action turn=7 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=64 attacker_hp=31 move_id=33
+Action turn=7 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=19 attacker_hp=64 move_id=274 via='조수'
+Action turn=8 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=60 attacker_hp=19 move_id=33
+Action turn=8 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=7 attacker_hp=60 move_id=274 via='조수'
+Action turn=9 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=55 attacker_hp=7 move_id=33
+Action turn=9 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=55 move_id=274 via='조수'
+result winner=0 turns=9 remaining=((55, None), (0,)) statuses=((None, None), (None,))
+## focus assist 4
+side=0 P52 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[274] mega=None
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=95 move_id=33
+Action turn=1 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=88 attacker_hp=95 move_id=274 via='조수'
+Action turn=2 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=90 attacker_hp=88 move_id=33
+Action turn=2 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=76 attacker_hp=90 move_id=274 via='조수'
+Action turn=3 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=86 attacker_hp=76 move_id=33
+Action turn=3 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=64 attacker_hp=86 move_id=274 via='조수'
+Action turn=4 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=80 attacker_hp=64 move_id=33
+Action turn=4 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=52 attacker_hp=80 move_id=274 via='조수'
+Action turn=5 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=76 attacker_hp=52 move_id=33
+Action turn=5 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=39 attacker_hp=76 move_id=274 via='조수'
+Action turn=6 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=70 attacker_hp=39 move_id=33
+Action turn=6 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=28 attacker_hp=70 move_id=274 via='조수'
+Action turn=7 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=66 attacker_hp=28 move_id=33
+Action turn=7 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='paralysis', stages=0),) defender_hp=16 attacker_hp=66 move_id=274 via='조수'
+Action turn=8 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=4 attacker_hp=66 move_id=274 via='조수'
+Action turn=8 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=61 attacker_hp=4 move_id=33
+Action turn=9 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=61 move_id=274 via='조수'
+result winner=0 turns=9 remaining=((61, None), (0,)) statuses=((None, None), ('paralysis',))
+## focus assist 5
+side=0 P52 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[274] mega=None
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=96 move_id=33
+Action turn=1 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=88 attacker_hp=96 move_id=274 via='조수'
+Action turn=2 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=91 attacker_hp=88 move_id=33
+Action turn=2 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=77 attacker_hp=91 move_id=274 via='조수'
+Action turn=3 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=86 attacker_hp=77 move_id=33
+Action turn=3 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=63 attacker_hp=86 move_id=274 via='조수'
+Action turn=4 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=82 attacker_hp=63 move_id=33
+Action turn=4 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=51 attacker_hp=82 move_id=274 via='조수'
+Action turn=5 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=78 attacker_hp=51 move_id=33
+Action turn=5 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=38 attacker_hp=78 move_id=274 via='조수'
+Action turn=6 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=74 attacker_hp=38 move_id=33
+Action turn=6 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=26 attacker_hp=74 move_id=274 via='조수'
+Action turn=7 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=69 attacker_hp=26 move_id=33
+Action turn=7 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=12 attacker_hp=69 move_id=274 via='조수'
+Action turn=8 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=64 attacker_hp=12 move_id=33
+Action turn=8 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 critical=True defender_hp=0 knockout=True attacker_hp=64 move_id=274 via='조수'
+result winner=0 turns=8 remaining=((64, None), (0,)) statuses=((None, None), (None,))
+## focus assist 6
+side=0 P52 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[274] mega=None
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=95 move_id=33
+Action turn=1 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=86 attacker_hp=95 move_id=274 via='조수'
+Action turn=2 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=90 attacker_hp=86 move_id=33
+Action turn=2 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=73 attacker_hp=90 move_id=274 via='조수'
+Action turn=3 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=86 attacker_hp=73 move_id=33
+Action turn=3 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=61 attacker_hp=86 move_id=274 via='조수'
+Action turn=4 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=81 attacker_hp=61 move_id=33
+Action turn=4 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=49 attacker_hp=81 move_id=274 via='조수'
+Action turn=5 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=76 attacker_hp=49 move_id=33
+Action turn=5 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=38 attacker_hp=76 move_id=274 via='조수'
+Action turn=6 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=71 attacker_hp=38 move_id=33
+Action turn=6 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=26 attacker_hp=71 move_id=274 via='조수'
+Action turn=7 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=66 attacker_hp=26 move_id=33
+Action turn=7 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=13 attacker_hp=66 move_id=274 via='조수'
+Action turn=8 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=62 attacker_hp=13 move_id=33
+Action turn=8 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=1 attacker_hp=62 move_id=274 via='조수'
+Action turn=9 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=56 attacker_hp=1 move_id=33
+Action turn=9 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=56 move_id=274 via='조수'
+result winner=0 turns=9 remaining=((56, None), (0,)) statuses=((None, None), (None,))
+## focus assist 7
+side=0 P52 Lv50 ('steel', 'poison') item=None ability=None nature=None moves=[274] mega=None
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=96 move_id=33
+Action turn=1 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=91 attacker_hp=96 move_id=274 via='조수'
+Action turn=2 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=92 attacker_hp=91 move_id=33
+Action turn=2 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=81 attacker_hp=92 move_id=274 via='조수'
+Action turn=3 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=87 attacker_hp=81 move_id=33
+Action turn=3 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=71 attacker_hp=87 move_id=274 via='조수'
+Action turn=4 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=83 attacker_hp=71 move_id=33
+Action turn=4 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=61 attacker_hp=83 move_id=274 via='조수'
+Action turn=5 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=79 attacker_hp=61 move_id=33
+Action turn=5 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=50 attacker_hp=79 move_id=274 via='조수'
+Action turn=6 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=75 attacker_hp=50 move_id=33
+Action turn=6 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=40 attacker_hp=75 move_id=274 via='조수'
+Action turn=7 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=71 attacker_hp=40 move_id=33
+Action turn=7 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=29 attacker_hp=71 move_id=274 via='조수'
+Action turn=8 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 critical=True defender_hp=64 attacker_hp=29 move_id=33
+Action turn=8 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=18 attacker_hp=64 move_id=274 via='조수'
+Action turn=9 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=60 attacker_hp=18 move_id=33
+Action turn=9 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=7 attacker_hp=60 move_id=274 via='조수'
+Action turn=10 side=1 attacker='P143' defender='P52' move='몸통박치기' multiplier=0.5 defender_hp=56 attacker_hp=7 move_id=33
+Action turn=10 side=0 attacker='P52' defender='P143' move='10만볼트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=56 move_id=274 via='조수'
+result winner=0 turns=10 remaining=((56, None), (0,)) statuses=((None, None), (None,))
+## focus baton-pass 0
+side=0 P133 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[14, 226, 33] mega=None
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=96 move_id=33
+Action turn=1 side=0 attacker='P133' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P133', kind='attack', stages=2),) attacker_hp=96 effect='swords-dance' move_id=14
+Action turn=2 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=91 move_id=33
+Action turn=2 side=0 attacker='P133' defender='P143' move='배턴터치' attacker_hp=91 effect='baton-pass' pivoted=True move_id=226
+SendOut turn=2 side=0 pokemon='P143' member=1
+VolatileTick turn=2 side=0 pokemon='P143' kind='baton-pass'
+Action turn=3 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=93 move_id=33
+Action turn=3 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=88 attacker_hp=93 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=86 attacker_hp=88 move_id=33
+Action turn=4 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=76 attacker_hp=86 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=78 attacker_hp=76 move_id=33
+Action turn=5 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=62 attacker_hp=78 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=71 attacker_hp=62 move_id=33
+Action turn=6 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=50 attacker_hp=71 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=65 attacker_hp=50 move_id=33
+Action turn=7 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=38 attacker_hp=65 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=57 attacker_hp=38 move_id=33
+Action turn=8 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=26 attacker_hp=57 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=51 attacker_hp=26 move_id=33
+Action turn=9 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=13 attacker_hp=51 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=43 attacker_hp=13 move_id=33
+Action turn=10 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=1 attacker_hp=43 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=36 attacker_hp=1 move_id=33
+Action turn=11 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=36 move_id=33
+result winner=0 turns=11 remaining=((91, 36), (0,)) statuses=((None, None), (None,))
+## focus baton-pass 1
+side=0 P133 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[14, 226, 33] mega=None
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=96 move_id=33
+Action turn=1 side=0 attacker='P133' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P133', kind='attack', stages=2),) attacker_hp=96 effect='swords-dance' move_id=14
+Action turn=2 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=90 move_id=33
+Action turn=2 side=0 attacker='P133' defender='P143' move='배턴터치' attacker_hp=90 effect='baton-pass' pivoted=True move_id=226
+SendOut turn=2 side=0 pokemon='P143' member=1
+VolatileTick turn=2 side=0 pokemon='P143' kind='baton-pass'
+Action turn=3 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=87 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P143' move='몸통박치기' critical=True defender_hp=87 attacker_hp=87 move_id=33
+Action turn=4 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=75 attacker_hp=87 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=80 attacker_hp=75 move_id=33
+Action turn=5 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=61 attacker_hp=80 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P143' move='몸통박치기' critical=True defender_hp=69 attacker_hp=61 move_id=33
+Action turn=6 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=48 attacker_hp=69 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=61 attacker_hp=48 move_id=33
+Action turn=7 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=35 attacker_hp=61 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=52 attacker_hp=35 move_id=33
+Action turn=8 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=21 attacker_hp=52 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=45 attacker_hp=21 move_id=33
+Action turn=9 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=7 attacker_hp=45 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=37 attacker_hp=7 move_id=33
+Action turn=10 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=37 move_id=33
+result winner=0 turns=10 remaining=((90, 37), (0,)) statuses=((None, None), (None,))
+## focus baton-pass 2
+side=0 P133 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[14, 226, 33] mega=None
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=97 move_id=33
+Action turn=1 side=0 attacker='P133' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P133', kind='attack', stages=2),) attacker_hp=97 effect='swords-dance' move_id=14
+Action turn=2 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=93 move_id=33
+Action turn=2 side=0 attacker='P133' defender='P143' move='배턴터치' attacker_hp=93 effect='baton-pass' pivoted=True move_id=226
+SendOut turn=2 side=0 pokemon='P143' member=1
+VolatileTick turn=2 side=0 pokemon='P143' kind='baton-pass'
+Action turn=3 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=85 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=94 attacker_hp=85 move_id=33
+Action turn=4 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=69 attacker_hp=94 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=87 attacker_hp=69 move_id=33
+Action turn=5 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=55 attacker_hp=87 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=79 attacker_hp=55 move_id=33
+Action turn=6 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=39 attacker_hp=79 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=73 attacker_hp=39 move_id=33
+Action turn=7 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=26 attacker_hp=73 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=65 attacker_hp=26 move_id=33
+Action turn=8 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=11 attacker_hp=65 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=58 attacker_hp=11 move_id=33
+Action turn=9 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=58 move_id=33
+result winner=0 turns=9 remaining=((93, 58), (0,)) statuses=((None, None), (None,))
+## focus baton-pass 3
+side=0 P133 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[14, 226, 33] mega=None
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=96 move_id=33
+Action turn=1 side=0 attacker='P133' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P133', kind='attack', stages=2),) attacker_hp=96 effect='swords-dance' move_id=14
+Action turn=2 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=91 move_id=33
+Action turn=2 side=0 attacker='P133' defender='P143' move='배턴터치' attacker_hp=91 effect='baton-pass' pivoted=True move_id=226
+SendOut turn=2 side=0 pokemon='P143' member=1
+VolatileTick turn=2 side=0 pokemon='P143' kind='baton-pass'
+Action turn=3 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=93 move_id=33
+Action turn=3 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=86 attacker_hp=93 move_id=33
+Action turn=4 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=74 attacker_hp=93 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=86 attacker_hp=74 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=79 attacker_hp=74 move_id=33
+Action turn=5 side=0 attacker='P143' defender='P143' move='몸통박치기' critical=True defender_hp=55 attacker_hp=79 move_id=33
+Action turn=6 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=42 attacker_hp=79 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=72 attacker_hp=42 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=65 attacker_hp=42 move_id=33
+Action turn=7 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=29 attacker_hp=65 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=57 attacker_hp=29 move_id=33
+Action turn=8 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=15 attacker_hp=57 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=51 attacker_hp=15 move_id=33
+Action turn=9 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=3 attacker_hp=51 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=43 attacker_hp=3 move_id=33
+Action turn=10 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=43 move_id=33
+result winner=0 turns=10 remaining=((91, 43), (0,)) statuses=((None, None), (None,))
+## focus baton-pass 4
+side=0 P133 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[14, 226, 33] mega=None
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=96 move_id=33
+Action turn=1 side=0 attacker='P133' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P133', kind='attack', stages=2),) attacker_hp=96 effect='swords-dance' move_id=14
+Action turn=2 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=92 move_id=33
+Action turn=2 side=0 attacker='P133' defender='P143' move='배턴터치' attacker_hp=92 effect='baton-pass' pivoted=True move_id=226
+SendOut turn=2 side=0 pokemon='P143' member=1
+VolatileTick turn=2 side=0 pokemon='P143' kind='baton-pass'
+Action turn=3 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=88 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=93 attacker_hp=88 move_id=33
+Action turn=4 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=74 attacker_hp=93 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=86 attacker_hp=74 move_id=33
+Action turn=5 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=60 attacker_hp=86 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=79 attacker_hp=60 move_id=33
+Action turn=6 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=46 attacker_hp=79 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=71 attacker_hp=46 move_id=33
+Action turn=7 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=33 attacker_hp=71 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=63 attacker_hp=33 move_id=33
+Action turn=8 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=19 attacker_hp=63 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=56 attacker_hp=19 move_id=33
+Action turn=9 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=6 attacker_hp=56 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=49 attacker_hp=6 move_id=33
+Action turn=10 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=49 move_id=33
+result winner=0 turns=10 remaining=((92, 49), (0,)) statuses=((None, None), (None,))
+## focus baton-pass 5
+side=0 P133 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[14, 226, 33] mega=None
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=96 move_id=33
+Action turn=1 side=0 attacker='P133' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P133', kind='attack', stages=2),) attacker_hp=96 effect='swords-dance' move_id=14
+Action turn=2 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=93 move_id=33
+Action turn=2 side=0 attacker='P133' defender='P143' move='배턴터치' attacker_hp=93 effect='baton-pass' pivoted=True move_id=226
+SendOut turn=2 side=0 pokemon='P143' member=1
+VolatileTick turn=2 side=0 pokemon='P143' kind='baton-pass'
+Action turn=3 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=94 move_id=33
+Action turn=3 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=86 attacker_hp=94 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=88 attacker_hp=86 move_id=33
+Action turn=4 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=73 attacker_hp=88 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=82 attacker_hp=73 move_id=33
+Action turn=5 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=60 attacker_hp=82 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P143' move='몸통박치기' critical=True defender_hp=73 attacker_hp=60 move_id=33
+Action turn=6 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=47 attacker_hp=73 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=67 attacker_hp=47 move_id=33
+Action turn=7 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=34 attacker_hp=67 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=61 attacker_hp=34 move_id=33
+Action turn=8 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=21 attacker_hp=61 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=55 attacker_hp=21 move_id=33
+Action turn=9 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=9 attacker_hp=55 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=49 attacker_hp=9 move_id=33
+Action turn=10 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=49 move_id=33
+result winner=0 turns=10 remaining=((93, 49), (0,)) statuses=((None, None), (None,))
+## focus baton-pass 6
+side=0 P133 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[14, 226, 33] mega=None
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=95 move_id=33
+Action turn=1 side=0 attacker='P133' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P133', kind='attack', stages=2),) attacker_hp=95 effect='swords-dance' move_id=14
+Action turn=2 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 critical=True defender_hp=89 move_id=33
+Action turn=2 side=0 attacker='P133' defender='P143' move='배턴터치' attacker_hp=89 effect='baton-pass' pivoted=True move_id=226
+SendOut turn=2 side=0 pokemon='P143' member=1
+VolatileTick turn=2 side=0 pokemon='P143' kind='baton-pass'
+Action turn=3 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=85 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P143' move='몸통박치기' critical=True defender_hp=88 attacker_hp=85 move_id=33
+Action turn=4 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=69 attacker_hp=88 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=81 attacker_hp=69 move_id=33
+Action turn=5 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=54 attacker_hp=81 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=74 attacker_hp=54 move_id=33
+Action turn=6 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=41 attacker_hp=74 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=67 attacker_hp=41 move_id=33
+Action turn=7 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=26 attacker_hp=67 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=59 attacker_hp=26 move_id=33
+Action turn=8 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=11 attacker_hp=59 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=51 attacker_hp=11 move_id=33
+Action turn=9 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=51 move_id=33
+result winner=0 turns=9 remaining=((89, 51), (0,)) statuses=((None, None), (None,))
+## focus baton-pass 7
+side=0 P133 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[14, 226, 33] mega=None
+side=0 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=95 move_id=33
+Action turn=1 side=0 attacker='P133' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P133', kind='attack', stages=2),) attacker_hp=95 effect='swords-dance' move_id=14
+Action turn=2 side=1 attacker='P143' defender='P133' move='몸통박치기' multiplier=0.5 defender_hp=91 move_id=33
+Action turn=2 side=0 attacker='P133' defender='P143' move='배턴터치' attacker_hp=91 effect='baton-pass' pivoted=True move_id=226
+SendOut turn=2 side=0 pokemon='P143' member=1
+VolatileTick turn=2 side=0 pokemon='P143' kind='baton-pass'
+Action turn=3 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=85 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=93 attacker_hp=85 move_id=33
+Action turn=4 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=70 attacker_hp=93 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=87 attacker_hp=70 move_id=33
+Action turn=5 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=56 attacker_hp=87 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=80 attacker_hp=56 move_id=33
+Action turn=6 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=40 attacker_hp=80 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=73 attacker_hp=40 move_id=33
+Action turn=7 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=25 attacker_hp=73 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=65 attacker_hp=25 move_id=33
+Action turn=8 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=11 attacker_hp=65 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=58 attacker_hp=11 move_id=33
+Action turn=9 side=0 attacker='P143' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=58 move_id=33
+result winner=0 turns=9 remaining=((91, 58), (0,)) statuses=((None, None), (None,))
+## focus focus-energy 0
+side=0 P56 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[116, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P56' defender='P143' move='기충전' effect='focus-energy' move_id=116
+Action turn=1 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=94 move_id=33
+Action turn=2 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=92 attacker_hp=94 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=88 attacker_hp=92 move_id=33
+Action turn=3 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=82 attacker_hp=88 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=83 attacker_hp=82 move_id=33
+Action turn=4 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=71 attacker_hp=83 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=77 attacker_hp=71 move_id=33
+Action turn=5 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=59 attacker_hp=77 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=71 attacker_hp=59 move_id=33
+Action turn=6 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=49 attacker_hp=71 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=66 attacker_hp=49 move_id=33
+Action turn=7 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=43 attacker_hp=66 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=60 attacker_hp=43 move_id=33
+Action turn=8 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=33 attacker_hp=60 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=54 attacker_hp=33 move_id=33
+Action turn=9 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=21 attacker_hp=54 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=47 attacker_hp=21 move_id=33
+Action turn=10 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=14 attacker_hp=47 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=42 attacker_hp=14 move_id=33
+Action turn=11 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=7 attacker_hp=42 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=36 attacker_hp=7 move_id=33
+Action turn=12 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=0 knockout=True attacker_hp=36 move_id=33
+result winner=0 turns=12 remaining=((36,), (0,)) statuses=((None,), (None,))
+## focus focus-energy 1
+side=0 P56 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[116, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P56' defender='P143' move='기충전' effect='focus-energy' move_id=116
+Action turn=1 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=95 move_id=33
+Action turn=2 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=89 attacker_hp=95 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=89 attacker_hp=89 move_id=33
+Action turn=3 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=79 attacker_hp=89 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=84 attacker_hp=79 move_id=33
+Action turn=4 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=69 attacker_hp=84 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=79 attacker_hp=69 move_id=33
+Action turn=5 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=59 attacker_hp=79 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=73 attacker_hp=59 move_id=33
+Action turn=6 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=53 attacker_hp=73 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=68 attacker_hp=53 move_id=33
+Action turn=7 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=46 attacker_hp=68 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=62 attacker_hp=46 move_id=33
+Action turn=8 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=39 attacker_hp=62 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=56 attacker_hp=39 move_id=33
+Action turn=9 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=28 attacker_hp=56 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=51 attacker_hp=28 move_id=33
+Action turn=10 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=21 attacker_hp=51 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=46 attacker_hp=21 move_id=33
+Action turn=11 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=14 attacker_hp=46 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=40 attacker_hp=14 move_id=33
+Action turn=12 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=7 attacker_hp=40 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=35 attacker_hp=7 move_id=33
+Action turn=13 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=35 move_id=33
+result winner=0 turns=13 remaining=((35,), (0,)) statuses=((None,), (None,))
+## focus focus-energy 2
+side=0 P56 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[116, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P56' defender='P143' move='기충전' effect='focus-energy' move_id=116
+Action turn=1 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=94 move_id=33
+Action turn=2 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=90 attacker_hp=94 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=88 attacker_hp=90 move_id=33
+Action turn=3 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=80 attacker_hp=88 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=82 attacker_hp=80 move_id=33
+Action turn=4 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=73 attacker_hp=82 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=76 attacker_hp=73 move_id=33
+Action turn=5 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=65 attacker_hp=76 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=70 attacker_hp=65 move_id=33
+Action turn=6 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=59 attacker_hp=70 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=64 attacker_hp=59 move_id=33
+Action turn=7 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=48 attacker_hp=64 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=58 attacker_hp=48 move_id=33
+Action turn=8 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=37 attacker_hp=58 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=52 attacker_hp=37 move_id=33
+Action turn=9 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=25 attacker_hp=52 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=46 attacker_hp=25 move_id=33
+Action turn=10 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=15 attacker_hp=46 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=40 attacker_hp=15 move_id=33
+Action turn=11 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=4 attacker_hp=40 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=34 attacker_hp=4 move_id=33
+Action turn=12 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=0 knockout=True attacker_hp=34 move_id=33
+result winner=0 turns=12 remaining=((34,), (0,)) statuses=((None,), (None,))
+## focus focus-energy 3
+side=0 P56 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[116, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P56' defender='P143' move='기충전' effect='focus-energy' move_id=116
+Action turn=1 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=93 move_id=33
+Action turn=2 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=91 attacker_hp=93 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=85 attacker_hp=91 move_id=33
+Action turn=3 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=80 attacker_hp=85 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=78 attacker_hp=80 move_id=33
+Action turn=4 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=70 attacker_hp=78 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=72 attacker_hp=70 move_id=33
+Action turn=5 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=61 attacker_hp=72 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P56' move='몸통박치기' critical=True defender_hp=61 attacker_hp=61 move_id=33
+Action turn=6 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=54 attacker_hp=61 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=54 attacker_hp=54 move_id=33
+Action turn=7 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=48 attacker_hp=54 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=48 attacker_hp=48 move_id=33
+Action turn=8 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=38 attacker_hp=48 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=40 attacker_hp=38 move_id=33
+Action turn=9 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=27 attacker_hp=40 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=34 attacker_hp=27 move_id=33
+Action turn=10 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=22 attacker_hp=34 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=27 attacker_hp=22 move_id=33
+Action turn=11 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=12 attacker_hp=27 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=20 attacker_hp=12 move_id=33
+Action turn=12 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=2 attacker_hp=20 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=13 attacker_hp=2 move_id=33
+Action turn=13 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=0 knockout=True attacker_hp=13 move_id=33
+result winner=0 turns=13 remaining=((13,), (0,)) statuses=((None,), (None,))
+## focus focus-energy 4
+side=0 P56 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[116, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P56' defender='P143' move='기충전' effect='focus-energy' move_id=116
+Action turn=1 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=93 move_id=33
+Action turn=2 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=90 attacker_hp=93 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=86 attacker_hp=90 move_id=33
+Action turn=3 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=83 attacker_hp=86 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=79 attacker_hp=83 move_id=33
+Action turn=4 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=76 attacker_hp=79 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=72 attacker_hp=76 move_id=33
+Action turn=5 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=68 attacker_hp=72 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=65 attacker_hp=68 move_id=33
+Action turn=6 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=56 attacker_hp=65 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=57 attacker_hp=56 move_id=33
+Action turn=7 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=45 attacker_hp=57 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=50 attacker_hp=45 move_id=33
+Action turn=8 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=33 attacker_hp=50 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=44 attacker_hp=33 move_id=33
+Action turn=9 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=22 attacker_hp=44 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=36 attacker_hp=22 move_id=33
+Action turn=10 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=15 attacker_hp=36 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=29 attacker_hp=15 move_id=33
+Action turn=11 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=4 attacker_hp=29 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=22 attacker_hp=4 move_id=33
+Action turn=12 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=0 knockout=True attacker_hp=22 move_id=33
+result winner=0 turns=12 remaining=((22,), (0,)) statuses=((None,), (None,))
+## focus focus-energy 5
+side=0 P56 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[116, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P56' defender='P143' move='기충전' effect='focus-energy' move_id=116
+Action turn=1 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=95 move_id=33
+Action turn=2 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=92 attacker_hp=95 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=89 attacker_hp=92 move_id=33
+Action turn=3 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=84 attacker_hp=89 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=84 attacker_hp=84 move_id=33
+Action turn=4 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=73 attacker_hp=84 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=78 attacker_hp=73 move_id=33
+Action turn=5 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=61 attacker_hp=78 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P56' move='몸통박치기' critical=True defender_hp=70 attacker_hp=61 move_id=33
+Action turn=6 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=49 attacker_hp=70 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=64 attacker_hp=49 move_id=33
+Action turn=7 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=42 attacker_hp=64 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=59 attacker_hp=42 move_id=33
+Action turn=8 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=34 attacker_hp=59 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=54 attacker_hp=34 move_id=33
+Action turn=9 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=24 attacker_hp=54 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=48 attacker_hp=24 move_id=33
+Action turn=10 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=15 attacker_hp=48 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=42 attacker_hp=15 move_id=33
+Action turn=11 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=5 attacker_hp=42 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=36 attacker_hp=5 move_id=33
+Action turn=12 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=36 move_id=33
+result winner=0 turns=12 remaining=((36,), (0,)) statuses=((None,), (None,))
+## focus focus-energy 6
+side=0 P56 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[116, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P56' defender='P143' move='기충전' effect='focus-energy' move_id=116
+Action turn=1 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=93 move_id=33
+Action turn=2 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=90 attacker_hp=93 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=87 attacker_hp=90 move_id=33
+Action turn=3 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=78 attacker_hp=87 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=81 attacker_hp=78 move_id=33
+Action turn=4 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=71 attacker_hp=81 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=75 attacker_hp=71 move_id=33
+Action turn=5 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=64 attacker_hp=75 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=69 attacker_hp=64 move_id=33
+Action turn=6 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=53 attacker_hp=69 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=63 attacker_hp=53 move_id=33
+Action turn=7 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=47 attacker_hp=63 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=58 attacker_hp=47 move_id=33
+Action turn=8 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=39 attacker_hp=58 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=52 attacker_hp=39 move_id=33
+Action turn=9 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=27 attacker_hp=52 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=46 attacker_hp=27 move_id=33
+Action turn=10 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=20 attacker_hp=46 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=40 attacker_hp=20 move_id=33
+Action turn=11 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=9 attacker_hp=40 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=34 attacker_hp=9 move_id=33
+Action turn=12 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=0 knockout=True attacker_hp=34 move_id=33
+result winner=0 turns=12 remaining=((34,), (0,)) statuses=((None,), (None,))
+## focus focus-energy 7
+side=0 P56 Lv50 ('water', 'fairy') item=None ability=None nature=None moves=[116, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P56' defender='P143' move='기충전' effect='focus-energy' move_id=116
+Action turn=1 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=94 move_id=33
+Action turn=2 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=94 attacker_hp=94 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=88 attacker_hp=94 move_id=33
+Action turn=3 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=85 attacker_hp=88 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=82 attacker_hp=85 move_id=33
+Action turn=4 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=75 attacker_hp=82 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=76 attacker_hp=75 move_id=33
+Action turn=5 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=66 attacker_hp=76 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=69 attacker_hp=66 move_id=33
+Action turn=6 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=59 attacker_hp=69 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=63 attacker_hp=59 move_id=33
+Action turn=7 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=53 attacker_hp=63 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=57 attacker_hp=53 move_id=33
+Action turn=8 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=43 attacker_hp=57 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=50 attacker_hp=43 move_id=33
+Action turn=9 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=34 attacker_hp=50 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=44 attacker_hp=34 move_id=33
+Action turn=10 side=0 attacker='P56' defender='P143' move='몸통박치기' defender_hp=27 attacker_hp=44 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=38 attacker_hp=27 move_id=33
+Action turn=11 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=18 attacker_hp=38 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=31 attacker_hp=18 move_id=33
+Action turn=12 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=8 attacker_hp=31 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P56' move='몸통박치기' defender_hp=24 attacker_hp=8 move_id=33
+Action turn=13 side=0 attacker='P56' defender='P143' move='몸통박치기' critical=True defender_hp=0 knockout=True attacker_hp=24 move_id=33
+result winner=0 turns=13 remaining=((24,), (0,)) statuses=((None,), (None,))
+## focus stuff-cheeks 0
+side=0 P819 Lv50 ('flying',) item=sitrus-berry ability=None nature=None moves=[747, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P819' defender='P143' move='볼가득넣기' changes=(Change(side=0, pokemon='P819', kind='defense', stages=2),) effect='stuff-cheeks' move_id=747
+ItemHeal turn=1 side=0 pokemon='P819' item='sitrus-berry' hp=100
+Action turn=1 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=95 move_id=33
+Action turn=2 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=92 attacker_hp=95 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=89 attacker_hp=92 move_id=33
+Action turn=3 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=84 attacker_hp=89 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=85 attacker_hp=84 move_id=33
+Action turn=4 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=77 attacker_hp=85 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=79 attacker_hp=77 move_id=33
+Action turn=5 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=69 attacker_hp=79 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=74 attacker_hp=69 move_id=33
+Action turn=6 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=62 attacker_hp=74 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=69 attacker_hp=62 move_id=33
+Action turn=7 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=55 attacker_hp=69 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=64 attacker_hp=55 move_id=33
+Action turn=8 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=48 attacker_hp=64 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=58 attacker_hp=48 move_id=33
+Action turn=9 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=40 attacker_hp=58 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=52 attacker_hp=40 move_id=33
+Action turn=10 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=33 attacker_hp=52 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=47 attacker_hp=33 move_id=33
+Action turn=11 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=25 attacker_hp=47 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=42 attacker_hp=25 move_id=33
+Action turn=12 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=17 attacker_hp=42 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=36 attacker_hp=17 move_id=33
+Action turn=13 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=10 attacker_hp=36 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=32 attacker_hp=10 move_id=33
+Action turn=14 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=2 attacker_hp=32 move_id=33
+Action turn=14 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=26 attacker_hp=2 move_id=33
+Action turn=15 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=26 move_id=33
+result winner=0 turns=15 remaining=((26,), (0,)) statuses=((None,), (None,))
+## focus stuff-cheeks 1
+side=0 P819 Lv50 ('flying',) item=sitrus-berry ability=None nature=None moves=[747, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P819' defender='P143' move='볼가득넣기' changes=(Change(side=0, pokemon='P819', kind='defense', stages=2),) effect='stuff-cheeks' move_id=747
+ItemHeal turn=1 side=0 pokemon='P819' item='sitrus-berry' hp=100
+Action turn=1 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=96 move_id=33
+Action turn=2 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=92 attacker_hp=96 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=91 attacker_hp=92 move_id=33
+Action turn=3 side=0 attacker='P819' defender='P143' move='몸통박치기' critical=True defender_hp=81 attacker_hp=91 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=87 attacker_hp=81 move_id=33
+Action turn=4 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=74 attacker_hp=87 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=83 attacker_hp=74 move_id=33
+Action turn=5 side=0 attacker='P819' defender='P143' move='몸통박치기' critical=True defender_hp=64 attacker_hp=83 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=78 attacker_hp=64 move_id=33
+Action turn=6 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=57 attacker_hp=78 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=74 attacker_hp=57 move_id=33
+Action turn=7 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=49 attacker_hp=74 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=69 attacker_hp=49 move_id=33
+Action turn=8 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=42 attacker_hp=69 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=64 attacker_hp=42 move_id=33
+Action turn=9 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=34 attacker_hp=64 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=60 attacker_hp=34 move_id=33
+Action turn=10 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=26 attacker_hp=60 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=56 attacker_hp=26 move_id=33
+Action turn=11 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=19 attacker_hp=56 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=51 attacker_hp=19 move_id=33
+Action turn=12 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=12 attacker_hp=51 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=46 attacker_hp=12 move_id=33
+Action turn=13 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=4 attacker_hp=46 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=42 attacker_hp=4 move_id=33
+Action turn=14 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=42 move_id=33
+result winner=0 turns=14 remaining=((42,), (0,)) statuses=((None,), (None,))
+## focus stuff-cheeks 2
+side=0 P819 Lv50 ('flying',) item=sitrus-berry ability=None nature=None moves=[747, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P819' defender='P143' move='볼가득넣기' changes=(Change(side=0, pokemon='P819', kind='defense', stages=2),) effect='stuff-cheeks' move_id=747
+ItemHeal turn=1 side=0 pokemon='P819' item='sitrus-berry' hp=100
+Action turn=1 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=95 move_id=33
+Action turn=2 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=92 attacker_hp=95 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=89 attacker_hp=92 move_id=33
+Action turn=3 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=85 attacker_hp=89 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=83 attacker_hp=85 move_id=33
+Action turn=4 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=77 attacker_hp=83 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=77 attacker_hp=77 move_id=33
+Action turn=5 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=69 attacker_hp=77 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=72 attacker_hp=69 move_id=33
+Action turn=6 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=61 attacker_hp=72 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=66 attacker_hp=61 move_id=33
+Action turn=7 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=53 attacker_hp=66 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=61 attacker_hp=53 move_id=33
+Action turn=8 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=45 attacker_hp=61 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=55 attacker_hp=45 move_id=33
+Action turn=9 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=36 attacker_hp=55 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=49 attacker_hp=36 move_id=33
+Action turn=10 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=29 attacker_hp=49 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=43 attacker_hp=29 move_id=33
+Action turn=11 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=21 attacker_hp=43 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=37 attacker_hp=21 move_id=33
+Action turn=12 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=12 attacker_hp=37 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=31 attacker_hp=12 move_id=33
+Action turn=13 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=5 attacker_hp=31 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=26 attacker_hp=5 move_id=33
+Action turn=14 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=26 move_id=33
+result winner=0 turns=14 remaining=((26,), (0,)) statuses=((None,), (None,))
+## focus stuff-cheeks 3
+side=0 P819 Lv50 ('flying',) item=sitrus-berry ability=None nature=None moves=[747, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P819' defender='P143' move='볼가득넣기' changes=(Change(side=0, pokemon='P819', kind='defense', stages=2),) effect='stuff-cheeks' move_id=747
+ItemHeal turn=1 side=0 pokemon='P819' item='sitrus-berry' hp=100
+Action turn=1 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=95 move_id=33
+Action turn=2 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=93 attacker_hp=95 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=90 attacker_hp=93 move_id=33
+Action turn=3 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=85 attacker_hp=90 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=85 attacker_hp=85 move_id=33
+Action turn=4 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=78 attacker_hp=85 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=80 attacker_hp=78 move_id=33
+Action turn=5 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=72 attacker_hp=80 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P819' move='몸통박치기' critical=True defender_hp=73 attacker_hp=72 move_id=33
+Action turn=6 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=64 attacker_hp=73 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=68 attacker_hp=64 move_id=33
+Action turn=7 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=57 attacker_hp=68 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=63 attacker_hp=57 move_id=33
+Action turn=8 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=50 attacker_hp=63 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=58 attacker_hp=50 move_id=33
+Action turn=9 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=42 attacker_hp=58 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=53 attacker_hp=42 move_id=33
+Action turn=10 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=36 attacker_hp=53 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=48 attacker_hp=36 move_id=33
+Action turn=11 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=29 attacker_hp=48 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=43 attacker_hp=29 move_id=33
+Action turn=12 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=21 attacker_hp=43 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=38 attacker_hp=21 move_id=33
+Action turn=13 side=0 attacker='P819' defender='P143' move='몸통박치기' critical=True defender_hp=9 attacker_hp=38 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=34 attacker_hp=9 move_id=33
+Action turn=14 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=2 attacker_hp=34 move_id=33
+Action turn=14 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=29 attacker_hp=2 move_id=33
+Action turn=15 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=29 move_id=33
+result winner=0 turns=15 remaining=((29,), (0,)) statuses=((None,), (None,))
+## focus stuff-cheeks 4
+side=0 P819 Lv50 ('flying',) item=sitrus-berry ability=None nature=None moves=[747, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P819' defender='P143' move='볼가득넣기' changes=(Change(side=0, pokemon='P819', kind='defense', stages=2),) effect='stuff-cheeks' move_id=747
+ItemHeal turn=1 side=0 pokemon='P819' item='sitrus-berry' hp=100
+Action turn=1 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=94 move_id=33
+Action turn=2 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=93 attacker_hp=94 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=89 attacker_hp=93 move_id=33
+Action turn=3 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=85 attacker_hp=89 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=84 attacker_hp=85 move_id=33
+Action turn=4 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=77 attacker_hp=84 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=78 attacker_hp=77 move_id=33
+Action turn=5 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=69 attacker_hp=78 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=73 attacker_hp=69 move_id=33
+Action turn=6 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=60 attacker_hp=73 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=67 attacker_hp=60 move_id=33
+Action turn=7 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=52 attacker_hp=67 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=61 attacker_hp=52 move_id=33
+Action turn=8 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=44 attacker_hp=61 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=56 attacker_hp=44 move_id=33
+Action turn=9 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=36 attacker_hp=56 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=51 attacker_hp=36 move_id=33
+Action turn=10 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=29 attacker_hp=51 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=45 attacker_hp=29 move_id=33
+Action turn=11 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=20 attacker_hp=45 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=39 attacker_hp=20 move_id=33
+Action turn=12 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=12 attacker_hp=39 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=34 attacker_hp=12 move_id=33
+Action turn=13 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=5 attacker_hp=34 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=29 attacker_hp=5 move_id=33
+Action turn=14 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=29 move_id=33
+result winner=0 turns=14 remaining=((29,), (0,)) statuses=((None,), (None,))
+## focus stuff-cheeks 5
+side=0 P819 Lv50 ('flying',) item=sitrus-berry ability=None nature=None moves=[747, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P819' defender='P143' move='볼가득넣기' changes=(Change(side=0, pokemon='P819', kind='defense', stages=2),) effect='stuff-cheeks' move_id=747
+ItemHeal turn=1 side=0 pokemon='P819' item='sitrus-berry' hp=100
+Action turn=1 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=96 move_id=33
+Action turn=2 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=94 attacker_hp=96 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=91 attacker_hp=94 move_id=33
+Action turn=3 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=87 attacker_hp=91 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=86 attacker_hp=87 move_id=33
+Action turn=4 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=80 attacker_hp=86 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=81 attacker_hp=80 move_id=33
+Action turn=5 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=73 attacker_hp=81 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P819' move='몸통박치기' critical=True defender_hp=74 attacker_hp=73 move_id=33
+Action turn=6 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=67 attacker_hp=74 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=69 attacker_hp=67 move_id=33
+Action turn=7 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=60 attacker_hp=69 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=64 attacker_hp=60 move_id=33
+Action turn=8 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=53 attacker_hp=64 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=59 attacker_hp=53 move_id=33
+Action turn=9 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=47 attacker_hp=59 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=55 attacker_hp=47 move_id=33
+Action turn=10 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=40 attacker_hp=55 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=49 attacker_hp=40 move_id=33
+Action turn=11 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=34 attacker_hp=49 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=44 attacker_hp=34 move_id=33
+Action turn=12 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=27 attacker_hp=44 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=39 attacker_hp=27 move_id=33
+Action turn=13 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=20 attacker_hp=39 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=34 attacker_hp=20 move_id=33
+Action turn=14 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=14 attacker_hp=34 move_id=33
+Action turn=14 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=29 attacker_hp=14 move_id=33
+Action turn=15 side=0 attacker='P819' defender='P143' move='몸통박치기' critical=True defender_hp=4 attacker_hp=29 move_id=33
+Action turn=15 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=24 attacker_hp=4 move_id=33
+Action turn=16 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=24 move_id=33
+result winner=0 turns=16 remaining=((24,), (0,)) statuses=((None,), (None,))
+## focus stuff-cheeks 6
+side=0 P819 Lv50 ('flying',) item=sitrus-berry ability=None nature=None moves=[747, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P819' defender='P143' move='볼가득넣기' changes=(Change(side=0, pokemon='P819', kind='defense', stages=2),) effect='stuff-cheeks' move_id=747
+ItemHeal turn=1 side=0 pokemon='P819' item='sitrus-berry' hp=100
+Action turn=1 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=94 move_id=33
+Action turn=2 side=0 attacker='P819' defender='P143' move='몸통박치기' critical=True defender_hp=88 attacker_hp=94 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=89 attacker_hp=88 move_id=33
+Action turn=3 side=0 attacker='P819' defender='P143' move='몸통박치기' critical=True defender_hp=75 attacker_hp=89 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=84 attacker_hp=75 move_id=33
+Action turn=4 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=68 attacker_hp=84 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=79 attacker_hp=68 move_id=33
+Action turn=5 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=60 attacker_hp=79 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=75 attacker_hp=60 move_id=33
+Action turn=6 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=52 attacker_hp=75 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=70 attacker_hp=52 move_id=33
+Action turn=7 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=45 attacker_hp=70 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=64 attacker_hp=45 move_id=33
+Action turn=8 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=36 attacker_hp=64 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=60 attacker_hp=36 move_id=33
+Action turn=9 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=28 attacker_hp=60 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=56 attacker_hp=28 move_id=33
+Action turn=10 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=20 attacker_hp=56 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=51 attacker_hp=20 move_id=33
+Action turn=11 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=12 attacker_hp=51 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=46 attacker_hp=12 move_id=33
+Action turn=12 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=3 attacker_hp=46 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=41 attacker_hp=3 move_id=33
+Action turn=13 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=41 move_id=33
+result winner=0 turns=13 remaining=((41,), (0,)) statuses=((None,), (None,))
+## focus stuff-cheeks 7
+side=0 P819 Lv50 ('flying',) item=sitrus-berry ability=None nature=None moves=[747, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P819' defender='P143' move='볼가득넣기' changes=(Change(side=0, pokemon='P819', kind='defense', stages=2),) effect='stuff-cheeks' move_id=747
+ItemHeal turn=1 side=0 pokemon='P819' item='sitrus-berry' hp=100
+Action turn=1 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=95 move_id=33
+Action turn=2 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=93 attacker_hp=95 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=90 attacker_hp=93 move_id=33
+Action turn=3 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=86 attacker_hp=90 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=85 attacker_hp=86 move_id=33
+Action turn=4 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=79 attacker_hp=85 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=80 attacker_hp=79 move_id=33
+Action turn=5 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=72 attacker_hp=80 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=75 attacker_hp=72 move_id=33
+Action turn=6 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=65 attacker_hp=75 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=70 attacker_hp=65 move_id=33
+Action turn=7 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=58 attacker_hp=70 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=65 attacker_hp=58 move_id=33
+Action turn=8 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=50 attacker_hp=65 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=60 attacker_hp=50 move_id=33
+Action turn=9 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=43 attacker_hp=60 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=54 attacker_hp=43 move_id=33
+Action turn=10 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=36 attacker_hp=54 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=50 attacker_hp=36 move_id=33
+Action turn=11 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=29 attacker_hp=50 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=45 attacker_hp=29 move_id=33
+Action turn=12 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=21 attacker_hp=45 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=39 attacker_hp=21 move_id=33
+Action turn=13 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=15 attacker_hp=39 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=34 attacker_hp=15 move_id=33
+Action turn=14 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=7 attacker_hp=34 move_id=33
+Action turn=14 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=29 attacker_hp=7 move_id=33
+Action turn=15 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=1 attacker_hp=29 move_id=33
+Action turn=15 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=23 attacker_hp=1 move_id=33
+Action turn=16 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=23 move_id=33
+result winner=0 turns=16 remaining=((23,), (0,)) statuses=((None,), (None,))
