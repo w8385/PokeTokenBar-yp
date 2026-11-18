@@ -71,7 +71,7 @@ struct MachineShopSection: View {
 }
 
 @MainActor
-private struct MachineShopCard: View {
+struct MachineShopCard: View {
     let store: CompanionStore
     let move: MachineEntry
 

@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 struct ShopScoutSection: View {
     let store: CompanionStore
+    var pools: [ScoutPool] = ScoutPool.all
 
     var body: some View {
         let l = store.l
@@ -13,7 +14,7 @@ struct ShopScoutSection: View {
                 Text(l.scoutShopHint).font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            ForEach(ScoutPool.all, id: \.self) { pool in
+            ForEach(pools, id: \.self) { pool in
                 row(pool, l)
             }
         }

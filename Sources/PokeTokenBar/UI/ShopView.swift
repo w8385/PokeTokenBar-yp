@@ -8,53 +8,107 @@ struct ShopView: View {
     let store: CompanionStore
     let nav: PopoverNavigation
     @State private var category: ItemCategory?
+    @State private var query: String
+    @State private var heldGroup: BattleItemGroup?
     private let machineQuery: String
 
-    init(store: CompanionStore, nav: PopoverNavigation, initialCategory: ItemCategory? = nil, machineQuery: String = "") {
+    init(store: CompanionStore, nav: PopoverNavigation, initialCategory: ItemCategory? = nil, machineQuery: String = "",
+         searchQuery: String = "", heldGroup: BattleItemGroup? = nil) {
         self.store = store
         self.nav = nav
         self.machineQuery = machineQuery
         _category = State(initialValue: initialCategory)
+        _query = State(initialValue: searchQuery)
+        _heldGroup = State(initialValue: heldGroup)
     }
 
     var body: some View {
         let l = store.l
+        let screen = store.shopScreen(category: category, query: query, heldGroup: heldGroup)
         // 고정 높이 — 컬렉션/가방과 동일(팝오버 재오픈 시 fitting size 축소 방지).
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 walletHeader(l)
+                DexSearchField(l: l, text: $query, placeholder: l.shopSearchPrompt)
                 ItemCategoryChips(categories: store.shopCategories, selection: $category, l: l)
-                // shopEntries = 판매 아이템 + 알 3종(보증 없음·고급 이상·희귀 이상)을 가격 오름차순으로
-                // 병합한 단일 목록. 알은 항상 포함되고(즉시 액션이라 ItemKind 가 아님), 알 상태에선
-                // EggCard 가 구매만 비활성으로 보여준다.
-                let entries = store.shopEntries(in: category)
-                let heldStart = entries.firstIndex { $0.category == .heldItem } ?? entries.endIndex
-                let others = entries.filter { $0.category != .heldItem }
-                entryCards(others[..<heldStart])
-                if category == nil || category == .heldItem {
-                    HeldItemSections(sections: store.shopBattleSections, l: l) { kind in
-                        ShopItemCard(store: store, kind: kind)
-                    }
+                if !screen.subTabs.isEmpty {
+                    BattleGroupChips(groups: screen.subTabs,
+                                     selection: Binding(get: { screen.shownSubTab }, set: { heldGroup = $0 }), l: l)
                 }
-                entryCards(others[heldStart...])
-                if category == nil || category == .evolution {
-                    if category == nil {
-                        ItemSectionHeader(title: l.shopEvolutionSection)
-                    }
-                    ForEach(category == nil ? store.shopAllViewEvolutionItems : store.shopEvolutionItems, id: \.self) { kind in
-                        ShopItemCard(store: store, kind: kind)
-                    }
+                if screen.showsEmptyLine {
+                    Text(l.shopSearchEmpty).font(.caption).foregroundStyle(.secondary)
                 }
-                if category == nil || category == .scout {
-                    ShopScoutSection(store: store)
+                if let results = screen.results {
+                    searchResults(results, l)
+                } else {
+                    browseContent(screen, l)
                 }
-                if category == .machine {
+                if screen.hasMachineTab {
                     MachineShopSection(store: store, initialQuery: machineQuery)
+                        .frame(height: screen.showsMachineTab ? nil : 0)
+                        .clipped()
+                        .opacity(screen.showsMachineTab ? 1 : 0)
+                        .allowsHitTesting(screen.showsMachineTab)
+                        .accessibilityHidden(!screen.showsMachineTab)
                 }
             }
             .reservesScrollerLane()
         }
         .frame(height: 520)
+    }
+
+    @ViewBuilder
+    private func browseContent(_ screen: ShopScreen, _ l: L) -> some View {
+        // shopEntries = 판매 아이템 + 알 3종(보증 없음·고급 이상·희귀 이상)을 가격 오름차순으로
+        // 병합한 단일 목록. 알은 항상 포함되고(즉시 액션이라 ItemKind 가 아님), 알 상태에선
+        // EggCard 가 구매만 비활성으로 보여준다.
+        let entries = store.shopEntries(in: category)
+        let heldStart = entries.firstIndex { $0.category == .heldItem } ?? entries.endIndex
+        let others = entries.filter { $0.category != .heldItem }
+        entryCards(others[..<heldStart])
+        if category == nil || category == .heldItem {
+            HeldItemSections(sections: screen.heldSections, l: l) { kind in
+                ShopItemCard(store: store, kind: kind)
+            }
+        }
+        entryCards(others[heldStart...])
+        if category == nil || category == .evolution {
+            if category == nil {
+                ItemSectionHeader(title: l.shopEvolutionSection)
+            }
+            ForEach(category == nil ? store.shopAllViewEvolutionItems : store.shopEvolutionItems, id: \.self) { kind in
+                ShopItemCard(store: store, kind: kind)
+            }
+        }
+        if category == nil || category == .scout {
+            ShopScoutSection(store: store)
+        }
+    }
+
+    @ViewBuilder
+    private func searchResults(_ results: ShopSearchResults, _ l: L) -> some View {
+        entryCards(results.entriesBeforeHeld[...])
+        HeldItemSections(sections: results.battleSections, l: l) { kind in
+            ShopItemCard(store: store, kind: kind)
+        }
+        entryCards(results.entriesAfterHeld[...])
+        if !results.evolutionItems.isEmpty {
+            ItemSectionHeader(title: l.shopEvolutionSection)
+            ForEach(results.evolutionItems, id: \.self) { kind in
+                ShopItemCard(store: store, kind: kind)
+            }
+        }
+        if !results.scoutPools.isEmpty {
+            ShopScoutSection(store: store, pools: results.scoutPools)
+        }
+        if !results.megaStones.isEmpty {
+            ItemSectionHeader(title: l.categoryName(.megaStone))
+            entryCards(results.megaStones[...])
+        }
+        if !results.machines.isEmpty {
+            ItemSectionHeader(title: l.categoryName(.machine))
+            ForEach(results.machines) { MachineShopCard(store: store, move: $0) }
+        }
     }
 
     private func entryCards(_ entries: ArraySlice<ShopEntry>) -> some View {
