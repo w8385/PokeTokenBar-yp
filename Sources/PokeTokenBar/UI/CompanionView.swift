@@ -790,7 +790,7 @@ struct CompanionHeader: View {
     @State private var eggWiggle = false
     // 사탕 "+XP" 순간 표시 (진화 없이 부분 진행일 때도 피드백)
     @State private var seenCandySeq = -1
-    @State private var xpFlash = XPFlash()
+    @State var xpFlash = XPFlash()
     // 민트 사용 시 "반짝" 스파클 (성격 변경 피드백 — 텍스트 없이 짧은 이펙트)
     @State private var seenMintSeq = -1
     @State private var mintSparkle = false
@@ -855,6 +855,7 @@ struct CompanionHeader: View {
                 if xpFlash.isShown {
                     Text("+\(TokenFormatter.compact(xpFlash.amount)) XP")
                         .font(.caption.weight(.bold)).foregroundStyle(.orange)
+                        .fixedSize()
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(.regularMaterial, in: Capsule())
                         .transition(.move(edge: .bottom).combined(with: .opacity))

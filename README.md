@@ -57,10 +57,10 @@ Move your companion out of the menu bar and onto the desktop, at any size from 4
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pet-interactions.png" width="300" alt="Separate native pet samples for prayer, petting, sulking, and agent waiting"><br><small>Native UI components · sample states</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="Floating pet with two friends beside it, one wearing a heart"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pet-interactions.png" width="300" alt="Separate native pet samples for prayer, petting, sulking, and agent waiting"><br><small>Native UI components · sample states</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="Floating pet with two friends beside it, one wearing a heart"><br><br><img src="assets/screenshot-pet-xp.png" width="300" alt="Home sprite with a +270K XP badge after five fast clicks"><br><small>Sample state</small></td>
 <td width="55%" valign="middle">
 <h3>A companion with a little personality</h3>
-Move the pointer over your floating pet, or click it, to pet it; click an egg to pray, and watch for small reactions, sulking, and occasional event bubbles. Friends stand close beside the pet, slightly overlapping, and petting a friend pops a heart over that friend. These interactions are cosmetic: praying does not change hatch odds or growth rewards. Every 30 prayers, a quip can accompany a usage refresh. Agent activity can add working, waiting, and done reactions after <a href="#agent-activity">manual setup</a>.
+Move the pointer over your floating pet, or click it, to pet it; click an egg to pray, and watch for small reactions, sulking, and occasional event bubbles. Friends stand close beside the pet, slightly overlapping, and petting a friend pops a heart over that friend. These interactions are cosmetic: praying does not change hatch odds or growth rewards. Clicking the big Home sprite or a hatched floating pet does grow it, and every click counts: fast clicks add up in one +XP badge. Every 30 prayers, a quip can accompany a usage refresh. Agent activity can add working, waiting, and done reactions after <a href="#agent-activity">manual setup</a>.
 </td>
 </tr>
 <tr>

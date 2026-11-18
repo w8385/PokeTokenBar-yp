@@ -61,7 +61,7 @@ SCREENS = (
     ("ActivityVisualization.swift", ("screenshot-activity-views", "screenshot-home")),
     ("PopoverView.swift", ("screenshot-home",)),
     ("CompanionView.swift", ("screenshot-home", "screenshot-collection-pokedex", "screenshot-dex-next-evolution",
-                             "screenshot-move-on")),
+                             "screenshot-move-on", "screenshot-pet-xp")),
     ("UnownedSpeciesDetailView.swift", ("screenshot-collection-pokedex", "screenshot-pokemon-forms",
                                         "screenshot-dex-next-evolution")),
     ("FloatingPetPanel.swift", ("screenshot-pet-interactions", "floating-pet", "screenshot-floating-friends")),
