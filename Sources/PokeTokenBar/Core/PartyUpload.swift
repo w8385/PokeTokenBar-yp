@@ -17,6 +17,8 @@ struct PartyMember: Encodable, Equatable, Sendable {
     var ability: String? = nil
     /// `ItemKind.heldItemSlug` of the item it holds; nil is left out of the JSON.
     var heldItem: String? = nil
+    /// True when a Mirror Herb was used on it, so the bot accepts its attacking egg moves; nil is left out of the JSON.
+    var mirrorHerb: Bool? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
@@ -61,7 +63,8 @@ enum PartyBuilder {
                            ivs: profile?.ivs,
                            nature: nature?.rawValue,
                            ability: profile.flatMap { FormBattleData.abilityName(speciesID: speciesID, form: form, profile: $0) },
-                           heldItem: heldItem)
+                           heldItem: heldItem,
+                           mirrorHerb: profile?.mirrorHerb == true ? true : nil)
     }
 
     static func isAcceptedPokemonID(_ id: Int) -> Bool {
@@ -296,11 +299,13 @@ final class PartyUploader {
     }
 
     /// Nil when there is no token or server, or the bot cannot answer. Answers are kept until the app quits.
-    func learnableMoves(pokemonID: Int, level: Int) async -> LearnableMoves? {
-        let key = "\(serverURL)|\(pokemonID)-\(level)"
+    /// `egg` also lists the attacking egg moves (`egg=1`).
+    func learnableMoves(pokemonID: Int, level: Int, egg: Bool = false) async -> LearnableMoves? {
+        let key = "\(serverURL)|\(pokemonID)-\(level)\(egg ? "-egg" : "")"
         if let cached = learnableCache[key] { return cached }
         guard let token = tokenStore.load(),
-              let request = Self.movesRequest(serverURL: serverURL, token: token, pokemonID: pokemonID, level: level),
+              let request = Self.movesRequest(serverURL: serverURL, token: token, pokemonID: pokemonID, level: level,
+                                              egg: egg),
               let (data, status) = try? await fetch(request), status == 200,
               let moves = try? LearnableMoves.decode(data)
         else { return nil }
@@ -426,14 +431,15 @@ final class PartyUploader {
         return request
     }
 
-    nonisolated static func movesRequest(serverURL: String, token: String, pokemonID: Int, level: Int) -> URLRequest? {
+    nonisolated static func movesRequest(serverURL: String, token: String, pokemonID: Int, level: Int,
+                                         egg: Bool = false) -> URLRequest? {
         guard let base = baseURL(serverURL) else { return nil }
         let url = base.appending(path: "v1/moves").appending(queryItems: [
             URLQueryItem(name: "pokemon_id", value: String(pokemonID)),
             URLQueryItem(name: "level", value: String(level)),
             URLQueryItem(name: "machine", value: "1"),
             URLQueryItem(name: "status", value: "1"),
-        ])
+        ] + (egg ? [URLQueryItem(name: "egg", value: "1")] : []))
         var request = URLRequest(url: url, timeoutInterval: 30)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
@@ -458,13 +464,14 @@ final class PartyUploader {
     }
 }
 
-/// `GET /v1/moves`: the attacking moves usable at a level, level-up ones oldest first, then machine (TM) ones,
-/// then the battle's status moves. A bot that predates status moves sends none.
+/// `GET /v1/moves`: the attacking moves usable at a level, level-up ones oldest first, then egg ones (only with
+/// `egg=1`), then machine (TM) ones, then the battle's status moves. A bot that predates status moves sends none.
 struct LearnableMoves: Decodable, Equatable, Sendable {
     let moves: [LearnableMove]
     let `default`: [Int]
 
-    var levelUpMoves: [LearnableMove] { moves.filter { !$0.isMachine && !$0.isStatus } }
+    var levelUpMoves: [LearnableMove] { moves.filter { !$0.isMachine && !$0.isEgg && !$0.isStatus } }
+    var eggMoves: [LearnableMove] { moves.filter { $0.isEgg && !$0.isStatus } }
     var machineMoves: [LearnableMove] { moves.filter { $0.isMachine && !$0.isStatus } }
     var statusMoves: [LearnableMove] { moves.filter(\.isStatus) }
 
@@ -483,7 +490,7 @@ struct LearnableMove: Decodable, Equatable, Sendable, Identifiable {
     let damageClass: String
     let accuracy: Int?
     let level: Int
-    /// `"level"`, `"machine"` or `"egg"` (status moves only); nil from bots that predate TM moves, where every move
+    /// `"level"`, `"machine"` or `"egg"` (attacking ones only with `egg=1`); nil from bots that predate TM moves, where every move
     /// is a level-up move.
     var source: String? = nil
     /// The fields below are nil from bots older than yp8.

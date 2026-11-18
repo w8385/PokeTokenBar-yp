@@ -39,7 +39,7 @@ final class ItemLoreTests: XCTestCase {
             .mint, .linkingCord, .fairyFeather, .syrupyApple, .auspiciousArmor, .maliciousArmor, .unremarkableTeacup,
             .masterpieceTeacup, .metalAlloy, .peatBlock, .blackAugurite, .scrollOfDarkness, .scrollOfWaters,
             .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
-            .adamantCrystal, .lustrousGlobe, .griseousCore, .punchingGlove,
+            .adamantCrystal, .lustrousGlobe, .griseousCore, .punchingGlove, .mirrorHerb,
         ]
         for kind in ItemKind.allCases {
             XCTAssertEqual(ItemLore.isAppOriginal(kind.loreSlug), flaggedKinds.contains(kind), "\(kind)")

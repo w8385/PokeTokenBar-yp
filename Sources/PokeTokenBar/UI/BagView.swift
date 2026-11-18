@@ -324,11 +324,15 @@ struct TrainingTargetPicker: View {
     let nav: PopoverNavigation
     let kind: ItemKind
     @State private var open = false
+    /// A Mirror Herb is used here, after one confirm; other items open the Box page.
+    @State private var pendingHerb: BoxIndividual?
 
     var body: some View {
         let l = store.l
         let targets = store.trainingTargets(for: kind)
-        if targets.isEmpty {
+        if let target = pendingHerb {
+            herbConfirm(target)
+        } else if targets.isEmpty {
             Text(l.trainingNoTarget).font(.caption2).foregroundStyle(.tertiary)
         } else if open {
             VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -347,7 +351,8 @@ struct TrainingTargetPicker: View {
             }
         } else {
             HStack {
-                Text(l.trainingBagHint(kind)).font(.caption2).foregroundStyle(.tertiary)
+                Text(kind == .mirrorHerb ? l.mirrorHerbBagHint : l.trainingBagHint(kind))
+                    .font(.caption2).foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
                 Button(l.useItem) { open = true }.buttonStyle(.bordered).controlSize(.small)
@@ -359,10 +364,27 @@ struct TrainingTargetPicker: View {
         nav.openBoxDetail(id: target.id, naturePicker: kind == .mint)
     }
 
+    private func herbConfirm(_ target: BoxIndividual) -> some View {
+        let l = store.l
+        return VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(l.mirrorHerbConfirmLine(store.dexEntryName(target.entry))).font(.caption).fontWeight(.semibold)
+            Text(l.mirrorHerbPaymentLine(store.mirrorHerbPayment)).font(.caption2).foregroundStyle(.secondary)
+            HStack {
+                Spacer()
+                Button(l.cancel) { pendingHerb = nil }.buttonStyle(.borderless).controlSize(.small)
+                Button(l.useItem) {
+                    pendingHerb = nil
+                    if store.useMirrorHerb(on: target.id) == .changed { Self.use(kind, on: target, nav: nav) }
+                }
+                .buttonStyle(.borderedProminent).controlSize(.small)
+            }
+        }
+    }
+
     private func row(_ target: BoxIndividual) -> some View {
         Button {
             open = false
-            Self.use(kind, on: target, nav: nav)
+            if kind == .mirrorHerb { pendingHerb = target } else { Self.use(kind, on: target, nav: nav) }
         } label: {
             HStack(spacing: Spacing.sm) {
                 SpriteView(speciesID: target.speciesID, size: 26, animated: false, shiny: target.entry.isShiny,

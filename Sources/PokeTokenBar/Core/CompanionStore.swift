@@ -2584,20 +2584,32 @@ final class CompanionStore {
     /// Sets the picked nature with a Mint from the bag, or buys one and uses it in the same step.
     @discardableResult
     func changeNature(of id: String, to nature: PokemonNature) -> TrainingResult {
-        let result = train(id, pay: {
-            switch mintPayment {
-            case .stock: return useOne(.mint)
-            case .buy(let price):
-                state.spentTokens += price
-                return true
-            case .short: return false
-            }
-        }) { $0.nature = nature }
+        let result = train(id, pay: { useOrBuy(.mint, mintPayment) }) { $0.nature = nature }
         if result == .changed, id == homeBoxID {
             mintFeedbackNature = nature
             mintFeedbackSeq += 1
         }
         return result
+    }
+
+    /// Unlocks the individual's attacking egg moves with a Mirror Herb from the bag, or buys one and uses it in the
+    /// same step.
+    @discardableResult
+    func useMirrorHerb(on id: String) -> TrainingResult {
+        guard let individual = trainable(id: id), EggMoves.hasAttacking(speciesID: individual.speciesID) else {
+            return .unavailable
+        }
+        return train(id, pay: { useOrBuy(.mirrorHerb, mirrorHerbPayment) }) { $0.profile.mirrorHerb = true }
+    }
+
+    private func useOrBuy(_ kind: ItemKind, _ payment: MintPayment) -> Bool {
+        switch payment {
+        case .stock: return useOne(kind)
+        case .buy(let price):
+            state.spentTokens += price
+            return true
+        case .short: return false
+        }
     }
 
     @discardableResult

@@ -206,9 +206,9 @@ final class ShopTests: XCTestCase {
     // MARK: 정렬 (가격 저렴한 순 + 구매 완료 보유형 맨 아래)
 
     /// 상점 목록은 가격 오름차순.
-    static let cheapItems: [ItemKind] = [.mint, .abilityCapsule, .bottleCap, .rareCandy, .revealGlass, .dnaSplicers,
-                                         .reinsOfUnity, .abilityPatch, .goldBottleCap]
-    static let cheapEntries: [ShopEntry] = cheapItems.prefix(8).map { .item($0) }
+    static let cheapItems: [ItemKind] = [.mint, .abilityCapsule, .bottleCap, .mirrorHerb, .rareCandy, .revealGlass,
+                                         .dnaSplicers, .reinsOfUnity, .abilityPatch, .goldBottleCap]
+    static let cheapEntries: [ShopEntry] = cheapItems.dropLast().map { .item($0) }
         + [.egg(nil), .item(.goldBottleCap), .egg(.uncommon)]
 
     func testItemsSortedByPriceAscending() {

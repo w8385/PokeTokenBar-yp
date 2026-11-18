@@ -19,6 +19,7 @@ struct StubMoveNames: PokemonNameProviding {
         231: ["ko": "아이언테일", "en": "Iron Tail", "ja": "アイアンテール"],
         281: ["ko": "하품", "en": "Yawn", "ja": "あくび"],
         337: ["ko": "드래곤크루", "en": "Dragon Claw", "ja": "ドラゴンクロー"],
+        344: ["ko": "볼트태클", "en": "Volt Tackle", "ja": "ボルテッカー"],
         433: ["ko": "트릭룸", "en": "Trick Room", "ja": "トリックルーム"],
         446: ["ko": "스텔스록", "en": "Stealth Rock", "ja": "ステルスロック"],
     ]

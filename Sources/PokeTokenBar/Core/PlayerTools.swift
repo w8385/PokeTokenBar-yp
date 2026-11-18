@@ -14,6 +14,18 @@ enum BottleCap {
     static let maxIV = 31
 }
 
+enum MirrorHerb {
+    static let price = 50_000_000
+}
+
+/// Which species get attacking egg moves from a Mirror Herb, parsed from the generated `EggMoveTable`.
+enum EggMoves {
+    static let speciesWithAttacking: Set<Int> = Set(
+        EggMoveTable.speciesWithAttackingEggMoves.split(whereSeparator: { $0 == "," || $0.isNewline }).compactMap { Int($0) })
+
+    static func hasAttacking(speciesID: Int) -> Bool { speciesWithAttacking.contains(speciesID) }
+}
+
 /// Key items that switch a species between its forms, the way an NPC team fields them.
 enum FormTool {
     static let price = 150_000_000
@@ -46,6 +58,7 @@ extension ItemKind {
         case .revealGlass: "reveal-glass"
         case .dnaSplicers: "dna-splicers"
         case .reinsOfUnity: "reins-of-unity"
+        case .mirrorHerb: "mirror-herb"
         default: nil
         }
     }
