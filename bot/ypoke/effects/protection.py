@@ -69,13 +69,17 @@ class Protect(Guard):
     blocks_status = True
 
     def stops_move(self, name, move, priority, target):
-        if breaks_guard(move):
+        if breaks_guard(move, target):
             return None
         return name if attacking(move) or self.blocks_status and aimed(move) else None
 
 
-def breaks_guard(move) -> bool:
-    return hooks.move(move, "breaks_guard", default=False)
+def breaks_guard(move, target) -> bool:
+    """The move, or the ability of the foe facing `target` that uses it (Unseen Fist), passes a guard."""
+    if hooks.move(move, "breaks_guard", default=False):
+        return True
+    user = target.arena.foe_of(target) if target.arena is not None else None
+    return user is not None and hooks.ability(user, "breaks_guard", move, user, default=False)
 
 
 def attacking(move) -> bool:
@@ -150,7 +154,7 @@ class QuickGuard(Guard):
         return last is not None and last.priority > 0 and attacking(last)
 
     def stops_move(self, name, move, priority, target):
-        return name if priority > 0 and (attacking(move) or aimed(move)) and not breaks_guard(move) else None
+        return name if priority > 0 and (attacking(move) or aimed(move)) and not breaks_guard(move, target) else None
 
 
 @register("moves", "crafty-shield")
