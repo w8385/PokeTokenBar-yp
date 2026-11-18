@@ -37,7 +37,7 @@ SCREENS = (
     ("MoveTrainingSection.swift", ("screenshot-pokemon-profile",)),
     ("ExpShareSlot.swift", ("screenshot-exp-share",)),
     ("GymReplayView.swift", ("screenshot-gym-replay",)),
-    ("GymResultView.swift", ("screenshot-gym-replay",)),
+    ("GymResultView.swift", ("screenshot-gym-replay", "screenshot-hidden-boss")),
     ("Gym*.swift", ("screenshot-gyms",)),
     ("Battle*.swift", ("screenshot-battle",)),
     ("SettingsView.swift", ("settings", "screenshot-provider-settings")),

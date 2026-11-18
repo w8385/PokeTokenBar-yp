@@ -102,6 +102,8 @@ final class ReadmeScreenshotTests: XCTestCase {
                            height: nil)
             try await shot(finale(language: language, catalog: catalog), "screenshot-champion-finale\(suffix)", in: dir,
                            height: nil)
+            try await shot(hiddenBoss(language: language, catalog: catalog), "screenshot-hidden-boss\(suffix)", in: dir,
+                           height: nil)
         }
     }
 
@@ -109,6 +111,8 @@ final class ReadmeScreenshotTests: XCTestCase {
         state.inventory[ItemKind.rareCandy.rawValue] = 3
         state.inventory[ItemKind.mint.rawValue] = 2
         state.inventory[ItemKind.expShare.rawValue] = 1
+        state.inventory["shiny-egg:150"] = 1
+        state.inventory[ItemKind.punchingGlove.rawValue] = 1
         state.expShareHolders = [BoxDexFixture.pikachuID]
         state.friendEntryIDs = [BoxDexFixture.charizardID, BoxDexFixture.pikachuID]
         state.gymBadges.update("kanto") { $0.gyms = [1, 2, 3] }
@@ -235,6 +239,7 @@ final class ReadmeScreenshotTests: XCTestCase {
             _ = await SpriteLoader.image(speciesID: id, back: true)
         }
         _ = await SpriteLoader.image(speciesID: 25, shiny: true)
+        _ = await SpriteLoader.image(speciesID: 150, shiny: true)
         for name in ItemKind.allCases.compactMap(\.spriteName) {
             _ = await SpriteLoader.itemImage(name: name)
         }
@@ -289,6 +294,29 @@ final class ReadmeScreenshotTests: XCTestCase {
         .environment(\.locale, language.displayLocale)
     }
 
+    /// The hidden boss beaten, with its first-clear prize; the finale partner stays unrevealed.
+    private func hiddenBoss(language: AppLanguage, catalog: GymCatalog) throws -> some View {
+        let l = L(language)
+        let kanto = try XCTUnwrap(catalog.region("kanto"))
+        let boss = try XCTUnwrap(kanto.hidden)
+        let mine = [ReplayCast.pikachu, ReplayCast.lapras, ReplayCast.gengar]
+        let theirs = try boss.team.map { id in try XCTUnwrap(ReplayCast.all.first { $0.id == id }) } + [ReplayCast.mewtwo]
+        let outcome = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+            gymID: boss.id, kind: "hidden", won: true, turns: 18,
+            teams: (zip(mine, [0, 30, 100]).map { GymFixtures.fighter($0.id, name: $0.name(language), hp: $1) },
+                    zip(theirs, [0, 0, 0, 0, 0, 0, nil] as [Int?]).map {
+                        GymFixtures.fighter($0.id, name: $0.name(language), hp: $1)
+                    })))
+        let tm = try XCTUnwrap(MachineCatalog.moves.first { $0.power >= GymRewards.finaleMinPower })
+        let reward = GymReward(region: "kanto", battleID: boss.id, kind: .hiddenBoss, tmMoveID: tm.id, badges: GymBadges())
+        return GymResultView(record: GymFightRecord(opponent: boss, outcome: outcome, reward: reward),
+                             language: language, l: l, regionName: l.gymRegionName(kanto),
+                             tmName: { _ in tm.name(language) }, primaryTitle: l.gymRematch, busy: false,
+                             onPrimary: {}, onClose: {})
+            .padding(PopoverMetrics.padding)
+            .environment(\.locale, language.displayLocale)
+    }
+
     /// `height: nil` draws the view at its own height.
     private func shot<V: View>(_ view: V, _ name: String, in dir: URL, height: CGFloat?) async throws {
         let width = PopoverMetrics.width
@@ -339,9 +367,12 @@ private struct ReplayCast {
         ReplayCast(id: 6, names: [.en: "Charizard", .ko: "리자몽", .ja: "リザードン"]),
         ReplayCast(id: 94, names: [.en: "Gengar", .ko: "팬텀", .ja: "ゲンガー"]),
         ReplayCast(id: 130, names: [.en: "Gyarados", .ko: "갸라도스", .ja: "ギャラドス"]),
-        ReplayCast(id: 150, names: [.en: "Mewtwo", .ko: "뮤츠", .ja: "ミュウツー"]),
+        mewtwo,
     ]
-    static let all = [pikachu, lapras, gengar, wartortle, seadra, seaking] + champion
+    static let mewtwo = ReplayCast(id: 150, names: [.en: "Mewtwo", .ko: "뮤츠", .ja: "ミュウツー"])
+    static let venusaur = ReplayCast(id: 3, names: [.en: "Venusaur", .ko: "이상해꽃", .ja: "フシギバナ"])
+    static let articuno = ReplayCast(id: 144, names: [.en: "Articuno", .ko: "프리져", .ja: "フリーザー"])
+    static let all = [pikachu, lapras, gengar, wartortle, seadra, seaking, venusaur, articuno] + champion
 
     private static let moves: [String: [AppLanguage: String]] = [
         "thunderbolt": [.en: "Thunderbolt", .ko: "10만볼트", .ja: "10まんボルト"],
