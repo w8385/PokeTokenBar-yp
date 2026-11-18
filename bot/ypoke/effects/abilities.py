@@ -57,14 +57,14 @@ class GaleWings(Handler):
 
 @register("abilities", "attack-doubled")
 class AttackDoubled(Handler):
-    def modify_stat(self, name, stat, weather, statused, can_evolve):
+    def modify_stat(self, name, stat, weather, fighter):
         return 2.0 if stat == "attack" else 1.0
 
 
 @register("abilities", "guts")
 class Guts(Handler):
-    def modify_stat(self, name, stat, weather, statused, can_evolve):
-        return abilities.GUTS_BOOST if stat == "attack" and statused else 1.0
+    def modify_stat(self, name, stat, weather, fighter):
+        return abilities.GUTS_BOOST if stat == "attack" and fighter.status is not None else 1.0
 
     def ignores_burn(self, name):
         return True
@@ -72,40 +72,41 @@ class Guts(Handler):
 
 @register("abilities", "weather-speed")
 class WeatherSpeed(Handler):
-    def modify_stat(self, name, stat, weather, statused, can_evolve):
+    def modify_stat(self, name, stat, weather, fighter):
         doubled = stat == "speed" and weather is not None and abilities.WEATHER_DOUBLES_SPEED[name] == weather
         return 2.0 if doubled else 1.0
 
 
 @register("abilities", "type-immunity")
 class TypeImmunity(Handler):
-    def immune_to(self, name, move_type):
-        return move_type is not None and abilities.IMMUNE_TYPE[name] == move_type
+    def immune_to(self, name, move, holder):
+        return move.type is not None and abilities.IMMUNE_TYPE[name] == move.type
 
 
 @register("abilities", "supreme-overlord")
 class SupremeOverlord(Handler):
-    def modify_power(self, name, move_type, power, low_hp, weather, fallen_allies):
-        return 1 + abilities.SUPREME_OVERLORD_STEP * min(fallen_allies, abilities.SUPREME_OVERLORD_MAX_FALLEN)
+    def modify_power(self, name, move, power, user, target, weather):
+        return 1 + abilities.SUPREME_OVERLORD_STEP * min(user.fallen_allies, abilities.SUPREME_OVERLORD_MAX_FALLEN)
 
 
 @register("abilities", "sand-force")
 class SandForce(Handler):
-    def modify_power(self, name, move_type, power, low_hp, weather, fallen_allies):
-        boosted = weather == "sandstorm" and move_type in abilities.SAND_FORCE_TYPES
+    def modify_power(self, name, move, power, user, target, weather):
+        boosted = weather == "sandstorm" and move.type in abilities.SAND_FORCE_TYPES
         return abilities.SAND_FORCE_BOOST if boosted else 1.0
 
 
 @register("abilities", "technician")
 class Technician(Handler):
-    def modify_power(self, name, move_type, power, low_hp, weather, fallen_allies):
+    def modify_power(self, name, move, power, user, target, weather):
         return abilities.TECHNICIAN_BOOST if power <= abilities.TECHNICIAN_MAX_POWER else 1.0
 
 
 @register("abilities", "pinch-type-boost")
 class PinchTypeBoost(Handler):
-    def modify_power(self, name, move_type, power, low_hp, weather, fallen_allies):
-        boosted = low_hp and move_type is not None and abilities.LOW_HP_BOOSTED_TYPE[name] == move_type
+    def modify_power(self, name, move, power, user, target, weather):
+        boosted = (abilities.low_hp(user) and move.type is not None
+                   and abilities.LOW_HP_BOOSTED_TYPE[name] == move.type)
         return abilities.LOW_HP_BOOST if boosted else 1.0
 
 
@@ -117,8 +118,8 @@ class Adaptability(Handler):
 
 @register("abilities", "type-resist")
 class TypeResist(Handler):
-    def modify_damage_taken(self, name, move_type):
-        return 0.5 if move_type in abilities.RESISTED_TYPES[name] else 1.0
+    def modify_damage_taken(self, name, move, multiplier, holder, user):
+        return 0.5 if move.type in abilities.RESISTED_TYPES[name] else 1.0
 
 
 @register("abilities", "sturdy")
@@ -132,7 +133,7 @@ class Sturdy(Handler):
 
 @register("abilities", "ailment-block")
 class AilmentBlock(Handler):
-    def blocks_ailment(self, name, ailment):
+    def blocks_ailment(self, name, ailment, holder):
         return ailment in abilities.AILMENT_BLOCKED[name]
 
 
@@ -140,7 +141,7 @@ class AilmentBlock(Handler):
 class ContactAilment(Handler):
     def on_contact(self, name, side, move, user, holder, rng):
         ailment = abilities.CONTACT_AILMENT[name]
-        if not battle.makes_contact(user, move) or hooks.ability(user, "blocks_ailment", ailment, default=False):
+        if not battle.makes_contact(user, move) or battle._blocks_ailment(user, ailment):
             return None
         if not battle._open_to(ailment, user, True) or rng.random() >= abilities.CONTACT_CHANCE:
             return None

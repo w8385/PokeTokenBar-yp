@@ -2,7 +2,6 @@
 (`ypoke.effects.abilities`) use. An ability that runs none of `EFFECT_KEYS` does nothing."""
 
 from ypoke import battle_data
-from ypoke.effects import hooks
 
 EFFECT_KEYS = frozenset({
     "pinch-type-boost", "intimidate", "type-immunity", "attack-doubled", "type-resist", "technician", "sturdy",
@@ -42,12 +41,21 @@ SHED_SKIN_CHANCE = 0.33
 NAMES = battle_data.bot_names("abilities")
 
 
-def power_multiplier(ability: str | None, move_type: str | None, power: float, low_hp: bool,
-                     weather: str | None = None, fallen_allies: int = 0) -> float:
-    return hooks.call("abilities", ability, "modify_power", move_type, power, low_hp, weather, fallen_allies,
-                      default=1.0)
+def low_hp(fighter) -> bool:
+    return fighter.hp * LOW_HP_FRACTION <= fighter.max_hp
 
 
 def in_weather(weather: str | None, wanted: str) -> bool:
     """Snow abilities count hail too, the older games' snow."""
     return weather is not None and (weather == wanted or wanted == "snow" and weather == "hail")
+
+
+# A foe's move or ability that ignores abilities (Mold Breaker, Sunsteel Strike) leaves these out.
+BREAKABLE = frozenset(name for name, entry in battle_data.table("abilities").items()
+                      if "breakable" in entry.get("flags", ()))
+# Neutralizing Gas leaves these on.
+UNSUPPRESSED = frozenset({
+    "as-one-glastrier", "as-one-spectrier", "battle-bond", "comatose", "commander", "disguise", "gulp-missile",
+    "ice-face", "multitype", "neutralizing-gas", "power-construct", "rks-system", "schooling", "shields-down",
+    "stance-change", "tera-shift", "zen-mode", "zero-to-hero",
+})

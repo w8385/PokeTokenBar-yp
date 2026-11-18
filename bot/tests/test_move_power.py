@@ -254,11 +254,15 @@ def test_retaliate_doubles_only_on_the_turn_after_a_teammate_fainted():
 
 
 def test_supreme_overlord_adds_a_tenth_per_fainted_teammate_up_to_half():
-    def multiplier(fallen):
-        return abilities.power_multiplier("supreme-overlord", "dark", 80, False, None, fallen)
+    move = attack(TACKLE.id, "dark", 80)
+
+    def multiplier(fallen, ability="supreme-overlord"):
+        user = fighter(ability=ability)
+        user.fallen_allies = fallen
+        return _power(user, fighter(), move, None, 1.0) / 80
 
     assert [multiplier(fallen) for fallen in (0, 2, 5, 6)] == pytest.approx([1.0, 1.2, 1.5, 1.5])
-    assert abilities.power_multiplier(None, "dark", 80, False, None, 5) == 1.0
+    assert multiplier(5, None) == 1.0
 
 
 def test_supreme_overlord_counts_its_own_sides_faints_only():

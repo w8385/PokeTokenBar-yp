@@ -5,7 +5,7 @@ picked at half HP or below when it heals more than the foe's best hit takes away
 from dataclasses import replace
 
 from ypoke import battle, move_power
-from ypoke.effects import hooks, register
+from ypoke.effects import register
 from ypoke.effects.moves import StatusMove
 from ypoke.effects.stats import Stages, arg, shift
 
@@ -234,7 +234,7 @@ class Rest(Heal):
 
 def sleepable(fighter) -> bool:
     return (not any(battle._field(fighter, "guards_ailment", "sleep", fighter, False))
-            and not hooks.ability(fighter, "blocks_ailment", "sleep", default=False))
+            and not battle._blocks_ailment(fighter, "sleep"))
 
 
 @register("moves", "aqua-ring", "ingrain")

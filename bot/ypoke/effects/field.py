@@ -289,7 +289,7 @@ class ToxicSpikes(Hazard):
             return battle.HazardHit(turn, side, fighter.combatant.name, name, fighter.hp_percent, cleared=True)
         ailment = "toxic" if layers >= fs.TOXIC_SPIKES_TOXIC_LAYERS else "poison"
         if (_booted(fighter) or not battle._open_to(ailment, fighter, True)
-                or hooks.ability(fighter, "blocks_ailment", ailment, default=False)):
+                or battle._blocks_ailment(fighter, ailment)):
             return None
         change = battle._inflict(ailment, fighter, side, rng)
         return battle.HazardHit(turn, side, fighter.combatant.name, name, fighter.hp_percent, change=change)
@@ -377,8 +377,8 @@ class MortalSpin(RapidSpin):
         if dealt <= 0:
             return None
         _spun_free(user, move)
-        if target.hp == 0 or not battle._open_to("poison", target, not battle._infiltrates(user)) or hooks.ability(
-                target, "blocks_ailment", "poison", default=False):
+        if (target.hp == 0 or not battle._open_to("poison", target, not battle._infiltrates(user))
+                or battle._blocks_ailment(target, "poison")):
             return None
         return (battle._inflict("poison", target, target.side, None),)
 
