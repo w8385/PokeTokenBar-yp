@@ -1416,7 +1416,9 @@ final class CompanionStoreTests: XCTestCase {
         XCTAssertTrue(isSuspended, "line fetch should be suspended")
 
         s.applyUsage(42)
-        let changedNature = try XCTUnwrap(s.useMint())
+        let changedNature = PokemonNature.timid
+        let id = try XCTUnwrap(s.state.active?.profile?.instanceID)
+        XCTAssertEqual(s.changeNature(of: id, to: changedNature), .changed)
         XCTAssertEqual(s.state.active?.usedAtStage, 42)
         XCTAssertEqual(s.state.active?.nature, changedNature)
 

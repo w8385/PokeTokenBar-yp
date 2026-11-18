@@ -2336,7 +2336,7 @@ final class CompanionStore {
 
     /// An item the shop sells once: a bought passive item, or a single-copy item that is in the bag or on a holder.
     func isSoldOut(_ kind: ItemKind) -> Bool {
-        (kind.isPassive && itemCount(kind) > 0) || (kind.isSingleCopy && itemOwnedTotal(kind) > 0)
+        (kind.isBoughtOnce && itemCount(kind) > 0) || (kind.isSingleCopy && itemOwnedTotal(kind) > 0)
             || (kind == .expShare && itemOwnedTotal(kind) >= ExpShare.maxOwned)
     }
 
@@ -2454,26 +2454,95 @@ final class CompanionStore {
         return .progressed
     }
 
-    // MARK: 민트 (성격 랜덤 재설정)
+    // MARK: Training items (Mint, Ability Capsule and Patch, Bottle Caps, form tools)
 
-    /// 민트 사용 가능 — 활성 포켓몬 + 재고>0. 성격은 MonState 에만 있어 진화 라인 로딩과 무관하다
-    /// (사탕과 달리 currentLine 조건 없음 — 재시작 직후·오프라인에도 사용 가능).
-    var canUseMint: Bool { hasActive && itemCount(.mint) > 0 }
-
-    /// 민트 1개 사용 — 현재 포켓몬 성격을 '현재와 다른' 무작위 성격으로 교체(반드시 바뀐다). 성장·shiny·
-    /// 종·usedAtStage·통계 전부 무관(순수 코스메틱). 사용 불가면 nil(무소모). 바뀐 성격을 반환(피드백용).
-    @discardableResult
-    func useMint() -> PokemonNature? {
-        guard canUseMint, state.active != nil else { return nil }
-        let cur = state.active!.nature
-        let pool = PokemonNature.allCases.filter { $0 != cur }   // cur=nil(구버전 개체)이면 25종 전체
-        let new = pool[Int(rng.next() % UInt64(pool.count))]
-        state.active!.nature = new
-        state.inventory[ItemKind.mint.rawValue] = itemCount(.mint) - 1
-        mintFeedbackNature = new
-        mintFeedbackSeq += 1
+    /// Applies `change` to one individual when it does something; `pay` runs just before the write and may
+    /// refuse. Nothing is used up or paid for otherwise. Saves once.
+    private func train(_ id: String, pay: () -> Bool, _ change: (inout TrainableIndividual) -> Void) -> TrainingResult {
+        guard !isTradeLocked(id), let before = trainable(id: id) else { return .unavailable }
+        var after = before
+        change(&after)
+        guard after != before else { return .unchanged }
+        guard pay() else { return .short }
+        if state.active?.profile?.instanceID == id {
+            state.active?.nature = after.nature
+            state.active?.profile = after.profile
+            state.active?.form = after.form
+        } else if state.storedLines[id] != nil {
+            state.storedLines[id]?.mon.nature = after.nature
+            state.storedLines[id]?.mon.profile = after.profile
+            state.storedLines[id]?.mon.form = after.form
+        } else if let index = state.dex.firstIndex(where: { $0.id == id && !$0.isReleased }) {
+            state.dex[index].nature = after.nature
+            state.dex[index].profile = after.profile
+            state.dex[index].form = after.form
+        }
         save()
-        return new
+        return .changed
+    }
+
+    private func useOne(_ kind: ItemKind) -> Bool {
+        guard itemCount(kind) > 0 else { return false }
+        state.inventory[kind.rawValue] = itemCount(kind) - 1
+        return true
+    }
+
+    /// Sets the picked nature with a Mint from the bag, or buys one and uses it in the same step.
+    @discardableResult
+    func changeNature(of id: String, to nature: PokemonNature) -> TrainingResult {
+        let result = train(id, pay: {
+            switch mintPayment {
+            case .stock: return useOne(.mint)
+            case .buy(let price):
+                state.spentTokens += price
+                return true
+            case .short: return false
+            }
+        }) { $0.nature = nature }
+        if result == .changed, id == homeBoxID {
+            mintFeedbackNature = nature
+            mintFeedbackSeq += 1
+        }
+        return result
+    }
+
+    @discardableResult
+    func useAbilityCapsule(on id: String) -> TrainingResult {
+        guard itemCount(.abilityCapsule) > 0, let target = trainable(id: id).flatMap(capsuleTarget) else {
+            return .unavailable
+        }
+        return train(id, pay: { useOne(.abilityCapsule) }) { $0.profile.setAbility(target) }
+    }
+
+    @discardableResult
+    func useAbilityPatch(on id: String) -> TrainingResult {
+        guard itemCount(.abilityPatch) > 0, let target = trainable(id: id).flatMap(patchTarget) else {
+            return .unavailable
+        }
+        return train(id, pay: { useOne(.abilityPatch) }) { $0.profile.setAbility(target) }
+    }
+
+    @discardableResult
+    func useBottleCap(on id: String, stat: String) -> TrainingResult {
+        guard itemCount(.bottleCap) > 0, PokemonStatCalculator.order.contains(stat) else { return .unavailable }
+        return train(id, pay: { useOne(.bottleCap) }) { $0.profile.ivs[stat] = BottleCap.maxIV }
+    }
+
+    @discardableResult
+    func useGoldBottleCap(on id: String) -> TrainingResult {
+        guard itemCount(.goldBottleCap) > 0 else { return .unavailable }
+        return train(id, pay: { useOne(.goldBottleCap) }) { individual in
+            for stat in PokemonStatCalculator.order { individual.profile.ivs[stat] = BottleCap.maxIV }
+        }
+    }
+
+    /// Switches the individual to `form` with the key item its species needs; the item stays in the bag.
+    @discardableResult
+    func changeForm(of id: String, to form: PokemonForm) -> TrainingResult {
+        guard let individual = trainable(id: id), ownedFormTool(speciesID: individual.speciesID) != nil,
+              PokemonForm.forms(speciesID: individual.speciesID).contains(form) else { return .unavailable }
+        guard PokemonForm.resolved(speciesID: individual.speciesID, form: individual.form) != form else { return .unchanged }
+        return train(id, pay: { true }) { $0.form = form }
     }
 
     // MARK: 진화의 돌
@@ -2533,8 +2602,8 @@ final class CompanionStore {
                 && $0.category != .megaStone }
             .sorted { a, b in
                 // 구매 완료한 보유형(이로치 부적 등)은 맨 아래로 — 재구매 불가라 위에 있을 이유가 없다.
-                let aDone = a.isPassive && itemCount(a) > 0
-                let bDone = b.isPassive && itemCount(b) > 0
+                let aDone = a.isBoughtOnce && itemCount(a) > 0
+                let bDone = b.isBoughtOnce && itemCount(b) > 0
                 if aDone != bDone { return !aDone }
                 return (a.shopPrice ?? 0) < (b.shopPrice ?? 0)   // 나머지는 가격 저렴한 순
             }
@@ -2595,7 +2664,7 @@ final class CompanionStore {
     /// 구매 완료한 보유형(이로치 부적 등)인지 — shopEntries 정렬에서 맨 아래로 보낼 판정.
     private func isPurchasedPassive(_ entry: ShopEntry) -> Bool {
         guard case .item(let kind) = entry else { return false }   // 알은 즉시 액션 — 보유 개념 없음
-        return kind.isPassive && itemCount(kind) > 0
+        return kind.isBoughtOnce && itemCount(kind) > 0
     }
 
     /// 구매 가능 — 잔액이 그 아이템 가격 이상(상점 미판매면 false). 활성/알 무관(재고는 미리 쌓아둘 수 있음).
@@ -2609,7 +2678,7 @@ final class CompanionStore {
     /// 미판매·잔액 부족이면 0.
     func maxBuyCount(_ kind: ItemKind) -> Int {
         guard canBuy(kind), let price = price(of: kind), price > 0 else { return 0 }
-        return kind.isPassive || kind.isSingleCopy || kind == .expShare ? 1 : availableTokens / price
+        return kind.isBoughtOnce || kind.isSingleCopy || kind == .expShare ? 1 : availableTokens / price
     }
 
     /// 아이템 count 개 구매 — 지갑에서 price × count 차감, 인벤토리 +count. usedSinceInstall(성장·통계)·

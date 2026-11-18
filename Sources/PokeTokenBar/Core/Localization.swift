@@ -2182,7 +2182,7 @@ struct L {
         case .expertBelt: return t("달인의띠", "Expert Belt", "たつじんのおび", "Cinta Experto", "Ceinture Pro", "Cinto Perito", "Expertengurt", "Пояс эксперта")
         case .charcoal: return t("목탄", "Charcoal", "もくたん", "Carbón", "Charbon", "Carvão", "Holzkohle", "Древесный уголь")
         case .stellarCrystal: return t("별빛 결정", "Stellar Crystal", "ほしぞらのけっしょう", "Cristal Estelar", "Cristal Stellaire", "Cristal Estelar", "Sternenkristall", "Звёздный кристалл")
-        default: return evolutionItemName(kind)
+        default: return trainingItemName(kind) ?? evolutionItemName(kind)
         }
     }
 
@@ -2338,6 +2338,7 @@ struct L {
                      "Passt dein aktuelles Pokémon, entwickelt es sich sofort auf dem Zweig dieses Steins.",
                      "Если текущий покемон подходит, он сразу эволюционирует по ветке этого камня.")
         }
+        if let effect = trainingEffect(kind) { return effect }
         switch kind {
         case .rareCandy:
             let xp = TokenFormatter.compact(RareCandy.xp)   // 상수에서 파생(하드코딩 드리프트 방지)
@@ -2349,8 +2350,6 @@ struct L {
                      "Adiciona \(xp) de EXP ao seu Pokémon atual.",
                      "Gibt deinem aktuellen Pokémon \(xp) EP.",
                      "Добавляет текущему покемону \(xp) опыта.")
-        case .mint:
-            return nil
         case .shinyCharm:
             let base = PokemonOdds.shinyDenominator, boosted = ShinyCharm.shinyDenominator
             return t("이로치 부화 확률이 1/\(base)에서 1/\(boosted)로 올라요.",
@@ -2382,8 +2381,6 @@ struct L {
             return effect.isEmpty ? nil : effect
         }
     }
-    /// 가방 사용 컨트롤의 효과 힌트 — 민트("성격 랜덤 변경", 사탕의 "+XP" 자리).
-    var mintEffectHint: String { t("성격 랜덤 변경", "Random nature", "せいかくランダム変更", "Naturaleza aleatoria", "Nature aléatoire", "Natureza aleatória", "Zufälliges Wesen", "Случайный характер") }
 
     // MARK: 상점·가방 분류 탭
     var categoryAll: String { t("전체", "All", "すべて", "Todo", "Tout", "Tudo", "Alle", "Все") }

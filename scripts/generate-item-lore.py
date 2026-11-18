@@ -53,19 +53,21 @@ ITEMS = [
     "flame-plate", "splash-plate", "zap-plate", "meadow-plate", "icicle-plate", "fist-plate", "toxic-plate",
     "earth-plate", "sky-plate", "mind-plate", "insect-plate", "stone-plate", "spooky-plate", "draco-plate",
     "dread-plate", "iron-plate", "pixie-plate",
+    "ability-capsule", "ability-patch", "bottle-cap", "gold-bottle-cap",
+    "reveal-glass", "dna-splicers", "reins-of-unity",
 ]
 
 # Items that are not in the games: hand-written in the same in-game voice, all eight app languages.
 APP_ORIGINAL = {
     "app-mint": {
-        "ko": "상쾌한 향이 나는 민트. 먹이면 포켓몬의 성격이 무작위로 바뀐다.",
-        "en": "A mint with a refreshing scent. It changes a Pokémon's nature to a random one.",
-        "ja": "さわやかな　かおりの　ミント。　あたえるとポケモンの　せいかくが　ランダムに　かわる。",
-        "es": "Una menta de aroma fresco. Cambia la naturaleza de un Pokémon por otra al azar.",
-        "fr": "Une menthe au parfum frais. Elle change la nature d'un Pokémon au hasard.",
-        "pt": "Uma menta de aroma refrescante. Muda a natureza de um Pokémon para outra aleatória.",
-        "de": "Eine Minze mit frischem Duft. Sie ändert das Wesen eines Pokémon zufällig.",
-        "ru": "Мята со свежим ароматом. Случайным образом меняет характер покемона.",
+        "ko": "상쾌한 향이 나는 민트. 먹이면 포켓몬의 성격이 고른 성격으로 바뀐다.",
+        "en": "A mint with a refreshing scent. It changes a Pokémon's nature to the one you choose.",
+        "ja": "さわやかな　かおりの　ミント。　あたえるとポケモンの　せいかくが　えらんだ　せいかくに　かわる。",
+        "es": "Una menta de aroma fresco. Cambia la naturaleza de un Pokémon por la que elijas.",
+        "fr": "Une menthe au parfum frais. Elle change la nature d'un Pokémon pour celle de ton choix.",
+        "pt": "Uma menta de aroma refrescante. Muda a natureza de um Pokémon para a que você escolher.",
+        "de": "Eine Minze mit frischem Duft. Sie ändert das Wesen eines Pokémon in das gewählte.",
+        "ru": "Мята со свежим ароматом. Меняет характер покемона на выбранный.",
     },
     # {pool} is replaced with the region name (or "National") when the text is looked up.
     "app-scout-ticket": {

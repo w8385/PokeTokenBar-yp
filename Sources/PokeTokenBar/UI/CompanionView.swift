@@ -722,6 +722,8 @@ struct CompanionHeader: View {
     let store: CompanionStore
     /// Opens a species' Pokédex detail page (`PopoverNavigation.openDexEntry`). nil = sprites inert.
     var onOpenDexEntry: ((String) -> Void)? = nil
+    /// Opens the Box page of this Box id with its nature picker. nil = no Mint button.
+    var onChangeNature: ((String) -> Void)? = nil
     /// Injectable so render tests stay offline and away from the real sprite cache.
     var spriteStore: SpriteStore = .shared
     var cryPlayer: CryPlayer = .shared
@@ -754,6 +756,16 @@ struct CompanionHeader: View {
 
     /// 부화 임박(90%+) — 알이 흔들리고 문구가 바뀐다.
     private var eggImminent: Bool { store.isEgg && store.eggProgress >= 0.9 }
+
+    @ViewBuilder
+    private var mintButton: some View {
+        if let onChangeNature, let id = store.homeBoxID, store.trainable(id: id) != nil {
+            Button { onChangeNature(id) } label: { ItemIconView(kind: .mint, size: 12) }
+                .buttonStyle(.borderless)
+                .help(store.l.mintChangeHelp)
+                .accessibilityLabel(store.l.mintChangeHelp)
+        }
+    }
 
     /// Clicking it is a click-growth click, like clicking the floating pet.
     private var bigSprite: some View {
@@ -845,9 +857,11 @@ struct CompanionHeader: View {
                             Badge(store.l.rarityLabel(r).uppercased(), tint: .rarity(r))
                         }
                     }
-                    if store.hasRaisedPokemon, let id = store.currentSpeciesID, let details = store.pokemonDetailsByID[id] {
+                    if store.hasRaisedPokemon, let id = store.currentSpeciesID,
+                       let details = store.pokemonDetails(speciesID: id, form: store.currentForm) {
                         TypeBadges(types: details.types, language: store.language)
-                        if !PokemonForm.isDefault(store.currentForm, speciesID: id) {
+                        if !PokemonForm.isDefault(store.currentForm, speciesID: id),
+                           FormBattleData.of(speciesID: id, form: store.currentForm) == nil {
                             Text(store.l.defaultFormDataNote)
                                 .font(.caption2).foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -864,11 +878,15 @@ struct CompanionHeader: View {
                         ViewThatFits(in: .horizontal) {
                             HStack(spacing: 5) {
                                 stage.lineLimit(1).fixedSize()
+                                mintButton
                                 Spacer(minLength: 4)
                                 DayNightLabel(store: store)
                             }
                             VStack(alignment: .leading, spacing: 2) {
-                                stage.lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                                    stage.lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                                    mintButton
+                                }
                                 DayNightLabel(store: store).frame(maxWidth: .infinity, alignment: .trailing)
                             }
                         }

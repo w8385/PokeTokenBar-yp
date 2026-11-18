@@ -88,11 +88,10 @@ final class ItemLoreTests: XCTestCase {
         }
     }
 
-    func testAppNoteStaysOnOneLineAndAppOriginalItemsHaveNone() {
+    func testEveryItemHasAOneLineAppNote() {
         for lang in AppLanguage.allCases {
             let l = L(lang)
-            XCTAssertEqual(l.itemAppNote(.mint), "", "\(lang)")
-            for kind in ItemKind.allCases where kind != .mint {
+            for kind in ItemKind.allCases {
                 let note = l.itemAppNote(kind)
                 XCTAssertFalse(note.isEmpty, "\(kind) \(lang)")
                 XCTAssertFalse(note.contains("\n"), note)

@@ -103,7 +103,7 @@ struct ShopItemCard: View {
     /// 잔액이 줄어 한도가 내려가도 선택값이 한도를 넘지 않게 클램프.
     private var selectedQuantity: Int { min(quantity, maxQuantity) }
     /// 보유형은 1회 구매라 수량 선택이 없다. 2개 이상 살 수 있을 때만 Stepper 노출.
-    private var showsQuantity: Bool { !kind.isPassive && store.maxBuyCount(kind) > 1 }
+    private var showsQuantity: Bool { !kind.isBoughtOnce && store.maxBuyCount(kind) > 1 }
 
     var body: some View {
         let l = store.l
@@ -114,7 +114,7 @@ struct ShopItemCard: View {
                     HStack(spacing: 6) {
                         Text(l.itemName(kind)).font(.callout.weight(.semibold))
                         let owned = kind == .expShare ? store.itemOwnedTotal(kind) : store.itemCount(kind)
-                        if owned > 0 && !kind.isPassive && !kind.isSingleCopy {
+                        if owned > 0 && !kind.isBoughtOnce && !kind.isSingleCopy {
                             Text(l.ownedCount(owned)).font(.caption2.weight(.bold))
                                 .foregroundStyle(.secondary).monospacedDigit()
                         }

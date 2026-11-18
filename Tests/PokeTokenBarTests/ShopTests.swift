@@ -206,10 +206,15 @@ final class ShopTests: XCTestCase {
     // MARK: 정렬 (가격 저렴한 순 + 구매 완료 보유형 맨 아래)
 
     /// 상점 목록은 가격 오름차순.
+    static let cheapItems: [ItemKind] = [.mint, .abilityCapsule, .bottleCap, .rareCandy, .revealGlass, .dnaSplicers,
+                                         .reinsOfUnity, .abilityPatch, .goldBottleCap]
+    static let cheapEntries: [ShopEntry] = cheapItems.prefix(8).map { .item($0) }
+        + [.egg(nil), .item(.goldBottleCap), .egg(.uncommon)]
+
     func testItemsSortedByPriceAscending() {
         let items = store(used: 0).purchasableItems
-        XCTAssertEqual(Array(items.prefix(2)), [.mint, .rareCandy])
-        XCTAssertEqual(Set(items.dropFirst(2)), Set(ItemKind.allCases.filter { $0.category == .heldItem } + [.shinyCharm, .expShare]),
+        XCTAssertEqual(Array(items.prefix(Self.cheapItems.count)), Self.cheapItems)
+        XCTAssertEqual(Set(items.dropFirst(Self.cheapItems.count)), Set(ItemKind.allCases.filter { $0.category == .heldItem } + [.shinyCharm, .expShare]),
                        "held items, the charm and the first Exp. Share tie on price")
         let prices = items.compactMap(\.shopPrice)
         XCTAssertEqual(prices, prices.sorted(), "shopPrice 오름차순 — 가격 상수가 바뀌어도 정렬 불변식 유지")
@@ -241,7 +246,7 @@ final class ShopTests: XCTestCase {
         let s = CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
         XCTAssertTrue(s.hasActive)
         XCTAssertEqual(s.shopEntries,
-                       [.item(.mint), .item(.rareCandy), .egg(nil), .egg(.uncommon)]
+                       Self.cheapEntries
                        + [.item(.shinyCharm), .item(.expShare)]   // ties keep ItemKind declaration order
                        + heldItemEntries
                        + [.egg(.rare)])
@@ -256,7 +261,7 @@ final class ShopTests: XCTestCase {
         let s = store(used: 1_000_000_000)   // active 없음, 잔액은 전 티어 가격 이상
         XCTAssertFalse(s.hasActive)
         XCTAssertEqual(s.shopEntries,
-                       [.item(.mint), .item(.rareCandy), .egg(nil), .egg(.uncommon)]
+                       Self.cheapEntries
                        + [.item(.shinyCharm), .item(.expShare)]   // ties keep ItemKind declaration order
                        + heldItemEntries
                        + [.egg(.rare)])
@@ -273,7 +278,7 @@ final class ShopTests: XCTestCase {
         let s = store(used: 0)
         XCTAssertEqual(s.shopCategories, [.growth, .egg, .scout, .evolution, .heldItem, .megaStone, .machine])
         XCTAssertEqual(s.shopEntries(in: .egg), [.egg(nil), .egg(.uncommon), .egg(.rare)])
-        XCTAssertEqual(s.shopEntries(in: .growth), [.item(.mint), .item(.rareCandy), .item(.shinyCharm), .item(.expShare)])
+        XCTAssertEqual(s.shopEntries(in: .growth), (Self.cheapItems + [.shinyCharm, .expShare]).map { .item($0) })
         XCTAssertEqual(s.shopEntries(in: .megaStone).count, MegaStone.all.count + 1, "the stones plus the Stellar Crystal")
     }
 
