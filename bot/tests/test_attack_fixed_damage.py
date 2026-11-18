@@ -152,8 +152,8 @@ def test_the_ai_scores_set_damage_as_the_power_that_would_deal_it():
 
 
 def test_set_damage_attacks_are_offered_once_their_effect_works():
-    assert move_effects.attacks(69, None, "physical") and move_effects.attacks(12, None, "physical")
-    assert not move_effects.attacks(117, None, "physical") and not move_effects.attacks(622, None, "physical")
+    assert all(move_effects.attacks(move_id, None, "physical") for move_id in (69, 12, 117))
+    assert not move_effects.attacks(622, None, "physical")
     assert not move_effects.attacks(73, None, "status")
 
 

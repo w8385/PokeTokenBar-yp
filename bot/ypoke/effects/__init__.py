@@ -66,8 +66,8 @@ def loaded() -> dict[str, dict[str, Handler]]:
     """The registry once every handler module has registered. They import `battle`, which needs the modules that
     import `effects.hooks`, so they load on first use rather than with this package."""
     from ypoke.effects import (  # noqa: F401
-        abilities, after_hit, callers, changers, conditions, field, fixed_damage, healing, item_moves, items, moves,
-        multi_hit, protection, recoil, secondary, stats, switching, two_turn, variable_power, volatiles,
+        abilities, after_hit, callers, changers, conditions, field, fixed_damage, healing, item_moves, items, locking,
+        moves, multi_hit, protection, recoil, secondary, stats, switching, two_turn, variable_power, volatiles,
     )
 
     return REGISTRY

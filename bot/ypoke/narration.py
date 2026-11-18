@@ -93,7 +93,7 @@ EFFECT_TEXT = {
     "chilly-reception": "❄️눈을 부르고 물러났다", "chilly-reception-dry": "🥶썰렁한 농담을 하고 물러났다",
     "mimic": "🪞상대의 기술을 따라 배웠다", "sketch": "✏️상대의 기술을 스케치했다", "transform": "🔄상대로 변신했다",
     "charge-turn": "⏳힘을 모으는 중", "flying": "🕊️하늘 높이 날아올랐다", "underground": "⛏️땅속으로 파고들었다",
-    "underwater": "🌊물속으로 숨었다", "vanished": "👻모습을 감췄다",
+    "underwater": "🌊물속으로 숨었다", "vanished": "👻모습을 감췄다", "bide": "😤참는 중",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
@@ -133,6 +133,7 @@ VOLATILE_LABEL = {
     "tar-shot": "🛢️타르", "focus-energy": "🎯기충전", "laser-focus": "🎯레이저포커스",
     "baton-pass": "🪄바통 이어받음", "transform": "🔄변신",
     "throat-chop": "🤐지옥찌르기", "salt-cure": "🧂소금절이", "syrup-bomb": "🍯사탕범벅 스피드↓",
+    "binding": "🪢조이기",
 }
 # Changes an attack left on a Pokémon beyond a status or a stat stage.
 CHANGE_TEXT = {
@@ -140,10 +141,11 @@ CHANGE_TEXT = {
     "salt-cure": "🧂소금절이", "syrup-bomb": "🍯사탕범벅", "heal-block": "🚫회복봉인", "leech-seed": "🌱씨뿌리기",
     "spite": "마지막 기술 PP↓", "ability-lost": "🧪특성 사라짐", "lost-fire": "🔥불꽃 타입 잃음",
     "lost-electric": "⚡전기 타입 잃음", "crash": "💥크래시 데미지", "hp-cost": "💥HP 절반 소모",
-    "ohko": "💀일격필살", "healed": "💚HP 회복",
+    "ohko": "💀일격필살", "healed": "💚HP 회복", "binding": "🪢조여졌다", "rampage": "🔒날뛰기 시작",
+    "uproar": "📢소란 시작", "rollout": "🔒구르기 시작", "fatigue": "💫지쳐서 혼란", "woke": "⏰잠에서 깼다",
 }
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
-                     "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)"}
+                     "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)", "binding": "풀려났다"}
 
 
 Image = tuple[str, str]
