@@ -108,6 +108,9 @@ class Sturdy(Handler):
     def endures(self, name, fighter, from_full, rng):
         return from_full
 
+    def blocks_ohko(self, name):
+        return True
+
 
 @register("abilities", "ailment-block")
 class AilmentBlock(Handler):

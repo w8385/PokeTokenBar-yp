@@ -53,6 +53,8 @@ HOOKS = {
     "before_hit": "move: acts before the accuracy draw and the target's immunity",
     "crashes": "move: its user loses HP when the move meets Protect, misses or hits an immune target (High Jump Kick); "
                "returns the change",
+    "own_accuracy": "move: its accuracy against this target, in place of the data's and unmoved by stages and items "
+                    "(OHKO moves)",
     "skips_accuracy":"move: hits without an accuracy draw",
     "rolls_each_hit": "move: each hit after the first draws for accuracy and a miss ends the move (Triple Kick)",
     "accuracy_as_user": "item: multiplies the user's accuracy, before the target's item",
@@ -70,6 +72,8 @@ HOOKS = {
     "guards_crit": "state: no critical hit lands on its side (the draw still happens)",
     "ignores_burn": "ability, move: a burn does not halve the user's Attack",
     "base_power": "move: the move's power in this battle state",
+    "fixed_damage": "move: the damage each hit deals, with no roll, critical hit or modifier (Seismic Toss); the "
+                    "mean when the rng is None",
     "modify_power": "ability: multiplies the user's base power",
     "field_power": "state: multiplies the base power, after the ability",
     "modify_stab": "ability: replaces the same-type bonus",
@@ -81,6 +85,7 @@ HOOKS = {
     "resists": "item: halves the first hit and is used up",
     "takes_hit": "state: takes a hit's damage in its holder's place (Substitute)",
     "spares": "move: a hit that would knock its target out leaves it 1 HP (False Swipe)",
+    "blocks_ohko": "ability: an OHKO move fails on its holder (Sturdy)",
     "endures":"state, then ability, then item: a hit that would knock its holder out leaves it 1 HP",
     "on_knocked_out": "state: acts as a foe's move knocks its holder out (Destiny Bond, Grudge)",
     "on_contact_hit": "item: hurts the user of each physical hit on its holder",

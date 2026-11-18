@@ -20,6 +20,8 @@ from ypoke.type_chart import effectiveness
 
 STAB_MULTIPLIER = 1.5
 CRITICAL_MULTIPLIER = 1.5
+DAMAGE_DIVISOR = 50
+LOWEST_ROLL = 0.85
 CRITICAL_CHANCES = (1 / 24, 1 / 8, 1 / 2, 1.0)
 BURN_DAMAGE_FRACTION = 16
 POISON_DAMAGE_FRACTION = 8
@@ -805,6 +807,7 @@ class _Team:
         fallen = sum(fighter.hp == 0 for fighter in self.fighters.values())
         fighter = self.active
         fighter.acted = fighter.hit_by_foe = fighter.lowered = False
+        fighter.hurt = None
         fighter.turn_stages = dict(fighter.stages)
         fighter.flopped_last, fighter.flopped = fighter.flopped, False
         fighter.fallen_allies = fallen
@@ -875,6 +878,7 @@ class _Fighter:
     danced: bool = False
     acted: bool = False
     hit_by_foe: bool = False
+    hurt: tuple[bool, int] | None = None
     lowered: bool = False
     turn_stages: dict[str, int] | None = None
     flopped: bool = False
@@ -1145,9 +1149,11 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                       attacker_hp=attacker.hp_percent, **used)
     hooks.move(move, "before_hit", attacker, defender)
     multiplier = _multiplier(move, defender, weather.kind)
-    accuracy = (move.accuracy or 0) * _accuracy_stages(attacker, defender) * (
-        hooks.item(attacker, "accuracy_as_user", default=1.0)
-        * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy"))
+    accuracy = hooks.move(move, "own_accuracy", attacker, defender)
+    if accuracy is None:
+        accuracy = (move.accuracy or 0) * _accuracy_stages(attacker, defender) * (
+            hooks.item(attacker, "accuracy_as_user", default=1.0)
+            * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy"))
     checks_accuracy = (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
                        and not _sure_hit(attacker, defender))
     if checks_accuracy and rng.random() * 100 >= accuracy:
@@ -1164,7 +1170,9 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                       ability=defender.ability if granted else None, changes=crash,
                       attacker_fainted=attacker.hp == 0)
     critical, hits, dealt, sturdy, endured, berry, shielded = False, 0, 0, False, "", "", False
-    resisted = defender.item if hooks.item(defender, "resists", move.type, multiplier, default=False) else ""
+    fixed = hooks.move(move, "fixed_damage", attacker, defender, rng)
+    resisted = defender.item if fixed is None and hooks.item(defender, "resists", move.type, multiplier,
+                                                             default=False) else ""
     crit_stage = (hooks.move(move, "crit_stage", default=move.crit_stage) + hooks.item(attacker, "crit_stage", default=0)
                   + sum(_field(attacker, "crit_stage")))
     no_crit = any(_field(defender, "guards_crit"))
@@ -1173,8 +1181,11 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     for hit in range(hit_count):
         if hit > 0 and rolls_each_hit and rng.random() * 100 >= accuracy:
             break
-        hit_critical = rng.random() < CRITICAL_CHANCES[min(crit_stage, len(CRITICAL_CHANCES) - 1)] and not no_crit
-        damage = _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng, hit)
+        if fixed is None:
+            hit_critical = rng.random() < CRITICAL_CHANCES[min(crit_stage, len(CRITICAL_CHANCES) - 1)] and not no_crit
+            damage = _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng, hit)
+        else:
+            hit_critical, damage = False, fixed
         if resisted and hit == 0:
             damage, defender.item = max(1, int(damage * items.RESIST_BERRY_MULTIPLIER)), None
         if any(_field(defender, "takes_hit", damage, attacker, defender, move)):
@@ -1201,6 +1212,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         held = defender.item
         if hit < hit_count - 1 and hooks.item(defender, "between_hits", defender, default=False):
             berry = held
+    if dealt > 0:
+        defender.hurt = (move.physical, dealt)
     if defender.hp == 0:
         _field(defender, "on_knocked_out", attacker, move, turn, side)
     changes, ability = (), defender.ability if sturdy else None
@@ -1309,7 +1322,7 @@ def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multipl
     attack, defense = _stats_for(attacker, defender, move.physical, weather, _ignores_burn(move))
     level = attacker.combatant.level
     power = _power(attacker, defender, move, weather, multiplier, hit)
-    damage = ((2 * level // 5 + 2) * power * attack / max(1, defense)) // 50 + 2
+    damage = ((2 * level // 5 + 2) * power * attack / max(1, defense)) // DAMAGE_DIVISOR + 2
     return (
         damage * _stab(attacker, move) * multiplier * _weather_boost(move, weather)
         * _damage_taken(defender, move) * _item_boost(attacker, move, multiplier)
@@ -1496,8 +1509,13 @@ def _surely_finishes(attacker: _Fighter, defender: _Fighter, move: Move, weather
     """Whether a hit with the lowest damage roll that cannot miss knocks the defender out."""
     move = move_power.typed(move, weather, attacker)
     never_misses = move.accuracy in (None, 100) or hooks.move(move, "skips_accuracy", weather, default=False)
-    damage = _unrolled_damage(attacker, defender, move, _multiplier(move, defender, weather), weather)
-    return (never_misses and damage * 0.85 >= defender.hp and not _banned(attacker, move)
+    multiplier = _multiplier(move, defender, weather)
+    fixed = hooks.move(move, "fixed_damage", attacker, defender, None)
+    if fixed is None:
+        lowest = _unrolled_damage(attacker, defender, move, multiplier, weather) * LOWEST_ROLL
+    else:
+        lowest = fixed if multiplier > 0 else 0
+    return (never_misses and lowest >= defender.hp and not _banned(attacker, move)
             and not _stopped(attacker, defender, move) and not hooks.move(move, "spares", default=False)
             and not hooks.move(move, "fails", attacker, defender, default=False))
 
@@ -1530,15 +1548,19 @@ def _best_score(attacker: _Fighter, defender: _Fighter, weather: str | None) -> 
 
 
 def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
-    """Power × STAB × type × weather × accuracy × attack/defense; 0 for a move a state bans or stops."""
+    """Power × STAB × type × weather × accuracy × attack/defense; 0 for a move a state bans or stops. A move with set
+    damage scores the power that would deal that damage at even attack and defense."""
     move = move_power.typed(move, weather, attacker)
     if (_banned(attacker, move) or _stopped(attacker, defender, move)
             or hooks.move(move, "fails", attacker, defender, default=False)):
         return 0.0
     attack, defense = _stats_for(attacker, defender, move.physical, weather, _ignores_burn(move))
     skips = move.accuracy is None or hooks.move(move, "skips_accuracy", weather, default=False)
-    accuracy = 100 if skips else move.accuracy
+    accuracy = 100 if skips else hooks.move(move, "own_accuracy", attacker, defender, default=move.accuracy)
     multiplier = _multiplier(move, defender, weather)
+    fixed = hooks.move(move, "fixed_damage", attacker, defender, None)
+    if fixed is not None:
+        return fixed * (multiplier > 0) * accuracy * DAMAGE_DIVISOR / (2 * attacker.combatant.level // 5 + 2)
     return (
         _power(attacker, defender, move, weather, multiplier) * _expected_hits(move, accuracy)
         * _stab(attacker, move) * multiplier

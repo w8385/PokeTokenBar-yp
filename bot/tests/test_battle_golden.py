@@ -172,7 +172,7 @@ class FakePokeAPI:
     def attacking_moves(self, pokemon_id, level, machine_ids=(), status=False):
         return [
             {**move, "level": 1, "source": "level"} for move in MOVE_POOL
-            if move["weather"] or (move["power"] and move["damage_class"] != "status")
+            if move["weather"] or _attacks(move)
             or (status and move["id"] in STATUS_MOVES)
         ]
 
@@ -407,13 +407,17 @@ def _effect_move_ids():
 
 @cache
 def _attack_move_ids():
-    return sorted(move["id"] for move in _learnable() if move["power"] and move["damage_class"] != "status")
+    return sorted(move["id"] for move in _learnable() if _attacks(move))
 
 
 @cache
 def _learnable():
     return [{**move, "level": 1, "source": "level"} for move in _replay_moves().values()
-            if move["weather"] or (move["power"] and move["damage_class"] != "status") or move["id"] in STATUS_MOVES]
+            if move["weather"] or _attacks(move) or move["id"] in STATUS_MOVES]
+
+
+def _attacks(move):
+    return move_effects.attacks(move["id"], move["power"], move["damage_class"])
 
 
 @cache

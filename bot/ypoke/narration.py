@@ -138,6 +138,7 @@ CHANGE_TEXT = {
     "salt-cure": "🧂소금절이", "syrup-bomb": "🍯사탕범벅", "heal-block": "🚫회복봉인", "leech-seed": "🌱씨뿌리기",
     "spite": "마지막 기술 PP↓", "ability-lost": "🧪특성 사라짐", "lost-fire": "🔥불꽃 타입 잃음",
     "lost-electric": "⚡전기 타입 잃음", "crash": "💥크래시 데미지", "hp-cost": "💥HP 절반 소모",
+    "ohko": "💀일격필살",
 }
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)"}

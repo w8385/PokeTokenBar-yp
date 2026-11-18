@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from ypoke import battle_data, items, tera_forms
 from ypoke.battle import BaseStats
 from ypoke.mega_stones import mega_form_id, move_mega_form_id
-from ypoke.move_effects import STATUS_MOVES, wants_status_moves
+from ypoke.move_effects import STATUS_MOVES, attacks, wants_status_moves
 from ypoke.store import Store
 
 API_BASE = "https://pokeapi.co/api/v2"
@@ -143,7 +143,7 @@ class PokeAPIService:
         return [
             {**move, "level": entry["level"], "source": entry["source"]}
             for entry, move in zip(learned, moves)
-            if move["weather"] or (move["power"] and move["damage_class"] != "status") or move["id"] in STATUS_MOVES
+            if move["weather"] or attacks(move["id"], move["power"], move["damage_class"]) or move["id"] in STATUS_MOVES
         ]
 
     def egg_moves(self, pokemon_id: int) -> list[int]:
