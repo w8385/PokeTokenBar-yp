@@ -67,7 +67,7 @@ def resisting(last, user, foe) -> tuple[str, ...] | None:
 def exposure(types: tuple[str, ...], foe) -> float:
     """How hard the foe's best-typed attack hits `types`."""
     return max((effectiveness(known.type, types) for known, pp in zip(foe.combatant.moves, foe.pp)
-                if known.power and known.type and pp > 0), default=1.0)
+                if known.damaging and known.type and pp > 0), default=1.0)
 
 
 def reshape(fighter, **fields) -> None:
@@ -116,7 +116,7 @@ class FoeType(StatusMove):
 def offense(user, types: tuple[str, ...]) -> float:
     """How hard the user's best-typed attack hits `types`."""
     return max((effectiveness(known.type, types) for known, pp in zip(user.combatant.moves, user.pp)
-                if known.power and known.type and pp > 0), default=1.0)
+                if known.damaging and known.type and pp > 0), default=1.0)
 
 
 @register("moves", "role-play", "doodle", "skill-swap", "entrainment", "simple-beam", "worry-seed", "gastro-acid")

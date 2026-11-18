@@ -5,7 +5,8 @@ Run when a new generation lands and commit the result; the app never fetches TM 
 
     python3 -I scripts/generate-tm-catalog.py [--out PATH]
 
-A move is in the catalog when it is battle-usable (damaging or weather-setting) and at least one species
+A move is in the catalog when it is battle-usable (an attack the bot uses, power 0 when its effect sets the power or
+damage, or weather-setting) and at least one species
 learns it by machine. "Learns by machine" uses the bot's own rule, `ypoke.pokeapi.learnset_from`: the
 newest main-series version group that has level-up moves for that species.
 """
@@ -17,6 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "bot"))
+from ypoke.move_effects import attacks  # noqa: E402
 from ypoke.pokeapi import API_BASE, WEATHER_MOVES, _get_json, learnset_from  # noqa: E402
 
 MAX_SPECIES = 1025
@@ -44,7 +46,7 @@ def move_row(move_id: int) -> str | None:
     move = get(f"{API_BASE}/move/{move_id}")
     weather = WEATHER_MOVES.get(move_id, "")
     power = move["power"] or 0
-    if not weather and not (power and move["damage_class"]["name"] != "status"):
+    if not weather and not attacks(move_id, power, move["damage_class"]["name"]):
         return None
     names = {entry["language"]["name"]: entry["name"] for entry in move["names"]}
     en = names.get("en", move["name"])

@@ -258,7 +258,8 @@ def test_a_multi_hit_move_deals_damage_for_every_hit_and_stops_on_a_knockout():
 @pytest.mark.parametrize("low,high", [(2, 2), (3, 3), (2, 3)])
 def test_other_hit_ranges_are_uniform(low, high):
     move = replace(TACKLE, min_hits=low, max_hits=high)
-    assert {_hit_count(move, random.Random(seed)) for seed in range(100)} == set(range(low, high + 1))
+    user = _Fighter.enter(mon("A", ["normal"]))
+    assert {_hit_count(move, user, random.Random(seed)) for seed in range(100)} == set(range(low, high + 1))
 
 
 def test_the_ai_values_a_multi_hit_move_by_its_expected_hits():

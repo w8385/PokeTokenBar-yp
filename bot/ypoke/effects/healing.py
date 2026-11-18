@@ -50,7 +50,7 @@ def worth_healing(user, foe, amount: int, weather) -> bool:
 def foe_hit(user, foe, weather) -> float:
     """The foe's best mean hit on `user`."""
     return max((battle._unrolled_damage(foe, user, typed, battle._multiplier(typed, user, weather), weather)
-                for move in foe.combatant.moves if move.power
+                for move in foe.combatant.moves if move.damaging
                 for typed in (move_power.typed(move, weather, foe),)), default=0)
 
 

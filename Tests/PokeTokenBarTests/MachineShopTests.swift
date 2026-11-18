@@ -173,6 +173,7 @@ final class MachineShopTests: XCTestCase {
         try await shot("tm-shop-list.png", language: .en)
         try await shot("tm-shop-search.png", language: .en, query: "thunder")
         try await shot("tm-shop-search-ko.png", language: .ko, query: "빔")
+        try await shot("tm-shop-set-power-ko.png", language: .ko, query: "볼")
     }
 
     func testTheShopRendersTheTMCategory() async throws {

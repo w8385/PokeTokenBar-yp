@@ -56,6 +56,7 @@ HOOKS = {
     "own_accuracy": "move: its accuracy against this target, in place of the data's and unmoved by stages and items "
                     "(OHKO moves)",
     "skips_accuracy":"move: hits without an accuracy draw",
+    "hit_count": "move: how many times it hits this time, in place of the data's hit range (Beat Up)",
     "rolls_each_hit": "move: each hit after the first draws for accuracy and a miss ends the move (Triple Kick)",
     "accuracy_as_user": "item: multiplies the user's accuracy, before the target's item",
     "accuracy_as_target": "item: multiplies the accuracy of a move used on its holder",
@@ -72,6 +73,7 @@ HOOKS = {
     "guards_crit": "state: no critical hit lands on its side (the draw still happens)",
     "ignores_burn": "ability, move: a burn does not halve the user's Attack",
     "base_power": "move: the move's power in this battle state",
+    "draws": "move: draws what its hits use once it lands, before `fixed_damage` and the hits (Magnitude)",
     "fixed_damage": "move: the damage each hit deals, with no roll, critical hit or modifier (Seismic Toss); the "
                     "mean when the rng is None",
     "modify_power": "ability: multiplies the user's base power",

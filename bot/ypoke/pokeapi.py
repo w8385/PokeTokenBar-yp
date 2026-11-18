@@ -75,9 +75,10 @@ class PokeAPIService:
         return result
 
     def pokemon(self, pokemon_id: int) -> dict:
-        """Return `{"name_ko", "types", "base"}` for a PokéAPI `/pokemon/{id}` id. Raises on network errors."""
+        """Return `{"name_ko", "types", "base", "weight"}` for a PokéAPI `/pokemon/{id}` id, weight in hectograms.
+        An entry cached before weights were kept is fetched again. Raises on network errors."""
         cached = self._store.cached_pokemon(pokemon_id)
-        if cached is not None:
+        if cached is not None and "weight" in cached:
             return cached
         data = self._fetch(pokemon_id)
         self._store.cache_pokemon(pokemon_id, data)
@@ -196,6 +197,7 @@ class PokeAPIService:
             "name_ko": names.get("ko") or names.get("en") or pokemon["name"],
             "types": [entry["type"]["name"] for entry in sorted(pokemon["types"], key=lambda t: t["slot"])],
             "base": base,
+            "weight": pokemon["weight"],
         }
 
 

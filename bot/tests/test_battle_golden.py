@@ -185,7 +185,7 @@ def _species_data(pokemon_id):
     second = TYPES[(pokemon_id * 7 + 3) % len(TYPES)]
     types = [first] if pokemon_id % 3 == 0 or second == first else [first, second]
     base = {stat: 50 + (pokemon_id * (index + 3) * 37) % 81 for index, stat in enumerate(STATS)}
-    return {"name_ko": f"P{pokemon_id}", "types": types, "base": base}
+    return {"name_ko": f"P{pokemon_id}", "types": types, "base": base, "weight": 10 + pokemon_id * 53 % 3000}
 
 
 def _member(rng, slot):
@@ -239,6 +239,7 @@ FOCUS_CASES = {
                    ((68, None, None, [2, 7]), (59, None, None, [53, 44]))),
     "thaw-moves": (((131, None, None, [58]), (87, None, None, [58]), (124, None, None, [58])),
                    ((9, None, None, [503]), (134, None, None, [503, 815]), (1013, None, None, [902]))),
+    "false-swipe": (((68, None, None, [206]),), ((65, None, None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

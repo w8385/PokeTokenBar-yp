@@ -175,7 +175,7 @@ def service(tmp_path, monkeypatch):
     fetched = []
     body = {
         "name": "charizard-mega-x", "species": {"url": "https://pokeapi.co/api/v2/pokemon-species/6/"},
-        "types": [{"slot": 2, "type": {"name": "dragon"}}, {"slot": 1, "type": {"name": "fire"}}],
+        "types": [{"slot": 2, "type": {"name": "dragon"}}, {"slot": 1, "type": {"name": "fire"}}], "weight": 1105,
         "stats": [{"stat": {"name": name}, "base_stat": value} for name, value in
                   (("hp", 78), ("attack", 130), ("defense", 111), ("special-attack", 130), ("special-defense", 85), ("speed", 100))],
         "abilities": [{"is_hidden": True, "ability": {"name": "hidden", "url": "https://pokeapi.co/api/v2/ability/1/"}},

@@ -170,7 +170,7 @@ class Gravity(StatusMove):
     def wanted(self, move, team, foes, side, arena, weather):
         user = team.active
         return not arena.gravity and not battle._grounded(foes.active) and any(
-            known.type == "ground" and known.power and user.pp[index] > 0
+            known.type == "ground" and known.damaging and user.pp[index] > 0
             for index, known in enumerate(user.combatant.moves))
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
@@ -217,7 +217,7 @@ class Room(StatusMove):
 
     def _guard(self, defender, attacker) -> float:
         """How much the swap raises the defense the attacker's damaging moves hit, 1.0 when they hit both."""
-        kinds = {known.physical for known in attacker.combatant.moves if known.power}
+        kinds = {known.physical for known in attacker.combatant.moves if known.damaging}
         if len(kinds) != 1:
             return 1.0
         key = "defense" if kinds.pop() else "special_defense"

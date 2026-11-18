@@ -374,6 +374,11 @@ final class MachineOwnershipTests: XCTestCase {
                           moveChoices: rig.battle.moveChoices, rentalSpeciesID: 4)
     }
 
+    func testAnAttackWhosePowerTheBattleSetsShowsADashForItsPower() {
+        XCTAssertEqual(L(.ko).movePowerLine(0), "위력 —")
+        XCTAssertEqual(L(.en).movePowerLine(80), "Power 80")
+    }
+
     func testPriceTiersFollowPowerAndWeatherThenScaleWithShopDifficulty() async throws {
         let low = PokemonBalance.machinePrice(power: 0, isWeather: false)
         let mid = PokemonBalance.machinePrice(power: 70, isWeather: false)

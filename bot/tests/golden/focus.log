@@ -3803,3 +3803,123 @@ StatusDamage turn=18 side=0 pokemon='P124' hp=48 fainted=False
 Action turn=19 side=1 attacker='P1013' defender='P124' move='휘적휘적포' multiplier=0.25 defender_hp=44 drained=True attacker_hp=5 move_id=902
 Action turn=19 side=0 attacker='P124' defender='P1013' move='냉동빔' multiplier=0.25 critical=True defender_hp=0 knockout=True attacker_hp=44 move_id=58
 result winner=0 turns=19 remaining=((0, 0, 44), (0, 0, 0)) statuses=(('burn', None, 'burn'), (None, None, None))
+## focus false-swipe 0
+side=0 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[206] mega=None
+side=1 P65 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=79 move_id=33
+Action turn=1 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=87 attacker_hp=79 move_id=206
+Action turn=2 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=59 attacker_hp=87 move_id=33
+Action turn=2 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=75 attacker_hp=59 move_id=206
+Action turn=3 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=40 attacker_hp=75 move_id=33
+Action turn=3 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=63 attacker_hp=40 move_id=206
+Action turn=4 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=20 attacker_hp=63 move_id=33
+Action turn=4 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=50 attacker_hp=20 move_id=206
+Action turn=5 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=1 attacker_hp=50 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=39 attacker_hp=1 move_id=206
+Action turn=6 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=39 move_id=33
+result winner=1 turns=6 remaining=((0,), (39,)) statuses=((None,), (None,))
+## focus false-swipe 1
+side=0 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[206] mega=None
+side=1 P65 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=84 move_id=33
+Action turn=1 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=89 attacker_hp=84 move_id=206
+Action turn=2 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=66 attacker_hp=89 move_id=33
+Action turn=2 side=0 attacker='P68' defender='P65' move='칼등치기' critical=True defender_hp=72 attacker_hp=66 move_id=206
+Action turn=3 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=51 attacker_hp=72 move_id=33
+Action turn=3 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=61 attacker_hp=51 move_id=206
+Action turn=4 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=33 attacker_hp=61 move_id=33
+Action turn=4 side=0 attacker='P68' defender='P65' move='칼등치기' critical=True defender_hp=47 attacker_hp=33 move_id=206
+Action turn=5 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=16 attacker_hp=47 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=36 attacker_hp=16 move_id=206
+Action turn=6 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=36 move_id=33
+result winner=1 turns=6 remaining=((0,), (36,)) statuses=((None,), (None,))
+## focus false-swipe 2
+side=0 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[206] mega=None
+side=1 P65 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=84 move_id=33
+Action turn=1 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=90 attacker_hp=84 move_id=206
+Action turn=2 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=67 attacker_hp=90 move_id=33
+Action turn=2 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=81 attacker_hp=67 move_id=206
+Action turn=3 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=49 attacker_hp=81 move_id=33
+Action turn=3 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=71 attacker_hp=49 move_id=206
+Action turn=4 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=32 attacker_hp=71 move_id=33
+Action turn=4 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=60 attacker_hp=32 move_id=206
+Action turn=5 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=14 attacker_hp=60 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=51 attacker_hp=14 move_id=206
+Action turn=6 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=51 move_id=33
+result winner=1 turns=6 remaining=((0,), (51,)) statuses=((None,), (None,))
+## focus false-swipe 3
+side=0 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[206] mega=None
+side=1 P65 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=81 move_id=33
+Action turn=1 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=89 attacker_hp=81 move_id=206
+Action turn=2 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=60 attacker_hp=89 move_id=33
+Action turn=2 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=75 attacker_hp=60 move_id=206
+Action turn=3 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=40 attacker_hp=75 move_id=33
+Action turn=3 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=63 attacker_hp=40 move_id=206
+Action turn=4 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=23 attacker_hp=63 move_id=33
+Action turn=4 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=51 attacker_hp=23 move_id=206
+Action turn=5 side=1 attacker='P65' defender='P68' move='몸통박치기' critical=True defender_hp=0 knockout=True attacker_hp=51 move_id=33
+result winner=1 turns=5 remaining=((0,), (51,)) statuses=((None,), (None,))
+## focus false-swipe 4
+side=0 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[206] mega=None
+side=1 P65 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=81 move_id=33
+Action turn=1 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=89 attacker_hp=81 move_id=206
+Action turn=2 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=64 attacker_hp=89 move_id=33
+Action turn=2 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=77 attacker_hp=64 move_id=206
+Action turn=3 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=46 attacker_hp=77 move_id=33
+Action turn=3 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=65 attacker_hp=46 move_id=206
+Action turn=4 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=28 attacker_hp=65 move_id=33
+Action turn=4 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=52 attacker_hp=28 move_id=206
+Action turn=5 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=9 attacker_hp=52 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=38 attacker_hp=9 move_id=206
+Action turn=6 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=38 move_id=33
+result winner=1 turns=6 remaining=((0,), (38,)) statuses=((None,), (None,))
+## focus false-swipe 5
+side=0 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[206] mega=None
+side=1 P65 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=88 move_id=206
+Action turn=1 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=82 attacker_hp=88 move_id=33
+Action turn=2 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=76 attacker_hp=82 move_id=206
+Action turn=2 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=62 attacker_hp=76 move_id=33
+Action turn=3 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=64 attacker_hp=62 move_id=206
+Action turn=3 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=43 attacker_hp=64 move_id=33
+Action turn=4 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=51 attacker_hp=43 move_id=206
+Action turn=4 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=23 attacker_hp=51 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P65' move='칼등치기' critical=True defender_hp=33 attacker_hp=23 move_id=206
+Action turn=5 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=5 attacker_hp=33 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=20 attacker_hp=5 move_id=206
+Action turn=6 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=20 move_id=33
+result winner=1 turns=6 remaining=((0,), (20,)) statuses=((None,), (None,))
+## focus false-swipe 6
+side=0 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[206] mega=None
+side=1 P65 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=82 move_id=33
+Action turn=1 side=0 attacker='P68' defender='P65' move='칼등치기' critical=True defender_hp=81 attacker_hp=82 move_id=206
+Action turn=2 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=65 attacker_hp=81 move_id=33
+Action turn=2 side=0 attacker='P68' defender='P65' move='칼등치기' critical=True defender_hp=60 attacker_hp=65 move_id=206
+Action turn=3 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=48 attacker_hp=60 move_id=33
+Action turn=3 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=48 attacker_hp=48 move_id=206
+Action turn=4 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=31 attacker_hp=48 move_id=33
+Action turn=4 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=36 attacker_hp=31 move_id=206
+Action turn=5 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=16 attacker_hp=36 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=23 attacker_hp=16 move_id=206
+Action turn=6 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=1 attacker_hp=23 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=11 attacker_hp=1 move_id=206
+Action turn=7 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=11 move_id=33
+result winner=1 turns=7 remaining=((0,), (11,)) statuses=((None,), (None,))
+## focus false-swipe 7
+side=0 P68 Lv50 ('dragon', 'bug') item=None ability=None nature=None moves=[206] mega=None
+side=1 P65 Lv50 ('bug', 'ground') item=None ability=None nature=None moves=[33] mega=None
+Action turn=1 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=91 move_id=206
+Action turn=1 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=78 attacker_hp=91 move_id=33
+Action turn=2 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=81 attacker_hp=78 move_id=206
+Action turn=2 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=58 attacker_hp=81 move_id=33
+Action turn=3 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=72 attacker_hp=58 move_id=206
+Action turn=3 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=38 attacker_hp=72 move_id=33
+Action turn=4 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=63 attacker_hp=38 move_id=206
+Action turn=4 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=17 attacker_hp=63 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P65' move='칼등치기' defender_hp=52 attacker_hp=17 move_id=206
+Action turn=5 side=1 attacker='P65' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=52 move_id=33
+result winner=1 turns=5 remaining=((0,), (52,)) statuses=((None,), (None,))

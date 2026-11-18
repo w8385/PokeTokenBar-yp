@@ -58,8 +58,8 @@ MOVES = {
          "stat_changes": []},
     86: {"id": 86, "names": [{"language": {"name": "ko"}, "name": "전기자석파"}], "name": "thunder-wave",
          "type": {"name": "electric"}, "power": None, "damage_class": {"name": "status"}, "accuracy": 90, "pp": 20, "priority": 0},
-    360: {"id": 360, "names": [{"language": {"name": "en"}, "name": "Gyro Ball"}], "name": "gyro-ball",
-          "type": {"name": "steel"}, "power": None, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 5, "priority": 0},
+    374: {"id": 374, "names": [{"language": {"name": "en"}, "name": "Fling"}], "name": "fling",
+          "type": {"name": "dark"}, "power": None, "damage_class": {"name": "physical"}, "accuracy": 100, "pp": 10, "priority": 0},
     240: {"id": 240, "names": [{"language": {"name": "ko"}, "name": "비바라기"}], "name": "rain-dance",
           "type": {"name": "water"}, "power": None, "damage_class": {"name": "status"}, "accuracy": None, "pp": 5,
           "priority": 0, "meta": {"ailment": {"name": "none"}, "category": {"name": "field-effect"}}},
@@ -69,7 +69,7 @@ MOVES = {
 PIKACHU = {"moves": [
     learned(84, ("scarlet-violet", "level-up", 1)),
     learned(86, ("scarlet-violet", "level-up", 4)),
-    learned(360, ("scarlet-violet", "level-up", 10)),
+    learned(374, ("scarlet-violet", "level-up", 10)),
     learned(240, ("scarlet-violet", "level-up", 20)),
     learned(85, ("scarlet-violet", "level-up", 36)),
 ]}
@@ -77,7 +77,7 @@ PIKACHU = {"moves": [
 
 POKEMON_BODY = {
     **PIKACHU, "name": "pikachu", "species": {"url": "https://pokeapi.co/api/v2/pokemon-species/25/"},
-    "types": [{"slot": 1, "type": {"name": "electric"}}],
+    "types": [{"slot": 1, "type": {"name": "electric"}}], "weight": 60,
     "stats": [{"stat": {"name": "hp"}, "base_stat": 35}, {"stat": {"name": "attack"}, "base_stat": 55},
               {"stat": {"name": "defense"}, "base_stat": 40}, {"stat": {"name": "special-attack"}, "base_stat": 50},
               {"stat": {"name": "special-defense"}, "base_stat": 50}, {"stat": {"name": "speed"}, "base_stat": 90}],
@@ -234,6 +234,13 @@ def body(category, ailment="none", ailment_chance=0, stat_changes=(), stat_chanc
 def test_move_keeps_only_the_simulated_secondary_effects(move, expected):
     data = move_from(move)
     assert {key: data[key] for key in expected} == expected
+
+
+def test_a_species_cached_before_weights_were_kept_is_fetched_again_with_its_weight(service):
+    api, fetched = service
+    api._store.cache_pokemon(25, {"name_ko": "피카츄", "types": ["electric"], "base": {}})
+    assert api.pokemon(25)["weight"] == 60
+    assert any(url.rstrip("/").endswith("/pokemon/25") for url in fetched)
 
 
 def test_warm_caches_every_member_so_a_later_lookup_makes_no_network_call(service):
