@@ -114,5 +114,16 @@ enum GymFixtures {
         event(5, "faint", side: 1, member: 1),
     ] }
 
+    static func form(_ turn: Int, side: Int, member: Int, id: Int, kind: String = "mega") -> [String: Any] {
+        ["turn": turn, "type": "form", "side": side, "member": member, "pokemon_id": id, "kind": kind]
+    }
+
+    /// `replayEvents` with Foe1 (Charizard) Mega Evolving into Mega Charizard X right after it comes out.
+    static var megaReplayEvents: [[String: Any]] {
+        var events = replayEvents
+        events.insert(form(2, side: 1, member: 1, id: 10034), at: 10)
+        return events
+    }
+
     static func carryJSON(hp: Int, status: String? = nil) -> [String: Any] { ["hp": hp, "status": status as Any? ?? NSNull()] }
 }

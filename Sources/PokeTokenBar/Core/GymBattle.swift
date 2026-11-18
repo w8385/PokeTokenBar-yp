@@ -56,11 +56,15 @@ struct GymBattleEvent: Decodable, Equatable, Sendable {
     var move: String?
     /// The PokéAPI id of `move`; nil from a bot older than localized replays.
     var moveId: Int?
+    /// The `/pokemon` id a `form` event's member now fights as.
+    var pokemonId: Int?
 }
 
 extension GymBattleEvent {
     /// The champion's hidden member is about to come out (`member` is the one that will).
     static let finale = "finale"
+    /// The member Mega Evolved or changed form and now fights as `pokemonId`.
+    static let form = "form"
 }
 
 /// The reply of `POST /v1/gym/battle`.

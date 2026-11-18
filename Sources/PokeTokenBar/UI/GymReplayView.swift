@@ -55,8 +55,9 @@ struct GymReplayView: View {
         let fighter = active.map { fighters[$0] }
         let hp = active.flatMap { frame.hp[side][$0] }
         let status = active.flatMap { frame.status[side][$0] }
+        let spriteID = active.map { frame.spriteID(side: side, member: $0, roster: fighters) }
         HStack(spacing: Spacing.md) {
-            if side == 0 { sprite(fighter, back: true, fainted: hp == 0) }
+            if side == 0 { sprite(fighter, id: spriteID, back: true, fainted: hp == 0) }
             VStack(alignment: side == 0 ? .trailing : .leading, spacing: Spacing.xs) {
                 HStack(spacing: Spacing.xs) {
                     Text(fighter?.name ?? " ").font(.callout.weight(.semibold)).lineLimit(1)
@@ -76,16 +77,16 @@ struct GymReplayView: View {
                 pips(side, frame: frame, count: fighters.count)
             }
             .frame(maxWidth: .infinity, alignment: side == 0 ? .trailing : .leading)
-            if side == 1 { sprite(fighter, back: false, fainted: hp == 0) }
+            if side == 1 { sprite(fighter, id: spriteID, back: false, fainted: hp == 0) }
         }
         .accessibilityElement(children: .combine)
     }
 
-    private func sprite(_ fighter: GymFighter?, back: Bool, fainted: Bool) -> some View {
+    private func sprite(_ fighter: GymFighter?, id: Int?, back: Bool, fainted: Bool) -> some View {
         ZStack {
-            if let fighter {
-                SpriteView(speciesID: fighter.pokemonId, size: 64, shiny: fighter.shiny, back: back)
-                    .id("\(fighter.pokemonId)-\(back)")
+            if let fighter, let id {
+                SpriteView(speciesID: id, size: 64, shiny: fighter.shiny, back: back)
+                    .id("\(id)-\(back)")
                     .transition(.opacity)
             }
         }

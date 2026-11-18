@@ -121,6 +121,69 @@ final class GymReplayTests: XCTestCase {
         XCTAssertFalse(replay.frame(after: entrance + 3).finale)
     }
 
+    func testAFormEventDecodesItsIdAndAnOldBotsReplayShowsEveryRosterId() throws {
+        let mega = try replay(events: GymFixtures.megaReplayEvents)
+        let old = try replay()
+
+        XCTAssertEqual(mega.events[10], GymBattleEvent(turn: 2, type: "form", side: 1, member: 1, pokemonId: 10034))
+        for count in 0...old.events.count {
+            XCTAssertEqual(old.frame(after: count).form, [[nil, nil, nil], [nil, nil]], "after \(count)")
+        }
+        XCTAssertEqual(old.last.spriteID(side: 1, member: 1, roster: try outcome().foeTeam), 2)
+    }
+
+    func testAFormEventChangesOnlyItsMembersSprite() throws {
+        let replay = try replay(events: GymFixtures.megaReplayEvents)
+        let roster = try outcome(events: GymFixtures.megaReplayEvents)
+
+        let before = replay.frame(after: 10)
+        XCTAssertEqual(before.active[1], 1)
+        XCTAssertEqual(before.spriteID(side: 1, member: 1, roster: roster.foeTeam), 2)
+        let after = replay.frame(after: 11)
+        XCTAssertEqual(after.spriteID(side: 1, member: 1, roster: roster.foeTeam), 10034)
+        XCTAssertEqual(after.spriteID(side: 0, member: 0, roster: roster.playerTeam), 25)
+        XCTAssertEqual(after.spriteID(side: 1, member: 0, roster: roster.foeTeam), 1)
+        XCTAssertEqual(replay.last.form, [[nil, nil, nil], [nil, 10034]])
+    }
+
+    func testAFormEventKeepsItsHoldersHPAndStatus() throws {
+        let events = Array(GymFixtures.replayEvents.prefix(13)) + [GymFixtures.form(3, side: 0, member: 0, id: 10034)]
+        let replay = try replay(events: events)
+        let frame = replay.last
+
+        XCTAssertEqual(frame.form[0][0], 10034)
+        XCTAssertEqual(frame.status[0][0], "burn")
+        XCTAssertEqual(frame.hp[0][0], 30)
+    }
+
+    func testANewMemberShowsItsRosterIdAndAPivotedMegaComesBackMega() throws {
+        let events = [
+            GymFixtures.event(0, "switch", side: 0, member: 0, hp: 100),
+            GymFixtures.event(0, "switch", side: 1, member: 0, hp: 100),
+            GymFixtures.form(1, side: 1, member: 0, id: 10034),
+            GymFixtures.event(1, "switch", side: 1, member: 1, hp: 100),
+            GymFixtures.event(2, "switch", side: 1, member: 0, hp: 100),
+        ]
+        let replay = try replay(events: events)
+        let foes = try outcome(events: events).foeTeam
+
+        let swapped = replay.frame(after: 4)
+        XCTAssertEqual(swapped.active[1], 1)
+        XCTAssertEqual(swapped.spriteID(side: 1, member: 1, roster: foes), 2)
+        let back = replay.frame(after: 5)
+        XCTAssertEqual(back.active[1], 0)
+        XCTAssertEqual(back.spriteID(side: 1, member: 0, roster: foes), 10034)
+    }
+
+    func testAMegaWithNoSpriteKeepsTheBaseSprite() throws {
+        let missing = try XCTUnwrap(MegaStone.missingSpriteIDs.first)
+        let events = GymFixtures.replayEvents.prefix(2) + [GymFixtures.form(1, side: 1, member: 0, id: missing)]
+        let replay = try replay(events: Array(events))
+
+        XCTAssertEqual(replay.events.count, 3)
+        XCTAssertEqual(replay.last.spriteID(side: 1, member: 0, roster: try outcome().foeTeam), 1)
+    }
+
     private func total(_ replay: GymReplay) -> Double {
         replay.events.indices.map { replay.delay(before: $0) / .seconds(1) }.reduce(0, +)
     }
