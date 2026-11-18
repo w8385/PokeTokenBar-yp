@@ -1736,6 +1736,12 @@ read_when:
   battles but only stored the event log; nothing narrated them, and the narration tests built their own events by
   hand. Now `test_every_state_a_move_leaves_has_a_label` checks every `State` handler's key, and
   `test_every_replayed_battle_narrates` narrates each PvP golden battle. Removing the Lock-On label fails both.
+- **A replay walk that steps through a list must step by a number coprime with its length.** The PvP replays picked
+  each member's effect moves at `slot * 3` and `slot * 7 + 1` and its ability at `slot * 5`, modulo the list length.
+  With 381 effect moves (3 × 127) the first pick reached only a third of them, and with 45 abilities the walk used 9.
+  Nothing failed because the other pick and the focus cases still ran every handler; adding 18 moves made the length
+  399 (3 × 7 × 19) and 68 handlers dropped out of the replays at once. Now `_stride` takes the first step from 3, 7
+  and 5 up that shares no factor with the length, so every index is reached whatever the length.
 
 ## Tests and the user's desktop
 

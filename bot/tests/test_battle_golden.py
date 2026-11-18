@@ -1,5 +1,6 @@
 import hashlib
 import json
+import math
 import os
 import random
 from dataclasses import MISSING, fields
@@ -379,16 +380,22 @@ def _replay_member(rng, slot, level=None):
         item = rng.choice(sorted(BOUND_ITEMS))
         pokemon_id = BOUND_ITEMS[item]
     effect_ids, attack_ids = _effect_move_ids(), _attack_move_ids()
-    moves = [effect_ids[(slot * 3) % len(effect_ids)], effect_ids[(slot * 7 + 1) % len(effect_ids)],
+    count = len(effect_ids)
+    moves = [effect_ids[(slot * _stride(count, 3)) % count], effect_ids[(slot * _stride(count, 7) + 1) % count],
              *rng.sample(attack_ids, 2)]
     if rng.random() < 0.05:
         pokemon_id, moves[0] = 384, move_effects.DRAGON_ASCENT
     return {
         "pokemon_id": pokemon_id, "level": level or rng.randrange(40, 71), "shiny": False,
         "moves": list(dict.fromkeys(moves)), "ivs": {stat: rng.randrange(0, 32) for stat in STATS},
-        "held_item": item, "ability": REPLAY_ABILITIES[(slot * 5) % len(REPLAY_ABILITIES)],
+        "held_item": item, "ability": REPLAY_ABILITIES[(slot * _stride(len(REPLAY_ABILITIES), 5)) % len(REPLAY_ABILITIES)],
         "nature": rng.choice(("adamant", "modest", "jolly", "timid", "brave", "quiet", None)),
     }
+
+
+def _stride(count, start):
+    """The first step from `start` up that shares no factor with `count`, so stepping by it reaches every index."""
+    return next(step for step in range(start, start + count) if math.gcd(step, count) == 1)
 
 
 @cache
