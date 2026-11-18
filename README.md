@@ -83,9 +83,16 @@ Shiny hatches keep their distinct colors through every evolution — menu bar, h
 <h3>A Pokédex worth filling</h3>
 The <b>Pokédex</b> folds every species you've owned into one cell — 16 per page in a 4×4 grid. Search by name or number, filter by rarity or shiny appearance, and change the sort order. Turn pages with the scroll wheel or trackpad, or use the larger arrow hit areas. Click a collected Pokémon in Home's evolution line to open its species page (clicking the big Home sprite grows your companion instead); Back returns to the Pokédex page you came from. The page is about the species — and an "N in your Box" button jumps to the individuals you own.
 <br><br>
-The <b>Box</b> tab holds every Pokémon you own — the one you're raising, your friends and the graduated ones — with its level, shiny and gender marks, and held item. Search, filter by shiny or held item, and sort. Open one for its stats, nature, IVs, moves, evolution progress and the big <b>held item</b> slot: this is the one place to equip, swap or remove an item (locked while the Pokémon is in an open trade). Battle, evolution cards and Home only show the item and link back here.
+The <b>Box</b> tab holds every Pokémon you own — the one you're raising, your friends and the graduated ones — with its level, shiny and gender marks, and held item. Search, filter by region, grade, shiny or held item, and sort. Open one for its stats, nature, IVs, moves, evolution progress and the big <b>held item</b> slot: this is the one place to equip, swap or remove an item (locked while the Pokémon is in an open trade). Battle, evolution cards and Home only show the item and link back here.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-collection-pokedex.png" width="300" alt="Pokédex — one cell per species"><br><br><img src="assets/screenshot-collection-box.png" width="300" alt="Box — every Pokémon you own, with level and held item"></td>
+</tr>
+<tr>
+<td width="45%" align="center"><img src="assets/screenshot-box-chips.png" width="300" alt="The Box with region and grade chips above the grid and the Epic grade picked"></td>
+<td width="55%" valign="middle">
+<h3>Filter the Box by region and grade</h3>
+Two chip rows sit above the Box grid, like the Pokédex header: the regions from Kanto to Paldea, then the grades. Each chip counts the Pokémon in your Box. Click a chip to filter and click it again to clear. One region and one grade can be on at a time, and they combine with search and the filter panel. A Pokémon's region follows its current species, so an Onix that became Steelix counts as Johto.
+</td>
 </tr>
 <tr>
 <td width="45%" align="center"><img src="assets/screenshot-dex-next-evolution.png" width="300" alt="Snorlax's Pokédex page with the pet condition and a raised Munchlax's 3/30 progress"></td>
@@ -201,10 +208,10 @@ The Shop's Growth tab adds the <b>Ability Capsule</b> (the other regular ability
 <td width="45%" align="center"><img src="assets/screenshot-nature-picker.png" width="300" alt="An Onix's Box page with the 5×5 nature chart open, the Ability Capsule, Ability Patch and Gold Bottle Cap, and a Bottle Cap on each IV"></td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab — an entry of up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, Elite Four, hideout and the badge case"></td>
+<td width="45%" align="center"><img src="assets/screenshot-battle.png" width="300" alt="Battle tab, Entry sub-tab — up to six Pokémon in fighting order"><br><br><img src="assets/screenshot-gyms.png" width="300" alt="Gym leaders, Elite Four, hideout and the badge case"></td>
 <td width="55%" valign="middle">
 <h3>⚔️ Gyms, the Elite Four, and a badge case</h3>
-With the <a href="bot/README.md">YPoke</a> link set up, the <b>Battle</b> tab holds your entry: up to six Pokémon that fight in order. When one faints the next comes in; nothing switches mid-battle. <b>Auto</b> sends the Pokémon you're raising.
+With the <a href="bot/README.md">YPoke</a> link set up, the <b>Battle</b> tab has three sub-tabs. <b>Entry</b> holds up to six Pokémon that fight in order, <b>Battle</b> holds the gyms, and <b>History</b> lists your recent battles. When one faints the next comes in; nothing switches mid-battle. <b>Auto</b> sends the Pokémon you're raising.
 <br><br>
 Under <b>Gyms</b>, each region has eight leaders with their own type and team. Your entry fights at Lv50 or below, and nothing is posted to Slack. A win earns the badge and can grant a TM. Eight badges open the <b>Elite Four</b> run, and the <b>hideout</b> is a run of battles in a row: your team is fully healed before each one, and a loss starts the run again. The <b>badge case</b> shows each region's badges.
 </td>
@@ -212,7 +219,7 @@ Under <b>Gyms</b>, each region has eight leaders with their own type and team. Y
 <tr>
 <td width="55%" valign="middle">
 <h3>▶️ Watch the battle play out</h3>
-A gym fight plays back turn by turn: moves, damage, HP bars, and each side's remaining Pokémon. Fast-forward, step to the next turn, or skip to the result.
+A gym fight plays back turn by turn: moves, damage, HP bars, and each side's remaining Pokémon. Moves are named in the app's language. Fast-forward, step to the next turn, or skip to the result.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-gym-replay.png" width="300" alt="A gym battle replay stopped mid-fight"></td>
 </tr>
