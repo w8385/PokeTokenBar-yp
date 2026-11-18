@@ -1,7 +1,8 @@
-"""Held items: PokéAPI item slugs the battle simulation understands (`data/battle/items.json`). Anything else is
-ignored."""
+"""Held items: PokéAPI item slugs the battle simulation understands (`data/battle/items.json`) and the numbers their
+handlers (`ypoke.effects.items`) use. Anything else is ignored."""
 
 from ypoke import battle_data
+from ypoke.effects import hooks
 
 LEFTOVERS = "leftovers"
 CHOICE_SCARF = "choice-scarf"
@@ -58,7 +59,6 @@ WEATHER_ROCKS = battle_data.args("items", "weather-rock", "weathers")
 OGERPON_MASKS = tuple(battle_data.with_key("items", "ogerpon-mask"))
 ORB_AILMENTS = battle_data.args("items", "status-orb", "ailment")
 ITEM_NAMES = battle_data.bot_names("items", unless="mega-stone")
-CHOICE_ITEMS = frozenset({CHOICE_SCARF, CHOICE_BAND, CHOICE_SPECS})
 LEFTOVERS_FRACTION = 16
 BLACK_SLUDGE_HURT_FRACTION = 8
 LIFE_ORB_RECOIL_FRACTION = 10
@@ -85,50 +85,13 @@ def known(item: str | None) -> str | None:
 
 
 def stat_multiplier(item: str | None, key: str, can_evolve: bool = False) -> float:
-    if item == CHOICE_SCARF and key == "speed" or item == CHOICE_BAND and key == "attack":
-        return CHOICE_MULTIPLIER
-    if item == CHOICE_SPECS and key == "special_attack" or item == ASSAULT_VEST and key == "special_defense":
-        return CHOICE_MULTIPLIER
-    if item == EVIOLITE and can_evolve and key in ("defense", "special_defense"):
-        return CHOICE_MULTIPLIER
-    return 1.0
+    return hooks.call("items", item, "modify_stat", key, None, False, can_evolve, default=1.0)
 
 
 def damage_multiplier(item: str | None, move_type: str | None, effectiveness: float, physical: bool = True,
                       punch: bool = False) -> float:
-    if item == LIFE_ORB:
-        return LIFE_ORB_MULTIPLIER
-    if item == EXPERT_BELT and effectiveness > 1:
-        return BOOST_MULTIPLIER
-    if move_type is not None and (TYPE_BOOST_ITEMS.get(item) == move_type or PLATES.get(item) == move_type
-                                  or move_type in ORIGIN_BOOSTS.get(item, ()) or item in OGERPON_MASKS):
-        return BOOST_MULTIPLIER
-    if item == PUNCHING_GLOVE and punch:
-        return BAND_MULTIPLIER
-    if move_type is not None and item == (MUSCLE_BAND if physical else WISE_GLASSES):
-        return BAND_MULTIPLIER
-    return 1.0
-
-
-def resists(item: str | None, move_type: str | None, effectiveness: float) -> bool:
-    """Whether a resist berry halves this hit: one of its type, super-effective unless it is Chilan's Normal."""
-    kind = RESIST_BERRIES.get(item)
-    return kind is not None and kind == move_type and (effectiveness > 1 or kind == "normal")
-
-
-def crit_stage_bonus(item: str | None) -> int:
-    return 1 if item in (SCOPE_LENS, RAZOR_CLAW) else 0
-
-
-def accuracy_multiplier(attacker_item: str | None, defender_item: str | None) -> float:
-    return (WIDE_LENS_ACCURACY if attacker_item == WIDE_LENS else 1.0) * (
-        BRIGHT_POWDER_ACCURACY if defender_item == BRIGHT_POWDER else 1.0
-    )
+    return hooks.call("items", item, "modify_damage", move_type, effectiveness, physical, punch, default=1.0)
 
 
 def weather_turns(item: str | None, weather: str, default: int) -> int:
-    return ROCK_WEATHER_TURNS if weather in WEATHER_ROCKS.get(item, ()) else default
-
-
-def drain_heal(item: str | None, healed: int) -> int:
-    return int(healed * BIG_ROOT_MULTIPLIER) if item == BIG_ROOT else healed
+    return hooks.call("items", item, "weather_turns", weather, default, default=default)
