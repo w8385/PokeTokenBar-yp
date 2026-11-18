@@ -274,6 +274,9 @@ FOCUS_CASES = {
     "unseen-fist": (((892, None, "unseen-fist", [370]),), ((718, None, None, [182]),)),
     "gastro-acid": (((18, None, None, [380, 33]),), ((36, None, "huge-power", [33]),)),
     "weight": (((306, None, "heavy-metal", [484]),), ((25, None, None, [33]),)),
+    "scrappy": (((130, None, "intimidate", [33]), (306, None, "heavy-metal", [484])),
+                ((115, None, "scrappy", [33]), (2, None, None, [275, 499]))),
+    "serene-grace": (((18, None, "serene-grace", [52]),), ((36, None, None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

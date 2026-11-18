@@ -12,7 +12,9 @@ EFFECT_KEYS = frozenset({
     "shield-dust", "analytic", "stakeout", "status-power", "stat-boost", "hustle", "choice-lock", "status-stat",
     "solar-power", "defeatist", "slow-start", "damage-dealt", "super-taken", "full-hp-taken", "taken", "heatproof",
     "aura", "aura-break", "ruin", "parental-bond", "skill-link", "weight", "rock-head", "long-reach", "guard-piercing",
-    "weather-on-hit", "weather-evasion", "shed-skin",
+    "accuracy-boost", "stat-guard", "ignores-evasion", "scrappy", "intimidate-immune", "tangled-feet",
+    "weather-evasion", "wonder-skin", "super-luck", "merciless", "crit-guard", "no-guard", "unaware",
+    "weather-on-hit", "shed-skin",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
 FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
@@ -45,6 +47,13 @@ RUINED_STAT = battle_data.args("abilities", "ruin", "stat")
 RUIN = 0.75
 PARENTAL_BOND_SECOND = 0.25
 WEIGHT_MULTIPLIER = battle_data.args("abilities", "weight", "weight")
+ACCURACY_BOOST = battle_data.args("abilities", "accuracy-boost", "accuracy")
+GUARDED_STATS = battle_data.args("abilities", "stat-guard", "stats")
+SCRAPPY_TYPES = ("normal", "fighting")
+TANGLED_FEET_ACCURACY = 0.5
+EVASION_WEATHER = battle_data.args("abilities", "weather-evasion", "weather")
+WEATHER_EVASION_ACCURACY = 0.8
+WONDER_SKIN_ACCURACY = 50
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
 LOW_HP_BOOST = 1.5
