@@ -7,7 +7,7 @@ from dataclasses import replace
 
 from ypoke import abilities, battle, items
 from ypoke import field_states as fs
-from ypoke.effects import Handler, hooks, register
+from ypoke.effects import Handler, hooks, register, stats
 from ypoke.effects.moves import StatusMove
 from ypoke.type_chart import effectiveness
 
@@ -267,18 +267,21 @@ class StickyWeb(Hazard):
 
 @register("moves", "defog")
 class Defog(StatusMove):
-    """Clears the foe's screens, Safeguard and Mist, the hazards on both sides and the terrain. Fails when nothing is
-    there: the battle has no evasion stage for its Evasion drop."""
+    """Lowers the foe's evasion (not through Mist or a Substitute), then clears the foe's screens, Safeguard and
+    Mist, the hazards on both sides and the terrain. Fails when it did none of it."""
 
     def wanted(self, move, team, foes, side, arena, weather):
         return team.has_next and _layers(arena, side) > _layers(arena, 1 - side)
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
+        dropped = None
+        if not stats.guarded(user, foe) and not any(battle._field(foe, "shields", move, user)):
+            dropped = stats.shift(foe, 1 - side, "evasion", fs.DEFOG_EVASION)
         gone = [*_cleared(arena, 1 - side, fs.DEFOGGED, move.name, "sides"),
                 *_cleared(arena, 1 - side, fs.HAZARDS, move.name, "hazards"),
                 *_cleared(arena, side, fs.HAZARDS, move.name, "hazards")]
         terrain = _clear_terrain(arena, move.name)
-        return (self.key if gone or terrain else ""), ()
+        return (self.key if gone or terrain or dropped else ""), tuple(filter(None, (dropped,)))
 
 
 @register("moves", "court-change")

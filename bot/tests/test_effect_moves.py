@@ -232,14 +232,18 @@ def test_swords_dance_raises_attack_two_stages_once_per_entry_above_half_hp():
 
 
 def test_the_offered_status_moves_are_the_ones_the_ai_tries_in_its_order():
-    assert dict(zip(STATUS_EFFECTS, STATUS_MOVES)) == {
+    first = {}
+    for move_id, key in STATUS_MOVES.items():
+        first.setdefault(key, move_id)
+    assert tuple(first) == STATUS_EFFECTS
+    singles = {
         "trick-room": 433, "stealth-rock": 446, "swords-dance": 14, "yawn": 281, "thunder-wave": 86,
         "electric-terrain": 604, "grassy-terrain": 580, "psychic-terrain": 678, "misty-terrain": 581, "reflect": 115,
         "light-screen": 113, "aurora-veil": 694, "spikes": 191, "toxic-spikes": 390, "sticky-web": 564,
         "tailwind": 366, "safeguard": 219, "mist": 54, "lucky-chant": 381, "gravity": 356, "haze": 114, "defog": 432,
         "court-change": 756, "tidy-up": 882,
     }
-    assert len(STATUS_MOVES) == len(STATUS_EFFECTS)
+    assert {key: first[key] for key in singles} == singles
 
 
 def test_swords_dance_by_its_pokeapi_id_is_a_status_move_the_battle_brings():

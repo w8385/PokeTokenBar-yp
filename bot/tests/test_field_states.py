@@ -314,10 +314,21 @@ def test_defog_clears_the_targets_side_states_both_sides_hazards_and_the_terrain
                    sides=[{"tailwind": 3}, {"reflect": 4, "safeguard": 2, "tailwind": 2}],
                    hazards=[{"spikes": 1}, {"stealth-rock": 1}])
     user, target = put(mon("바람", ("flying",)), arena), put(wall("과녁"), arena, 1)
-    assert resolve(user, target, DEFOG, arena).effect == "defog"
+    used = resolve(user, target, DEFOG, arena)
+    assert used.effect == "defog" and used.changes == (Change(1, "과녁", "evasion", -1),)
     assert arena.sides == [{"tailwind": 3}, {"tailwind": 2}] and arena.hazards == [{}, {}]
     assert arena.terrain is None
+    assert resolve(user, target, DEFOG, arena).effect == "defog" and target.stages["evasion"] == -2
+    target.stages["evasion"] = -6
     assert resolve(user, target, DEFOG, arena).failed
+
+
+def test_defog_drops_no_evasion_through_mist_and_still_clears():
+    arena = _Arena(sides=[{}, {"mist": 3, "reflect": 2}])
+    user, target = put(mon("바람", ("flying",)), arena), put(wall("과녁"), arena, 1)
+    used = resolve(user, target, DEFOG, arena)
+    assert used.effect == "defog" and used.changes == () and target.stages["evasion"] == 0
+    assert arena.sides == [{}, {}]
 
 
 def test_court_change_swaps_the_sides_and_fails_with_nothing_to_swap():

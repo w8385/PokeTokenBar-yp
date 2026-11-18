@@ -447,7 +447,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
              _Team(_roster(sides[1]), finale=finale, unlimited_megas=unlimited_megas, arena=arena, side=1))
     arena.teams = teams
     events: list[Event] = []
-    weather = _Weather()
+    weather = arena.weather = _Weather()
     for side in (0, 1):
         _enter_forms(teams[side], side, 1, events)
     events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng))
@@ -755,6 +755,7 @@ class _Arena:
     rooms: dict[str, int] = field(default_factory=dict)
     teams: tuple | None = None
     last_move: Move | None = None
+    weather: _Weather = field(default_factory=_Weather)
 
     def states(self, side: int) -> tuple[str, ...]:
         """The effect keys of the states that act on `side`: the terrain, Gravity, the rooms, then that side's timed
@@ -1108,7 +1109,8 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
         return Action(turn, side, *names, move.name, failed=True, blocked=stopped, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=changes,
                       attacker_fainted=attacker.hp == 0)
-    used = hooks.move(move, "use", attacker, defender, side, turn, weather, arena if arena is not None else _Arena(),
+    used = hooks.move(move, "use", attacker, defender, side, turn, weather,
+                      arena if arena is not None else _Arena(weather=weather),
                       rng)
     if used is not None:
         return Action(turn, side, *names, move.name, recovered=recovered, defender_hp=defender.hp_percent,
@@ -1373,11 +1375,10 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
     if best is not None and _surely_finishes(attacker, defender, attacker.combatant.moves[best], weather):
         return best
     for effect in (*STATUS_EFFECTS, *CHOSEN_DAMAGE_EFFECTS):
-        index = _usable(attacker, effect)
-        if index is None or _banned(attacker, attacker.combatant.moves[index]):
-            continue
-        if hooks.move(attacker.combatant.moves[index], "wanted", team, foes, side, arena, weather, default=False):
-            return index
+        for index in _with_effect(attacker, effect):
+            if not _banned(attacker, attacker.combatant.moves[index]) and hooks.move(
+                    attacker.combatant.moves[index], "wanted", team, foes, side, arena, weather, default=False):
+                return index
     pivot = _usable(attacker, "pivot")
     if pivot is not None and team.pivot_target() is not None and _threatened(attacker, defender, weather):
         return pivot
@@ -1399,8 +1400,11 @@ def _yawnable(fighter: _Fighter, by_foe: bool = True) -> bool:
 
 
 def _usable(fighter: _Fighter, effect: str) -> int | None:
-    return next((index for index, move in enumerate(fighter.combatant.moves)
-                 if move.effect == effect and fighter.pp[index] > 0), None)
+    return next(iter(_with_effect(fighter, effect)), None)
+
+
+def _with_effect(fighter: _Fighter, effect: str) -> list[int]:
+    return [index for index, move in enumerate(fighter.combatant.moves) if move.effect == effect and fighter.pp[index] > 0]
 
 
 def _threatened(fighter: _Fighter, foe: _Fighter, weather: str | None) -> bool:

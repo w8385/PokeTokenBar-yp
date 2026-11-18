@@ -276,7 +276,7 @@ extension L {
               "Remove armadilhas dos dois lados, Ataque e Velocidade +1 estágio",
               "Entfernt Fallen beider Seiten, Angriff und Initiative +1 Stufe",
               "Убирает ловушки обеих сторон, атака и скорость +1 ступень")
-        default: nil
+        default: moreStatusMoveEffect(moveID)
         }
     }
 

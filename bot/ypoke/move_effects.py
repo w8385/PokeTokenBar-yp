@@ -22,6 +22,8 @@ STATUS_EFFECTS = (
     "electric-terrain", "grassy-terrain", "psychic-terrain", "misty-terrain", "reflect", "light-screen", "aurora-veil",
     "spikes", "toxic-spikes", "sticky-web", "tailwind", "safeguard", "mist", "lucky-chant", "gravity", "haze", "defog",
     "court-change", "tidy-up",
+    "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
+    "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
 )
 # Damaging moves the chooser may pick for their effect, like a status move.
 CHOSEN_DAMAGE_EFFECTS = ("rapid-spin", "mortal-spin")
