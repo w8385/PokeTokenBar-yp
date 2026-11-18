@@ -49,7 +49,7 @@ Replaces the caller's stored party.
 | `ability` | string | optional, the individual's PokéAPI ability name, lowercase with dashes (`"huge-power"`, max 40 chars). Missing or malformed names are dropped, never rejected. Battles know 27 abilities (Blaze, Torrent, Overgrow, Swarm, Intimidate, Levitate, Huge Power, Pure Power, Thick Fat, Technician, Sturdy, Adaptability, Guts, Swift Swim, Chlorophyll, Sand Rush, Drizzle, Drought, Sand Stream, Snow Warning, Static, Flame Body, Poison Point, Immunity, Limber, Insomnia, Water Veil); any other name does nothing. A physical move counts as contact for Static, Flame Body and Poison Point (30%) |
 | `held_item` | string | optional, lowercase PokéAPI item slug. Known: `leftovers` (heals 1/16 each turn), `choice-scarf` (Speed ×1.5), `choice-band` (Attack ×1.5), `choice-specs` (Sp. Atk ×1.5), the three Choice items lock into the first move, `focus-sash` (survives one KO hit from full HP), `focus-band` (10% to survive a KO hit), `life-orb` (damage ×1.3, 10% max HP recoil), `expert-belt` (super-effective ×1.2), `assault-vest` (Sp. Def ×1.5, no weather moves), `eviolite` (Def and Sp. Def ×1.5 while the species can still evolve), `rocky-helmet` (1/6 max HP to a physical attacker per hit), `sitrus-berry` (heals 1/4 once at 50% HP or less), `lum-berry` (cures a status once), `white-herb` (resets lowered stats once), `black-sludge` (Poison types heal 1/16, others lose 1/8 each turn), `shell-bell` (heals 1/8 of damage dealt), `big-root` (drain heals ×1.3), `muscle-band` / `wise-glasses` (physical / special moves ×1.1), `scope-lens` and `razor-claw` (critical stage +1), `quick-claw` (20% to move first), `bright-powder` (attackers' accuracy ×0.9), `wide-lens` (own accuracy ×1.1), `weakness-policy` (+2 Attack and Sp. Atk after a surviving super-effective hit), `flame-orb` / `toxic-orb` (burn / badly poison the holder at end of turn), `heat-rock` / `damp-rock` / `smooth-rock` / `icy-rock` (own weather lasts 8 turns), and one type-boost item per type (damage ×1.2): `charcoal` (Fire), `mystic-water`, `miracle-seed`, `magnet`, `never-melt-ice`, `black-belt`, `poison-barb`, `soft-sand`, `sharp-beak`, `twisted-spoon`, `silver-powder`, `hard-stone`, `spell-tag`, `dragon-fang`, `black-glasses`, `metal-coat`, `silk-scarf`, `fairy-feather`. `everstone` is app-only (it stops evolution) and does nothing in battle. A Mega Stone slug (`venusaurite`, `charizardite-x`, …) on a member whose `pokemon_id` is that stone's Pokémon makes it Mega Evolve before turn 1 with the Mega form's base stats, types and ability name from PokéAPI; on any other member it does nothing. The Ogerpon masks (`teal-mask`, `wellspring-mask`, `hearthflame-mask`, `cornerstone-mask`) work only on Ogerpon (`pokemon_id` 1017): it takes the mask's type (Grass plus Water, Fire or Rock; teal stays Grass), its moves do ×1.2 damage, and each time it enters it gets +1 Speed, Sp. Def, Attack or Defense (teal, wellspring, hearthflame, cornerstone). Terapagos (1024) always enters in its Terastal form; `stellar-crystal` (app-only, Terapagos only) makes it enter in the Stellar form instead and shares the once-per-battle slot with Mega Evolution (the first holder on a side in line takes it). Masks and the crystal on any other Pokémon do nothing. With a mask, Ivy Cudgel takes the mask's type. `punching-glove` makes punching moves ×1.1. The 17 plates (`flame-plate` … `pixie-plate`, no Legend Plate) make moves of their type ×1.2 on any holder; on Arceus (493) the plate also sets its type and Judgment's. The resist berries (`occa-berry` … `roseli-berry`, 18) halve the first super-effective hit of their type and are used up; `chilan-berry` halves the first Normal hit. `adamant-crystal`, `lustrous-globe` and `griseous-core` work only on Dialga (483), Palkia (484) and Giratina (487): it enters as its Origin Forme (its stats and types; Giratina gets Levitate) and its Dragon and second-type moves do ×1.2. `rusted-sword` and `rusted-shield` work only on Zacian (888) and Zamazenta (889): it enters in its Crowned form (its stats and types). `ultranecrozium-z` works only on Necrozma (800): it Ultra Bursts before turn 1 like a Mega Evolution and takes the Mega slot. A Rayquaza (384) that knows Dragon Ascent and holds no Mega Stone Mega Evolves with no stone, using the Mega slot; its Delta Stream replaces any weather with strong winds, which stop weather moves and abilities, take away Flying's weaknesses and end when it faints or leaves. Missing, empty or unknown slugs do nothing and are never rejected |
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
-| `moves` | array | optional, up to 4 distinct PokéAPI move ids, each a move from `GET /v1/moves` at that level, level-up or machine (TM), or one of its `status=1` status moves. Missing or empty: the 4 most recently learned level-up moves |
+| `moves` | array | optional, up to 4 distinct PokéAPI move ids, each a move from `GET /v1/moves` at that level, level-up or machine (TM), or one of its `status=1` status moves (learnable as described there, egg moves included). Any other move is rejected with `400`. Missing or empty: the 4 most recently learned level-up moves |
 | `trade_pool` | array | optional, a top-level key beside `party`. The Pokémon the player may trade, see [Trades](#trades). Left out by older apps; a pool that fails validation is ignored and never fails the upload |
 
 ### `dex` (optional)
@@ -131,9 +131,13 @@ with `machine=1`, which apps that know TMs send) every move it learns by machine
 Without `machine=1` the list is level-up moves only. Both come from the newest main game that has level-up moves
 for it. Attacking moves only, plus the weather moves (Sunny Day, Rain Dance, Sandstorm,
 Hail, Snowscape), which come with `"power": 0` and `"damage_class": "status"`. With `status=1` (apps that show
-status moves send it) the battle's status moves follow: Trick Room (433), Stealth Rock (446), Yawn (281) and Thunder
-Wave (86), with `"power"` and `"accuracy"` possibly `null`. Status moves count egg moves (of the Pokémon or any
-species it evolved from), `"source": "egg"`; attacking moves never do. Status moves are never in `default`. Auth as above.
+status moves send it) the battle's status moves follow, by id: Swords Dance (14), Thunder Wave (86), Yawn (281),
+Trick Room (433) and Stealth Rock (446). They also come with `"power": 0` and `"damage_class": "status"`, and
+`"accuracy"` is `null` for the ones that never miss. A status move is listed when the Pokémon learns it by level-up at
+or below `level`, by machine (only with `machine=1`), or as an egg move of the Pokémon or any species it evolved from
+(`"source": "egg"`, `"level": 0`). A move learnable several ways is listed once, as the first of level-up, egg,
+machine. Attacking moves never count egg moves. Status moves are never in `default`. No other status move is offered.
+Without `status=1` (or with any other value) the reply is exactly what it was before status moves. Auth as above.
 
 ```json
 {
@@ -150,7 +154,7 @@ species it evolved from), `"source": "egg"`; attacking moves never do. Status mo
 }
 ```
 
-`source` is `"level"` for a level-up move (`level` is when it is learned) or `"machine"` for a TM move (`level` is `0`, usable at any level; the app offers it once the player owns the TM). Apps that predate `source` ignore it. `default` is what the bot uses when the upload sends no `moves`: the latest level-up attacking moves, never a weather or machine move. `accuracy` is `null` for moves that
+`source` is `"level"` for a level-up move (`level` is when it is learned), `"machine"` for a TM move (`level` is `0`, usable at any level; the app offers it once the player owns the TM) or `"egg"` for an egg status move (`level` is `0`, only with `status=1`). Apps that predate `source` ignore it. `default` is what the bot uses when the upload sends no `moves`: the latest level-up attacking moves, never a weather or machine move. `accuracy` is `null` for moves that
 never miss.
 
 | Field | Meaning in the battle |
@@ -162,11 +166,27 @@ never miss.
 | `min_hits`, `max_hits` | Multi-hit range; 2–5 hits use the main series odds (35%, 35%, 15%, 15%) |
 | `priority` | Higher priority acts first (Quick Attack is `1`); equal priority falls back to speed, and a full tie is a coin flip |
 | `stat_changes`, `stat_target`, `stat_chance` | Stage changes (`attack`, `defense`, `special_attack`, `special_defense`, `speed`, −6..+6) on the `"target"` or the `"user"`, with a percent chance |
-
 | `weather` | `"sun"`, `"rain"`, `"sandstorm"`, `"hail"` or `"snow"` for a move that sets weather for 5 turns, else `null`. The Pokémon uses it only when it swings the exchange in its favor and that weather is not already up. Sun/rain: Fire and Water damage ×1.5 / ×0.5 (rain the other way round). Sandstorm: 1/16 max HP each turn to everything but Rock, Ground and Steel, and Rock Special Defense ×1.5. Hail: the same chip, Ice is immune. Snow: Ice Defense ×1.5 |
 | `always_hits_in` | Weathers in which the move never misses (Thunder and Hurricane in `"rain"`, Blizzard in `"hail"`, `"snow"`) |
 
 Other secondary effects (flinch, trapping) are not simulated. `400` for a missing or out-of-range query, `503 pokeapi_unavailable` when PokéAPI is down.
+
+### Status moves in battle
+
+Both sides pick moves by one rule: a player's Pokémon uses its status moves exactly as a trainer's does. Each turn the
+Pokémon first uses a damaging move that surely knocks the foe out. Otherwise it tries its status moves in this order
+and uses the first whose moment has come:
+
+| Move | Used when | Effect |
+|---|---|---|
+| Trick Room (433) | On the user's first turn in, when its team's mean Speed is below the foe's, Trick Room is not up, and its team has not set it yet this battle | For 5 turns the slower Pokémon moves first within a priority bracket. Using it while up ends it |
+| Stealth Rock (446) | Its team has not set rocks yet, the foe's side has none, and the foe has a member left to come in | Each foe that comes in after loses 1/8 of its max HP times its Rock weakness (1/32 to 1/2) |
+| Swords Dance (14) | Once per time in, above half HP, and Attack below +6 | Attack +2 stages (to +6 at most) |
+| Yawn (281) | The foe has no status, is not already drowsy, and no ability blocks sleep | The foe falls asleep at the end of the next turn unless it switches out |
+| Thunder Wave (86) | The foe is faster and can be paralyzed (no status, not Electric, not immune to Electric moves, no ability that blocks it) | Paralysis |
+
+A Pokémon holding a Choice item or an Assault Vest, or locked into a move, never uses a status move. With none of these
+moments, it attacks as before. A status move uses PP like any other move.
 
 ## Trades
 

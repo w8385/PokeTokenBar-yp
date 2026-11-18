@@ -254,17 +254,19 @@ def egg_moves_from(pokemon: dict) -> list[int]:
 def status_move_entries(learnset: list[dict], level: int, machine_ids: Collection[int] | None,
                         eggs: Sequence[Collection[int]]) -> list[dict]:
     """The battle's status moves a Pokémon may use: by level-up at or below `level` or by machine (as for attacking
-    moves), or as an egg move of the Pokémon or any species it evolved from (`eggs`). Learnset entries, by id."""
+    moves), or as an egg move of the Pokémon or any species it evolved from (`eggs`). Learnset entries, by id.
+    A move learnable several ways keeps the first of level-up, egg, machine."""
     found: dict[int, dict] = {}
     for entry in learnset:
-        move_id = entry["move_id"]
-        if move_id in STATUS_MOVES and (
-            entry["source"] == "level" and entry["level"] <= level
-            or entry["source"] == "machine" and (machine_ids is None or move_id in machine_ids)
-        ):
-            found.setdefault(move_id, entry)
+        if entry["move_id"] in STATUS_MOVES and entry["source"] == "level" and entry["level"] <= level:
+            found.setdefault(entry["move_id"], entry)
     for move_id in sorted({move_id for listed in eggs for move_id in listed if move_id in STATUS_MOVES}):
         found.setdefault(move_id, {"move_id": move_id, "level": 0, "source": "egg"})
+    for entry in learnset:
+        if entry["move_id"] in STATUS_MOVES and entry["source"] == "machine" and (
+            machine_ids is None or entry["move_id"] in machine_ids
+        ):
+            found.setdefault(entry["move_id"], entry)
     return [found[move_id] for move_id in sorted(found)]
 
 

@@ -12,7 +12,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 
 from ypoke import abilities, items, tera_forms
-from ypoke.move_effects import PUNCH_MOVES
+from ypoke.move_effects import PUNCH_MOVES, STATUS_MOVES
 from ypoke.type_chart import effectiveness
 
 STAB_MULTIPLIER = 1.5
@@ -52,7 +52,7 @@ AILMENT_IMMUNE_TYPES = {
 RESIDUAL_FRACTIONS = {"burn": BURN_DAMAGE_FRACTION, "poison": POISON_DAMAGE_FRACTION}
 TRICK_ROOM_TURNS = 5
 STEALTH_ROCK_FRACTION = 8
-STATUS_EFFECTS = ("trick-room", "stealth-rock", "swords-dance", "yawn", "thunder-wave")
+STATUS_EFFECTS = tuple(STATUS_MOVES.values())
 SWORDS_DANCE_STAGES = 2
 _NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
 _NATURE_NAMES = (
