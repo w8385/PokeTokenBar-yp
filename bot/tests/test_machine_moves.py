@@ -39,6 +39,9 @@ MOVES = {
     281: move_body(281, None, "status"),   # Yawn, an egg move
     33: move_body(33, 40),                 # an attacking egg move
     240: move_body(240, None, "status"),   # Rain Dance, a TM
+    14: move_body(14, None, "status"),     # Swords Dance, an egg move and a TM
+    446: move_body(446, None, "status"),   # Stealth Rock, level-up at 10
+    433: move_body(433, None, "status"),   # Trick Room, not in this learnset
 }
 POKEMON = {
     "species": {"url": "https://pokeapi.co/api/v2/pokemon-species/25/"},
@@ -55,6 +58,8 @@ POKEMON = {
     entry(240, detail(SV, "machine")),
     entry(281, detail(SV, "egg")),
     entry(33, detail(SV, "egg")),
+    entry(14, detail(SV, "machine"), detail(SV, "egg")),
+    entry(446, detail(SV, "level-up", 10)),
 ]}
 
 
@@ -168,22 +173,47 @@ def test_an_upload_may_choose_a_machine_move_at_any_level(server):
     assert store.party("U1").party[0]["moves"] == [89, 85]
 
 
-@pytest.mark.parametrize("move_id", [87, 92, 33, 999])
+@pytest.mark.parametrize("move_id", [87, 92, 33, 999, 433])
 def test_an_upload_rejects_a_move_of_another_group_a_status_move_or_an_unknown_one(server, move_id):
     store, base = server
     status, body = call(f"{base}/v1/party", store.issue_token("U1"),
                         {"party": [{"pokemon_id": 25, "level": 100, "moves": [move_id]}]})
-    assert status == 400 and f"{move_id} is not an attacking move" in body["error"]
+    assert (status, body) == (400, {"ok": False, "error": f"party[0].moves: {move_id} is not an attacking move learnable at level 100"})
     assert store.party("U1") is None
+
+
+def test_an_upload_rejects_a_level_up_status_move_below_its_level(server):
+    store, base = server
+    status, body = call(f"{base}/v1/party", store.issue_token("U1"),
+                        {"party": [{"pokemon_id": 25, "level": 9, "moves": [446]}]})
+    assert (status, body) == (400, {"ok": False, "error": "party[0].moves: 446 is not an attacking move learnable at level 9"})
+    assert call(f"{base}/v1/party", store.issue_token("U1"),
+                {"party": [{"pokemon_id": 25, "level": 10, "moves": [446]}]})[0] == 200
 
 
 def test_status_moves_count_egg_moves_but_attacking_moves_do_not(api):
     moves = api.attacking_moves(25, 5, None, status=True)
     assert [(move["id"], move["source"]) for move in moves if move["damage_class"] == "status"] == [
-        (240, "machine"), (86, "machine"), (281, "egg"),
+        (240, "machine"), (14, "egg"), (86, "machine"), (281, "egg"),
     ]
     assert 33 not in [move["id"] for move in moves]
     assert 92 not in [move["id"] for move in moves]
+
+
+def test_an_egg_only_status_move_is_offered_without_any_machine_ids(api):
+    moves = api.attacking_moves(25, 5, (), status=True)
+    assert [(move["id"], move["source"], move["level"]) for move in moves if move["id"] == 281] == [(281, "egg", 0)]
+
+
+def test_a_level_up_status_move_is_offered_from_its_level(api):
+    assert 446 not in [move["id"] for move in api.attacking_moves(25, 9, (), status=True)]
+    assert [(move["id"], move["source"], move["level"]) for move in api.attacking_moves(25, 10, (), status=True)
+            if move["id"] == 446] == [(446, "level", 10)]
+
+
+def test_a_status_move_that_is_an_egg_move_and_a_tm_is_listed_as_the_free_egg_move(api):
+    sources = {move["id"]: move["source"] for move in api.attacking_moves(25, 5, [14], status=True)}
+    assert sources[14] == "egg"
 
 
 def test_status_moves_by_machine_follow_the_machine_ids_asked_for(api):
@@ -191,19 +221,26 @@ def test_status_moves_by_machine_follow_the_machine_ids_asked_for(api):
     assert 281 in ids and 86 not in ids
 
 
-def test_an_old_app_without_the_status_opt_in_gets_attacking_moves_only(server):
+@pytest.mark.parametrize("query", ["pokemon_id=25&level=50&machine=1", "pokemon_id=25&level=50&machine=1&status=0"])
+def test_an_old_app_without_the_status_opt_in_gets_todays_reply_byte_for_byte(server, query):
     store, base = server
-    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=5&machine=1", store.issue_token("U1"))
-    assert status == 200 and all(move["damage_class"] != "status" or move["weather"] for move in body["moves"])
+    expected = {"ok": True, "moves": [
+        {**pokeapi.move_from(MOVES[move_id]), "level": level, "source": source}
+        for move_id, level, source in [(84, 1, "level"), (85, 36, "level"), (89, 0, "machine"), (240, 0, "machine")]
+    ], "default": [84, 85]}
+    request = urllib.request.Request(f"{base}/v1/moves?{query}", headers={"Authorization": f"Bearer {store.issue_token('U1')}"})
+    with urllib.request.urlopen(request, timeout=5) as response:
+        assert response.read() == json.dumps(expected, ensure_ascii=False).encode()
 
 
 def test_the_status_opt_in_lists_the_battles_status_moves_but_never_as_a_default(server):
     store, base = server
-    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=5&machine=1&status=1", store.issue_token("U1"))
+    status, body = call(f"{base}/v1/moves?pokemon_id=25&level=50&machine=1&status=1", store.issue_token("U1"))
     assert status == 200
-    assert {86, 281} <= {move["id"] for move in body["moves"]}
-    assert 92 not in {move["id"] for move in body["moves"]}
-    assert body["default"] == [84]
+    assert [(move["id"], move["source"], move["damage_class"], move["power"]) for move in body["moves"]][4:] == [
+        (14, "egg", "status", 0), (86, "machine", "status", 0), (281, "egg", "status", 0), (446, "level", "status", 0),
+    ]
+    assert body["default"] == [84, 85]
 
 
 def test_an_upload_may_choose_a_status_move_the_battle_implements(server):

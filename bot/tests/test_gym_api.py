@@ -21,6 +21,8 @@ TACKLE = {
     "always_hits_in": [], "level": 1,
 }
 HYPER = {**TACKLE, "id": 63, "name": "파괴광선", "power": 150, "level": 20}
+SWORDS_DANCE = {**TACKLE, "id": 14, "name": "칼춤", "power": 0, "damage_class": "status", "accuracy": None,
+                "pp": 20, "level": 0, "source": "egg"}
 FOE_IDS = {species for region in gyms.regions()[:1] for o in (*region.gyms, *region.elite, *region.hideout) for species in o.team}
 FULL = {"hp": 100, "status": None}
 
@@ -40,7 +42,7 @@ class FakePokeAPI:
     def attacking_moves(self, pokemon_id, level, machine_ids=(), status=False):
         if self.offline:
             raise OSError("offline")
-        return [move for move in (TACKLE, HYPER) if move["level"] <= level]
+        return [move for move in (TACKLE, HYPER) if move["level"] <= level] + ([SWORDS_DANCE] if status else [])
 
 
 class Clock:
@@ -211,6 +213,16 @@ def test_chosen_moves_are_checked_and_used(server):
     status, body, _ = battle(base, token, team=[{"pokemon_id": 900, "level": 50, "moves": [63]}])
     assert status == 200
     assert any("파괴광선" in line["text"] for turn in body["log"] for line in turn["lines"])
+
+
+def test_a_players_chosen_swords_dance_is_used_by_the_foe_ais_rule_and_raises_attack(server):
+    store, base, _, _ = server
+    status, body, _ = battle(base, store.issue_token("U1"), gym_id="kanto-8",
+                             team=[{"pokemon_id": 900, "level": 50, "moves": [33, 14]}])
+    assert status == 200
+    player_moves = [event["move"] for event in body["events"] if event["type"] == "move" and event["side"] == 0]
+    assert player_moves[0] == "칼춤" and player_moves[1:3] == ["몸통박치기", "몸통박치기"]
+    assert any("⚔️공격이 크게 올랐다" in line["text"] for turn in body["log"] for line in turn["lines"])
 
 
 @pytest.mark.parametrize("body", [{"team": [{"pokemon_id": 900, "level": 50}]}, {"gym_id": 3, "team": []}, [], None])

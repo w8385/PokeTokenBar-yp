@@ -5,11 +5,10 @@ import pytest
 
 from ypoke import gym_battle
 from ypoke.battle import (
-    AbilityTrigger, Action, BaseStats, Carry, Change, Combatant, HazardDamage, MegaEvolution, MegaForm, Move, SendOut,
-    TrickRoomEnd,
-    YawnSleep, _act, _chipped_by, _Fighter, _Team, _turn_order, _unrolled_damage, _Weather, _yawnable, simulate,
+    STATUS_EFFECTS, AbilityTrigger, Action, BaseStats, Carry, Change, Combatant, HazardDamage, MegaEvolution, MegaForm,
+    Move, SendOut, TrickRoomEnd, YawnSleep, _act, _chipped_by, _Fighter, _Team, _turn_order, _unrolled_damage, _Weather, _yawnable, simulate,
 )
-from ypoke.move_effects import wants_status_moves
+from ypoke.move_effects import STATUS_MOVES, wants_status_moves
 from ypoke.moves import battle_moves
 from ypoke.narration import battle_turns
 
@@ -230,6 +229,13 @@ def test_swords_dance_raises_attack_two_stages_once_per_entry_above_half_hp():
         assert [effect for effect, _ in moves[1:]] == ["", ""]
     hurt = simulate(((dancer,), (wall("과녁"),)), seed=5, carried=[Carry(50, None)])
     assert next(event for event in actions(hurt) if event.side == 0).effect == ""
+
+
+def test_the_offered_status_moves_are_the_ones_the_ai_tries_in_its_order():
+    assert STATUS_EFFECTS == ("trick-room", "stealth-rock", "swords-dance", "yawn", "thunder-wave")
+    assert dict(zip(STATUS_EFFECTS, STATUS_MOVES)) == {
+        "trick-room": 433, "stealth-rock": 446, "swords-dance": 14, "yawn": 281, "thunder-wave": 86,
+    }
 
 
 def test_swords_dance_by_its_pokeapi_id_is_a_status_move_the_battle_brings():

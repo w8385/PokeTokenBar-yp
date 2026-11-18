@@ -17,8 +17,8 @@ DRAGON_ASCENT = 620
 PUNCH_MOVES = frozenset({5, 7, 8, 9, 183, 223, 264, 309, 325, 359, 409, 418, 612, 665, 721, 742, 817, 838, 857, 889})
 
 STATUS_MOVES = {
-    TRICK_ROOM: "trick-room", STEALTH_ROCK: "stealth-rock", YAWN: "yawn", THUNDER_WAVE: "thunder-wave",
-    SWORDS_DANCE: "swords-dance",
+    TRICK_ROOM: "trick-room", STEALTH_ROCK: "stealth-rock", SWORDS_DANCE: "swords-dance", YAWN: "yawn",
+    THUNDER_WAVE: "thunder-wave",
 }
 EFFECTS = {
     **STATUS_MOVES, U_TURN: "pivot", VOLT_SWITCH: "pivot", FLIP_TURN: "pivot", SELF_DESTRUCT: "self-ko",
