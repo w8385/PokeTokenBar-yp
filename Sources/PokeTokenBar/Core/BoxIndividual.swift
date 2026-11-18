@@ -140,7 +140,7 @@ extension CompanionStore {
     /// filters narrow together. `fightingIDs` is the battle lineup (`TradePool.fightingIDs`).
     func filteredBoxIndividuals(query: String = "", speciesID: Int? = nil, shinyOnly: Bool = false,
                                 hasItemOnly: Bool = false, sort: BoxSortOption = .recent,
-                                types: Set<PokemonType> = [], rarity: Rarity? = nil,
+                                types: Set<PokemonType> = [], rarity: Rarity? = nil, region: PokedexRegion? = nil,
                                 inLineupOnly: Bool = false, tradableOnly: Bool = false,
                                 level: BoxLevelFilter = .any, fightingIDs: Set<String> = []) -> [BoxIndividual] {
         let matcher = DexSearchMatcher(query)
@@ -150,6 +150,7 @@ extension CompanionStore {
             if hasItemOnly, state.heldItems[individual.id] == nil { return false }
             if let matcher, !matcher.matches(individual.entry) { return false }
             if let rarity, individual.entry.rarity != rarity { return false }
+            if let region, !region.dexRange.contains(individual.speciesID) { return false }
             if !level.admits(individual.level) { return false }
             if inLineupOnly, !fightingIDs.contains(individual.id) { return false }
             if tradableOnly, !isTradableNow(individual, fightingIDs: fightingIDs) { return false }
@@ -166,7 +167,7 @@ extension CompanionStore {
                                 fightingIDs: Set<String> = []) -> [BoxIndividual] {
         filteredBoxIndividuals(query: query, speciesID: speciesID, shinyOnly: filter.shinyOnly,
                                hasItemOnly: filter.hasItemOnly, sort: filter.sort, types: filter.types,
-                               rarity: filter.rarity, inLineupOnly: filter.inLineupOnly,
+                               rarity: filter.rarity, region: filter.region, inLineupOnly: filter.inLineupOnly,
                                tradableOnly: filter.tradableOnly, level: filter.level, fightingIDs: fightingIDs)
     }
 

@@ -30,15 +30,19 @@ struct BoxFilter: Codable, Equatable {
     var hasItemOnly = false
     var types: Set<PokemonType> = []
     var rarity: Rarity?
+    var region: PokedexRegion?
     var inLineupOnly = false
     var tradableOnly = false
     var level: BoxLevelFilter = .any
 
     /// Filters inside the filter menu that are switched on (the toolbar toggles and the sort show themselves).
     var menuActiveCount: Int {
-        (types.isEmpty ? 0 : 1) + (rarity == nil ? 0 : 1) + (inLineupOnly ? 1 : 0)
+        (types.isEmpty ? 0 : 1) + (rarity == nil ? 0 : 1) + (region == nil ? 0 : 1) + (inLineupOnly ? 1 : 0)
             + (tradableOnly ? 1 : 0) + (level == .any ? 0 : 1)
     }
+
+    mutating func toggleRarity(_ value: Rarity) { rarity = rarity == value ? nil : value }
+    mutating func toggleRegion(_ value: PokedexRegion) { region = region == value ? nil : value }
 
     init() {}
 
@@ -49,6 +53,7 @@ struct BoxFilter: Codable, Equatable {
         hasItemOnly = (try? c.decodeIfPresent(Bool.self, forKey: .hasItemOnly)) ?? false
         types = (try? c.decodeIfPresent(Set<PokemonType>.self, forKey: .types)) ?? []
         rarity = try? c.decodeIfPresent(Rarity.self, forKey: .rarity)
+        region = try? c.decodeIfPresent(PokedexRegion.self, forKey: .region)
         inLineupOnly = (try? c.decodeIfPresent(Bool.self, forKey: .inLineupOnly)) ?? false
         tradableOnly = (try? c.decodeIfPresent(Bool.self, forKey: .tradableOnly)) ?? false
         level = (try? c.decodeIfPresent(BoxLevelFilter.self, forKey: .level)) ?? .any

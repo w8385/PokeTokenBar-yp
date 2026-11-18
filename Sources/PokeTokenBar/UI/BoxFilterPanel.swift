@@ -25,7 +25,7 @@ struct BoxFilterPanel: View {
                 HStack(spacing: 4) {
                     ForEach(Self.rarities, id: \.self) { rarity in
                         chip(l.rarityLabel(rarity), isSelected: filter.rarity == rarity) {
-                            filters.filter.rarity = filter.rarity == rarity ? nil : rarity
+                            filters.filter.toggleRarity(rarity)
                         }
                     }
                 }
