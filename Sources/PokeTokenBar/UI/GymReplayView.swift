@@ -7,6 +7,8 @@ struct GymReplayView: View {
     let outcome: GymBattleOutcome
     let l: L
     var autoplay = true
+    /// Shown where Fast and Skip were once the replay is over: the result screen's next step.
+    var next: Next? = nil
     @Environment(\.pokemonNameProvider) private var nameProvider
     @Environment(\.pokemonNameStore) private var injectedNames
 
@@ -28,6 +30,9 @@ struct GymReplayView: View {
                     Button { withAnimation { player.skip() } } label: {
                         Label(l.gymReplaySkip, systemImage: "forward.end.fill").font(.caption)
                     }
+                } else if let next {
+                    Button(next.title, action: next.action)
+                        .buttonStyle(.bordered).keyboardShortcut(.defaultAction).disabled(next.busy)
                 }
             }
             .buttonStyle(.borderless).controlSize(.small)
@@ -47,6 +52,12 @@ struct GymReplayView: View {
         .task {
             await MoveName.load(ids: (outcome.events ?? []).compactMap(\.moveId), store: names, provider: nameProvider)
         }
+    }
+
+    struct Next {
+        let title: String
+        let busy: Bool
+        let action: () -> Void
     }
 
     @ViewBuilder
