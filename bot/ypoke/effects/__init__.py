@@ -65,7 +65,7 @@ def problems(data: dict | None = None) -> list[str]:
 def loaded() -> dict[str, dict[str, Handler]]:
     """The registry once every handler module has registered. They import `battle`, which needs the modules that
     import `effects.hooks`, so they load on first use rather than with this package."""
-    from ypoke.effects import abilities, field, healing, items, moves, stats  # noqa: F401
+    from ypoke.effects import abilities, field, healing, items, moves, protection, stats  # noqa: F401
 
     return REGISTRY
 
