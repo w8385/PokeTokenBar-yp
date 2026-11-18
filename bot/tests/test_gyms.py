@@ -1,4 +1,5 @@
 import json
+import re
 import statistics
 from dataclasses import replace
 from pathlib import Path
@@ -10,18 +11,7 @@ from ypoke.gyms import MIN_TOTAL, TEAM_SIZE, Species, usable_species
 from ypoke.mega_stones import MEGA_STONES, PRIMAL_ORBS, mega_form_id, move_mega_form_id
 from ypoke.type_chart import effectiveness
 
-BORROWED = {
-    "brock", "misty", "surge", "erika", "koga", "sabrina", "blaine", "giovanni", "lance", "falkner", "bugsy",
-    "whitney", "morty", "chuck", "jasmine", "pryce", "clair", "roxanne", "brawly", "wattson", "flannery", "norman",
-    "winona", "tate", "liza", "wallace", "juan", "steven", "archie", "maxie", "roark", "gardenia", "maylene",
-    "fantina", "byron", "candice", "volkner", "cynthia", "cyrus", "cilan", "lenora", "burgh", "elesa", "clay",
-    "skyla", "brycen", "drayden", "iris", "ghetsis", "viola", "grant", "korrina", "ramos", "clemont", "valerie",
-    "olympia", "wulfric", "diantha", "lysandre", "ilima", "lana", "kiawe", "mallow", "acerola", "mina", "hapu",
-    "guzma", "lusamine", "milo", "nessa", "kabu", "bea", "allister", "opal", "gordie", "melony", "piers", "raihan",
-    "leon", "rose", "katy", "brassius", "iono", "kofu", "larry", "ryme", "tulip", "grusha", "geeta", "nemona",
-    "team rocket", "team aqua", "team magma", "team galactic", "team plasma", "team flare", "team skull",
-    "team yell", "team star",
-}
+OFFICIAL_NAMES = json.loads((Path(__file__).parent / "official_names.json").read_text())
 # Gyms whose region has too few unrelated species of the type, so an evolution line fills the rest.
 SAME_LINE_GYMS = {"kalos-5", "kalos-6", "kalos-7", "alola-8"}
 FACADE = 263
@@ -110,8 +100,8 @@ def test_the_gym_lineup_check_catches_an_off_type_out_of_region_or_missized_team
 
 
 def test_a_type_swapped_region_keeps_ids_and_moves_the_leader_with_the_type():
-    assert gym_data.GYM_TYPES["kalos"][7] == "fairy" and gyms.find("kalos-8").trainer.name["en"] == "Frill"
-    assert gym_data.GYM_TYPES["johto"][4] == "rock" and gyms.find("johto-5").trainer.name["en"] == "Cairn"
+    assert gym_data.GYM_TYPES["kalos"][7] == "fairy" and gyms.find("kalos-8").trainer.name["en"] == "Fleur"
+    assert gym_data.GYM_TYPES["johto"][4] == "rock" and gyms.find("johto-5").trainer.name["en"] == "Carrick"
 
 
 def test_an_elite_four_or_hideout_team_leads_with_its_focus_type_as_far_as_the_region_has_species_of_it():
@@ -404,22 +394,38 @@ def test_a_regions_gyms_use_eight_different_types_and_no_two_regions_share_the_o
         assert not set(gym_data.ELITE_TYPES[region_id]) & set(gym_data.GYM_TYPES[region_id])
 
 
-def test_every_trainer_is_an_original_character_with_a_short_line_in_three_languages():
-    seen = {language: [] for language in gyms.LANGUAGES}
-    rows = [
-        *(row for rows in gym_data.LEADERS.values() for row in rows), *(row for rows in gym_data.ELITE.values() for row in rows),
-        *gym_data.CHAMPIONS.values(), *(row for org in gym_data.ORGS.values() for row in org),
-        *gym_data.HIDDEN_TRAINERS.values(),
-    ]
+def test_every_trainer_has_a_unique_name_and_a_short_line_in_three_languages():
+    rows = _named_rows()
     assert len(rows) == 72 + 36 + 9 + 27 + 9
     for row in rows:
         assert len(row) == 6 and all(text.strip() for text in row)
         assert all(len(line) <= 60 for line in row[3:])
-        for language, name in zip(gyms.LANGUAGES, row[:3]):
-            seen[language].append(name)
-    assert all(len(set(names)) == len(rows) for names in seen.values())
-    english = {name.lower() for name in seen["en"]} | {word.lower() for name in seen["en"] for word in name.split()}
-    assert not english & BORROWED
+    for index, language in enumerate(gyms.LANGUAGES):
+        assert len({row[index] for row in rows}) == len(rows), language
+
+
+def test_no_trainer_or_organization_shares_a_name_with_an_official_character():
+    rows = _named_rows()
+    english = {row[1].lower() for row in rows} | {word.lower() for row in rows for word in row[1].split()}
+    assert not english & set(OFFICIAL_NAMES["en"])
+    assert not {row[0] for row in rows} & set(OFFICIAL_NAMES["ko"])
+    japanese = {row[2] for row in rows} | {part for row in rows for part in row[2].split("・")}
+    assert not japanese & set(OFFICIAL_NAMES["ja"])
+
+
+def test_korean_trainer_names_are_two_or_three_hangul_syllables():
+    organizations = {org[0] for org in gym_data.ORGS.values()}
+    people = [row[0] for row in _named_rows() if row not in organizations]
+    assert len(people) == 72 + 36 + 9 + 18 + 9
+    assert [name for name in people if not re.fullmatch(r"[가-힣]{2,3}", name)] == []
+
+
+def _named_rows():
+    return [
+        *(row for rows in gym_data.LEADERS.values() for row in rows), *(row for rows in gym_data.ELITE.values() for row in rows),
+        *gym_data.CHAMPIONS.values(), *(row for org in gym_data.ORGS.values() for row in org),
+        *gym_data.HIDDEN_TRAINERS.values(),
+    ]
 
 
 def test_the_hideout_is_two_grunts_an_admin_and_a_boss_of_the_organizations_types():

@@ -49,7 +49,8 @@ final class GymScreenshotTests: XCTestCase {
         return entry
     }
 
-    private func rig(badges: GymBadges, reply: @escaping @Sendable (URLRequest) -> (Data, Int)) throws -> Rig {
+    private func rig(badges: GymBadges, catalog: Data? = nil,
+                     reply: @escaping @Sendable (URLRequest) -> (Data, Int)) throws -> Rig {
         let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("gym-shot-\(UUID())")
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
         var state = CompanionState()
@@ -71,7 +72,8 @@ final class GymScreenshotTests: XCTestCase {
         uploader.saveToken("synthetic-token")
         uploader.serverURL = "http://bot-host:8790"
         let session = GymSession()
-        session.setCatalog(try GymCatalog.decode(GymFixtures.catalogData(regions: regions)), for: "http://bot-host:8790")
+        session.setCatalog(try GymCatalog.decode(catalog ?? GymFixtures.catalogData(regions: regions)),
+                           for: "http://bot-host:8790")
         let service = GymService(
             link: { uploader.gymLink }, exchange: { request in reply(request) },
             badges: { store.state.gymBadges }, ownedTMs: { MachineMove.ownedIDs(in: store.state.inventory) },
@@ -116,6 +118,10 @@ final class GymScreenshotTests: XCTestCase {
         let list = try rig(badges: badges([1, 2, 3, 5]), reply: none)
         defer { try? FileManager.default.removeItem(at: list.scratch) }
         try await shot(list, height: 960, to: directory.appendingPathComponent("pve-gym-list.png"))
+
+        let named = try rig(badges: badges([1, 2, 3, 5]), catalog: Data(contentsOf: GymRepo.kantoCatalog), reply: none)
+        defer { try? FileManager.default.removeItem(at: named.scratch) }
+        try await shot(named, height: 960, to: directory.appendingPathComponent("pve-gym-list-kanto.png"))
 
         let elite = try rig(badges: badges(Set(1...8)), reply: none)
         defer { try? FileManager.default.removeItem(at: elite.scratch) }
