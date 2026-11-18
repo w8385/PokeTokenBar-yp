@@ -1686,6 +1686,18 @@ read_when:
   `attacking_moves` drops them. Tests in
   `test_move_power.py` hit each rule's boosted and plain branch, and the battle-state ones go through `simulate`/`_act`
   with a spy on the power actually used; each rule and each state line was broken once to see its test fail.
+- **A replay must carry every change the app draws, not only what the app tracked first.** In the gym replay a
+  Mega-evolved or form-changed fighter kept its base sprite for both NPCs and the player: `_events` sent only
+  switch, move, damage, faint, status and finale, the rosters send one fixed `pokemon_id` per member, and the replay
+  and the result team strip drew that id. Slack's narration had the Mega, so nobody missed it in the bot. The bot tests
+  pinned the event types to that set, and the app fixtures had no form-changing member, so neither side could notice.
+  Now a `form` event (`pokemon_id`, `kind`, plus `member` so an older app still decodes the reply and skips the type)
+  follows the member's switch, and the app keeps it per member, so a Mega that a pivot brings back stays Mega. Class
+  sweep of what the battle changes on a fighter: HP, status and forms reach the replay; stat stages and weather are
+  log-only by design (`bot/API.md`). Surfaces that draw a gym fighter: the replay and the result team strip follow
+  the form; the Battle tab's recent battles are Slack battles, not gym ones. Tests: `test_gym_api.py` (form events
+  for an NPC Mega, a player Mega, Terastal, Stellar, Origin; a teal mask sends none), `GymReplayTests` (one member
+  only, status kept, pivot return, a Mega with no sprite).
 
 ## Tests and the user's desktop
 
