@@ -338,23 +338,35 @@ final class CompanionStore {
 
     // MARK: 동행 포켓몬
 
+    /// Graduates and stored lines that are not friends yet, newest first. Ids are Box ids.
     var friendCandidates: [DexEntry] {
-        state.friendCandidates.sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
+        let graduates = state.dex.filter { !$0.isReleased && $0.id != state.raisedEntryID }
+        let stored = state.storedLines.map { storedBoxEntry(id: $0.key, $0.value.mon) }
+        return (graduates + stored).filter { !state.isFriend(boxID: $0.id) }
+            .sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
     }
 
-    /// Only a graduated entry that is not a friend yet, while a slot is free. Returns false and keeps the picks otherwise.
+    /// The friend as it stands now; a stored line shows its current species.
+    func friendEntry(forKey key: String) -> DexEntry? {
+        let id = CompanionState.boxID(ofFriendKey: key)
+        if id != key { return state.storedLines[id].map { storedBoxEntry(id: id, $0.mon) } }
+        return state.dex.first { $0.id == id && !$0.isReleased }
+    }
+
+    /// `entryID` is a Box id: a graduate that is not a friend yet, or a stored line, while a slot is free.
+    /// Returns false and keeps the picks otherwise.
     @discardableResult
     func addFriend(entryID: String) -> Bool {
         guard state.friendEntryIDs.count < CompanionState.maxFriends,
-              state.friendCandidates.contains(where: { $0.id == entryID }) else { return false }
-        state.friendEntryIDs.append(entryID)
+              let key = state.friendKey(forBoxID: entryID), !state.friendEntryIDs.contains(key) else { return false }
+        state.friendEntryIDs.append(key)
         reevaluateEvolution()
         return true
     }
 
     func removeFriend(entryID: String) {
-        guard state.friendEntryIDs.contains(entryID) else { return }
-        state.friendEntryIDs.removeAll { $0 == entryID }
+        guard state.isFriend(boxID: entryID) else { return }
+        state.friendEntryIDs.removeAll { CompanionState.boxID(ofFriendKey: $0) == entryID }
         reevaluateEvolution()
     }
 
@@ -436,8 +448,8 @@ final class CompanionStore {
     }
 
     private func refreshFriendSubjects() {
-        let next = state.friendEntryIDs.compactMap { id in
-            state.dex.first { $0.id == id }.map {
+        let next = state.friendEntryIDs.compactMap { key in
+            friendEntry(forKey: key).map {
                 FriendSubject($0, megaSpriteID: megaSpriteID(instanceID: $0.id, speciesID: $0.finalID))
             }
         }
@@ -1354,13 +1366,8 @@ final class CompanionStore {
             } else if holdsEverstone(a.profile?.instanceID) {
                 break
             } else {
-                let nextIndex = a.stageIndex + 1
-                let traits = evolutionTraits(of: a)
-                let planned = a.plannedPathIDs.indices.contains(nextIndex)
-                    ? options.first(where: { $0.speciesID == a.plannedPathIDs[nextIndex] }) : nil
-                let picked = planned ?? pickPlannedChild(node, baseID: a.baseID, gender: gender, traits: traits)
-                let timed = EvoNode.resolvingTimeOfDay(picked, among: options, at: DayPeriod.at(clock()))
-                let next = EvolutionRules.resolvingSelector(timed, among: options, traits: traits)
+                let step = lineStep(of: a, at: node, among: options)
+                let next = step.next
                 let context = evolutionContext(for: a, thresholdOverride: thr)
                 let openPath = EvolutionRules.openPath(into: next.speciesID, in: context)
                 // A closed gate keeps the stage open: the XP keeps adding up and carries over once it opens.
@@ -1368,7 +1375,7 @@ final class CompanionStore {
                     notifyEvolutionStuckIfNeeded(of: a, into: next, in: line, context: context)
                     break
                 }
-                if planned == nil || next.speciesID != picked.speciesID {
+                if step.replans {
                     replanEvolution(from: node, to: next, base: a)
                     AppLog.write("evolve: replanned path for base \(a.baseID)")
                 }
@@ -1410,14 +1417,30 @@ final class CompanionStore {
 
     static func minutes(_ seconds: TimeInterval) -> Int { max(1, Int((seconds / 60).rounded(.up))) }
 
-    /// 실제로 간 갈래가 계획과 다르면 계획을 그 갈래 아래로 다시 세운다.
+    /// The form a line moves into next: its planned child (else a fresh pick), resolved for the clock and its traits.
+    /// `replans` when that is not the plan. The raised line and a stored holder both choose here.
+    private func lineStep(of a: MonState, at node: EvoNode, among options: [EvoNode]) -> (next: EvoNode, replans: Bool) {
+        let nextIndex = a.stageIndex + 1
+        let traits = evolutionTraits(of: a)
+        let planned = a.plannedPathIDs.indices.contains(nextIndex)
+            ? options.first(where: { $0.speciesID == a.plannedPathIDs[nextIndex] }) : nil
+        let picked = planned ?? pickPlannedChild(node, baseID: a.baseID, gender: a.profile?.gender, traits: traits)
+        let timed = EvoNode.resolvingTimeOfDay(picked, among: options, at: DayPeriod.at(clock()))
+        let next = EvolutionRules.resolvingSelector(timed, among: options, traits: traits)
+        return (next, planned == nil || next.speciesID != picked.speciesID)
+    }
+
     private func replanEvolution(from node: EvoNode, to next: EvoNode, base a: MonState) {
+        let plan = replannedPath(from: node, to: next, base: a)
+        state.active!.plannedPathIDs = plan
+        state.active!.totalForms = plan.count
+    }
+
+    /// 실제로 간 갈래가 계획과 다르면 계획을 그 갈래 아래로 다시 세운다.
+    private func replannedPath(from node: EvoNode, to next: EvoNode, base a: MonState) -> [Int] {
         let fallbackRoute = [node.speciesID]
             + makeEvolutionPlan(from: next, baseID: a.baseID, gender: a.profile?.gender, traits: evolutionTraits(of: a))
-        let repaired = Self.repairedPlan(realizedPath: a.pathIDs, stageIndex: a.stageIndex,
-                                         fallbackRoute: fallbackRoute)
-        state.active!.plannedPathIDs = repaired
-        state.active!.totalForms = repaired.count
+        return Self.repairedPlan(realizedPath: a.pathIDs, stageIndex: a.stageIndex, fallbackRoute: fallbackRoute)
     }
 
     /// 다음 형태로 넘어가는 공통 처리 — 경로·단계·프로필·연출·알림. 저장은 호출부가 한다.
@@ -1485,8 +1508,8 @@ final class CompanionStore {
         context.knownMoves.formUnion(profile?.moves.map(\.name) ?? [])
         if let id = profile?.instanceID { context.heldItem = heldItem(of: id) }
         for (kind, count) in ownedItems { context.bag[kind] = count }
-        for id in state.friendEntryIDs {
-            guard let entry = state.dex.first(where: { $0.id == id }) else { continue }
+        for key in state.friendEntryIDs {
+            guard let entry = friendEntry(forKey: key), entry.id != profile?.instanceID else { continue }
             context.friendCount += 1
             context.friendLines.formUnion(entry.chainOrder)
             context.friendLines.insert(entry.finalID)
@@ -1687,6 +1710,9 @@ final class CompanionStore {
     /// A shop or scout egg puts one copy from the bag on the Pokémon it sends to the Box.
     var eggSwapAttachesExpShare: Bool { itemCount(.expShare) > 0 }
 
+    /// A shop or scout egg makes the Pokémon it sends to the Box a friend while a slot is free.
+    var eggSwapAddsFriend: Bool { state.friendEntryIDs.count < CompanionState.maxFriends }
+
     @discardableResult
     func detachExpShare(from instanceID: String) -> Bool {
         guard let index = state.expShareHolders.firstIndex(of: instanceID) else { return false }
@@ -1696,8 +1722,39 @@ final class CompanionStore {
         return true
     }
 
+    /// Every holder as the Box lists it, oldest holder first.
+    func expShareHolderIndividuals(in all: [BoxIndividual]? = nil) -> [BoxIndividual] {
+        guard !state.expShareHolders.isEmpty else { return [] }
+        let all = all ?? boxIndividuals
+        return state.expShareHolders.compactMap { id in all.first { $0.id == id } }
+    }
+
+    /// Holders whose copy can move onto `target` in one step. Empty when it can't hold one or already does.
+    func expShareMoveSources(to target: BoxIndividual, holders: [BoxIndividual]) -> [BoxIndividual] {
+        guard Self.canHoldExpShare(target.role), !holdsExpShare(target.id) else { return [] }
+        return holders
+    }
+
+    func expShareMoveSources(to instanceID: String) -> [BoxIndividual] {
+        let all = boxIndividuals
+        guard let target = all.first(where: { $0.id == instanceID }) else { return [] }
+        return expShareMoveSources(to: target, holders: expShareHolderIndividuals(in: all))
+    }
+
+    /// Moves the copy `source` holds onto `target`. What either has banked stays with it.
+    @discardableResult
+    func moveExpShare(from source: String, to target: String) -> Bool {
+        guard expShareMoveSources(to: target).contains(where: { $0.id == source }),
+              let index = state.expShareHolders.firstIndex(of: source) else { return false }
+        state.expShareHolders.remove(at: index)
+        state.expShareHolders.append(target)
+        save()
+        Task { await checkExpShareEvolution() }
+        return true
+    }
+
     /// A graduate holder levels and builds `graduateXP` like the raised graduate; a stored line banks the share in
-    /// its stage and evolves by the line rules once it is raised again.
+    /// its stage and takes the steps that open by themselves (`evolveStoredLineIfReady`).
     private func creditExpShareHolders(_ share: Int, skipping raisingIDs: Set<String>) {
         guard share > 0 else { return }
         for id in state.expShareHolders where !raisingIDs.contains(id) {
@@ -1705,6 +1762,7 @@ final class CompanionStore {
                 var mon = stored.mon
                 mon.usedAtStage = min(SaveTransfer.maxTokenValue, mon.usedAtStage + share)
                 state.storedLines[id]?.mon = reconciledProfileGrowth(mon)
+                if let line = expShareLines[mon.baseID] { _ = evolveStoredLineIfReady(id: id, in: line) }
             } else if let index = state.dex.firstIndex(where: { $0.id == id && !$0.isReleased }) {
                 creditExpShareGraduate(at: index, share)
             }
@@ -1732,9 +1790,14 @@ final class CompanionStore {
             .compactMap { id in state.dex.first { $0.id == id && !$0.isReleased } }
     }
 
-    /// Loads each graduate holder's line once, then takes any step that is open now (a clock gate opens on its own).
+    private var expShareStoredLines: [(id: String, baseID: Int)] {
+        state.expShareHolders.compactMap { id in state.storedLines[id].map { (id, $0.mon.baseID) } }
+    }
+
+    /// Loads each holder's line once, then takes any step that is open now (a clock gate opens on its own).
     func checkExpShareEvolution() async {
-        for baseID in Set(expShareGraduates.map(\.baseID)) where expShareLines[baseID] == nil {
+        let baseIDs = Set(expShareGraduates.map(\.baseID)).union(expShareStoredLines.map(\.baseID))
+        for baseID in baseIDs where expShareLines[baseID] == nil {
             guard loadingExpShareLines.insert(baseID).inserted else { continue }
             defer { loadingExpShareLines.remove(baseID) }
             if let line = try? await dexNameLine(baseID: baseID) { expShareLines[baseID] = line }
@@ -1744,7 +1807,94 @@ final class CompanionStore {
             guard let line = expShareLines[entry.baseID] else { continue }
             if evolveGraduateIfReady(id: entry.id, in: line, celebrate: false) { evolved = true }
         }
+        for holder in expShareStoredLines {
+            guard let line = expShareLines[holder.baseID] else { continue }
+            if evolveStoredLineIfReady(id: holder.id, in: line) { evolved = true }
+        }
         if evolved { save() }
+    }
+
+    /// The step a stored line takes in the Box now: the one the raised line would choose, through a path that asks
+    /// nothing of the player. Nil while it waits.
+    private func storedLineStep(_ stored: StoredLine, in line: EvoLine) -> (node: EvoNode, next: EvoNode, replans: Bool)? {
+        let mon = stored.mon
+        let threshold = stageThreshold(for: mon)
+        guard line.baseID == mon.baseID, mon.usedAtStage >= threshold, mon.dittoDisguise == nil || mon.dittoRevealed,
+              !holdsEverstone(mon.profile?.instanceID), let node = line.tree.node(withID: mon.currentID) else { return nil }
+        let options = growthOptions(of: node, gender: mon.profile?.gender)
+        guard !options.isEmpty else { return nil }
+        let step = lineStep(of: mon, at: node, among: options)
+        guard EvolutionRules.pathOpenByItself(into: step.next.speciesID, in: storedLineContext(stored)) != nil else {
+            return nil
+        }
+        return (node, step.next, step.replans)
+    }
+
+    /// Takes every step a stored holder can take in the Box. It never graduates there. The caller saves.
+    private func evolveStoredLineIfReady(id: String, in line: EvoLine) -> Bool {
+        var evolved = false
+        for _ in 0..<5 {
+            guard let stored = state.storedLines[id], let step = storedLineStep(stored, in: line) else { break }
+            var mon = stored.mon
+            if step.replans {
+                mon.plannedPathIDs = replannedPath(from: step.node, to: step.next, base: mon)
+                mon.totalForms = mon.plannedPathIDs.count
+            }
+            completeStoredEvolution(id: id, mon, to: step.next, in: line, spentAtStore: stored.spentAtStore)
+            evolved = true
+        }
+        return evolved
+    }
+
+    /// Like `completeEvolution` without the Home celebration; the released Pokédex record follows the new species.
+    private func completeStoredEvolution(id: String, _ a: MonState, to next: EvoNode, in line: EvoLine, spentAtStore: Int) {
+        var mon = a
+        mon.pathIDs = Array(a.pathIDs.prefix(a.stageIndex + 1)) + [next.speciesID]
+        mon.stageIndex += 1
+        mon.usedAtStage = a.usedAtStage - stageThreshold(for: a)
+        mon.evolution = a.evolution.nextForm(spentBaseline: spentAtStore)
+        if let details = pokemonDetailsByID[next.speciesID] {
+            mon.profile?.enrich(with: details)
+        } else if detailProvider != nil {
+            Task { await self.loadPokemonDetails(speciesID: next.speciesID) }
+        }
+        state.storedLines[id]?.mon = mon
+        if let index = state.dex.firstIndex(where: { $0.id == id && $0.isReleased }) {
+            state.dex[index].chainOrder = Array(mon.pathIDs.prefix(mon.stageIndex + 1))
+            state.dex[index].finalID = next.speciesID
+            Self.mergeNames(of: line, into: &state.dex[index])
+        }
+        if let companion = EvolutionRules.companions[next.speciesID] {
+            registerCompanion(companion, evolvedFrom: a, in: line)
+        }
+        let oldName = formDisplayName(line.localizedName(a.currentID, state.language), speciesID: a.currentID, form: a.form)
+        let newName = formDisplayName(line.localizedName(next.speciesID, state.language), speciesID: next.speciesID,
+                                      form: a.form)
+        notifyCompanionEvent(l.notifEvolveTitle, l.notifEvolveBody(from: oldName, to: newName))
+    }
+
+    /// Spending while it waits in the Box does not count toward its gate (`resumeStoredLine`).
+    private func storedLineContext(_ stored: StoredLine) -> EvolutionContext {
+        var context = evolutionContext(for: stored.mon)
+        context.spentTokens = stored.spentAtStore
+        return context
+    }
+
+    /// The step a stored holder waits on in the Box and what it still lacks, for its Box page.
+    func storedLineGate(id: String) -> (rule: EvolutionRule, context: EvolutionContext)? {
+        guard holdsExpShare(id), let stored = state.storedLines[id], let line = expShareLines[stored.mon.baseID],
+              let node = line.tree.node(withID: stored.mon.currentID) else { return nil }
+        let mon = stored.mon
+        let options = growthOptions(of: node, gender: mon.profile?.gender)
+        let traits = evolutionTraits(of: mon)
+        let nextIndex = mon.stageIndex + 1
+        let planned = mon.plannedPathIDs.indices.contains(nextIndex)
+            ? options.first { $0.speciesID == mon.plannedPathIDs[nextIndex] } : nil
+        guard let target = planned ?? EvolutionRules.plannable(options, traits: traits).first else { return nil }
+        let timed = EvoNode.resolvingTimeOfDay(target, among: options, at: DayPeriod.at(clock()))
+        let next = EvolutionRules.resolvingSelector(timed, among: options, traits: traits)
+        guard let rule = EvolutionRules.rule(for: next.speciesID), !rule.paths.isEmpty else { return nil }
+        return (rule, storedLineContext(stored))
     }
 
     private static func mergeNames(of line: EvoLine, into entry: inout DexEntry) {
@@ -2546,7 +2696,10 @@ final class CompanionStore {
     /// 활성 포켓몬을 박스로 보내고 처음부터 인큐베이션하는 새 알로 — 상점 알과 스카우트가 같이 쓴다.
     /// `pendingHatchID` 가 있으면(스카우트) 그 종으로 미리 정해 두고 메타몽 위장도 끈다.
     private func storeActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?, shiny: Bool = false) {
-        if let storedID = storeActiveInBox() { attachExpShare(to: storedID) }
+        if let storedID = storeActiveInBox() {
+            if eggSwapAddsFriend { state.friendEntryIDs.append(CompanionState.friendKey(storedLine: storedID)) }
+            attachExpShare(to: storedID)
+        }
         state.reconcileRepresentativeSelection()
         activeGeneration += 1
         currentLine = nil
@@ -3785,7 +3938,7 @@ final class CompanionStore {
         let node = line.tree.node(withID: entry.finalID)
         let held = withCord ? heldItem(of: entryID) : entry.tradeHeldItem.flatMap(ItemKind.init(rawValue:))
         let partners: Set<Int> = withCord
-            ? Set(state.friendEntryIDs.compactMap { id in state.dex.first { $0.id == id }?.finalID })
+            ? Set(state.friendEntryIDs.compactMap { friendEntry(forKey: $0)?.finalID })
             : Set(entry.tradePartnerID.map { [$0] } ?? [])
         let next = node?.tradeEvolution(heldItem: held, partners: partners)
         if withCord, next == nil, node?.evolvesByTrade == true { return .notReady }

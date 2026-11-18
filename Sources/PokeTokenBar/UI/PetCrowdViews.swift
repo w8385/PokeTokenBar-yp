@@ -219,7 +219,7 @@ struct FriendAddDisc: View {
     }
 }
 
-/// Graduated Pokémon that can join as a friend. Tapping one adds it and closes the picker.
+/// Graduated and stored Pokémon that can join as a friend. Tapping one adds it and closes the picker.
 @MainActor
 struct FriendPicker: View {
     let store: CompanionStore
@@ -245,6 +245,15 @@ struct FriendPicker: View {
                                 .ptbPanel()
                                 .overlay(alignment: .topTrailing) {
                                     if friend.isShiny { Text("✨").font(.ptb(.small)) }
+                                }
+                                .overlay(alignment: .bottom) {
+                                    if store.state.storedLines[entry.id] != nil {
+                                        Text(l.storedBadge).font(.ptb(.tiny, weight: .bold)).foregroundStyle(.secondary)
+                                            .lineLimit(1).minimumScaleFactor(0.6)
+                                            .padding(.horizontal, 3).padding(.vertical, 1)
+                                            .background(Color(nsColor: .windowBackgroundColor).opacity(0.9), in: Capsule())
+                                            .offset(y: 4)
+                                    }
                                 }
                         }
                         .buttonStyle(.plain)

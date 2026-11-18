@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// A graduated Pokémon standing beside the active one.
+/// A graduated or stored Pokémon standing beside the active one, as it is now. `entryID` is its Box id.
 struct FriendSubject: Equatable, Identifiable, Sendable {
     let entryID: String
     let speciesID: Int

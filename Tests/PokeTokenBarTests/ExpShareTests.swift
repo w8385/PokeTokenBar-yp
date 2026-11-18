@@ -301,7 +301,7 @@ final class ExpShareTests: XCTestCase {
         feed(store, 4_000_000)
         let after = try XCTUnwrap(store.state.storedLines[Self.lineID]?.mon)
         XCTAssertEqual(after.usedAtStage, before.usedAtStage + 2_000_000)
-        XCTAssertEqual(after.stageIndex, before.stageIndex, "it evolves once it is raised again")
+        XCTAssertEqual(after.stageIndex, before.stageIndex, "still below its stage threshold")
         XCTAssertGreaterThanOrEqual(try XCTUnwrap(after.profile?.growthTokens), try XCTUnwrap(before.profile?.growthTokens))
 
         XCTAssertTrue(store.raise(entryID: Self.lineID))

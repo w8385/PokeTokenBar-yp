@@ -279,6 +279,11 @@ private struct EggCard: View {
                                 .font(.caption2).foregroundStyle(.tertiary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                        if store.eggSwapAddsFriend {
+                            Text(l.friendJoinsWithEggSwap)
+                                .font(.caption2).foregroundStyle(.tertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
                 Spacer()

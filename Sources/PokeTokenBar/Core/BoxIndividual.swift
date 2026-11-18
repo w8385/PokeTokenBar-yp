@@ -11,6 +11,8 @@ struct BoxIndividual: Identifiable {
     /// The line Pokémon's synthesized entry, or the graduated record.
     let entry: DexEntry
     let role: Role
+    /// Walks beside the raised Pokémon: a `.friend` graduate, or a `.stored` line picked as a friend.
+    var isFriend = false
 
     var speciesID: Int { entry.finalID }
     var level: Int { entry.profile?.level ?? 5 }
@@ -46,24 +48,24 @@ extension CompanionStore {
     /// Every individual that can hold an item: the raised Pokémon first, then the graduated ones that were not
     /// released. Same membership as `CompanionState.ownedInstanceIDs`.
     var boxIndividuals: [BoxIndividual] {
-        let friends = Set(state.friendEntryIDs)
         var result: [BoxIndividual] = []
         if let entry = raisedDexEntry, let id = entry.profile?.instanceID {
             result.append(BoxIndividual(id: id, entry: entry, role: isLineParked ? .parked : .raising))
         }
         for entry in state.dex where entry.releasedAt == nil {
             let role: BoxIndividual.Role = entry.id == state.raisedEntryID ? .raising
-                : friends.contains(entry.id) ? .friend : .graduated
-            result.append(BoxIndividual(id: entry.id, entry: entry, role: role))
+                : state.isFriend(boxID: entry.id) ? .friend : .graduated
+            result.append(BoxIndividual(id: entry.id, entry: entry, role: role, isFriend: role == .friend))
         }
         for (id, stored) in state.storedLines.sorted(by: { $0.key < $1.key }) {
-            result.append(BoxIndividual(id: id, entry: storedBoxEntry(id: id, stored.mon), role: .stored))
+            result.append(BoxIndividual(id: id, entry: storedBoxEntry(id: id, stored.mon), role: .stored,
+                                        isFriend: state.isFriend(boxID: id)))
         }
         return result
     }
 
     /// The stored line as it stands now; names and the time it was stored come from its Pokédex record.
-    private func storedBoxEntry(id: String, _ mon: MonState) -> DexEntry {
+    func storedBoxEntry(id: String, _ mon: MonState) -> DexEntry {
         let record = state.dex.first { $0.id == id }
         return DexEntry(id: id, baseID: mon.baseID, finalID: mon.currentID,
                         chainOrder: Array(mon.pathIDs.prefix(mon.stageIndex + 1)), rarity: mon.rarity,

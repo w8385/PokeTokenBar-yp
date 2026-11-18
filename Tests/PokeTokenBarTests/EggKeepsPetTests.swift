@@ -115,14 +115,13 @@ final class EggKeepsPetTests: XCTestCase {
         XCTAssertEqual(store.boxIndividual(id: Self.lineID)?.role, .stored)
     }
 
-    func testAStoredLineCannotBeTradedFoughtOrBefriended() throws {
+    func testAStoredLineCannotBeTradedOrFought() throws {
         let store = try makeStore(lineState())
         XCTAssertTrue(store.buyEgg(nil))
         let individual = try XCTUnwrap(store.boxIndividual(id: Self.lineID))
         XCTAssertEqual(store.tradeRefusal(for: individual.entry, fightingIDs: []), .unavailable)
         XCTAssertFalse(store.isTradableNow(individual, fightingIDs: []))
         XCTAssertNil(store.battleCandidate(for: individual.entry))
-        XCTAssertFalse(store.addFriend(entryID: Self.lineID))
     }
 
     // MARK: raising again

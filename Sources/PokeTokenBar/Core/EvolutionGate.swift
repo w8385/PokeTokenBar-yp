@@ -130,6 +130,14 @@ extension EvolutionRequirement {
         let (have, need) = progress(in: ctx)
         return have >= need
     }
+
+    /// Met without the player doing anything, so a Pokémon waiting in the Box may take a step that needs only these.
+    var opensByItself: Bool {
+        switch self {
+        case .time, .knownMove, .knownFairyMove, .friendLine, .friendType, .anyFriend, .longStage: true
+        case .pets, .holds, .bag, .flipped, .spun, .tokenRain, .battles, .towerChosen, .spent, .candies: false
+        }
+    }
 }
 
 enum EvolutionBlock: Equatable {
@@ -145,6 +153,11 @@ extension EvolutionRule {
     }
 
     func isOpen(in ctx: EvolutionContext) -> Bool { openPath(in: ctx) != nil }
+
+    /// The first path that is open now and asks nothing of the player; nil while there is none.
+    func pathOpenByItself(in ctx: EvolutionContext) -> [EvolutionRequirement]? {
+        paths.isEmpty ? [] : paths.first { $0.allSatisfy { $0.opensByItself && $0.isMet(in: ctx) } }
+    }
 
     /// Why a ready form is not taking this step. A path that lacks only the day or night waits for the clock;
     /// anything else it lacks is a condition the player has to meet (or skip).

@@ -184,8 +184,18 @@ struct ScoutPickerView: View {
     private func confirmBar(_ l: L) -> some View {
         if let id = selectedID, let pick = store.scoutPicks(ids ?? []).first(where: { $0.id == id }) {
             HStack(spacing: 8) {
-                Text(l.scoutPickConfirm(store.displayName, pick.species.name))
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(l.scoutPickConfirm(store.displayName, pick.species.name))
+                        .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+                    if store.eggSwapAttachesExpShare {
+                        Text(l.expShareGoesWithEggSwap).font(.caption2).foregroundStyle(.tertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if store.eggSwapAddsFriend {
+                        Text(l.friendJoinsWithEggSwap).font(.caption2).foregroundStyle(.tertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
                 Spacer(minLength: 4)
                 Button(l.scoutPick) { commit(id) }
                     .buttonStyle(.borderedProminent).controlSize(.small)
