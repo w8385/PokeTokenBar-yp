@@ -1650,6 +1650,13 @@ read_when:
   linked (`Store.is_linked`), posts both in the channel with the next step, and the app's battle tab
   says an egg sends nothing (`testAnEggWithNothingChosenSendsNothing`,
   `test_linked_opponent_without_an_upload_gets_the_egg_and_network_hint`).
+- **A run battle won with nobody left standing must end the run.** A last member that knocks out the foe's last
+  one and faints on its own recoil wins (the hit side is checked first), so the bot answered `won` with the next
+  battle and a carry of all zeros, and that next battle crashed on an empty roster (`IndexError` in `_Team`). The
+  gym tests only won runs with members to spare, and the golden runs never drew a recoil double KO until the
+  status moves changed the turn order. Now a win whose carry has no member above 0 HP gives no `next` and no carry,
+  like the last battle of a run (`test_a_run_win_that_leaves_nobody_standing_ends_the_run`). Class sweep: the
+  carry is the only state a run passes on; `awake` already skips members carried at 0 HP.
 - **A permanent PokéAPI cache key changes when the cached shape grows.** Moves gained PP and
   secondary-effect fields; the old `move/{id}` rows lack them, so the key is now `move-v2/{id}`.
 - **A Pokémon that faints on its own move must end the turn for its side, not just for the loop's first check.**

@@ -54,7 +54,8 @@ class GymBattles:
                           finale=finale, unlimited_megas=opponent.kind == "hidden")
         shown, carry = _outcomes(starts, awake, result)
         won = result.winner == 0
-        following = gyms.next_in_run(opponent) if won else None
+        standing = any(state["hp"] > 0 for state in carry)
+        following = gyms.next_in_run(opponent) if won and standing else None
         return {
             "gym_id": opponent.id,
             "kind": opponent.kind,
