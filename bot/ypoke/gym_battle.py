@@ -11,8 +11,8 @@ from functools import partial
 
 from ypoke import gyms
 from ypoke.battle import (
-    CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, HazardDamage, ItemEffect, ItemHeal, SendOut, StatusDamage,
-    WeatherDamage, YawnSleep, simulate,
+    CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage, ItemEffect, ItemHeal, MegaEvolution,
+    SendOut, StatusDamage, WeatherDamage, YawnSleep, simulate,
 )
 from ypoke.combatants import combatant
 from ypoke.gym_data import FINALE_LINE
@@ -113,7 +113,7 @@ def _roster(roster: Sequence[Combatant], shares: Sequence[int | None]) -> list[d
 
 def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: Sequence[Carry | None],
             finale: int | None = None) -> list[dict]:
-    """The battle as the app replays it: who is out, which move, HP shares, faints and statuses. `members` maps each
+    """The battle as the app replays it: who is out, its form, which move, HP shares, faints and statuses. `members` maps each
     side's fighting order to its team index (the player's skips members that came in down); `starts` is how each
     of the player's fighters came in. A `finale` event comes right before the trainer's member `finale` is out."""
     replay = _Replay(members)
@@ -138,6 +138,8 @@ def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: 
             replay.status(turn, event.side, None if event.effect == "cure" else event.effect)
         elif isinstance(event, YawnSleep):
             replay.status(turn, event.side, "sleep")
+        elif isinstance(event, (MegaEvolution, FormShift)) and event.form_id is not None:
+            replay.form(turn, event.side, event.form_id, event.kind)
     return replay.events
 
 
@@ -161,6 +163,9 @@ class _Replay:
             self._hp[key] = 100 if start is None else start.hp
             self._status[key] = None if start is None else start.status
         self._emit(turn, "switch", side, hp=self._hp[key], status=self._status[key])
+
+    def form(self, turn: int, side: int, form_id: int, kind: str) -> None:
+        self._emit(turn, "form", side, pokemon_id=form_id, kind=kind)
 
     def action(self, action: Action) -> None:
         if action.move:
@@ -195,9 +200,9 @@ class _Replay:
     def _key(self, side: int) -> tuple[int, int]:
         return side, self.active[side]
 
-    def _emit(self, turn: int, kind: str, side: int, **fields) -> None:
+    def _emit(self, turn: int, event_type: str, side: int, **fields) -> None:
         member = self.members[side][self.active[side]]
-        self.events.append({"turn": turn, "type": kind, "side": side, "member": member, **fields})
+        self.events.append({"turn": turn, "type": event_type, "side": side, "member": member, **fields})
 
 
 def _log(result: BattleResult, finale: int | None = None) -> list[dict]:

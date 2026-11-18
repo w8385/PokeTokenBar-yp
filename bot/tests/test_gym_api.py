@@ -6,8 +6,11 @@ from pathlib import Path
 import pytest
 
 from ypoke import gym_battle, gym_data, gyms
-from ypoke.battle import Action, BattleResult, Carry, Change, ItemEffect, SendOut, StatusDamage
+from ypoke.battle import (
+    Action, BattleResult, Carry, Change, FormShift, ItemEffect, MegaEvolution, SendOut, StatusDamage,
+)
 from ypoke.gym_battle import GymBattles
+from ypoke.mega_stones import mega_form_id
 from ypoke.narration import split_side
 from ypoke.store import Store
 from ypoke.upload_server import GYM_BATTLE_INTERVAL, serve
@@ -319,6 +322,7 @@ def test_the_hidden_boss_is_one_full_hp_battle_whose_every_stone_holder_mega_evo
     assert len(body["foe_team"]) == len(gym_data.HIDDEN_TEAMS["kanto"])
     lines = [line["text"] for turn in body["log"] for line in turn["lines"]]
     assert sum("메가진화" in line for line in lines) == 3
+    assert sum(event["type"] == "form" for event in body["events"]) == 3
     status, reply, _ = battle(base, store.issue_token("U2"), "kanto-hidden", strong_team(6), [None] * 6)
     assert status == 400 and reply["error"] == "carried is only for Elite Four and hideout battles"
 
@@ -443,12 +447,69 @@ def test_the_events_follow_statuses_recoil_and_who_is_out():
     ]
 
 
+def test_a_mega_and_a_form_shift_with_a_form_id_become_form_events_and_a_mask_without_one_does_not():
+    result = BattleResult(winner=0, turns=2, events=[
+        MegaEvolution(1, 1, "B", None, 10034),
+        FormShift(1, 0, "A", "mask", None, Change(0, "A", "speed", 1)),
+        Action(1, 0, "A", "B", "불꽃", defender_hp=0, knockout=True, attacker_hp=50, move_id=52),
+        SendOut(1, 1, "C", 1),
+        FormShift(1, 1, "C", "origin", 10007),
+    ])
+    events = gym_battle._events(result, ([0], [0, 1]), [None])
+    assert [event for event in events if event["type"] == "form"] == [
+        {"turn": 1, "type": "form", "side": 1, "member": 0, "pokemon_id": 10034, "kind": "mega"},
+        {"turn": 1, "type": "form", "side": 1, "member": 1, "pokemon_id": 10007, "kind": "origin"},
+    ]
+
+
+def test_the_champions_mega_holder_takes_its_mega_form_right_after_its_switch(server):
+    store, base, _, _ = server
+    status, body, _ = battle(base, store.issue_token("U1"), "kanto-champion", strong_team(6))
+    assert status == 200
+    assert_one_form_right_after_its_switch(body, champion_mega())
+
+
+@pytest.mark.parametrize("team,expected", [
+    ([{"pokemon_id": 6, "level": 50, "held_item": "charizardite-x"}], (0, 0, 10034, "mega")),
+    ([{"pokemon_id": 1024, "level": 50}], (0, 0, 10276, "terastal")),
+    ([{"pokemon_id": 1024, "level": 50, "held_item": "stellar-crystal"}], (0, 0, 10277, "stellar")),
+    ([{"pokemon_id": 487, "level": 50, "held_item": "griseous-core"}], (0, 0, 10007, "origin")),
+])
+def test_a_players_form_comes_after_its_switch_and_before_its_first_move(server, team, expected):
+    store, base, _, _ = server
+    status, body, _ = battle(base, store.issue_token("U1"), "kanto-1", team)
+    assert status == 200
+    kinds = assert_one_form_right_after_its_switch(body, expected)
+    assert kinds[:3] == ["switch", "form", "move"]
+
+
+def champion_mega():
+    foes = gyms.foe_members(gyms.find("kanto-champion"))
+    return next((1, index, form_id, "mega") for index, foe in enumerate(foes)
+                if (form_id := mega_form_id(foe["held_item"], foe["pokemon_id"])))
+
+
+def assert_one_form_right_after_its_switch(body, expected):
+    """`expected` is the form event's (side, member, pokemon_id, kind); returns that member's switch, form and move
+    event types in order."""
+    events = body["events"]
+    forms = [event for event in events if event["type"] == "form"]
+    assert [(e["side"], e["member"], e["pokemon_id"], e["kind"]) for e in forms] == [expected]
+    assert set(forms[0]) == {"turn", "type", "side", "member", "pokemon_id", "kind"}
+    side, member = expected[:2]
+    kinds = [event["type"] for event in events
+             if event["side"] == side and event["member"] == member and event["type"] in ("switch", "form", "move")]
+    assert kinds[:2] == ["switch", "form"]
+    assert_replay_matches_the_rosters(body)
+    return kinds
+
+
 def assert_replay_matches_the_rosters(body):
     events = body["events"]
     assert [(event["turn"], event["type"], event["side"]) for event in events[:2]] == [(0, "switch", 0), (0, "switch", 1)]
     assert [event["turn"] for event in events] == sorted(event["turn"] for event in events)
     assert events[-1]["turn"] <= body["turns"]
-    assert {event["type"] for event in events} <= {"switch", "move", "damage", "faint", "status"}
+    assert {event["type"] for event in events} <= {"switch", "form", "move", "damage", "faint", "status", "finale"}
     left = replayed(body)
     for side, roster in ((0, body["player_team"]), (1, body["foe_team"])):
         for member, fighter in enumerate(roster):
