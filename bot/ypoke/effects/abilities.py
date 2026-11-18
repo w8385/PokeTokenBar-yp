@@ -8,7 +8,7 @@ from ypoke.effects import Handler, hooks, register
 @register("abilities", "intimidate")
 class Intimidate(Handler):
     def on_entry(self, name, fighter, foe, side, weather):
-        if foe.stages["attack"] <= -battle.MAX_STAGE:
+        if foe.stages["attack"] <= -battle.MAX_STAGE or battle._stats_guarded(foe):
             return None
         foe.stages["attack"] -= 1
         foe.lowered = True
@@ -123,7 +123,7 @@ class ContactAilment(Handler):
         ailment = abilities.CONTACT_AILMENT[name]
         if not move.physical or hooks.ability(user, "blocks_ailment", ailment, default=False):
             return None
-        if not battle._open_to(ailment, user) or rng.random() >= abilities.CONTACT_CHANCE:
+        if not battle._open_to(ailment, user, True) or rng.random() >= abilities.CONTACT_CHANCE:
             return None
         return battle._inflict(ailment, user, side, rng)
 

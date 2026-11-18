@@ -11,45 +11,62 @@ from ypoke import battle_data
 from ypoke.effects import hook_names, loaded
 
 HOOKS = {
-    "on_entry_form": "item: a held-item form takes hold as its holder enters, after Stealth Rock and Mega Evolution",
+    "hazard": "state: an entry hazard acts on a Pokémon entering its side, in the order the hazards were set",
+    "ignores_hazards": "item: the hazards that hurt, poison or slow do nothing to its holder",
+    "on_entry_form": "item: a held-item form takes hold as its holder enters, after the hazards and Mega Evolution",
     "on_entry": "ability: acts as its holder enters, the faster entering Pokémon first",
+    "state_turns": "item: how long a field or side state its holder sets lasts",
     "on_update": "item: a one-use item reacts to its holder's state after an entry, an action or the end of a turn",
-    "wanted": "move: whether the move chooser picks this status move now",
+    "wanted": "move: whether the move chooser picks this effect move now",
     "bars_status_moves": "item: its holder only picks damaging moves",
-    "modify_type": "move: the move's type in this weather",
-    "modify_priority": "ability: added to the move's priority",
+    "modify_type": "move: the move's type in this weather or terrain",
+    "modify_priority": "ability, move: added to the move's priority",
     "moves_first": "item: a draw that puts its holder first in its priority bracket (holders only draw)",
     "modify_stat": "item, then ability: multiplies a stat after its stage (paralysis halves Speed in between)",
+    "field_stat": "ability: multiplies a stat in a weather or terrain, after `modify_stat`",
+    "side_stat": "state: multiplies a stat of the Pokémon on its side, last",
+    "bans_move": "state: a move that cannot be used at all, after sleep and freeze and before confusion and PP",
     "locks_move": "item: its holder repeats the move it used",
+    "stops_move": "state: a used move fails on a target on its side, after PP",
     "use": "move: a status or weather move acts instead of dealing damage",
     "weather_turns": "item: how long a weather its holder starts lasts",
+    "before_hit": "move: acts before the accuracy draw and the target's immunity",
     "skips_accuracy": "move: hits without an accuracy draw",
     "accuracy_as_user": "item: multiplies the user's accuracy, before the target's item",
     "accuracy_as_target": "item: multiplies the accuracy of a move used on its holder",
+    "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
+    "grounds": "state: grounds every Pokémon, so Ground moves hit Flying types and Levitate",
+    "airborne": "ability: its holder is not grounded",
     "immune_to": "ability: a move type that does nothing to its holder",
-    "crit_stage": "item: added to the move's critical-hit stage",
+    "crit_stage": "move, then item: the move's critical-hit stage, then added to it",
+    "guards_crit": "state: no critical hit lands on its side (the draw still happens)",
     "ignores_burn": "ability, move: a burn does not halve the user's Attack",
     "base_power": "move: the move's power in this battle state",
     "modify_power": "ability: multiplies the user's base power",
+    "field_power": "state: multiplies the base power, after the ability",
     "modify_stab": "ability: replaces the same-type bonus",
     "modify_weather_boost": "move: replaces the weather's multiplier",
     "modify_damage_taken": "ability: multiplies damage its holder takes, after the weather",
     "modify_damage": "item: multiplies damage its holder deals, last",
+    "screen": "state: multiplies damage to its side; the lowest one counts, and a critical hit passes it",
+    "infiltrates": "ability: its holder's moves pass screens, Safeguard and Mist",
     "resists": "item: halves the first hit and is used up",
     "endures": "ability, then item: a hit that would knock its holder out leaves it 1 HP",
     "on_contact_hit": "item: hurts the user of each physical hit on its holder",
     "between_hits": "item: acts between the hits of a multi-hit move",
+    "guards_ailment": "state: an ailment a Pokémon on its side cannot get, from anyone or only from a foe",
     "blocks_ailment": "ability: an ailment its holder cannot get",
+    "guards_stats": "state: a foe cannot lower the stats of a Pokémon on its side",
     "on_contact": "ability: may hit back at a physical move's user once the move is over",
     "modify_drain": "item: the HP a draining move gives back",
     "after_move_as_user": "item: acts after its holder's move dealt damage, after recoil and drain",
     "after_move_as_target": "item: acts after a move dealt damage to its holder",
-    "after_move": "move: acts once the damage is dealt",
+    "after_move": "move: acts once the damage is dealt; may return more changes",
     "faints_user": "move: its user faints once it is used",
     "switches_user_out": "move: its user switches out after a hit",
-    "remember": "move: the team notes a status move that worked, so it is not picked again",
+    "remember": "move: the team notes an effect move that worked, so it is not picked again",
     "blocks_weather_chip": "ability: weather does not chip its holder",
-    "end_of_turn": "item: heals, hurts or inflicts at the end of a turn, after weather",
+    "end_of_turn": "state, then item: heals, hurts or inflicts at the end of a turn, after weather",
     "keeps_weather": "ability: the weather lasts only while a holder is out",
 }
 
@@ -80,8 +97,13 @@ def move(used, hook: str, *args, default=None):
 
 def key(kind: str, name: str, hook: str, *args, default=None):
     """Runs the handler of effect key `name` itself, if it has the hook."""
-    handler = _only((name,), kind, hook)
+    handler = _key_handler(kind, name, hook)
     return default if handler is None else getattr(handler, hook)(name, *args)
+
+
+@cache
+def _key_handler(kind: str, name: str, hook: str):
+    return _only((name,), kind, hook)
 
 
 @cache

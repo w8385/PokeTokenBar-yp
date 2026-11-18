@@ -11,8 +11,8 @@ from functools import partial
 
 from ypoke import gyms
 from ypoke.battle import (
-    CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage, ItemEffect, ItemHeal, MegaEvolution,
-    SendOut, StatusDamage, WeatherDamage, YawnSleep, simulate,
+    CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal,
+    MegaEvolution, SendOut, StatusDamage, TerrainHeal, WeatherDamage, YawnSleep, simulate,
 )
 from ypoke.combatants import combatant
 from ypoke.gym_data import FINALE_LINE
@@ -132,8 +132,12 @@ def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: 
             replay.switch(turn, event.side, starts[position] if event.side == 0 else None)
         elif isinstance(event, Action):
             replay.action(event)
-        elif isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage)):
+        elif isinstance(event, (StatusDamage, WeatherDamage, ItemHeal, HazardDamage, TerrainHeal)):
             replay.hp(turn, event.side, event.hp)
+        elif isinstance(event, HazardHit):
+            replay.hp(turn, event.side, event.hp)
+            if event.change is not None and event.change.kind in CARRIED_STATUSES:
+                replay.status(turn, event.side, event.change.kind)
         elif isinstance(event, ItemEffect) and event.effect in ("cure", *CARRIED_STATUSES):
             replay.status(turn, event.side, None if event.effect == "cure" else event.effect)
         elif isinstance(event, YawnSleep):
