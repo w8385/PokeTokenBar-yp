@@ -35,6 +35,10 @@ STATE_LABEL = {
 BLOCKED_TAG = {
     "paralysis": "⚡몸이 저려 못 움직임", "sleep": "💤자는 중", "freeze": "🧊얼어서 못 움직임",
     "gravity": "🌍중력 때문에 기술을 못 씀", "psychic-terrain": "🔮사이코필드에 막힘",
+    "protect": "🛡️방어에 막힘", "kings-shield": "🛡️킹실드에 막힘", "spiky-shield": "🌵니들가드에 막힘",
+    "baneful-bunker": "☠️토치카에 막힘", "obstruct": "🛡️블로킹에 막힘", "silk-trap": "🕸️실크트랩에 막힘",
+    "burning-bulwark": "🔥화염의수호에 막힘", "mat-block": "🛡️마룻바닥세워막기에 막힘",
+    "quick-guard": "🛡️퍼스트가드에 막힘", "crafty-shield": "🛡️트릭가드에 막힘", "substitute": "🧸대타에 막힘",
 }
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {
@@ -60,6 +64,10 @@ EFFECT_TEXT = {
     "wish": "🌠소원을 빌었다", "aqua-ring": "💧물의 고리를 둘렀다", "ingrain": "🌱뿌리를 박았다",
     "heal-bell": "🔔동료의 상태이상이 나았다", "healing-wish": "🌙몸을 바쳐 다음 동료를 회복시킨다",
     "memento": "🖤몸을 바쳤다 →", "revival-blessing": "✨",
+    **dict.fromkeys(("protect", "kings-shield", "spiky-shield", "baneful-bunker", "obstruct", "silk-trap",
+                     "burning-bulwark", "mat-block"), "🛡️방어 태세"),
+    "quick-guard": "🛡️선제공격을 막는다", "crafty-shield": "🛡️변화 기술을 막는다", "endure": "💪버티기 태세",
+    "substitute": "🧸대타를 세웠다", "shed-tail": "🧸꼬리를 잘라 대타를 남겼다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
@@ -72,8 +80,11 @@ STAT_SHORT = {
     "accuracy": "명중", "evasion": "회피",
 }
 CHANGES_IN_TEXT = frozenset({"swords-dance", "tidy-up"})
-VOLATILE_LABEL = {"wish": "🌠소원", "aqua-ring": "💧물의고리", "ingrain": "🌱뿌리박기", "healing-wish": "🌙치유소원"}
-VOLATILE_END_TEXT: dict[str, str] = {}
+VOLATILE_LABEL = {
+    "wish": "🌠소원", "aqua-ring": "💧물의고리", "ingrain": "🌱뿌리박기", "healing-wish": "🌙치유소원",
+    "substitute": "🧸대타", "shed-tail": "🧸대타 이어받음",
+}
+VOLATILE_END_TEXT = {"substitute": "부서졌다"}
 
 
 Image = tuple[str, str]

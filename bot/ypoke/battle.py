@@ -1141,7 +1141,7 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
         damage = _damage(attacker, defender, move, multiplier, hit_critical, weather.kind, rng, hit)
         if resisted and hit == 0:
             damage, defender.item = max(1, int(damage * items.RESIST_BERRY_MULTIPLIER)), None
-        if any(_field(defender, "takes_hit", damage, attacker, defender)):
+        if any(_field(defender, "takes_hit", damage, attacker, defender, move)):
             hits, critical, shielded = hits + 1, critical or hit_critical, True
             continue
         damage = min(defender.hp, damage)

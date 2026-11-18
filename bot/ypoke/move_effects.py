@@ -22,8 +22,11 @@ STATUS_EFFECTS = (
     "electric-terrain", "grassy-terrain", "psychic-terrain", "misty-terrain", "reflect", "light-screen", "aurora-veil",
     "spikes", "toxic-spikes", "sticky-web", "tailwind", "safeguard", "mist", "lucky-chant", "gravity", "haze", "defog",
     "court-change", "tidy-up",
+    "protect", "kings-shield", "spiky-shield", "baneful-bunker", "obstruct", "silk-trap", "burning-bulwark",
+    "mat-block", "quick-guard", "crafty-shield", "endure",
     "healing-wish", "memento", "revival-blessing", "heal", "weather-heal", "roost", "swallow", "strength-sap",
     "pain-split", "purify", "rest", "wish", "heal-bell", "refresh", "aqua-ring", "ingrain", "heal-foe",
+    "substitute", "shed-tail",
     "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
     "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
 )
@@ -40,6 +43,9 @@ EFFECT_KEYS = frozenset({*STATUS_EFFECTS, *DAMAGE_EFFECTS, *ID_KEYS, "damage", "
 # Punching Glove boosts these.
 PUNCH_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
                         if "punch" in entry.get("flags", ()))
+# They pass a Substitute.
+SOUND_MOVES = frozenset(int(move_id) for move_id, entry in battle_data.table("moves").items()
+                        if "sound" in entry.get("flags", ()))
 
 STATUS_MOVES = {move_id: key for key in STATUS_EFFECTS for move_id in battle_data.with_key("moves", key)}
 EFFECTS = {**STATUS_MOVES, **{move_id: key for key in DAMAGE_EFFECTS for move_id in battle_data.with_key("moves", key)}}

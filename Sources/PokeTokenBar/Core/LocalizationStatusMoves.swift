@@ -220,6 +220,78 @@ extension L {
                         note: t("자신은 기절", "the user faints", "自分は ひんし", "el usuario se debilita",
                                 "le lanceur tombe K.O.", "o usuário desmaia", "der Anwender wird besiegt",
                                 "пользователь падает"))
+        case 182, 197: guardLine(nil)
+        case 588:
+            guardLine(t("접촉한 상대 공격 1랭크 하락, 공격 기술만", "a contact attacker loses 1 Attack stage; attacks only",
+                        "触れた相手の こうげき1段階ダウン、攻撃わざのみ", "quien lo toque pierde 1 nivel de Ataque; solo ataques",
+                        "qui le touche perd 1 niveau d'Attaque ; attaques seulement",
+                        "quem tocar perde 1 estágio de Ataque; só ataques",
+                        "wer ihn berührt, verliert 1 Angriffsstufe; nur Attacken",
+                        "контактный атакующий теряет 1 ступень атаки; только атаки"))
+        case 596:
+            guardLine(t("접촉한 상대 HP 1/8 감소", "a contact attacker loses 1/8 of its HP", "触れた相手のHPを1/8減らす",
+                        "quien lo toque pierde 1/8 de sus PS", "qui le touche perd 1/8 de ses PV",
+                        "quem tocar perde 1/8 dos PS", "wer ihn berührt, verliert 1/8 seiner KP",
+                        "контактный атакующий теряет 1/8 ОЗ"))
+        case 661:
+            guardLine(t("접촉한 상대를 독으로", "poisons a contact attacker", "触れた相手を どくにする",
+                        "envenena a quien lo toque", "empoisonne qui le touche", "envenena quem tocar",
+                        "vergiftet, wer ihn berührt", "отравляет контактного атакующего"))
+        case 908:
+            guardLine(t("접촉한 상대를 화상으로", "burns a contact attacker", "触れた相手を やけどにする",
+                        "quema a quien lo toque", "brûle qui le touche", "queima quem tocar",
+                        "verbrennt, wer ihn berührt", "обжигает контактного атакующего"))
+        case 792:
+            guardLine(t("접촉한 상대 방어 2랭크 하락, 공격 기술만", "a contact attacker loses 2 Defense stages; attacks only",
+                        "触れた相手の ぼうぎょ2段階ダウン、攻撃わざのみ",
+                        "quien lo toque pierde 2 niveles de Defensa; solo ataques",
+                        "qui le touche perd 2 niveaux de Défense ; attaques seulement",
+                        "quem tocar perde 2 estágios de Defesa; só ataques",
+                        "wer ihn berührt, verliert 2 Verteidigungsstufen; nur Attacken",
+                        "контактный атакующий теряет 2 ступени защиты; только атаки"))
+        case 852:
+            guardLine(t("접촉한 상대 스피드 1랭크 하락, 공격 기술만", "a contact attacker loses 1 Speed stage; attacks only",
+                        "触れた相手の すばやさ1段階ダウン、攻撃わざのみ",
+                        "quien lo toque pierde 1 nivel de Velocidad; solo ataques",
+                        "qui le touche perd 1 niveau de Vitesse ; attaques seulement",
+                        "quem tocar perde 1 estágio de Velocidade; só ataques",
+                        "wer ihn berührt, verliert 1 Initiative-Stufe; nur Attacken",
+                        "контактный атакующий теряет 1 ступень скорости; только атаки"))
+        case 561:
+            t("나온 첫 턴에만 그 턴의 공격을 막음", "Blocks attacks that turn, on its first turn in only",
+              "出たターンだけ そのターンの攻撃を防ぐ", "Bloquea los ataques ese turno, solo en su primer turno",
+              "Bloque les attaques ce tour-ci, à son premier tour seulement",
+              "Bloqueia ataques nesse turno, só no primeiro turno", "Blockt Attacken in der Runde, nur in der ersten Runde",
+              "Блокирует атаки на этот ход, только в первый ход")
+        case 501:
+            t("그 턴 상대의 선제 기술을 막음", "Blocks the target's priority moves that turn", "そのターン 相手の先制技を防ぐ",
+              "Bloquea los movimientos con prioridad ese turno", "Bloque les capacités prioritaires ce tour-ci",
+              "Bloqueia golpes com prioridade nesse turno", "Blockt in der Runde Attacken mit Vorrang",
+              "Блокирует приоритетные приёмы на этот ход")
+        case 578:
+            t("그 턴 상대의 변화 기술을 막음", "Blocks the target's status moves that turn", "そのターン 相手の変化技を防ぐ",
+              "Bloquea los movimientos de estado ese turno", "Bloque les capacités de statut ce tour-ci",
+              "Bloqueia golpes de status nesse turno", "Blockt in der Runde Status-Attacken",
+              "Блокирует приёмы статуса на этот ход")
+        case 203:
+            t("그 턴 기절할 공격을 HP 1로 버팀", "Survives a knockout hit that turn with 1 HP",
+              "そのターン ひんしになる攻撃をHP1で耐える", "Aguanta con 1 PS un golpe que lo debilitaría ese turno",
+              "Survit avec 1 PV à un coup fatal ce tour-ci", "Aguenta com 1 PS um golpe fatal nesse turno",
+              "Übersteht in der Runde einen K.-o.-Treffer mit 1 KP", "Переживает смертельный удар на этот ход с 1 ОЗ")
+        case 164:
+            t("HP 1/4로 대타를 세움, 변화 기술을 막음", "Pays 1/4 HP for a substitute that blocks status moves",
+              "HP1/4で みがわりを作り 変化技を防ぐ", "Paga 1/4 de PS por un sustituto que bloquea movimientos de estado",
+              "Paie 1/4 des PV pour un clone qui bloque les capacités de statut",
+              "Paga 1/4 dos PS por um substituto que bloqueia golpes de status",
+              "Zahlt 1/4 KP für einen Delegator, der Status-Attacken blockt",
+              "Платит 1/4 ОЗ за заменителя, который блокирует приёмы статуса")
+        case 880:
+            t("HP 1/2로 대타를 세우고 다음 포켓몬과 교체", "Pays 1/2 HP for a substitute and switches it to the next Pokémon",
+              "HP1/2で みがわりを作り 次のポケモンと交代", "Paga 1/2 de PS por un sustituto y cambia al siguiente Pokémon",
+              "Paie 1/2 des PV pour un clone et passe au Pokémon suivant",
+              "Paga 1/2 dos PS por um substituto e troca pelo próximo Pokémon",
+              "Zahlt 1/2 KP für einen Delegator und wechselt zum nächsten Pokémon",
+              "Платит 1/2 ОЗ за заменителя и передаёт его следующему покемону")
         default: nil
         }
     }
@@ -268,6 +340,17 @@ extension L {
     private func hpCost(_ share: Int) -> String {
         t("HP 1/\(share) 소모", "costs 1/\(share) of its HP", "HPを1/\(share)消費", "cuesta 1/\(share) de sus PS",
           "coûte 1/\(share) de ses PV", "custa 1/\(share) dos PS", "kostet 1/\(share) der KP", "стоит 1/\(share) ОЗ")
+    }
+
+    private func guardLine(_ note: String?) -> String {
+        let base = t("그 턴 공격을 막음, 연속 사용 시 1/3 확률", "Blocks attacks that turn; 1/3 chance when repeated",
+                     "そのターン攻撃を防ぐ、連続使用は1/3の確率", "Bloquea ataques ese turno; 1/3 de probabilidad si se repite",
+                     "Bloque les attaques ce tour-ci ; 1/3 de chance si répété",
+                     "Bloqueia ataques nesse turno; 1/3 de chance se repetido",
+                     "Blockt Attacken in der Runde; 1/3 Chance bei Wiederholung",
+                     "Блокирует атаки на этот ход; шанс 1/3 при повторе")
+        guard let note else { return base }
+        return base + t(", ", ", ", "、", ", ", ", ", ", ", ", ", ", ") + note
     }
 
     private func healShare(_ share: Int) -> String {
