@@ -52,6 +52,7 @@ struct BoxView: View {
                 Text(store.l.dexTotal(visible.count)).font(.caption).foregroundStyle(.secondary)
                 Spacer(minLength: 0)
             }
+            BoxScopeChips(l: store.l, all: all, filters: filters)
             if let speciesID = navigation.boxSpeciesFilter {
                 speciesFilterChip(speciesID, all: all)
             }
