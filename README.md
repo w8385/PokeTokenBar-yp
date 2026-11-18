@@ -210,7 +210,7 @@ A Pokémon waiting in the Box can be a friend, not only a graduate. The picker m
 <h3>➡️ A stuck Pokémon moves on by itself</h3>
 Sometimes your Pokémon has all the EXP it needs, but its next step waits on something only you can do, such as pets, a friend or an item. Home then shows what it needs and how long until it moves on. If you don't open the app for 30 minutes, it goes to the Box with its progress. The Box Pokémon closest to its next step takes its place, or a new egg starts if there is none. Press <b>Keep waiting</b> to keep that Pokémon until it evolves.
 <br><br>
-An Exp. Share on a Box Pokémon that can't use more EXP moves to the next closest one, or back to the Bag. Turn all of this off under <b>Settings › General</b>.
+An Exp. Share on a Box Pokémon that can't use more EXP moves to the next closest one, or back to the Bag. A fully grown holder with no step left graduates by itself into your Pokédex, and its Exp. Share moves on the same way. Turn all of this off under <b>Settings › General</b>.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-move-on.png" width="300" alt="Home with a Munchlax that needs 30 pets, the time left until it moves to the Box, and Keep waiting"></td>
 </tr>
