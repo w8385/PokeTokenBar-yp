@@ -43,7 +43,7 @@ BLOCKED_TAG = {
     "quick-guard": "🛡️퍼스트가드에 막힘", "crafty-shield": "🛡️트릭가드에 막힘", "substitute": "🧸대타에 막힘",
     "taunt": "😤도발 때문에 못 씀", "disable": "🚫사슬묶기로 못 씀", "torment": "😈트집 때문에 연달아 못 씀",
     "heal-block": "🚫회복봉인으로 못 씀", "imprison": "🔒봉인되어 못 씀", "powder": "💥분진이 터졌다",
-    "flinch": "😖풀죽어서 못 움직임", "throat-chop": "🤐소리 기술을 못 씀",
+    "flinch": "😖풀죽어서 못 움직임", "throat-chop": "🤐소리 기술을 못 씀", "recharge": "😮‍💨반동으로 못 움직임",
 }
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {
@@ -92,6 +92,8 @@ EFFECT_TEXT = {
     "teleport": "✨순간이동으로 물러났다", "baton-pass": "🪄바통을 넘겼다",
     "chilly-reception": "❄️눈을 부르고 물러났다", "chilly-reception-dry": "🥶썰렁한 농담을 하고 물러났다",
     "mimic": "🪞상대의 기술을 따라 배웠다", "sketch": "✏️상대의 기술을 스케치했다", "transform": "🔄상대로 변신했다",
+    "charge-turn": "⏳힘을 모으는 중", "flying": "🕊️하늘 높이 날아올랐다", "underground": "⛏️땅속으로 파고들었다",
+    "underwater": "🌊물속으로 숨었다", "vanished": "👻모습을 감췄다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
