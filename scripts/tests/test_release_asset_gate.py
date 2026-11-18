@@ -23,7 +23,7 @@ class ReleaseAssetGateTests(unittest.TestCase):
         self.env = {k: v for k, v in os.environ.items() if not k.startswith(("PTB_", "GIT_"))} | GIT_ENV
         scripts = self.repo / "scripts"
         scripts.mkdir()
-        for name in ("release-asset-gate.py", "fork-release.sh"):
+        for name in ("release-asset-gate.py", "fork-release.sh", "png-diff.py"):
             shutil.copy(ROOT / "scripts" / name, scripts / name)
         self.git("init", "-q", "-b", "main")
         for readme, image in README.items():
@@ -74,6 +74,42 @@ class ReleaseAssetGateTests(unittest.TestCase):
         self.draw("screenshot-shop", "v3")
         self.commit("docs: redraw the shop")
         self.assertEqual(self.gate().returncode, 0)
+
+    def test_an_unchanged_image_with_a_changed_source_fails_when_the_fresh_render_differs(self):
+        self.write(f"{UI}/ShopView.swift", "struct ShopView { let price = 2 }\n")
+        self.commit("fix(shop): price")
+        fresh = self.render("fresh", "v2")
+        result = self.gate(PTB_README_FRESH_DIR=fresh)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("differs from the fresh render", result.stdout)
+
+    def test_a_fresh_render_identical_to_every_committed_variant_clears_the_screen(self):
+        self.write(f"{UI}/ShopView.swift", "struct ShopView { let price = 2 }\n")
+        self.commit("refactor(shop): price")
+        result = self.gate(PTB_README_FRESH_DIR=self.render("fresh", "v1"))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("screenshot-shop matches a fresh render", result.stdout)
+
+    def test_differences_only_where_two_fresh_renders_disagree_are_noise(self):
+        self.write(f"{UI}/ShopView.swift", "struct ShopView { let price = 2 }\n")
+        self.commit("refactor(shop): price")
+        fresh = self.render("fresh", "v1", clock=(200, 0, 0, 255))
+        second = self.render("second", "v1", clock=(0, 200, 0, 255))
+        self.assertEqual(self.gate(PTB_README_FRESH_DIR=fresh).returncode, 1)
+        result = self.gate(PTB_README_FRESH_DIR=fresh, PTB_README_NOISE_DIR=second)
+        self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_no_fresh_render_or_a_missing_variant_still_fails(self):
+        self.write(f"{UI}/ShopView.swift", "struct ShopView { let price = 2 }\n")
+        self.commit("refactor(shop): price")
+        result = self.gate()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("No fresh render", result.stdout)
+        fresh = self.render("fresh", "v1")
+        (Path(fresh) / "screenshot-shop-ja.png").unlink()
+        result = self.gate(PTB_README_FRESH_DIR=fresh)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("screenshot-shop-ja.png missing from the fresh render", result.stdout)
 
     def test_redrawing_another_screen_does_not_cover_a_mapped_one(self):
         self.write(f"{UI}/ShopView.swift", "struct ShopView { let price = 2 }\n")
@@ -128,9 +164,17 @@ class ReleaseAssetGateTests(unittest.TestCase):
         return subprocess.run(["bash", "scripts/fork-release.sh", *args], cwd=self.repo, env=self.env | env,
                               capture_output=True, text=True)
 
-    def gate(self):
-        return subprocess.run(["python3", "scripts/release-asset-gate.py", "v1.0.0"], cwd=self.repo, env=self.env,
-                              capture_output=True, text=True)
+    def gate(self, **env):
+        return subprocess.run(["python3", "scripts/release-asset-gate.py", "v1.0.0"], cwd=self.repo,
+                              env=self.env | env, capture_output=True, text=True)
+
+    def render(self, name, content, clock=None):
+        renders = tempfile.TemporaryDirectory()
+        self.addCleanup(renders.cleanup)
+        out = Path(renders.name) / name
+        for suffix in ("", "-ko", "-ja"):
+            png(out / f"screenshot-shop{suffix}.png", content, clock)
+        return str(out)
 
     def stub(self, path, body):
         path.write_text(f"#!/bin/sh\n{body}\n")
@@ -138,7 +182,7 @@ class ReleaseAssetGateTests(unittest.TestCase):
 
     def draw(self, family, content):
         for suffix in ("", "-ko", "-ja"):
-            self.write(f"assets/{family}{suffix}.png", content)
+            png(self.repo / f"assets/{family}{suffix}.png", content)
 
     def show_in_readmes(self, family, skip=None):
         for readme, suffix in (("README.md", ""), ("README.ko.md", "-ko"), ("README.ja.md", "-ja")):
@@ -157,6 +201,16 @@ class ReleaseAssetGateTests(unittest.TestCase):
 
     def git(self, *args):
         subprocess.run(["git", *args], cwd=self.repo, env=self.env, check=True, capture_output=True)
+
+
+def png(path, content, clock=None):
+    from PIL import Image
+    path.parent.mkdir(parents=True, exist_ok=True)
+    shade = sum(content.encode()) % 256
+    image = Image.new("RGBA", (40, 20), (shade, 255 - shade, 128, 255))
+    if clock:
+        image.paste(Image.new("RGBA", (6, 4), clock), (30, 14))
+    image.save(path)
 
 
 class ScreenMapTests(unittest.TestCase):
