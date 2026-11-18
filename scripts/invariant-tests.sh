@@ -21,6 +21,7 @@ cd "$(dirname "$0")/.."
 CLASSES=(
   SwiftUIIsolationTests            # every View/App struct is @MainActor
   NoOCRInTestsGuardTests           # no test reads rendered text with OCR
+  PinnedSpriteGuardTests           # no test seeds the evictable sprite cache
   ScrollerLaneTests                # every vertical ScrollView reserves the scroller lane
   LocalizedUILiteralTests          # no Hangul literals in UI sources
   LocalizationColumnTests          # es/pt columns not swapped in Localization.swift

@@ -28,15 +28,8 @@ final class DexColorRenderingTests: XCTestCase {
             SpriteLoader.cacheDir.appendingPathComponent(
                 SpriteStore.cacheKey(speciesID: 606, animated: false, shiny: $0) + ".png").path as NSString
         }
-        let previous = keys.map { SpriteLoader.imageCache.object(forKey: $0) }
         for (key, color) in zip(keys, [NSColor.red, NSColor.blue]) {
-            SpriteLoader.imageCache.setObject(solidImage(color), forKey: key)
-        }
-        defer {
-            for (key, image) in zip(keys, previous) {
-                if let image { SpriteLoader.imageCache.setObject(image, forKey: key) }
-                else { SpriteLoader.imageCache.removeObject(forKey: key) }
-            }
+            pinSprite(solidImage(color), at: key)
         }
         try await body()
     }
