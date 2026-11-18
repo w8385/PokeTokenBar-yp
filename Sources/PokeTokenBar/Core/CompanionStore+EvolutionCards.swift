@@ -24,7 +24,7 @@ extension CompanionStore {
     /// The step into `speciesID`. Without an `individual` (the Pokédex page) also the steps out of it, with the raised
     /// Pokémon's progress on the step it waits for. For the raised Pokémon's Box page it also carries its progress
     /// and its waiting step; for a graduated individual, the trade steps it can take. A raised graduate whose form
-    /// can still evolve gets its step too.
+    /// can still evolve gets its step too, and so does a stored Exp. Share holder.
     func evolutionCards(for speciesID: Int, individual: DexEntry? = nil) -> [EvolutionCard] {
         guard let individual else { return speciesEvolutionCards(for: speciesID) }
         let raised = individual.finalID == speciesID
@@ -39,6 +39,10 @@ extension CompanionStore {
         if let pending, pending.rule.species != speciesID {
             cards.append(EvolutionCard(rule: pending.rule, context: pending.context, isNextStep: true,
                                        offersSkip: skippable))
+        }
+        if state.storedLines[individual.id] != nil, individual.finalID == speciesID,
+           let gate = storedLineGate(id: individual.id), gate.rule.species != speciesID {
+            cards.append(EvolutionCard(rule: gate.rule, context: gate.context, isNextStep: true))
         }
         if individual.releasedAt == nil, state.storedLines[individual.id] == nil,
            individual.profile != nil, individual.finalID == speciesID,

@@ -182,6 +182,11 @@ enum EvolutionRules {
         return rule.openPath(in: context)
     }
 
+    static func pathOpenByItself(into species: Int, in context: EvolutionContext) -> [EvolutionRequirement]? {
+        guard let rule = rule(for: species) else { return [] }
+        return rule.pathOpenByItself(in: context)
+    }
+
     /// The children growth can reach; an item-only child is reached by using its item on the current form.
     static func growthChildren(_ options: [EvoNode]) -> [EvoNode] {
         options.filter { rule(for: $0.speciesID)?.isItemOnly != true }

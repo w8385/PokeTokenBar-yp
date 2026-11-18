@@ -1319,7 +1319,8 @@ struct CompanionState: Codable, Sendable {
     // 졸업분 + 현재 개체의 도달 단계이며, 그 범위에서 빠지면 reconcileRepresentativeSelection 이 nil 로 복구한다.
     var representativeSpeciesID: Int? = nil
     var representativeForm: PokemonForm? = nil
-    /// `DexEntry.id` of the graduated Pokémon shown beside the active one (display only, at most `maxFriends`).
+    /// Pokémon shown beside the active one, at most `maxFriends`: a graduate's `DexEntry.id`, or
+    /// `friendKey(storedLine:)` for a stored line.
     var friendEntryIDs: [String] = []
     static let maxFriends = 2
     /// `DexEntry.id` of the graduate the player raises in place of the line in `active` / the egg fields. While it
@@ -1562,9 +1563,25 @@ struct CompanionState: Codable, Sendable {
     /// Forget the prayers of the previous egg. Call on every path that starts a new egg (or consumes this one).
     mutating func resetEggPrayers() { eggPrayers = nil }
 
-    /// Graduated individuals that can stand beside the active Pokémon: released records are not friends.
-    var friendCandidates: [DexEntry] {
-        dex.filter { !$0.isReleased && !friendEntryIDs.contains($0.id) && $0.id != raisedEntryID }
+    /// A stored line's key in `friendEntryIDs`. Its instance ID is also the id of its released `dex` record.
+    static func friendKey(storedLine instanceID: String) -> String { storedFriendPrefix + instanceID }
+    static let storedFriendPrefix = "stored:"
+
+    /// The Box id (instance ID) a `friendEntryIDs` key stands for.
+    static func boxID(ofFriendKey key: String) -> String {
+        key.hasPrefix(storedFriendPrefix) ? String(key.dropFirst(storedFriendPrefix.count)) : key
+    }
+
+    /// The key an owned individual takes in `friendEntryIDs`: a graduate that is not raised, or a stored line.
+    /// Nil for anything else, the raised Pokémon and the line in `active` included.
+    func friendKey(forBoxID id: String) -> String? {
+        if storedLines[id] != nil { return Self.friendKey(storedLine: id) }
+        guard id != raisedEntryID, dex.contains(where: { $0.id == id && !$0.isReleased }) else { return nil }
+        return id
+    }
+
+    func isFriend(boxID id: String) -> Bool {
+        friendEntryIDs.contains { Self.boxID(ofFriendKey: $0) == id }
     }
 
     /// The graduate being raised now; nil when the line in `active` (or its egg) is the one raised.
@@ -1605,10 +1622,12 @@ struct CompanionState: Codable, Sendable {
         graduateEvolution = graduateEvolution.filter { owned.contains($0.key) }
     }
 
-    /// Friends are only graduated dex entries, once each, at most `maxFriends`. Call wherever the dex can change.
+    /// Friends are owned graduates that are not raised and stored lines, once each, at most `maxFriends`. Call
+    /// wherever the dex or the Box can change.
     mutating func reconcileFriends() {
         let raised = raisedEntryID
-        let valid = Set(dex.lazy.filter { !$0.isReleased && $0.id != raised }.map(\.id))
+        var valid = Set(dex.lazy.filter { !$0.isReleased && $0.id != raised }.map(\.id))
+        valid.formUnion(storedLines.keys.map(Self.friendKey(storedLine:)))
         var seen = Set<String>()
         friendEntryIDs = friendEntryIDs.filter { valid.contains($0) && seen.insert($0).inserted }
             .prefix(Self.maxFriends).map { $0 }

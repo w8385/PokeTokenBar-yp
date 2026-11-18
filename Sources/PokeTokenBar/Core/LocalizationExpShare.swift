@@ -22,14 +22,24 @@ extension L {
     }
 
     var expShareStoredNote: String {
-        t("보관 중에는 경험치만 쌓이고, 다시 키우면 그만큼 진화해요.",
-          "While stored it only banks EXP. It evolves with it once you raise it again.",
-          "預けている間は経験値がたまるだけで、また育てるとその分進化します。",
-          "Mientras está guardado solo acumula EXP. Evoluciona con ella cuando vuelvas a criarlo.",
-          "Rangé, il ne fait qu'accumuler de l'EXP. Il évolue avec quand tu le reprends.",
-          "Guardado, ele só acumula EXP. Evolui com ela quando você voltar a criá-lo.",
-          "Verwahrt sammelt es nur EP. Es entwickelt sich damit, sobald du es wieder aufziehst.",
-          "На хранении он только копит опыт. Эволюционирует с ним, когда вы снова начнёте его растить.")
+        t("보관 중에도 경험치가 쌓이고, 저절로 열리는 진화는 박스에서 해요. 도구·쓰다듬기·배틀이 필요한 진화는 다시 키울 때 해요.",
+          "It banks EXP in the Box and takes any evolution that opens by itself. Steps that need an item, pets or battles wait until you raise it again.",
+          "預けている間も経験値がたまり、ひとりでに開く進化はボックスでします。道具・なでる・バトルが必要な進化はまた育てるときにします。",
+          "Acumula EXP en la Caja y evoluciona allí cuando la evolución se abre sola. Las que necesitan un objeto, caricias o combates esperan a que vuelvas a criarlo.",
+          "Il accumule de l'EXP dans la Boîte et y évolue quand l'évolution s'ouvre toute seule. Celles qui demandent un objet, des caresses ou des combats attendent que tu le reprennes.",
+          "Acumula EXP na Caixa e evolui lá quando a evolução se abre sozinha. As que precisam de item, carinho ou batalhas esperam até você voltar a criá-lo.",
+          "Es sammelt EP in der Box und entwickelt sich dort, wenn sich die Entwicklung von selbst öffnet. Schritte mit Item, Streicheln oder Kämpfen warten, bis du es wieder aufziehst.",
+          "В Коробке он копит опыт и эволюционирует там, если эволюция открывается сама. Шаги, которым нужен предмет, поглаживания или бои, ждут, пока вы снова начнёте его растить.")
+    }
+
+    var expShareMoveHere: String {
+        t("여기로 옮기기", "Move here", "ここに移す", "Mover aquí", "Déplacer ici", "Mover para cá", "Hierher verschieben", "Перенести сюда")
+    }
+
+    var expShareMoveTitle: String {
+        t("학습장치를 가져올 포켓몬", "Take the Exp. Share from", "がくしゅうそうちを移すポケモン",
+          "Quitarle el Repartir Exp a", "Prendre le Multi Exp de", "Pegar o Compart. Exp. de",
+          "EP-Teiler nehmen von", "Забрать Общий опыт у")
     }
 
     var expShareIdleWhileRaised: String {
@@ -55,14 +65,14 @@ extension L {
     }
 
     var expShareNoneInBag: String {
-        t("가방에 남은 학습장치가 없어요. 다른 포켓몬에게서 떼면 달 수 있어요.",
-          "No Exp. Share left in your bag. Detach one from another Pokémon to attach it here.",
-          "バッグにがくしゅうそうちが残っていません。ほかのポケモンからはずすとつけられます。",
-          "No te queda ningún Repartir Exp en la mochila. Quítaselo a otro Pokémon para ponérselo a este.",
-          "Plus aucun Multi Exp dans le sac. Retire-le d'un autre Pokémon pour l'attacher ici.",
-          "Nenhum Compart. Exp. sobrando na mochila. Remova de outro Pokémon para colocar neste.",
-          "Kein EP-Teiler mehr im Beutel. Nimm einen einem anderen Pokémon ab, um ihn hier anzubringen.",
-          "В сумке не осталось Общего опыта. Снимите его с другого покемона, чтобы прикрепить сюда.")
+        t("가방에 남은 학습장치가 없어요. 다른 포켓몬의 학습장치를 여기로 옮길 수 있어요.",
+          "No Exp. Share left in your bag. Move one here from another Pokémon.",
+          "バッグにがくしゅうそうちが残っていません。ほかのポケモンのものをここに移せます。",
+          "No te queda ningún Repartir Exp en la mochila. Puedes moverle aquí el de otro Pokémon.",
+          "Plus aucun Multi Exp dans le sac. Tu peux déplacer ici celui d'un autre Pokémon.",
+          "Nenhum Compart. Exp. sobrando na mochila. Você pode mover para cá o de outro Pokémon.",
+          "Kein EP-Teiler mehr im Beutel. Du kannst den eines anderen Pokémon hierher verschieben.",
+          "В сумке не осталось Общего опыта. Можно перенести сюда его с другого покемона.")
     }
 
     var expShareBagHint: String {

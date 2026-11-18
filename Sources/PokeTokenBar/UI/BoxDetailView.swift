@@ -96,7 +96,11 @@ struct BoxDetailView: View {
                 case .raising: Text(l.dexRaising).font(.callout).foregroundStyle(Color.accentColor)
                 case .parked: Text(l.parkedBadge).font(.callout).foregroundStyle(.orange)
                 case .friend: Text(l.friendLabel).font(.callout).foregroundStyle(.pink)
-                case .stored: Text(l.storedBadge).font(.callout).foregroundStyle(.secondary)
+                case .stored:
+                    HStack(spacing: 6) {
+                        Text(l.storedBadge).font(.callout).foregroundStyle(.secondary)
+                        if individual.isFriend { Text(l.friendLabel).font(.callout).foregroundStyle(.pink) }
+                    }
                 case .graduated: EmptyView()
                 }
             }
@@ -187,20 +191,17 @@ struct BoxDetailView: View {
 
     @ViewBuilder
     private var friendButton: some View {
-        switch individual.role {
-        case .friend:
+        if individual.isFriend {
             Button { store.removeFriend(entryID: individual.id) } label: {
                 Label(l.friendRemove, systemImage: "heart.slash")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
-        case .graduated:
+        } else if individual.role == .graduated || individual.role == .stored {
             Button { store.addFriend(entryID: individual.id) } label: {
                 Label(l.friendAdd, systemImage: "heart")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
             .disabled(store.state.friendEntryIDs.count >= CompanionState.maxFriends)
-        case .raising, .parked, .stored:
-            EmptyView()
         }
     }
 

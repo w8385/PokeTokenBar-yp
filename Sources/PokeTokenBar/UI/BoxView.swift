@@ -43,6 +43,7 @@ struct BoxView: View {
         let visible = store.filteredBoxIndividuals(
             query: filters.searchText, speciesID: navigation.boxSpeciesFilter, filter: filters.filter,
             fightingIDs: TradePool.fightingIDs(state: store.state, slots: battleEntry?.slots ?? []))
+        let holders = store.expShareHolderIndividuals(in: all)
         return VStack(alignment: .leading, spacing: 6) {
             toolbar
             if showFilters { BoxFilterPanel(store: store, filters: filters) }
@@ -68,7 +69,7 @@ struct BoxView: View {
                             Color.clear.frame(height: 0).id("boxTop")
                             LazyVGrid(columns: Self.columns, spacing: 4) {
                                 ForEach(visible) { individual in
-                                    BoxCell(store: store, individual: individual) {
+                                    BoxCell(store: store, individual: individual, expShareHolders: holders) {
                                         navigation.boxDetailID = individual.id
                                     }
                                     .id(individual.id)
@@ -221,6 +222,7 @@ struct BoxView: View {
 struct BoxCell: View {
     let store: CompanionStore
     let individual: BoxIndividual
+    var expShareHolders: [BoxIndividual] = []
     let onTap: () -> Void
     @State private var isHovered = false
 
@@ -249,7 +251,7 @@ struct BoxCell: View {
                     .overlay(alignment: .bottomLeading) {
                         HStack(spacing: 1) {
                             if individual.role == .raising { roleIcon("figure.walk", tint: .accentColor) }
-                            else if individual.role == .friend { roleIcon("heart.fill", tint: .pink) }
+                            else if individual.isFriend { roleIcon("heart.fill", tint: .pink) }
                             if holdsExpShare { roleIcon("antenna.radiowaves.left.and.right", tint: .teal) }
                             if individual.role == .parked { textTag(store.l.parkedBadge, tint: .orange) }
                             if individual.role == .stored { textTag(store.l.storedBadge, tint: .secondary) }
@@ -287,6 +289,21 @@ struct BoxCell: View {
         .onHover { isHovered = $0 }
         .help(tooltip)
         .accessibilityLabel(tooltip)
+        .contextMenu { expShareMoveMenu }
+    }
+
+    @ViewBuilder
+    private var expShareMoveMenu: some View {
+        let sources = store.expShareMoveSources(to: individual, holders: expShareHolders)
+        if !sources.isEmpty {
+            Menu(store.l.expShareMoveHere) {
+                ForEach(sources) { holder in
+                    Button("\(store.dexEntryName(holder.entry)) Lv\(holder.level)") {
+                        store.moveExpShare(from: holder.id, to: individual.id)
+                    }
+                }
+            }
+        }
     }
 
     private var levelTag: some View {
@@ -326,7 +343,7 @@ struct BoxCell: View {
         if individual.role == .raising { parts.append(l.dexRaising) }
         if individual.role == .parked { parts.append(l.parkedBadge) }
         if individual.role == .stored { parts.append(l.storedBadge) }
-        if individual.role == .friend { parts.append(l.friendLabel) }
+        if individual.isFriend { parts.append(l.friendLabel) }
         if isRepresentative { parts.append(l.representativeBadge) }
         if let held { parts.append("\(l.heldItemLabel): \(held.name(l))") }
         if holdsExpShare { parts.append(l.itemName(.expShare)) }
