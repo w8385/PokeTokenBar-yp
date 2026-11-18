@@ -95,6 +95,7 @@ EFFECT_TEXT = {
     "mimic": "🪞상대의 기술을 따라 배웠다", "sketch": "✏️상대의 기술을 스케치했다", "transform": "🔄상대로 변신했다",
     "charge-turn": "⏳힘을 모으는 중", "flying": "🕊️하늘 높이 날아올랐다", "underground": "⛏️땅속으로 파고들었다",
     "underwater": "🌊물속으로 숨었다", "vanished": "👻모습을 감췄다", "bide": "😤참는 중",
+    "delayed-hit": "🔮미래로 공격을 보냈다",
 }
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {

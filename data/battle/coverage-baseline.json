@@ -410,13 +410,10 @@
  },
  "moves": {
   "counts": {
-   "implemented": 809,
+   "implemented": 811,
    "inert": 126,
-   "todo": 2
+   "todo": 0
   },
-  "todo": [
-   "248",
-   "353"
-  ]
+  "todo": []
  }
 }

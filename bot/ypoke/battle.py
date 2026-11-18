@@ -753,7 +753,8 @@ class _Weather:
 class _Arena:
     """The field. `trick_room`, `gravity` and `terrain_turns` are the turns left; `sides[side]` maps each timed side
     state (a screen, Tailwind, Safeguard, Mist, Lucky Chant) to its turns left and `hazards[side]` each hazard to
-    its layers, in the order they were set. `rooms` maps each other whole-field state (Magic Room, Wonder Room, Mud
+    its layers, in the order they were set, and `pending[side]` each delayed attack aimed at it (Future Sight) to its
+    turns left, user and move. `rooms` maps each other whole-field state (Magic Room, Wonder Room, Mud
     Sport) to its turns left. `log` collects the events a move's handlers make mid-action. `teams` are the two sides
     of a `simulate` run (None outside one); `last_move` is the last move anyone used, in `last_move_turn`."""
 
@@ -763,6 +764,7 @@ class _Arena:
     terrain_turns: int = 0
     sides: list[dict[str, int]] = field(default_factory=lambda: [{}, {}])
     hazards: list[dict[str, int]] = field(default_factory=lambda: [{}, {}])
+    pending: list[dict[str, tuple]] = field(default_factory=lambda: [{}, {}])
     turn: int = 0
     log: list = field(default_factory=list)
     rooms: dict[str, int] = field(default_factory=dict)
@@ -773,9 +775,9 @@ class _Arena:
 
     def states(self, side: int) -> tuple[str, ...]:
         """The effect keys of the states that act on `side`: the terrain, Gravity, the rooms, then that side's timed
-        states."""
+        states, then the delayed attacks aimed at it."""
         return (*((self.terrain,) if self.terrain else ()), *(("gravity",) if self.gravity else ()), *self.rooms,
-                *self.sides[side])
+                *self.sides[side], *self.pending[side])
 
     def foe_of(self, fighter: "_Fighter") -> "_Fighter | None":
         return self.teams[1 - fighter.side].active if self.teams else None
