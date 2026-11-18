@@ -5,7 +5,7 @@ picked at half HP or below when it heals more than the foe's best hit takes away
 from dataclasses import replace
 
 from ypoke import battle, move_power
-from ypoke.effects import register
+from ypoke.effects import hooks, register
 from ypoke.effects.moves import StatusMove
 from ypoke.effects.stats import Stages, arg, shift
 
@@ -193,6 +193,10 @@ class StrengthSap(Heal):
         dropped = shift(foe, 1 - side, "attack", -1, by=user)
         if dropped is None:
             return "", ()
+        if hooks.ability(foe, "inverts_drain", default=False):
+            user.hp = max(0, user.hp - (0 if battle._chip_free(user) else max(1, amount)))
+            arena.log.append(battle.AbilityAct(turn, 1 - side, foe.combatant.name, foe.ability))
+            return "oozed", (dropped,)
         restore(user, amount)
         return "heal", (dropped,)
 

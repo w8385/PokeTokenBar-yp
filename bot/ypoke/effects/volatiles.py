@@ -108,6 +108,11 @@ class LeechSeed(State):
         drained = hurt(fighter, LEECH_SHARE)
         seeded = ticked(fighter, side, turn, name)
         healer = fighter.arena.foe_of(fighter) if fighter.arena is not None else None
+        if healer is not None and healer.hp > 0 and drained and hooks.ability(fighter, "inverts_drain", default=False):
+            healer.hp = max(0, healer.hp - (0 if battle._chip_free(healer) else drained))
+            return seeded, battle.AbilityAct(turn, side, fighter.combatant.name, fighter.ability,
+                                             foe=healer.combatant.name, foe_hp=healer.hp_percent,
+                                             foe_fainted=healer.hp == 0)
         if healer is None or healer.hp == 0 or healer.hp == healer.max_hp:
             return seeded
         healer.hp = min(healer.max_hp, healer.hp + drained)

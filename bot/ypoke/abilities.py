@@ -14,6 +14,8 @@ EFFECT_KEYS = frozenset({
     "aura", "aura-break", "ruin", "parental-bond", "skill-link", "weight", "rock-head", "long-reach", "guard-piercing",
     "accuracy-boost", "stat-guard", "ignores-evasion", "scrappy", "intimidate-immune", "tangled-feet",
     "weather-evasion", "wonder-skin", "super-luck", "merciless", "crit-guard", "no-guard", "unaware",
+    "absorb-heal", "absorb-boost", "flash-fire", "dry-skin", "move-block", "good-as-gold", "priority-block",
+    "wonder-guard", "weatherproof", "magic-bounce", "liquid-ooze",
     "weather-on-hit", "shed-skin",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
@@ -54,6 +56,15 @@ TANGLED_FEET_ACCURACY = 0.5
 EVASION_WEATHER = battle_data.args("abilities", "weather-evasion", "weather")
 WEATHER_EVASION_ACCURACY = 0.8
 WONDER_SKIN_ACCURACY = 50
+ABSORBED = {**battle_data.args("abilities", "absorb-heal", "absorbs"),
+            **battle_data.args("abilities", "absorb-boost", "absorbs"),
+            **battle_data.args("abilities", "flash-fire", "absorbs")}
+ABSORB_RAISES = battle_data.args("abilities", "absorb-boost", "raises")
+ABSORB_HEAL_FRACTION = 4
+FLASH_FIRE_POWER = 1.5
+DRY_SKIN_FIRE_POWER = 1.25
+DRY_SKIN_SHARE = 8
+BLOCKED_MOVES = battle_data.args("abilities", "move-block", "blocks")
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
 LOW_HP_BOOST = 1.5

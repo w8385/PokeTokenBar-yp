@@ -102,7 +102,7 @@ EFFECT_TEXT = {
 # Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
 HP_TEXT = {
     "heal": "💚{attacker}%", "rest": "💚{attacker}%", "heal-foe": "→ {foe} 💚{defender}%",
-    "pain-split": "→ 체력을 나눴다 {attacker}% · {foe} {defender}%",
+    "pain-split": "→ 체력을 나눴다 {attacker}% · {foe} {defender}%", "oozed": "💥{attacker}%",
 }
 FORM_CHANGE = {"mega": ("메가진화", "메가"), "primal": ("원시회귀", "원시"), "ultra": ("울트라버스트", "울트라")}
 STAT_SHORT = {
@@ -147,11 +147,11 @@ CHANGE_TEXT = {
     "lost-electric": "⚡전기 타입 잃음", "crash": "💥크래시 데미지", "hp-cost": "💥HP 절반 소모",
     "ohko": "💀일격필살", "healed": "💚HP 회복", "binding": "🪢조여졌다", "rampage": "🔒날뛰기 시작",
     "uproar": "📢소란 시작", "rollout": "🔒구르기 시작", "fatigue": "💫지쳐서 혼란", "woke": "⏰잠에서 깼다",
-    "guard-lifted": "🛡️방어가 풀렸다",
+    "guard-lifted": "🛡️방어가 풀렸다", "flash-fire": "🔥불꽃 위력 상승",
 }
 # What an ability did, by `AbilityAct.effect` or `AbilityEntry.effect`; `{detail}` is a type, item or ability name.
 ABILITY_EFFECT_TEXT = {
-    "first": "선제공격", "guard": "능력이 떨어지지 않는다",
+    "first": "선제공격", "guard": "능력이 떨어지지 않는다", "bounce": "기술을 되받아쳤다",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
 ABILITY_BLOCKED_TEXT = {"truant": " 게으름을 피우고 있다"}
