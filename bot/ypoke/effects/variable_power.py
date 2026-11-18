@@ -47,7 +47,7 @@ class TargetWeight(Handler):
     by_id = True
 
     def base_power(self, move, power, scene):
-        weight = scene.target.combatant.weight
+        weight = battle._weight(scene.target)
         return next((stepped for limit, stepped in TARGET_WEIGHT_POWER if weight < limit), HEAVIEST_TARGET_POWER)
 
 
@@ -58,7 +58,7 @@ class WeightRatio(Handler):
     by_id = True
 
     def base_power(self, move, power, scene):
-        ratio = scene.user.combatant.weight / max(1, scene.target.combatant.weight)
+        ratio = battle._weight(scene.user) / max(1, battle._weight(scene.target))
         return next((stepped for least, stepped in WEIGHT_RATIO_POWER if ratio >= least), HEAVIER_TARGET_POWER)
 
 

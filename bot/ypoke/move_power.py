@@ -2,7 +2,7 @@
 `battle` takes a move's type from `typed` before it scores or uses the move, and its base power before abilities from
 `power`; every other move keeps PokéAPI's. `user` and `target` are `battle._Fighter`s."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ypoke import items, tera_forms
 from ypoke.effects import hooks
@@ -59,8 +59,10 @@ EFFECT_KEYS = frozenset({
 
 def typed(move, weather: str | None, user=None):
     """Weather Ball takes the weather's type and Terrain Pulse its grounded `user`'s terrain's; any other move comes
-    back as it is."""
-    return hooks.move(move, "modify_type", weather, user, default=move)
+    back as it is. The user's ability may then change its type (Pixilate)."""
+    moved = hooks.move(move, "modify_type", weather, user, default=move)
+    kind = None if user is None else hooks.ability(user, "retypes", moved)
+    return moved if kind is None or kind == moved.type else replace(moved, type=kind)
 
 
 def power(move, user, target, weather: str | None, multiplier: float, hit: int | None = None) -> float:

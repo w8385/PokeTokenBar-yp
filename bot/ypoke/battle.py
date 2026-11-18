@@ -632,6 +632,7 @@ def _status_upkeep(turn: int, teams: tuple["_Team", "_Team"], fighters: tuple["_
             damage = fighter.residual_damage()
             if _chip_free(fighter):
                 continue
+            damage = hooks.ability(fighter, "modify_status_damage", damage, fighter.status, default=damage)
             answer = hooks.ability(fighter, "status_damage", damage, fighter, side, turn)
             if answer is not None:
                 events.append(answer)
@@ -1121,9 +1122,12 @@ class _Fighter:
         if key == "speed" and self.status == "paralysis":
             value /= 2
         terrain = self.arena.terrain if self.arena is not None else None
+        foe = self.arena.foe_of(self) if self.arena is not None else None
+        ruined = foe is not None and foe is not self and foe.hp > 0
         return (value * hooks.ability(self, "modify_stat", key, weather, self, default=1.0)
                 * hooks.ability(self, "field_stat", key, weather, terrain, default=1.0)
-                * math.prod(_field(self, "side_stat", key)))
+                * math.prod(_field(self, "side_stat", key))
+                * (hooks.ability(foe, "modify_foe_stat", key, self, default=1.0) if ruined else 1.0))
 
 
 def _carry_of(fighter: _Fighter) -> Carry | None:
@@ -1415,7 +1419,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         crit_stage = len(CRITICAL_CHANCES) - 1
     no_crit = any(_field(defender, "guards_crit")) or hooks.ability(defender, "guards_crit", default=False)
     hit_count = _hit_count(move, attacker, rng)
-    rolls_each_hit = checks_accuracy and hooks.move(move, "rolls_each_hit", default=False)
+    rolls_each_hit = (checks_accuracy and hooks.move(move, "rolls_each_hit", default=False)
+                      and not hooks.ability(attacker, "skips_hit_rolls", default=False))
     for hit in range(hit_count):
         if hit > 0 and rolls_each_hit and rng.random() * 100 >= accuracy:
             break
@@ -1555,6 +1560,14 @@ def _crash(attacker: _Fighter, move: Move) -> tuple[Change, ...]:
     return () if crash is None else (crash,)
 
 
+def _weather_of(fighter: "_Fighter") -> str | None:
+    return fighter.arena.weather.kind if fighter.arena is not None else None
+
+
+def _weight(fighter: "_Fighter") -> float:
+    return fighter.combatant.weight * hooks.ability(fighter, "modify_weight", default=1.0)
+
+
 def _retyped(attacker: _Fighter, move: Move) -> Move:
     """A state that changes the type of the user's move (Electrify, Ion Deluge)."""
     kind = next(iter(_field(attacker, "retypes_move", move)), None)
@@ -1616,6 +1629,8 @@ def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tupl
 
 def _hit_count(move: Move, attacker: _Fighter, rng: random.Random) -> int:
     counted = hooks.move(move, "hit_count", attacker)
+    if counted is None:
+        counted = hooks.ability(attacker, "hit_count", move)
     if counted is not None:
         return counted
     if move.max_hits <= 1:
@@ -1961,7 +1976,8 @@ def _expected_hits(move: Move, attacker: _Fighter, accuracy: float) -> float:
     """Hits that each draw for accuracy count only while every earlier one landed."""
     if accuracy < 100 and hooks.move(move, "rolls_each_hit", default=False):
         return sum((accuracy / 100) ** hit for hit in range(move.max_hits))
-    return hooks.move(move, "hit_count", attacker, default=move.expected_hits)
+    expected = hooks.ability(attacker, "expected_hits", move, default=move.expected_hits)
+    return hooks.move(move, "hit_count", attacker, default=expected)
 
 
 def _damage_taken(attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float, critical: bool) -> float:
@@ -1991,9 +2007,10 @@ def _power(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | No
     if move is STRUGGLE or move is CONFUSION_HIT:
         return move.power
     power = move_power.power(move, attacker, defender, weather, multiplier, hit)
+    extra_hit = hooks.ability(attacker, "extra_hit_power", default=1.0) if hit and move.max_hits <= 1 else 1.0
     return power * (hooks.ability(attacker, "modify_power", move, power, attacker, defender, weather, default=1.0)
                     * hooks.ability(defender, "modify_foe_power", move, defender, default=1.0)) * math.prod(
-        _field(attacker, "field_power", move, attacker, defender)) * (_hidden(defender, move) or 1.0)
+        _field(attacker, "field_power", move, attacker, defender)) * (_hidden(defender, move) or 1.0) * extra_hit
 
 
 def _stab(attacker: _Fighter, move: Move) -> float:

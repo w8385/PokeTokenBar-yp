@@ -7,9 +7,44 @@ EFFECT_KEYS = frozenset({
     "pinch-type-boost", "intimidate", "type-immunity", "attack-doubled", "type-resist", "technician", "sturdy",
     "adaptability", "guts", "weather-speed", "weather-on-entry", "contact-ailment", "ailment-block", "sand-force",
     "weather-chip-immune", "gale-wings", "supreme-overlord", "terrain-on-entry", "field-stat", "screen-cleaner",
-    "infiltrator", "airborne", "long-reach", "contrary", "imposter", "protean", "weather-on-hit", "weather-evasion",
-    "shed-skin",
+    "infiltrator", "airborne", "contrary", "imposter", "protean",
+    "flag-power", "type-power", "ate", "normalize", "liquid-voice", "reckless", "sheer-force", "serene-grace",
+    "shield-dust", "analytic", "stakeout", "status-power", "stat-boost", "hustle", "choice-lock", "status-stat",
+    "solar-power", "defeatist", "slow-start", "damage-dealt", "super-taken", "full-hp-taken", "taken", "heatproof",
+    "aura", "aura-break", "ruin", "parental-bond", "skill-link", "weight", "rock-head", "long-reach", "guard-piercing",
+    "weather-on-hit", "weather-evasion", "shed-skin",
 })
+POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
+FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
+POWER_TYPE = battle_data.args("abilities", "type-power", "type")
+TYPE_POWER = battle_data.args("abilities", "type-power", "power")
+ATE_TYPE = battle_data.args("abilities", "ate", "type")
+ATE_POWER = 1.2
+RECKLESS_POWER = 1.2
+SHEER_FORCE_POWER = 5325 / 4096
+ANALYTIC_POWER = 5325 / 4096
+STATUS_POWER_PHYSICAL = battle_data.args("abilities", "status-power", "physical")
+POWER_STATUSES = battle_data.args("abilities", "status-power", "statuses")
+STATUS_POWER = 1.5
+BOOSTED_STAT = battle_data.args("abilities", "stat-boost", "stat")
+STAT_BOOST = battle_data.args("abilities", "stat-boost", "boost")
+HUSTLE_ACCURACY = 0.8
+STATUS_STAT_KEY = battle_data.args("abilities", "status-stat", "stat")
+STATUS_STAT = 1.5
+SOLAR_POWER_BOOST = 1.5
+SOLAR_POWER_CHIP = 8
+SLOW_START_TURNS = 5
+DEALT_WHEN = battle_data.args("abilities", "damage-dealt", "when")
+DEALT_MULTIPLIER = battle_data.args("abilities", "damage-dealt", "dealt")
+SUPER_TAKEN = 0.75
+TAKEN = battle_data.args("abilities", "taken", "taken")
+AURA_TYPE = battle_data.args("abilities", "aura", "type")
+AURA_POWER = 5448 / 4096
+AURA_BROKEN = 3072 / 4096
+RUINED_STAT = battle_data.args("abilities", "ruin", "stat")
+RUIN = 0.75
+PARENTAL_BOND_SECOND = 0.25
+WEIGHT_MULTIPLIER = battle_data.args("abilities", "weight", "weight")
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
 LOW_HP_BOOST = 1.5

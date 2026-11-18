@@ -267,6 +267,13 @@ FOCUS_CASES = {
     "sandaconda": (((844, None, "sand-spit", [89, 203, 283]), (844, None, "sand-veil", [89, 201]),
                     (844, None, "shed-skin", [89, 34])),
                    ((36, None, None, [92, 33]), (143, None, None, [92, 34]))),
+    "ability-damage": (((724, None, "long-reach", [413]), (717, None, "dark-aura", [399]),
+                        (306, None, "rock-head", [38])),
+                       ((760, None, "fluffy", [182, 34]), (437, "flame-orb", "heatproof", [182, 89]),
+                        (718, None, "aura-break", [182, 392, 89]))),
+    "unseen-fist": (((892, None, "unseen-fist", [370]),), ((718, None, None, [182]),)),
+    "gastro-acid": (((18, None, None, [380, 33]),), ((36, None, "huge-power", [33]),)),
+    "weight": (((306, None, "heavy-metal", [484]),), ((25, None, None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
