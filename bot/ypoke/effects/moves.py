@@ -19,6 +19,7 @@ class StatusMove(Handler):
         if (move.accuracy is not None and not battle._sure_hit(user, foe)
                 and rng.random() * 100 >= move.accuracy * battle._accuracy_stages(user, foe)):
             return {"missed": True}
+        attacker = user
         if self.targets_foe(move):
             shield = next(iter(battle._field(foe, "shields", move, user)), "")
             if shield:
@@ -28,7 +29,7 @@ class StatusMove(Handler):
         elif self.snatchable and any(battle._field(foe, "snatches", move)):
             user, foe, side = foe, user, 1 - side
         effect, changes = self._apply(move, user, foe, side, turn, arena, rng)
-        return {"failed": not effect, "effect": effect, "changes": changes}
+        return {"failed": not effect, "effect": effect, "changes": changes, "attacker_fainted": attacker.hp == 0}
 
     def targets_foe(self, move):
         return self.hits_foe

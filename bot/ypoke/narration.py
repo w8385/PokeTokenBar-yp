@@ -57,6 +57,14 @@ EFFECT_TEXT = {
     "court-change": "🔄양쪽 필드를 바꿨다", "tidy-up": "🧹주변을 정리했다 (공격·스피드↑)",
     "psych-up": "🪞상대의 능력 변화를 따라 했다", "topsy-turvy": "🙃상대의 능력 변화가 뒤집혔다",
     "stage-swap": "🔁상대와 능력 변화를 바꿨다", "stat-swap": "🔁능력치가 바뀌었다",
+    "wish": "🌠소원을 빌었다", "aqua-ring": "💧물의 고리를 둘렀다", "ingrain": "🌱뿌리를 박았다",
+    "heal-bell": "🔔동료의 상태이상이 나았다", "healing-wish": "🌙몸을 바쳐 다음 동료를 회복시킨다",
+    "memento": "🖤몸을 바쳤다 →", "revival-blessing": "✨",
+}
+# Effects whose line shows HP after the move: the attacker's, or the defender's ({foe} {defender}%).
+HP_TEXT = {
+    "heal": "💚{attacker}%", "rest": "💚{attacker}%", "heal-foe": "→ {foe} 💚{defender}%",
+    "pain-split": "→ 체력을 나눴다 {attacker}% · {foe} {defender}%",
 }
 FORM_CHANGE = {"mega": ("메가진화", "메가"), "primal": ("원시회귀", "원시"), "ultra": ("울트라버스트", "울트라")}
 STAT_SHORT = {
@@ -64,7 +72,7 @@ STAT_SHORT = {
     "accuracy": "명중", "evasion": "회피",
 }
 CHANGES_IN_TEXT = frozenset({"swords-dance", "tidy-up"})
-VOLATILE_LABEL: dict[str, str] = {}
+VOLATILE_LABEL = {"wish": "🌠소원", "aqua-ring": "💧물의고리", "ingrain": "🌱뿌리박기", "healing-wish": "🌙치유소원"}
 VOLATILE_END_TEXT: dict[str, str] = {}
 
 
@@ -401,6 +409,9 @@ def _action_line(event: Action, marker: str) -> str:
         return f"{head} → {event.defender} 졸음"
     if event.effect == "thunder-wave":
         return f"{head} → {event.defender} {STATUS_ICON['paralysis']}"
+    if event.effect in HP_TEXT:
+        text = HP_TEXT[event.effect].format(attacker=event.attacker_hp, defender=event.defender_hp, foe=event.defender)
+        return " ".join([head, text, *(_change_tag(change, event.side) for change in event.changes)])
     if event.effect in CHANGES_IN_TEXT or event.effect and not event.changes:
         return f"{head} {EFFECT_TEXT[event.effect]}"
     if event.effect:
@@ -452,5 +463,7 @@ def _change_tag(change: Change | None, acting_side: int) -> str:
         return f"{'자신 ' if change.side == acting_side else ''}상태 회복"
     if change.kind == "thaw":
         return "🧊해동"
+    if change.kind == "revive":
+        return f"{change.pokemon} 부활"
     arrows = ("↑" if change.stages > 0 else "↓") * (2 if abs(change.stages) >= 2 else 1)
     return f"{'자신 ' if change.side == acting_side else ''}{STAT_SHORT[change.kind]}{arrows}"

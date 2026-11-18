@@ -22,6 +22,8 @@ STATUS_EFFECTS = (
     "electric-terrain", "grassy-terrain", "psychic-terrain", "misty-terrain", "reflect", "light-screen", "aurora-veil",
     "spikes", "toxic-spikes", "sticky-web", "tailwind", "safeguard", "mist", "lucky-chant", "gravity", "haze", "defog",
     "court-change", "tidy-up",
+    "healing-wish", "memento", "revival-blessing", "heal", "weather-heal", "roost", "swallow", "strength-sap",
+    "pain-split", "purify", "rest", "wish", "heal-bell", "refresh", "aqua-ring", "ingrain", "heal-foe",
     "stages", "growth", "stockpile", "charge", "no-retreat", "take-heart", "plus-minus", "grass-boost",
     "venom-drench", "acupressure", "psych-up", "topsy-turvy", "stage-swap", "stat-swap",
 )
