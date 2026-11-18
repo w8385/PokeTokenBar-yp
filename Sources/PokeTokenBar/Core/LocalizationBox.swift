@@ -115,6 +115,45 @@ extension L {
         t("기술머신", "TM", "わざマシン", "MT", "CT", "TM", "TM", "ТМ")
     }
 
+    var moveGroupStatus: String {
+        t("변화 기술", "Status moves", "変化技", "Movimientos de estado", "Capacités de statut", "Golpes de status",
+          "Statusattacken", "Статусные приёмы")
+    }
+
+    var moveStatusClass: String { t("변화", "Status", "変化", "Estado", "Statut", "Status", "Status", "Статус") }
+
+    var moveEggSource: String {
+        t("알 기술", "Egg move", "タマゴわざ", "Mov. huevo", "Cap. Œuf", "Golpe de ovo", "Ei-Attacke", "Яйцевой")
+    }
+
+    /// What the bot's battle does with each status move it offers (`GET /v1/moves?status=1`), by PokéAPI id.
+    func statusMoveEffect(_ moveID: Int) -> String? {
+        switch moveID {
+        case 14:
+            t("공격 2랭크 상승", "Attack +2 stages", "こうげき2段階アップ", "Ataque +2 niveles", "Attaque +2 niveaux",
+              "Ataque +2 estágios", "Angriff +2 Stufen", "Атака +2 ступени")
+        case 86:
+            t("상대를 마비", "Paralyzes the target", "相手をまひさせる", "Paraliza al objetivo", "Paralyse la cible",
+              "Paralisa o alvo", "Paralysiert das Ziel", "Парализует цель")
+        case 281:
+            t("다음 턴 끝에 상대가 잠듦", "Target sleeps at the end of next turn", "次のターンの終わりに相手がねむる",
+              "El objetivo se duerme al final del siguiente turno", "La cible s'endort à la fin du tour suivant",
+              "O alvo adormece no fim do próximo turno", "Ziel schläft am Ende der nächsten Runde ein",
+              "Цель засыпает в конце следующего хода")
+        case 433:
+            t("5턴 동안 느린 포켓몬부터 행동", "Slower Pokémon move first for 5 turns", "5ターンの間 遅いポケモンから動く",
+              "Los Pokémon lentos actúan primero 5 turnos", "Les Pokémon lents agissent d'abord pendant 5 tours",
+              "Pokémon mais lentos agem primeiro por 5 turnos", "Langsamere Pokémon handeln 5 Runden zuerst",
+              "5 ходов первыми ходят медленные покемоны")
+        case 446:
+            t("교체해 나오는 상대에게 바위 피해", "Foes that switch in take Rock damage", "交代で出てくる相手にいわのダメージ",
+              "Los rivales que entran reciben daño Roca", "Les adversaires qui entrent subissent des dégâts Roche",
+              "Rivais que entram sofrem dano de Pedra", "Eingewechselte Gegner nehmen Gestein-Schaden",
+              "Выходящие соперники получают урон Камнем")
+        default: nil
+        }
+    }
+
     var moveSlotEmpty: String {
         t("기술 추가", "Add a move", "わざを追加", "Añadir movimiento", "Ajouter une capacité", "Adicionar golpe",
           "Attacke hinzufügen", "Добавить приём")

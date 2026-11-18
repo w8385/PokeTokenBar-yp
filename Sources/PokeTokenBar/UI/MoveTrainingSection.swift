@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The Box page's move training: the four moves a Pokémon takes into battle, each swapped from the list
-/// the bot says it can use now: level-up moves up to its level, and TM moves at any level once the TM is owned.
-/// An unowned TM is listed locked with its price and an inline buy button.
+/// the bot says it can use now: level-up moves up to its level, TM moves at any level once the TM is owned, and the
+/// battle's status moves in their own group. An unowned TM is listed locked with its price and an inline buy button.
 @MainActor
 struct MoveTrainingSection: View {
     let store: CompanionStore
@@ -112,6 +112,7 @@ struct MoveTrainingSection: View {
     private func picker(_ moves: LearnableMoves, editing index: Int, selected: [Int]) -> some View {
         group(l.moveGroupLevelUp, moves.levelUpMoves.reversed(), index: index, selected: selected, moves: moves)
         group(l.moveGroupMachine, moves.machineMoves, index: index, selected: selected, moves: moves)
+        group(l.moveGroupStatus, moves.statusMoves, index: index, selected: selected, moves: moves)
     }
 
     @ViewBuilder
@@ -173,7 +174,7 @@ struct MoveTrainingSection: View {
                 Text(move.name).font(.callout)
                 TypeBadges(types: [move.type], language: store.language)
                 Spacer()
-                if !move.isMachine { Text("Lv\(move.level)").font(.caption2).foregroundStyle(.tertiary) }
+                if let source = source(move) { Text(source).font(.caption2).foregroundStyle(.tertiary) }
             }
             Text(stats(move)).font(.caption2).foregroundStyle(.secondary).monospacedDigit()
             if let effects = effects(move) {
@@ -182,15 +183,23 @@ struct MoveTrainingSection: View {
         }
     }
 
+    private func source(_ move: LearnableMove) -> String? {
+        if move.isEgg { return l.moveEggSource }
+        if !move.isMachine { return "Lv\(move.level)" }
+        return move.isStatus ? l.moveGroupMachine : nil
+    }
+
     private func stats(_ move: LearnableMove) -> String {
-        var parts = [move.damageClass == "physical" ? l.movePhysical : l.moveSpecial,
-                     "\(l.movePower) \(move.power)",
-                     "\(l.moveAccuracy) \(move.accuracy.map(String.init) ?? "—")"]
+        var parts = move.isStatus
+            ? [l.moveStatusClass]
+            : [move.damageClass == "physical" ? l.movePhysical : l.moveSpecial, "\(l.movePower) \(move.power)"]
+        parts.append("\(l.moveAccuracy) \(move.accuracy.map(String.init) ?? "—")")
         if let pp = move.pp { parts.append("PP \(pp)") }
         return parts.joined(separator: " · ")
     }
 
     private func effects(_ move: LearnableMove) -> String? {
+        if move.isStatus { return l.statusMoveEffect(move.id) }
         var parts: [String] = []
         if let ailment = move.ailment, let chance = move.ailmentChance {
             parts.append("\(l.moveAilment(ailment)) \(chance)%")

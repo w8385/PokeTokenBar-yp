@@ -40,10 +40,16 @@ final class ReadmeScreenshotTests: XCTestCase {
         let usage = UsageStore(providers: [], discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil },
                                claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults)
         let updater = UpdateChecker(currentVersion: "3.5.0", defaults: defaults, fetchLatest: { nil })
-        let uploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch)
+        let uploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch,
+                                                        moves: [6: Self.charizardMoves])
         let entry = BattleEntryStore(defaults: defaults)
         for id in [BoxDexFixture.pikachuID, BoxDexFixture.charizardID, BoxDexFixture.onixID, BoxDexFixture.eeveeID] {
             _ = entry.add(id)
+        }
+        var chosen: [Int] = []
+        for (index, move) in [14, 337, 53, 225].enumerated() {
+            entry.chooseMove(move, at: index, for: BoxDexFixture.charizardID, pokemonID: 6, current: chosen)
+            chosen = entry.chosenMoves(for: BoxDexFixture.charizardID, pokemonID: 6)
         }
         let battleSuite = "readme-battle-\(UUID())"
         let battleDefaults = try XCTUnwrap(UserDefaults(suiteName: battleSuite))
@@ -85,6 +91,8 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await shot(popover { $0.tab = .box }, "screenshot-collection-box\(suffix)", in: dir, height: 420)
             try await shot(popover { $0.openBoxDetail(id: BoxDexFixture.charizardID) },
                            "screenshot-pokemon-profile\(suffix)", in: dir, height: 560)
+            try await shot(statusMoves(store: store, uploader: uploader, entry: entry),
+                           "screenshot-status-moves\(suffix)", in: dir, height: nil)
             try await shot(popover { $0.openBoxDetail(id: BoxDexFixture.pikachuID) },
                            "screenshot-exp-share\(suffix)", in: dir, height: 372)
             let (battleStore, battleCleanup) = try BoxDexFixture.makeStore(
@@ -200,6 +208,27 @@ final class ReadmeScreenshotTests: XCTestCase {
             }
         }
         .padding(PopoverMetrics.padding)
+    }
+
+    /// What the bot answers for Charizard with `status=1`: Korean names, as the bot sends them.
+    private static let charizardMoves = """
+    {"ok":true,"default":[52,225,53,337],"moves":[
+     {"id":52,"name":"불꽃세례","type":"fire","power":40,"damage_class":"special","accuracy":100,"level":1,"pp":25,"source":"level","ailment":"burn","ailment_chance":10},
+     {"id":225,"name":"용의숨결","type":"dragon","power":60,"damage_class":"special","accuracy":100,"level":12,"pp":20,"source":"level","ailment":"paralysis","ailment_chance":30},
+     {"id":53,"name":"화염방사","type":"fire","power":90,"damage_class":"special","accuracy":100,"level":30,"pp":15,"source":"level","ailment":"burn","ailment_chance":10},
+     {"id":337,"name":"드래곤크루","type":"dragon","power":80,"damage_class":"physical","accuracy":100,"level":36,"pp":15,"source":"level"},
+     {"id":14,"name":"칼춤","type":"normal","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":20,"source":"egg"},
+     {"id":446,"name":"스텔스록","type":"rock","power":0,"damage_class":"status","accuracy":null,"level":0,"pp":20,"source":"egg"},
+     {"id":86,"name":"전기자석파","type":"electric","power":0,"damage_class":"status","accuracy":90,"level":0,"pp":20,"source":"machine","ailment":"paralysis","ailment_chance":0}
+    ]}
+    """
+
+    /// Charizard's moves on its Box page with the picker open on the Swords Dance slot.
+    private func statusMoves(store: CompanionStore, uploader: PartyUploader, entry: BattleEntryStore) throws -> some View {
+        let candidate = try XCTUnwrap(BattleEntry.candidates(in: store.state).first { $0.id == BoxDexFixture.charizardID })
+        return MoveTrainingSection(store: store, battleEntry: entry, uploader: uploader, candidate: candidate,
+                                   initialEditing: 0, onChange: {})
+            .padding(PopoverMetrics.padding)
     }
 
     /// The Shop's and the Bag's held-item tabs, cut after their first battle-item groups.
