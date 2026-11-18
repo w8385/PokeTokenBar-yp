@@ -1,14 +1,20 @@
 import hashlib
 import json
+import os
 import random
+from dataclasses import MISSING, fields
+from functools import cache
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
-from ypoke import abilities, gyms, items, narration
+from ypoke import abilities, battle_data, gym_battle, gyms, items, move_effects, narration, pokeapi
 from ypoke.battle import simulate
 from ypoke.combatants import combatant
+from ypoke.gym_battle import GymBattles
 from ypoke.mega_stones import MEGA_STONES, PRIMAL_ORBS, ULTRA_BURSTS
+from ypoke.upload_server import validate_members
 from ypoke.move_effects import STATUS_MOVES
 
 GOLDEN = Path(__file__).with_name("battle_golden.json")
@@ -194,3 +200,199 @@ def _member(rng, slot):
         "ivs": {stat: rng.randrange(0, 32) for stat in STATS}, "held_item": item, "ability": rng.choice(ABILITY_POOL),
         "nature": rng.choice(("adamant", "modest", "jolly", "timid", None)),
     }
+
+
+GOLDEN_DIR = Path(__file__).with_name("golden")
+PVP_SCENARIOS = 160
+PVP_PER_FILE = 40
+GYM_PARTIES = 2
+FOCUS_SEEDS = 8
+# (side 0, side 1) as (pokemon_id, item, ability, moves) per member, for effects the walk above rarely reaches.
+FOCUS_CASES = {
+    "quick-claw": (((25, "quick-claw", None, [33, 98]), (133, "quick-claw", None, [33, 34]), (52, "quick-claw", None, [33])),
+                   ((150, None, None, [33]), (151, None, None, [6]), (149, None, None, [33]))),
+    "ailment-block": (((26, None, None, [609, 398]), (78, None, None, [517, 34]), (82, None, None, [192, 398])),
+                      ((68, None, "limber", [33]), (89, None, "immunity", [33]), (131, None, "water-veil", [33]),
+                       (143, None, "insomnia", [33]))),
+    "guts-orbs": (((68, "flame-orb", "guts", [33, 263]), (214, "toxic-orb", "guts", [33, 263]), (217, "flame-orb", "guts", [263])),
+                  ((95, "lum-berry", "static", [34, 609]), (113, "leftovers", "flame-body", [53]),
+                   (34, "black-sludge", "poison-point", [398]))),
+    "winds": (((150, None, None, [369, 33]), (384, None, "delta-stream", [33, 240])),
+              ((6, None, None, [240, 241, 53, 58]), (9, None, None, [240, 57]))),
+    "thaw": (((131, None, None, [58, 369]), (6, None, None, [53, 517])),
+             ((3, "leftovers", None, [33]), (143, "sitrus-berry", None, [33]))),
+}
+REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
+    f"gyms-{region.id}" for region in gyms.regions()]
+REPLAY_ITEMS = sorted(items.ITEM_NAMES) + ["everstone", None]
+REPLAY_ABILITIES = sorted(abilities.NAMES) + ["pressure", None]
+
+
+@pytest.mark.parametrize("name", REPLAY_NAMES)
+def test_fixed_seed_replays_match_the_golden_event_logs(name):
+    expected = (GOLDEN_DIR / f"{name}.log").read_text().splitlines()
+    actual = _replay_text(name).splitlines()
+    first = next((index for index, (want, got) in enumerate(zip(expected, actual)) if want != got),
+                 min(len(expected), len(actual)))
+    assert actual == expected, f"{name}.log line {first + 1}: {actual[first:first + 1]} != {expected[first:first + 1]}"
+
+
+@pytest.mark.skipif(not os.environ.get("WRITE_GOLDEN"), reason="WRITE_GOLDEN=1 rewrites the golden event logs")
+def test_write_golden_event_logs():
+    GOLDEN_DIR.mkdir(exist_ok=True)
+    for name in REPLAY_NAMES:
+        (GOLDEN_DIR / f"{name}.log").write_text(_replay_text(name))
+
+
+def _replay_text(name):
+    kind, _, rest = name.partition("-")
+    if kind == "pvp":
+        start = int(rest)
+        return "".join(_pvp_text(scenario) for scenario in range(start, start + PVP_PER_FILE))
+    if kind == "focus":
+        return "".join(_focus_text(case, seed) for case in FOCUS_CASES for seed in range(FOCUS_SEEDS))
+    return _gyms_text(next(region for region in gyms.regions() if region.id == rest))
+
+
+def _focus_text(case, seed):
+    rng = random.Random(f"{case}-{seed}")
+    api = ReplayAPI()
+    sides = tuple(
+        tuple(combatant(api, {"pokemon_id": pokemon_id, "level": 50, "shiny": False, "moves": moves,
+                              "ivs": {stat: rng.randrange(0, 32) for stat in STATS}, "held_item": item,
+                              "ability": ability, "nature": None})
+              for pokemon_id, item, ability, moves in members)
+        for members in FOCUS_CASES[case]
+    )
+    result = simulate(sides, seed=seed)
+    lines = [f"## focus {case} {seed}", *(_combatant_line(side, member) for side in (0, 1) for member in sides[side])]
+    return _lines(lines, result)
+
+
+def _pvp_text(scenario):
+    rng = random.Random(10_000 + scenario)
+    api = ReplayAPI()
+    sides = tuple(
+        tuple(combatant(api, _replay_member(rng, scenario * 12 + side * 6 + slot)) for slot in range(rng.randint(3, 6)))
+        for side in (0, 1)
+    )
+    result = simulate(sides, seed=scenario)
+    lines = [f"## pvp {scenario}", *(_combatant_line(side, member) for side in (0, 1) for member in sides[side])]
+    return _lines(lines, result)
+
+
+def _gyms_text(region):
+    lines = []
+    for party in range(GYM_PARTIES):
+        rng = random.Random(f"{region.id}-{party}")
+        team = validate_members([_replay_member(rng, rng.randrange(10_000), level=50) for _ in range(6)], "team")
+        seeds = iter(range(1, 1000))
+        engine = GymBattles(ReplayAPI(), lambda: next(seeds))
+        for run in (region.gyms, region.elite, region.hideout, (region.hidden,)):
+            carried = None
+            for opponent in run:
+                recorded = []
+
+                def recording(*args, **kwargs):
+                    recorded.append(simulate(*args, **kwargs))
+                    return recorded[-1]
+
+                with mock.patch.object(gym_battle, "simulate", recording):
+                    body = engine.battle(opponent.id, team, carried)
+                lines.append(f"## {opponent.id} party {party} carried {json.dumps(carried)}")
+                lines.extend(_lines([], recorded[0]).splitlines())
+                lines.append(f"won={body['won']} carry={json.dumps(body['carry'])} body={_digest(_json(body))}")
+                carried = body["carry"] if opponent.run is not None and body["won"] else None
+    return "".join(f"{line}\n" for line in lines)
+
+
+def _json(value):
+    return json.dumps(value, sort_keys=True, ensure_ascii=False)
+
+
+def _lines(lines, result):
+    lines = [*lines, *(_event_line(event) for event in result.events),
+             f"result winner={result.winner} turns={result.turns} remaining={result.remaining} "
+             f"statuses={result.statuses}"]
+    return "".join(f"{line}\n" for line in lines)
+
+
+def _combatant_line(side, member):
+    mega = member.mega and (member.mega.kind, member.mega.form_id, member.mega.ability_id)
+    return (f"side={side} {member.name} Lv{member.level} {member.types} item={member.item} ability={member.ability} "
+            f"nature={member.nature} moves={[move.id for move in member.moves]} mega={mega}")
+
+
+def _event_line(event):
+    parts = [type(event).__name__]
+    for spec in fields(event):
+        value = getattr(event, spec.name)
+        default = spec.default if spec.default is not MISSING else (
+            spec.default_factory() if spec.default_factory is not MISSING else MISSING)
+        if default is MISSING or value != default:
+            parts.append(f"{spec.name}={value!r}")
+    return " ".join(parts)
+
+
+class ReplayAPI(FakePokeAPI):
+    def attacking_moves(self, pokemon_id, level, machine_ids=(), status=False):
+        return [move for move in _learnable() if status or move["id"] not in STATUS_MOVES]
+
+
+def _replay_member(rng, slot, level=None):
+    """Member `slot` of a run of members that walks every known item and ability and the effect moves, with a bound
+    item on its own species now and then."""
+    item = REPLAY_ITEMS[slot % len(REPLAY_ITEMS)]
+    pokemon_id = rng.randrange(1, 1026)
+    if rng.random() < 0.2:
+        item = rng.choice(sorted(BOUND_ITEMS))
+        pokemon_id = BOUND_ITEMS[item]
+    effect_ids, attack_ids = _effect_move_ids(), _attack_move_ids()
+    moves = [effect_ids[(slot * 3) % len(effect_ids)], effect_ids[(slot * 7 + 1) % len(effect_ids)],
+             *rng.sample(attack_ids, 2)]
+    if rng.random() < 0.05:
+        pokemon_id, moves[0] = 384, move_effects.DRAGON_ASCENT
+    return {
+        "pokemon_id": pokemon_id, "level": level or rng.randrange(40, 71), "shiny": False,
+        "moves": list(dict.fromkeys(moves)), "ivs": {stat: rng.randrange(0, 32) for stat in STATS},
+        "held_item": item, "ability": REPLAY_ABILITIES[(slot * 5) % len(REPLAY_ABILITIES)],
+        "nature": rng.choice(("adamant", "modest", "jolly", "timid", "brave", "quiet", None)),
+    }
+
+
+@cache
+def _effect_move_ids():
+    learnable = {move["id"] for move in _learnable()}
+    return sorted(int(move_id) for move_id, entry in battle_data.table("moves").items()
+                  if int(move_id) in learnable and set(battle_data.keys(entry)) - {"damage"})
+
+
+@cache
+def _attack_move_ids():
+    return sorted(move["id"] for move in _learnable() if move["power"] and move["damage_class"] != "status")
+
+
+@cache
+def _learnable():
+    return [{**move, "level": 1, "source": "level"} for move in _replay_moves().values()
+            if move["weather"] or (move["power"] and move["damage_class"] != "status") or move["id"] in STATUS_MOVES]
+
+
+@cache
+def _replay_moves():
+    """Every move of `data/battle/moves.json` as `PokeAPIService.move` returns it."""
+    stat_names = {key: name for name, key in pokeapi._STAT_KEYS.items()}
+    moves = {}
+    for move_id, entry in battle_data.table("moves").items():
+        meta = entry["meta"]
+        raw = {
+            "id": int(move_id), "name": entry["slug"],
+            "names": [{"language": {"name": language}, "name": name} for language, name in entry["names"].items()],
+            "type": {"name": entry["type"]}, "power": entry["power"], "damage_class": {"name": entry["class"]},
+            "accuracy": entry["accuracy"], "priority": entry["priority"], "pp": entry["pp"],
+            "meta": {**meta, "ailment": {"name": meta["ailment"]}, "category": {"name": meta["category"]}},
+            "stat_changes": [{"stat": {"name": stat_names[stat]}, "change": change}
+                             for stat, change in meta["stat_changes"]],
+        }
+        moves[int(move_id)] = pokeapi.move_from(raw)
+    return moves
