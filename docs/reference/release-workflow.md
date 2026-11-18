@@ -72,8 +72,11 @@ read_when:
   기준으로 게이트를 돌리고, 경고(1)와 하드 게이트(2) 모두에서 멈춘다(프롬프트 없음). train 은 태그를 먼저 push 하므로
   `git describe` 를 기준으로 쓰면 범위가 비어 늘 통과한다 — 그래서 기준은 직전 *릴리스* 태그다.
   검토를 마친 예외만 `PTB_ASSET_GATE_SKIP="<사유>"` 로 넘기고, 사유는 게시되는 릴리스 노트 끝에 찍힌다.
-- **랜딩.** 포크(`w8385/PokeTokenBar-yp`)에는 아직 `gh-pages` 브랜치와 Pages 가 없다. 랜딩 갱신은 업스트림 `gh-pages` 를
-  받아 만든 로컬 브랜치에 `landing:` 커밋으로 두고, 게시는 통합자가 정한다.
+- **랜딩.** 포크(`w8385/PokeTokenBar-yp`)의 랜딩은 자기 `gh-pages` 브랜치에서 Pages(legacy 빌드)로 나간다
+  (`w8385.dev/PokeTokenBar-yp/`). 랜딩 갱신은 `gh-pages` 에 `landing:` 커밋으로 두고, 게시는 통합자가 정한다.
+- **포크 repo.** 이 repo 는 `chattymin/PokeTokenBar` 의 GitHub 포크다. `gh` 는 `--repo` 가 없으면 부모를 고르므로
+  `gh pr`·`gh release`·`gh run`·`gh api` 는 늘 `--repo w8385/PokeTokenBar-yp`(또는 `repos/w8385/PokeTokenBar-yp/...`)로 부른다.
+  2026-11-18 이전 PR·이슈 기록은 `w8385/PokeTokenBar-yp-archive`(보관됨)에 있다.
 
 ## 2. 실행
 

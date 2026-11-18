@@ -119,8 +119,10 @@ states are covered, and that the English wording and checked claims are true.
 It does not build/test the app or prove that a remote image exists.
 
 Publish only when the user's request authorizes PR creation/update. A request
-to prepare a title/body authorizes local preparation only. Use `gh pr create`
-or `gh pr edit` with the checked title and body file; preserve unrelated existing
+to prepare a title/body authorizes local preparation only. Use `gh pr create
+--repo w8385/PokeTokenBar-yp` or `gh pr edit --repo w8385/PokeTokenBar-yp` with
+the checked title and body file. This repository is a GitHub fork, and without
+`--repo` gh targets the parent `chattymin/PokeTokenBar`. Preserve unrelated existing
 PR metadata. Never force-push to make the workflow succeed. If push succeeds
 but PR publication fails, report the pushed branch and missing/unchanged PR.
 After publication, read back the title and body and inspect the image rendering
