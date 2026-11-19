@@ -6,7 +6,7 @@ landed, how many times in a row and what the last use did. A bind hurts its targ
 from ypoke import battle
 from ypoke.effects import Handler, register
 from ypoke.effects.stats import shift
-from ypoke.effects.volatiles import hurt, ticked
+from ypoke.effects.volatiles import due, hurt, ticked
 
 RAMPAGE_USES = (2, 3)
 UPROAR_USES = 3
@@ -164,6 +164,9 @@ class Binding(Handler):
         user.memory[self.key] = token = (_turn(user), user.combatant.name)
         target.volatiles[self.key] = [rng.randint(*BIND_TURNS), token]
         return (battle.Change(1 - side, target.combatant.name, self.key),)
+
+    def tick_due(self, name, fighter):
+        return due(fighter, BIND_SHARE) if fighter.volatiles[name][0] else 0
 
     def volatile_end(self, name, fighter, side, turn, rng):
         bind = fighter.volatiles[name]

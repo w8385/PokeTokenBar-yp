@@ -1,6 +1,7 @@
 import random
 
-from status_moves import choose, data_move, pair, put, resolve
+import pytest
+from status_moves import choose, data_move, pair, put, resolve, weather
 from test_battle import TACKLE, mon
 
 from ypoke import battle
@@ -182,3 +183,65 @@ def test_the_chooser_endures_only_ahead_of_a_flail_and_subs_only_above_half():
     assert choose(teams, arena) == 0
     teams[0].active.hp = teams[0].active.max_hp // 2
     assert choose(teams, arena) == 1
+
+
+def test_endure_in_sand_outlasts_a_foe_that_the_chip_knocks_out_at_the_end_of_the_turn():
+    teams, arena, user, foe = facing_a_finishing_hit()
+    foe.hp = foe.max_hp // 16
+    assert choose(teams, arena, weather="sandstorm") == 0
+    assert end_of_a_turn_of_endure(teams, arena, weather("sandstorm")) == 1 and user.hp == 1
+
+
+def test_endure_is_not_used_when_the_chip_leaves_the_foe_standing():
+    teams, arena, _, foe = facing_a_finishing_hit()
+    foe.hp = foe.max_hp // 16 + 1
+    assert choose(teams, arena, weather="sandstorm") == 1
+
+
+@pytest.mark.parametrize("foe_type", ["rock", "ground", "steel"])
+def test_endure_is_not_used_against_a_foe_the_sand_does_not_chip(foe_type):
+    teams, arena, _, foe = facing_a_finishing_hit(foe_types=(foe_type,))
+    foe.hp = foe.max_hp // 16
+    assert choose(teams, arena, weather="sandstorm") == 1
+
+
+def test_endure_is_not_used_when_the_chip_would_knock_out_the_enduring_user_too():
+    teams, arena, _, foe = facing_a_finishing_hit(user_types=("normal",))
+    foe.hp = foe.max_hp // 16
+    assert choose(teams, arena, weather="sandstorm") == 1
+
+
+@pytest.mark.parametrize(("ticking", "share"), [
+    ({"status": "poison"}, 8), ({"status": "toxic"}, 16), ({"status": "burn"}, 16),
+    ({"volatile": "leech-seed"}, 8), ({"volatile": "salt-cure"}, 8), ({"volatile": "binding"}, 8),
+])
+def test_endure_outlasts_a_foe_that_its_status_or_state_finishes_at_the_end_of_the_turn(ticking, share):
+    teams, arena, user, foe = facing_a_finishing_hit()
+    foe.status = ticking.get("status")
+    if ticking.get("volatile") == "binding":
+        user.memory["binding"] = token = (1, user.combatant.name)
+        foe.volatiles["binding"] = [3, token]
+    elif "volatile" in ticking:
+        foe.volatiles[ticking["volatile"]] = True
+    foe.hp = foe.max_hp // share
+    assert choose(teams, arena) == 0
+    assert end_of_a_turn_of_endure(teams, arena, weather(None)) == 1 and user.hp > 0
+    foe.hp = foe.max_hp
+    assert choose(teams, arena) == 1
+
+
+def facing_a_finishing_hit(user_types=("ground",), foe_types=("normal",)):
+    """A faster Endure user at half HP, which the foe's best hit knocks out, and whose Tackle cannot finish the foe
+    at 1/16 HP."""
+    teams, arena = pair((ENDURE, TACKLE), foe_moves=(HUGE_HIT,), user_types=user_types, foe_types=foe_types,
+                        speed=200, attack=1)
+    teams[0].active.hp = teams[0].active.max_hp // 2
+    return teams, arena, teams[0].active, teams[1].active
+
+
+def end_of_a_turn_of_endure(teams, arena, field):
+    """The user endures, the foe's hit leaves it 1 HP, and the turn ends. Returns the side that ran out, if any."""
+    user, foe = teams[0].active, teams[1].active
+    resolve(user, foe, ENDURE, arena)
+    resolve(foe, user, HUGE_HIT, arena)
+    return battle._end_of_turn(1, teams, field, arena, random.Random(0), [])

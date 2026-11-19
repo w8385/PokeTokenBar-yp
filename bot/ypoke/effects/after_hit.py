@@ -8,7 +8,7 @@ from ypoke.effects.changers import FIXED_ABILITIES, reshape
 from ypoke.effects.item_moves import hold, movable, received
 from ypoke.effects.secondary import afflict
 from ypoke.effects.stats import arg, shift
-from ypoke.effects.volatiles import hurt, ticked
+from ypoke.effects.volatiles import due, hurt, ticked
 from ypoke.move_effects import SOUND_MOVES
 
 FELL_STINGER_STAGES = 3
@@ -184,10 +184,16 @@ class ThroatChop(Countdown):
 class SaltCure(Countdown):
     """The target loses 1/8 of its max HP at each end of turn, Water and Steel types 1/4, until it switches out."""
 
+    def tick_due(self, name, fighter):
+        return due(fighter, self._share(fighter))
+
     def _tick(self, fighter, side, turn):
-        harsh = any(kind in fighter.combatant.types for kind in SALT_CURE_HARSH_TYPES)
-        hurt(fighter, SALT_CURE_HARSH_SHARE if harsh else SALT_CURE_SHARE)
+        hurt(fighter, self._share(fighter))
         return ticked(fighter, side, turn, self.key)
+
+    def _share(self, fighter) -> int:
+        harsh = any(kind in fighter.combatant.types for kind in SALT_CURE_HARSH_TYPES)
+        return SALT_CURE_HARSH_SHARE if harsh else SALT_CURE_SHARE
 
 
 @register("moves", "syrup-bomb")

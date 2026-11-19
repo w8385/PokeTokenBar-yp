@@ -174,14 +174,24 @@ def last_move(fighter):
 @register("moves", "endure")
 class Endure(Guard):
     """A hit that would knock the user out this turn leaves it 1 HP. Picked when the foe can knock the user out and
-    the user has Flail, Reversal or Endeavor to follow."""
+    the user has Flail, Reversal or Endeavor to follow, or the end of this turn finishes the foe and spares it."""
 
     def _worth(self, user, foe, weather):
-        return (user.hp > 1 and any(move.id in ENDURE_PAYOFF for move in user.combatant.moves)
-                and foe_hit(user, foe, weather) >= user.hp)
+        return (user.hp > 1 and foe_hit(user, foe, weather) >= user.hp
+                and (any(move.id in ENDURE_PAYOFF for move in user.combatant.moves) or outlasts(user, foe, weather)))
 
     def endures(self, name, fighter, from_full, rng):
         return True
+
+
+def outlasts(user, foe, weather) -> bool:
+    return end_of_turn_loss(foe, weather) >= foe.hp and end_of_turn_loss(user, weather) == 0
+
+
+def end_of_turn_loss(fighter, weather) -> int:
+    """Weather chip, burn or poison and the Pokémon's own states, without the heals between them."""
+    return (battle._weather_chip(fighter, weather) + fighter.residual_due()
+            + sum(hooks.key("moves", kind, "tick_due", fighter, default=0) for kind in list(fighter.volatiles)))
 
 
 @register("moves", "substitute")
