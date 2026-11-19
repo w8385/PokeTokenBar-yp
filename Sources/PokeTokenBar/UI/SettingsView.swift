@@ -184,7 +184,7 @@ struct SettingsView: View {
     private func sectionView(_ section: SettingsSection, _ store: UsageStore) -> some View {
         switch section {
         case .general: generalGroup(store)
-        case .difficulty: difficultyGroup
+        case .growthMode: GrowthModeSection(companion: companion)
         case .menuBar: menuBarGroup(store)
         case .trackedProviders: trackedProvidersGroup(store)
         case .floatingPet: floatingPetGroup(store)
@@ -310,10 +310,6 @@ struct SettingsView: View {
                     .disabled(!isBundledApp)
             }
         }
-    }
-
-    private var difficultyGroup: some View {
-        DifficultySettingsSection(companion: companion)
     }
 
     @ViewBuilder

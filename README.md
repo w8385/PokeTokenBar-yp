@@ -57,7 +57,7 @@ Move your companion out of the menu bar and onto the desktop, at any size from 4
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pet-interactions.png" width="300" alt="Separate native pet samples for prayer, petting, sulking, and agent waiting"><br><small>Native UI components · sample states</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="Floating pet with two friends beside it, one wearing a heart"><br><br><img src="assets/screenshot-pet-xp.png" width="300" alt="Home sprite with a +270K XP badge after five fast clicks"><br><small>Sample state</small></td>
+<td width="45%" align="center"><img src="assets/screenshot-pet-interactions.png" width="300" alt="Separate native pet samples for prayer, petting, sulking, and agent waiting"><br><small>Native UI components · sample states</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="Floating pet with two friends beside it, one wearing a heart"><br><br><img src="assets/screenshot-pet-xp.png" width="300" alt="Home sprite with a +250K XP badge after five fast clicks"><br><small>Sample state</small></td>
 <td width="55%" valign="middle">
 <h3>A companion with a little personality</h3>
 Move the pointer over your floating pet, or click it, to pet it; click an egg to pray, and watch for small reactions, sulking, and occasional event bubbles. Friends stand close beside the pet, slightly overlapping, and petting a friend pops a heart over that friend. These interactions are cosmetic: praying does not change hatch odds or growth rewards. Clicking the big Home sprite or a hatched floating pet does grow it, and every click counts: fast clicks add up in one +XP badge. Every 30 prayers, a quip can accompany a usage refresh. Agent activity can add working, waiting, and done reactions after <a href="#agent-activity">manual setup</a>.
@@ -277,10 +277,10 @@ Beat the champion and each region's <b>hidden boss</b> opens below the Elite Fou
 <td width="45%" align="center"><img src="assets/screenshot-hidden-boss.png" width="300" alt="The hidden boss beaten, with its first-clear prize"></td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-difficulty.png" width="300" alt="Choose your growth pace"></td>
+<td width="45%" align="center"><img src="assets/screenshot-growth-mode.png" width="300" alt="Growth source picker set to active time"></td>
 <td width="55%" valign="middle">
-<h3>Choose your growth pace</h3>
-Set growth thresholds and shop prices independently from <b>10% to 200%</b>, with Easy/Hard and Cheap/Expensive labels at the slider ends. Dragging only edits a draft; press <b>Save</b> to apply it. Changing growth difficulty preserves your current stage progress instead of triggering an evolution. A hatch from an evolution line you have already graduated grows <b>2× faster</b>. Hover the hatch or growth bar on Home to see used tokens, the target, and progress as a percentage.
+<h3>Grow by tokens or by time</h3>
+Pick what grows your Pokémon: the tokens your coding agents use, or the time you spend at the keyboard. In time mode each active second adds <b>25K</b> growth and <b>25K</b> shop tokens. More than five idle minutes, sleep, and a locked screen add nothing. The choice is a draft until you press <b>Save</b>. A hatch from an evolution line you have already graduated grows <b>2× faster</b>. Hover the hatch or growth bar on Home to see used tokens, the target, and progress as a percentage.
 </td>
 </tr>
 <tr>
@@ -324,7 +324,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 
 <img src="assets/screenshot-usage-recap.png" width="360" alt="Usage recap for a selected period">
 
-<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, gym, replay, champion, floating-friends, stored-friends, difficulty, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
+<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, gym, replay, champion, floating-friends, stored-friends, growth-mode, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
 
 ## Agent activity
 

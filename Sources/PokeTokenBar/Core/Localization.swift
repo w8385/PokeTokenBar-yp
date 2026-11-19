@@ -434,14 +434,15 @@ struct L {
           "Wächst mit den Tokens deiner Coding-Agenten.", "Растёт от токенов, которые тратят ваши кодовые агенты.")
     }
     var growthModeTimeHint: String {
-        t("Mac을 쓰는 시간으로 자랍니다. 이 모드에서는 토큰 사용량이 성장에 반영되지 않습니다.",
-          "Grows with the time you are active on this Mac. Token usage does not count in this mode.",
-          "このMacを使っている時間で成長します。このモードではトークン使用量は反映されません。",
-          "Crece con el tiempo que usas este Mac. El uso de tokens no cuenta en este modo.",
-          "Grandit avec le temps d'activité sur ce Mac. L'usage des tokens ne compte pas dans ce mode.",
-          "Cresce com o tempo de uso deste Mac. O uso de tokens não conta neste modo.",
-          "Wächst mit der Zeit, die du an diesem Mac aktiv bist. Token-Nutzung zählt in diesem Modus nicht.",
-          "Растёт от времени, которое вы проводите за этим Mac. Расход токенов в этом режиме не учитывается.")
+        let rate = TokenFormatter.compact(PokemonBalance.timeTokensPerActiveSecond)
+        return t("Mac을 쓰는 시간으로 자랍니다. 활동하는 1초마다 성장과 상점 토큰이 각각 \(rate)씩 쌓입니다. 이 모드에서는 토큰 사용량이 성장에 반영되지 않습니다.",
+          "Grows with the time you are active on this Mac: \(rate) growth and \(rate) shop tokens per active second. Token usage does not count in this mode.",
+          "このMacを使っている時間で成長します。操作中は1秒ごとに成長\(rate)、ショップのトークン\(rate)が増えます。このモードではトークン使用量は反映されません。",
+          "Crece con el tiempo que usas este Mac: \(rate) de crecimiento y \(rate) tokens de tienda por segundo activo. El uso de tokens no cuenta en este modo.",
+          "Grandit avec le temps d'activité sur ce Mac : \(rate) de croissance et \(rate) tokens de boutique par seconde active. L'usage des tokens ne compte pas dans ce mode.",
+          "Cresce com o tempo de uso deste Mac: \(rate) de crescimento e \(rate) tokens da loja por segundo ativo. O uso de tokens não conta neste modo.",
+          "Wächst mit der Zeit, die du an diesem Mac aktiv bist: \(rate) Wachstum und \(rate) Shop-Tokens pro aktiver Sekunde. Token-Nutzung zählt in diesem Modus nicht.",
+          "Растёт от времени, которое вы проводите за этим Mac: \(rate) роста и \(rate) токенов магазина за каждую активную секунду. Расход токенов в этом режиме не учитывается.")
     }
     var timeModeBadge: String { t("시간 모드", "Time mode", "時間モード", "Modo tiempo", "Mode temps", "Modo tempo", "Zeitmodus", "Режим времени") }
     var idleTokenHint: String {
@@ -453,26 +454,6 @@ struct L {
           "Sem uso de tokens? Nos Ajustes você pode crescer por tempo.",
           "Keine Token-Nutzung? In den Einstellungen kannst du per Zeit wachsen.",
           "Не используете токены? В настройках можно расти по времени.")
-    }
-    // MARK: 난이도
-    var difficultySectionTitle: String { t("난이도", "Difficulty", "難易度", "Dificultad", "Difficulté", "Dificuldade", "Schwierigkeit", "Сложность") }
-    var difficultyGrowthLabel: String { t("성장", "Growth", "成長", "Crecimiento", "Croissance", "Crescimento", "Wachstum", "Рост") }
-    var difficultyShopLabel: String { t("상점 가격", "Shop prices", "ショップ価格", "Precios de la tienda", "Prix de la boutique", "Preços da loja", "Shop-Preise", "Цены в магазине") }
-    var difficultyGrowthLowLabel: String { t("쉬움", "Easy", "やさしい", "Fácil", "Facile", "Fácil", "Leicht", "Легко") }
-    var difficultyGrowthHighLabel: String { t("어려움", "Hard", "難しい", "Difícil", "Difficile", "Difícil", "Schwer", "Сложно") }
-    var difficultyShopLowLabel: String { t("저렴", "Cheap", "安い", "Barato", "Pas cher", "Barato", "Günstig", "Дёшево") }
-    var difficultyShopHighLabel: String { t("비쌈", "Expensive", "高い", "Caro", "Cher", "Caro", "Teuer", "Дорого") }
-    func difficultyScaleHint(low: String, high: String) -> String {
-        t("낮추면 \(low), 높이면 \(high)", "Lower: \(low), higher: \(high)", "下げると\(low)、上げると\(high)",
-          "Más bajo: \(low); más alto: \(high)", "Plus bas : \(low) ; plus haut : \(high)",
-          "Mais baixo: \(low); mais alto: \(high)", "Niedriger: \(low), höher: \(high)", "Ниже: \(low), выше: \(high)")
-    }
-    /// 슬라이더 옆 현재 배율 — 10%~200%, 1.0 = 100%.
-    func difficultyValue(_ value: Double) -> String {
-        let percent = value * 100
-        if percent >= 10 { return String(format: "%.0f%%", percent) }
-        if percent >= 1 { return String(format: "%.1f%%", percent) }
-        return String(format: "%.2f%%", percent)
     }
     // MARK: 플로팅 펫
     var floatingPetSectionTitle: String { t("플로팅 펫", "Floating Pet", "フローティングペット", "Mascota flotante", "Compagnon flottant", "Mascote flutuante", "Schwebendes Pokémon", "Питомец на экране") }
@@ -1734,7 +1715,6 @@ struct L {
     }
     var eggImminent: String { t("곧 부화해요!", "About to hatch!", "もうすぐ孵化！", "¡Está a punto de eclosionar!", "Sur le point d'éclore !", "Está quase chocando!", "Schlüpft gleich!", "Вот-вот вылупится!") }
     /// 첫 실행(아직 토큰 적립 0) 안내 — "왜 아무 일도 안 일어나지"를 방지.
-    /// `amount` 는 성장 난이도가 반영된 부화 임계(포맷된 값) — 고정값이 아니다.
     func eggFirstRunHint(_ amount: String) -> String {
         t("로컬 AI 코딩 도구의 사용량으로 자라요. 약 \(amount) 토큰을 쓰면 알이 부화해요.",
           "Grows from your local AI coding usage. Your egg hatches after ~\(amount) tokens.",

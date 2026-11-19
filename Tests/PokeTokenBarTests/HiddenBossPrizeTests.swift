@@ -27,7 +27,7 @@ final class HiddenBossPrizeTests: XCTestCase {
 
     /// A save with a raised Pokémon; `extra` is spliced into the top-level JSON object.
     private func store(file: URL, extra: String = "", rng: some RandomNumberGenerator = SeededRNG(seed: 3)) throws -> CompanionStore {
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":50000000000,\"spentTokens\":0,\"lastDate\":\"d\","
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":50000000000,\"spentTokens\":0,\"lastDate\":\"d\","
             + "\"language\":\"en\",\"active\":\(activeMon),\"dex\":[],\"collectedFinals\":[]\(extra)}"
         try Data(json.utf8).write(to: file)
         return CompanionStore(provider: PrizeProvider(), clock: { self.now }, fileURL: file, rng: rng)
@@ -192,7 +192,7 @@ final class HiddenBossPrizeTests: XCTestCase {
     func testTheSameEggWithoutThePrizeFlagHatchesPlain() async throws {
         let file = url()
         defer { try? FileManager.default.removeItem(at: file) }
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\","
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\","
             + "\"active\":null,\"dex\":[],\"collectedFinals\":[],\"eggUsage\":\(PokemonBalance.eggHatchThreshold),"
             + "\"pendingHatchID\":150,\"scoutedEgg\":true}"
         try Data(json.utf8).write(to: file)
@@ -205,7 +205,7 @@ final class HiddenBossPrizeTests: XCTestCase {
     func testThePrizeEggNeedsAPokemonToSendOff() throws {
         let file = url()
         defer { try? FileManager.default.removeItem(at: file) }
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\","
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,\"lastDate\":\"d\","
             + "\"active\":null,\"dex\":[],\"collectedFinals\":[],\"inventory\":{\"shiny-egg:150\":1}}"
         try Data(json.utf8).write(to: file)
         let s = CompanionStore(provider: PrizeProvider(), clock: { self.now }, fileURL: file, rng: SeededRNG(seed: 3))

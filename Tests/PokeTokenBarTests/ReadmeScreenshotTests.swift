@@ -299,7 +299,7 @@ final class ReadmeScreenshotTests: XCTestCase {
         var mon = MonState(baseID: 446, pathIDs: [446], plannedPathIDs: [446, 143], stageIndex: 0, usedAtStage: 0,
                            rarity: .rare, totalForms: 2,
                            profile: PokemonProfile.generate(seed: 8, instanceID: "readme-munchlax"))
-        mon.usedAtStage = PokemonBalance.scaled(mon.phaseThreshold, by: 1.0)
+        mon.usedAtStage = mon.phaseThreshold
         mon.evolution.pets = 12
         state.active = mon
         let file = scratch.appendingPathComponent("move-on-\(language.rawValue).json")
@@ -307,8 +307,6 @@ final class ReadmeScreenshotTests: XCTestCase {
         let suite = "readme-move-on-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         addTeardownBlock { UserDefaults.standard.removePersistentDomain(forName: suite) }
-        defaults.set(1.0, forKey: "growthDifficulty")
-        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         let clock = ReadmeClock()
         let store = CompanionStore(provider: MoveOnLineProvider(), clock: { clock.now }, fileURL: file,
                                    rng: SeededRNG(seed: 1), dittoDisguiseRollingEnabled: false, defaults: defaults)

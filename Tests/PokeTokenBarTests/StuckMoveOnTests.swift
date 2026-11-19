@@ -8,7 +8,7 @@ final class StuckMoveOnTests: StoredLineHarness {
     static let nearID = "near"
     static let farID = "far"
 
-    func fullXP(_ mon: MonState) -> Int { PokemonBalance.scaled(mon.phaseThreshold, by: 1.0) }
+    func fullXP(_ mon: MonState) -> Int { mon.phaseThreshold }
 
     func munchlax(short: Int = 0) -> MonState {
         var mon = storedMon(Self.munchID, path: [446, 143])
@@ -195,7 +195,7 @@ final class ExpShareMoveOnTests: StoredLineHarness {
     func idleHolderState() -> CompanionState {
         var state = baseState()
         var munch = storedMon(Self.idleID, path: [446, 143], seed: 51)
-        munch.usedAtStage = PokemonBalance.scaled(munch.phaseThreshold, by: 1.0)
+        munch.usedAtStage = munch.phaseThreshold
         store(munch, in: &state, holding: true)
         return state
     }
@@ -230,8 +230,7 @@ final class ExpShareMoveOnTests: StoredLineHarness {
         profile.level = 30
         state.dex.append(DexEntry(id: "slig", baseID: 704, finalID: 705, chainOrder: [704, 705], rarity: .common,
                                   caughtAt: Date(timeIntervalSince1970: 5_000), profile: profile))
-        let sliggooThreshold = PokemonBalance.scaled(
-            PokemonBalance.phaseThreshold(rarity: .common, totalForms: 3, stageIndex: 1), by: 1.0)
+        let sliggooThreshold = PokemonBalance.phaseThreshold(rarity: .common, totalForms: 3, stageIndex: 1)
         var progress = EvolutionProgress()
         progress.graduateXP = sliggooThreshold - 1
         state.graduateEvolution["slig"] = progress
@@ -248,7 +247,7 @@ final class ExpShareMoveOnTests: StoredLineHarness {
     func testAFullHolderWaitingForAFriendPassesItsCopyOn() async throws {
         var state = baseState()
         var mantyke = storedMon("mantyke", path: [458, 226], seed: 55)
-        mantyke.usedAtStage = PokemonBalance.scaled(mantyke.phaseThreshold, by: 1.0)
+        mantyke.usedAtStage = mantyke.phaseThreshold
         store(mantyke, in: &state, holding: true)
         addNear(to: &state, holding: false)
         let store = try makeStore(state)
@@ -305,7 +304,7 @@ final class MoveOnCountdownLayoutTests: XCTestCase {
         for language in AppLanguage.allCases {
             let l = L(language)
             let needs = [EvolutionRequirement.pets(30), .holds(.expShare)]
-                .map { l.evolutionRequirementText($0, speciesName: { _ in "Fletchinder" }, shopDifficulty: 1) }
+                .map { l.evolutionRequirementText($0, speciesName: { _ in "Fletchinder" }) }
                 .joined(separator: " + ")
             let text = l.moveOnCountdown(needs, minutes: 30, next: .raise("Fletchinder"), toGraduates: true)
             let button = LayoutMeasure.size(Button(l.keepWaiting) {}.buttonStyle(.bordered).controlSize(.mini).fixedSize())

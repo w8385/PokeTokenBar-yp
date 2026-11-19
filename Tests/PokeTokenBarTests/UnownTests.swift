@@ -102,8 +102,6 @@ final class UnownTests: XCTestCase {
         let date = now
         let suite = "unown-tests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
-        defaults.set(1.0, forKey: "growthDifficulty")
-        defaults.set(1.0, forKey: "shopDifficulty")
         addTeardownBlock { UserDefaults.standard.removePersistentDomain(forName: suite) }
         return CompanionStore(provider: provider, clock: { date },
                               fileURL: url, rng: rng ?? SeededRNG(seed: seed),
@@ -468,10 +466,9 @@ final class UnownTests: XCTestCase {
         XCTAssertTrue(s.pokemonIndividuals(speciesID: 201, form: .question).isEmpty)
     }
 
-    func testDifferentLettersKeepSpeciesBasedRepeatGrowthAtEveryDifficulty() async throws {
-        for difficulty in [0.1, 1.0, 2.0] {
+    func testDifferentLettersKeepSpeciesBasedRepeatGrowth() async throws {
+        do {
             let s = try store(seed: 17)
-            s.setGrowthDifficulty(difficulty)
             await s.hatch(baseID: 201)
             XCTAssertFalse(try XCTUnwrap(s.state.active).hasGrowthBoost)
             let firstForm = try XCTUnwrap(s.currentForm)
@@ -484,7 +481,6 @@ final class UnownTests: XCTestCase {
             nextEgg.pendingForm = firstForm == .a ? .b : .a
             nextEgg.eggUsage = PokemonBalance.eggHatchThreshold
             let repeated = try store(nextEgg)
-            repeated.setGrowthDifficulty(difficulty)
             await repeated.hatchIfNeeded()
             XCTAssertEqual(repeated.currentForm, nextEgg.pendingForm)
             XCTAssertNotEqual(repeated.currentForm, firstForm)

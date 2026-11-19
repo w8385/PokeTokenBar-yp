@@ -31,7 +31,7 @@ sits in through `.ptb(.body, scale: k)`. Semantic colors (`.primary`, `.secondar
 
 | Modifier or type | Look | Used for |
 |---|---|---|
-| `.ptbCard()` | control background, separator hairline, `Radius.card` | grouped settings rows, coworker list, difficulty and battle sections |
+| `.ptbCard()` | control background, separator hairline, `Radius.card` | grouped settings rows, coworker list, growth-mode and battle sections |
 | `.ptbPanel(radius:)` | `secondary` at 7%, `Radius.card` | species flavor, evolution card, friend rows, unowned detail |
 | `.ptbChip(active:)` | control background, hairline, `Radius.chip`; `ChipTint.accent` / `.shiny` while on | filter toggles, sort, search box |
 | `.speechBubbleSurface(_:)` | window background, tail, `ShadowStyle.bubble` | every pet bubble (see `Design/Bubble.swift`) |

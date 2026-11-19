@@ -139,15 +139,15 @@ final class SaveTransferTests: XCTestCase {
         var original = CompanionState()
         original.active = MonState(
             baseID: 1, pathIDs: [1], plannedPathIDs: [1, 2, 3], stageIndex: 0,
-            usedAtStage: 12_000_000, rarity: .common, totalForms: 3, hasGrowthBoost: true)
+            usedAtStage: 1_200_000, rarity: .common, totalForms: 3, hasGrowthBoost: true)
 
         let data = try SaveTransfer.encode(state: original, appVersion: "2.5.0",
                                            deviceName: "Old Mac", now: transferNow)
         let envelope = try SaveTransfer.decode(data)
 
         XCTAssertTrue(envelope.state.active?.hasGrowthBoost == true)
-        XCTAssertEqual(envelope.state.active?.usedAtStage, 12_000_000)
-        XCTAssertEqual(envelope.state.active?.phaseThreshold, 12_500_000)
+        XCTAssertEqual(envelope.state.active?.usedAtStage, 1_200_000)
+        XCTAssertEqual(envelope.state.active?.phaseThreshold, 1_250_000)
     }
 
     /// [핵심] 봉투가 없으면 `CompanionState` 의 관대 디코딩이 아무 JSON 이나 빈 상태로 흡수해
@@ -526,7 +526,7 @@ final class SaveTransferTests: XCTestCase {
     func testCorruptStateOnDiskIsClampedOnLoadNotJustOnImport() throws {
         let url = tempURL("diskclamp")
         // 앱이 아니라 손편집·이전 버전이 남긴 것처럼 극단값을 직접 파일에 심는다.
-        let json = #"{"economyVersion":2,"installBaselineSet":true,"usedSinceInstall":9223372036854775807,"#
+        let json = #"{"economyVersion":3,"installBaselineSet":true,"usedSinceInstall":9223372036854775807,"#
             + #""spentTokens":-9223372036854775808,"eggUsage":9223372036854775807,"#
             + #""claimedTodayTokens":-1,"lastDate":"2026-08-03"}"#
         try Data(json.utf8).write(to: url)

@@ -88,7 +88,7 @@ struct EvolutionCardView: View {
             } else {
                 Text("•").foregroundStyle(.secondary)
             }
-            Text(l.evolutionRequirementText(requirement, speciesName: speciesLabel, shopDifficulty: store.shopDifficulty))
+            Text(l.evolutionRequirementText(requirement, speciesName: speciesLabel))
             if case .time = requirement { dayNightClock }
             if let progress, progress.need > 1 {
                 Text("\(min(progress.have, progress.need))/\(progress.need)")

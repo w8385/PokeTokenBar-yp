@@ -126,8 +126,7 @@ extension CompanionStore {
 
     func requirementsText(_ requirements: [EvolutionRequirement]) -> String {
         requirements.map {
-            l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" },
-                                       shopDifficulty: shopDifficulty)
+            l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" })
         }.joined(separator: " + ")
     }
 

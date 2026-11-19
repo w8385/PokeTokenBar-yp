@@ -28,7 +28,7 @@ final class SettingsTabsTests: XCTestCase {
     // MARK: Grouping
 
     func testEveryFormerSectionLivesInExactlyOneTab() {
-        let former: Set<SettingsSection> = [.general, .difficulty, .menuBar, .trackedProviders, .floatingPet,
+        let former: Set<SettingsSection> = [.general, .growthMode, .menuBar, .trackedProviders, .floatingPet,
                                             .notifications, .update, .transfer, .advanced, .aboutSupport]
         let placed = SettingsTab.allCases.flatMap(\.sections)
         XCTAssertEqual(placed.count, Set(placed).count, "a section sits in two tabs")

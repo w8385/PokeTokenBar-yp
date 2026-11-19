@@ -101,12 +101,6 @@ enum Rarity: String, Codable, Sendable, CaseIterable {
     }
 }
 
-/// Growth from clicking the pet. Every click counts: no daily limit and no interval.
-enum ClickGrowth {
-    /// About 2,800 clicks take a common line from a new egg to graduation.
-    static let tokensPerClick = 54_000
-}
-
 /// Where new growth and wallet income come from. Banked progress is the same in both modes.
 enum GrowthMode: String, Codable, Sendable, CaseIterable {
     /// Real usage from the coding agents (the original behaviour).
@@ -115,118 +109,10 @@ enum GrowthMode: String, Codable, Sendable, CaseIterable {
     case time
 }
 
-/// 토큰 경제 — 동료 중앙값(~44M/일) 기준.
-/// 졸업 총량 T 는 같은 희귀도면 진화 단계 수와 무관하게 동일.
-/// 형태 k개 라인에서 i번째 형태 성장 비용 = T·i / (k(k+1)/2) → 합 = T, 단계↑일수록 비용↑.
-enum PokemonBalance {
-    /// With no token usage for this long the companion turns its back (`CompanionStateKind.sulk`).
-    static let sulkAfterIdle: TimeInterval = 3 * 3600
-    /// 알 부화 임계 — 이만큼 토큰을 써야 알이 깨진다(즉시 부화 대신 기대감). 초과분은 부화체 성장에 이월.
-    static let eggHatchThreshold = 1_000_000
-    static let repeatGrowthMultiplier = 2
-    /// The base token tables were divided by this once; difficulty settings and in-flight credits are migrated by it.
-    static let economyDivisor = 5
-    /// 2 = tables divided by `economyDivisor`. Saves and settings written before that are version 1.
-    static let economyVersion = 2
-    /// UserDefaults flag: the two difficulty sliders were multiplied by `economyDivisor` once.
-    static let difficultyMigratedKey = "economyDifficultyV2"
-    static let legacyGrowthKey = "economyLegacyGrowth"
-
-    // MARK: Time mode
-
-    /// Growth tokens per active hour, before difficulty (which scales thresholds and prices, not this).
-    static let timeTokensPerActiveHour = 40_000_000
-    /// Wallet tokens per active hour. Only growth gets `timeTokensPerActiveHour`.
-    static let timeWalletTokensPerActiveHour = 10_000_000
-
-    static func timeTokens(forActiveSeconds seconds: TimeInterval, perHour: Int = timeTokensPerActiveHour) -> Int {
-        max(0, Int(seconds * Double(perHour) / 3600))
-    }
-    /// Input within this long counts as active.
-    static let timeIdleLimit: TimeInterval = 5 * 60
-    /// One tick never credits more than this, so a long gap (sleep, a stalled timer) cannot pay out.
-    static let timeMaxStep: TimeInterval = 2 * 60
-    /// Token mode with no usage for this long offers the switch to time mode.
-    static let idleTokenHintAfter: TimeInterval = 3 * 86400
-
-    static func graduationTotal(_ rarity: Rarity) -> Int {
-        switch rarity {
-        case .common:    return    150_000_000
-        case .uncommon:  return    375_000_000
-        case .rare:      return    600_000_000
-        case .legendary: return  1_200_000_000
-        }
-    }
-    /// stageIndex(0-based)에서 다음 단계/졸업까지 필요한 토큰.
-    static func phaseThreshold(rarity: Rarity, totalForms k: Int, stageIndex: Int,
-                               growthMultiplier: Int = 1) -> Int {
-        let kk = max(1, k)
-        let i = stageIndex + 1                         // 1-based
-        let total = Double(graduationTotal(rarity))
-        let denom = Double(kk * (kk + 1)) / 2.0
-        let standardThreshold = Int((total * Double(i) / denom).rounded())
-        return max(1, Int((Double(standardThreshold) / Double(max(1, growthMultiplier))).rounded()))
-    }
-
-    // MARK: 난이도 배율 (설정 슬라이더)
-
-    /// 사용자 조절 배율의 허용 범위. 1 미만이면 기본보다 빠르고·싸며, 1 초과면 느리고·비싸다.
-    static let difficultyRange: ClosedRange<Double> = 0.1...2.0
-    /// 기본값 — 이 값에서 모든 밸런스가 위 상수표 그대로다(기존 동작과 동일).
-    static let defaultDifficulty: Double = 1.0
-
-    /// 저장값을 허용 범위로 조인다. UserDefaults 는 `defaults write` 로 외부에서 쓸 수 있어
-    /// 0·음수·NaN 이 실제로 들어올 수 있고, 배율 0 은 임계 0(진행률 0 나눗셈·퇴화한 진화 루프)이 된다.
-    static func clampDifficulty(_ value: Double) -> Double {
-        guard value.isFinite else { return defaultDifficulty }
-        return min(max(value, difficultyRange.lowerBound), difficultyRange.upperBound)
-    }
-
-    /// One-time move of a stored slider to the divided tables: ×`economyDivisor` so the effective balance
-    /// stays, clamped to the range. The app writes the default 1.0 back on every launch, so a stored 1.0
-    /// cannot be told from an untouched slider; it stays 1.0 (the new base). A missing or invalid value is the default.
-    static func migratedDifficulty(_ stored: Double?) -> Double {
-        guard let stored, stored.isFinite, stored != defaultDifficulty else { return defaultDifficulty }
-        return clampDifficulty(stored * Double(economyDivisor))
-    }
-
-    /// 기본값 × 난이도 — 임계·가격 공통. **상수표 자체는 스케일하지 않는다**: 등급 알 가격이
-    /// `graduationTotal` 의 *비율*로 파생되므로(FreshEgg.price), 표를 건드리면 성장 배율이 상점
-    /// 가격까지 끌고 간다. 소비 지점에서만 곱해 두 배율을 서로 독립으로 유지한다.
-    static func scaled(_ base: Int, by difficulty: Double) -> Int {
-        Int((Double(base) * clampDifficulty(difficulty)).rounded())
-    }
-
-    static func machinePrice(power: Int, isWeather: Bool) -> Int {
-        if isWeather || power >= 100 { return 120_000_000 }
-        return power >= 70 ? 80_000_000 : 40_000_000
-    }
-
-    // MARK: 슬라이더 위치 ↔ 배율 (로그 매핑)
-    // 같은 비율의 변화가 같은 거리를 차지한다. 기본값은 트랙의 ±1%에서 스냅한다.
-    private static let defaultSnapWidth = 0.01
-
-    /// 슬라이더 위치(0…1) → 배율.
-    static func difficulty(atPosition position: Double) -> Double {
-        let lo = difficultyRange.lowerBound, hi = difficultyRange.upperBound
-        let p = min(max(position, 0), 1)
-        if abs(p - difficultyPosition(defaultDifficulty)) < defaultSnapWidth { return defaultDifficulty }
-        return snapDifficulty(lo * pow(hi / lo, p))
-    }
-
-    /// 배율 → 슬라이더 위치(0…1).
-    static func difficultyPosition(_ value: Double) -> Double {
-        let lo = difficultyRange.lowerBound, hi = difficultyRange.upperBound
-        return log(clampDifficulty(value) / lo) / log(hi / lo)
-    }
-
-    /// 로그 슬라이더에서 나온 값을 유효숫자 2자리로 정리한다 — 없으면 1.0473 같은 값이 그대로 표시된다.
-    /// 기본값 되돌리기는 여기가 아니라 `difficulty(atPosition:)` 의 위치 스냅이 담당한다.
-    static func snapDifficulty(_ value: Double) -> Double {
-        guard value > 0 else { return difficultyRange.lowerBound }
-        let magnitude = pow(10, (log10(value)).rounded(.down) - 1)
-        return ((value / magnitude).rounded() * magnitude)
-    }
+/// Growth from clicking the pet. Every click counts: no daily limit and no interval.
+enum ClickGrowth {
+    /// About 300 clicks take a common line from a new egg to graduation.
+    static let tokensPerClick = PokemonBalance.tokensPerPet
 }
 
 /// 인벤토리 아이템 종류 — 확장 대비 enum(현재 이상한 사탕 1종). rawValue 로 CompanionState.inventory 에 저장.
@@ -552,12 +438,12 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
 
 /// 진화의 돌 밸런스 상수 — 소모품. 쓰면 그 돌로 진화하는 갈래로 바로 진화한다(현재 단계 XP는 그대로 이어진다).
 enum EvolutionStone {
-    static let price = 200_000_000
+    static let price = PokemonBalance.Price.evolutionStone
 }
 
 /// 지닌 도구 상수 — 소모되지 않고 배틀 포켓몬에 달았다 뗄 수 있다.
 enum HeldItem {
-    static let price = 600_000_000
+    static let price = PokemonBalance.Price.heldItem
 }
 
 /// 상점·가방의 분류 탭. 빈 분류는 화면에서 숨긴다 — 아이템을 추가하는 쪽이 `ItemKind.category` 한 줄만 채운다.
@@ -656,23 +542,21 @@ struct BattleItemSection: Hashable, Sendable {
 
 /// 이상한 사탕 밸런스 상수.
 enum RareCandy {
-    /// 사용 시 현재 포켓몬에 주입하는 XP(토큰 환산). 2× 성장의 최소 임계는 12.5M(common 3형태 첫 단계 25M 의 절반)이지만,
-    /// 기본 난이도·첫 부화에서는 초과 이월(<20M)이 다음 임계(25M)보다 작아 최대 1단계만 올린다.
-    /// 낮은 난이도나 반복 부화 보너스에서는 여러 단계를 진행할 수 있다.
-    static let xp = 20_000_000
+    /// XP one candy adds to the current Pokémon. It can carry a Pokémon through several stages.
+    static let xp = PokemonBalance.rareCandyXP
     /// 주간 한도 100% 도달 시 지급 개수(세션급은 1개).
     static let weeklyGrant = 5
-    static let price = 100_000_000
+    static let price = PokemonBalance.Price.rareCandy
 }
 
 /// 민트 밸런스 상수.
 enum Mint {
-    static let price = 20_000_000
+    static let price = PokemonBalance.Price.mint
 }
 
 /// 이로치 부적 밸런스 상수 — 보유형(1회 구매·영구, 소비 안 됨).
 enum ShinyCharm {
-    static let price = 600_000_000
+    static let price = PokemonBalance.Price.shinyCharm
     /// 보유 시 이로치 부화 확률 분모 — 1/64 → 1/48 (+33%). 본가 '반짝이 부적'(이로치 확률↑) 오마주.
     /// ×2(1/32)는 과해 절제. 이미 부화한 개체엔 소급 없음(이로치는 부화 순간 확정).
     static let shinyDenominator: UInt64 = 48
@@ -681,7 +565,7 @@ enum ShinyCharm {
 /// Exp. Share: not used up, attached to one Box individual, which gets a share of the main Pokémon's XP.
 enum ExpShare {
     /// Base price of the next copy, by how many the player already owns.
-    static let prices = [600_000_000, 1_200_000_000]
+    static let prices = PokemonBalance.Price.expShare
     static var maxOwned: Int { prices.count }
     static let shareDivisor = 2
     static var sharePercent: Int { 100 / shareDivisor }
@@ -691,7 +575,7 @@ enum ExpShare {
 
 /// 새 알(리롤) 밸런스 상수 — 상점 구매 시 현재 포켓몬을 폐기하고 새 알로 되돌린다.
 enum FreshEgg {
-    static let price = 200_000_000
+    static let price = PokemonBalance.Price.egg
 
     /// 상점에서 파는 알 — 보증 없음(기본) → 고급 이상 → 희귀 이상. `nil` = 등급 보증 없는 기존 알.
     /// **전설 전용 알은 팔지 않는다**(등급 하한을 capture_rate 로 표현할 수 없고, 최고 등급을 확정
@@ -740,7 +624,7 @@ enum ScoutTicket {
     /// 한 번에 보여 주는 후보 수.
     static let drawSize = 10
     /// 모든 지역·전국 공통 가격.
-    static let price = 600_000_000
+    static let price = PokemonBalance.Price.scoutTicket
 }
 
 /// 상점 표시 한 줄 — 판매 아이템(ItemKind) 또는 알 리롤(즉시 액션이라 ItemKind 가 아님).
@@ -1405,8 +1289,7 @@ struct CompanionState: Codable, Sendable {
     var rewardedDexRegions: Set<String> = []
     /// Ids of trades already applied here, newest last (capped); a trade the bot sends again is skipped.
     var appliedTradeIDs: [String] = []
-    /// Which token scale the stored egg/stage credits and profile growth are in. A save without the field is
-    /// from before the base economy was divided by `PokemonBalance.economyDivisor`.
+    /// Which token tables the stored egg/stage credits and profile growth are in. A save without the field is v1.
     var economyVersion = PokemonBalance.economyVersion
     var growthMode = GrowthMode.token
     /// Virtual tokens earned by active time. Part of the wallet, kept out of `usedSinceInstall` and usage stats.

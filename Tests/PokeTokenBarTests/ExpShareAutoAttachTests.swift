@@ -55,7 +55,6 @@ final class ExpShareAutoAttachTests: XCTestCase {
         let suite = "exp-share-auto-\(UUID())"
         suites.append(suite)
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
-        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         return CompanionStore(provider: AutoAttachProvider(), fileURL: url, rng: SeededRNG(seed: 3),
                               dittoDisguiseRollingEnabled: false, defaults: defaults)
     }
@@ -225,7 +224,7 @@ final class BagExpSharePassTests: StoredLineHarness {
     static let farID = "far"
     static let zardID = "zard"
 
-    func fullXP(_ mon: MonState) -> Int { PokemonBalance.scaled(mon.phaseThreshold, by: 1.0) }
+    func fullXP(_ mon: MonState) -> Int { mon.phaseThreshold }
 
     func charmander(_ id: String, short: Int, seed: UInt64) -> MonState {
         var mon = storedMon(id, path: [4, 5, 6], seed: seed)

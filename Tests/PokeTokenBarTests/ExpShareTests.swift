@@ -74,8 +74,6 @@ final class ExpShareTests: XCTestCase {
         let suite = "exp-share-\(UUID())"
         suites.append(suite)
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
-        defaults.set(1.0, forKey: "growthDifficulty")
-        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         return CompanionStore(provider: ExpShareProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 3),
                               dittoDisguiseRollingEnabled: false, defaults: defaults)
     }
@@ -110,15 +108,14 @@ final class ExpShareTests: XCTestCase {
 
     // MARK: shop
 
-    func testTheSecondCopyCostsTheSecondPriceTimesTheShopDifficulty() throws {
+    func testTheSecondCopyCostsTheSecondPrice() throws {
         let store = try makeStore(baseState())
         XCTAssertEqual(ItemKind.expShare.shopPrice, ExpShare.prices[0])
         XCTAssertEqual(ItemKind.expShare.category, .growth)
         XCTAssertFalse(ItemKind.expShare.isEquippable)
         XCTAssertTrue(store.purchasableItems.contains(.expShare))
-        store.setShopDifficulty(2)
-        let first = PokemonBalance.scaled(ExpShare.prices[0], by: store.shopDifficulty)
-        let second = PokemonBalance.scaled(ExpShare.prices[1], by: store.shopDifficulty)
+        let first = ExpShare.prices[0]
+        let second = ExpShare.prices[1]
         XCTAssertEqual(store.price(of: .expShare), first)
 
         let spent = store.state.spentTokens

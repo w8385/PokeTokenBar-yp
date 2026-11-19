@@ -7,7 +7,7 @@ final class BoxGraduationTests: StoredLineHarness {
     static let goodraID = "goodra"
     static let nearID = "near"
 
-    func fullXP(_ mon: MonState) -> Int { PokemonBalance.scaled(mon.phaseThreshold, by: 1.0) }
+    func fullXP(_ mon: MonState) -> Int { mon.phaseThreshold }
 
     func finalForm(_ id: String, path: [Int], seed: UInt64, short: Int = 0) -> MonState {
         var mon = storedMon(id, path: path, stage: path.count - 1, seed: seed)

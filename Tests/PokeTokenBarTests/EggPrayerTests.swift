@@ -26,7 +26,7 @@ final class EggPrayerTests: XCTestCase {
     private func hatchReadyEgg(seed: UInt64 = 7, pending: Bool,
                                provider: (any PokeProviding)? = nil) -> CompanionStore {
         let url = tempURL()
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":10000000,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":10000000,\"spentTokens\":0,"
             + "\"lastDate\":\"d\",\"active\":null,\"dex\":[],\"collectedFinals\":[],"
             + "\"eggUsage\":\(PokemonBalance.eggHatchThreshold)"
             + (pending ? ",\"pendingHatchID\":1" : "") + "}"
@@ -39,7 +39,7 @@ final class EggPrayerTests: XCTestCase {
         let url = tempURL()
         let mon = "{\"baseID\":10,\"pathIDs\":[10],\"stageIndex\":0,\"usedAtStage\":200000000,"
             + "\"rarity\":\"common\",\"totalForms\":3,\"isShiny\":false}"
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":5000000000,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":5000000000,\"spentTokens\":0,"
             + "\"lastDate\":\"d\",\"active\":\(mon),\"dex\":[],\"collectedFinals\":[]}"
         try? json.data(using: .utf8)!.write(to: url)
         return CompanionStore(provider: PrayerOfflineProvider(), clock: { self.now }, fileURL: url,

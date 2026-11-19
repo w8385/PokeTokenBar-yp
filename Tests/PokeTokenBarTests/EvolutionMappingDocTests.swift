@@ -55,7 +55,7 @@ final class EvolutionMappingDocTests: XCTestCase {
             if let selector = rule.selector { app.append(l.evolutionSelectorText(selector)) }
             if !rule.paths.isEmpty {
                 app.append(rule.paths.map {
-                    l.evolutionPathText($0, speciesName: name, shopDifficulty: PokemonBalance.defaultDifficulty)
+                    l.evolutionPathText($0, speciesName: name)
                 }.joined(separator: " **or** "))
             }
             if let trade = rule.trade {

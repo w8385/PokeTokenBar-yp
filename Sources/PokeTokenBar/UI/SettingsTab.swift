@@ -3,7 +3,7 @@ import SwiftUI
 /// Every card the Settings screen can show. `SettingsView` renders them through an exhaustive switch,
 /// so a new card cannot exist without a tab (`SettingsTab.sections`).
 enum SettingsSection: CaseIterable {
-    case general, difficulty, menuBar, trackedProviders, floatingPet, notifications
+    case general, growthMode, menuBar, trackedProviders, floatingPet, notifications
     case update, transfer, advanced, aboutSupport, ypoke
 }
 
@@ -14,7 +14,7 @@ enum SettingsTab: String, CaseIterable {
         switch self {
         case .general: [.general, .update, .aboutSupport]
         case .usage: [.menuBar, .trackedProviders]
-        case .companion: [.difficulty, .floatingPet]
+        case .companion: [.growthMode, .floatingPet]
         case .notifications: [.notifications]
         case .ypoke: [.ypoke]
         case .advanced: [.transfer, .advanced]

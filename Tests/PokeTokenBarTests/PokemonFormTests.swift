@@ -59,8 +59,6 @@ final class PokemonFormTests: XCTestCase {
         try JSONEncoder().encode(state).write(to: url)
         let suite = "form-tests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
-        defaults.set(1.0, forKey: "growthDifficulty")
-        defaults.set(1.0, forKey: "shopDifficulty")
         addTeardownBlock { UserDefaults.standard.removePersistentDomain(forName: suite) }
         let date = now
         return CompanionStore(provider: FormTestProvider(), clock: { date }, fileURL: url,
@@ -282,7 +280,6 @@ final class PokemonFormTests: XCTestCase {
         addTeardownBlock { try? FileManager.default.removeItem(at: url) }
         let suite = "form-ditto-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
-        defaults.set(1.0, forKey: "growthDifficulty")
         addTeardownBlock { UserDefaults.standard.removePersistentDomain(forName: suite) }
         let date = now
         let s = CompanionStore(provider: FormTestProvider(), clock: { date }, fileURL: url, rng: SeededRNG(seed: 7),

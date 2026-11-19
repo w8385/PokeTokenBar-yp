@@ -1,21 +1,21 @@
 import Foundation
 
 enum AbilityCapsule {
-    static let price = 50_000_000
+    static let price = PokemonBalance.Price.abilityCapsule
 }
 
 enum AbilityPatch {
-    static let price = 200_000_000
+    static let price = PokemonBalance.Price.abilityPatch
 }
 
 enum BottleCap {
-    static let price = 50_000_000
-    static let goldPrice = 300_000_000
+    static let price = PokemonBalance.Price.bottleCap
+    static let goldPrice = PokemonBalance.Price.goldBottleCap
     static let maxIV = 31
 }
 
 enum MirrorHerb {
-    static let price = 50_000_000
+    static let price = PokemonBalance.Price.mirrorHerb
 }
 
 /// Which species get attacking egg moves from a Mirror Herb, parsed from the generated `EggMoveTable`.
@@ -28,7 +28,7 @@ enum EggMoves {
 
 /// Key items that switch a species between its forms, the way an NPC team fields them.
 enum FormTool {
-    static let price = 150_000_000
+    static let price = PokemonBalance.Price.formTool
 
     static func species(of kind: ItemKind) -> Set<Int>? {
         switch kind {
