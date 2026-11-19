@@ -159,7 +159,7 @@ final class DailyTrendStackTests: XCTestCase {
     @MainActor
     func testEveryRegisteredProviderGetsItsOwnColor() {
         let defaults = UserDefaults(suiteName: "DailyTrendStackTests.\(UUID().uuidString)")!
-        let registry = UsageStore(autoRefresh: false, defaults: defaults).registeredProviderIDs
+        let registry = UsageStore(statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults).registeredProviderIDs
         let slots = DailyTrendStack.colorIndices(for: registry, registry: registry,
                                                  paletteCount: MonthDailyTrend.providerPalette.count)
         XCTAssertEqual(Set(slots.values).count, registry.count,

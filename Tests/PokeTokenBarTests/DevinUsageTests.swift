@@ -235,7 +235,7 @@ final class DevinUsageTests: XCTestCase, @unchecked Sendable {
         let suite = "DevinRegistration-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let ids = UsageStore(autoRefresh: false, defaults: defaults).registeredProviderIDs
+        let ids = UsageStore(statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults).registeredProviderIDs
         XCTAssertEqual(ids.last, "devin")
     }
 

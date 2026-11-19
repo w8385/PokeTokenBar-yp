@@ -60,6 +60,8 @@ final class SecureStorageAccountsScreenshotTests: XCTestCase {
                     readDefaultIdentity: { nil }, readLastPrompt: { _ in nil },
                     claudeUsageEntries: { _ in [] }, readPromptHistory: { _ in [:] },
                     codexLimitsProvider: NoCodex(), antigravityLimitsProvider: NoAntigravity(),
+                    cursorLimitsProvider: OfflineCursorLimits(), openCodeGoLimitsProvider: OfflineOpenCodeGoLimits(),
+                    grokLimitsProvider: OfflineGrokLimits(),
                     statusProvider: NoStatuses(), sessionKeys: NoSessionKey(),
                     accountSessionKeys: { _ in NoSessionKey() }, autoRefresh: false, defaults: defaults)
                 await usage.refresh(scheduleEmptyRetry: false)
@@ -143,6 +145,8 @@ final class SecureStorageAccountsScreenshotTests: XCTestCase {
                     readDefaultIdentity: { nil }, readLastPrompt: { _ in nil },
                     claudeUsageEntries: { _ in [] }, readPromptHistory: { _ in [:] },
                     codexLimitsProvider: NoCodex(), antigravityLimitsProvider: NoAntigravity(),
+                    cursorLimitsProvider: OfflineCursorLimits(), openCodeGoLimitsProvider: OfflineOpenCodeGoLimits(),
+                    grokLimitsProvider: OfflineGrokLimits(),
                     statusProvider: NoStatuses(), sessionKeys: NoSessionKey(),
                     accountSessionKeys: { _ in NoSessionKey() }, autoRefresh: false, defaults: defaults)
                 await usage.refresh(scheduleEmptyRetry: false)

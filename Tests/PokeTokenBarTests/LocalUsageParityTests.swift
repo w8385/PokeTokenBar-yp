@@ -29,6 +29,7 @@ final class LocalUsageParityTests: XCTestCase {
             providers: [LocalClaudeProvider(), LocalCodexProvider()],
             claudeLimitsProvider: NoClaudeLimits(),
             codexLimitsProvider: NoCodexLimits(),
+            statusProvider: NoProviderStatus(),
             autoRefresh: false)
         await store.refresh(scheduleEmptyRetry: false)
         print("PARITY-PIPE today=\(store.todayTotalTokens) cost=\(String(format: "%.2f", store.todayCostTotal)) menu=[\(store.menuTitle)] week=\(store.weekTotalTokens) month=\(store.monthTotalTokens) snapshots=\(store.snapshots.count) burnTier=\(store.burnTier) stale=\(store.isStale) err=\(store.lastErrorDescription ?? "none")")

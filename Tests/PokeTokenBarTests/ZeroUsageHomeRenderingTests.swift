@@ -102,7 +102,8 @@ final class ZeroUsageHomeRenderingTests: XCTestCase {
             claudeLimitsProvider: QuietHomeClaude(), discoverClaudeConfigDirs: { [] },
             readDefaultIdentity: { nil }, claudeUsageEntries: { _ in [] },
             codexLimitsProvider: QuietHomeCodex(), antigravityLimitsProvider: QuietHomeAntigravity(),
-            cursorLimitsProvider: QuietHomeCursor(), statusProvider: QuietHomeStatus(),
+            cursorLimitsProvider: QuietHomeCursor(), openCodeGoLimitsProvider: OfflineOpenCodeGoLimits(),
+            grokLimitsProvider: OfflineGrokLimits(), statusProvider: QuietHomeStatus(), sessionKeys: OfflineSessionKeys(),
             autoRefresh: false, defaults: defaults)
         await store.refresh(scheduleEmptyRetry: false)
         XCTAssertEqual(store.todayTotalTokens, 0)

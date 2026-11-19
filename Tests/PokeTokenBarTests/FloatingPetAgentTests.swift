@@ -251,7 +251,7 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         let suite = "FloatingPetAgentWiringTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(suite).json")
-        let store = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let store = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         if hatched {
             var state = CompanionState()
             state.active = MonState(baseID: 1, pathIDs: [1], stageIndex: 0, usedAtStage: 0,

@@ -74,8 +74,7 @@ final class TimeModeScreenshotTests: XCTestCase {
     }
 
     private func captureHome(_ companion: CompanionStore, defaults: UserDefaults, to file: URL) async throws {
-        let usage = UsageStore(providers: [], discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil },
-                               claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults)
+        let usage = UsageStore.offline(providers: [], defaults: defaults)
         let height = 604.0
         let size = CGSize(width: PopoverMetrics.width, height: height)
         try await OffscreenRender.capture(PopoverView()

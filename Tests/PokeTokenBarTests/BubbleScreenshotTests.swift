@@ -49,7 +49,7 @@ final class BubbleScreenshotTests: XCTestCase {
         let file = scratch.appendingPathComponent("state.json")
         try JSONEncoder().encode(state).write(to: file)
         let store = CompanionStore(provider: BubbleShotProvider(), fileURL: file, rng: SeededRNG(seed: 3), defaults: defaults)
-        let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let sprites = SpriteStore(directory: scratch.appendingPathComponent("sprites"))
         XCTAssertTrue(store.addFriend(entryID: "pikachu"))
         XCTAssertTrue(store.addFriend(entryID: "charizard"))

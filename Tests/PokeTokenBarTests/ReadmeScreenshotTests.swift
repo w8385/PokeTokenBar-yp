@@ -173,9 +173,7 @@ final class ReadmeScreenshotTests: XCTestCase {
         await MoveName.load(ids: StubMoveNames.table.keys, store: moveNames, provider: StubMoveNames())
         self.moveNames = moveNames
 
-        let usage = UsageStore(providers: [], discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil },
-                               claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults,
-                               pinnedNow: Self.pinnedNow)
+        let usage = UsageStore.offline(providers: [], defaults: defaults, pinnedNow: Self.pinnedNow)
         let updater = UpdateChecker(currentVersion: "3.5.0", defaults: defaults, fetchLatest: { nil })
         let uploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch,
                                                         moves: [6: Self.charizardMoves])
@@ -414,12 +412,13 @@ final class ReadmeScreenshotTests: XCTestCase {
                                         totalCost: Double(month) / 1_000_000 * 2.4),
                 monthDaily: days, recentDaily: days, periodsOK: true))
         }
-        let usage = UsageStore(
+        let usage = UsageStore.offline(
             providers: [provider("claude_code", "Claude Code", pattern: [4, 0, 6, 9, 3, 5, 7, 0, 2, 6, 8, 5, 10, 7]),
                         provider("codex", "Codex", pattern: [2, 0, 1, 3, 2, 0, 4, 0, 1, 2, 3, 2, 3, 4])],
-            discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil }, claudeUsageEntries: { _ in [] },
-            autoRefresh: false, defaults: defaults, pinnedNow: Self.lastRefresh)
+            defaults: defaults, pinnedNow: Self.lastRefresh)
+        RefreshRequests.arm()
         await usage.refresh(scheduleEmptyRetry: false)
+        XCTAssertEqual(RefreshRequests.disarm(), [], "Home's refresh reached the network; the shot would follow it")
         usage.pinnedNow = Self.pinnedNow
         return usage
     }
@@ -751,6 +750,32 @@ private final class LateSpriteRequests: URLProtocol, @unchecked Sendable {
     override func startLoading() {
         let path = request.url?.path ?? "?"
         Self.lock.withLock { _ = Self.paths.insert(path) }
+        client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet))
+    }
+    override func stopLoading() {}
+}
+
+/// Fails and lists every shared-session request made while Home's store refreshes, such as the status pages.
+private final class RefreshRequests: URLProtocol, @unchecked Sendable {
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var armed = false
+    nonisolated(unsafe) private static var hosts: Set<String> = []
+
+    static func arm() {
+        lock.withLock { armed = true; hosts = [] }
+        URLProtocol.registerClass(RefreshRequests.self)
+    }
+
+    static func disarm() -> [String] {
+        URLProtocol.unregisterClass(RefreshRequests.self)
+        return lock.withLock { armed = false; return hosts.sorted() }
+    }
+
+    override class func canInit(with request: URLRequest) -> Bool { lock.withLock { armed } }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        let host = request.url?.host ?? "?"
+        Self.lock.withLock { _ = Self.hosts.insert(host) }
         client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet))
     }
     override func stopLoading() {}

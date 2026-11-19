@@ -158,8 +158,7 @@ final class BagExpShareScreenshotTests: XCTestCase {
         let suite = "bag-expshare-shots-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let usage = UsageStore(providers: [], discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil },
-                               claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults)
+        let usage = UsageStore.offline(providers: [], defaults: defaults)
         let updater = UpdateChecker(currentVersion: "2.5.7-yp1", defaults: defaults, fetchLatest: { nil })
         let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("bag-expshare-\(UUID())")
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)

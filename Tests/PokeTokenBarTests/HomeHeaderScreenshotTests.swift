@@ -68,7 +68,7 @@ final class HomeHeaderScreenshotTests: XCTestCase {
         let suite = "header-shot-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let sprites = SpriteStore(directory: scratch.appendingPathComponent("sprites"))
 
         for language in AppLanguage.allCases {

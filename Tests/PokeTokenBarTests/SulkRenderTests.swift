@@ -134,7 +134,7 @@ final class SulkRenderTests: XCTestCase {
                 let suite = "SulkRenderUsage-\(UUID())"
                 let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
                 addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
-                let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+                let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
                 // The same text the hover callout shows; the chrome here only approximates the NSPanel's.
                 let hover = FloatingPetView.hoverTooltip(
                     todayTokens: 0, limitUtilization: nil, mode: usage.limitDisplayMode,

@@ -36,6 +36,7 @@ CLASSES=(
   EvolutionMappingDocTests         # docs/reference/evolution-mapping.md matches the rule table
   WorkflowInvariantTests           # self-hosted runs-on guard, ci-ok/bot-ok allow-lists, .xcode-version
   OffscreenRenderGuardTests        # no test shows a window or activates the app
+  LiveStatusGuardTests             # no test UsageStore keeps the live status pages
   DesignTokenScanTests             # no raw Color(red:, numeric font size or corner radius outside UI/Design
   SpeciesFactsGuardTests           # no test hand-builds species facts; the table matches the games
   GymTermGuardTests                # no Korean UI string says 도장

@@ -130,7 +130,7 @@ final class ScreenshotGenTests: XCTestCase {
         let suite = "PaceShot-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let store = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let store = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
 
         /// PopoverView.quotaRow 와 같은 구성 — 그 함수는 private 이라 여기서 형태만 맞춘다.
         /// 리셋 라벨이 퍼센트 **앞**에 온다(후행 정렬, #292). 순서가 어긋나면 스크린샷이
