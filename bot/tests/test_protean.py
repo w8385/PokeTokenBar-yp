@@ -27,6 +27,12 @@ def test_protean_missed_play_rough_still_makes_the_user_fairy_and_immune_to_drag
     assert any("마스카나 [변환자재] 페어리 타입이 되었다" in block for block in battle_log(result))
 
 
+def test_protean_names_a_type_without_a_korean_name_by_its_key():
+    shadow_rush = battle.Move("섀도러시", "shadow", 55, physical=True, accuracy=100)
+    result = simulate(((replace(MEOWSCARADA, moves=(shadow_rush,)),), (PALKIA,)), seed=HITTING_SEED)
+    assert any("마스카나 [변환자재] shadow 타입이 되었다" in block for block in battle_log(result))
+
+
 def test_protean_gives_stab_on_the_new_type():
     plain, _ = struck(replace(MEOWSCARADA, ability="overgrow"), PLAY_ROUGH)
     retyped, user = struck(MEOWSCARADA, PLAY_ROUGH)
