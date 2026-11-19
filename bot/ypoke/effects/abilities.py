@@ -151,7 +151,7 @@ class ContactAilment(Handler):
             return None
         if not battle._open_to(ailment, user, True) or rng.random() >= abilities.CONTACT_CHANCE:
             return None
-        return battle._inflict(ailment, user, side, rng)
+        return battle._inflict(ailment, user, side, rng, holder)
 
 
 @register("abilities", "weather-chip-immune")

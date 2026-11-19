@@ -282,6 +282,11 @@ FOCUS_CASES = {
     "mimic": (((122, None, None, [102, 33]),), ((143, None, None, [33]),)),
     "weather-rock": (((18, "damp-rock", "drizzle", [33]),), ((36, None, None, [33]),)),
     "adaptability": (((474, None, "adaptability", [370, 161]),), ((143, None, None, [33]),)),
+    "leaf-guard": (((18, None, "leaf-guard", [33]),), ((36, None, "drought", [92, 33]),)),
+    "serene-grace": (((18, None, "serene-grace", [52]),), ((36, None, None, [33]),)),
+    "no-guard": (((68, None, "no-guard", [223]),), ((143, None, None, [33]),)),
+    "synchronize": (((65, None, "synchronize", [33]),), ((36, None, None, [92, 33]),)),
+    "comatose": (((775, None, "comatose", [33]),), ((36, None, None, [92, 33]),)),
     "liquid-ooze": (((3, None, None, [202, 73, 254]), (248, None, "sand-stream", [33])),
                     ((72, None, "liquid-ooze", [33]), (1, None, "overcoat", [33]))),
     "guard-dog": (((130, None, "intimidate", [33]),), ((143, None, "guard-dog", [33]),)),
@@ -293,6 +298,13 @@ FOCUS_CASES = {
     "dancer": (((101, None, None, [14, 33]),), ((79, None, "dancer", [33]),)),
     "simple": (((400, None, "simple", [14, 33]),), ((143, None, None, [33]),)),
     "shield-dust": (((101, None, None, [52]),), ((79, None, "shield-dust", [33]),)),
+    "contrary-overheat": (((79, None, "contrary", [315]),), ((101, None, None, [33]),)),
+    "corrosion": (((18, None, "corrosion", [92, 33]),), ((16, None, None, [33]),)),
+    "natural-cure": (((18, None, "natural-cure", [369]), (36, None, None, [33])), ((6, None, "prankster", [92, 183]),)),
+    "regenerator": (((18, None, "regenerator", [369]), (36, None, None, [33])), ((6, None, None, [183]),)),
+    "poison-heal": (((18, "toxic-orb", "poison-heal", [33]),), ((101, None, None, [33]),)),
+    "flower-veil": (((4, None, "flower-veil", [33]),), ((101, None, None, [45, 261]),)),
+    "early-bird": (((101, None, None, [95, 33]),), ((79, None, "early-bird", [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

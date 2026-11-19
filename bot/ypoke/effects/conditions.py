@@ -2,8 +2,8 @@
 whose users never miss with it (`sure_for`, Toxic). `user` and `foe` are `battle._Fighter`s. Each is picked only
 when it would land and the condition hurts this foe."""
 
-from ypoke import battle
-from ypoke.effects import register
+from ypoke import abilities, battle
+from ypoke.effects import hooks, register
 from ypoke.effects.healing import cure
 from ypoke.effects.moves import StatusMove
 from ypoke.effects.stats import arg, guarded, shift_all, useful
@@ -32,7 +32,7 @@ class Inflict(StatusMove):
         ailment = arg(move, "ailment")
         if not lands(move, ailment, user, foe):
             return "", ()
-        return self.key, (battle._inflict(ailment, foe, 1 - side, rng),)
+        return self.key, (battle._inflict(ailment, foe, 1 - side, rng, user),)
 
 
 def reaches(move, user, foe) -> bool:
@@ -41,14 +41,17 @@ def reaches(move, user, foe) -> bool:
 
 
 def lands(move, ailment: str, user, foe) -> bool:
-    return (battle._open_to(ailment, foe, not battle._infiltrates(user))
+    return (battle._open_to(ailment, foe, not battle._infiltrates(user), user)
             and not battle._blocks_ailment(foe, ailment)
             and not (move.id in POWDER_MOVES and "grass" in foe.combatant.types))
 
 
 def hurts(ailment: str, user, foe, weather) -> bool:
     """Sleep always; paralysis on a faster foe; a burn on a physical attacker; poison and confusion while the foe
-    has more than half its HP left."""
+    has more than half its HP left. Never one the foe's ability gives back, welcomes, or a poison that cannot chip it."""
+    if (battle._passed_back(ailment, foe, user) or hooks.ability(foe, "welcomes_ailment", ailment, default=False)
+            or ailment in abilities.POISONS and battle._chip_free(foe)):
+        return False
     if ailment == "paralysis":
         return foe.stat("speed", weather) > user.stat("speed", weather)
     if ailment == "burn":
@@ -87,7 +90,7 @@ class ToxicThread(StatusMove):
         return reaches(move, user, foe) and lands(move, "poison", user, foe) and hurts("poison", user, foe, weather)
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
-        poisoned = (battle._inflict("poison", foe, 1 - side, rng),) if lands(move, "poison", user, foe) else ()
+        poisoned = (battle._inflict("poison", foe, 1 - side, rng, user),) if lands(move, "poison", user, foe) else ()
         slowed = shift_all(foe, 1 - side, THREAD_DROP, guarded=guarded(user, foe), by=user)
         return (self.key if poisoned or slowed else ""), (*poisoned, *slowed)
 
@@ -105,5 +108,5 @@ class PsychoShift(StatusMove):
     def _apply(self, move, user, foe, side, turn, arena, rng):
         if user.status not in SHIFTED or not lands(move, user.status, user, foe):
             return "", ()
-        given = battle._inflict(user.status, foe, 1 - side, rng)
+        given = battle._inflict(user.status, foe, 1 - side, rng, user)
         return self.key, (given, *cure(user, side))

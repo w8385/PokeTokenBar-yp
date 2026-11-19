@@ -638,7 +638,7 @@ def _status_upkeep(turn: int, teams: tuple["_Team", "_Team"], fighters: tuple["_
             damage = hooks.ability(fighter, "modify_status_damage", damage, fighter.status, default=damage)
             answer = hooks.ability(fighter, "status_damage", damage, fighter, side, turn)
             if answer is not None:
-                events.append(answer)
+                events.extend(answer)
                 continue
             fighter.hp = max(0, fighter.hp - damage)
             events.append(
@@ -1636,6 +1636,7 @@ def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tupl
     """What ended before the Pokémon acts, and what stops it from using its move ("" if nothing)."""
     recovered: list[str] = []
     if attacker.status == "sleep":
+        attacker.sleep_left = max(0, attacker.sleep_left - hooks.ability(attacker, "wakes_early", default=0))
         if attacker.sleep_left > 0:
             attacker.sleep_left -= 1
             if not hooks.move(move, "acts_asleep", default=False):
@@ -1725,7 +1726,7 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
         if _blocks_ailment(defender, move.ailment):
             blocked_by = defender.ability
         else:
-            changes.append(_inflict(move.ailment, defender, 1 - side, rng))
+            changes.append(_inflict(move.ailment, defender, 1 - side, rng, attacker))
     if defender.status == "freeze" and (move.type == "fire" or hooks.move(move, "thaws_user", default=False)):
         defender.status = None
         changes.append(Change(1 - side, defender.combatant.name, "thaw"))
@@ -1787,7 +1788,7 @@ def _contact_effect(side: int, move: Move, attacker: _Fighter, defender: _Fighte
 def _ailment_lands(move: Move, attacker: _Fighter, defender: _Fighter, rng: random.Random) -> bool:
     if move.ailment not in AILMENT_IMMUNE_TYPES:
         return False
-    return (_open_to(move.ailment, defender, not _infiltrates(attacker))
+    return (_open_to(move.ailment, defender, not _infiltrates(attacker), attacker)
             and rng.random() * 100 < move.ailment_chance * _chance_scale(move, attacker, defender))
 
 
@@ -1799,9 +1800,12 @@ def _chance_scale(move: Move, attacker: _Fighter, defender: _Fighter | None) -> 
     return hooks.ability(attacker, "secondary_chance", move, default=1.0)
 
 
-def _open_to(ailment: str, fighter: _Fighter, by_foe: bool = False) -> bool:
-    """Whether `fighter` can get `ailment` now. `by_foe`: a foe inflicts it and its side's guards (Safeguard) count."""
-    if any(kind in fighter.combatant.types for kind in AILMENT_IMMUNE_TYPES[ailment]):
+def _open_to(ailment: str, fighter: _Fighter, by_foe: bool = False, user: "_Fighter | None" = None) -> bool:
+    """Whether `fighter` can get `ailment` now. `by_foe`: a foe inflicts it and its side's guards (Safeguard) count.
+    `user`: the Pokémon whose move inflicts it, whose ability may reach past the type (Corrosion)."""
+    typed = not (user is not None and ailment in abilities.POISONS
+                 and hooks.ability(user, "poisons_any_type", default=False))
+    if typed and any(kind in fighter.combatant.types for kind in AILMENT_IMMUNE_TYPES[ailment]):
         return False
     if any(_field(fighter, "guards_ailment", ailment, fighter, by_foe)):
         return False
@@ -1813,7 +1817,9 @@ def _stats_guarded(fighter: _Fighter, by_foe: bool = True) -> bool:
     return by_foe and any(_field(fighter, "guards_stats"))
 
 
-def _inflict(ailment: str, defender: _Fighter, side: int, rng: random.Random) -> Change:
+def _inflict(ailment: str, defender: _Fighter, side: int, rng: random.Random | None,
+             by: "_Fighter | None" = None) -> Change:
+    """`by` is the foe giving it, which the defender's ability may give it back to (Synchronize)."""
     if ailment == "confusion":
         defender.confusion_left = rng.randint(*CONFUSION_TURNS)
     else:
@@ -1821,7 +1827,20 @@ def _inflict(ailment: str, defender: _Fighter, side: int, rng: random.Random) ->
         defender.toxic_ticks = 0
         if ailment == "sleep":
             defender.sleep_left = rng.randint(*SLEEP_TURNS)
+    if by is not None and _passed_back(ailment, defender, by):
+        _ability_act(defender, changes=(_inflict(ailment, by, by.side, rng),))
     return Change(side, defender.combatant.name, ailment)
+
+
+def _passed_back(ailment: str, holder: _Fighter, foe: _Fighter) -> bool:
+    """`holder`'s ability gives `ailment` from `foe` back to it, if it can take it (Synchronize)."""
+    return (foe is not holder and foe.hp > 0 and hooks.ability(holder, "passes_ailment", ailment, default=False)
+            and _open_to(ailment, foe, True) and not _blocks_ailment(foe, ailment))
+
+
+def _status_of(fighter: _Fighter) -> str | None:
+    """The status `fighter` counts as having: its own, or the one its ability stands for (Comatose's sleep)."""
+    return fighter.status or hooks.ability(fighter, "status_as", default=None)
 
 
 def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: str | None) -> int | None:

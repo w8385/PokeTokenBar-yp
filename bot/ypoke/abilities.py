@@ -21,7 +21,8 @@ EFFECT_KEYS = frozenset({
     "speed-boost", "moody", "contrary", "simple", "mirror-armor", "guard-dog", "opportunist", "steadfast", "unnerve",
     "weather-on-hit", "terrain-on-hit", "hazard-on-hit",
     "prankster", "triage", "stall", "quick-draw", "mycelium-might", "unburden", "truant", "pressure", "damp", "dancer",
-    "shed-skin",
+    "synchronize", "shed-skin", "hydration", "natural-cure", "poison-heal", "magic-guard", "comatose", "leaf-guard",
+    "flower-veil", "corrosion", "early-bird", "regenerator",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
 FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
@@ -95,6 +96,13 @@ TRIAGE_FLAG = "heal"
 QUICK_DRAW_CHANCE = 0.3
 DAMP_MOVES = battle_data.args("abilities", "damp", "moves")
 DANCE_FLAG = "dance"
+MAJOR_AILMENTS = frozenset({"burn", "freeze", "paralysis", "poison", "toxic", "sleep"})
+POISONS = frozenset({"poison", "toxic"})
+SYNCED_AILMENTS = battle_data.args("abilities", "synchronize", "ailments")
+POISON_HEAL_SHARE = 8
+REGENERATOR_SHARE = 3
+COMATOSE_STATUS = "sleep"
+FLOWER_VEIL_TYPE = "grass"
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
 LOW_HP_BOOST = 1.5
