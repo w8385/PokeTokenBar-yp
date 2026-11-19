@@ -4,6 +4,9 @@
 from ypoke import abilities, battle
 from ypoke.effects import Handler, hooks, register
 from ypoke.effects.callers import transform, transformable
+from ypoke.effects.changers import reshape
+
+PROTEAN = "protean"
 
 
 @register("abilities", "intimidate")
@@ -155,3 +158,17 @@ class Imposter(Handler):
         return battle.AbilityTransform(side, fighter.combatant.name, name, into=foe.combatant.name,
                                        form_id=foe.form_id or foe.combatant.pokemon_id,
                                        own_form_id=fighter.combatant.pokemon_id)
+
+
+@register("abilities", "protean")
+class Protean(Handler):
+    """Protean, Libero: the first move after each entry turns the holder into the move's type, unless it is
+    Terastallized or already only that type."""
+
+    def before_move(self, name, move, attacker, side, turn):
+        if (PROTEAN in attacker.memory or not move.type or attacker.combatant.tera
+                or attacker.combatant.types == (move.type,) or hooks.move(move, "hits_later", default=False)):
+            return None
+        attacker.memory[PROTEAN] = True
+        reshape(attacker, types=(move.type,))
+        return battle.AbilityRetype(side, attacker.combatant.name, name, into=move.type)

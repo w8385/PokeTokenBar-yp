@@ -5,12 +5,13 @@ from dataclasses import dataclass, field
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    BATTLE_LEVEL, AbilityField, AbilityTransform, AbilityTrigger,Action, BattleResult, Change, Combatant, Event, FieldEnd, FieldStart,
-    FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal,
-    TrickRoomEnd, VolatileEnd, VolatileTick, WeatherDamage, WeatherEnd, YawnSleep,
+    BATTLE_LEVEL, AbilityField, AbilityRetype, AbilityTransform, AbilityTrigger, Action, BattleResult, Change,
+    Combatant, Event, FieldEnd, FieldStart, FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal, MegaEvolution,
+    SendOut, StatusDamage, TerrainHeal, TrickRoomEnd, VolatileEnd, VolatileTick, WeatherDamage, WeatherEnd, YawnSleep,
 )
 from ypoke.dex import bar, sprite_url
 from ypoke.items import ITEM_NAMES, known
+from ypoke.type_chart import TYPE_NAMES_KO
 
 MAX_LOG_BLOCKS = 44
 MAX_TAGS = 2
@@ -404,6 +405,8 @@ def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
         effect = f"{'·'.join(STATE_LABEL[key] for key in event.cleared)} 사라짐"
     elif isinstance(event, AbilityTransform):
         effect = f"{event.into}{_direction_particle(event.into)} 변신"
+    elif isinstance(event, AbilityRetype):
+        effect = f"{TYPE_NAMES_KO[event.into]} 타입이 되었다"
     else:
         effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
     return f"[{ABILITY_NAMES[event.ability]}] {effect}"
