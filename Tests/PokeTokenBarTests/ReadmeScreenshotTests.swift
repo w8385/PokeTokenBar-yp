@@ -213,6 +213,8 @@ final class ReadmeScreenshotTests: XCTestCase {
                            "screenshot-egg-moves\(suffix)", in: dir, height: nil)
             try await shot(popover { $0.openBoxDetail(id: StoredFriendScreenshotTests.bulbasaurID) },
                            "screenshot-exp-share\(suffix)", in: dir, height: 380)
+            try await shot(try miracleTrade(store: store, uploader: uploader, entry: battleEntry),
+                           "screenshot-miracle-trade\(suffix)", in: dir, height: 672)
             let (battleStore, battleCleanup) = try BoxDexFixture.makeStore(
                 language: language, mutate: { Self.sample(&$0); Self.addKyogre(&$0) }, defaults: defaults,
                 clock: { Self.pinnedNow })
@@ -490,6 +492,18 @@ final class ReadmeScreenshotTests: XCTestCase {
         nav.openBoxDetail(id: BoxDexFixture.onixID, naturePicker: true)
         return BoxDetailView(store: store, individual: onix, navigation: nav, onBack: {})
             .environment(store)
+            .padding(PopoverMetrics.padding)
+    }
+
+    /// Eevee's Box page while it is up for Miracle Trade.
+    private func miracleTrade(store: CompanionStore, uploader: PartyUploader, entry: BattleEntryStore) throws -> some View {
+        let eevee = try XCTUnwrap(store.boxIndividual(id: BoxDexFixture.eeveeID))
+        let offer = MiracleOffer(offerID: "readme", giveID: BoxDexFixture.eeveeID, name: "Eevee",
+                                 expiresAt: "2026-11-20T09:00:00Z")
+        let miracle = MiracleTradeModel(uploader: uploader, availability: .available, offer: offer)
+        return BoxDetailView(store: store, individual: eevee, navigation: PopoverNavigation(), onBack: {},
+                             initialMiracle: miracle)
+            .environment(store).environment(uploader).environment(entry)
             .padding(PopoverMetrics.padding)
     }
 
