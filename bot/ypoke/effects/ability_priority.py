@@ -79,13 +79,17 @@ class Pressure(Handler):
 
 @register("abilities", "damp")
 class Damp(Handler):
-    """Self-Destruct, Explosion, Misty Explosion and Mind Blown (`args.moves`) fail, and their user stays in."""
+    """Self-Destruct, Explosion, Misty Explosion and Mind Blown (`args.moves`) fail, and their user stays in;
+    Aftermath does nothing."""
 
     def stops_move(self, name, move, priority, holder, attacker):
         return move.id in abilities.DAMP_MOVES[name]
 
     def prevents_self_ko(self, name, move):
         return move.id in abilities.DAMP_MOVES[name]
+
+    def damps(self, name):
+        return True
 
 
 @register("abilities", "dancer")
