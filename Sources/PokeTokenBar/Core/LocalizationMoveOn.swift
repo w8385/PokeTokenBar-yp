@@ -93,6 +93,11 @@ extension L {
           "\(name) se formou na Caixa.", "\(name) hat in der Box seinen Abschluss gemacht.", "\(name) выпустился в Коробке.")
     }
 
+    func expShareFromBagLine(to: String) -> String {
+        t("가방 → \(to)", "Bag → \(to)", "バッグ → \(to)", "Mochila → \(to)", "Sac → \(to)", "Mochila → \(to)",
+          "Beutel → \(to)", "Сумка → \(to)")
+    }
+
     func expShareBaggedLine(_ from: String) -> String {
         t("\(from) → 가방", "\(from) → Bag", "\(from) → バッグ", "\(from) → Mochila", "\(from) → Sac", "\(from) → Mochila",
           "\(from) → Beutel", "\(from) → Сумка")
