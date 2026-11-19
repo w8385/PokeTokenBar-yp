@@ -80,7 +80,6 @@ struct EvolutionContext: Sendable {
     var friendTypes: Set<String> = []
     var friendCount = 0
     var spentTokens = 0
-    var shopDifficulty = PokemonBalance.defaultDifficulty
     var stageXP = 0
     var stageThreshold = 1
 }
@@ -121,7 +120,7 @@ extension EvolutionRequirement {
             }
         case .towerChosen: return (ctx.progress.tower != nil ? 1 : 0, 1)
         case .spent(let n):
-            return (max(0, ctx.spentTokens - ctx.progress.spentBaseline), PokemonBalance.scaled(n, by: ctx.shopDifficulty))
+            return (max(0, ctx.spentTokens - ctx.progress.spentBaseline), n)
         case .candies(let n): return (ctx.progress.candies, n)
         }
     }

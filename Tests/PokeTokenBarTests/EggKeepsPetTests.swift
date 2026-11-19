@@ -59,8 +59,6 @@ final class EggKeepsPetTests: XCTestCase {
         let suite = "egg-keeps-pet-\(UUID())"
         suites.append(suite)
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
-        defaults.set(1.0, forKey: "growthDifficulty")
-        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         return CompanionStore(provider: StoredLineProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 3),
                               dittoDisguiseRollingEnabled: false, defaults: defaults)
     }

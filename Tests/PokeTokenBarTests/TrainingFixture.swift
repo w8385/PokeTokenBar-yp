@@ -39,8 +39,6 @@ struct TrainingFixture {
         url = directory.appendingPathComponent("companion-state.json")
         let suite = "training-tests-\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suite)!
-        defaults.set(1.0, forKey: "growthDifficulty")
-        defaults.set(1.0, forKey: "shopDifficulty")
         test.addTeardownBlock {
             try? FileManager.default.removeItem(at: directory)
             UserDefaults.standard.removePersistentDomain(forName: suite)

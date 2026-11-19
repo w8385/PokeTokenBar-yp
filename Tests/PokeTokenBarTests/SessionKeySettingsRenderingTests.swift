@@ -31,7 +31,7 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         XCTAssertFalse(navigation.expandAdvancedOnOpen)
     }
 
-    func testDifficultyAndWarningSlidersSurviveOnTheirTabs() async throws {
+    func testWarningSlidersSurviveOnTheirTab() async throws {
         let suite = "SettingsTabSliders-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
@@ -40,7 +40,7 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let companion = CompanionStore(fileURL: file, defaults: defaults)
         companion.setLanguage(.en)
-        for tab in [SettingsTab.companion, .notifications] {
+        for tab in [SettingsTab.notifications] {
             let navigation = PopoverNavigation(defaults: defaults)
             navigation.settingsTab = tab
             let host = renderedSettings(usage, companion, navigation, startExpanded: false)

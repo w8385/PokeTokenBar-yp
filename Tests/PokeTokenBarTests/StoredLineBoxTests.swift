@@ -100,8 +100,6 @@ class StoredLineHarness: XCTestCase {
         let suite = "stored-line-\(UUID())"
         suites.append(suite)
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
-        defaults.set(1.0, forKey: "growthDifficulty")
-        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         return CompanionStore(provider: BoxLineProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 3),
                               dittoDisguiseRollingEnabled: false, defaults: defaults)
     }
@@ -286,7 +284,7 @@ private extension CompanionStore {
 
 /// A stored line holding an Exp. Share takes the steps that open by themselves in the Box; the rest wait.
 final class StoredLineEvolutionTests: StoredLineHarness {
-    private func threshold(_ mon: MonState) -> Int { PokemonBalance.scaled(mon.phaseThreshold, by: 1.0) }
+    private func threshold(_ mon: MonState) -> Int { mon.phaseThreshold }
 
     func testAStoredHolderCrossesItsStageThresholdAndEvolvesInTheBox() async throws {
         var state = baseState()

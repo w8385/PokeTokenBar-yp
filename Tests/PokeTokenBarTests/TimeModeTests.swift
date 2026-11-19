@@ -57,70 +57,115 @@ final class TimeModeTests: XCTestCase {
 
     // MARK: rate
 
-    func testTheLongestEvolutionStepTakesAtMostTenActiveHours() {
-        var longest = 0
-        for rarity in Rarity.allCases {
-            for forms in 1...12 {
-                for stage in 0..<(forms - 1) {
-                    let base = PokemonBalance.phaseThreshold(rarity: rarity, totalForms: forms, stageIndex: stage)
-                    longest = max(longest, PokemonBalance.scaled(base, by: PokemonBalance.defaultDifficulty))
-                }
-            }
-        }
-        XCTAssertGreaterThan(longest, 0)
-        XCTAssertLessThanOrEqual(Double(longest) / Double(PokemonBalance.timeTokensPerActiveHour), 10)
-    }
-
-    func testRateMathAtDifficultyOne() {
-        let perHour = Double(PokemonBalance.timeTokensPerActiveHour)
-        func hours(_ tokens: Int) -> Double { Double(tokens) / perHour }
-        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .common, totalForms: 3, stageIndex: 0)), 0.625, accuracy: 0.01)
-        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .common, totalForms: 2, stageIndex: 0)), 1.25, accuracy: 0.01)
-        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .rare, totalForms: 3, stageIndex: 0)), 2.5, accuracy: 0.01)
-        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .rare, totalForms: 2, stageIndex: 0)), 5, accuracy: 0.01)
-        XCTAssertEqual(hours(PokemonBalance.phaseThreshold(rarity: .legendary, totalForms: 2, stageIndex: 0)), 10, accuracy: 0.01)
-        XCTAssertEqual(hours(PokemonBalance.graduationTotal(.common)), 3.75, accuracy: 0.01)
+    func testRateMathPerActiveSecond() {
+        func seconds(_ tokens: Int) -> Double { Double(tokens) / Double(PokemonBalance.timeTokensPerActiveSecond) }
+        XCTAssertEqual(seconds(PokemonBalance.eggHatchThreshold), 4)
+        XCTAssertEqual(seconds(PokemonBalance.phaseThreshold(rarity: .common, totalForms: 3, stageIndex: 0)), 100)
+        XCTAssertEqual(seconds(PokemonBalance.phaseThreshold(rarity: .rare, totalForms: 2, stageIndex: 0)), 800)
+        XCTAssertEqual(seconds(PokemonBalance.phaseThreshold(rarity: .legendary, totalForms: 2, stageIndex: 0)), 1600)
+        XCTAssertEqual(seconds(PokemonBalance.graduationTotal(.common)), 600)
     }
 
     // MARK: crediting
 
-    func testActiveTimeCreditsGrowthAndTheWalletAtTheirOwnRatesButNotUsage() {
+    func testActiveTimeCreditsGrowthAndTheWalletAtTheSameRateButNotUsage() {
         let clock = Clock(); var up: TimeInterval = 1000
         let s = egg(clock: clock)
         s.creditActiveTime(uptime: up, idle: 1, present: true)   // anchor
-        let credited = tick(s, clock, uptime: &up, times: 10)
-        let wallet = 10 * PokemonBalance.timeTokens(forActiveSeconds: 30, perHour: PokemonBalance.timeWalletTokensPerActiveHour)
-        XCTAssertEqual(credited, 10 * PokemonBalance.timeTokens(forActiveSeconds: 30))
+        let credited = tick(s, clock, uptime: &up, times: 3, step: 1)
+        XCTAssertEqual(credited, 3 * 25_000)
         XCTAssertEqual(s.state.eggUsage, credited)
-        XCTAssertLessThan(wallet, credited)
-        XCTAssertEqual(s.state.timeCredit, wallet)
-        XCTAssertEqual(s.availableTokens, wallet)
+        XCTAssertEqual(s.state.timeCredit, credited)
+        XCTAssertEqual(s.availableTokens, credited)
         XCTAssertEqual(s.state.usedSinceInstall, 0)
         XCTAssertNil(s.state.claimedTodayTokensByProvider)
     }
 
-    func testGrowthDifficultyScalesTheThresholdNotTheCredit() {
-        for (difficulty, expected) in [(1.0, 1.0 / 3), (0.5, 2.0 / 3)] {
-            let clock = Clock(); var up: TimeInterval = 1000
-            let s = egg(clock: clock)
-            s.setGrowthDifficulty(difficulty)
-            s.creditActiveTime(uptime: up, idle: 1, present: true)
-            let credited = tick(s, clock, uptime: &up, times: 1)   // 30 s
-            XCTAssertEqual(credited, PokemonBalance.timeTokens(forActiveSeconds: 30), "credit ignores difficulty")
-            XCTAssertEqual(s.eggProgress, Double(credited) / Double(PokemonBalance.eggHatchThreshold) / difficulty, accuracy: 1e-9)
-            XCTAssertEqual(s.eggProgress, expected, accuracy: 0.01)
+    func testEachOneSecondTickCredits25KToGrowthAndTheWallet() throws {
+        let clock = Clock(); var up: TimeInterval = 1000
+        var state = CompanionState()
+        state.installBaselineSet = true
+        state.growthMode = .time
+        var profile = PokemonProfile.generate(seed: 11, instanceID: "g")
+        profile.level = 5
+        state.dex = [DexEntry(id: "g", baseID: 25, finalID: 25, chainOrder: [25], rarity: .common,
+                              caughtAt: Date(timeIntervalSince1970: 1_000), profile: profile)]
+        state.raisedEntryID = "g"
+        let s = store(String(decoding: try JSONEncoder().encode(state), as: UTF8.self), clock: clock)
+        s.creditActiveTime(uptime: up, idle: 1, present: true)
+        for second in 1...5 {
+            XCTAssertEqual(tick(s, clock, uptime: &up, times: 1, step: 1), 25_000)
+            XCTAssertEqual(s.state.timeCredit, second * 25_000)
+            XCTAssertEqual(s.state.dex.first?.profile?.growthTokens, second * 25_000)
         }
     }
 
-    func testShopDifficultyScalesPricesNotTheWallet() {
-        let clock = Clock(); var up: TimeInterval = 0
-        let s = egg(clock: clock)
+    // MARK: saving
+
+    func testOneSecondTicksWriteTheSaveAtMostEveryThirtySeconds() {
+        let clock = Clock(); var up: TimeInterval = 1000
+        let url = tempURL()
+        let s = egg(clock: clock, url: url)
         s.creditActiveTime(uptime: up, idle: 1, present: true)
-        tick(s, clock, uptime: &up, times: 100)
-        let wallet = s.availableTokens
-        s.setShopDifficulty(0.5)
-        XCTAssertEqual(s.availableTokens, wallet)
-        XCTAssertEqual(s.price(of: .mint), Mint.price / 2)
+        var writes = 0
+        s.didWriteSave = { writes += 1 }
+        let credited = tick(s, clock, uptime: &up, times: 60, step: 1)
+        XCTAssertEqual(credited, 60 * 25_000)
+        XCTAssertGreaterThanOrEqual(writes, 1)
+        XCTAssertLessThanOrEqual(writes, 3, "60 one-second ticks")
+    }
+
+    func testABreakAModeSwitchAndQuitWriteWhatTheThrottleHeld() throws {
+        let clock = Clock(); var up: TimeInterval = 1000
+        let url = tempURL()
+        let s = egg(clock: clock, url: url)
+        s.creditActiveTime(uptime: up, idle: 1, present: true)
+        tick(s, clock, uptime: &up, times: 1, step: 1)
+        func onDisk() throws -> Int {
+            try JSONDecoder().decode(CompanionState.self, from: Data(contentsOf: url)).timeCredit
+        }
+
+        tick(s, clock, uptime: &up, times: 3, step: 1)
+        XCTAssertLessThan(try onDisk(), s.state.timeCredit, "held in memory between throttled saves")
+        s.noteActivityBreak()
+        XCTAssertEqual(try onDisk(), s.state.timeCredit)
+
+        tick(s, clock, uptime: &up, times: 4, step: 1)
+        XCTAssertLessThan(try onDisk(), s.state.timeCredit)
+        s.flushTimeSave()
+        XCTAssertEqual(try onDisk(), s.state.timeCredit)
+
+        tick(s, clock, uptime: &up, times: 3, step: 1)
+        s.setGrowthMode(.token)
+        XCTAssertEqual(try onDisk(), s.state.timeCredit)
+    }
+
+    func testAnEvolutionInsideTheThrottleWindowIsWrittenAtOnce() async throws {
+        let clock = Clock(); var up: TimeInterval = 1000
+        let url = tempURL()
+        var state = CompanionState()
+        state.installBaselineSet = true
+        state.lastDate = "d"
+        state.growthMode = .time
+        var mon = MonState(baseID: 1, pathIDs: [1], plannedPathIDs: [1, 2, 3], stageIndex: 0, usedAtStage: 0,
+                           rarity: .common, totalForms: 3)
+        mon.usedAtStage = mon.phaseThreshold - 2 * PokemonBalance.timeTokensPerActiveSecond + 1
+        state.active = mon
+        let s = store(String(decoding: try JSONEncoder().encode(state), as: UTF8.self), clock: clock, url: url)
+        s.update(todayTokensByProvider: [:], todayDate: "d", monthTotal: 0, burnTier: .idle, limitWarning: false,
+                 hasUsageData: false)
+        try await waitUntil("the line to load") { s.currentLine != nil }
+        s.creditActiveTime(uptime: up, idle: 1, present: true)
+        tick(s, clock, uptime: &up, times: 1, step: 1)
+        XCTAssertEqual(s.state.active?.stageIndex, 0)
+        var writes = 0
+        s.didWriteSave = { writes += 1 }
+
+        tick(s, clock, uptime: &up, times: 1, step: 1)
+        XCTAssertEqual(s.state.active?.stageIndex, 1)
+        XCTAssertEqual(writes, 1, "the evolution is written in the same tick")
+        let onDisk = try JSONDecoder().decode(CompanionState.self, from: Data(contentsOf: url))
+        XCTAssertEqual(onDisk.active?.stageIndex, 1)
     }
 
     // MARK: what is not active
@@ -169,8 +214,7 @@ final class TimeModeTests: XCTestCase {
         s.creditActiveTime(uptime: up, idle: 1, present: true)
         let credited = tick(s, clock, uptime: &up, times: 12 * 120)   // 12 hours in 30 s ticks
         XCTAssertEqual(credited, 12 * 120 * PokemonBalance.timeTokens(forActiveSeconds: 30), "every 30 s tick pays, past hour 8")
-        XCTAssertEqual(s.state.timeCredit,
-                       12 * 120 * PokemonBalance.timeTokens(forActiveSeconds: 30, perHour: PokemonBalance.timeWalletTokensPerActiveHour))
+        XCTAssertEqual(s.state.timeCredit, credited)
     }
 
     func testWallClockJumpsDoNotMintTime() {
@@ -232,7 +276,7 @@ final class TimeModeTests: XCTestCase {
         let clock = Clock(); var up: TimeInterval = 1000
         let s = egg(clock: clock)
         s.creditActiveTime(uptime: up, idle: 1, present: true)
-        tick(s, clock, uptime: &up, times: 2 * 13)
+        tick(s, clock, uptime: &up, times: 5, step: 1)
         for _ in 0..<400 where s.state.active == nil { await Task.yield() }
         XCTAssertNotNil(s.state.active)
         for _ in 0..<400 where s.displayState != .levelUp { await Task.yield() }
@@ -268,7 +312,7 @@ final class TimeModeTests: XCTestCase {
         for language in AppLanguage.allCases {
             let s = store("{\"installBaselineSet\":true,\"growthMode\":\"time\",\"language\":\"\(language.rawValue)\"}",
                           clock: Clock())
-            let ideal = LayoutMeasure.size(DifficultySettingsSection(companion: s), width: 100).width
+            let ideal = LayoutMeasure.size(GrowthModeSection(companion: s), width: 100).width
             XCTAssertLessThanOrEqual(ideal, available + 0.5, "settings section too wide in \(language.rawValue): \(ideal)pt")
         }
     }
@@ -316,7 +360,7 @@ final class TimeModeTests: XCTestCase {
                  limitWarning: false, hasUsageData: false)
         XCTAssertTrue(s.state.installBaselineSet)
         s.creditActiveTime(uptime: up, idle: 1, present: true)
-        tick(s, clock, uptime: &up, times: 2 * 13)   // 13 minutes > the 1M egg threshold
+        tick(s, clock, uptime: &up, times: 5, step: 1)
         for _ in 0..<400 where s.state.active == nil { await Task.yield() }
         XCTAssertNotNil(s.state.active, "the egg hatched from time alone")
         s.update(todayTokensByProvider: ["p": 5_000_000], todayDate: "d1", monthTotal: 0, burnTier: .idle,

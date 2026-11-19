@@ -74,18 +74,11 @@ final class CompanionStore {
     private var timeActiveNow = false
     private var rebaseUsageOnNextUpdate = false
     private var tokenModeSinceUnsaved = false
-
-    // MARK: 난이도 배율 (설정 — UserDefaults)
-    //
-    // 세이브(CompanionState)가 아니라 UserDefaults 에 둔다. 이건 진행 상황이 아니라 취향 설정이고
-    // (설정창의 다른 슬라이더와 같은 자리), 세이브에 넣으면 남의 세이브를 불러올 때 내 난이도가 조용히
-    // 바뀌며 SaveTransfer 의 관대 디코딩·검증까지 새 수치 필드를 떠안는다.
-
-    /// 성장 배율 — 알 부화 임계 + 진화/졸업 임계에 곱한다. 낮을수록 빨리 자란다.
-    /// 사탕 XP(RareCandy.xp)는 스케일하지 않는다 — 함께 곱하면 서로 상쇄돼 사탕만 난이도를 안 탄다.
-    private(set) var growthDifficulty: Double
-    /// 상점 배율 — 아이템·알 가격에 곱한다. 낮을수록 싸다.
-    private(set) var shopDifficulty: Double
+    private var deferTimeSaves = false
+    private var timeSavePending = false
+    private var lastTimeSaveUptime: TimeInterval?
+    /// Called after each write of the save file.
+    var didWriteSave: (() -> Void)?
     /// Moves a stuck raised Pokémon or an idle Exp. Share holder on by itself (`CompanionStore+MoveOn`).
     var autoMoveOn: Bool {
         didSet { defaults.set(autoMoveOn, forKey: Self.autoMoveOnKey) }
@@ -110,33 +103,12 @@ final class CompanionStore {
         self.dittoDisguiseRollingEnabled = dittoDisguiseRollingEnabled
         self.defaults = defaults
         autoMoveOn = defaults.object(forKey: Self.autoMoveOnKey) as? Bool ?? true
-        let storedGrowth = defaults.object(forKey: "growthDifficulty") as? Double
-        let storedShop = defaults.object(forKey: "shopDifficulty") as? Double
-        let difficultyMigrated = defaults.bool(forKey: PokemonBalance.difficultyMigratedKey)
-        // Previous releases accepted 0.01%–2000%. Reprice their banked progress before
-        // persisting the narrower range, otherwise an upgrade silently changes completion.
-        let previousGrowth = storedGrowth.map { $0.isFinite ? min(20, max(0.0001, $0)) : 1 } ?? 1
-        if difficultyMigrated {
-            growthDifficulty = PokemonBalance.clampDifficulty(storedGrowth ?? PokemonBalance.defaultDifficulty)
-            shopDifficulty = PokemonBalance.clampDifficulty(storedShop ?? PokemonBalance.defaultDifficulty)
-        } else {
-            growthDifficulty = PokemonBalance.migratedDifficulty(storedGrowth)
-            shopDifficulty = PokemonBalance.migratedDifficulty(storedShop)
-        }
         load()
         if state.tokenModeSince == nil {
             state.tokenModeSince = clock()
             tokenModeSinceUnsaved = true
         }
-        if difficultyMigrated, previousGrowth != growthDifficulty {
-            rescaleBankedGrowth(from: previousGrowth, to: growthDifficulty)
-            save()
-        }
-        migrateEconomyIfNeeded(previousGrowth: difficultyMigrated ? nil : previousGrowth)
-        defaults.set(growthDifficulty, forKey: "growthDifficulty")
-        defaults.set(shopDifficulty, forKey: "shopDifficulty")
-        if !difficultyMigrated { defaults.set(previousGrowth, forKey: PokemonBalance.legacyGrowthKey) }
-        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
+        migrateEconomyIfNeeded()
         migratePokemonProfilesIfNeeded()
         seedDexCompletionsIfNeeded()
         // A region finished before the reward shipped is paid on the first launch that sees it.
@@ -161,64 +133,45 @@ final class CompanionStore {
     var language: AppLanguage { state.language }
     func setLanguage(_ lang: AppLanguage) { state.language = lang; save() }
 
-    // MARK: 난이도 — 저장할 때만 적용
+    // MARK: Economy migration
 
-    /// Keep the earned fraction of this egg/stage. These are progression credits,
-    /// not actual usage: lifetime tokens, provider ledgers and wallet never change here.
-    func setGrowthDifficulty(_ value: Double) {
-        let clamped = PokemonBalance.clampDifficulty(value)
-        guard clamped != growthDifficulty else { return }
-        rescaleBankedGrowth(from: growthDifficulty, to: clamped)
-        growthDifficulty = clamped
-        defaults.set(clamped, forKey: "growthDifficulty")
-        // Do not evolve, graduate or hatch just because Settings changed.
-        save()
-    }
-
-    /// Moves a save from the old token tables to the current ones. Credits keep the fraction they had:
-    /// the old effective multiplier (`previousGrowth`, in the old tables) is `economyDivisor` times larger
-    /// when written against the new tables. Without `previousGrowth` (an import or snapshot restore) the
-    /// current difficulty is assumed. Profile growth is table-relative, so it always shrinks by the divisor.
-    private func migrateEconomyIfNeeded(previousGrowth: Double?) {
-        guard state.economyVersion < PokemonBalance.economyVersion else { return }
-        let divisor = Double(PokemonBalance.economyDivisor)
-        let from = (previousGrowth ?? growthDifficulty) * divisor
+    /// Moves a save to the current tables. Every banked stage keeps the fraction it had: the old threshold was
+    /// the old table × the growth slider the player had (`LegacyGrowthDifficulty`). Profile growth is measured
+    /// against the bare tables, so it shrinks by the table factor alone. Wallet and usage never change.
+    private func migrateEconomyIfNeeded() {
+        let version = state.economyVersion
+        guard version < PokemonBalance.economyVersion else { return }
         if state.usedSinceInstall > 0 || state.active != nil || !state.dex.isEmpty,
            FileManager.default.fileExists(atPath: fileURL.path) {
             let backup = fileURL.deletingLastPathComponent()
-                .appendingPathComponent("companion-state.pre-economy-v2.json")
+                .appendingPathComponent("companion-state.pre-economy-v\(PokemonBalance.economyVersion).json")
             if !FileManager.default.fileExists(atPath: backup.path) {
                 try? FileManager.default.copyItem(at: fileURL, to: backup)
             }
         }
-        if from != growthDifficulty {
-            rescaleBankedGrowth(from: from, to: growthDifficulty, alsoEgg: true)
-        }
-        if var active = state.active, var profile = active.profile {
-            profile.growthTokens /= PokemonBalance.economyDivisor
-            active.profile = profile
+        let factor = LegacyGrowthDifficulty.tableFactor(fromEconomyVersion: version)
+        rescaleBankedStages(oldScale: LegacyGrowthDifficulty(defaults).scale(fromEconomyVersion: version))
+        if var active = state.active {
+            active.profile?.growthTokens /= factor
             state.active = active
         }
+        for id in state.storedLines.keys {
+            state.storedLines[id]?.mon.profile?.growthTokens /= factor
+        }
         for index in state.dex.indices {
-            state.dex[index].profile?.growthTokens /= PokemonBalance.economyDivisor
+            state.dex[index].profile?.growthTokens /= factor
         }
         state.economyVersion = PokemonBalance.economyVersion
         save()
-        AppLog.write("economy migration complete — token tables divided by \(PokemonBalance.economyDivisor)")
+        AppLog.write("economy migration complete — v\(version) to v\(PokemonBalance.economyVersion)")
     }
 
-    /// The slider the player had before the ÷5 tables, while the migrated slider is still untouched.
-    private var legacyGrowthForOldSaves: Double? {
-        guard let legacy = defaults.object(forKey: PokemonBalance.legacyGrowthKey) as? Double,
-              PokemonBalance.migratedDifficulty(legacy) == growthDifficulty else { return nil }
-        return legacy
-    }
-
-    private func rescaleBankedGrowth(from old: Double, to new: Double, alsoEgg: Bool = false) {
+    /// Credits written against thresholds `oldScale` times the current ones, moved to the current thresholds.
+    private func rescaleBankedStages(oldScale: Double) {
         func rescaled(_ credits: Int, base: Int) -> Int {
-            // Calculate the old threshold without the new range clamp during migration.
-            let oldThreshold = max(1, Int((Double(base) * old).rounded()))
-            let newThreshold = max(1, Int((Double(base) * new).rounded()))
+            let oldThreshold = max(1, Int((Double(base) * oldScale).rounded()))
+            let newThreshold = max(1, base)
+            guard oldThreshold != newThreshold else { return credits }
             let value = Double(credits) / Double(oldThreshold) * Double(newThreshold)
             let rounded = Int(min(Double(SaveTransfer.maxTokenValue), max(0, value.rounded(.down))))
             // Rounding must never turn an incomplete stage into a completed one.
@@ -227,41 +180,28 @@ final class CompanionStore {
         if var active = state.active {
             active.usedAtStage = rescaled(active.usedAtStage, base: active.phaseThreshold)
             state.active = active
-            if alsoEgg { state.eggUsage = rescaled(state.eggUsage, base: PokemonBalance.eggHatchThreshold) }
-        } else {
-            state.eggUsage = rescaled(state.eggUsage, base: PokemonBalance.eggHatchThreshold)
+        }
+        state.eggUsage = rescaled(state.eggUsage, base: PokemonBalance.eggHatchThreshold)
+        for id in state.storedLines.keys {
+            guard let mon = state.storedLines[id]?.mon else { continue }
+            state.storedLines[id]?.mon.usedAtStage = rescaled(mon.usedAtStage, base: mon.phaseThreshold)
+        }
+        for id in state.graduateEvolution.keys {
+            guard let xp = state.graduateEvolution[id]?.graduateXP else { continue }
+            state.graduateEvolution[id]?.graduateXP = Int((Double(xp) / oldScale).rounded(.down))
         }
     }
 
-    /// 상점 배율 변경 — 가격과 소비 진화 조건은 읽을 때 배율을 곱하므로 저장 상태를 고치지 않는다.
-    func setShopDifficulty(_ value: Double) {
-        let clamped = PokemonBalance.clampDifficulty(value)
-        guard clamped != shopDifficulty else { return }
-        shopDifficulty = clamped
-        defaults.set(clamped, forKey: "shopDifficulty")
-    }
+    var eggHatchThreshold: Int { PokemonBalance.eggHatchThreshold }
 
-    /// 난이도를 반영한 알 부화 임계. 첫 실행 안내 문구도 이 값을 보여준다.
-    var eggHatchThreshold: Int {
-        PokemonBalance.scaled(PokemonBalance.eggHatchThreshold, by: growthDifficulty)
-    }
+    func stageThreshold(for mon: MonState) -> Int { mon.phaseThreshold }
 
-    /// 난이도를 반영한 단계 임계. **`PokemonBalance.phaseThreshold` 를 직접 부르지 않는다** —
-    /// 배율을 빠뜨린 호출부가 생기면 그 경로만 조용히 기본 난이도로 돌아간다.
-    func stageThreshold(for mon: MonState) -> Int {
-        PokemonBalance.scaled(mon.phaseThreshold, by: growthDifficulty)
-    }
-
-    /// 상점 표시·결제에 쓰는 실제 가격 — 기본가 × 상점 난이도. 미판매면 nil.
+    /// The shop price, or nil when the item is not sold.
     func price(of kind: ItemKind) -> Int? {
-        let base = kind == .expShare ? ExpShare.price(owned: itemOwnedTotal(kind)) : kind.shopPrice
-        return base.map { PokemonBalance.scaled($0, by: shopDifficulty) }
+        kind == .expShare ? ExpShare.price(owned: itemOwnedTotal(kind)) : kind.shopPrice
     }
 
-    /// 알을 포함한 상점 한 줄의 실제 가격.
-    func price(of entry: ShopEntry) -> Int {
-        PokemonBalance.scaled(entry.price, by: shopDifficulty)
-    }
+    func price(of entry: ShopEntry) -> Int { entry.price }
     /// 앱 전체 UI 문자열 — language 변경 시 자동 재렌더.
     var l: L { L(language) }
 
@@ -1219,11 +1159,18 @@ final class CompanionStore {
     func noteActivityBreak() {
         timeMeter.reanchor()
         timeActiveNow = false
+        flushTimeSave()
+    }
+
+    /// Writes time-mode credit that is still only in memory.
+    func flushTimeSave() {
+        guard timeSavePending else { return }
+        save()
     }
 
     /// One tick of time mode. `uptime` is monotonic and excludes sleep; `idle` is seconds since the last input.
-    /// Credits active seconds as virtual tokens to growth and, at its own rate, to the wallet. Returns the growth
-    /// tokens credited.
+    /// Credits active seconds as virtual tokens to growth and the wallet alike, and writes the save at most every
+    /// `timeSaveInterval`. Returns the growth tokens credited.
     @discardableResult
     func creditActiveTime(uptime: TimeInterval, idle: TimeInterval, present: Bool) -> Int {
         if tokenModeSinceUnsaved {
@@ -1241,20 +1188,36 @@ final class CompanionStore {
             refreshTimeDisplayState()
             return 0
         }
-        state.timeCredit += PokemonBalance.timeTokens(forActiveSeconds: seconds,
-                                                      perHour: PokemonBalance.timeWalletTokensPerActiveHour)
+        state.timeCredit += tokens
         state.installBaselineSet = true
+        let milestone = growthMilestone
+        deferTimeSaves = true
         creditUsage(tokens)
-        save()
+        deferTimeSaves = false
+        let saveDue = lastTimeSaveUptime.map { uptime - $0 >= PokemonBalance.timeSaveInterval } ?? true
+        if saveDue || growthMilestone != milestone {
+            lastTimeSaveUptime = uptime
+            save()
+        } else {
+            timeSavePending = true
+        }
         if state.active == nil, state.raisedEntry == nil, !isHatching {
             if state.eggUsage >= eggHatchThreshold {
                 Task { await hatchIfNeeded() }
-            } else {
+            } else if saveDue {
                 Task { await ensureEggPrefetch() }
             }
         }
         refreshTimeDisplayState()
         return tokens
+    }
+
+    /// Changes here are written at once, not at the next throttled time-mode save.
+    private var growthMilestone: [String] {
+        [state.active.map { "\($0.currentID)/\($0.stageIndex)" } ?? "egg", "\(state.dex.count)",
+         state.raisedEntryID ?? "", "\(state.raisedEntry?.finalID ?? 0)"]
+            + state.storedLines.map { "\($0.key):\($0.value.mon.currentID)" }.sorted()
+            + state.dex.filter { state.expShareHolders.contains($0.id) }.map { "\($0.id):\($0.finalID)" }.sorted()
     }
 
     @discardableResult
@@ -1266,9 +1229,11 @@ final class CompanionStore {
 
     private func refreshTimeDisplayState() {
         guard state.active != nil else { return }
-        if expireEventWindow(), displayState == .levelUp { displayState = timeActiveNow ? .working : .sleep }
+        let next: CompanionStateKind = timeActiveNow ? .working : .sleep
+        if expireEventWindow(), displayState == .levelUp { displayState = next }
         switch displayState {
-        case .egg, .idle, .working, .sleep, .sulk: displayState = timeActiveNow ? .working : .sleep
+        case .egg, .idle, .sulk: displayState = next
+        case .working, .sleep: if displayState != next { displayState = next }
         default: break
         }
     }
@@ -1326,11 +1291,10 @@ final class CompanionStore {
         creditExpShareHolders(delta / ExpShare.shareDivisor, skipping: raisingIDs)
     }
 
-    /// A graduate grows by level only, on the same curve as the line (`delta` is in the difficulty's units).
+    /// A graduate grows by level only, on the same curve as the line.
     private func growGraduate(at index: Int, by delta: Int) {
         guard var profile = state.dex[index].profile else { return }
-        let standard = Int((Double(delta) / PokemonBalance.clampDifficulty(growthDifficulty)).rounded(.down))
-        profile.applyGrowth(standard, rarity: state.dex[index].rarity)
+        profile.applyGrowth(delta, rarity: state.dex[index].rarity)
         if let details = pokemonDetailsByID[state.dex[index].finalID] { profile.enrich(with: details) }
         state.dex[index].profile = profile
     }
@@ -1417,8 +1381,7 @@ final class CompanionStore {
             return
         }
         let what = blocking.map {
-            l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" },
-                                       shopDifficulty: shopDifficulty)
+            l.evolutionRequirementText($0, speciesName: { speciesIndex?.entry($0)?.names[language.rawValue] ?? "#\($0)" })
         }.joined(separator: " + ")
         notifyCompanionEvent(l.notifEvolveStuckTitle, l.notifEvolveStuckSkippableBody(name, what))
     }
@@ -1524,7 +1487,6 @@ final class CompanionStore {
             context.friendTypes.formUnion(speciesTypes(entry.finalID))
         }
         context.spentTokens = state.spentTokens
-        context.shopDifficulty = shopDifficulty
         context.stageXP = stageXP
         context.stageThreshold = stageThreshold
         return context
@@ -1692,9 +1654,7 @@ final class CompanionStore {
     func graduateContext(_ entry: DexEntry) -> EvolutionContext {
         let progress = state.graduateEvolution[entry.id] ?? EvolutionProgress(spentBaseline: state.spentTokens)
         let forms = max(1, entry.chainOrder.count)
-        let threshold = PokemonBalance.scaled(
-            PokemonBalance.phaseThreshold(rarity: entry.rarity, totalForms: forms + 1, stageIndex: forms - 1),
-            by: growthDifficulty)
+        let threshold = PokemonBalance.phaseThreshold(rarity: entry.rarity, totalForms: forms + 1, stageIndex: forms - 1)
         return evolutionContext(progress: progress, speciesID: entry.finalID, profile: entry.profile,
                                 stageXP: threshold + progress.graduateXP, stageThreshold: threshold)
     }
@@ -2462,7 +2422,7 @@ final class CompanionStore {
     func ownsTM(_ moveID: Int) -> Bool { (state.inventory[MachineMove.inventoryKey(moveID)] ?? 0) > 0 }
 
     func tmPrice(power: Int, isWeather: Bool) -> Int {
-        PokemonBalance.scaled(PokemonBalance.machinePrice(power: power, isWeather: isWeather), by: shopDifficulty)
+        PokemonBalance.machinePrice(power: power, isWeather: isWeather)
     }
 
     func canBuyTM(power: Int, isWeather: Bool) -> Bool { availableTokens >= tmPrice(power: power, isWeather: isWeather) }
@@ -2555,7 +2515,7 @@ final class CompanionStore {
     /// 라인 미로딩(재시작 직후·오프라인)이면 비활성 — 사탕이 진화 없이 적립만 되는 것 방지.
     var canUseRareCandy: Bool { maxRareCandyUseCount > 0 }
 
-    /// Use the same rounded, difficulty-adjusted thresholds as actual growth.
+    /// Use the same rounded thresholds as actual growth.
     /// Preview the apparent evolution path so hidden identities cannot change the picker.
     private var rareCandyStageCosts: [Int] {
         guard var mon = state.active, !isLineParked, currentLine != nil else { return [] }
@@ -2989,7 +2949,7 @@ final class CompanionStore {
         }
     }
 
-    var scoutPrice: Int { PokemonBalance.scaled(ScoutTicket.price, by: shopDifficulty) }
+    var scoutPrice: Int { ScoutTicket.price }
     var canBuyScoutTicket: Bool { availableTokens >= scoutPrice }
 
     @discardableResult
@@ -3749,7 +3709,7 @@ final class CompanionStore {
         candyFeedbackAmount = 0
         mintFeedbackNature = nil
         displayState = isEgg ? .egg : .idle
-        migrateEconomyIfNeeded(previousGrowth: legacyGrowthForOldSaves)
+        migrateEconomyIfNeeded()
         migratePokemonProfilesIfNeeded()
         seedDexCompletionsIfNeeded()
         save()
@@ -3956,7 +3916,7 @@ final class CompanionStore {
     }
 
     /// Completed phases retain their earned credit. Only the current raw phase is repriced
-    /// by difficulty/repeat boost; its profile high-water mark prevents level loss.
+    /// by the repeat boost; its profile high-water mark prevents level loss.
     private func reconcileActiveProfileGrowth() {
         guard let active = state.active else { return }
         state.active = reconciledProfileGrowth(active)
@@ -4274,6 +4234,11 @@ final class CompanionStore {
         state = SaveTransfer.sanitized(s)
     }
     func save() {
+        if deferTimeSaves {
+            timeSavePending = true
+            return
+        }
+        timeSavePending = false
         state.reconcileRaised()
         state.reconcileFriends()
         state.returnOrphanedHeldItems()
@@ -4286,6 +4251,7 @@ final class CompanionStore {
         checkDexCompletions()   // 보유 성장분이 영속되는 매 지점에서 세대 완성 알림을 한 번만 띄운다
         guard let data = try? JSONEncoder().encode(state) else { return }
         try? data.write(to: fileURL, options: .atomic)   // 부분 쓰기 손상 방지(펫 상태)
+        didWriteSave?()
     }
 
     /// Records a first gym clear: the badge, its TM if any is left, a save and a notification.

@@ -139,7 +139,7 @@ struct PokemonProfile: Codable, Sendable, Equatable {
     var abilityName: String?
     var abilityIsHidden: Bool
     var level: Int
-    /// Earned growth in standard-balance units, independent of difficulty and repeat boosts.
+    /// Earned growth in standard-balance units, independent of repeat boosts.
     var growthTokens: Int
     var moves: [PokemonKnownMove]
     /// True once a Mirror Herb is used on it: its attacking egg moves stay learnable for good, also after it evolves.
@@ -225,7 +225,7 @@ struct PokemonProfile: Codable, Sendable, Equatable {
         advanceGrowth(to: growthTokens + max(0, delta), rarity: rarity)
     }
 
-    /// Difficulty changes and imports cannot undo an already-earned level.
+    /// Migrations and imports cannot undo an already-earned level.
     mutating func advanceGrowth(to candidate: Int, rarity: Rarity) {
         growthTokens = min(SaveTransfer.maxTokenValue, max(growthTokens, max(0, candidate)))
         let total = max(1, PokemonBalance.graduationTotal(rarity))

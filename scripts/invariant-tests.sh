@@ -70,6 +70,8 @@ METHODS=(
   # Language sweeps the name rule does not catch.
   ActivityVisualizationTests/testTitleStatesTheWindowLength
   AdditionalClaudeAccountsStoreTests/testTheBubbleDropsAnAccountThatDoesNotFit
+  BalanceTableTests/testFirstRunEggHintShowsTheHatchPoint
+  BalanceTableTests/testTimeHintNamesTheRateInEveryLanguage
   BoxTests/testBattleTabKeepsRecentBattlesButNoConnectionTradeOrCoworkers
   BoxTests/testCoworkersTabListsCoworkersAndOffersATradeWhenConnected
   BoxTests/testDexDetailOffersTheBoxCountAndNoIndividualControls
@@ -80,7 +82,6 @@ METHODS=(
   CompanionIdentityTests/testNatureNamesComplete
   CompanionIdentityTests/testSystemDefaultLanguageResolves
   DailyTrendStackTests/testTheLegendWrapsWithinThePopoverWidth
-  DifficultyTests/testFirstRunEggHintShowsTheScaledHatchPoint
   EggPrayerTests/testDetailCopy
   EvolutionCardTests/testEveryRuleIsTranslatedNotCopiedFromEnglish
   FloatingPetAgentTests/testAgentBubbleTextNeverTruncates

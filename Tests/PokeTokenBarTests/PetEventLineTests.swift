@@ -142,7 +142,7 @@ final class PetEventLineTests: XCTestCase {
     func testRevealEventReplacesTheHatchLineAndNeverShowsAnEvolution() async throws {
         let store = dittoStore(seed: Self.shinyDisguisedDittoSeed)
         await store.hatch(baseID: 1)
-        store.applyUsage(130_000_000)   // past the first evolution threshold: the disguise breaks instead of evolving
+        store.applyUsage(13_000_000)   // past the first evolution threshold: the disguise breaks instead of evolving
         try await waitUntil("the disguise to break") { store.state.active?.dittoRevealed == true }
         XCTAssertEqual(store.latestEvent?.text, L(.en).notifShinyDittoRevealBody("Bulb"))
         XCTAssertFalse(store.latestEvent?.text.contains("evolved") ?? true)

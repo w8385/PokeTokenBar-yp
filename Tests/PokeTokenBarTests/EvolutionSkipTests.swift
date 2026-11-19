@@ -206,8 +206,7 @@ final class EvolutionSkipTests: XCTestCase {
         await s.hatch(baseID: 446)
         s.applyUsage(s.tokensToNext)
         XCTAssertEqual(s.latestEvent?.text, L(s.language).notifEvolveStuckSkippableBody(
-            s.displayName, L(s.language).evolutionRequirementText(.pets(30), speciesName: { "#\($0)" },
-                                                                  shopDifficulty: s.shopDifficulty)))
+            s.displayName, L(s.language).evolutionRequirementText(.pets(30), speciesName: { "#\($0)" })))
     }
 
     func testTheKoreanConfirmPicksTheParticleForTheName() {
@@ -301,8 +300,7 @@ final class EvolutionSkipTests: XCTestCase {
         XCTAssertTrue(s.raise(entryID: id))
         await s.checkRaisedGraduateEvolution()
         let entry = try XCTUnwrap(s.state.dex.first { $0.id == id })
-        let threshold = PokemonBalance.scaled(
-            PokemonBalance.phaseThreshold(rarity: entry.rarity, totalForms: 2, stageIndex: 0), by: s.growthDifficulty)
+        let threshold = PokemonBalance.phaseThreshold(rarity: entry.rarity, totalForms: 2, stageIndex: 0)
         XCTAssertEqual(s.currentSpeciesID, 705, "a graduate counts as 100%; the path asks for 200%")
         func credit(_ total: Int) {
             s.update(todayTokensByProvider: ["test": total], todayDate: "d1", monthTotal: 0, burnTier: .idle,

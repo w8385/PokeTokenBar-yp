@@ -379,7 +379,7 @@ final class MachineOwnershipTests: XCTestCase {
         XCTAssertEqual(L(.en).movePowerLine(80), "Power 80")
     }
 
-    func testPriceTiersFollowPowerAndWeatherThenScaleWithShopDifficulty() async throws {
+    func testPriceTiersFollowPowerAndWeather() async throws {
         let low = PokemonBalance.machinePrice(power: 0, isWeather: false)
         let mid = PokemonBalance.machinePrice(power: 70, isWeather: false)
         let top = PokemonBalance.machinePrice(power: 100, isWeather: false)
@@ -392,9 +392,7 @@ final class MachineOwnershipTests: XCTestCase {
         let rig = try await TrainingRig()
         defer { rig.close() }
         XCTAssertEqual(rig.store.tmPrice(power: 90, isWeather: false), mid)
-        rig.store.setShopDifficulty(0.5)
-        XCTAssertEqual(rig.store.tmPrice(power: 90, isWeather: false), PokemonBalance.scaled(mid, by: 0.5))
-        XCTAssertEqual(rig.store.tmPrice(power: 120, isWeather: false), PokemonBalance.scaled(top, by: 0.5))
+        XCTAssertEqual(rig.store.tmPrice(power: 120, isWeather: false), top)
     }
 
     func testBuyingATMChargesOnceAndMakesItChoosableOnEveryPokemon() async throws {

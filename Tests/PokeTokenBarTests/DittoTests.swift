@@ -10,7 +10,7 @@ private func dLine(base: Int, tree: EvoNode, rarity: Rarity) -> EvoLine {
     for id in ids(tree) { names[id] = ["en": "P\(id)", "ko": "포\(id)", "ja": "ポ\(id)"] }
     return EvoLine(baseID: base, tree: tree, rarity: rarity, names: names)
 }
-private let disguiseLine = dLine(base: 1, tree: dNode(1, [dNode(2, [dNode(3)])]), rarity: .common) // 커먼 3형태: 첫 진화 25M
+private let disguiseLine = dLine(base: 1, tree: dNode(1, [dNode(2, [dNode(3)])]), rarity: .common) // 커먼 3형태: 첫 진화 2.5M
 private let prunedDisguiseLine = dLine(base: 206, tree: dNode(206, [dNode(1026)]), rarity: .common)
 private let dittoLine = dLine(base: 132, tree: dNode(132), rarity: .rare)                           // 메타몽: rare 단일형태
 private let dNow = Date(timeIntervalSince1970: 1_700_000_000)
@@ -106,7 +106,7 @@ final class DittoRevealTests: XCTestCase {
             + "\"rarity\":\"common\",\"totalForms\":3,\"isShiny\":\(shiny),\"hasGrowthBoost\":\(boosted),"
             + "\"dittoDisguise\":1,\"dittoRevealed\":\(revealed)}"
         let finals = collectedFinals.map { "\"\($0)\"" }.joined(separator: ",")
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1000000000,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":1000000000,\"spentTokens\":0,"
             + "\"lastDate\":\"d1\",\"active\":\(active),\"dex\":[],\"collectedFinals\":[\(finals)]}"
         try? json.data(using: .utf8)!.write(to: url)
         return CompanionStore(provider: DittoTestProvider(), clock: { dNow }, fileURL: url, rng: SeededRNG(seed: 7), defaults: defaults)
@@ -128,8 +128,8 @@ final class DittoRevealTests: XCTestCase {
     /// [트리거 브랜치] 첫 진화 임계에서 진화 대신 메타몽으로 리빌 — 진화 자체를 밟지 않는다.
     func testRevealAtFirstEvolution() async {
         let s = seedDisguise()
-        s.applyUsage(60_000_000)   // 라인 미로딩 중 적립(첫 진화 25M 초과) — 진화/리빌 보류
-        XCTAssertEqual(s.state.active?.usedAtStage, 60_000_000)
+        s.applyUsage(6_000_000)   // 라인 미로딩 중 적립(첫 진화 2.5M 초과) — 진화/리빌 보류
+        XCTAssertEqual(s.state.active?.usedAtStage, 6_000_000)
         XCTAssertEqual(s.currentSpeciesID, 1, "아직 위장체 표시")
         XCTAssertFalse(s.state.active?.dittoRevealed ?? true)
         await drainReveal(s)
@@ -142,7 +142,7 @@ final class DittoRevealTests: XCTestCase {
         XCTAssertEqual(s.state.active?.stageIndex, 0)
         XCTAssertEqual(s.state.active?.pathIDs, [132])
         XCTAssertEqual(s.state.active?.plannedPathIDs, [132])
-        XCTAssertEqual(s.state.active?.usedAtStage, 60_000_000 - 25_000_000, "첫 진화 초과분 이월")
+        XCTAssertEqual(s.state.active?.usedAtStage, 6_000_000 - 2_500_000, "첫 진화 초과분 이월")
         XCTAssertNotNil(s.state.active?.dittoDisguise, "위장 마커 보존")
         XCTAssertEqual(s.celebration, .dittoReveal(shiny: false), "리빌 연출 발화")
     }
@@ -154,7 +154,7 @@ final class DittoRevealTests: XCTestCase {
         XCTAssertEqual(s.state.active?.profile?.abilityName, "overgrow")
         XCTAssertEqual(s.state.active?.profile?.moves.map(\.name), ["tackle"])
 
-        s.applyUsage(60_000_000)
+        s.applyUsage(6_000_000)
         await drainReveal(s)
         for _ in 0..<200 {
             if s.state.active?.profile?.gender == .genderless { break }
@@ -165,7 +165,7 @@ final class DittoRevealTests: XCTestCase {
         XCTAssertEqual(profile?.gender, .genderless)
         XCTAssertEqual(profile?.abilityName, "limber")
         XCTAssertEqual(profile?.moves.map(\.name), ["transform"])
-        XCTAssertEqual(profile?.growthTokens, 100_000_000)
+        XCTAssertEqual(profile?.growthTokens, 10_000_000)
         XCTAssertEqual(profile?.level, 20, "revealing Ditto preserves earned phase progress")
     }
 
@@ -174,7 +174,6 @@ final class DittoRevealTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         let s = seedDisguise(boosted: true, defaults: defaults)
-        s.setGrowthDifficulty(0.1)
         await s.loadPokemonDetails(speciesID: 1)
         let initial = try XCTUnwrap(s.state.active?.profile)
         s.applyUsage(1_450_000) // 1.25M reveal threshold plus 200K raw carryover.
@@ -200,7 +199,7 @@ final class DittoRevealTests: XCTestCase {
     /// The disguise hatches with its own line's boost. After the reveal only a repeat Ditto keeps it.
     func testBoostedDisguiseRevealsAtTheHalvedThresholdAndANewDittoDropsTheBoost() async throws {
         let s = seedDisguise(boosted: true)
-        s.applyUsage(12_500_000)
+        s.applyUsage(1_250_000)
 
         await drainReveal(s)
 
@@ -208,19 +207,19 @@ final class DittoRevealTests: XCTestCase {
         XCTAssertTrue(revealed.dittoRevealed)
         XCTAssertFalse(revealed.hasGrowthBoost)
         XCTAssertEqual(revealed.usedAtStage, 0)
-        XCTAssertEqual(revealed.phaseThreshold, 600_000_000)
+        XCTAssertEqual(revealed.phaseThreshold, 60_000_000)
     }
 
     func testRevealingAnAlreadyGraduatedDittoGrantsTheRepeatBoost() async throws {
         let s = seedDisguise(collectedFinals: ["\(PokemonOdds.dittoSpeciesID):\(PokemonOdds.dittoSpeciesID)"])
-        s.applyUsage(25_000_000)
+        s.applyUsage(2_500_000)
 
         await drainReveal(s)
 
         let revealed = try XCTUnwrap(s.state.active)
         XCTAssertTrue(revealed.dittoRevealed)
         XCTAssertTrue(revealed.hasGrowthBoost)
-        XCTAssertEqual(revealed.phaseThreshold, 300_000_000)
+        XCTAssertEqual(revealed.phaseThreshold, 30_000_000)
     }
 
     /// [회귀] 위장 종만 근거로 고정한 대표 선택은 리빌과 함께 무효가 된다. 공개 뒤에는 유령 위장 종을
@@ -233,7 +232,7 @@ final class DittoRevealTests: XCTestCase {
                        CompanionStore.RepresentativeSubject(speciesID: 1, isShiny: false),
                        "위장 중에는 대표 스프라이트도 이로치를 숨김")
 
-        s.applyUsage(60_000_000)
+        s.applyUsage(6_000_000)
         await drainReveal(s)
 
         XCTAssertTrue(s.state.active?.dittoRevealed ?? false)
@@ -248,12 +247,12 @@ final class DittoRevealTests: XCTestCase {
     func testPrunedLeafDisguiseRevealsBeforeGraduation() async throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("ditto-pruned-\(UUID().uuidString).json")
         let threshold = PokemonBalance.phaseThreshold(rarity: .common, totalForms: 1, stageIndex: 0)
-        XCTAssertEqual(threshold, 150_000_000)
+        XCTAssertEqual(threshold, 15_000_000)
         XCTAssertTrue(prunedDisguiseLine.tree.children.isEmpty, "#1026 제거 후 #206은 leaf여야 한다")
         let active = "{\"baseID\":206,\"pathIDs\":[206],\"plannedPathIDs\":[206,1026],\"stageIndex\":0,"
             + "\"usedAtStage\":\(threshold),\"rarity\":\"common\",\"totalForms\":2,\"isShiny\":true,"
             + "\"nature\":\"timid\",\"dittoDisguise\":206,\"dittoRevealed\":false}"
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1000000000,\"lastDate\":\"d1\","
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":1000000000,\"lastDate\":\"d1\","
             + "\"active\":\(active),\"dex\":[],\"collectedFinals\":[]}"
         try Data(json.utf8).write(to: url)
         let s = CompanionStore(provider: PrunedDittoTestProvider(), clock: { dNow }, fileURL: url,
@@ -276,8 +275,8 @@ final class DittoRevealTests: XCTestCase {
 
     func testDelayedRevealDoesNotConvertSameBaseReplacementDisguise() async throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("ditto-race-\(UUID().uuidString).json")
-        let active = #"{"baseID":1,"pathIDs":[1],"plannedPathIDs":[1,2,3],"stageIndex":0,"usedAtStage":25000000,"rarity":"common","totalForms":3,"dittoDisguise":1}"#
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":2000000000,\"lastDate\":\"d1\",\"active\":\(active),\"dex\":[],\"collectedFinals\":[]}"
+        let active = #"{"baseID":1,"pathIDs":[1],"plannedPathIDs":[1,2,3],"stageIndex":0,"usedAtStage":2500000,"rarity":"common","totalForms":3,"dittoDisguise":1}"#
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":2000000000,\"lastDate\":\"d1\",\"active\":\(active),\"dex\":[],\"collectedFinals\":[]}"
         try Data(json.utf8).write(to: url)
         let provider = DelayedDittoProvider()
         var seed: UInt64?
@@ -313,7 +312,7 @@ final class DittoRevealTests: XCTestCase {
     /// 리빌 후 이로치가 공개된다(위장 중 숨겼던 것) + 이로치 리빌 연출.
     func testShinyUnmaskedAfterReveal() async {
         let s = seedDisguise(shiny: true)
-        s.applyUsage(60_000_000)
+        s.applyUsage(6_000_000)
         XCTAssertFalse(s.currentIsShiny, "리빌 전 숨김")
         await drainReveal(s)
         XCTAssertTrue(s.state.active?.dittoRevealed ?? false)
@@ -324,20 +323,20 @@ final class DittoRevealTests: XCTestCase {
     /// 임계 미달이면 리빌하지 않는다(위장 유지).
     func testNoRevealBelowThreshold() async {
         let s = seedDisguise()
-        s.applyUsage(20_000_000)   // 첫 진화 25M 미달
+        s.applyUsage(2_000_000)   // 첫 진화 2.5M 미달
         await drainReveal(s)        // (드레인해도 리빌 조건 미충족)
         XCTAssertFalse(s.state.active?.dittoRevealed ?? true, "임계 미달 → 위장 유지")
         XCTAssertEqual(s.currentSpeciesID, 1, "여전히 위장체")
     }
 
     func testCandyPickerMatchesApparentPokemonButOnlySpendsEnoughToReveal() async throws {
-        let s = seedDisguise(usedAtStage: 20_000_000)
+        let s = seedDisguise(usedAtStage: 2_000_000)
         await drainReveal(s)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("normal-candy-\(UUID()).json")
         let normal = CompanionStore(provider: DittoTestProvider(), clock: { dNow }, fileURL: url,
                                     dittoDisguiseRollingEnabled: false)
         await normal.hatch(baseID: 1)
-        normal.applyUsage(20_000_000)
+        normal.applyUsage(2_000_000)
         for store in [s, normal] {
             store.grantCandies(from: [], limitsReady: true)
             store.grantCandies(from: [CandyWindow(key: "batch.weekly", name: "Test", kind: .weekly,
@@ -360,21 +359,19 @@ final class DittoRevealTests: XCTestCase {
         XCTAssertEqual(s.useRareCandy(count: 5), .unavailable, "Do not spend while the reveal is pending")
         await drainReveal(s)
         XCTAssertEqual(s.currentSpeciesID, PokemonOdds.dittoSpeciesID)
-        XCTAssertEqual(s.state.active?.usedAtStage, 15_000_000)
-        XCTAssertEqual(s.maxRareCandyUseCount, 4)
+        XCTAssertEqual(s.state.active?.usedAtStage, 19_500_000)
+        XCTAssertEqual(s.maxRareCandyUseCount, 3)
         XCTAssertEqual(s.useRareCandy(count: 2), .progressed)
-        XCTAssertEqual(s.state.active?.usedAtStage, 55_000_000)
+        XCTAssertEqual(s.state.active?.usedAtStage, 59_500_000)
         XCTAssertEqual(s.rareCandyCount, 2)
     }
 
     func testApparentGraduationBatchPreservesUnusedCandiesAtDittoReveal() async throws {
-        for difficulty in [0.1, 1.0, 2.0] {
+        do {
             for boosted in [false, true] {
                 let suiteName = "ditto-candy-\(UUID())"
                 let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
                 defer { defaults.removePersistentDomain(forName: suiteName) }
-                defaults.set(difficulty, forKey: "growthDifficulty")
-                defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
                 let s = seedDisguise(boosted: boosted, defaults: defaults)
                 await drainReveal(s)
                 s.grantCandies(from: [], limitsReady: true)
@@ -397,8 +394,8 @@ final class DittoRevealTests: XCTestCase {
         }
     }
 
-    func testCandyBatchStopsExactlyAtRevealWithoutOverflow() async throws {
-        let s = seedDisguise(usedAtStage: 5_000_000)
+    func testCandyBatchStopsAtTheRevealAndCarriesOnlyThatCandy() async throws {
+        let s = seedDisguise()
         await drainReveal(s)
         s.grantCandies(from: [], limitsReady: true)
         s.grantCandies(from: [CandyWindow(key: "batch.exact", name: "Test", kind: .weekly,
@@ -406,7 +403,8 @@ final class DittoRevealTests: XCTestCase {
         _ = s.useRareCandy(count: 5)
         await drainReveal(s)
         XCTAssertEqual(s.currentSpeciesID, PokemonOdds.dittoSpeciesID)
-        XCTAssertEqual(s.state.active?.usedAtStage, 0)
+        XCTAssertEqual(s.state.active?.usedAtStage,
+                       RareCandy.xp - PokemonBalance.phaseThreshold(rarity: .common, totalForms: 3, stageIndex: 0))
         XCTAssertEqual(s.rareCandyCount, 4)
     }
 
@@ -415,7 +413,7 @@ final class DittoRevealTests: XCTestCase {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("ditto-bc-\(UUID().uuidString).json")
         let active = "{\"baseID\":1,\"pathIDs\":[1],\"stageIndex\":0,\"usedAtStage\":0,"
             + "\"rarity\":\"common\",\"totalForms\":3,\"isShiny\":true}"   // ditto 필드 없음
-        let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":0,\"spentTokens\":0,"
+        let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":0,\"spentTokens\":0,"
             + "\"lastDate\":\"d1\",\"active\":\(active),\"dex\":[],\"collectedFinals\":[]}"
         try? json.data(using: .utf8)!.write(to: url)
         let s = CompanionStore(provider: DittoTestProvider(), clock: { dNow }, fileURL: url, rng: SeededRNG(seed: 7))

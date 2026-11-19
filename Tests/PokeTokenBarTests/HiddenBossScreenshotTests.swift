@@ -109,7 +109,7 @@ final class HiddenBossScreenshotTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: scratch) }
         for language in [AppLanguage.ko, .en] {
             let file = scratch.appendingPathComponent("state-\(language.rawValue).json")
-            let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,"
+            let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,"
                 + "\"lastDate\":\"d\",\"language\":\"\(language.rawValue)\",\"dex\":[],\"collectedFinals\":[],"
                 + "\"active\":{\"baseID\":10,\"pathIDs\":[10],\"stageIndex\":0,\"usedAtStage\":0,\"rarity\":\"common\","
                 + "\"totalForms\":3,\"isShiny\":false},"
@@ -158,7 +158,7 @@ final class HiddenBossScreenshotTests: XCTestCase {
         for language in [AppLanguage.ko, .en] {
             for (name, inventory) in shots {
                 let file = scratch.appendingPathComponent("signature-\(name)-\(language.rawValue).json")
-                let json = "{\"economyVersion\":2,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,"
+                let json = "{\"economyVersion\":3,\"installBaselineSet\":true,\"usedSinceInstall\":1,\"spentTokens\":0,"
                     + "\"lastDate\":\"d\",\"language\":\"\(language.rawValue)\",\"dex\":[],\"collectedFinals\":[],"
                     + "\"active\":{\"baseID\":10,\"pathIDs\":[10],\"stageIndex\":0,\"usedAtStage\":0,\"rarity\":\"common\","
                     + "\"totalForms\":3,\"isShiny\":false},\"inventory\":{\(inventory)}}"

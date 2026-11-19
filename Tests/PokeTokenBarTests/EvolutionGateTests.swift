@@ -89,8 +89,8 @@ final class EvolutionGateRuleTests: XCTestCase {
     }
 
     func testSpendingAndCandyStepsCountFromTheStartOfTheForm() throws {
-        try gate(1000, closed: context { $0.spentTokens = 300_000_000; $0.progress.spentBaseline = 200_000_000 },
-                 opens: context { $0.spentTokens = 400_000_000; $0.progress.spentBaseline = 200_000_000 })
+        try gate(1000, closed: context { $0.spentTokens = 210_000_000; $0.progress.spentBaseline = 200_000_000 },
+                 opens: context { $0.spentTokens = 220_000_000; $0.progress.spentBaseline = 200_000_000 })
         try gate(809, closed: context { $0.progress.candies = 4 }, opens: context { $0.progress.candies = 5 })
     }
 

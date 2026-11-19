@@ -57,7 +57,7 @@ SCREENS = (
     ("Battle*.swift", ("screenshot-battle",)),
     ("SettingsView.swift", ("settings", "screenshot-provider-settings")),
     ("SettingsTab.swift", ("settings", "screenshot-provider-settings")),
-    ("DifficultySettingsSection.swift", ("screenshot-difficulty",)),
+    ("GrowthModeSection.swift", ("screenshot-growth-mode",)),
     ("UsageRecapView.swift", ("screenshot-usage-recap",)),
     ("ActivityHeatmap.swift", ("screenshot-activity-views", "screenshot-home")),
     ("ActivityVisualization.swift", ("screenshot-activity-views", "screenshot-home")),

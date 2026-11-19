@@ -58,7 +58,7 @@ PokeTokenBar는 당신이 이미 태우고 있는 AI 코딩 토큰(Claude Code �
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pet-interactions-ko.png" width="300" alt="기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 펫 샘플"><br><small>실제 UI 컴포넌트 · 샘플 상태</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="플로팅 펫 옆에 선 친구 둘, 그중 하나 위에 뜬 하트"><br><br><img src="assets/screenshot-pet-xp-ko.png" width="300" alt="빠르게 다섯 번 클릭한 뒤 +270K XP 배지가 뜬 홈 스프라이트"><br><small>샘플 상태</small></td>
+<td width="45%" align="center"><img src="assets/screenshot-pet-interactions-ko.png" width="300" alt="기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 펫 샘플"><br><small>실제 UI 컴포넌트 · 샘플 상태</small><br><br><img src="assets/screenshot-floating-friends.png" width="300" alt="플로팅 펫 옆에 선 친구 둘, 그중 하나 위에 뜬 하트"><br><br><img src="assets/screenshot-pet-xp-ko.png" width="300" alt="빠르게 다섯 번 클릭한 뒤 +250K XP 배지가 뜬 홈 스프라이트"><br><small>샘플 상태</small></td>
 <td width="55%" valign="middle">
 <h3>작은 반응이 있는 파트너</h3>
 플로팅 펫 위로 포인터를 움직이거나 클릭해 쓰다듬고, 알을 클릭해 기도해 보세요. 작은 반응, 삐침, 가끔 나타나는 이벤트 말풍선을 볼 수 있어요. 친구는 펫 바로 옆에 살짝 겹쳐 서고, 친구를 쓰다듬으면 그 친구 위에 하트가 떠요. 이 상호작용은 연출이며 기도가 부화 확률이나 성장 보상을 바꾸지는 않습니다. 홈의 큰 스프라이트나 부화한 플로팅 펫을 클릭하면 실제로 자라고, 클릭은 매번 셉니다. 빠르게 누르면 +XP 배지 하나에 더해져요. 기도 30회마다 한마디와 함께 사용량을 새로고침할 수 있어요. 에이전트의 작업·입력 대기·완료 반응은 <a href="#에이전트-활동">수동 설정</a> 후 사용할 수 있어요.
@@ -278,10 +278,10 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 <td width="45%" align="center"><img src="assets/screenshot-hidden-boss-ko.png" width="300" alt="숨겨진 강자를 이기고 받은 첫 클리어 보상"></td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-difficulty-ko.png" width="300" alt="내 페이스에 맞춰 키우기"></td>
+<td width="45%" align="center"><img src="assets/screenshot-growth-mode-ko.png" width="300" alt="활동 시간으로 맞춘 성장 기준 선택"></td>
 <td width="55%" valign="middle">
-<h3>내 페이스에 맞춰 키우기</h3>
-성장 임계값과 상점 가격을 각각 <b>10%~200%</b>로 조절하며, 슬라이더 양끝의 쉬움/어려움·저렴/비쌈 표시로 방향을 확인합니다. 슬라이더는 임시 변경이며 <b>저장</b>을 눌러야 적용됩니다. 성장 난이도를 바꿔도 현재 단계의 진행률을 유지해 즉시 진화하지 않습니다. 이미 졸업시킨 진화 계보에서 다시 부화하면 <b>2배 빠르게</b> 자랍니다. 홈의 부화·성장 막대에 마우스를 올리면 사용량·목표와 진행률을 볼 수 있습니다.
+<h3>토큰으로, 또는 시간으로 키우기</h3>
+코딩 에이전트가 쓴 토큰으로 키울지, 키보드 앞에 있던 시간으로 키울지 고릅니다. 시간 모드에서는 활동하는 1초마다 성장 <b>25K</b>와 상점 토큰 <b>25K</b>가 쌓입니다. 5분 넘게 입력이 없거나 잠자기·화면 잠금 중에는 쌓이지 않습니다. 선택은 임시 변경이며 <b>저장</b>을 눌러야 적용됩니다. 이미 졸업시킨 진화 계보에서 다시 부화하면 <b>2배 빠르게</b> 자랍니다. 홈의 부화·성장 막대에 마우스를 올리면 사용량·목표와 진행률을 볼 수 있습니다.
 </td>
 </tr>
 <tr>
@@ -325,7 +325,7 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 
 <img src="assets/screenshot-usage-recap-ko.png" width="360" alt="선택한 기간의 사용량 돌아보기">
 
-<small>위 홈·설정·폼·상점·가방·도감·다음 진화·박스·프로필·학습장치·대결·체육관·리플레이·챔피언·플로팅 친구·박스 친구·난이도·활동·지방 도감·펫 상호작용·회고 이미지는 샘플 데이터로 실제 UI를 로컬 렌더링한 이미지입니다. 체육관 이미지는 YPoke 봇의 관동 체육관 목록을 씁니다. 지방 도감·펫 보드는 별도로 렌더링한 실제 UI 컴포넌트를 조합했습니다. GIF는 설명용 데모이며 이전 배치를 보여줄 수 있습니다.</small>
+<small>위 홈·설정·폼·상점·가방·도감·다음 진화·박스·프로필·학습장치·대결·체육관·리플레이·챔피언·플로팅 친구·박스 친구·성장 기준·활동·지방 도감·펫 상호작용·회고 이미지는 샘플 데이터로 실제 UI를 로컬 렌더링한 이미지입니다. 체육관 이미지는 YPoke 봇의 관동 체육관 목록을 씁니다. 지방 도감·펫 보드는 별도로 렌더링한 실제 UI 컴포넌트를 조합했습니다. GIF는 설명용 데모이며 이전 배치를 보여줄 수 있습니다.</small>
 
 ## 에이전트 활동
 

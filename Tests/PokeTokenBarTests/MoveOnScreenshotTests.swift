@@ -104,13 +104,11 @@ final class MoveOnScreenshotTests: XCTestCase {
         profile.level = 22
         var mon = MonState(baseID: 446, pathIDs: [446], plannedPathIDs: [446, 143], stageIndex: 0, usedAtStage: 0,
                            rarity: .common, totalForms: 2, profile: profile)
-        mon.usedAtStage = PokemonBalance.scaled(mon.phaseThreshold, by: 1.0)
+        mon.usedAtStage = mon.phaseThreshold
         mon.evolution.pets = 12
         state.active = mon
         let file = scratch.appendingPathComponent("state-\(language.rawValue).json")
         try JSONEncoder().encode(state).write(to: file)
-        defaults.set(1.0, forKey: "growthDifficulty")
-        defaults.set(true, forKey: PokemonBalance.difficultyMigratedKey)
         let store = CompanionStore(provider: MoveOnShotProvider(), clock: { clock.now }, fileURL: file,
                                    rng: SeededRNG(seed: 3), dittoDisguiseRollingEnabled: false, defaults: defaults)
         store.update(todayTokensByProvider: ["shot": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,

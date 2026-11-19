@@ -107,7 +107,7 @@ Steps the games list with no condition at all keep growing by XP: Manaphy (#490)
 | Farigiraf (#981) | Level up while knowing Twin Beam | Know Twin Beam | Mapped |
 | Dudunsparce (#982) | Level up while knowing Hyper Drill; Random (set per individual) | Know Hyper Drill | Mapped (form not drawn in the dex) |
 | Kingambit (#983) | Defeat 3 group-leading Bisharp, then level up | Win 5 battles **or** Fill the growth bar to 200% | Mapped |
-| Gholdengo (#1000) | Collect 999 coins, then level up | Spend 200M tokens in the shop | Mapped |
+| Gholdengo (#1000) | Collect 999 coins, then level up | Spend 20M tokens in the shop | Mapped |
 | Dipplin (#1011) | Use Syrupy Apple | Use Syrupy Apple | Mapped |
 | Sinistcha (#1013) | Use Unremarkable Teacup; Use Masterpiece Teacup | Use Unremarkable Teacup **or** Use Masterpiece Teacup | Mapped |
 | Archaludon (#1018) | Use Metal Alloy | Use Metal Alloy | Mapped |

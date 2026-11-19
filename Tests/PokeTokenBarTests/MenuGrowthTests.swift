@@ -17,7 +17,8 @@ final class MenuGrowthTests: XCTestCase {
         return flag
     }
 
-    private func fixture(_ body: (UsageStore, CompanionStore) async throws -> Void) async throws {
+    private func fixture(rarity: Rarity = .common,
+                         _ body: (UsageStore, CompanionStore) async throws -> Void) async throws {
         let name = "ptb-menu-growth-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: name))
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(name)
@@ -34,7 +35,7 @@ final class MenuGrowthTests: XCTestCase {
         let line = EvoLine(baseID: 1,
             tree: EvoNode(speciesID: 1, children: [EvoNode(speciesID: 2,
                 children: [EvoNode(speciesID: 3, children: [])])]),
-            rarity: .common, names: [1: ["en": "Bulbasaur"], 2: ["en": "Ivysaur"], 3: ["en": "Venusaur"]])
+            rarity: rarity, names: [1: ["en": "Bulbasaur"], 2: ["en": "Ivysaur"], 3: ["en": "Venusaur"]])
         let companion = CompanionStore(provider: StubProvider(value: line), fileURL: file,
             rng: SeededRNG(seed: 7), dittoDisguiseRollingEnabled: false, defaults: defaults)
         let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
@@ -74,14 +75,14 @@ final class MenuGrowthTests: XCTestCase {
     func testEggPercentageMatchesHomeAtExactTwentyNinePercentBoundary() async throws {
         try await fixture { usage, companion in
             companion.setLanguage(.ko)
-            XCTAssertEqual(companion.eggHatchThreshold, 1_000_000)
+            XCTAssertEqual(companion.eggHatchThreshold, 100_000)
             companion.update(todayTokensByProvider: ["test": 0], todayDate: "d", monthTotal: 0,
                              burnTier: .idle, limitWarning: false, hasUsageData: true)
             // The former Double conversion turns exactly 29% into 28.999999999999996.
             // Also protect flooring just below a boundary and clamping while hatching is pending.
-            for (credits, percent) in [(0, 0), (289_999, 28), (290_000, 29),
-                                       (299_999, 29), (300_000, 30), (999_999, 99),
-                                       (1_000_000, 100), (1_000_001, 100)] {
+            for (credits, percent) in [(0, 0), (28_999, 28), (29_000, 29),
+                                       (29_999, 29), (30_000, 30), (99_999, 99),
+                                       (100_000, 100), (100_001, 100)] {
                 companion.update(todayTokensByProvider: ["test": credits], todayDate: "d", monthTotal: 0,
                                  burnTier: .idle, limitWarning: false, hasUsageData: true)
                 XCTAssertTrue(companion.isEgg)
@@ -114,25 +115,22 @@ final class MenuGrowthTests: XCTestCase {
         }
     }
 
-    func testCandyDifficultyLanguageAndToggleInvalidateMenuWithoutUsageRefresh() async throws {
-        try await fixture { usage, companion in
+    func testCandyLanguageAndToggleInvalidateMenuWithoutUsageRefresh() async throws {
+        try await fixture(rarity: .legendary) { usage, companion in
             await companion.hatch(baseID: 1)
+            companion.applyUsage(companion.tokensToNext)
             let candy = observe(usage, companion)
             XCTAssertEqual(companion.useRareCandy(), .progressed)
             XCTAssertTrue(candy.changed)
-            XCTAssertEqual(companion.menuGrowthText, "Growth 80%")
-            let difficulty = observe(usage, companion)
-            companion.setGrowthDifficulty(0.5)
-            XCTAssertTrue(difficulty.changed)
-            XCTAssertEqual(companion.menuGrowthText, "Growth 80%", "difficulty preserves the earned fraction")
+            XCTAssertEqual(companion.menuGrowthText, "Growth 50%")
             let language = observe(usage, companion)
             companion.setLanguage(.ko)
             XCTAssertTrue(language.changed)
-            XCTAssertEqual(companion.menuGrowthText, "성장 80%")
+            XCTAssertEqual(companion.menuGrowthText, "성장 50%")
             let russian = observe(usage, companion)
             companion.setLanguage(.ru)
             XCTAssertTrue(russian.changed)
-            XCTAssertEqual(MenuBarContent.lines(store: usage, companion: companion), ["Рост 80%"])
+            XCTAssertEqual(MenuBarContent.lines(store: usage, companion: companion), ["Рост 50%"])
             let toggle = observe(usage, companion)
             usage.showGrowthInMenu = false
             XCTAssertTrue(toggle.changed)

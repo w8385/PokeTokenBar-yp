@@ -95,6 +95,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue.flatMap { URL(string: $0) }
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        companion?.flushTimeSave()
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // 업그레이드 중 남아 있는 구 로그인 에이전트가 앱을 다시 띄울 수 있어 나중에 뜬 쪽이 물러난다.
         // 메뉴바 항목을 만들기 전에 판정해 아이콘이 떴다 사라지는 깜빡임을 없애고,
@@ -164,10 +168,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
         activityMonitor.onBreak = { [weak companion] in companion?.noteActivityBreak() }
         activityMonitor.start()
-        Task { @MainActor [companion, activityMonitor] in   // a time gate opens within ~30s of the day/night switch even with polling off
+        Task { @MainActor [companion] in   // a time gate opens within ~30s of the day/night switch even with polling off
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(30), tolerance: .seconds(10))
                 companion?.checkEvolutionGate()
+            }
+        }
+        Task { @MainActor [companion, activityMonitor] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1), tolerance: .milliseconds(200))
                 companion?.creditActiveTime(uptime: activityMonitor.uptime, idle: activityMonitor.idleSeconds,
                                             present: activityMonitor.isPresent)
             }

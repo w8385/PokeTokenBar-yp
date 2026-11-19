@@ -54,7 +54,7 @@ final class TimeModeScreenshotTests: XCTestCase {
         XCTAssertEqual(timeStore.growthMode, .time)
         XCTAssertTrue(hintStore.showsIdleTokenHint)
 
-        try await capture(DifficultySettingsSection(companion: timeStore).padding(12), height: 330,
+        try await capture(GrowthModeSection(companion: timeStore).padding(12), height: 200,
                           to: directory.appendingPathComponent("time-mode-settings.png"))
         try await capture(ShopView(store: timeStore, nav: PopoverNavigation()).environment(timeStore), height: 1300,
                           to: directory.appendingPathComponent("time-mode-wallet.png"))

@@ -123,7 +123,6 @@ final class DexCompletionStoreTests: XCTestCase {
         let suite = "ptb-dex-import-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        defaults.set(1.0, forKey: "growthDifficulty")
 
         var legacy = CompanionState()
         let lower = existingKanto ? 1 : 152

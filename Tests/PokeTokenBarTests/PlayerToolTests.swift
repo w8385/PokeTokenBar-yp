@@ -156,9 +156,9 @@ final class PlayerToolTests: XCTestCase {
 
     func testNewItemsArePricedAndSoldInTheShop() async throws {
         let prices: [ItemKind: Int] = [
-            .abilityCapsule: 50_000_000, .abilityPatch: 200_000_000, .bottleCap: 50_000_000,
-            .goldBottleCap: 300_000_000, .revealGlass: 150_000_000, .dnaSplicers: 150_000_000,
-            .reinsOfUnity: 150_000_000, .mint: 20_000_000,
+            .abilityCapsule: 5_000_000, .abilityPatch: 20_000_000, .bottleCap: 5_000_000,
+            .goldBottleCap: 30_000_000, .revealGlass: 15_000_000, .dnaSplicers: 15_000_000,
+            .reinsOfUnity: 15_000_000, .mint: 2_000_000,
         ]
         let s = try await store([], inventory: [:], species: [])
         for (kind, price) in prices {
