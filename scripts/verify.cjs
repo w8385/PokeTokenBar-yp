@@ -68,7 +68,7 @@ async function layout(page) {
   assert.equal(state.overflow,false,JSON.stringify(state));assert.deepEqual(state.broken,[]);assert.deepEqual(state.missing,[]);assert.deepEqual(state.duplicates,[]);
 }
 async function loadAll(page) {
-  await page.evaluate(async()=>{for(let y=0;y<document.body.scrollHeight;y+=700){scrollTo(0,y);await new Promise(r=>setTimeout(r,15));}scrollTo(0,0);await document.fonts.ready;});
+  await page.evaluate(async()=>{for(let y=0;y<document.body.scrollHeight;y+=700){scrollTo(0,y);await new Promise(r=>setTimeout(r,15));}scrollTo(0,0);await document.fonts.ready;for(const i of document.images)if(!i.complete)i.loading='eager';});
   await page.waitForFunction(()=>[...document.images].every(i=>i.complete));
 }
 async function capture(page,name,full=false,dir=output) {
