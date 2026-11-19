@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
-    BATTLE_LEVEL, AbilityField, AbilityTrigger, Action, BattleResult, Change, Combatant, Event, FieldEnd, FieldStart,
+    BATTLE_LEVEL, AbilityField, AbilityTransform, AbilityTrigger,Action, BattleResult, Change, Combatant, Event, FieldEnd, FieldStart,
     FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal,
     TrickRoomEnd, VolatileEnd, VolatileTick, WeatherDamage, WeatherEnd, YawnSleep,
 )
@@ -402,9 +402,18 @@ def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
         effect = STATE_LABEL[event.terrain]
     elif isinstance(event, AbilityField):
         effect = f"{'·'.join(STATE_LABEL[key] for key in event.cleared)} 사라짐"
+    elif isinstance(event, AbilityTransform):
+        effect = f"{event.into}{_direction_particle(event.into)} 변신"
     else:
         effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
     return f"[{ABILITY_NAMES[event.ability]}] {effect}"
+
+
+def _direction_particle(name: str) -> str:
+    last = ord(name[-1])
+    if not 0xAC00 <= last <= 0xD7A3:
+        return "(으)로"
+    return "로" if (last - 0xAC00) % 28 in (0, 8) else "으로"
 
 
 def _entry_segment(event: AbilityTrigger | MegaEvolution) -> str:

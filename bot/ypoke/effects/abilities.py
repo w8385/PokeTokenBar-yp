@@ -3,6 +3,7 @@
 
 from ypoke import abilities, battle
 from ypoke.effects import Handler, hooks, register
+from ypoke.effects.callers import transform, transformable
 
 
 @register("abilities", "intimidate")
@@ -141,3 +142,16 @@ class LongReach(Handler):
 class Contrary(Handler):
     def stage_factor(self, name):
         return -1
+
+
+@register("abilities", "imposter")
+class Imposter(Handler):
+    """Entering transforms the holder into the foe, as the move Transform does."""
+
+    def on_entry(self, name, fighter, foe, side, weather):
+        if foe.hp == 0 or not transformable(fighter, foe):
+            return None
+        transform(fighter, foe)
+        return battle.AbilityTransform(side, fighter.combatant.name, name, into=foe.combatant.name,
+                                       form_id=foe.form_id or foe.combatant.pokemon_id,
+                                       own_form_id=fighter.combatant.pokemon_id)

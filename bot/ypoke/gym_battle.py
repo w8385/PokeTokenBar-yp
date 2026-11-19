@@ -11,8 +11,8 @@ from functools import partial
 
 from ypoke import gyms
 from ypoke.battle import (
-    CARRIED_STATUSES, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal,
-    MegaEvolution, SendOut, StatusDamage, TerrainHeal, VolatileTick, WeatherDamage, YawnSleep, simulate,
+    CARRIED_STATUSES, AbilityTransform, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage, HazardHit,
+    ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal, VolatileTick, WeatherDamage, YawnSleep, simulate,
 )
 from ypoke.combatants import combatant
 from ypoke.gym_data import FINALE_LINE
@@ -125,6 +125,7 @@ def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: 
     for event in result.events:
         turn = getattr(event, "turn", turn)
         if isinstance(event, SendOut):
+            replay.revert(turn, event.side)
             position = event.member
             replay.active[event.side] = position
             if event.side == 1 and position == finale and not replay.seen(1):
@@ -145,6 +146,8 @@ def _events(result: BattleResult, members: tuple[list[int], list[int]], starts: 
             replay.status(turn, event.side, "sleep")
         elif isinstance(event, (MegaEvolution, FormShift)) and event.form_id is not None:
             replay.form(turn, event.side, event.form_id, event.kind)
+        elif isinstance(event, AbilityTransform) and event.form_id is not None:
+            replay.transform(turn, event.side, event.form_id, event.own_form_id)
     return replay.events
 
 
@@ -157,6 +160,7 @@ class _Replay:
         self.events: list[dict] = []
         self._hp: dict[tuple[int, int], int] = {}
         self._status: dict[tuple[int, int], str | None] = {}
+        self._reverts: dict[tuple[int, int], int] = {}
 
     def seen(self, side: int) -> bool:
         return self._key(side) in self._hp
@@ -168,6 +172,12 @@ class _Replay:
             self._hp[key] = 100 if start is None else start.hp
             self._status[key] = None if start is None else start.status
         self._emit(turn, "switch", side, hp=self._hp[key], status=self._status[key])
+
+    def transform(self, turn: int, side: int, form_id: int, own_form_id: int | None) -> None:
+        """A transformed member shows its own form again once it faints or leaves."""
+        self.form(turn, side, form_id, "transform")
+        if own_form_id is not None:
+            self._reverts[self._key(side)] = own_form_id
 
     def form(self, turn: int, side: int, form_id: int, kind: str) -> None:
         self._emit(turn, "form", side, pokemon_id=form_id, kind=kind)
@@ -194,6 +204,12 @@ class _Replay:
         self._emit(turn, "damage", side, hp=hp)
         if hp == 0:
             self._emit(turn, "faint", side)
+            self.revert(turn, side)
+
+    def revert(self, turn: int, side: int) -> None:
+        own_form_id = self._reverts.pop(self._key(side), None)
+        if own_form_id is not None:
+            self.form(turn, side, own_form_id, "revert")
 
     def status(self, turn: int, side: int, status: str | None) -> None:
         key = self._key(side)

@@ -234,6 +234,16 @@ class AbilityField(AbilityTrigger):
 
 
 @dataclass(frozen=True)
+class AbilityTransform(AbilityTrigger):
+    """Imposter: the Pokémon became the foe `into`. `form_id` is the `/pokemon` id of the form it now shows,
+    `own_form_id` the one it shows again once it leaves."""
+
+    into: str = ""
+    form_id: int | None = None
+    own_form_id: int | None = None
+
+
+@dataclass(frozen=True)
 class FieldStart:
     """An attack that set a hazard on `side` as it hit (Stone Axe, Ceaseless Edge)."""
 
@@ -720,9 +730,11 @@ def _enter_forms(team: "_Team", side: int, turn: int, events: list[Event]) -> No
     fighter = team.active
     combatant = fighter.combatant
     if combatant.tera:
+        fighter.form_id = tera_forms.TERASTAL_FORM
         events.append(FormShift(turn, side, combatant.name, "terastal", tera_forms.TERASTAL_FORM))
     shift = hooks.item(fighter, "on_entry_form", fighter, side, turn)
     if shift is not None:
+        fighter.form_id = shift.form_id
         events.append(shift)
 
 
@@ -748,6 +760,7 @@ def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> No
     fighter.hp = max(1, round(fighter.hp * form.max_hp / fighter.max_hp))
     fighter.combatant, fighter.max_hp, fighter.stats = evolved, form.max_hp, form.stats
     fighter.entered_as = fighter.entered_stats = None
+    fighter.form_id = mega.form_id
     team.mega_used = True
     if mega.kind == "stellar":
         events.append(FormShift(turn, side, fighter.combatant.name, "stellar", mega.form_id))
@@ -943,6 +956,7 @@ class _Fighter:
     entered_as: Combatant | None = None
     entered_stats: dict[str, int] | None = None
     entered_pp: list[int] | None = None
+    form_id: int | None = None
     last_used: int | None = None
     choice: int | None = None
     arena: _Arena | None = field(default=None, repr=False, compare=False)

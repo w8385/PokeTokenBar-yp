@@ -142,9 +142,9 @@
  },
  "abilities": {
   "counts": {
-   "implemented": 42,
+   "implemented": 43,
    "inert": 81,
-   "todo": 251
+   "todo": 250
   },
   "todo": [
    "aerilate",
@@ -232,7 +232,6 @@
    "ice-scales",
    "illuminate",
    "illusion",
-   "imposter",
    "innards-out",
    "inner-focus",
    "intrepid-sword",

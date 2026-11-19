@@ -257,6 +257,9 @@ FOCUS_CASES = {
     "contrary": (((213, None, "contrary", [14, 370]),), ((143, None, "intimidate", [45, 555]),)),
     "stockpile": (((80, None, None, [254, 255]), (79, None, None, [880]), (25, None, None, [33])),
                   ((143, None, None, [33]),)),
+    "fell-stinger": (((212, None, None, [565]),), ((10, None, None, [33]),)),
+    "switcheroo": (((94, None, None, [415, 33]),), ((143, "leftovers", None, [33]),)),
+    "imposter": (((25, None, None, [85]), (132, None, "imposter", [144])), ((6, "charizardite-x", None, [53, 33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
