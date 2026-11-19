@@ -8,6 +8,8 @@ struct MachineEntry: Identifiable, Hashable, Sendable {
     let ko: String
     let en: String
     let ja: String
+    /// The folded names and type id joined by newlines, which a folded query never contains.
+    let searchText: String
 
     var isWeather: Bool { !weather.isEmpty }
 
@@ -26,7 +28,8 @@ enum MachineCatalog {
     static let moves: [MachineEntry] = MachineCatalogTable.moves.split(separator: "\n").compactMap { line in
         let fields = line.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
         guard fields.count == 7, let id = Int(fields[0]), let power = Int(fields[2]) else { return nil }
-        return MachineEntry(id: id, type: fields[1], power: power, weather: fields[3], ko: fields[4], en: fields[5], ja: fields[6])
+        return MachineEntry(id: id, type: fields[1], power: power, weather: fields[3], ko: fields[4], en: fields[5], ja: fields[6],
+                            searchText: [fields[4], fields[5], fields[6], fields[1]].map(fold).joined(separator: "\n"))
     }
 
     static let learnersBySpecies: [Int: Set<Int>] = Dictionary(
@@ -41,14 +44,13 @@ enum MachineCatalog {
         owned.filter { learnersBySpecies[$0]?.contains(moveID) == true }
     }
 
-    /// Case, width, accent, kana and space insensitive containment over all three names and the type id.
-    static func matches(_ move: MachineEntry, query: String) -> Bool {
-        let needle = fold(query)
-        if needle.isEmpty { return true }
-        return [move.ko, move.en, move.ja, move.type].contains { fold($0).contains(needle) }
+    /// Moves that at least one species in `owned` learns by machine.
+    static func moves(learnedByAnyOf owned: Set<Int>) -> Set<Int> {
+        owned.reduce(into: Set<Int>()) { learnable, species in learnable.formUnion(learnersBySpecies[species] ?? []) }
     }
 
-    private static func fold(_ text: String) -> String {
+    /// Case, width, accent, kana and space insensitive; a move matches when its `searchText` contains the folded query.
+    static func fold(_ text: String) -> String {
         let kana = text.applyingTransform(.hiraganaToKatakana, reverse: false) ?? text
         return kana.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: nil)
             .filter { !$0.isWhitespace && $0 != "-" }
@@ -58,17 +60,17 @@ enum MachineCatalog {
 extension CompanionStore {
     /// The shop list for the TM category: unowned first, then moves one of my Pokémon learns, then cheaper first.
     func machineShopMoves(query: String = "", type: String? = nil, learnableOnly: Bool = false) -> [MachineEntry] {
-        let mine = state.ownedSpeciesIDs
-        func isMine(_ move: MachineEntry) -> Bool { !MachineCatalog.learners(of: move.id, among: mine).isEmpty }
+        let learnable = MachineCatalog.moves(learnedByAnyOf: state.ownedSpeciesIDs)
+        let needle = MachineCatalog.fold(query)
         return MachineCatalog.moves
             .filter { type == nil || $0.type == type }
-            .filter { MachineCatalog.matches($0, query: query) }
-            .filter { !learnableOnly || isMine($0) }
-            .sorted { a, b in
-                let key: (MachineEntry) -> [Int] = {
-                    [self.ownsTM($0.id) ? 1 : 0, isMine($0) ? 0 : 1, self.tmPrice(power: $0.power, isWeather: $0.isWeather), $0.id]
-                }
-                return key(a).lexicographicallyPrecedes(key(b))
+            .filter { needle.isEmpty || $0.searchText.contains(needle) }
+            .filter { !learnableOnly || learnable.contains($0.id) }
+            .map { move in
+                (move, [ownsTM(move.id) ? 1 : 0, learnable.contains(move.id) ? 0 : 1,
+                        tmPrice(power: move.power, isWeather: move.isWeather), move.id])
             }
+            .sorted { $0.1.lexicographicallyPrecedes($1.1) }
+            .map(\.0)
     }
 }

@@ -10,13 +10,13 @@ struct ShopView: View {
     @State private var category: ItemCategory?
     @State private var query: String
     @State private var heldGroup: BattleItemGroup?
-    private let machineQuery: String
+    @State private var machineFilter: MachineShopFilter
 
     init(store: CompanionStore, nav: PopoverNavigation, initialCategory: ItemCategory? = nil, machineQuery: String = "",
          searchQuery: String = "", heldGroup: BattleItemGroup? = nil) {
         self.store = store
         self.nav = nav
-        self.machineQuery = machineQuery
+        _machineFilter = State(initialValue: MachineShopFilter(query: machineQuery))
         _category = State(initialValue: initialCategory)
         _query = State(initialValue: searchQuery)
         _heldGroup = State(initialValue: heldGroup)
@@ -27,7 +27,7 @@ struct ShopView: View {
         let screen = store.shopScreen(category: category, query: query, heldGroup: heldGroup)
         // 고정 높이 — 컬렉션/가방과 동일(팝오버 재오픈 시 fitting size 축소 방지).
         ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
+            LazyVStack(alignment: .leading, spacing: 10) {
                 walletHeader(l)
                 DexSearchField(l: l, text: $query, placeholder: l.shopSearchPrompt)
                 ItemCategoryChips(categories: store.shopCategories, selection: $category, l: l)
@@ -43,13 +43,8 @@ struct ShopView: View {
                 } else {
                     browseContent(screen, l)
                 }
-                if screen.hasMachineTab {
-                    MachineShopSection(store: store, initialQuery: machineQuery)
-                        .frame(height: screen.showsMachineTab ? nil : 0)
-                        .clipped()
-                        .opacity(screen.showsMachineTab ? 1 : 0)
-                        .allowsHitTesting(screen.showsMachineTab)
-                        .accessibilityHidden(!screen.showsMachineTab)
+                if screen.showsMachineTab {
+                    MachineShopSection(store: store, filter: $machineFilter)
                 }
             }
             .reservesScrollerLane()

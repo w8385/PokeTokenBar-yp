@@ -28,7 +28,7 @@ struct BagView: View {
         } else {
             // 고정 높이 — 컬렉션과 동일(팝오버 재오픈 시 fitting size 축소 방지).
             ScrollView {
-                VStack(alignment: .leading, spacing: 8) {
+                LazyVStack(alignment: .leading, spacing: 8) {
                     ItemCategoryChips(categories: store.bagCategories, selection: $category, l: store.l)
                     ForEach(store.bagListItems(in: category), id: \.kind) { item in
                         ItemCard(store: store, nav: nav, kind: item.kind, count: item.count)

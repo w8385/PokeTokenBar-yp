@@ -88,6 +88,42 @@ final class MachineShopTests: XCTestCase {
         XCTAssertTrue(all.prefix(learnable.count).allSatisfy { learnable.contains($0.id) })
     }
 
+    func testTheListMatchesAPerMoveScanOfLearnersNamesAndPrices() throws {
+        let store = try makeStore(owning: [pikachu, 143, 6, 150, 448])
+        for move in MachineCatalog.moves.prefix(40) where move.id % 3 == 0 {
+            store.buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather)
+        }
+        let owned = store.state.ownedSpeciesIDs
+        func fold(_ text: String) -> String {
+            (text.applyingTransform(.hiraganaToKatakana, reverse: false) ?? text)
+                .folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: nil)
+                .filter { !$0.isWhitespace && $0 != "-" }
+        }
+        func isMine(_ move: MachineEntry) -> Bool { !MachineCatalog.learners(of: move.id, among: owned).isEmpty }
+        func scan(query: String, type: String?, learnableOnly: Bool) -> [Int] {
+            MachineCatalog.moves
+                .filter { type == nil || $0.type == type }
+                .filter { move in fold(query).isEmpty || [move.ko, move.en, move.ja, move.type].contains { fold($0).contains(fold(query)) } }
+                .filter { !learnableOnly || isMine($0) }
+                .sorted { a, b in
+                    let key = { (m: MachineEntry) in
+                        [store.ownsTM(m.id) ? 1 : 0, isMine(m) ? 0 : 1, store.tmPrice(power: m.power, isWeather: m.isWeather), m.id]
+                    }
+                    return key(a).lexicographicallyPrecedes(key(b))
+                }
+                .map(\.id)
+        }
+        for query in ["", "beam", "ＢＥＡＭ", "ice-beam", "10만", "かみなり", "electric", "zzz"] {
+            for type in [nil, "electric", "water"] as [String?] {
+                for learnableOnly in [false, true] {
+                    XCTAssertEqual(ids(store.machineShopMoves(query: query, type: type, learnableOnly: learnableOnly)),
+                                   scan(query: query, type: type, learnableOnly: learnableOnly),
+                                   "\(query) \(type ?? "-") \(learnableOnly)")
+                }
+            }
+        }
+    }
+
     func testWithoutAPokemonNothingIsLearnable() throws {
         let store = try makeStore(owning: [])
         XCTAssertTrue(store.machineShopMoves(learnableOnly: true).isEmpty)

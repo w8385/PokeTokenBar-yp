@@ -63,7 +63,6 @@ struct ShopScreen: Equatable {
     var subTabs: [BattleItemGroup]
     var shownSubTab: BattleItemGroup?
     var heldSections: [BattleItemSection]
-    var hasMachineTab: Bool
     var showsMachineTab: Bool
 
     var showsEmptyLine: Bool { results?.isEmpty == true }
@@ -78,7 +77,6 @@ extension CompanionStore {
             subTabs: held ? ShopSearch.subTabGroups(shopBattleSections) : [],
             shownSubTab: held && !searching ? heldGroup : nil,
             heldSections: ShopSearch.sections(shopBattleSections, in: held ? heldGroup : nil),
-            hasMachineTab: category == .machine,
             showsMachineTab: category == .machine && !searching)
     }
 
