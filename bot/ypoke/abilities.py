@@ -7,7 +7,7 @@ EFFECT_KEYS = frozenset({
     "pinch-type-boost", "intimidate", "type-immunity", "attack-doubled", "type-resist", "technician", "sturdy",
     "adaptability", "guts", "weather-speed", "weather-on-entry", "contact-ailment", "ailment-block", "sand-force",
     "weather-chip-immune", "gale-wings", "supreme-overlord", "terrain-on-entry", "field-stat", "screen-cleaner",
-    "infiltrator", "airborne", "contrary", "imposter", "protean",
+    "infiltrator", "airborne", "imposter", "protean",
     "flag-power", "type-power", "ate", "normalize", "liquid-voice", "reckless", "sheer-force", "serene-grace",
     "shield-dust", "analytic", "stakeout", "status-power", "stat-boost", "hustle", "choice-lock", "status-stat",
     "solar-power", "defeatist", "slow-start", "damage-dealt", "super-taken", "full-hp-taken", "taken", "heatproof",
@@ -16,7 +16,11 @@ EFFECT_KEYS = frozenset({
     "weather-evasion", "wonder-skin", "super-luck", "merciless", "crit-guard", "no-guard", "unaware",
     "absorb-heal", "absorb-boost", "flash-fire", "dry-skin", "move-block", "good-as-gold", "priority-block",
     "wonder-guard", "weatherproof", "magic-bounce", "liquid-ooze",
-    "weather-on-hit", "shed-skin",
+    "ko-boost", "beast-boost", "soul-heart", "stat-answer", "entry-boost", "supersweet-syrup", "download", "hit-boost",
+    "rattled", "half-hp-boost", "anger-point", "charge-on-hit", "tailwind-charge", "tailwind-boost", "cotton-down",
+    "speed-boost", "moody", "contrary", "simple", "mirror-armor", "guard-dog", "opportunist", "steadfast", "unnerve",
+    "weather-on-hit", "terrain-on-hit", "hazard-on-hit",
+    "shed-skin",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
 FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
@@ -65,6 +69,24 @@ FLASH_FIRE_POWER = 1.5
 DRY_SKIN_FIRE_POWER = 1.25
 DRY_SKIN_SHARE = 8
 BLOCKED_MOVES = battle_data.args("abilities", "move-block", "blocks")
+KO_RAISES = battle_data.args("abilities", "ko-boost", "raises")
+SOUL_HEART_RAISES = (("special_attack", 1),)
+ANSWER_RAISES = battle_data.args("abilities", "stat-answer", "raises")
+ENTRY_RAISES = battle_data.args("abilities", "entry-boost", "raises")
+HIT_RAISES = {**battle_data.args("abilities", "hit-boost", "raises"),
+              **battle_data.args("abilities", "rattled", "raises")}
+HIT_TYPES = battle_data.args("abilities", "hit-boost", "types")
+HIT_PHYSICAL = battle_data.args("abilities", "hit-boost", "physical")
+HALF_HP_RAISES = battle_data.args("abilities", "half-hp-boost", "raises")
+CHARGE_FLAG = battle_data.args("abilities", "charge-on-hit", "flag")
+CHARGE_STATE = "charge"
+CHARGE_TURNS = 2
+TAILWIND = "tailwind"
+TAILWIND_RAISES = battle_data.args("abilities", "tailwind-boost", "raises")
+STEADFAST_BAN = "flinch"
+WEATHER_ON_HIT = battle_data.args("abilities", "weather-on-hit", "weather")
+TERRAIN_ON_HIT = battle_data.args("abilities", "terrain-on-hit", "terrain")
+HAZARD_ON_HIT = battle_data.args("abilities", "hazard-on-hit", "hazard")
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
 LOW_HP_BOOST = 1.5

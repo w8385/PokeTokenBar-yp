@@ -668,7 +668,8 @@ def _exhausted(teams: tuple["_Team", "_Team"], order: tuple[int, ...]) -> int | 
 def _replace_fainted(teams: tuple["_Team", "_Team"], turn: int, arena: "_Arena", weather: "_Weather",
                      rng: random.Random, events: list[Event]) -> int | None:
     """End of turn: each side whose active Pokémon fainted sends the next one, again while the hazards knock out
-    the newcomer. Returns the side that ran out, if any."""
+    the newcomer. The standing foe's ability answers each faint first (Soul-Heart). Returns the side that ran out,
+    if any."""
     while True:
         entering = tuple(side for side in (0, 1) if teams[side].active.hp == 0)
         if not entering:
@@ -676,6 +677,10 @@ def _replace_fainted(teams: tuple["_Team", "_Team"], turn: int, arena: "_Arena",
         loser = _exhausted(teams, entering)
         if loser is not None:
             return loser
+        for side in entering:
+            foe = teams[1 - side].active
+            if foe.hp > 0:
+                _append(events, hooks.ability(foe, "on_foe_fainted", foe))
         standing = tuple(side for side in entering if _send_in(teams[side], side, turn, arena, events, rng))
         if standing:
             events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, standing))
@@ -1616,6 +1621,7 @@ def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tupl
         recovered.append("freeze")
     banned = _banned(attacker, move)
     if banned:
+        _announce(attacker, hooks.ability(attacker, "after_banned", banned, attacker))
         return tuple(recovered), banned
     if attacker.confusion_left > 0:
         attacker.confusion_left -= 1
@@ -1706,10 +1712,11 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
 
 
 def shift_stage(fighter: _Fighter, side: int, key: str, stages: int, *, guarded: bool = False,
-                by: "_Fighter | None" = None) -> Change | None:
+                by: "_Fighter | None" = None, copied: bool = False) -> Change | None:
     """Moves one stat stage within ±6 after its holder's ability scales it (Contrary, Simple); the `Change` that
     landed, None when none did. A drop is stopped when `guarded` (Mist); `by` is the foe lowering it, and the holder's
-    ability may keep the stat (Clear Body), bounce the drop back at `by` (Mirror Armor) or answer it (Defiant)."""
+    ability may keep the stat (Clear Body), bounce the drop back at `by` (Mirror Armor) or answer it (Defiant). A
+    raise that is not itself `copied` lets the foe's ability copy it (Opportunist)."""
     stages *= hooks.ability(fighter, "stage_factor", default=1)
     if guarded and stages < 0:
         return None
@@ -1728,6 +1735,9 @@ def shift_stage(fighter: _Fighter, side: int, key: str, stages: int, *, guarded:
     change = Change(side, fighter.combatant.name, key, fighter.stages[key] - before)
     if by_foe:
         _announce(fighter, hooks.ability(fighter, "on_stat_lowered", fighter, side))
+    foe = fighter.arena.foe_of(fighter) if fighter.arena is not None else None
+    if change.stages > 0 and not copied and foe is not None and foe is not fighter and foe.hp > 0:
+        _announce(foe, hooks.ability(foe, "on_foe_raised", foe, key, change.stages))
     return change
 
 
