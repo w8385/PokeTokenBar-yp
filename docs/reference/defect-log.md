@@ -2122,3 +2122,38 @@ read_when:
   Class sweep: every README shot goes through `hosted`, and only the three stored-friends images
   requested sprites; after the fix all 68 PNGs redrew byte-identical to `assets/` twice. The other
   `PTB_*_SHOT_DIR` tests write PR screenshots, not committed assets, so they stay unguarded.
+
+## README renders that follow the host's screens
+
+- **A README redraw rewrote 10 untouched image families because AppKit controls drew at the connected
+  screens' scale.** Train 36 ran `PTB_README_SHOT_DIR=assets swift test --filter ReadmeScreenshotTests`, and
+  battle, box-chips, collection-box, collection-pokedex, exp-share, gyms, home, miracle-trade, nature-picker
+  and settings (28 PNGs) changed: popup button, toggle, segmented control and button text drew differently.
+  Cause: a view with no window on a screen takes its backing scale from
+  `+[NSScreen _fallbackBackingScaleFactor]`, which follows the connected screens. On a MacBook docked to
+  1080p monitors with the lid closed, it is 1, so AppKit controls (`_NSCoreHostingView<AppKitPopUpButton>`
+  and the like) drew their text and bezels at 1x and were upscaled into the 2x README bitmap. With the
+  Retina panel on, it is 2. SwiftUI-drawn text and shapes follow the bitmap's own scale and did not change.
+  The committed `assets/` were a mix: 68 PNGs drawn docked (1x) and 9 (egg-moves, status-moves,
+  pokemon-profile) drawn with the panel on (2x), so every redraw churned one set or the other.
+  Reproduced by setting the fallback scale to 1 and then to 2 in one process: pinning 2 reproduced exactly
+  the integrator's 28 files, and pinning 1 reproduced the other 9.
+  Why no test caught it: the wall-clock sweep redrew every family twice on one desktop and got identical
+  bytes. That shows a render is stable, not that it is independent of the desktop. The earlier scale
+  guard (`testNoTestRendersAtTheHostScreensScale`) pinned only the bitmap's scale, not the scale controls
+  draw at inside it.
+  Fix: `OffscreenRender.pinWindowlessBackingScale()` sets the fallback to 2 before `host`, `controller`,
+  `windowHosting` and every bitmap, so all renders draw controls at 2x whatever screens are attached. The
+  28 PNGs drawn at 1x were redrawn once. Guard: `ReadmeScreenshotTests.testReadmeShotIgnoresTheHostsScreens`
+  renders Home on a simulated 1x desktop and on a 2x one, expects the same bytes, and checks that the
+  pin is in effect after rendering. Making the pin a no-op fails it (171149 vs 171074 bytes, and
+  "left the backing scale of a 1.0x desktop in place"). After the fix, two README runs leave
+  `git status --porcelain assets/` empty.
+  Class sweep: every test pixel goes through `OffscreenRender.fixedBitmap`, which now pins first. The 114
+  classes that use `OffscreenRender` or `LayoutMeasure` pass with the pin.
+  Not covered: the pin uses private AppKit SPI. If the selector disappears, `OffscreenRender` stops the
+  run with a precondition failure instead of drawing at the host's scale. Other desktop state still
+  reaches renders unpinned and was not varied here: the system accent and highlight colour (checkboxes
+  and segmented controls draw in it), Increase Contrast, and Reduce Transparency. Layout-only hosts built
+  with `NSHostingController` outside `OffscreenRender` get the pin only after an earlier test in the run
+  has gone through `OffscreenRender`.
