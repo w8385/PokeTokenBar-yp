@@ -15,9 +15,12 @@ struct BoxDetailView: View {
     @State private var tradePanelOpen = false
     @State private var naturePickerOpen = false
     @State private var trainingMessage: String?
+    @State private var miracle: MiracleTradeModel?
     /// Capture hooks: open the trade panel on appear, optionally with a friend already picked.
     var opensTradePanel = false
     var initialTradeTarget: String?
+    /// Capture hook: a miracle trade state that is already loaded.
+    var initialMiracle: MiracleTradeModel?
 
     private var l: L { store.l }
     private var entry: DexEntry { individual.entry }
@@ -159,12 +162,37 @@ struct BoxDetailView: View {
                 }
             }
             tradeNotes
+            miracleStatus
             if tradePanelOpen, let uploader {
                 BoxTradePanel(store: store, uploader: uploader, individualID: individual.id, pokemonName: name,
                               initialTarget: initialTradeTarget)
             }
         }
         .onAppear { if opensTradePanel { tradePanelOpen = true } }
+        .task { await loadMiracle() }
+    }
+
+    private func loadMiracle() async {
+        if let initialMiracle {
+            miracle = initialMiracle
+            return
+        }
+        guard let uploader, uploader.hasToken, uploader.hasServer else { return }
+        let model = MiracleTradeModel(uploader: uploader)
+        miracle = model
+        await model.load()
+    }
+
+    @ViewBuilder
+    private var miraclePostButton: some View {
+        if let miracle, uploader?.hasToken == true {
+            MiraclePostButton(model: miracle, individualID: individual.id, refusal: tradeRefusal, l: l)
+        }
+    }
+
+    @ViewBuilder
+    private var miracleStatus: some View {
+        if let miracle { MiracleOfferStatus(model: miracle, individualID: individual.id, l: l) }
     }
 
     @ViewBuilder
@@ -241,6 +269,7 @@ struct BoxDetailView: View {
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
             .disabled(tradeRefusal != nil)
         }
+        miraclePostButton
         if isGraduated, store.itemCount(.linkingCord) > 0 {
             Button {
                 Task { await useLinkingCord() }

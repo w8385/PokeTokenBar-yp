@@ -368,6 +368,52 @@ final class PartyUploader {
         return .failed
     }
 
+    /// Nil when the bot cannot be reached. A 404 (no battle channel, or a bot without the feature) is `.unavailable`.
+    func miracleStatus() async -> MiracleStatus? {
+        guard let token = tokenStore.load(),
+              let request = Self.get(serverURL: serverURL, token: token, path: "v1/miracle"),
+              let (data, status) = try? await fetch(request)
+        else { return nil }
+        if status == 404 { return .unavailable }
+        guard status == 200, let reply = try? JSONDecoder().decode(MiracleReply.self, from: data) else { return nil }
+        return reply.offer.map(MiracleStatus.open) ?? .nothingListed
+    }
+
+    /// Uploads the current pool first, so the offer is checked against what the app holds now.
+    func postMiracle(give individualID: String) async -> MiraclePost {
+        guard let token = tokenStore.load() else { return .failed }
+        resetThrottle()
+        await uploadParty(token: token, now: Date())
+        guard let request = Self.post(serverURL: serverURL, token: token, path: "v1/miracle",
+                                      body: ["give": individualID]),
+              let (data, status) = try? await fetch(request)
+        else { return .failed }
+        switch status {
+        case 200:
+            guard let offer = (try? JSONDecoder().decode(MiracleReply.self, from: data))?.offer else { return .failed }
+            trades?.lock(individualID)
+            return .posted(offer)
+        case 404: return .unavailable
+        case 400:
+            struct Refusal: Decodable { let message: String? }
+            guard let message = (try? JSONDecoder().decode(Refusal.self, from: data))?.message, !message.isEmpty
+            else { return .failed }
+            return .refused(message)
+        default: return .failed
+        }
+    }
+
+    /// True once the bot holds no open offer for this player (taken down now, or already gone). The trade lock
+    /// set is refreshed right away so the held item frees up.
+    func cancelMiracle() async -> Bool {
+        guard let token = tokenStore.load(),
+              let request = Self.post(serverURL: serverURL, token: token, path: "v1/miracle/cancel", body: [:]),
+              let (_, status) = try? await fetch(request), status == 200 || status == 400
+        else { return false }
+        await syncTrades(token: token)
+        return true
+    }
+
     private func resetThrottle() {
         lastAttemptAt = nil
         lastAttemptBody = nil

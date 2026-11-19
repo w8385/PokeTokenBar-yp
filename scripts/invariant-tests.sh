@@ -55,6 +55,7 @@ METHODS=(
   BoxTests/testNoCatchLogViewOrNavigationRemains
   BoxTests/testNoCatchLogStringRemainsInAnyLanguage
   TradeBoxPickerTests/testTheBoxDetailKeepsTheRefusalGateAndNeverLeavesForTheFriendsTab
+  MiracleTradeTests/testTheBoxDetailWiresBothControlsToItsRefusalGate
   SettingsTabsTests/testBattleViewNoLongerOwnsTheTokenField
   KiroUsageTests/testSkipStateIsPassedByTheCallerNotHeldByTheReader
   AntigravityUsageTests/testEntriesWithoutRootsGoesThroughResolvedRoots

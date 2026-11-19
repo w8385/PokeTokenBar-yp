@@ -251,14 +251,15 @@ latest pool, so an app that sends no pool can neither offer nor receive.
  "name": "고우스트", "entry": {"...": "the app's full record of the individual, at most 4 KB"}}
 ```
 
-The bot never reads `entry`; it hands the other side's copy back unchanged, so the receiver gets species, form,
-shiny, nature, IVs, level and original trainer as sent. Entries that fail the rules above are dropped.
+The bot hands the other side's copy of `entry` back unchanged, so the receiver gets species, form, shiny, nature,
+IVs, level and original trainer as sent. It reads only `entry.tradeHeldItem` (see deliveries), and `entry.nature`
+and `entry.profile.gender` to label picker options. Entries that fail the rules above are dropped.
 
 | Endpoint | Purpose |
 |---|---|
 | `GET /v1/coworkers` | `{"ok": true, "coworkers": [{"id", "name"}]}`: linked players with a pool, not the caller. `id` is an opaque handle for `POST /v1/trades`, never a Slack id |
 | `POST /v1/trades` | `{"to": "<coworker id>", "give": "<individual id>"}` → `{"ok": true, "trade_id"}`. `400 {"ok": false, "error", "message"}` for `self`, `unknown_user`, `unknown_individual`, `locked` (already in an open trade), `too_many` (3 open offers). `message` is a short Korean reason to show as is |
-| `GET /v1/trades` | `{"ok": true, "trades": {"deliveries": [...], "history": [...], "locked_ids": ["..."]}}`. `locked_ids` are the caller's individuals in open trades (offered, or picked back); the app keeps their held item in place until the trade ends. The same `deliveries` and `locked_ids` ride in the `POST /v1/party` reply |
+| `GET /v1/trades` | `{"ok": true, "trades": {"deliveries": [...], "history": [...], "locked_ids": ["..."]}}`. `locked_ids` are the caller's individuals in open trades (offered, picked back, or up for a miracle trade); the app keeps their held item in place until the trade ends. The same `deliveries` and `locked_ids` ride in the `POST /v1/party` reply |
 | `POST /v1/trades/ack` | `{"trade_ids": ["..."]}` → `{"ok": true}` |
 
 A delivery is `{"trade_id", "give_id", "from_name", "receive": <pool entry>, "give_held_item"}`: remove `give_id` from your
@@ -271,6 +272,26 @@ save; a lost acknowledgement only means the delivery comes again.
 Flow: the proposer's offer reaches the target as a DM with a picker of their pool and Accept/Decline.
 After the target picks and accepts, the proposer gets a confirm DM; their accept completes the trade.
 Completion is refused if either Pokémon has left its owner's latest pool. Either side can decline.
+A picker option reads name, sex, level, ✨ and nature; options still equal get ` #2`, ` #3`.
+
+### Miracle trades
+
+A player puts one Pokémon from the pool up on a card in the battle channel (`YPOKE_HOME_CHANNEL`). Anyone else with
+a pool presses 교환하기, picks one of theirs in a private select, and the trade completes at once: the poster agreed by
+posting. The first completed pick wins; later pressers are told privately that it is gone. The finished swap is an
+ordinary completed trade, so both apps receive it through `deliveries` as above.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/miracle` | `{"ok": true, "offer": null \| {"offer_id", "give_id", "name", "expires_at"}}`: the caller's open offer |
+| `POST /v1/miracle` | `{"give": "<individual id>"}` → `{"ok": true, "offer": {...}}`. `400 {"ok": false, "error", "message"}` for `unknown_individual`, `locked`, `already_open` (one open offer per player), `post_failed` (the card could not be posted) |
+| `POST /v1/miracle/cancel` | `{}` → `{"ok": true}`; `400` `none_open` |
+
+All three answer `404 {"ok": false, "error": "unavailable"}` when the bot has no battle channel; the app hides the
+feature on any 404, which also covers older bots. The offered Pokémon is in `locked_ids` while the offer is open.
+An offer ends when the poster takes it down (app or the card's poster-only 내리기), when the offered Pokémon leaves
+the poster's pool (raised, sent to battle), after 24 hours, or when it is traded; the card is edited to say which and
+loses its buttons. A pick that is no longer in the acceptor's pool is refused privately and the offer stays open.
 
 The app polls about every minute and re-sends the pool when it changes or every 5 minutes, so a finished
 trade shows up in the app within about a minute. One app per token: a second Mac may pick up the delivery
