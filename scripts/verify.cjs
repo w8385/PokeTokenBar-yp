@@ -30,32 +30,31 @@ async function test(name, fn) {
   finally {clearTimeout(timer);}
 }
 function read(file) {return fs.readFileSync(path.join(root, file), 'utf8');}
+const balanceRef = process.env.PTB_BALANCE_REF || 'origin/main';
+const balanceFile = 'Sources/PokeTokenBar/Core/PokemonBalance.swift';
 function swiftSource() {
-  try {return execFileSync('git',['show','origin/main:Sources/PokeTokenBar/Core/CompanionModel.swift'],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});}
+  try {return execFileSync('git',['show',`${balanceRef}:${balanceFile}`],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});}
   catch {return null;}
 }
 function appBalance(source) {
-  const block=name=>{const start=source.indexOf(`enum ${name}`);assert.ok(start>=0,`enum ${name} not found in CompanionModel.swift`);return source.slice(start,source.indexOf('\n}\n',start)+1);};
-  const constant=(text,name)=>{
-    const match=text.match(new RegExp(`static let ${name}(?::[^=\\n]+)?\\s*=\\s*([\\d_ .*]+)\\n`));
-    assert.ok(match,`static let ${name} not found in CompanionModel.swift`);
+  const start=source.indexOf('enum PokemonBalance');
+  assert.ok(start>=0,`enum PokemonBalance not found in ${balanceFile}`);
+  const balance=source.slice(start,source.indexOf('\n}\n',start)+1);
+  const constant=name=>{
+    const match=balance.match(new RegExp(`static let ${name}(?::[^=\\n]+)?\\s*=\\s*([\\d_ .*]+)\\n`));
+    assert.ok(match,`static let ${name} not found in ${balanceFile}`);
     return match[1].replace(/_/g,'').split('*').reduce((product,part)=>product*Number(part.trim()),1);
   };
-  const click=block('ClickGrowth'), balance=block('PokemonBalance');
   const total=rarity=>{const match=balance.match(new RegExp(`case \\.${rarity}:\\s*return\\s*([\\d_]+)`));assert.ok(match,`graduationTotal(.${rarity}) not found`);return Number(match[1].replace(/_/g,''));};
-  const range=balance.match(/static let difficultyRange[^=]*=\s*([\d.]+)\.\.\.([\d.]+)/);
-  assert.ok(range,'difficultyRange not found in CompanionModel.swift');
   return {
     graduationTotal:Object.fromEntries(['common','uncommon','rare','legendary'].map(r=>[r,total(r)])),
-    eggHatchThreshold:constant(balance,'eggHatchThreshold'),
-    repeatGrowthMultiplier:constant(balance,'repeatGrowthMultiplier'),
-    difficultyRange:[Number(range[1]),Number(range[2])],
-    timeTokensPerActiveHour:constant(balance,'timeTokensPerActiveHour'),
-    timeWalletTokensPerActiveHour:constant(balance,'timeWalletTokensPerActiveHour'),
-    timeIdleLimitSeconds:constant(balance,'timeIdleLimit'),
-    timeMaxStepSeconds:constant(balance,'timeMaxStep'),
-    idleTokenHintAfterSeconds:constant(balance,'idleTokenHintAfter'),
-    tokensPerClick:constant(click,'tokensPerClick')
+    eggHatchThreshold:constant('eggHatchThreshold'),
+    repeatGrowthMultiplier:constant('repeatGrowthMultiplier'),
+    timeTokensPerActiveSecond:constant('timeTokensPerActiveSecond'),
+    timeIdleLimitSeconds:constant('timeIdleLimit'),
+    timeMaxStepSeconds:constant('timeMaxStep'),
+    idleTokenHintAfterSeconds:constant('idleTokenHintAfter'),
+    tokensPerPet:constant('tokensPerPet')
   };
 }
 async function layout(page) {
@@ -270,13 +269,15 @@ async function dictionaries(browser) {
      assert.ok(header.height<=(width>1100?90:130),`${lang} ${width}px header is ${header.height}px tall`);
      assert.equal(await p.locator('#gtab-growth').isVisible(),true);
      const lastWhen=()=>p.locator('#gTimeline .tl-when').last().innerText();
-     assert.match(await lastWhen(),/(^|\D)4(\D|$)/);
+     assert.match(await lastWhen(),/(^|\D)1(\D|$)/);
      await p.locator('#gRarity').selectOption('legendary');
-     assert.match(await lastWhen(),/(^|\D)28(\D|$)/);
+     assert.match(await lastWhen(),/(^|\D)3(\D|$)/);
+     await p.locator('#gPace').selectOption('10');
+     assert.match(await lastWhen(),/(^|\D)13(\D|$)/);
      await p.locator('#gMode').selectOption('time');
      assert.equal(await p.locator('#gPaceField').isVisible(),false);
-     assert.match(await lastWhen(),/^30\D+8(\D|$)/);
-     assert.match(await p.locator('#gTimeline .tl-when').first().innerText(),/^2\D+1(\D|$)/);
+     assert.match(await lastWhen(),/^1\.3\D+1(\D|$)/);
+     assert.match(await p.locator('#gTimeline .tl-when').first().innerText(),/^1\D+1(\D|$)/);
      await layout(p);
      await p.locator('#gMode').selectOption('token');
      await p.locator('.install-more > summary').click();
@@ -408,9 +409,9 @@ async function dictionaries(browser) {
   });
   const swift=swiftSource();
   if(swift===null) {
-   console.log('SKIP balance drift check: git or origin/main:Sources/PokeTokenBar/Core/CompanionModel.swift is unavailable');
-   results.push({name:'BALANCE matches CompanionModel.swift on origin/main',status:'skip'});
-  } else await test('BALANCE matches CompanionModel.swift on origin/main',async()=>{
+   console.log(`SKIP balance drift check: git or ${balanceRef}:${balanceFile} is unavailable`);
+   results.push({name:`BALANCE matches PokemonBalance.swift on ${balanceRef}`,status:'skip'});
+  } else await test(`BALANCE matches PokemonBalance.swift on ${balanceRef}`,async()=>{
    const p=await browser.newPage();
    try {await p.goto(url);assert.deepEqual(await p.evaluate(()=>BALANCE),appBalance(swift));}finally{await p.close();}
   });
@@ -426,14 +427,15 @@ async function dictionaries(browser) {
     })),[]);
     assert.equal(await p.locator('tr[data-rarity]').count(),4);
     const missing=await p.evaluate(()=>{
-     const b=BALANCE, pct=x=>Math.round(x*100)+'%';
+     const b=BALANCE;
      const expected={
       'journey.hatchDesc':[formatTokens(b.eggHatchThreshold)],
-      'modes.timeRate':[formatTokens(b.timeTokensPerActiveHour),formatTokens(b.timeWalletTokensPerActiveHour)],
+      'g.costSub':[formatTokens(b.eggHatchThreshold)],
+      'modes.timeRate':[formatTokens(b.timeTokensPerActiveSecond),formatTokens(b.timeTokensPerActiveSecond*3600)],
       'modes.timeIdle':[String(b.timeIdleLimitSeconds/60),String(b.timeMaxStepSeconds/60)],
       'modes.hint':[String(b.idleTokenHintAfterSeconds/86400)],
-      'modes.clickD':[formatTokens(b.tokensPerClick),(Math.round((b.graduationTotal.common+b.eggHatchThreshold)/b.tokensPerClick/100)*100).toLocaleString('en')],
-      'p1.t':b.difficultyRange.map(pct),
+      'modes.clickD':[formatTokens(b.tokensPerPet),(Math.round((b.graduationTotal.common+b.eggHatchThreshold)/b.tokensPerPet/100)*100).toLocaleString('en')],
+      'alt.petXp':[formatTokens(b.tokensPerPet*5).toUpperCase()],
       'k3.d':[formatTokens(b.graduationTotal.common),formatTokens(b.graduationTotal.legendary)]
      };
      return Object.entries(I18N).flatMap(([lang,dict])=>Object.entries(expected).flatMap(([key,parts])=>parts.filter(part=>!dict[key].includes(part)).map(part=>`${lang} ${key}: ${part}`)));

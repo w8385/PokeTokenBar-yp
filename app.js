@@ -1,16 +1,14 @@
 "use strict";
-// Mirrors PokemonBalance and ClickGrowth in Sources/PokeTokenBar/Core/CompanionModel.swift; npm test compares them with origin/main.
+// Mirrors Sources/PokeTokenBar/Core/PokemonBalance.swift; npm test compares them with origin/main.
 const BALANCE = {
-  graduationTotal: {common: 150e6, uncommon: 375e6, rare: 600e6, legendary: 1.2e9},
-  eggHatchThreshold: 1e6,
+  graduationTotal: {common: 15e6, uncommon: 37.5e6, rare: 60e6, legendary: 120e6},
+  eggHatchThreshold: 100e3,
   repeatGrowthMultiplier: 2,
-  difficultyRange: [0.1, 2],
-  timeTokensPerActiveHour: 40e6,
-  timeWalletTokensPerActiveHour: 10e6,
+  timeTokensPerActiveSecond: 25e3,
   timeIdleLimitSeconds: 5 * 60,
   timeMaxStepSeconds: 2 * 60,
   idleTokenHintAfterSeconds: 3 * 86400,
-  tokensPerClick: 54e3
+  tokensPerPet: 50e3
 };
 function formatTokens(n) {
   const [unit, size] = n >= 1e9 ? ['B', 1e9] : n >= 1e6 ? ['M', 1e6] : ['k', 1e3];
@@ -72,13 +70,13 @@ const I18N = {
     "modes.tokenFit": "Suits heavy agent users.",
     "modes.timeTag": "Time mode",
     "modes.timeT": "Grow while you work",
-    "modes.timeRate": "Each active hour adds 40M growth tokens and 10M Shop tokens.",
+    "modes.timeRate": "Each active second adds 25k growth tokens and 25k Shop tokens, 90M of each per active hour.",
     "modes.timeIdle": "You count as active if you used the keyboard or mouse in the last 5 minutes. One check credits at most 2 minutes.",
     "modes.timeOnly": "AI token usage earns nothing in this mode.",
     "modes.timeFit": "Suits light users, or anyone without an AI coding tool.",
     "modes.hint": "No token usage for 3 days? The app suggests time mode in Settings.",
     "modes.clickT": "Click to help.",
-    "modes.clickD": "In either mode, clicking the big sprite on Home or the floating pet adds 54k growth tokens. About 2,800 clicks take a Normal line from egg to graduation.",
+    "modes.clickD": "In either mode, clicking the big sprite on Home or the floating pet adds 50k growth tokens. About 300 clicks take a Normal line from egg to graduation.",
     "badge.fork": "Only in PokeTokenBar-yp",
     "usage.title": "Less checking.\nMore coding.",
     "usage.desc": "Today’s tokens, usage trends and provider limits live together. Open the menu bar when you need the details; keep working when you don’t.",
@@ -100,8 +98,8 @@ const I18N = {
     "u6.d": "Get notified as a limit gets close, and when your partner hatches, evolves or graduates.",
     "alt.recap": "Native weekly recap sample with token usage and Pokémon graduation records",
     "native.recap": "Native UI · sample usage and Pokémon.",
-    "p1.t": "Difficulty from 10% to 200%",
-    "p1.d": "Growth and Shop difficulty have their own sliders. A species you have graduated before grows twice as fast after it hatches.",
+    "p1.t": "Pick the growth source in Settings",
+    "p1.d": "Tokens or Time is the only choice. Costs are fixed and the same for everyone. A species you have graduated before grows twice as fast after it hatches.",
     "p2.t": "Growth % in the menu bar",
     "p2.d": "Show egg or evolution progress next to the icon. Hover Home’s bar for tokens, target and percentage.",
     "p3.t": "A pet on your desktop",
@@ -114,7 +112,7 @@ const I18N = {
     "p6.t": "Representative Pokémon",
     "p6.d": "Pin an owned species and form to the menu bar and the desktop pet. Your current partner keeps growing on Home.",
     "alt.petInteractions": "Separate native pet samples for egg prayer, petting, sulking and agent waiting",
-    "alt.petXp": "Native Home header sample with one +270K XP badge after five fast clicks",
+    "alt.petXp": "Native Home header sample with one +250K XP badge after five fast clicks",
     "native.current": "Native UI renders · sample states",
     "c1.t": "Pokédex",
     "c1.d": "One cell per species you have owned, 16 per page. Search, sort, filter by rarity, Shiny or region, and earn completion badges.",
@@ -135,13 +133,13 @@ const I18N = {
     "x3.d": "Right-click the menu-bar icon for Refresh, Pokédex, Settings and more. Back returns to the page you came from.",
     "x4.t": "Animation quality",
     "x4.d": "Pick 2.5, 5 or 10 fps, or Original, for the menu bar and the floating pet. Low Power Mode caps it.",
-    "alt.difficulty": "Native difficulty settings sample with labeled growth and shop slider ends",
-    "native.difficulty": "Native UI · sample settings.",
+    "alt.growthMode": "Native growth source setting sample with Time selected",
+    "native.growthMode": "Native UI · sample settings.",
     "fork.desc": "PokeTokenBar-yp is a fork of chattymin’s PokeTokenBar. The original made the companion and the usage tracker. Features marked Only in PokeTokenBar-yp exist only in this fork, so please report problems with them here, not upstream.",
     "k1.t": "The full Pokédex, Gen 1 to 9",
     "k1.d": "The Pokédex runs to #1025, and an egg can start any of 540 Gen 1–9 lines. A legendary hatch is about 1 in 48. The regional filter covers nine regions, Kanto to Paldea, and the national badge counts all 1,025.",
     "k3.t": "Lighter costs",
-    "k3.d": "Growth costs and Shop prices are one fifth of the original app’s, set for a typical day of about 44M tokens. A Normal line graduates at 150M tokens and a Legendary at 1.2B. Saves from older versions were converted when the change shipped.",
+    "k3.d": "Growth costs and Shop prices are one fiftieth of the original app’s. A Normal line graduates at 15M tokens and a Legendary at 120M. Saves from older versions keep each stage’s progress when they update.",
     "k4.t": "The Battle tab",
     "k4.d": "With the YPoke Slack battle bot linked, the Battle tab lines up to six Pokémon in fighting order; Auto sends the one you are raising. Sub-tabs split the tab into Entry, Battle and History. Each lineup row shows the stats it fights with, marks what its nature raises and lowers, and follows its form.",
     "alt.gyms": "Native gym list sample with Kanto leaders in two columns, the hideout, the Elite Four and the badge case",
@@ -181,9 +179,9 @@ const I18N = {
     "comp.title": "A workday,\nwith a side quest.",
     "comp.desc": "Your existing token usage raises a partner through its real evolution line. Then a new egg arrives, and the collection grows.",
     "journey.hatch": "Hatch your first partner",
-    "journey.hatchDesc": "An egg hatches after 1M tokens at the default difficulty. Which Pokémon will it be?",
+    "journey.hatchDesc": "An egg hatches after 100k tokens. Which Pokémon will it be?",
     "journey.grow": "Watch it grow",
-    "journey.growDesc": "Keep coding, or keep working in time mode. Adjust difficulty to suit your own pace.",
+    "journey.growDesc": "Keep coding, or keep working in time mode. Pick the source that suits your pace.",
     "journey.collect": "Keep the memories",
     "journey.collectDesc": "Graduated partners stay in your collection. A fresh egg starts the next chapter.",
     "comp.caption": "Every partner has a place in your Pokédex. Example screen.",
@@ -195,12 +193,12 @@ const I18N = {
     "demo.play": "Play demo",
     "demo.stop": "Stop demo",
     "guide.title": "Curious how it grows?",
-    "guide.desc": "Try your pace, check the costs, and see what you can collect. Too many tokens? Lower the difficulty in the app, or switch to time mode.",
+    "guide.desc": "Try your pace, check the costs, and see what you can collect. Not using many tokens? Switch to time mode in the app.",
     "g.t1": "Growth calculator",
     "g.t2": "A day together",
     "g.t3": "Collection",
     "g.costH": "Tokens per evolution",
-    "g.costSub": "A three-form line at 100% difficulty, without the repeat-species bonus or items. The 1M-token hatch comes first and is not in the table. One- and two-form lines split the same total differently.",
+    "g.costSub": "A three-form line without the repeat-species bonus or items. The 100k-token hatch comes first and is not in the table. One- and two-form lines split the same total differently.",
     "g.thRarity": "Rarity",
     "g.thS1": "Stage 1",
     "g.thS2": "Stage 2",
@@ -228,10 +226,9 @@ const I18N = {
     "calc.h6": "6 hours",
     "calc.h8": "8 hours",
     "calc.rarity": "Rarity",
-    "calc.difficulty": "Difficulty",
     "calc.repeat": "Species graduated before (×2)",
     "calc.nojs": "Enable JavaScript to use the calculator. The token costs are listed above.",
-    "g.honest": "Estimates assume the same pace every day. Difficulty scales the costs, not the time-mode rate. Items and clicks make it faster.",
+    "g.honest": "Estimates assume the same pace every day. Items and clicks make it faster.",
     "g.dailyIntro": "Your companion responds to your coding rhythm, changing its pose and caption as you work.",
     "g.st1w": "no tokens today",
     "g.st1t": "Fast asleep",
@@ -345,13 +342,13 @@ const I18N = {
     "modes.tokenFit": "에이전트를 많이 쓰는 분께 맞아요.",
     "modes.timeTag": "시간 모드",
     "modes.timeT": "일하는 시간으로 키우기",
-    "modes.timeRate": "활동한 1시간마다 성장 토큰 40M과 상점 토큰 10M이 들어와요.",
+    "modes.timeRate": "활동한 1초마다 성장 토큰 25k와 상점 토큰 25k가 들어와요. 1시간이면 각각 90M이에요.",
     "modes.timeIdle": "최근 5분 안에 키보드나 마우스를 쓰면 활동 중으로 칩니다. 한 번 확인할 때 최대 2분까지만 쳐요.",
     "modes.timeOnly": "이 모드에서는 AI 토큰 사용량이 성장에 들어가지 않아요.",
     "modes.timeFit": "가볍게 쓰는 분이나 AI 코딩 도구가 없는 분께 맞아요.",
     "modes.hint": "3일 동안 토큰 사용이 없으면 앱이 설정에서 시간 모드를 권해요.",
     "modes.clickT": "클릭으로 거들기.",
-    "modes.clickD": "어느 모드든 홈의 큰 스프라이트나 플로팅 펫을 클릭하면 성장 토큰 54k가 더해져요. 기본 등급 라인은 2,800번쯤 클릭하면 알에서 졸업까지 가요.",
+    "modes.clickD": "어느 모드든 홈의 큰 스프라이트나 플로팅 펫을 클릭하면 성장 토큰 50k가 더해져요. 기본 등급 라인은 300번쯤 클릭하면 알에서 졸업까지 가요.",
     "badge.fork": "PokeTokenBar-yp에만 있어요",
     "usage.title": "사용량은 한눈에.\n코딩은 하던 대로.",
     "usage.desc": "오늘의 토큰, 사용량 추이, 프로바이더 한도를 한곳에서 확인하세요. 자세히 볼 때만 메뉴바를 열면 됩니다.",
@@ -373,8 +370,8 @@ const I18N = {
     "u6.d": "한도가 가까워질 때, 파트너가 부화·진화·졸업할 때 알려줘요.",
     "alt.recap": "토큰 사용량과 포켓몬 졸업 기록이 표시된 실제 주간 회고 UI 샘플",
     "native.recap": "실제 UI 렌더 · 샘플 사용량과 포켓몬.",
-    "p1.t": "난이도 10%~200%",
-    "p1.d": "성장 난이도와 상점 난이도는 슬라이더가 따로예요. 전에 졸업시킨 종은 부화한 뒤 두 배 빠르게 자라요.",
+    "p1.t": "설정에서 성장 방식 고르기",
+    "p1.d": "토큰과 시간 중 하나만 고르면 돼요. 비용은 고정이고 누구에게나 같아요. 전에 졸업시킨 종은 부화한 뒤 두 배 빠르게 자라요.",
     "p2.t": "메뉴바에 성장률 표시",
     "p2.d": "아이콘 옆에 부화·진화 진행률을 띄울 수 있어요. 홈 막대에 마우스를 올리면 토큰·목표·비율이 보여요.",
     "p3.t": "바탕화면의 펫",
@@ -387,7 +384,7 @@ const I18N = {
     "p6.t": "대표 포켓몬",
     "p6.d": "가진 종과 폼을 메뉴바와 바탕화면 펫에 고정하세요. 지금 키우는 파트너는 홈에서 계속 자라요.",
     "alt.petInteractions": "알 기도·쓰다듬기·삐침·에이전트 대기를 각각 렌더링한 실제 펫 샘플",
-    "alt.petXp": "빠르게 다섯 번 클릭한 뒤 +270K XP 배지 하나가 뜬 홈 헤더 샘플",
+    "alt.petXp": "빠르게 다섯 번 클릭한 뒤 +250K XP 배지 하나가 뜬 홈 헤더 샘플",
     "native.current": "실제 UI 렌더 · 샘플 상태",
     "c1.t": "도감",
     "c1.d": "가졌던 종마다 한 칸씩, 한 페이지에 16마리. 검색·정렬, 희귀도·이로치·지방 필터, 완성 배지가 있어요.",
@@ -408,13 +405,13 @@ const I18N = {
     "x3.d": "메뉴바 아이콘을 우클릭하면 새로고침·도감·설정 등으로 바로 가요. 뒤로가기는 보던 페이지로 돌아가요.",
     "x4.t": "애니메이션 품질",
     "x4.d": "메뉴바와 플로팅 펫의 움직임을 2.5·5·10fps 또는 원본으로 고르세요. 저전력 모드에서는 낮게 제한돼요.",
-    "alt.difficulty": "성장·상점 슬라이더 양끝에 값이 표시된 실제 난이도 설정 UI 샘플",
-    "native.difficulty": "실제 UI 렌더 · 샘플 설정.",
+    "alt.growthMode": "시간이 선택된 실제 성장 방식 설정 UI 샘플",
+    "native.growthMode": "실제 UI 렌더 · 샘플 설정.",
     "fork.desc": "PokeTokenBar-yp는 chattymin의 PokeTokenBar를 바탕으로 한 포크예요. 파트너와 사용량 트래커는 원작이 만들었어요. ‘PokeTokenBar-yp에만 있어요’ 표시가 붙은 기능은 이 포크에만 있으니, 문제가 있으면 원작이 아니라 여기에 알려 주세요.",
     "k1.t": "1~9세대 전국 도감",
     "k1.d": "도감은 #1025까지 있고, 알은 1~9세대의 540가지 시작 종 중 하나로 부화해요. 전설은 48번에 한 번꼴이에요. 지방 필터는 관동부터 팔데아까지 9개 지방이고, 전국 배지는 1,025종 전부를 셉니다.",
     "k3.t": "가벼워진 비용",
-    "k3.d": "성장 비용과 상점 가격이 원작의 5분의 1이에요. 하루 44M 토큰쯤 쓰는 보통의 하루에 맞췄어요. 기본 등급 라인은 150M 토큰, 전설은 1.2B 토큰이면 졸업해요. 예전 버전의 저장 데이터는 이 변경이 나갈 때 함께 바뀌었어요.",
+    "k3.d": "성장 비용과 상점 가격이 원작의 50분의 1이에요. 기본 등급 라인은 15M 토큰, 전설은 120M 토큰이면 졸업해요. 예전 버전의 저장 데이터는 업데이트해도 단계 안 진행 비율이 그대로예요.",
     "k4.t": "대결 탭",
     "k4.d": "YPoke 슬랙 대결 봇을 연결하면 대결 탭에 최대 여섯 마리를 나갈 순서대로 세워요. 자동이면 지금 키우는 포켓몬이 나가요. 탭 안은 엔트리·배틀·기록으로 나뉘어요. 줄마다 실제로 싸우는 능력치가 나오고, 성격이 올리고 내리는 능력치에 ↑·↓가 붙고, 폼을 따라요.",
     "alt.gyms": "두 줄로 선 관동 관장·아지트·사천왕·배지 케이스를 보여 주는 실제 체육관 목록 UI 샘플",
@@ -454,9 +451,9 @@ const I18N = {
     "comp.title": "코딩하는 하루에,\n작은 모험 하나.",
     "comp.desc": "이미 쓰고 있는 토큰으로 파트너가 실제 진화 계보를 따라 자라요. 졸업하면 새 알이 찾아오고, 도감에는 함께한 기록이 남습니다.",
     "journey.hatch": "첫 파트너와 만나기",
-    "journey.hatchDesc": "기본 난이도에서는 1M 토큰으로 알이 부화해요. 어떤 포켓몬이 나올까요?",
+    "journey.hatchDesc": "100k 토큰이면 알이 부화해요. 어떤 포켓몬이 나올까요?",
     "journey.grow": "함께 자라기",
-    "journey.growDesc": "코딩을 이어가거나, 시간 모드라면 평소처럼 일하면 돼요. 난이도는 자신의 속도에 맞게 조절할 수 있어요.",
+    "journey.growDesc": "코딩을 이어가거나, 시간 모드라면 평소처럼 일하면 돼요. 내 속도에 맞는 방식을 고르세요.",
     "journey.collect": "도감에 추억 남기기",
     "journey.collectDesc": "졸업한 파트너는 도감에 남아요. 새 알과 함께 다음 이야기를 시작하세요.",
     "comp.caption": "함께한 파트너가 쌓이는 도감. 예시 화면.",
@@ -468,12 +465,12 @@ const I18N = {
     "demo.play": "데모 재생",
     "demo.stop": "데모 정지",
     "guide.title": "얼마나 쓰면 자랄까요?",
-    "guide.desc": "내 속도로 계산하고, 진화 비용과 수집 요소를 확인하세요. 필요한 토큰이 부담스럽다면 앱에서 난이도를 낮추거나 시간 모드로 바꿔 보세요.",
+    "guide.desc": "내 속도로 계산하고, 진화 비용과 수집 요소를 확인하세요. 토큰을 많이 쓰지 않는다면 앱에서 시간 모드로 바꿔 보세요.",
     "g.t1": "성장 계산기",
     "g.t2": "파트너의 하루",
     "g.t3": "수집 요소",
     "g.costH": "진화에 필요한 토큰",
-    "g.costSub": "난이도 100%, 반복 부화 보너스와 아이템이 없는 3단계 진화 예시예요. 부화에 드는 1M 토큰은 표에 넣지 않았어요. 1·2단계 진화는 총량은 같지만 단계별로 나누는 비율이 달라요.",
+    "g.costSub": "반복 부화 보너스와 아이템이 없는 3단계 진화 예시예요. 부화에 드는 100k 토큰은 표에 넣지 않았어요. 1·2단계 진화는 총량은 같지만 단계별로 나누는 비율이 달라요.",
     "g.thRarity": "희귀도",
     "g.thS1": "1단계",
     "g.thS2": "2단계",
@@ -501,10 +498,9 @@ const I18N = {
     "calc.h6": "6시간",
     "calc.h8": "8시간",
     "calc.rarity": "희귀도",
-    "calc.difficulty": "난이도",
     "calc.repeat": "전에 졸업시킨 종 (×2)",
     "calc.nojs": "계산기를 사용하려면 JavaScript를 켜주세요. 토큰 비용은 위 표에서 확인할 수 있어요.",
-    "g.honest": "매일 같은 속도라고 가정한 예상치예요. 난이도는 비용을 바꾸고, 시간 모드의 속도는 바꾸지 않아요. 아이템과 클릭이 있으면 더 빨라져요.",
+    "g.honest": "매일 같은 속도라고 가정한 예상치예요. 아이템과 클릭이 있으면 더 빨라져요.",
     "g.dailyIntro": "메뉴바의 파트너는 장식이 아니에요. 당신의 코딩 리듬을 그대로 살아요 — 스프라이트와 문구가 실시간으로 바뀝니다.",
     "g.st1w": "오늘 사용량 0",
     "g.st1t": "쿨쿨",
@@ -618,13 +614,13 @@ const I18N = {
     "modes.tokenFit": "エージェントをたくさん使う人向け。",
     "modes.timeTag": "時間モード",
     "modes.timeT": "作業時間で育てる",
-    "modes.timeRate": "アクティブな1時間ごとに、成長トークン40Mとショップ用トークン10Mが入ります。",
+    "modes.timeRate": "アクティブな1秒ごとに、成長トークン25kとショップ用トークン25kが入ります。1時間でそれぞれ90Mです。",
     "modes.timeIdle": "直近5分以内にキーボードかマウスを使っていればアクティブとみなします。1回の確認で数えるのは最大2分です。",
     "modes.timeOnly": "このモードでは、AIトークンの使用量は成長になりません。",
     "modes.timeFit": "ライトに使う人や、AIコーディングツールを使わない人向け。",
     "modes.hint": "3日間トークンの使用がないと、アプリが設定で時間モードを提案します。",
     "modes.clickT": "クリックで手伝う。",
-    "modes.clickD": "どちらのモードでも、ホームの大きなスプライトやデスクトップペットをクリックすると成長トークンが54k増えます。ノーマルの進化ラインなら、約2,800回のクリックでタマゴから卒業まで進みます。",
+    "modes.clickD": "どちらのモードでも、ホームの大きなスプライトやデスクトップペットをクリックすると成長トークンが50k増えます。ノーマルの進化ラインなら、約300回のクリックでタマゴから卒業まで進みます。",
     "badge.fork": "PokeTokenBar-yp だけ",
     "usage.title": "使用量はひと目で。\nコードに集中。",
     "usage.desc": "今日のトークン、使用量の推移、プロバイダーの上限をひとつの場所に。詳しく知りたいときだけメニューバーを開けばOK。",
@@ -646,8 +642,8 @@ const I18N = {
     "u6.d": "上限が近づいたとき、パートナーが孵化・進化・卒業したときにお知らせします。",
     "alt.recap": "トークン使用量とポケモンの卒業記録を表示した実際の週間振り返りUIサンプル",
     "native.recap": "実際のUIレンダー · サンプル使用量とポケモン。",
-    "p1.t": "難易度は10%〜200%",
-    "p1.d": "成長とショップの難易度は別々のスライダーで調整します。以前に卒業させた種族は、孵化したあと2倍の速さで育ちます。",
+    "p1.t": "設定で成長の方式を選ぶ",
+    "p1.d": "トークンか時間か、選ぶのはそれだけです。コストは固定で、誰にとっても同じです。以前に卒業させた種族は、孵化したあと2倍の速さで育ちます。",
     "p2.t": "メニューバーに成長率",
     "p2.d": "アイコンの横に孵化や進化の進み具合を表示できます。ホームのバーにホバーすると、トークン・目標・割合を確認できます。",
     "p3.t": "デスクトップのペット",
@@ -660,7 +656,7 @@ const I18N = {
     "p6.t": "代表ポケモン",
     "p6.d": "所有する種族と姿を、メニューバーとデスクトップペットに固定できます。いま育てているパートナーはホームで育ち続けます。",
     "alt.petInteractions": "タマゴへのお祈り・なでる動作・すねる姿・エージェントの入力待ちを個別に描画した実際のペットサンプル",
-    "alt.petXp": "すばやく5回クリックしたあと、+270K XP のバッジが1つだけ出ているホームヘッダーのサンプル",
+    "alt.petXp": "すばやく5回クリックしたあと、+250K XP のバッジが1つだけ出ているホームヘッダーのサンプル",
     "native.current": "実際の UI レンダー · サンプル状態",
     "c1.t": "図鑑",
     "c1.d": "持ったことのある種族を1マスずつ、1ページ16匹。検索・並べ替え、レア度・色違い・地方の絞り込み、完成バッジがあります。",
@@ -681,13 +677,13 @@ const I18N = {
     "x3.d": "メニューバーのアイコンを右クリックすると、更新・図鑑・設定などへすぐ移動できます。戻ると元のページに戻ります。",
     "x4.t": "アニメーションの品質",
     "x4.d": "メニューバーとデスクトップペットの動きを、2.5・5・10fpsかオリジナルから選べます。低電力モードでは低く抑えます。",
-    "alt.difficulty": "育成・ショップのスライダー両端に値を表示した実際の難易度設定UIサンプル",
-    "native.difficulty": "実際のUIレンダー · サンプル設定。",
+    "alt.growthMode": "時間を選んだ実際の成長の方式の設定UIサンプル",
+    "native.growthMode": "実際のUIレンダー · サンプル設定。",
     "fork.desc": "PokeTokenBar-yp は chattymin の PokeTokenBar をもとにしたフォークです。パートナーも使用量トラッカーも、オリジナルが作ったものです。「PokeTokenBar-yp だけ」の印がある機能はこのフォークだけにあるので、不具合はオリジナルではなくこちらに報告してください。",
     "k1.t": "第1〜9世代の全国図鑑",
     "k1.d": "図鑑は #1025 まであり、タマゴは第1〜9世代の540種類の最初の姿のどれかから始まります。伝説はおよそ48回に1回。地方の絞り込みはカントーからパルデアまでの9地方で、全国バッジは1,025種すべてを数えます。",
     "k3.t": "軽くなったコスト",
-    "k3.d": "成長コストとショップの価格は、オリジナルの5分の1です。1日におよそ44Mトークンを使う、ふつうの1日に合わせています。ノーマルの進化ラインは150Mトークン、伝説は1.2Bトークンで卒業します。古いバージョンのセーブは、この変更のときに一緒に変換されました。",
+    "k3.d": "成長コストとショップの価格は、オリジナルの50分の1です。ノーマルの進化ラインは15Mトークン、伝説は120Mトークンで卒業します。古いバージョンのセーブは、アップデートしても段階内の進み具合をそのまま保ちます。",
     "k4.t": "バトルタブ",
     "k4.d": "YPoke の Slack バトルボットと連携すると、バトルタブに最大6匹を出る順に並べられます。自動ならいま育てているポケモンが出ます。タブの中はエントリー・バトル・履歴に分かれます。各行には実際に戦う能力値が出て、性格で上がる・下がる能力値に↑・↓が付き、フォルムに従います。",
     "alt.gyms": "2列に並んだカントーのジムリーダー・アジト・四天王・バッジケースを示す実際のジム一覧UIサンプル",
@@ -727,9 +723,9 @@ const I18N = {
     "comp.title": "いつもの作業に、\n小さな冒険を。",
     "comp.desc": "いつものトークン使用量で、パートナーが本来の進化ルートをたどります。卒業したら新しいタマゴが届き、図鑑が少しずつ埋まっていきます。",
     "journey.hatch": "最初のパートナーに出会う",
-    "journey.hatchDesc": "標準の難易度では1Mトークンで孵化。どのポケモンに出会えるでしょう？",
+    "journey.hatchDesc": "100kトークンで孵化。どのポケモンに出会えるでしょう？",
     "journey.grow": "成長を見守る",
-    "journey.growDesc": "コードを書き続けるか、時間モードならいつもどおり作業するだけ。難易度は自分のペースに合わせて調整できます。",
+    "journey.growDesc": "コードを書き続けるか、時間モードならいつもどおり作業するだけ。自分のペースに合う方式を選べます。",
     "journey.collect": "思い出を図鑑に",
     "journey.collectDesc": "卒業したパートナーは図鑑に残ります。新しいタマゴと次の物語へ。",
     "comp.caption": "パートナーとの記録が増えていく図鑑。画面例。",
@@ -741,12 +737,12 @@ const I18N = {
     "demo.play": "デモを再生",
     "demo.stop": "デモを停止",
     "guide.title": "どれくらいで育つ？",
-    "guide.desc": "自分のペースで計算して、進化コストや集められるものを確認しましょう。必要なトークンが多すぎると感じたら、アプリで難易度を下げるか、時間モードに切り替えてみてください。",
+    "guide.desc": "自分のペースで計算して、進化コストや集められるものを確認しましょう。トークンをあまり使わないなら、アプリで時間モードに切り替えてみてください。",
     "g.t1": "成長計算機",
     "g.t2": "パートナーの一日",
     "g.t3": "コレクション",
     "g.costH": "進化に必要なトークン",
-    "g.costSub": "難易度100%、リピートボーナスやアイテムなしの3段階進化の例です。最初の孵化に必要な1Mトークンは表に含みません。1・2段階進化では同じ合計を異なる比率で分けます。",
+    "g.costSub": "リピートボーナスやアイテムなしの3段階進化の例です。最初の孵化に必要な100kトークンは表に含みません。1・2段階進化では同じ合計を異なる比率で分けます。",
     "g.thRarity": "レア度",
     "g.thS1": "段階 1",
     "g.thS2": "段階 2",
@@ -774,10 +770,9 @@ const I18N = {
     "calc.h6": "6時間",
     "calc.h8": "8時間",
     "calc.rarity": "レア度",
-    "calc.difficulty": "難易度",
     "calc.repeat": "以前に卒業させた種族（×2）",
     "calc.nojs": "計算機にはJavaScriptが必要です。トークンコストは上の表をご覧ください。",
-    "g.honest": "毎日同じペースの場合の目安です。難易度はコストを変えますが、時間モードの速さは変えません。アイテムやクリックがあればもっと早くなります。",
+    "g.honest": "毎日同じペースの場合の目安です。アイテムやクリックがあればもっと早くなります。",
     "g.dailyIntro": "メニューバーのパートナーは飾りではありません。あなたのコーディングのリズムをそのまま生きています — スプライトとキャプションがリアルタイムに変わります。",
     "g.st1w": "今日の使用量 0",
     "g.st1t": "ぐっすり",
@@ -982,13 +977,12 @@ const journeyCopy = {
 };
 const calc = id => document.getElementById(id);
 function journeyRows() {
-  const difficulty = Number(calc('gDifficulty').value) / 100;
   const multiplier = calc('gRepeat').checked ? BALANCE.repeatGrowthMultiplier : 1;
   const total = BALANCE.graduationTotal[calc('gRarity').value];
-  let tokens = BALANCE.eggHatchThreshold * difficulty;
+  let tokens = BALANCE.eggHatchThreshold;
   const rows = [{stage:0,tokens}];
   for (let stage = 1; stage <= 3; stage++) {
-    tokens += total * difficulty * stage / 6 / multiplier;
+    tokens += total * stage / 6 / multiplier;
     rows.push({stage,tokens});
   }
   return rows;
@@ -997,21 +991,22 @@ function renderJourney() {
   const timeMode = calc('gMode').value === 'time';
   calc('gPaceField').hidden = timeMode;
   calc('gHoursField').hidden = !timeMode;
-  const perDay = timeMode ? Number(calc('gHours').value) * BALANCE.timeTokensPerActiveHour : Number(calc('gPace').value) * 1e6;
+  const perHour = BALANCE.timeTokensPerActiveSecond * 3600;
+  const perDay = timeMode ? Number(calc('gHours').value) * perHour : Number(calc('gPace').value) * 1e6;
   const s = journeyCopy[currentLang];
   calc('gTimeline').replaceChildren(...journeyRows().map(({stage,tokens}) => {
     const row = document.createElement('div');row.className='tl-row';
     const label = document.createElement('span');label.textContent = stage === 0 ? s.hatch : stage === 3 ? s.graduate : s.evolve(stage);
     const amount = document.createElement('span');amount.className='tl-tokens';amount.textContent=formatTokens(tokens);
     const day = s.day(Math.max(1, Math.ceil(tokens / perDay)));
-    const hours = tokens / BALANCE.timeTokensPerActiveHour;
+    const hours = tokens / perHour;
     const when = document.createElement('span');when.className='tl-when';
     const active = hours < 1 ? s.minutes(Math.ceil(hours * 60)) : s.hours(hours < 10 ? Math.round(hours * 10) / 10 : Math.round(hours));
     when.textContent = timeMode ? `${active} · ${day}` : day;
     row.append(label,amount,when);return row;
   }));
 }
-if (calc('gTimeline')) ['gMode','gPace','gHours','gRarity','gDifficulty','gRepeat'].forEach(id => calc(id).addEventListener('change', renderJourney));
+if (calc('gTimeline')) ['gMode','gPace','gHours','gRarity','gRepeat'].forEach(id => calc(id).addEventListener('change', renderJourney));
 
 const demoButton = document.getElementById('demoBtn');
 const demoImage = document.getElementById('pet-demo');

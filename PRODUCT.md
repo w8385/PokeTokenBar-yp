@@ -28,7 +28,7 @@ People using supported AI coding tools on a Mac. The installation and feature de
 - The Pokédex covers Gen 1–9 (#1025). The "Only in PokeTokenBar-yp" section lists features the upstream app does not have; keep it in step with `git log upstream/main..origin/main`.
 - The battle bot is described only as the README describes it ("the YPoke Slack battle bot"). Never name an internal workspace or channel.
 - Usage logs are not uploaded. The app makes network requests for provider usage/limits, Pokémon data and sprites, service status and updates. Do not claim it is completely offline.
-- Companions hatch, evolve and graduate into a collection. Growth difficulty is adjustable. Rare Candy and the token shop affect progress; a fixed completion time is not a promise.
+- Companions hatch, evolve and graduate into a collection. Costs are fixed; the player picks tokens or active time as the growth source. Rare Candy and the token shop affect progress; a fixed completion time is not a promise.
 - The website supports English, Korean and Japanese. The app supports eight UI languages, including Russian; website language support is separate.
 - Supported Gen 1–5 forms are retained per individual through evolution, saving and export. Form-specific types, stats, abilities and moves are not modeled: metadata uses the default form.
 - Rare Candy supports quantity selection and an evolution/graduation preview with carryover; the Shop shows quantity and total price.
@@ -46,7 +46,7 @@ Six routes: home (`/`) plus five feature pages served as folder indexes (`/usage
 
 - Main branch README files, native source and release documentation are the product authorities.
 - Nineteen 2.5.6 Home/gallery PNGs are byte-identical native production-view renders with isolated sample data. They are not live user usage. Capture source/tree, exact view scope and fallbacks are in `assets/README-release-2.5.6.md`.
-- Shop, difficulty, daily trend, recap, Box, held-item, gym and battle samples have EN/KO/JA images selected with the page language. The common Home image stays English and says so in all three languages.
+- Shop, growth source, daily trend, recap, Box, held-item, gym and battle samples have EN/KO/JA images selected with the page language. The common Home image stays English and says so in all three languages.
 - The retained quota, pace, collection and desktop-pet demonstrations are English examples; their captions remain separate from native sample labels.
 - Download counts are requests, including upgrades and repeats. They are not unique users and are omitted from public social proof.
 - No testimonials, customer logos, performance benchmarks or conversion figures have been supplied.
