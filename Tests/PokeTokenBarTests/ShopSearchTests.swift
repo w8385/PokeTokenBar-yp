@@ -218,14 +218,13 @@ final class ShopSearchTests: XCTestCase {
         let searching = shop.shopScreen(category: .machine, query: "ice beam", heldGroup: nil)
         XCTAssertNotNil(searching.results)
         XCTAssertFalse(searching.showsMachineTab)
-        XCTAssertTrue(searching.hasMachineTab, "the TM tab stays alive under a search")
         let cleared = shop.shopScreen(category: .machine, query: "", heldGroup: nil)
         XCTAssertNil(cleared.results)
-        XCTAssertTrue(cleared.showsMachineTab && cleared.hasMachineTab)
-        XCTAssertFalse(shop.shopScreen(category: nil, query: "", heldGroup: nil).hasMachineTab)
+        XCTAssertTrue(cleared.showsMachineTab)
+        XCTAssertFalse(shop.shopScreen(category: nil, query: "", heldGroup: nil).showsMachineTab)
     }
 
-    func testTheTMTabKeepsItsOwnFieldThroughASearchSetAndClear() async throws {
+    func testASearchDropsTheTMTabAndClearingItBringsTheTMQueryBack() async throws {
         let shop = try store(language: .en)
         let l = shop.l
         let host = OffscreenRender.host(
@@ -241,7 +240,7 @@ final class ShopSearchTests: XCTestCase {
         let browsing = machine.convert(machine.bounds, to: host)
 
         type("ice beam", into: global)
-        try await OffscreenRender.settle(host) { machine.convert(machine.bounds, to: host) != browsing }
+        try await OffscreenRender.settle(host) { field(in: host, placeholder: l.shopMachineSearchPrompt) == nil }
 
         type("", into: global)
         try await OffscreenRender.settle(host) { field(in: host, placeholder: l.shopMachineSearchPrompt)?.stringValue == "punch" }
@@ -260,8 +259,10 @@ final class ShopSearchTests: XCTestCase {
         XCTAssertNil(field(in: host, placeholder: bag.l.shopSearchPrompt), "the bag has no shop search")
     }
 
+    /// A lazy stack keeps a removed text field as a hidden subview, so only a shown field counts.
     private func field(in view: NSView, placeholder: String) -> NSTextField? {
-        NativeControls.descendants(view).compactMap { $0 as? NSTextField }.first { $0.placeholderString == placeholder }
+        NativeControls.descendants(view).compactMap { $0 as? NSTextField }
+            .first { $0.placeholderString == placeholder && !$0.isHiddenOrHasHiddenAncestor }
     }
 
     private func type(_ text: String, into field: NSTextField) {

@@ -1,40 +1,37 @@
 import SwiftUI
 
+struct MachineShopFilter: Equatable {
+    var query = ""
+    var type: PokemonType?
+    var learnableOnly = true
+}
+
 /// The shop's TM category: search, a type filter, a "my Pokémon can learn it" toggle and one card per move.
+/// Its body is a list of rows, so the shop's lazy stack builds only the cards on screen.
 @MainActor
 struct MachineShopSection: View {
     let store: CompanionStore
-    @State private var query: String
-    @State private var type: PokemonType?
-    @State private var learnableOnly: Bool
+    @Binding var filter: MachineShopFilter
 
-    init(store: CompanionStore, initialQuery: String = "", initialLearnableOnly: Bool = true) {
-        self.store = store
-        _query = State(initialValue: initialQuery)
-        _type = State(initialValue: nil)
-        _learnableOnly = State(initialValue: initialLearnableOnly)
-    }
+    private var type: PokemonType? { filter.type }
+    private var learnableOnly: Bool { filter.learnableOnly }
 
     var body: some View {
         let l = store.l
-        let moves = store.machineShopMoves(query: query, type: type?.rawValue, learnableOnly: learnableOnly)
-        VStack(alignment: .leading, spacing: 10) {
-            Text(l.shopMachineHint).font(.caption2).foregroundStyle(.tertiary)
-            DexSearchField(l: l, text: $query, placeholder: l.shopMachineSearchPrompt)
-            learnableToggle(l)
-            typeChips
-            if moves.isEmpty {
-                Text(l.shopMachineEmpty).font(.caption).foregroundStyle(.secondary)
-            }
-            LazyVStack(spacing: 10) {
-                ForEach(moves) { MachineShopCard(store: store, move: $0) }
-            }
+        let moves = store.machineShopMoves(query: filter.query, type: type?.rawValue, learnableOnly: learnableOnly)
+        Text(l.shopMachineHint).font(.caption2).foregroundStyle(.tertiary)
+        DexSearchField(l: l, text: $filter.query, placeholder: l.shopMachineSearchPrompt)
+        learnableToggle(l)
+        typeChips
+        if moves.isEmpty {
+            Text(l.shopMachineEmpty).font(.caption).foregroundStyle(.secondary)
         }
+        ForEach(moves) { MachineShopCard(store: store, move: $0) }
     }
 
     private func learnableToggle(_ l: L) -> some View {
         Button {
-            learnableOnly.toggle()
+            filter.learnableOnly.toggle()
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: learnableOnly ? "checkmark.circle.fill" : "circle")
@@ -55,7 +52,7 @@ struct MachineShopSection: View {
             HStack(spacing: 4) {
                 ForEach(PokemonType.allCases.filter { present.contains($0.rawValue) }, id: \.self) { candidate in
                     Button {
-                        type = type == candidate ? nil : candidate
+                        filter.type = type == candidate ? nil : candidate
                     } label: {
                         Badge(tint: .type(candidate), style: type == candidate ? .solid : .tinted, size: 9,
                               horizontalPadding: 7, verticalPadding: 3) {
@@ -63,8 +60,7 @@ struct MachineShopSection: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    .accessibilityAddTraits(type == candidate ? .isSelected : [])
-                }
+                    .accessibilityAddTraits(type == candidate ? .isSelected : [])                }
             }
         }
     }
