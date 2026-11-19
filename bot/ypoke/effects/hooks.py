@@ -16,7 +16,8 @@ HOOKS = {
     "on_entry_form": "item: a held-item form takes hold as its holder enters, after the hazards and Primal Reversion",
     "on_entry": "ability: acts as its holder enters, the faster entering Pokémon first, and as it Mega Evolves",
     "state_turns": "item: how long a field or side state its holder sets lasts",
-    "on_update": "item: a one-use item reacts to its holder's state after an entry, an action or the end of a turn",
+    "on_update": "ability, then item: reacts to its holder's state or the field after an entry, an action or the end "
+                 "of a turn (Forecast, a one-use item)",
     "forces_move": "state: the move index its holder must pick (Encore)",
     "readied": "state: the move its holder charged last turn, used now with no PP whatever it picked (Solar Beam)",
     "wanted": "move: whether the move chooser picks this effect move now",
@@ -107,6 +108,8 @@ HOOKS = {
     "type_multiplier": "move: multiplies how well it hits these types, after the type chart (Freeze-Dry on Water, "
                        "Flying Press's added Flying)",
     "weakens": "state: multiplies how well a move type hits its holder (Tar Shot)",
+    "caps_effectiveness": "ability: how well a move that can hit its holder does, in place of the type chart's "
+                          "(Tera Shell)",
     "sure_hit": "state: the moves of the given user hit its holder without an accuracy draw (Lock-On)",
     "grounds": "state: grounds every Pokémon, so Ground moves hit Flying types and Levitate",
     "hits_airborne": "move: a Ground move that hits a Flying type or a floating Pokémon (Thousand Arrows)",

@@ -52,7 +52,11 @@ BLOCKED_TAG = {
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {
     "mask": "가면", "terastal": "테라스탈폼", "stellar": "스텔라폼", "origin": "오리진폼", "crowned-sword": "검왕의모습",
-    "crowned-shield": "방패왕의모습",
+    "crowned-shield": "방패왕의모습", "base": "원래모습", "zen": "달마모드", "school": "군집의모습",
+    "blade": "블레이드폼", "core": "코어의모습", "complete": "퍼펙트폼", "busted": "탈이 벗겨진 모습",
+    "noice": "나이스페이스", "ice-face": "아이스페이스", "gulping": "찌로꼬를 문 모습", "gorging": "피카츄를 문 모습",
+    "hangry": "배고픈모양", "sunny": "태양의모습", "rainy": "빗방울의모습", "snowy": "설운의모습", "sunshine": "포지폼",
+    "hero": "마이티폼",
 }
 ITEM_EFFECT_TEXT = {
     "cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독",
@@ -156,7 +160,8 @@ ABILITY_EFFECT_TEXT = {
     "terrain": "{detail}", "hazard": "상대 쪽에 {detail} 깔림", "dance": "따라 춤췄다",
     "disable": "{detail} 🚫사슬묶기", "perish": "🎵멸망 카운트", "spread": "특성 전염", "swap": "특성 교환",
     "stole": "{detail} 훔쳤다", "breaks": "상대 특성을 무시한다", "gas": "상대 특성이 사라졌다",
-    "trace": "{detail} 복사",
+    "trace": "{detail} 복사", "retype": "{detail} 타입이 되었다", "retype-back": "원래 타입으로 돌아왔다",
+    "zero": "날씨와 필드가 사라졌다", "disguise": "탈이 대신 맞았다", "spit": "삼킨 것을 뱉었다",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
 ABILITY_BLOCKED_TEXT = {
@@ -417,7 +422,8 @@ def _form_line(event: FormShift) -> str:
     if event.kind == "mask":
         tag = _change_tag(event.change, event.side)
         return f"{marker} {event.pokemon}의 가면이 빛났다!{f' {tag}' if tag else ''}"
-    return f"{marker} {event.pokemon}{_topic_particle(event.pokemon)} {FORM_CAPTION[event.kind]}이 되었다!"
+    caption = FORM_CAPTION[event.kind]
+    return f"{marker} {event.pokemon}{_topic_particle(event.pokemon)} {caption}{_subject_particle(caption)} 되었다!"
 
 
 def _topic_particle(name: str) -> str:
@@ -425,6 +431,13 @@ def _topic_particle(name: str) -> str:
     if not 0xAC00 <= last <= 0xD7A3:
         return "은(는)"
     return "은" if (last - 0xAC00) % 28 else "는"
+
+
+def _subject_particle(word: str) -> str:
+    last = ord(word[-1])
+    if not 0xAC00 <= last <= 0xD7A3:
+        return "이(가)"
+    return "이" if (last - 0xAC00) % 28 else "가"
 
 
 def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:

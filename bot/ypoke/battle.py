@@ -135,8 +135,9 @@ CONFUSION_HIT = Move("혼란", None, CONFUSION_SELF_HIT_POWER, physical=True)
 
 @dataclass(frozen=True)
 class MegaForm:
-    """What a Mega Evolution swaps in. `ability` is the narrated name, `ability_id` the PokéAPI slug that replaces
-    the Pokémon's ability (one the battle does not know does nothing; None keeps the old one)."""
+    """What a Mega Evolution or an ability's form change (`Combatant.forms`, by `kind`) swaps in. `ability` is the
+    narrated name, `ability_id` the PokéAPI slug that replaces the Pokémon's ability (one the battle does not know does
+    nothing; None keeps the old one)."""
 
     types: tuple[str, ...]
     base: BaseStats
@@ -164,6 +165,7 @@ class Combatant:
     can_evolve: bool = False
     tera: bool = False
     weight: int = field(default=0, repr=False)
+    forms: tuple[MegaForm, ...] = field(default=(), repr=False)
 
     @property
     def label(self) -> str:
@@ -451,8 +453,9 @@ class MegaEvolution:
 
 @dataclass(frozen=True)
 class FormShift:
-    """A held-item form taking hold on entry: `kind` is "mask" (Ogerpon's mask glowed, `change` is its +1),
-    "terastal" or "stellar" (Terapagos) or an `ITEM_FORMS` kind ("origin", "crowned-sword", "crowned-shield").
+    """A form taking hold: `kind` is "mask" (Ogerpon's mask glowed, `change` is its +1), "terastal" or "stellar"
+    (Terapagos), an `ITEM_FORMS` kind ("origin", "crowned-sword", "crowned-shield") or an ability's form kind
+    (`abilities.FORMS`; "base" is the form the Pokémon entered in).
     `form_id` is the `/pokemon` id of the form shown, if it has one."""
 
     turn: int
@@ -1079,13 +1082,7 @@ class _Fighter:
 
     @classmethod
     def enter(cls, combatant: Combatant, carry: Carry | None = None) -> "_Fighter":
-        base, ivs, level = combatant.base, combatant.ivs, combatant.level
-        max_hp = 1 if base.hp == 1 else (2 * base.hp + ivs.hp) * level // 100 + level + 10
-        stats = {key: _other_stat(getattr(base, key), getattr(ivs, key), level) for key in BATTLE_STATS}
-        if combatant.nature in NATURE_MODIFIERS:
-            up, down = NATURE_MODIFIERS[combatant.nature]
-            stats[up] = stats[up] * 110 // 100
-            stats[down] = stats[down] * 90 // 100
+        max_hp, stats = _stats_of(combatant)
         fighter = cls(combatant, max_hp, max_hp, stats, [move.pp for move in combatant.moves], item=items.known(combatant.item))
         if carry is not None:
             fighter.hp = max(1, min(max_hp, round(max_hp * carry.hp / 100)))
@@ -1136,6 +1133,40 @@ class _Fighter:
                 * hooks.ability(self, "field_stat", key, weather, terrain, default=1.0)
                 * math.prod(_field(self, "side_stat", key))
                 * (hooks.ability(foe, "modify_foe_stat", key, self, default=1.0) if ruined else 1.0))
+
+
+def _take_form(fighter: _Fighter, form: MegaForm | None, lasting: bool = False) -> FormShift:
+    """The fighter takes the form's types and base stats, or (None) the ones it entered with. A `lasting` form stays
+    once it leaves (Power Construct); any other ends then. A higher max HP raises its HP by the difference."""
+    entered = fighter.entered_as or fighter.combatant
+    if form is None:
+        form = MegaForm(entered.types, entered.base, form_id=entered.pokemon_id, kind="base")
+    if lasting:
+        fighter.combatant = replace(fighter.combatant, types=form.types, base=form.base)
+        if fighter.entered_as is not None:
+            fighter.entered_as = replace(fighter.entered_as, types=form.types, base=form.base)
+    else:
+        fighter.entered_as = entered
+        fighter.combatant = replace(fighter.combatant, types=form.types, base=form.base)
+        fighter.entered_stats = fighter.entered_stats or dict(fighter.stats)
+    max_hp, fighter.stats = _stats_of(fighter.combatant)
+    if lasting and fighter.entered_stats is not None:
+        fighter.entered_stats = dict(fighter.stats)
+    fighter.hp, fighter.max_hp = fighter.hp + max(0, max_hp - fighter.max_hp), max_hp
+    turn = fighter.arena.turn if fighter.arena is not None else 0
+    return FormShift(turn, fighter.side, fighter.combatant.name, form.kind, form.form_id)
+
+
+def _stats_of(combatant: Combatant) -> tuple[int, dict[str, int]]:
+    """The max HP and the other stats before stages."""
+    base, ivs, level = combatant.base, combatant.ivs, combatant.level
+    max_hp = 1 if base.hp == 1 else (2 * base.hp + ivs.hp) * level // 100 + level + 10
+    stats = {key: _other_stat(getattr(base, key), getattr(ivs, key), level) for key in BATTLE_STATS}
+    if combatant.nature in NATURE_MODIFIERS:
+        up, down = NATURE_MODIFIERS[combatant.nature]
+        stats[up] = stats[up] * 110 // 100
+        stats[down] = stats[down] * 90 // 100
+    return max_hp, stats
 
 
 def _carry_of(fighter: _Fighter) -> Carry | None:
@@ -1256,10 +1287,11 @@ def _ability_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], events: list
 
 
 def _item_triggers(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[Event]) -> None:
-    """One-use items that react to the state a Pokémon is in: Sitrus Berry at half HP, Lum Berry on a status or
-    confusion, White Herb on a lowered stat."""
+    """Abilities that follow the field (Forecast), then one-use items that react to the state a Pokémon is in: Sitrus
+    Berry at half HP, Lum Berry on a status or confusion, White Herb on a lowered stat."""
     for side, fighter in enumerate(fighters):
         if fighter.hp > 0:
+            _append(events, hooks.ability(fighter, "on_update", fighter, side, turn))
             _append(events, hooks.item(fighter, "on_update", fighter, side, turn))
 
 
@@ -1475,6 +1507,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
             continue
         if hooks.ability(defender, "takes_hit", damage, attacker, defender, move, default=False):
             hits, critical = hits + 1, critical or hit_critical
+            if defender.hp == 0:
+                break
             continue
         damage = min(defender.hp, damage)
         lethal, from_full, held = damage >= defender.hp, defender.hp == defender.max_hp > 1, defender.item
@@ -2110,8 +2144,11 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
         exposed |= {hooks.ability(foe, "exposes", move.type)} - {None}
     if exposed:
         types = tuple(kind for kind in types if kind not in exposed or effectiveness(move.type, (kind,)) > 0)
-    return (effectiveness(move.type, types) * hooks.move(move, "type_multiplier", types, default=1.0)
-            * math.prod(_field(defender, "weakens", move.type)))
+    multiplier = (effectiveness(move.type, types) * hooks.move(move, "type_multiplier", types, default=1.0)
+                  * math.prod(_field(defender, "weakens", move.type)))
+    if multiplier == 0:
+        return multiplier
+    return hooks.ability(defender, "caps_effectiveness", multiplier, defender, default=multiplier)
 
 
 def _field(fighter: _Fighter, hook: str, *args) -> list:

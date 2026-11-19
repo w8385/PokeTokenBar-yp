@@ -26,6 +26,9 @@ EFFECT_KEYS = frozenset({
     "effect-spore", "contact-chip", "contact-slow", "aftermath", "innards-out", "cursed-body", "perish-body",
     "ability-spread", "wandering-spirit", "pickpocket", "magician", "hit-ailment", "stench", "poison-puppeteer",
     "spicy-spray", "mold-breaker", "neutralizing-gas", "trace",
+    "zen-mode", "schooling", "stance-change", "shields-down", "power-construct", "disguise", "ice-face", "gulp-missile",
+    "hunger-switch", "forecast", "flower-gift", "zero-to-hero", "mimicry", "color-change", "rks-system",
+    "battle-bond", "tera-shell", "teraform-zero", "tera-shift", "multitype", "embody-aspect",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
 FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
@@ -139,6 +142,25 @@ FIELD_STAT_STATE = battle_data.args("abilities", "field-stat", "field")
 FIELD_STAT_STAT = battle_data.args("abilities", "field-stat", "stat")
 FIELD_STAT_MULTIPLIER = battle_data.args("abilities", "field-stat", "multiplier")
 SHED_SKIN_CHANCE = 0.33
+
+# ability -> species `/pokemon` id -> form kind -> the form's `/pokemon` id (None: the species' own data, no sprite)
+FORMS = {name: {int(species): kinds for species, kinds in entry["args"]["forms"].items()}
+         for name, entry in battle_data.table("abilities").items()
+         if battle_data.keys(entry) and "forms" in entry.get("args", {})}
+STANCE_SHIELD_MOVE = battle_data.args("abilities", "stance-change", "shield_move")
+GULP_MOVES = battle_data.args("abilities", "gulp-missile", "moves")
+GULP_SHARE = 4
+DISGUISE_SHARE = 8
+HUNGER_MOVE = battle_data.args("abilities", "hunger-switch", "move")
+HUNGER_TYPE = battle_data.args("abilities", "hunger-switch", "type")
+FLOWER_GIFT_STATS = battle_data.args("abilities", "flower-gift", "stats")
+FLOWER_GIFT_BOOST = 1.5
+TERRAIN_TYPES = battle_data.args("abilities", "mimicry", "types")
+TYPES_OF_MOVE = battle_data.args("abilities", "rks-system", "types_of")
+ONCE_KO_RAISES = battle_data.args("abilities", "battle-bond", "raises")
+TERA_SHELL_EFFECTIVENESS = 0.5
+SCHOOLING_LEVEL = 20
+SCHOOLING_FRACTION = 4
 
 NAMES = battle_data.bot_names("abilities")
 
