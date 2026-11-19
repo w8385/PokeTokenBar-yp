@@ -165,7 +165,7 @@ HOOKS = {
     "secondary_chance": "ability: multiplies the chance of its holder's move's added effects (Serene Grace)",
     "secondary": "move: acts on a target the hits left standing, after the ailment and stat changes, unless a "
                  "Substitute took them (flinch); returns the changes",
-    "on_contact": "ability: may hit back at a contact move's user once the move is over",
+    "on_contact": "ability: may hit back at a contact move's user once the move is over, unless a Substitute took it",
     "modify_drain": "item: the HP a draining move gives back",
     "inverts_drain": "ability: a draining move on its holder hurts its user by what it would heal (Liquid Ooze)",
     "blocks_recoil": "ability: its holder takes no recoil (Rock Head)",
