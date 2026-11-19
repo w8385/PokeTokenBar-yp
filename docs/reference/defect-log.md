@@ -1797,7 +1797,9 @@ read_when:
   a Primal orb still reverts on entry. The Mega ability's entry effect (Drought) fires as it evolves. Class sweep of
   `_enter_forms`: Terapagos' Terastal form and the item forms are entry effects in the games too. Stat stage changes now
   go through `battle.shift_stage`, where Contrary turns each one around before Mist or Clear Body judges it.
-  Known gap: a self stat change (Close Combat) still does not apply when the hit knocks the target out.
+  A self stat change (Close Combat, Flame Charge) used to be skipped when the hit knocked the target out, because
+  `_resolve` ran every added effect only on a target still up; `_stat_changes` now runs the user's own change on a
+  knockout too (`test_self_stat_on_ko.py`).
 - **A button that starts something must be used up in the store, not only checked for who pressed it.** The loser
   could press 다시 붙기 on the same result card again and again, and each press played a new recorded battle.
   `CommandHandler.rematch` checked only the presser (a fighter, the loser in a recorded battle), and the card kept
