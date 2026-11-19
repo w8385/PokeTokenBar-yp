@@ -125,5 +125,12 @@ enum GymFixtures {
         return events
     }
 
+    /// `replayEvents` with Foe1 (Ditto) transforming into the player's Pikachu right after it comes out.
+    static var imposterReplayEvents: [[String: Any]] {
+        var events = replayEvents
+        events.insert(form(2, side: 1, member: 1, id: 25, kind: "transform"), at: 10)
+        return events
+    }
+
     static func carryJSON(hp: Int, status: String? = nil) -> [String: Any] { ["hp": hp, "status": status as Any? ?? NSNull()] }
 }

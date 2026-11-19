@@ -199,14 +199,18 @@ class Transform(StatusMove):
     def _apply(self, move, user, foe, side, turn, arena, rng):
         if not transformable(user, foe):
             return "", ()
-        user.entered_stats = user.entered_stats or dict(user.stats)
-        user.entered_pp = user.entered_pp or list(user.pp)
-        reshape(user, types=foe.combatant.types, ability=foe.ability, moves=foe.combatant.moves)
-        user.stats, user.stages = dict(foe.stats), dict(foe.stages)
-        user.pp = [min(TRANSFORM_PP, known.pp) for known in foe.combatant.moves]
-        user.volatiles[self.key] = True
-        user.locked = None
+        transform(user, foe)
         return self.key, ()
+
+
+def transform(user, foe) -> None:
+    user.entered_stats = user.entered_stats or dict(user.stats)
+    user.entered_pp = user.entered_pp or list(user.pp)
+    reshape(user, types=foe.combatant.types, ability=foe.ability, moves=foe.combatant.moves)
+    user.stats, user.stages = dict(foe.stats), dict(foe.stages)
+    user.pp = [min(TRANSFORM_PP, known.pp) for known in foe.combatant.moves]
+    user.volatiles["transform"] = True
+    user.locked = None
 
 
 def worth(called, user, foe, weather) -> bool:

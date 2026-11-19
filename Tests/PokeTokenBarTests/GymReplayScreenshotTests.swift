@@ -73,6 +73,30 @@ final class GymReplayScreenshotTests: XCTestCase {
         }
     }
 
+    /// The foe's Ditto right after Imposter turns it into the player's Pikachu: "before" drops the `form` event.
+    func testCaptureTheImposterReplay() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_GYM_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_GYM_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let foes = [(3, "이상해꽃"), (132, "메타몽")]
+        for (species, _) in mine { _ = await SpriteLoader.image(speciesID: species, back: true) }
+        for species in foes.map(\.0) + [25] { _ = await SpriteLoader.image(speciesID: species) }
+        let teams = (fighters(mine, hp: [0, 100, nil]), fighters(foes, hp: [0, 0]))
+        for (name, events) in [("before", GymFixtures.replayEvents), ("after", GymFixtures.imposterReplayEvents)] {
+            let outcome = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+                gymID: "kanto-1", kind: "gym", won: true, turns: 5, events: events, teams: teams))
+            let player = GymReplayPlayer(try XCTUnwrap(GymReplay(outcome)), shown: name == "before" ? 10 : 11)
+            for language in [AppLanguage.ko, .en] {
+                try write(GymReplayView(player: player, outcome: outcome, l: L(language), autoplay: false)
+                    .padding(Spacing.lg),
+                          language: language, height: 260,
+                          to: directory.appendingPathComponent("gym-replay-imposter-\(name)-\(language.rawValue).png"))
+            }
+        }
+    }
+
     /// A lost Elite Four step right after Skip: the replay's last frame and its next step.
     func testCaptureTheLostRunStepAfterSkip() async throws {
         guard let output = ProcessInfo.processInfo.environment["PTB_GYM_SCREENSHOT_DIR"] else {
