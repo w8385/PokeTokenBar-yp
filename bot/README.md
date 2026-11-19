@@ -21,8 +21,10 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   a token or link; those replies are ephemeral and carry no context line. A mention reply stays in the mention's
   thread (card, then the log) with the same public/private split and needs no echo line.
 - "다시 붙기" reruns the same matchup and format (the same size) with the current uploads and posts in the same thread. Only the two who
-  fought can press it (others get a private notice); a practice battle reruns as practice, and a side with no
-  upload goes through the pending flow below.
+  fought can press it, and in a recorded battle only the loser (others get a private notice); a practice battle
+  reruns as practice, and a side with no upload goes through the pending flow below. Each card's button works once:
+  the press removes it from the card, and a press that races it gets a private "이미 다시 붙었어요". The new card
+  has its own button.
 - When the challenger has no upload, the thread/channel also sees one line saying so; the how-to stays in the DM
   and the private reply.
 - The bot logs one INFO line per slash command, mention and button (`user`, `command`, `args`), never the

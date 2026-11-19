@@ -1798,6 +1798,17 @@ read_when:
   `_enter_forms`: Terapagos' Terastal form and the item forms are entry effects in the games too. Stat stage changes now
   go through `battle.shift_stage`, where Contrary turns each one around before Mist or Clear Body judges it.
   Known gap: a self stat change (Close Combat) still does not apply when the hit knocks the target out.
+- **A button that starts something must be used up in the store, not only checked for who pressed it.** The loser
+  could press 다시 붙기 on the same result card again and again, and each press played a new recorded battle.
+  `CommandHandler.rematch` checked only the presser (a fighter, the loser in a recorded battle), and the card kept
+  its button. The tests asked who may press, never the same card twice. Now `Store.claim_rematch` inserts
+  (channel, card `ts`) with `INSERT OR IGNORE` after the who-checks, so a wrong press spends nothing and two racing
+  presses play one battle; the listener then drops the actions block from the card (a failed edit is only logged).
+  The key is the card's own `ts`, not the thread root: every later card lives in the first card's thread
+  (`test_the_new_cards_button_works_once_even_inside_the_old_cards_thread`). Removing the claim fails 6 tests.
+  Class sweep: the trade buttons move `status` with a guarded `UPDATE … WHERE status = …` and the pending battles
+  with `claim_pending`, so both already act once. Known edge: a press whose battle fails on PokéAPI still spends
+  the card; `/대결` remains.
 
 ## Tests and the user's desktop
 
