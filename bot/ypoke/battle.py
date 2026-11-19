@@ -2048,7 +2048,7 @@ def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: s
         return fixed * (multiplier > 0) * accuracy * DAMAGE_DIVISOR / (2 * attacker.combatant.level // 5 + 2)
     return (
         _power(attacker, defender, move, weather, multiplier) * _expected_hits(move, attacker, accuracy)
-        * _stab(attacker, move) * multiplier
+        * _expected_stab(attacker, move) * multiplier
         * _weather_boost(move, weather) * _damage_taken(attacker, defender, move, multiplier, False)
         * _item_boost(attacker, move, multiplier)
         * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False) * _exposed(attacker, defender)
@@ -2116,6 +2116,12 @@ def _power(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | No
     return power * (hooks.ability(attacker, "modify_power", move, power, attacker, defender, weather, default=1.0)
                     * hooks.ability(defender, "modify_foe_power", move, defender, default=1.0)) * math.prod(
         _field(attacker, "field_power", move, attacker, defender)) * (_hidden(defender, move) or 1.0) * extra_hit
+
+
+def _expected_stab(attacker: _Fighter, move: Move) -> float:
+    if hooks.ability(attacker, "retypes_for", move, attacker, default=False):
+        return STAB_MULTIPLIER
+    return _stab(attacker, move)
 
 
 def _stab(attacker: _Fighter, move: Move) -> float:

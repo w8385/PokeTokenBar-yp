@@ -133,6 +133,8 @@ HOOKS = {
     "breaks_aura": "ability: Dark Aura and Fairy Aura weaken their moves instead while its holder is out (Aura Break)",
     "field_power": "state: multiplies the base power, after the ability",
     "modify_stab": "ability: replaces the same-type bonus",
+    "retypes_for": "ability: its holder turns into the move's type as it uses it, so the AI expects the same-type "
+                   "bonus (Protean)",
     "modify_weather_boost": "move: replaces the weather's multiplier",
     "modify_damage_taken": "ability: multiplies damage its holder takes from a foe, after the weather",
     "modify_damage_dealt": "ability: multiplies damage its holder deals a foe, with the target's ability",

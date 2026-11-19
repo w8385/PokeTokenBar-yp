@@ -898,74 +898,68 @@ side=1 P100 Lv50 ('psychic', 'fire') item=life-orb ability=mimicry nature=None m
 AbilityField side=0 pokemon='P384' ability='grassy-surge' terrain='grassy-terrain'
 MegaEvolution turn=1 side=0 pokemon='P384' ability='괴짜' form_id=10079
 AbilityTransform side=0 pokemon='P384' ability='imposter' into='P361' form_id=361 own_form_id=384
-Action turn=1 side=0 attacker='P384' defender='P361' move='원념의칼' multiplier=0.5 defender_hp=83 drained=True move_id=891
-AbilityRetype side=0 pokemon='P384' ability='libero' into='fire'
-Action turn=1 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 defender_hp=84 drained=True attacker_hp=91 move_id=891
-AbilityRetype side=1 pokemon='P361' ability='libero' into='fire'
-TerrainHeal turn=1 side=0 pokemon='P384' hp=90
-TerrainHeal turn=1 side=1 pokemon='P361' hp=97
-Action turn=2 side=0 attacker='P384' defender='P361' move='원념의칼' multiplier=0.5 defender_hp=79 drained=True attacker_hp=98 move_id=891
-Action turn=2 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 defender_hp=82 drained=True attacker_hp=88 move_id=891
-TerrainHeal turn=2 side=0 pokemon='P384' hp=88
-TerrainHeal turn=2 side=1 pokemon='P361' hp=94
-Action turn=3 side=0 attacker='P384' defender='P361' move='원념의칼' multiplier=0.5 defender_hp=78 drained=True attacker_hp=95 move_id=891
-Action turn=3 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 critical=True defender_hp=72 drained=True attacker_hp=91 move_id=891
-TerrainHeal turn=3 side=0 pokemon='P384' hp=78
-TerrainHeal turn=3 side=1 pokemon='P361' hp=97
-Action turn=4 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 defender_hp=63 drained=True move_id=891
-Action turn=4 side=0 attacker='P384' defender='P361' move='원념의칼' multiplier=0.5 defender_hp=82 drained=True attacker_hp=71 move_id=891
-TerrainHeal turn=4 side=0 pokemon='P384' hp=77
-TerrainHeal turn=4 side=1 pokemon='P361' hp=88
-Action turn=5 side=0 attacker='P384' defender='P361' move='원념의칼' multiplier=0.5 defender_hp=71 drained=True attacker_hp=84 move_id=891
-Action turn=5 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 critical=True defender_hp=60 drained=True attacker_hp=84 move_id=891
-TerrainHeal turn=5 side=0 pokemon='P384' hp=66
-TerrainHeal turn=5 side=1 pokemon='P361' hp=90
+Action turn=1 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) effect='charge-turn' move_id=130
+Action turn=1 side=1 attacker='P361' defender='P384' move='로켓박치기' changes=(Change(side=1, pokemon='P361', kind='defense', stages=1),) effect='charge-turn' move_id=130
+Action turn=2 side=1 attacker='P361' defender='P384' move='로켓박치기' defender_hp=71 move_id=130
+AbilityRetype side=1 pokemon='P361' ability='libero' into='normal'
+Action turn=2 side=0 attacker='P384' defender='P361' move='로켓박치기' defender_hp=65 attacker_hp=71 move_id=130
+AbilityRetype side=0 pokemon='P384' ability='libero' into='normal'
+TerrainHeal turn=2 side=0 pokemon='P384' hp=77
+TerrainHeal turn=2 side=1 pokemon='P361' hp=71
+Action turn=3 side=1 attacker='P361' defender='P384' move='로켓박치기' changes=(Change(side=1, pokemon='P361', kind='defense', stages=1),) defender_hp=77 attacker_hp=71 effect='charge-turn' move_id=130
+Action turn=3 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) defender_hp=71 attacker_hp=77 effect='charge-turn' move_id=130
+TerrainHeal turn=3 side=0 pokemon='P384' hp=83
+TerrainHeal turn=3 side=1 pokemon='P361' hp=77
+Action turn=4 side=1 attacker='P361' defender='P384' move='로켓박치기' defender_hp=59 attacker_hp=77 move_id=130
+Action turn=4 side=0 attacker='P384' defender='P361' move='로켓박치기' defender_hp=51 attacker_hp=59 move_id=130
+TerrainHeal turn=4 side=0 pokemon='P384' hp=65
+TerrainHeal turn=4 side=1 pokemon='P361' hp=57
+Action turn=5 side=1 attacker='P361' defender='P384' move='로켓박치기' changes=(Change(side=1, pokemon='P361', kind='defense', stages=1),) defender_hp=65 attacker_hp=57 effect='charge-turn' move_id=130
+Action turn=5 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) defender_hp=57 attacker_hp=65 effect='charge-turn' move_id=130
+TerrainHeal turn=5 side=0 pokemon='P384' hp=71
+TerrainHeal turn=5 side=1 pokemon='P361' hp=63
 FieldEnd turn=5 kind='grassy-terrain'
-Action turn=6 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) defender_hp=90 attacker_hp=66 effect='charge-turn' move_id=130
-Action turn=6 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 defender_hp=54 drained=True attacker_hp=96 move_id=891
-Action turn=7 side=0 attacker='P384' defender='P361' move='로켓박치기' defender_hp=64 attacker_hp=54 move_id=130
-Action turn=7 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 defender_hp=44 drained=True attacker_hp=69 move_id=891
-Action turn=8 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 defender_hp=34 drained=True attacker_hp=75 move_id=891
-Action turn=8 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) defender_hp=75 attacker_hp=34 effect='charge-turn' move_id=130
-Action turn=9 side=0 attacker='P384' defender='P361' move='로켓박치기' defender_hp=44 attacker_hp=34 move_id=130
-Action turn=9 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 defender_hp=26 drained=True attacker_hp=49 move_id=891
-Action turn=10 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) defender_hp=49 attacker_hp=26 effect='charge-turn' move_id=130
-Action turn=10 side=1 attacker='P361' defender='P384' move='원념의칼' multiplier=0.5 defender_hp=19 drained=True attacker_hp=53 move_id=891
-Action turn=11 side=0 attacker='P384' defender='P361' move='로켓박치기' defender_hp=18 attacker_hp=19 move_id=130
-Action turn=11 side=1 attacker='P361' defender='P384' move='로켓박치기' changes=(Change(side=1, pokemon='P361', kind='defense', stages=1),) defender_hp=19 attacker_hp=18 effect='charge-turn' move_id=130
-Action turn=12 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) defender_hp=18 attacker_hp=19 effect='charge-turn' move_id=130
-Action turn=12 side=1 attacker='P361' defender='P384' move='로켓박치기' defender_hp=8 attacker_hp=18 move_id=130
-Action turn=13 side=1 attacker='P361' defender='P384' move='로켓박치기' changes=(Change(side=1, pokemon='P361', kind='defense', stages=1),) defender_hp=8 attacker_hp=18 effect='charge-turn' move_id=130
-Action turn=13 side=0 attacker='P384' defender='P361' move='로켓박치기' defender_hp=2 attacker_hp=8 move_id=130
-Action turn=14 side=1 attacker='P361' defender='P384' move='로켓박치기' defender_hp=0 knockout=True attacker_hp=2 move_id=130
-SendOut turn=14 side=0 pokemon='P84' member=1
+Action turn=6 side=1 attacker='P361' defender='P384' move='로켓박치기' defender_hp=53 attacker_hp=63 move_id=130
+Action turn=6 side=0 attacker='P384' defender='P361' move='로켓박치기' critical=True defender_hp=29 attacker_hp=53 move_id=130
+Action turn=7 side=1 attacker='P361' defender='P384' move='로켓박치기' changes=(Change(side=1, pokemon='P361', kind='defense', stages=1),) defender_hp=53 attacker_hp=29 effect='charge-turn' move_id=130
+Action turn=7 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) defender_hp=29 attacker_hp=53 effect='charge-turn' move_id=130
+Action turn=8 side=0 attacker='P384' defender='P361' move='로켓박치기' defender_hp=11 attacker_hp=53 move_id=130
+Action turn=8 side=1 attacker='P361' defender='P384' move='로켓박치기' defender_hp=36 attacker_hp=11 move_id=130
+Action turn=9 side=0 attacker='P384' defender='P361' move='로켓박치기' changes=(Change(side=0, pokemon='P384', kind='defense', stages=1),) defender_hp=11 attacker_hp=36 effect='charge-turn' move_id=130
+Action turn=9 side=1 attacker='P361' defender='P384' move='로켓박치기' changes=(Change(side=1, pokemon='P361', kind='defense', stages=1),) defender_hp=36 attacker_hp=11 effect='charge-turn' move_id=130
+Action turn=10 side=0 attacker='P384' defender='P361' move='로켓박치기' defender_hp=0 knockout=True attacker_hp=36 move_id=130
+SendOut turn=10 side=1 pokemon='P505' member=1
+Action turn=11 side=1 attacker='P505' defender='P384' move='콸콸오라' defender_hp=23 move_id=736
+Action turn=11 side=0 attacker='P384' defender='P505' move='껍질끼우기' multiplier=2.0 changes=(Change(side=1, pokemon='P505', kind='binding', stages=0),) defender_hp=57 attacker_hp=23 move_id=128
+VolatileTick turn=11 side=1 pokemon='P505' kind='binding' hp=46
+Action turn=12 side=1 attacker='P505' defender='P384' move='콸콸오라' defender_hp=9 attacker_hp=46 move_id=736
+Action turn=12 side=0 attacker='P384' defender='P505' move='껍질끼우기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=9 move_id=128
+SendOut turn=12 side=1 pokemon='P752' member=2
+Action turn=13 side=1 attacker='P752' defender='P384' move='사이코웨이브' defender_hp=0 knockout=True move_id=149
+SendOut turn=13 side=0 pokemon='P84' member=1
 AbilityField side=0 pokemon='P84' ability='hadron-engine' terrain='electric-terrain'
-Action turn=15 side=0 attacker='P84' defender='P361' move='열탕' multiplier=2.0 defender_hp=0 knockout=True move_id=503
-SendOut turn=15 side=1 pokemon='P505' member=1
-Action turn=16 side=0 attacker='P84' defender='P505' move='이차원러시' multiplier=2.0 critical=True defender_hp=0 knockout=True move_id=621
-SendOut turn=16 side=1 pokemon='P752' member=2
-Action turn=17 side=0 attacker='P84' defender='P752' move='용의분노' multiplier=2.0 defender_hp=75 move_id=82
-Action turn=17 side=1 attacker='P752' defender='P84' move='녹기' changes=(Change(side=1, pokemon='P752', kind='defense', stages=2),) attacker_hp=75 effect='stages' move_id=151
-ItemHeal turn=17 side=1 pokemon='P752' item='leftovers' hp=81
-Action turn=18 side=0 attacker='P84' defender='P752' move='용의분노' multiplier=2.0 defender_hp=57 move_id=82
-Action turn=18 side=1 attacker='P752' defender='P84' move='사이코웨이브' defender_hp=51 attacker_hp=57 move_id=149
-ItemHeal turn=18 side=1 pokemon='P752' item='leftovers' hp=63
-Action turn=19 side=0 attacker='P84' defender='P752' move='용의분노' multiplier=2.0 defender_hp=38 attacker_hp=51 move_id=82
-Action turn=19 side=1 attacker='P752' defender='P84' move='사이코웨이브' defender_hp=19 attacker_hp=38 move_id=149
-ItemHeal turn=19 side=1 pokemon='P752' item='leftovers' hp=44
-FieldEnd turn=19 kind='electric-terrain'
-Action turn=20 side=0 attacker='P84' defender='P752' move='용의분노' multiplier=2.0 defender_hp=19 attacker_hp=19 move_id=82
-Action turn=20 side=1 attacker='P752' defender='P84' move='사이코웨이브' defender_hp=0 knockout=True attacker_hp=19 move_id=149
-ItemHeal turn=20 side=1 pokemon='P752' item='leftovers' hp=25
-SendOut turn=20 side=0 pokemon='P892' member=2
-Action turn=21 side=0 attacker='P892' defender='P752' move='자폭' defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 move_id=120
-SendOut turn=21 side=0 pokemon='P384' member=3
-SendOut turn=21 side=1 pokemon='P100' member=3
-Action turn=22 side=1 attacker='P100' defender='P384' move='텍스처' effect='conversion' move_id=160
-Action turn=22 side=0 attacker='P384' defender='P100' move='싫은소리' changes=(Change(side=1, pokemon='P100', kind='defense', stages=-2),) effect='stages' move_id=103
-Action turn=23 side=1 attacker='P100' defender='P384' move='더블어택' defender_hp=23 hits=2 attacker_hp=91 attacker_item='life-orb' move_id=458
-Action turn=23 side=0 attacker='P384' defender='P100' move='화룡점정' defender_hp=0 knockout=True attacker_hp=23 move_id=620
-result winner=0 turns=23 remaining=((0, 0, 0, 23, None, None), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
+Action turn=14 side=0 attacker='P84' defender='P752' move='용의분노' multiplier=2.0 defender_hp=75 move_id=82
+Action turn=14 side=1 attacker='P752' defender='P84' move='녹기' changes=(Change(side=1, pokemon='P752', kind='defense', stages=2),) attacker_hp=75 effect='stages' move_id=151
+ItemHeal turn=14 side=1 pokemon='P752' item='leftovers' hp=81
+Action turn=15 side=0 attacker='P84' defender='P752' move='용의분노' multiplier=2.0 defender_hp=57 move_id=82
+Action turn=15 side=1 attacker='P752' defender='P84' move='사이코웨이브' defender_hp=75 attacker_hp=57 move_id=149
+ItemHeal turn=15 side=1 pokemon='P752' item='leftovers' hp=63
+Action turn=16 side=0 attacker='P84' defender='P752' move='용의분노' multiplier=2.0 defender_hp=38 attacker_hp=75 move_id=82
+Action turn=16 side=1 attacker='P752' defender='P84' move='사이코웨이브' defender_hp=17 attacker_hp=38 move_id=149
+ItemHeal turn=16 side=1 pokemon='P752' item='leftovers' hp=44
+Action turn=17 side=0 attacker='P84' defender='P752' move='용의분노' multiplier=2.0 defender_hp=19 attacker_hp=17 move_id=82
+Action turn=17 side=1 attacker='P752' defender='P84' move='사이코웨이브' defender_hp=0 knockout=True attacker_hp=19 move_id=149
+ItemHeal turn=17 side=1 pokemon='P752' item='leftovers' hp=25
+SendOut turn=17 side=0 pokemon='P892' member=2
+Action turn=18 side=0 attacker='P892' defender='P752' move='자폭' defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 move_id=120
+FieldEnd turn=18 kind='electric-terrain'
+SendOut turn=18 side=0 pokemon='P384' member=3
+SendOut turn=18 side=1 pokemon='P100' member=3
+Action turn=19 side=1 attacker='P100' defender='P384' move='텍스처' effect='conversion' move_id=160
+Action turn=19 side=0 attacker='P384' defender='P100' move='싫은소리' changes=(Change(side=1, pokemon='P100', kind='defense', stages=-2),) effect='stages' move_id=103
+Action turn=20 side=1 attacker='P100' defender='P384' move='더블어택' defender_hp=21 hits=2 attacker_hp=91 attacker_item='life-orb' move_id=458
+Action turn=20 side=0 attacker='P384' defender='P100' move='화룡점정' defender_hp=0 knockout=True attacker_hp=21 move_id=620
+result winner=0 turns=20 remaining=((0, 0, 0, 21, None, None), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
 ## pvp 56
 side=0 P19 Lv50 ('fire', 'psychic') item=None ability=no-guard nature=brave moves=[191, 193, 447, 776] mega=None
 side=0 P864 Lv49 ('normal',) item=magnet ability=overcoat nature=None moves=[201, 203, 557, 6] mega=None
