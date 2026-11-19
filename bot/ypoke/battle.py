@@ -1546,6 +1546,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         if contact:
             changes, ability = (*changes, contact), defender.ability
         ability = ability or blocked_by
+    elif move.stat_on_user and dealt > 0:
+        changes = tuple(_stat_changes(side, move, attacker, defender, rng))
     recoil, drained = move is STRUGGLE, move.drain > 0
     if recoil:
         attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // STRUGGLE_RECOIL_FRACTION))
@@ -1767,17 +1769,20 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
     if defender.status == "freeze" and (move.type == "fire" or hooks.move(move, "thaws_user", default=False)):
         defender.status = None
         changes.append(Change(1 - side, defender.combatant.name, "thaw"))
-    if move.stat_changes and rng.random() * 100 < move.stat_chance * _chance_scale(
-            move, attacker, None if move.stat_on_user else defender):
-        target, target_side = (attacker, side) if move.stat_on_user else (defender, 1 - side)
-        guarded = not move.stat_on_user and _stats_guarded(defender, not _infiltrates(attacker))
-        for key, stages in move.stat_changes:
-            change = shift_stage(target, target_side, key, stages, guarded=guarded,
-                                 by=None if move.stat_on_user else attacker)
-            if change is not None:
-                changes.append(change)
+    changes.extend(_stat_changes(side, move, attacker, defender, rng))
     changes.extend(hooks.move(move, "secondary", attacker, defender, side, rng, default=()))
     return tuple(changes), blocked_by
+
+
+def _stat_changes(side: int, move: Move, attacker: _Fighter, defender: _Fighter, rng: random.Random) -> list[Change]:
+    if not move.stat_changes or rng.random() * 100 >= move.stat_chance * _chance_scale(
+            move, attacker, None if move.stat_on_user else defender):
+        return []
+    target, target_side = (attacker, side) if move.stat_on_user else (defender, 1 - side)
+    guarded = not move.stat_on_user and _stats_guarded(defender, not _infiltrates(attacker))
+    changes = (shift_stage(target, target_side, key, stages, guarded=guarded, by=None if move.stat_on_user else attacker)
+               for key, stages in move.stat_changes)
+    return [change for change in changes if change is not None]
 
 
 def shift_stage(fighter: _Fighter, side: int, key: str, stages: int, *, guarded: bool = False,

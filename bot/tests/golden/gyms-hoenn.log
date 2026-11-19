@@ -22,9 +22,9 @@ Action turn=9 side=1 attacker='P364' defender='P197' move='냉동빔' multiplier
 SendOut turn=9 side=0 pokemon='P384' member=3
 Action turn=10 side=0 attacker='P384' defender='P364' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=49 move_id=620
 Action turn=10 side=1 attacker='P364' defender='P384' move='지진' defender_hp=56 attacker_hp=49 move_id=89
-Action turn=11 side=0 attacker='P384' defender='P364' move='화룡점정' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=56 move_id=620
+Action turn=11 side=0 attacker='P384' defender='P364' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=56 move_id=620
 result winner=0 turns=11 remaining=((0, 0, 0, 56, None, None), (0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None))
-won=True carry=null body=54e284b0af2032f66b2292ab0e1c17a8d7f952a5fc3390c6431dda45ec5559a1
+won=True carry=null body=b6a34c983b485e0cfc2fe3c2eefa57fec5fd9d0fe6a285c1c9bb5fd3485c28d1
 ## hoenn-2 party 0 carried null
 Action turn=1 side=1 attacker='P351' defender='P403' move='불대문자' missed=True multiplier=2.0 move_id=126
 Action turn=1 side=0 attacker='P403' defender='P351' move='트라이어택' defender_hp=67 move_id=267 via='자연의힘'
@@ -90,22 +90,22 @@ Action turn=13 side=0 attacker='P197' defender='P326' move='에너지볼' multip
 Action turn=13 side=1 attacker='P326' defender='P197' move='사이코키네시스' defender_hp=0 knockout=True attacker_hp=30 move_id=94
 SendOut turn=13 side=0 pokemon='P384' member=3
 Action turn=14 side=1 attacker='P326' defender='P384' move='사이코키네시스' multiplier=2.0 defender_hp=59 attacker_hp=30 move_id=94
-Action turn=14 side=0 attacker='P384' defender='P326' move='화룡점정' defender_hp=0 knockout=True attacker_hp=59 move_id=620
+Action turn=14 side=0 attacker='P384' defender='P326' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=59 move_id=620
 result winner=0 turns=14 remaining=((0, 0, 0, 59, None, None), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), ('paralysis', None, None, None))
-won=True carry=null body=912e46cbc03254562f7efa9cfbc2f330d34f3adc7900622bd57dd8db37c6dfe5
+won=True carry=null body=4b4da933984511fc09ca8e0cdfa3b55a2701ac675d9107310c389c7b272cd4c0
 ## hoenn-4 party 0 carried null
 Action turn=1 side=0 attacker='P403' defender='P286' move='트라이어택' multiplier=0.5 defender_hp=91 move_id=267 via='자연의힘'
 Action turn=1 side=1 attacker='P286' defender='P403' move='인파이트' critical=True changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=10 attacker_hp=91 move_id=370
 Action turn=2 side=0 attacker='P403' defender='P286' move='트라이어택' multiplier=0.5 defender_hp=77 attacker_hp=10 move_id=267 via='자연의힘'
-Action turn=2 side=1 attacker='P286' defender='P403' move='인파이트' defender_hp=0 knockout=True attacker_hp=77 move_id=370
+Action turn=2 side=1 attacker='P286' defender='P403' move='인파이트' changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=77 move_id=370
 SendOut turn=2 side=0 pokemon='P65' member=1
 MegaEvolution turn=3 side=0 pokemon='P65' ability='일찍기상' form_id=10037
-Action turn=3 side=0 attacker='P65' defender='P286' move='파워젬' multiplier=0.5 critical=True defender_hp=56 move_id=408
-Action turn=3 side=1 attacker='P286' defender='P65' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=57 attacker_hp=56 move_id=370
-Action turn=4 side=0 attacker='P65' defender='P286' move='파워젬' multiplier=0.5 defender_hp=38 attacker_hp=57 move_id=408
-Action turn=4 side=1 attacker='P286' defender='P65' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=12 attacker_hp=38 move_id=370
-Action turn=5 side=0 attacker='P65' defender='P286' move='파워젬' multiplier=0.5 defender_hp=17 attacker_hp=12 move_id=408
-Action turn=5 side=1 attacker='P286' defender='P65' move='인파이트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=17 move_id=370
+Action turn=3 side=0 attacker='P65' defender='P286' move='파워젬' multiplier=0.5 defender_hp=59 move_id=408
+Action turn=3 side=1 attacker='P286' defender='P65' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=57 attacker_hp=59 move_id=370
+Action turn=4 side=0 attacker='P65' defender='P286' move='파워젬' multiplier=0.5 defender_hp=36 attacker_hp=57 move_id=408
+Action turn=4 side=1 attacker='P286' defender='P65' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=12 attacker_hp=36 move_id=370
+Action turn=5 side=0 attacker='P65' defender='P286' move='파워젬' multiplier=0.5 defender_hp=11 attacker_hp=12 move_id=408
+Action turn=5 side=1 attacker='P286' defender='P65' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=11 move_id=370
 SendOut turn=5 side=0 pokemon='P197' member=2
 Action turn=6 side=0 attacker='P197' defender='P286' move='불꽃튀기기' multiplier=2.0 defender_hp=0 knockout=True move_id=481
 SendOut turn=6 side=1 pokemon='P357' member=1
@@ -124,9 +124,9 @@ Action turn=11 side=0 attacker='P197' defender='P275' move='신비의칼' multip
 StatusDamage turn=11 side=0 pokemon='P197' hp=0 fainted=True kind='poison'
 SendOut turn=11 side=0 pokemon='P384' member=3
 Action turn=12 side=1 attacker='P275' defender='P384' move='속임수' multiplier=0.5 defender_hp=79 attacker_hp=20 move_id=492
-Action turn=12 side=0 attacker='P384' defender='P275' move='화룡점정' defender_hp=0 knockout=True attacker_hp=79 move_id=620
+Action turn=12 side=0 attacker='P384' defender='P275' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=79 move_id=620
 result winner=0 turns=12 remaining=((0, 0, 0, 79, None, None), (0, 0, 0, 0)) statuses=((None, None, 'poison', None, None, None), (None, None, None, None))
-won=True carry=null body=6dd061cd76b275a2a1e85fbc3bd11e7146ce84e8019cfd50842bc0e3a1baf646
+won=True carry=null body=3656e78338efd06caa5d5d27c3f771bf7570248aee8bed223b5eb2ff11895a77
 ## hoenn-5 party 0 carried null
 Action turn=1 side=1 attacker='P319' defender='P403' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
 SendOut turn=1 side=0 pokemon='P65' member=1
@@ -155,15 +155,15 @@ Action turn=11 side=0 attacker='P718' defender='P342' move='가위자르기' mis
 Action turn=11 side=1 attacker='P342' defender='P718' move='인파이트' changes=(Change(side=1, pokemon='P342', kind='defense', stages=-1), Change(side=1, pokemon='P342', kind='special_defense', stages=-1)) defender_hp=57 move_id=370
 Action turn=12 side=0 attacker='P718' defender='P342' move='열사의폭풍' defender_hp=60 attacker_hp=57 move_id=848
 Action turn=12 side=1 attacker='P342' defender='P718' move='인파이트' changes=(Change(side=1, pokemon='P342', kind='defense', stages=-1), Change(side=1, pokemon='P342', kind='special_defense', stages=-1)) defender_hp=16 attacker_hp=60 move_id=370
-Action turn=13 side=1 attacker='P342' defender='P718' move='인파이트' defender_hp=0 knockout=True attacker_hp=60 move_id=370
+Action turn=13 side=1 attacker='P342' defender='P718' move='인파이트' changes=(Change(side=1, pokemon='P342', kind='defense', stages=-1), Change(side=1, pokemon='P342', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=60 move_id=370
 SendOut turn=13 side=0 pokemon='P82' member=5
 AbilityTransform side=0 pokemon='P82' ability='imposter' into='P342' form_id=342 own_form_id=82
-Action turn=14 side=0 attacker='P82' defender='P342' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True move_id=370
+Action turn=14 side=0 attacker='P82' defender='P342' move='인파이트' multiplier=2.0 changes=(Change(side=0, pokemon='P82', kind='defense', stages=-1), Change(side=0, pokemon='P82', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
 SendOut turn=14 side=1 pokemon='P332' member=3
-Action turn=15 side=0 attacker='P82' defender='P332' move='인파이트' multiplier=2.0 changes=(Change(side=0, pokemon='P82', kind='defense', stages=-1), Change(side=0, pokemon='P82', kind='special_defense', stages=-1)) defender_hp=20 move_id=370
-Action turn=15 side=1 attacker='P332' defender='P82' move='기합구슬' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=10 attacker_item='life-orb' move_id=411
-result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 10, None)) statuses=((None, None, None, None, None, None), (None, 'paralysis', None, None, None))
-won=False carry=null body=df9102ed7e2647ca139a871758f8b9aa5c06f483efd6bbf2d62a9c02e4165105
+Action turn=15 side=0 attacker='P82' defender='P332' move='인파이트' multiplier=2.0 changes=(Change(side=0, pokemon='P82', kind='defense', stages=-1), Change(side=0, pokemon='P82', kind='special_defense', stages=-1)) defender_hp=17 move_id=370
+Action turn=15 side=1 attacker='P332' defender='P82' move='기합구슬' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=8 attacker_item='life-orb' move_id=411
+result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 8, None)) statuses=((None, None, None, None, None, None), (None, 'paralysis', None, None, None))
+won=False carry=null body=c616f96fe2830060ea6c271c833b32975b7e8ab3c5e92df9210523818ac3f323
 ## hoenn-6 party 0 carried null
 Action turn=1 side=1 attacker='P313' defender='P403' move='깨뜨리다' defender_hp=66 move_id=280
 Action turn=1 side=0 attacker='P403' defender='P313' move='트라이어택' multiplier=0.5 critical=True defender_hp=90 attacker_hp=66 move_id=267 via='자연의힘'
@@ -190,24 +190,28 @@ SendOut turn=10 side=0 pokemon='P384' member=3
 Action turn=11 side=1 attacker='P284' defender='P384' move='폭풍' missed=True multiplier=2.0 attacker_hp=90 move_id=542
 Action turn=11 side=0 attacker='P384' defender='P284' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=16 move_id=620
 Action turn=12 side=1 attacker='P284' defender='P384' move='폭풍' missed=True multiplier=2.0 attacker_hp=16 move_id=542
-Action turn=12 side=0 attacker='P384' defender='P284' move='화룡점정' multiplier=2.0 defender_hp=0 knockout=True move_id=620
+Action turn=12 side=0 attacker='P384' defender='P284' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=620
 SendOut turn=12 side=1 pokemon='P291' member=3
-Action turn=13 side=1 attacker='P291' defender='P384' move='제비반환' multiplier=2.0 critical=True defender_hp=0 knockout=True move_id=332
+Action turn=13 side=1 attacker='P291' defender='P384' move='제비반환' multiplier=2.0 defender_hp=0 knockout=True move_id=332
 SendOut turn=13 side=0 pokemon='P718' member=4
-Action turn=14 side=0 attacker='P718' defender='P291' move='열사의폭풍' multiplier=2.0 defender_hp=48 move_id=848
-Action turn=14 side=1 attacker='P291' defender='P718' move='베어가르기' multiplier=0.5 defender_hp=92 attacker_hp=48 move_id=163
-Action turn=15 side=0 attacker='P718' defender='P291' move='열사의폭풍' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=92 move_id=848
+Action turn=14 side=0 attacker='P718' defender='P291' move='열사의폭풍' multiplier=2.0 changes=(Change(side=1, pokemon='P291', kind='burn', stages=0),) defender_hp=48 move_id=848
+Action turn=14 side=1 attacker='P291' defender='P718' move='베어가르기' multiplier=0.5 critical=True defender_hp=94 attacker_hp=48 move_id=163
+StatusDamage turn=14 side=1 pokemon='P291' hp=42 fainted=False
+Action turn=15 side=0 attacker='P718' defender='P291' move='열사의폭풍' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=94 move_id=848
 SendOut turn=15 side=1 pokemon='P348' member=4
-Action turn=16 side=0 attacker='P718' defender='P348' move='가위자르기' defender_hp=1 attacker_hp=92 defender_item='focus-sash' move_id=12
-Action turn=16 side=1 attacker='P348' defender='P718' move='지진' multiplier=4.0 defender_hp=9 attacker_hp=1 move_id=89
-Action turn=17 side=0 attacker='P718' defender='P348' move='열사의폭풍' missed=True defender_hp=1 attacker_hp=9 move_id=848
-Action turn=17 side=1 attacker='P348' defender='P718' move='지진' multiplier=4.0 defender_hp=0 knockout=True attacker_hp=1 move_id=89
-SendOut turn=17 side=0 pokemon='P82' member=5
+Action turn=16 side=0 attacker='P718' defender='P348' move='가위자르기' missed=True attacker_hp=94 move_id=12
+Action turn=16 side=1 attacker='P348' defender='P718' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
+SendOut turn=16 side=0 pokemon='P82' member=5
 AbilityTransform side=0 pokemon='P82' ability='imposter' into='P348' form_id=348 own_form_id=82
-Action turn=18 side=1 attacker='P348' defender='P82' move='지진' defender_hp=68 attacker_hp=1 move_id=89
-Action turn=18 side=0 attacker='P82' defender='P348' move='지진' defender_hp=0 knockout=True attacker_hp=68 move_id=89
-result winner=0 turns=18 remaining=((0, 0, 0, 0, 0, 68), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=True carry=null body=8ad781c25658e0de640ea202e15bdc163a3fd882132226e58ddf23ffadd28be4
+Action turn=17 side=0 attacker='P82' defender='P348' move='지진' defender_hp=76 move_id=89
+Action turn=17 side=1 attacker='P348' defender='P82' move='지진' defender_hp=68 attacker_hp=76 move_id=89
+Action turn=18 side=1 attacker='P348' defender='P82' move='지진' defender_hp=36 attacker_hp=76 move_id=89
+Action turn=18 side=0 attacker='P82' defender='P348' move='지진' defender_hp=54 attacker_hp=36 move_id=89
+Action turn=19 side=0 attacker='P82' defender='P348' move='지진' defender_hp=30 attacker_hp=36 move_id=89
+Action turn=19 side=1 attacker='P348' defender='P82' move='지진' defender_hp=6 attacker_hp=30 move_id=89
+Action turn=20 side=1 attacker='P348' defender='P82' move='지진' defender_hp=0 knockout=True attacker_hp=30 move_id=89
+result winner=1 turns=20 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 30)) statuses=((None, None, None, None, None, None), (None, None, None, 'burn', None))
+won=False carry=null body=d69a4ded6e0af4f5ae3b526ab024c49ae3e70db960d5fca76f99b40a90a06d94
 ## hoenn-7 party 0 carried null
 Action turn=1 side=0 attacker='P403' defender='P279' move='트라이어택' changes=(Change(side=1, pokemon='P279', kind='paralysis', stages=0),) defender_hp=68 move_id=267 via='자연의힘'
 Action turn=1 side=1 attacker='P279' defender='P403' move='' blocked='paralysis' attacker_hp=68
@@ -357,9 +361,9 @@ AbilityTransform side=0 pokemon='P82' ability='imposter' into='P286' form_id=286
 Action turn=1 side=1 attacker='P286' defender='P82' move='인파이트' changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=11 move_id=370
 Action turn=1 side=0 attacker='P82' defender='P286' move='인파이트' changes=(Change(side=0, pokemon='P82', kind='defense', stages=-1), Change(side=0, pokemon='P82', kind='special_defense', stages=-1)) defender_hp=52 attacker_hp=11 move_id=370
 Action turn=2 side=0 attacker='P82' defender='P286' move='인파이트' changes=(Change(side=0, pokemon='P82', kind='defense', stages=-1), Change(side=0, pokemon='P82', kind='special_defense', stages=-1)) defender_hp=1 attacker_hp=11 move_id=370
-Action turn=2 side=1 attacker='P286' defender='P82' move='인파이트' defender_hp=0 knockout=True attacker_hp=1 move_id=370
+Action turn=2 side=1 attacker='P286' defender='P82' move='인파이트' changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=1 move_id=370
 result winner=1 turns=2 remaining=((0,), (1, None, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
-won=False carry=null body=8a9efb13e4b9545638ce7fa6267c0b22cd506a853415bd7771d428dee8dd4a17
+won=False carry=null body=7520590df836e26b25a38fbecee72427d4bece0cad181de3369c50f8fa56016f
 ## hoenn-elite-3 party 0 carried null
 Action turn=1 side=1 attacker='P302' defender='P403' move='속임수' defender_hp=65 move_id=492
 Action turn=1 side=0 attacker='P403' defender='P302' move='트라이어택' changes=(Change(side=1, pokemon='P302', kind='paralysis', stages=0),) defender_hp=84 attacker_hp=65 move_id=267 via='자연의힘'
@@ -445,7 +449,7 @@ SendOut turn=10 side=0 pokemon='P384' member=3
 Action turn=11 side=1 attacker='P369' defender='P384' move='지진' defender_hp=63 attacker_hp=28 move_id=89
 Action turn=11 side=0 attacker='P384' defender='P369' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=4 attacker_hp=63 move_id=620
 Action turn=12 side=1 attacker='P369' defender='P384' move='지진' defender_hp=12 attacker_hp=4 move_id=89
-Action turn=12 side=0 attacker='P384' defender='P369' move='화룡점정' defender_hp=0 knockout=True attacker_hp=12 move_id=620
+Action turn=12 side=0 attacker='P384' defender='P369' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=12 move_id=620
 SendOut turn=12 side=1 pokemon='P334' member=3
 Action turn=13 side=1 attacker='P334' defender='P384' move='브레이브버드' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=97 move_id=413
 SendOut turn=13 side=0 pokemon='P718' member=4
@@ -463,7 +467,7 @@ SendOut turn=17 side=1 pokemon='P373' member=5
 Action turn=18 side=0 attacker='P82' defender='P373' move='문포스' changes=(Change(side=1, pokemon='P373', kind='special_attack', stages=-1),) defender_hp=76 attacker_hp=19 move_id=585
 Action turn=18 side=1 attacker='P373' defender='P82' move='지진' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=76 move_id=89
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 76)) statuses=((None, None, None, None, None, None), ('burn', None, None, None, None, None))
-won=False carry=null body=5f969807238b5730b4f8b4cb1e3e6a3ef7f2b773fc5771692f81cffcb4b0f43d
+won=False carry=null body=64ded13191952156f8647622f6601f4d0923db355c1ac9917daa3db2044f32de
 ## hoenn-champion party 0 carried null
 MegaEvolution turn=1 side=1 pokemon='P282' ability='플라워베일' form_id=10051
 Action turn=1 side=1 attacker='P282' defender='P403' move='사이코키네시스' defender_hp=79 move_id=94
@@ -500,21 +504,21 @@ SendOut turn=14 side=1 pokemon='P350' member=3
 Action turn=15 side=0 attacker='P197' defender='P350' move='에너지볼' multiplier=2.0 defender_hp=25 attacker_hp=27 move_id=412
 Action turn=15 side=1 attacker='P350' defender='P197' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=25 move_id=58
 SendOut turn=15 side=0 pokemon='P384' member=3
-Action turn=16 side=0 attacker='P384' defender='P350' move='화룡점정' defender_hp=0 knockout=True move_id=620
+Action turn=16 side=0 attacker='P384' defender='P350' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=620
 SendOut turn=16 side=1 pokemon='P286' member=4
-Action turn=17 side=1 attacker='P286' defender='P384' move='인파이트' changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=21 move_id=370
-Action turn=17 side=0 attacker='P384' defender='P286' move='화룡점정' multiplier=0.5 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=77 attacker_hp=21 move_id=620
-Action turn=18 side=1 attacker='P286' defender='P384' move='인파이트' defender_hp=0 knockout=True attacker_hp=77 move_id=370
-SendOut turn=18 side=0 pokemon='P718' member=4
-Action turn=19 side=0 attacker='P718' defender='P286' move='열사의폭풍' multiplier=4.0 defender_hp=0 knockout=True move_id=848
-SendOut turn=19 side=1 pokemon='P381' member=5
-Action turn=20 side=0 attacker='P718' defender='P381' move='열사의폭풍' multiplier=2.0 defender_hp=13 move_id=848
-Action turn=20 side=1 attacker='P381' defender='P718' move='러스터퍼지' defender_hp=76 attacker_hp=13 move_id=295
-Action turn=21 side=0 attacker='P718' defender='P381' move='열사의폭풍' missed=True multiplier=2.0 defender_hp=13 attacker_hp=76 move_id=848
-Action turn=21 side=1 attacker='P381' defender='P718' move='러스터퍼지' changes=(Change(side=0, pokemon='P718', kind='special_defense', stages=-1),) defender_hp=54 attacker_hp=13 move_id=295
-Action turn=22 side=0 attacker='P718' defender='P381' move='열사의폭풍' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=54 move_id=848
+Action turn=17 side=1 attacker='P286' defender='P384' move='인파이트' changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
+SendOut turn=17 side=0 pokemon='P718' member=4
+Action turn=18 side=0 attacker='P718' defender='P286' move='열사의폭풍' multiplier=4.0 defender_hp=0 knockout=True move_id=848
+SendOut turn=18 side=1 pokemon='P381' member=5
+Action turn=19 side=0 attacker='P718' defender='P381' move='열사의폭풍' missed=True multiplier=2.0 move_id=848
+Action turn=19 side=1 attacker='P381' defender='P718' move='러스터퍼지' changes=(Change(side=0, pokemon='P718', kind='special_defense', stages=-1),) defender_hp=79 move_id=295
+Action turn=20 side=0 attacker='P718' defender='P381' move='열사의폭풍' multiplier=2.0 defender_hp=13 attacker_hp=79 move_id=848
+Action turn=20 side=1 attacker='P381' defender='P718' move='러스터퍼지' defender_hp=43 attacker_hp=13 move_id=295
+Action turn=21 side=0 attacker='P718' defender='P381' move='열사의폭풍' missed=True multiplier=2.0 defender_hp=13 attacker_hp=43 move_id=848
+Action turn=21 side=1 attacker='P381' defender='P718' move='러스터퍼지' changes=(Change(side=0, pokemon='P718', kind='special_defense', stages=-1),) defender_hp=10 attacker_hp=13 move_id=295
+Action turn=22 side=0 attacker='P718' defender='P381' move='열사의폭풍' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=10 move_id=848
 SendOut turn=22 side=1 pokemon='P383' member=6
-Action turn=23 side=0 attacker='P718' defender='P383' move='가위자르기' missed=True attacker_hp=54 move_id=12
+Action turn=23 side=0 attacker='P718' defender='P383' move='가위자르기' missed=True attacker_hp=10 move_id=12
 Action turn=23 side=1 attacker='P383' defender='P718' move='단애의칼' multiplier=4.0 defender_hp=0 knockout=True move_id=619
 SendOut turn=23 side=0 pokemon='P82' member=5
 AbilityTransform side=0 pokemon='P82' ability='imposter' into='P383' form_id=383 own_form_id=82
@@ -522,7 +526,7 @@ Action turn=24 side=0 attacker='P82' defender='P383' move='암해머' multiplier
 Action turn=24 side=1 attacker='P383' defender='P82' move='단애의칼' defender_hp=43 attacker_hp=55 move_id=619
 Action turn=25 side=1 attacker='P383' defender='P82' move='단애의칼' defender_hp=0 knockout=True attacker_hp=55 move_id=619
 result winner=1 turns=25 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 55)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=a830468566b78cead024b6a5a2bad6fcd5de4361b98003442603e57e2f33c197
+won=False carry=null body=3349b9798b21d5ba1c9ecdf80ec1daf0ea75ff0347dc3185a2c872c30eaf6c4b
 ## hoenn-hideout-1 party 0 carried null
 Action turn=1 side=0 attacker='P403' defender='P303' move='정신차리기' defender_hp=68 move_id=265
 Action turn=1 side=1 attacker='P303' defender='P403' move='깨뜨리다' defender_hp=76 attacker_hp=68 move_id=280
@@ -612,26 +616,27 @@ Action turn=13 side=0 attacker='P197' defender='P362' move='에너지볼' multip
 Action turn=14 side=1 attacker='P362' defender='P197' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=19 move_id=58
 SendOut turn=14 side=0 pokemon='P384' member=3
 Action turn=15 side=1 attacker='P362' defender='P384' move='지진' defender_hp=55 attacker_hp=19 move_id=89
-Action turn=15 side=0 attacker='P384' defender='P362' move='화룡점정' defender_hp=0 knockout=True attacker_hp=55 move_id=620
+Action turn=15 side=0 attacker='P384' defender='P362' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=55 move_id=620
 SendOut turn=15 side=1 pokemon='P257' member=5
 Action turn=16 side=0 attacker='P384' defender='P257' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=70 attacker_hp=55 move_id=620
 Action turn=16 side=1 attacker='P257' defender='P384' move='브레이브버드' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=52 move_id=413
 SendOut turn=16 side=0 pokemon='P718' member=4
-Action turn=17 side=0 attacker='P718' defender='P257' move='열사의폭풍' defender_hp=22 move_id=848
-Action turn=17 side=1 attacker='P257' defender='P718' move='지진' multiplier=4.0 defender_hp=30 attacker_hp=22 move_id=89
-Action turn=18 side=0 attacker='P718' defender='P257' move='열사의폭풍' defender_hp=0 knockout=True attacker_hp=30 move_id=848
-result winner=0 turns=18 remaining=((0, 0, 0, 0, 30, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 30, "status": null}, {"hp": 100, "status": null}] body=2a82b53b11290f964cb5c0e257b8e81e2528adbf8dc5af3194ed56c944d16433
-## hoenn-hideout-4 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 30, "status": null}, {"hp": 100, "status": null}]
-Action turn=1 side=0 attacker='P718' defender='P324' move='열사의폭풍' defender_hp=41 attacker_hp=30 move_id=848
-Action turn=1 side=1 attacker='P324' defender='P718' move='지진' multiplier=4.0 defender_hp=0 knockout=True attacker_hp=41 move_id=89
-SendOut turn=1 side=0 pokemon='P82' member=1
+Action turn=17 side=0 attacker='P718' defender='P257' move='열사의폭풍' defender_hp=21 move_id=848
+Action turn=17 side=1 attacker='P257' defender='P718' move='지진' multiplier=4.0 critical=True defender_hp=0 knockout=True attacker_hp=21 move_id=89
+SendOut turn=17 side=0 pokemon='P82' member=5
+AbilityTransform side=0 pokemon='P82' ability='imposter' into='P257' form_id=257 own_form_id=82
+Action turn=18 side=0 attacker='P82' defender='P257' move='인파이트' multiplier=2.0 changes=(Change(side=0, pokemon='P82', kind='defense', stages=-1), Change(side=0, pokemon='P82', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
+result winner=0 turns=18 remaining=((0, 0, 0, 0, 0, 100), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}] body=6755f3b88e8a2c6f2471f5af7595d9fee3084333b1b53def9ff0fdc3e4ce5713
+## hoenn-hideout-4 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}]
 AbilityTransform side=0 pokemon='P82' ability='imposter' into='P324' form_id=324 own_form_id=82
-Action turn=2 side=0 attacker='P82' defender='P324' move='이판사판태클' recoil=True defender_hp=0 knockout=True attacker_hp=89 move_id=38
+Action turn=1 side=1 attacker='P324' defender='P82' move='이판사판태클' recoil=True defender_hp=47 attacker_hp=80 move_id=38
+Action turn=1 side=0 attacker='P82' defender='P324' move='이판사판태클' recoil=True defender_hp=19 attacker_hp=31 move_id=38
+Action turn=2 side=0 attacker='P82' defender='P324' move='이판사판태클' recoil=True defender_hp=0 knockout=True attacker_hp=26 move_id=38
 SendOut turn=2 side=1 pokemon='P330' member=1
 Action turn=3 side=1 attacker='P330' defender='P82' move='역린' changes=(Change(side=1, pokemon='P330', kind='rampage', stages=0),) defender_hp=0 knockout=True move_id=200
-result winner=1 turns=3 remaining=((0, 0), (0, 100, None, None, None, None)) statuses=((None, None), (None, None, None, None, None, None))
-won=False carry=null body=4d1e2c0b85ff223387ff9938c81a37334a7f15888e5081a6656c2b502b89d7fe
+result winner=1 turns=3 remaining=((0,), (0, 100, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
+won=False carry=null body=9dead8d06d5e2d6415baa2c54274c134c24cf7db4b9d823f7768653a800394ad
 ## hoenn-hidden party 0 carried null
 Action turn=1 side=0 attacker='P403' defender='P260' move='트라이어택' defender_hp=74 move_id=267 via='자연의힘'
 Action turn=1 side=1 attacker='P260' defender='P403' move='지진' multiplier=4.0 defender_hp=0 knockout=True attacker_hp=74 move_id=89
@@ -835,7 +840,7 @@ result winner=0 turns=17 remaining=((0, 0, 0, 0, 38, None), (0, 0, 0, 0)) status
 won=True carry=null body=9ae8c55513b59f5666f19e7771bc9fa522b515c9bd9e8d408ab4ab22f4b3c07a
 ## hoenn-4 party 1 carried null
 Action turn=1 side=0 attacker='P617' defender='P286' move='블라스트번' multiplier=2.0 defender_hp=52 move_id=307
-Action turn=1 side=1 attacker='P286' defender='P617' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=52 move_id=370
+Action turn=1 side=1 attacker='P286' defender='P617' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=52 move_id=370
 SendOut turn=1 side=0 pokemon='P346' member=1
 Action turn=2 side=0 attacker='P346' defender='P286' move='대지의힘' multiplier=4.0 defender_hp=0 knockout=True move_id=414
 SendOut turn=2 side=1 pokemon='P357' member=1
@@ -862,13 +867,14 @@ MegaEvolution turn=10 side=0 pokemon='P384' ability='괴짜' form_id=10079
 AbilityTransform side=0 pokemon='P384' ability='imposter' into='P275' form_id=275 own_form_id=384
 Action turn=10 side=0 attacker='P384' defender='P275' move='리프스톰' missed=True multiplier=2.0 move_id=437
 Action turn=10 side=1 attacker='P275' defender='P384' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P275', kind='special_attack', stages=-2),) defender_hp=23 move_id=437
-Action turn=11 side=1 attacker='P275' defender='P384' move='리프스톰' multiplier=2.0 defender_hp=0 knockout=True move_id=437
+Action turn=11 side=1 attacker='P275' defender='P384' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P275', kind='special_attack', stages=-2),) defender_hp=0 knockout=True move_id=437
 SendOut turn=11 side=0 pokemon='P365' member=5
-Action turn=12 side=1 attacker='P275' defender='P365' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P275', kind='special_attack', stages=-2),) defender_hp=21 move_id=437
-Action turn=12 side=0 attacker='P365' defender='P275' move='전격부리' multiplier=2.0 defender_hp=42 attacker_hp=21 move_id=754
-Action turn=13 side=1 attacker='P275' defender='P365' move='리프스톰' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=42 move_id=437
-result winner=1 turns=13 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 42)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-won=False carry=null body=cf396a5390b2cf880d44770c29e0968912584c07e782fd4d57e9752af30e524e
+Action turn=12 side=1 attacker='P275' defender='P365' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P275', kind='special_attack', stages=-2),) defender_hp=47 move_id=437
+Action turn=12 side=0 attacker='P365' defender='P275' move='전격부리' multiplier=2.0 defender_hp=42 attacker_hp=47 move_id=754
+Action turn=13 side=1 attacker='P275' defender='P365' move='리프스톰' multiplier=2.0 defender_hp=8 attacker_hp=42 move_id=437
+Action turn=13 side=0 attacker='P365' defender='P275' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=8 move_id=754
+result winner=0 turns=13 remaining=((0, 0, 0, 0, 0, 8), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
+won=True carry=null body=89b1c629317ec2853f8ffa0109389ce3b22fe44d6999c401e298c6c532f851e3
 ## hoenn-5 party 1 carried null
 Action turn=1 side=1 attacker='P319' defender='P617' move='지진' defender_hp=55 move_id=89
 Action turn=1 side=0 attacker='P617' defender='P319' move='블라스트번' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=65 attacker_item='shell-bell' move_id=307
@@ -906,15 +912,15 @@ SendOut turn=13 side=1 pokemon='P342' member=2
 Action turn=14 side=0 attacker='P384' defender='P342' move='스톤에지' missed=True attacker_hp=55 move_id=444
 Action turn=14 side=1 attacker='P342' defender='P384' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P342', kind='defense', stages=-1), Change(side=1, pokemon='P342', kind='special_defense', stages=-1)) defender_hp=26 move_id=370
 Action turn=15 side=0 attacker='P384' defender='P342' move='스톤에지' critical=True defender_hp=4 attacker_hp=26 move_id=444
-Action turn=15 side=1 attacker='P342' defender='P384' move='인파이트' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=4 move_id=370
+Action turn=15 side=1 attacker='P342' defender='P384' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P342', kind='defense', stages=-1), Change(side=1, pokemon='P342', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=4 move_id=370
 SendOut turn=15 side=0 pokemon='P365' member=5
 Action turn=16 side=0 attacker='P365' defender='P342' move='아가미물기' defender_hp=0 knockout=True move_id=755
 SendOut turn=16 side=1 pokemon='P332' member=3
 Action turn=17 side=0 attacker='P365' defender='P332' move='아가미물기' multiplier=2.0 defender_hp=0 knockout=True move_id=755
 SendOut turn=17 side=1 pokemon='P275' member=4
-Action turn=18 side=1 attacker='P275' defender='P365' move='리프스톰' multiplier=2.0 defender_hp=0 knockout=True move_id=437
+Action turn=18 side=1 attacker='P275' defender='P365' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P275', kind='special_attack', stages=-2),) defender_hp=0 knockout=True move_id=437
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 100)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=False carry=null body=63db013b80aeb8d233a50e7543b3193a3e44cbb11c56e4be8af55376695700a8
+won=False carry=null body=0eef8792afb706e60a40cec958a6cd69354425d50e9a6b34db2c8c5e2cc29958
 ## hoenn-6 party 1 carried null
 Action turn=1 side=1 attacker='P313' defender='P617' move='깨뜨리다' multiplier=2.0 defender_hp=19 move_id=280
 Action turn=1 side=0 attacker='P617' defender='P313' move='블라스트번' multiplier=2.0 critical=True defender_hp=48 attacker_hp=26 attacker_item='shell-bell' move_id=307
@@ -1090,96 +1096,66 @@ Action turn=10 side=0 attacker='P384' defender='P330' move='사이코키네시�
 Action turn=11 side=1 attacker='P330' defender='P384' move='지진' defender_hp=18 attacker_hp=6 move_id=89
 Action turn=11 side=0 attacker='P384' defender='P330' move='사이코키네시스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=18 move_id=94
 SendOut turn=11 side=1 pokemon='P254' member=2
-Action turn=12 side=1 attacker='P254' defender='P384' move='리프스톰' multiplier=2.0 defender_hp=0 knockout=True move_id=437
+Action turn=12 side=1 attacker='P254' defender='P384' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P254', kind='special_attack', stages=-2),) defender_hp=0 knockout=True move_id=437
 SendOut turn=12 side=0 pokemon='P365' member=5
 Action turn=13 side=0 attacker='P365' defender='P254' move='전격부리' multiplier=2.0 defender_hp=1 defender_item='focus-sash' move_id=754
-Action turn=13 side=1 attacker='P254' defender='P365' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P254', kind='special_attack', stages=-2),) defender_hp=1 attacker_hp=1 move_id=437
-Action turn=14 side=0 attacker='P365' defender='P254' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=1 move_id=754
+Action turn=13 side=1 attacker='P254' defender='P365' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P254', kind='special_attack', stages=-2),) defender_hp=49 attacker_hp=1 move_id=437
+Action turn=14 side=0 attacker='P365' defender='P254' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=49 move_id=754
 SendOut turn=14 side=1 pokemon='P306' member=3
-Action turn=15 side=0 attacker='P365' defender='P306' move='아가미물기' defender_hp=43 attacker_hp=1 move_id=755
+Action turn=15 side=0 attacker='P365' defender='P306' move='아가미물기' defender_hp=43 attacker_hp=49 move_id=755
 Action turn=15 side=1 attacker='P306' defender='P365' move='스톤에지' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=33 attacker_item='life-orb' move_id=444
 result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 33, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=82eb6a8ba7aad14df9d2e7e9b61eb9554d567b2e4072009c5500d68573874122
+won=False carry=null body=4e16f89c3dff28ce79b9801e8729da0e5901288a0907d9a6e9d1258498f1429c
 ## hoenn-elite-2 party 1 carried null
 Action turn=1 side=0 attacker='P617' defender='P286' move='블라스트번' multiplier=2.0 defender_hp=62 move_id=307
-Action turn=1 side=1 attacker='P286' defender='P617' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=62 move_id=370
+Action turn=1 side=1 attacker='P286' defender='P617' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=62 move_id=370
 SendOut turn=1 side=0 pokemon='P346' member=1
-Action turn=2 side=0 attacker='P346' defender='P286' move='제살깎기' changes=(Change(side=0, pokemon='P346', kind='attack', stages=2), Change(side=0, pokemon='P346', kind='special_attack', stages=2), Change(side=0, pokemon='P346', kind='speed', stages=2)) defender_hp=62 attacker_hp=50 effect='stages' move_id=868
-Action turn=2 side=1 attacker='P286' defender='P346' move='더스트슈트' defender_hp=0 knockout=True attacker_hp=62 move_id=441
-SendOut turn=2 side=0 pokemon='P756' member=2
-Action turn=3 side=0 attacker='P756' defender='P286' move='분화' multiplier=2.0 defender_hp=26 move_id=284
-Action turn=3 side=1 attacker='P286' defender='P756' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=26 move_id=370
-SendOut turn=3 side=0 pokemon='P772' member=3
+Action turn=2 side=0 attacker='P346' defender='P286' move='대지의힘' multiplier=4.0 defender_hp=0 knockout=True move_id=414
+SendOut turn=2 side=1 pokemon='P297' member=1
+Action turn=3 side=0 attacker='P346' defender='P297' move='제살깎기' changes=(Change(side=0, pokemon='P346', kind='attack', stages=2), Change(side=0, pokemon='P346', kind='special_attack', stages=2), Change(side=0, pokemon='P346', kind='speed', stages=2)) attacker_hp=50 effect='stages' move_id=868
+Action turn=3 side=1 attacker='P297' defender='P346' move='지옥찌르기' multiplier=2.0 defender_hp=0 knockout=True move_id=675
+SendOut turn=3 side=0 pokemon='P756' member=2
+Action turn=4 side=0 attacker='P756' defender='P297' move='역린' changes=(Change(side=0, pokemon='P756', kind='rampage', stages=0),) defender_hp=55 move_id=200
+Action turn=4 side=1 attacker='P297' defender='P756' move='지옥찌르기' changes=(Change(side=0, pokemon='P756', kind='throat-chop', stages=0),) defender_hp=53 attacker_hp=55 move_id=675
+Action turn=5 side=0 attacker='P756' defender='P297' move='역린' changes=(Change(side=0, pokemon='P756', kind='fatigue', stages=0),) defender_hp=14 attacker_hp=53 move_id=200
+Action turn=5 side=1 attacker='P297' defender='P756' move='지옥찌르기' defender_hp=5 attacker_hp=14 move_id=675
+VolatileEnd turn=5 side=0 pokemon='P756' kind='throat-chop'
+Action turn=6 side=0 attacker='P756' defender='P297' move='역린' changes=(Change(side=0, pokemon='P756', kind='rampage', stages=0),) defender_hp=0 knockout=True attacker_hp=5 move_id=200
+SendOut turn=6 side=1 pokemon='P368' member=2
+Action turn=7 side=1 attacker='P368' defender='P756' move='냉동빔' defender_hp=0 knockout=True attacker_hp=91 attacker_item='life-orb' move_id=58
+SendOut turn=7 side=0 pokemon='P772' member=3
 AbilityEntry side=0 pokemon='P772' ability='intrepid-sword' changes=(Change(side=0, pokemon='P772', kind='attack', stages=1),)
-Action turn=4 side=0 attacker='P772' defender='P286' move='지오컨트롤' changes=(Change(side=0, pokemon='P772', kind='special_attack', stages=2), Change(side=0, pokemon='P772', kind='special_defense', stages=2), Change(side=0, pokemon='P772', kind='speed', stages=2)) defender_hp=26 effect='stages' move_id=601
-Action turn=4 side=1 attacker='P286' defender='P772' move='인파이트' changes=(Change(side=1, pokemon='P286', kind='defense', stages=-1), Change(side=1, pokemon='P286', kind='special_defense', stages=-1)) defender_hp=59 attacker_hp=26 move_id=370
-Action turn=5 side=0 attacker='P772' defender='P286' move='무한다이빔' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=59 move_id=795
-SendOut turn=5 side=1 pokemon='P297' member=1
-Action turn=6 side=0 attacker='P772' defender='P297' move='' blocked='recharge' attacker_hp=59
-Action turn=6 side=1 attacker='P297' defender='P772' move='들이받기' multiplier=4.0 defender_hp=0 knockout=True move_id=838
-SendOut turn=6 side=0 pokemon='P384' member=4
-MegaEvolution turn=7 side=0 pokemon='P384' ability='괴짜' form_id=10079
-AbilityTransform side=0 pokemon='P384' ability='imposter' into='P297' form_id=297 own_form_id=384
-Action turn=7 side=1 attacker='P297' defender='P384' move='들이받기' multiplier=0 move_id=838
-Action turn=7 side=0 attacker='P384' defender='P297' move='스톤에지' multiplier=2.0 critical=True defender_hp=0 knockout=True move_id=444
-SendOut turn=7 side=1 pokemon='P368' member=2
-Action turn=8 side=1 attacker='P368' defender='P384' move='냉동빔' multiplier=2.0 defender_hp=25 attacker_hp=91 attacker_item='life-orb' move_id=58
-Action turn=8 side=0 attacker='P384' defender='P368' move='인파이트' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=9 attacker_hp=25 move_id=370
-Action turn=9 side=1 attacker='P368' defender='P384' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 attacker_item='life-orb' move_id=58
-SendOut turn=9 side=0 pokemon='P365' member=5
+Action turn=8 side=1 attacker='P368' defender='P772' move='파도타기' defender_hp=70 attacker_hp=81 attacker_item='life-orb' move_id=57
+Action turn=8 side=0 attacker='P772' defender='P368' move='지오컨트롤' changes=(Change(side=0, pokemon='P772', kind='special_attack', stages=2), Change(side=0, pokemon='P772', kind='special_defense', stages=2), Change(side=0, pokemon='P772', kind='speed', stages=2)) defender_hp=81 attacker_hp=70 effect='stages' move_id=601
+Action turn=9 side=0 attacker='P772' defender='P368' move='무한다이빔' defender_hp=0 knockout=True attacker_hp=70 move_id=795
 SendOut turn=9 side=1 pokemon='P334' member=3
-Action turn=10 side=0 attacker='P365' defender='P334' move='아가미물기' multiplier=2.0 defender_hp=1 move_id=755
-Action turn=10 side=1 attacker='P334' defender='P365' move='문포스' defender_hp=55 attacker_hp=1 move_id=585
-Action turn=11 side=0 attacker='P365' defender='P334' move='아가미물기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=55 move_id=755
-SendOut turn=11 side=1 pokemon='P321' member=4
-Action turn=12 side=0 attacker='P365' defender='P321' move='아가미물기' defender_hp=27 attacker_hp=55 move_id=755
-Action turn=12 side=1 attacker='P321' defender='P365' move='지진' defender_hp=25 attacker_hp=27 move_id=89
-Action turn=13 side=0 attacker='P365' defender='P321' move='아가미물기' defender_hp=0 knockout=True attacker_hp=25 move_id=755
-SendOut turn=13 side=1 pokemon='P257' member=5
-Action turn=14 side=0 attacker='P365' defender='P257' move='전격부리' multiplier=2.0 defender_hp=24 attacker_hp=25 move_id=754
-Action turn=14 side=1 attacker='P257' defender='P365' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=24 move_id=370
-result winner=1 turns=14 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 24)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=c9f5d8cbc34446d9ffc0420203b82c933108568b0cee122bcc694aea8e596078
-## hoenn-elite-3 party 1 carried null
-Action turn=1 side=1 attacker='P302' defender='P617' move='깨뜨리다' multiplier=2.0 defender_hp=21 move_id=280
-Action turn=1 side=0 attacker='P617' defender='P302' move='아프로브레이크' recoil=True defender_hp=79 attacker_hp=18 attacker_item='shell-bell' move_id=543
-Action turn=2 side=1 attacker='P302' defender='P617' move='깨뜨리다' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=79 move_id=280
-SendOut turn=2 side=0 pokemon='P346' member=1
-Action turn=3 side=1 attacker='P302' defender='P346' move='섀도클로' multiplier=2.0 defender_hp=31 attacker_hp=79 move_id=421
-AbilityAct turn=3 side=0 pokemon='P346' ability='berserk' changes=(Change(side=0, pokemon='P346', kind='special_attack', stages=1),)
-Action turn=3 side=0 attacker='P346' defender='P302' move='제살깎기' defender_hp=79 failed=True attacker_hp=31 move_id=868
-Action turn=4 side=1 attacker='P302' defender='P346' move='섀도클로' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=79 move_id=421
-SendOut turn=4 side=0 pokemon='P756' member=2
-Action turn=5 side=1 attacker='P302' defender='P756' move='깨뜨리다' multiplier=2.0 defender_hp=30 attacker_hp=79 move_id=280
-Action turn=5 side=0 attacker='P756' defender='P302' move='역린' multiplier=2.0 changes=(Change(side=0, pokemon='P756', kind='rampage', stages=0),) defender_hp=41 attacker_hp=30 move_id=200
-Action turn=6 side=1 attacker='P302' defender='P756' move='깨뜨리다' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=41 move_id=280
-SendOut turn=6 side=0 pokemon='P772' member=3
-AbilityEntry side=0 pokemon='P772' ability='intrepid-sword' changes=(Change(side=0, pokemon='P772', kind='attack', stages=1),)
-Action turn=7 side=1 attacker='P302' defender='P772' move='속임수' defender_hp=52 attacker_hp=41 move_id=492
-Action turn=7 side=0 attacker='P772' defender='P302' move='지오컨트롤' changes=(Change(side=0, pokemon='P772', kind='special_attack', stages=2), Change(side=0, pokemon='P772', kind='special_defense', stages=2), Change(side=0, pokemon='P772', kind='speed', stages=2)) defender_hp=41 attacker_hp=52 effect='stages' move_id=601
-Action turn=8 side=0 attacker='P772' defender='P302' move='무한다이빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=52 move_id=795
-SendOut turn=8 side=1 pokemon='P354' member=1
-Action turn=9 side=0 attacker='P772' defender='P354' move='' blocked='recharge' attacker_hp=52
-Action turn=9 side=1 attacker='P354' defender='P772' move='섀도클로' defender_hp=19 move_id=421
-Action turn=10 side=0 attacker='P772' defender='P354' move='무한다이빔' defender_hp=25 attacker_hp=19 move_id=795
-Action turn=10 side=1 attacker='P354' defender='P772' move='섀도클로' defender_hp=0 knockout=True attacker_hp=25 move_id=421
+Action turn=10 side=0 attacker='P772' defender='P334' move='' blocked='recharge' attacker_hp=70
+Action turn=10 side=1 attacker='P334' defender='P772' move='지진' multiplier=4.0 defender_hp=0 knockout=True move_id=89
 SendOut turn=10 side=0 pokemon='P384' member=4
 MegaEvolution turn=11 side=0 pokemon='P384' ability='괴짜' form_id=10079
-AbilityTransform side=0 pokemon='P384' ability='imposter' into='P354' form_id=354 own_form_id=384
-Action turn=11 side=1 attacker='P354' defender='P384' move='섀도클로' defender_hp=74 attacker_hp=25 move_id=421
-Action turn=11 side=0 attacker='P384' defender='P354' move='섀도클로' defender_hp=0 knockout=True attacker_hp=74 move_id=421
-SendOut turn=11 side=1 pokemon='P356' member=2
-Action turn=12 side=1 attacker='P356' defender='P384' move='깨뜨리다' multiplier=2.0 critical=True defender_hp=30 move_id=280
-Action turn=12 side=0 attacker='P384' defender='P356' move='더스트슈트' defender_hp=72 attacker_hp=30 move_id=441
-Action turn=13 side=1 attacker='P356' defender='P384' move='깨뜨리다' multiplier=2.0 defender_hp=1 attacker_hp=72 move_id=280
-Action turn=13 side=0 attacker='P384' defender='P356' move='더스트슈트' defender_hp=41 attacker_hp=1 move_id=441
-Action turn=14 side=1 attacker='P356' defender='P384' move='깨뜨리다' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=41 move_id=280
+AbilityTransform side=0 pokemon='P384' ability='imposter' into='P334' form_id=334 own_form_id=384
+Action turn=11 side=1 attacker='P334' defender='P384' move='지진' multiplier=2.0 defender_hp=69 move_id=89
+Action turn=11 side=0 attacker='P384' defender='P334' move='지진' multiplier=2.0 critical=True defender_hp=52 attacker_hp=69 move_id=89
+Action turn=12 side=1 attacker='P334' defender='P384' move='지진' multiplier=2.0 defender_hp=42 attacker_hp=52 move_id=89
+Action turn=12 side=0 attacker='P384' defender='P334' move='지진' multiplier=2.0 defender_hp=19 attacker_hp=42 move_id=89
+Action turn=13 side=1 attacker='P334' defender='P384' move='지진' multiplier=2.0 defender_hp=14 attacker_hp=19 move_id=89
+Action turn=13 side=0 attacker='P384' defender='P334' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=14 move_id=89
+SendOut turn=13 side=1 pokemon='P321' member=4
+Action turn=14 side=0 attacker='P384' defender='P321' move='역린' changes=(Change(side=0, pokemon='P384', kind='rampage', stages=0),) defender_hp=69 attacker_hp=14 move_id=200
+Action turn=14 side=1 attacker='P321' defender='P384' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=69 move_id=89
 SendOut turn=14 side=0 pokemon='P365' member=5
-Action turn=15 side=1 attacker='P356' defender='P365' move='사이코키네시스' defender_hp=45 attacker_hp=41 move_id=94
-Action turn=15 side=0 attacker='P365' defender='P356' move='아가미물기' multiplier=0.5 defender_hp=25 attacker_hp=45 move_id=755
-Action turn=16 side=1 attacker='P356' defender='P365' move='사이코키네시스' defender_hp=0 knockout=True attacker_hp=25 move_id=94
-result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 25, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=0b44cd5e170a76e126cf7b83b2d3798de2cd6011bcf6e5bbc7bcce38b8c2be89
+Action turn=15 side=0 attacker='P365' defender='P321' move='아가미물기' defender_hp=0 knockout=True move_id=755
+SendOut turn=15 side=1 pokemon='P257' member=5
+Action turn=16 side=0 attacker='P365' defender='P257' move='전격부리' multiplier=2.0 defender_hp=22 move_id=754
+Action turn=16 side=1 attacker='P257' defender='P365' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P257', kind='defense', stages=-1), Change(side=1, pokemon='P257', kind='special_defense', stages=-1)) defender_hp=19 attacker_hp=22 move_id=370
+Action turn=17 side=0 attacker='P365' defender='P257' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=19 move_id=754
+result winner=0 turns=17 remaining=((0, 0, 0, 0, 0, 19), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 19, "status": null}] body=0422805fabe8df218f38d1467da43eb92f84266910ea7403c6b5ca8a7b29ff8e
+## hoenn-elite-3 party 1 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 19, "status": null}]
+Action turn=1 side=0 attacker='P365' defender='P302' move='아가미물기' multiplier=0.5 defender_hp=74 attacker_hp=19 move_id=755
+Action turn=1 side=1 attacker='P302' defender='P365' move='깨뜨리다' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=74 move_id=280
+result winner=1 turns=1 remaining=((0,), (74, None, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
+won=False carry=null body=b8e1393425373bf1167945d9c10208f030a32a57e85c3c50a7c90a2c3318e6b4
 ## hoenn-elite-4 party 1 carried null
 Action turn=1 side=0 attacker='P617' defender='P340' move='블라스트번' multiplier=2.0 defender_hp=43 move_id=307
 Action turn=1 side=1 attacker='P340' defender='P617' move='지진' critical=True defender_hp=40 attacker_hp=43 move_id=89
@@ -1220,19 +1196,19 @@ Action turn=15 side=1 attacker='P272' defender='P384' move='리프스톰' multip
 Action turn=16 side=0 attacker='P384' defender='P272' move='리프스톰' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='special_attack', stages=-2),) defender_hp=18 attacker_hp=47 move_id=437
 Action turn=16 side=1 attacker='P272' defender='P384' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P272', kind='special_attack', stages=-2),) defender_hp=18 attacker_hp=18 move_id=437
 Action turn=17 side=0 attacker='P384' defender='P272' move='리프스톰' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='special_attack', stages=-2),) defender_hp=2 attacker_hp=18 move_id=437
-Action turn=17 side=1 attacker='P272' defender='P384' move='리프스톰' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=2 move_id=437
+Action turn=17 side=1 attacker='P272' defender='P384' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P272', kind='special_attack', stages=-2),) defender_hp=0 knockout=True attacker_hp=2 move_id=437
 SendOut turn=17 side=0 pokemon='P365' member=5
-Action turn=18 side=1 attacker='P272' defender='P365' move='리프스톰' multiplier=2.0 changes=(Change(side=1, pokemon='P272', kind='special_attack', stages=-2),) defender_hp=39 attacker_hp=2 move_id=437
-Action turn=18 side=0 attacker='P365' defender='P272' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=39 move_id=754
+Action turn=18 side=1 attacker='P272' defender='P365' move='리프스톰' missed=True multiplier=2.0 attacker_hp=2 move_id=437
+Action turn=18 side=0 attacker='P365' defender='P272' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True move_id=754
 SendOut turn=18 side=1 pokemon='P369' member=2
-Action turn=19 side=0 attacker='P365' defender='P369' move='전격부리' multiplier=2.0 defender_hp=31 attacker_hp=39 move_id=754
-Action turn=19 side=1 attacker='P369' defender='P365' move='양날박치기' missed=True multiplier=2.0 defender_hp=39 attacker_hp=31 move_id=457
-Action turn=20 side=0 attacker='P365' defender='P369' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=39 move_id=754
+Action turn=19 side=0 attacker='P365' defender='P369' move='전격부리' multiplier=2.0 defender_hp=33 move_id=754
+Action turn=19 side=1 attacker='P369' defender='P365' move='양날박치기' multiplier=2.0 recoil=True defender_hp=32 attacker_hp=7 move_id=457
+Action turn=20 side=0 attacker='P365' defender='P369' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=32 move_id=754
 SendOut turn=20 side=1 pokemon='P334' member=3
-Action turn=21 side=0 attacker='P365' defender='P334' move='아가미물기' multiplier=2.0 defender_hp=8 attacker_hp=39 move_id=755
+Action turn=21 side=0 attacker='P365' defender='P334' move='아가미물기' multiplier=2.0 defender_hp=8 attacker_hp=32 move_id=755
 Action turn=21 side=1 attacker='P334' defender='P365' move='문포스' defender_hp=0 knockout=True attacker_hp=8 move_id=585
 result winner=1 turns=21 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 8, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=449769b83b38fe980f09a092432bcde3e35395be900588286475099fe8224e15
+won=False carry=null body=6136b000e816e53d9018077e2b1fe1b4cd54eabde310e3e663bd4aa2a36d4951
 ## hoenn-champion party 1 carried null
 MegaEvolution turn=1 side=1 pokemon='P282' ability='플라워베일' form_id=10051
 Action turn=1 side=1 attacker='P282' defender='P617' move='에너지볼' multiplier=2.0 defender_hp=68 move_id=412
@@ -1281,9 +1257,9 @@ SendOut turn=16 side=1 pokemon='P381' member=5
 Action turn=17 side=0 attacker='P365' defender='P381' move='아가미물기' defender_hp=0 knockout=True attacker_hp=3 move_id=755
 SendOut turn=17 side=1 pokemon='P383' member=6
 Action turn=18 side=0 attacker='P365' defender='P383' move='전격부리' multiplier=2.0 defender_hp=35 attacker_hp=3 move_id=754
-Action turn=18 side=1 attacker='P383' defender='P365' move='암해머' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=35 move_id=359
+Action turn=18 side=1 attacker='P383' defender='P365' move='암해머' multiplier=2.0 changes=(Change(side=1, pokemon='P383', kind='speed', stages=-1),) defender_hp=0 knockout=True attacker_hp=35 move_id=359
 result winner=1 turns=18 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 35)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=9992b6cee3382dd3f89276629624101bbb5f255b54a2e619772902b12778fd48
+won=False carry=null body=6b8c213892568c4af26cfe91a7bdf7b81595d3cfc22a11cb8fa0b8b5410690c4
 ## hoenn-hideout-1 party 1 carried null
 Action turn=1 side=0 attacker='P617' defender='P303' move='아프로브레이크' recoil=True defender_hp=39 attacker_hp=94 attacker_item='shell-bell' move_id=543
 Action turn=1 side=1 attacker='P303' defender='P617' move='스톤에지' multiplier=2.0 defender_hp=17 attacker_hp=39 move_id=444
@@ -1304,47 +1280,51 @@ Action turn=7 side=1 attacker='P279' defender='P346' move='폭풍' missed=True m
 Action turn=8 side=0 attacker='P346' defender='P279' move='스톤샤워' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=4 move_id=157
 SendOut turn=8 side=1 pokemon='P323' member=4
 Action turn=9 side=0 attacker='P346' defender='P323' move='대지의힘' defender_hp=71 attacker_hp=4 move_id=414
-Action turn=9 side=1 attacker='P323' defender='P346' move='오버히트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=61 attacker_item='life-orb' move_id=315
+Action turn=9 side=1 attacker='P323' defender='P346' move='오버히트' multiplier=2.0 changes=(Change(side=1, pokemon='P323', kind='special_attack', stages=-2),) defender_hp=0 knockout=True attacker_hp=61 attacker_item='life-orb' move_id=315
 SendOut turn=9 side=0 pokemon='P756' member=2
-Action turn=10 side=0 attacker='P756' defender='P323' move='분화' multiplier=0.5 defender_hp=51 move_id=284
-Action turn=10 side=1 attacker='P323' defender='P756' move='오버히트' changes=(Change(side=1, pokemon='P323', kind='special_attack', stages=-2),) defender_hp=65 attacker_hp=42 attacker_item='life-orb' move_id=315
-Action turn=11 side=0 attacker='P756' defender='P323' move='분화' multiplier=0.5 defender_hp=37 attacker_hp=65 move_id=284
-Action turn=11 side=1 attacker='P323' defender='P756' move='지진' defender_hp=35 attacker_hp=27 attacker_item='life-orb' move_id=89
-Action turn=12 side=0 attacker='P756' defender='P323' move='분화' multiplier=0.5 defender_hp=24 attacker_hp=35 move_id=284
-Action turn=12 side=1 attacker='P323' defender='P756' move='지진' defender_hp=1 attacker_hp=14 attacker_item='life-orb' move_id=89
-Action turn=13 side=0 attacker='P756' defender='P323' move='분화' multiplier=0.5 defender_hp=14 attacker_hp=1 move_id=284
-Action turn=13 side=1 attacker='P323' defender='P756' move='이판사판태클' recoil=True defender_hp=0 knockout=True attacker_hp=4 attacker_item='life-orb' move_id=38
-SendOut turn=13 side=0 pokemon='P772' member=3
+Action turn=10 side=0 attacker='P756' defender='P323' move='분화' multiplier=0.5 defender_hp=52 move_id=284
+Action turn=10 side=1 attacker='P323' defender='P756' move='이판사판태클' recoil=True defender_hp=64 attacker_hp=35 attacker_item='life-orb' move_id=38
+Action turn=11 side=0 attacker='P756' defender='P323' move='분화' multiplier=0.5 critical=True defender_hp=26 attacker_hp=64 move_id=284
+Action turn=11 side=1 attacker='P323' defender='P756' move='지진' defender_hp=34 attacker_hp=17 attacker_item='life-orb' move_id=89
+Action turn=12 side=0 attacker='P756' defender='P323' move='분화' multiplier=0.5 defender_hp=14 attacker_hp=34 move_id=284
+Action turn=12 side=1 attacker='P323' defender='P756' move='지진' defender_hp=0 knockout=True attacker_hp=4 attacker_item='life-orb' move_id=89
+SendOut turn=12 side=0 pokemon='P772' member=3
 AbilityEntry side=0 pokemon='P772' ability='intrepid-sword' changes=(Change(side=0, pokemon='P772', kind='attack', stages=1),)
-Action turn=14 side=1 attacker='P323' defender='P772' move='지진' multiplier=4.0 defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 attacker_item='life-orb' move_id=89
+Action turn=13 side=1 attacker='P323' defender='P772' move='지진' multiplier=4.0 defender_hp=6 attacker_fainted=True attacker_hp=0 attacker_item='life-orb' move_id=89
+SendOut turn=13 side=1 pokemon='P324' member=5
+Action turn=14 side=0 attacker='P772' defender='P324' move='더블촙' defender_hp=21 hits=2 attacker_hp=6 move_id=530
+Action turn=14 side=1 attacker='P324' defender='P772' move='지진' multiplier=4.0 defender_hp=0 knockout=True attacker_hp=21 move_id=89
 SendOut turn=14 side=0 pokemon='P384' member=4
-SendOut turn=14 side=1 pokemon='P324' member=5
 MegaEvolution turn=15 side=0 pokemon='P384' ability='괴짜' form_id=10079
 AbilityTransform side=0 pokemon='P384' ability='imposter' into='P324' form_id=324 own_form_id=384
-Action turn=15 side=0 attacker='P384' defender='P324' move='이판사판태클' recoil=True defender_hp=31 attacker_hp=87 move_id=38
-Action turn=15 side=1 attacker='P324' defender='P384' move='이판사판태클' recoil=True defender_hp=46 attacker_hp=9 move_id=38
-Action turn=16 side=0 attacker='P384' defender='P324' move='이판사판태클' recoil=True defender_hp=0 knockout=True attacker_hp=44 move_id=38
-result winner=0 turns=16 remaining=((0, 0, 0, 0, 44, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 44, "status": null}, {"hp": 100, "status": null}] body=55640da655bba32b80d9b1879e08ad7d6875186edd655a46e07ddd51372b159b
-## hoenn-hideout-2 party 1 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 44, "status": null}, {"hp": 100, "status": null}]
+Action turn=15 side=0 attacker='P384' defender='P324' move='이판사판태클' recoil=True defender_hp=0 knockout=True attacker_hp=96 move_id=38
+result winner=0 turns=15 remaining=((0, 0, 0, 0, 96, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 96, "status": null}, {"hp": 100, "status": null}] body=28797b0470ae5e5d0288b1a3393306e8dfb8b6dcc3b4525ad0faab1f85d7e87a
+## hoenn-hideout-2 party 1 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 96, "status": null}, {"hp": 100, "status": null}]
 MegaEvolution turn=1 side=0 pokemon='P384' ability='괴짜' form_id=10079
 AbilityTransform side=0 pokemon='P384' ability='imposter' into='P303' form_id=303 own_form_id=384
-Action turn=1 side=1 attacker='P303' defender='P384' move='치근거리기' multiplier=2.0 defender_hp=0 knockout=True move_id=583
-SendOut turn=1 side=0 pokemon='P365' member=1
-Action turn=2 side=0 attacker='P365' defender='P303' move='아가미물기' defender_hp=0 knockout=True move_id=755
-SendOut turn=2 side=1 pokemon='P308' member=1
-Action turn=3 side=0 attacker='P365' defender='P308' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True move_id=754
-SendOut turn=3 side=1 pokemon='P314' member=2
-Action turn=4 side=0 attacker='P365' defender='P314' move='아가미물기' multiplier=2.0 defender_hp=0 knockout=True move_id=755
-SendOut turn=4 side=1 pokemon='P352' member=3
-Action turn=5 side=0 attacker='P365' defender='P352' move='아가미물기' multiplier=2.0 defender_hp=0 knockout=True move_id=755
-SendOut turn=5 side=1 pokemon='P323' member=4
-Action turn=6 side=0 attacker='P365' defender='P323' move='아가미물기' multiplier=0.5 defender_hp=68 move_id=755
-Action turn=6 side=1 attacker='P323' defender='P365' move='오버히트' changes=(Change(side=1, pokemon='P323', kind='special_attack', stages=-2),) defender_hp=28 attacker_hp=59 attacker_item='life-orb' move_id=315
-Action turn=7 side=0 attacker='P365' defender='P323' move='아가미물기' multiplier=0.5 defender_hp=30 attacker_hp=28 move_id=755
-Action turn=7 side=1 attacker='P323' defender='P365' move='오버히트' defender_hp=0 knockout=True attacker_hp=20 attacker_item='life-orb' move_id=315
-result winner=1 turns=7 remaining=((0, 0), (0, 0, 0, 0, 20, None)) statuses=((None, None), (None, None, None, None, None, None))
-won=False carry=null body=ff73e5ea7f4fcf04b957c5d3ad93cc5fb05e3b1a3dd0cc85b9015e7e53067142
+Action turn=1 side=1 attacker='P303' defender='P384' move='치근거리기' multiplier=2.0 defender_hp=18 move_id=583
+Action turn=1 side=0 attacker='P384' defender='P303' move='치근거리기' multiplier=2.0 defender_hp=6 attacker_hp=18 move_id=583
+Action turn=2 side=1 attacker='P303' defender='P384' move='치근거리기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=6 move_id=583
+SendOut turn=2 side=0 pokemon='P365' member=1
+Action turn=3 side=0 attacker='P365' defender='P303' move='아가미물기' defender_hp=0 knockout=True move_id=755
+SendOut turn=3 side=1 pokemon='P308' member=1
+Action turn=4 side=0 attacker='P365' defender='P308' move='전격부리' multiplier=2.0 defender_hp=0 knockout=True move_id=754
+SendOut turn=4 side=1 pokemon='P314' member=2
+Action turn=5 side=0 attacker='P365' defender='P314' move='아가미물기' multiplier=2.0 defender_hp=0 knockout=True move_id=755
+SendOut turn=5 side=1 pokemon='P352' member=3
+Action turn=6 side=0 attacker='P365' defender='P352' move='아가미물기' multiplier=2.0 defender_hp=0 knockout=True move_id=755
+SendOut turn=6 side=1 pokemon='P323' member=4
+Action turn=7 side=0 attacker='P365' defender='P323' move='아가미물기' multiplier=0.5 defender_hp=68 move_id=755
+Action turn=7 side=1 attacker='P323' defender='P365' move='오버히트' changes=(Change(side=1, pokemon='P323', kind='special_attack', stages=-2),) defender_hp=27 attacker_hp=59 attacker_item='life-orb' move_id=315
+Action turn=8 side=0 attacker='P365' defender='P323' move='아가미물기' multiplier=0.5 defender_hp=26 attacker_hp=27 move_id=755
+Action turn=8 side=1 attacker='P323' defender='P365' move='오버히트' missed=True defender_hp=27 attacker_hp=26 move_id=315
+Action turn=9 side=0 attacker='P365' defender='P323' move='아가미물기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=27 move_id=755
+SendOut turn=9 side=1 pokemon='P324' member=5
+Action turn=10 side=0 attacker='P365' defender='P324' move='아가미물기' defender_hp=1 attacker_hp=27 defender_item='focus-sash' move_id=755
+Action turn=10 side=1 attacker='P324' defender='P365' move='이판사판태클' recoil=True defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 move_id=38
+result winner=1 turns=10 remaining=((0, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None), (None, None, None, None, None, None))
+won=False carry=null body=b98716786e2248c9232d37a13eccf93ee4e5e8e6e6a3964095531b80d0654465
 ## hoenn-hideout-3 party 1 carried null
 Action turn=1 side=0 attacker='P617' defender='P323' move='아프로브레이크' recoil=True defender_hp=73 attacker_hp=96 attacker_item='shell-bell' move_id=543
 Action turn=1 side=1 attacker='P323' defender='P617' move='이판사판태클' critical=True recoil=True defender_hp=44 attacker_hp=57 move_id=38
@@ -1474,6 +1454,6 @@ Action turn=20 side=1 attacker='P383' defender='P365' move='스톤에지' multip
 Action turn=21 side=0 attacker='P365' defender='P383' move='아가미물기' defender_hp=0 knockout=True attacker_hp=20 move_id=755
 SendOut turn=21 side=1 pokemon='P257' member=5
 MegaEvolution turn=22 side=1 pokemon='P257' ability='플라워기프트' form_id=10050
-Action turn=22 side=1 attacker='P257' defender='P365' move='인파이트' multiplier=2.0 defender_hp=0 knockout=True move_id=370
+Action turn=22 side=1 attacker='P257' defender='P365' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P257', kind='defense', stages=-1), Change(side=1, pokemon='P257', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
 result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 100, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None, None))
-won=False carry=null body=2472c0c245ae0032c90965a71ed7b2ad5ffb9f8ed976c82e7e6bd489108139c7
+won=False carry=null body=9c6d33594201fe2d3ed63f465bec596a575bf71915ee521c59bf39a99d7cd3d5
