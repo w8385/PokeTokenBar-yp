@@ -48,6 +48,8 @@ HOOKS = {
     "retypes_move": "state: the type its holder's move takes, after the weather or terrain (Electrify)",
     "backfires": "state: a used move fails on its own user, after PP (Powder)",
     "fails": "move: the move fails once used, after PP and before the target's states (Burn Up from a non-Fire user)",
+    "hits_later": "move: the hit lands on a later turn (Future Sight), so the user's Protean skips it",
+    "before_move": "ability: acts as its holder uses a move that did not fail (Protean); returns an event",
     "targets_foe":"move: a status move aimed at the foe, which Protect stops",
     "never_misses": "move: a status move skips its accuracy draw for this user (Toxic from a Poison type)",
     "breaks_guard": "move: the target's Protect or Quick Guard does not stop it (Feint)",

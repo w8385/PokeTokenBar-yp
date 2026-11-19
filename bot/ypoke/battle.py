@@ -244,6 +244,13 @@ class AbilityTransform(AbilityTrigger):
 
 
 @dataclass(frozen=True)
+class AbilityRetype(AbilityTrigger):
+    """Protean, Libero: the Pokémon became the type `into` as it used a move; logged after the move."""
+
+    into: str = ""
+
+
+@dataclass(frozen=True)
 class FieldStart:
     """An attack that set a hazard on `side` as it hit (Stone Axe, Ceaseless Edge)."""
 
@@ -1220,6 +1227,9 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     if hooks.move(move, "fails", attacker, defender, default=False):
         return Action(turn, side, *names, move.name, failed=True, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
+    retyped = hooks.ability(attacker, "before_move", move, attacker, side, turn)
+    if retyped is not None:
+        arena.log.append(retyped)
     stopped = _stopped(attacker, defender, move)
     if stopped:
         changes = tuple(change for answer in _field(defender, "punishes", move, attacker, side, rng)

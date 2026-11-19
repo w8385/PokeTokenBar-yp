@@ -27,6 +27,9 @@ class DelayedHit(Handler):
     def breaks_guard(self, move):
         return True
 
+    def hits_later(self, move):
+        return True
+
     def use(self, move, user, target, side, turn, weather, arena, rng):
         if user.memory.pop(RELEASED, False):
             return None

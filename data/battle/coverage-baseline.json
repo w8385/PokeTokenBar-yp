@@ -142,9 +142,9 @@
  },
  "abilities": {
   "counts": {
-   "implemented": 43,
+   "implemented": 45,
    "inert": 81,
-   "todo": 250
+   "todo": 248
   },
   "todo": [
    "aerilate",
@@ -241,7 +241,6 @@
    "keen-eye",
    "klutz",
    "leaf-guard",
-   "libero",
    "light-metal",
    "lightning-rod",
    "lingering-aroma",
@@ -291,7 +290,6 @@
    "primordial-sea",
    "prism-armor",
    "propeller-tail",
-   "protean",
    "protosynthesis",
    "punk-rock",
    "purifying-salt",

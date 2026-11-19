@@ -260,6 +260,10 @@ FOCUS_CASES = {
     "fell-stinger": (((212, None, None, [565]),), ((10, None, None, [33]),)),
     "switcheroo": (((94, None, None, [415, 33]),), ((143, "leftovers", None, [33]),)),
     "imposter": (((25, None, None, [85]), (132, None, "imposter", [144])), ((6, "charizardite-x", None, [53, 33]),)),
+    "protean": (((908, None, "protean", [583, 870]),), ((484, None, None, [460]),)),
+    "aqua-ring": (((18, None, None, [392, 33]),), ((36, None, None, [33]),)),
+    "ingrain": (((18, None, None, [275, 33]),), ((36, None, None, [33]),)),
+    "charge": (((18, None, None, [268, 85]),), ((36, None, None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
