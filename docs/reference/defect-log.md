@@ -419,6 +419,14 @@ read_when:
   proof.
   **Guards:** `BagExpSharePassTests`. The gate test runs through `checkEvolutionGate()`; dropping the new gate term
   fails it while the direct-call tests pass.
+- **Hard-coded balance numbers in tests hide which scale they assume.** Removing the difficulty slider moved every
+  threshold and price ÷10. Some 80 assertions across 31 tests still held the old ×10 literals (25M stages, 100M candy
+  prices, 1M egg). Some tests passed only because of the old ratio between two numbers: "one candy advances at most
+  one stage" held only while a 20M candy was smaller than the 25M smallest stage. At the new scale a candy graduates
+  a whole common line, and nothing tested it.
+  **Sweep:** build test fixtures from `PokemonBalance` (`phaseThreshold`, `graduationTotal`, `Price.*`,
+  `RareCandy.xp`), not from literals. When a test's claim depends on a ratio (candy vs stage), pin the ratio's case
+  for each rarity, or name the rarity the test relies on.
 
 ## 외부 로그·사용량 소스
 
@@ -958,6 +966,19 @@ read_when:
   hatched-pet Open, while context-menu Open always opens. Keep the heart/particles attached to
   the sprite's bob modifier. `FloatingPetAgentTests` checks combined speech/headroom/event gates;
   `FloatingPetAgentWiringTests` invokes the production hosting callbacks for eggs and hatched pets.
+  Amended by the one-emote rule below: hearts no longer reserve headroom; only limit and agent speech do.
+  The old "… > hearts > hover/event" order now lives in `PetCrowd.Rank`, plus `speechOnMain`, which
+  blocks only slot 0. Emotes stay inside the sprite's bob modifier.
+
+- **Emotes over a Pokémon have one owner.** The floating pet had four emote sources (stroke hearts,
+  friend stroke hearts, crowd bubbles, prayer/heart particles) that each drew on their own. A friend
+  click fired two of them on the same friend, and a pet click could stack three. Tests asserted each
+  source separately (`crowd.bubble(1) == .heart` and `hearts.friendIndex == 0` both passed for the
+  same click), and none counted emotes per Pokémon. Now `PetCrowd.bubbles` is the only store,
+  `PetCrowd.show` is the only write (rank idle < cheer < touch; speech blocks slot 0), and
+  `CrowdMember` is the only renderer. `EmoteUnifyTests` counts heart pixels in a rendered row.
+  Class sweep: any new reaction (click, stroke, prayer, event) calls `crowd.touched`/`clicked`/`cheer`,
+  never its own overlay.
 
 - **초기 설정 이동은 애니메이션 완료에 의존하지 않는다.** 세션 키 만료·등록 안내에서
   `startExpanded`로 연 고급 섹션의 animated `scrollTo`가 비활성·non-key native 호스트에서
@@ -1833,6 +1854,22 @@ read_when:
   suffix fails 3 tests. Class sweep: the miracle picker and the direct pick select are the bot's only Pokémon
   selects; the card text and DMs name one Pokémon each. Known gap: the app's trade grid shows sprite and level
   only, so two look-alikes there are told apart by place, not by text.
+- **A cap on what one side sends must be the same rule the other side's buttons read, and a test must run at the
+  cap's size.** Some Box Pokémon could not go up for Miracle Trade or a trade although they held no item and were not
+  in the lineup; the bot said they were being raised or in battle. `TradePool.build` kept only the newest 100 entries
+  and 48,000 bytes (61 of 264 tradable on a real save), and the bot's body limit was 64 KB. The Box detail button, the
+  offer grid and the Slack pickers each used their own rule, so the app showed a post button for Pokémon the bot never
+  got, and the bot's `unknown_individual` text guessed a cause.
+  **Why no test caught it:** every trade test used a pool of 1–5 Pokémon, far under both caps. The button gate
+  (`tradeRefusal`) and the pool (`build`) had no shared rule and no test that compared them. The 100-option Slack
+  `static_select` cap was never hit in tests.
+  **Class:** a cap applied silently on one side of a contract while the other side (button, picker, error text)
+  assumes everything passed. Swept: the pool count, byte and per-entry caps (app), `MAX_POOL` and `MAX_BODY_BYTES`
+  (bot), the two Slack pickers (100-option cap). The per-entry cap stays; the largest record a sanitized save can hold
+  is tested to fit.
+  **Guards:** `TradePoolCapacityTests` (300 → all 300, body under the bot's limit read from the bot source; button and
+  pool agree past the cap), `bot/tests/test_trade_pool_full.py` (oldest of 300 posts and trades; pickers past 100 find
+  and pick the 130th). Injecting the old caps fails both.
 
 ## Tests and the user's desktop
 
