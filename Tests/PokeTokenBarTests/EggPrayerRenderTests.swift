@@ -70,24 +70,21 @@ final class EggPrayerRenderTests: XCTestCase {
         }
     }
 
-    /// The floating egg with three 🙏 frozen mid-flight at fixed spots (the live ones use random x).
-    func testWriteFloatingEggWithPrayers() async throws {
+    /// The floating egg right after a prayer: its one 🙏 emote.
+    func testWriteFloatingEggWithPrayer() async throws {
         guard let directory = ProcessInfo.processInfo.environment["PTB_PRAYER_RENDER_DIR"] else {
             throw XCTSkip("PTB_PRAYER_RENDER_DIR not set")
         }
         let petSize: CGFloat = 128
-        let emoji = PrayerEmojiLayer.emojiSize(petSize: petSize)
-        let egg = ZStack {
-            SpriteView(speciesID: nil, size: petSize, animated: false, shiny: false)
-                .frame(width: petSize, height: petSize)
-            ForEach([(0.2, 0.3), (0.55, 0.55), (0.85, 0.8)], id: \.0) { fraction, progress in
-                PrayerEmojiFrame(xFraction: fraction, petSize: petSize, emojiSize: emoji, progress: progress)
-            }
-        }
-        .frame(width: petSize, height: petSize)
+        let crowd = PetCrowd(settle: .seconds(120))
+        crowd.configure(order: [0], motionAllowed: false, active: true)
+        crowd.touched(slot: 0, with: .prayer)
+        let egg = SpriteView(speciesID: nil, size: petSize, animated: false, shiny: false, reportsVisibleTop: true)
+            .crowdMember(crowd, slot: 0, size: petSize)
+            .frame(width: petSize, height: petSize)
         for (dark, tag) in [(false, "light"), (true, "dark")] {
             try await writePNG(egg, height: 200,
-                               to: URL(fileURLWithPath: directory).appendingPathComponent("floating-egg-3-prayer-emojis-\(tag).png"),
+                               to: URL(fileURLWithPath: directory).appendingPathComponent("floating-egg-prayer-\(tag).png"),
                                dark: dark)
         }
     }

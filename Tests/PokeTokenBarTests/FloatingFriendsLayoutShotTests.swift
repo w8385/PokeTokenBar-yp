@@ -81,19 +81,17 @@ final class FloatingFriendsLayoutShotTests: XCTestCase {
         for pair in Self.pairs {
             for row in Self.rows {
                 for mode in Self.modes where mode == .calm || pair.name == "mixed" {
-                    let bubble = mode == .bubble || mode == .friendHearts
                     store.friendSubjects.forEach { store.removeFriend(entryID: $0.entryID) }
                     for id in pair.ids.prefix(row.count) { XCTAssertTrue(store.addFriend(entryID: "mon-\(id)")) }
                     let crowd = PetCrowd(settle: .seconds(120))
                     crowd.configure(order: row.order, motionAllowed: true, active: false)
                     crowd.friendsOnLeft = row.left
                     crowd.friendsFlank = row.flank
-                    let hearts = PetHeartState()
-                    hearts.isShowing = mode == .bubble
-                    if mode == .friendHearts { hearts.friendIndex = row.count - 1 }
+                    if mode == .bubble { crowd.touched(slot: 0) }
+                    if mode == .friendHearts { crowd.touched(slot: row.count) }
                     let layout = PetRowLayout(friendCount: row.count, friendsOnLeft: row.left, friendsFlank: row.flank)
-                    let panel = FloatingPetController.panelSize(petSize: size, showingBubble: bubble, layout: layout)
-                    let view = FloatingPetView(animated: false, spriteStore: sprites, hearts: hearts, crowd: crowd)
+                    let panel = FloatingPetController.panelSize(petSize: size, showingBubble: false, layout: layout)
+                    let view = FloatingPetView(animated: false, spriteStore: sprites, crowd: crowd)
                         .environment(usage).environment(store)
                         .frame(width: panel.width, height: panel.height)
                         .background(Color.white)

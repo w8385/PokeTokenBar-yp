@@ -23,7 +23,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     private(set) var tracker = AgentActivityTracker()
     private var agentTimer: Timer?
     /// Reactions between the main pet and its friends; display only.
-    let crowd = PetCrowd()
+    let crowd: PetCrowd
     private var friendsOnLeft: Bool {
         get { crowd.friendsOnLeft }
         set { crowd.friendsOnLeft = newValue }
@@ -190,25 +190,9 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         return ellipsized(low)
     }
 
-    /// How long the heart bubble stays after the last qualifying stroke.
-    static let heartDuration: Duration = .milliseconds(1800)
-
-    /// Speech takes priority over hearts: limit alert, agent done, agent waiting, then a stroke.
-    static func heartsShowing(afterStrokeWithAlertActive alertActive: Bool,
-                              agent: AgentActivitySummary = .init()) -> Bool {
-        !alertActive && bubble(limitAlert: nil, agent: agent) == nil
-    }
-
-    /// Reserve headroom for either speech or hearts, including agent-only speech.
-    static func isShowingBubble(alertActive: Bool, heartsShowing: Bool,
-                                agent: AgentActivitySummary = .init()) -> Bool {
-        alertActive || bubble(limitAlert: nil, agent: agent) != nil || heartsShowing
-    }
-
-    /// The native tooltip would overlap the heart bubble, so it is cleared while hearts show.
-    /// Limit alerts keep the tooltip as before.
-    static func nativeToolTip(_ text: String, heartsShowing: Bool) -> String? {
-        heartsShowing ? nil : text
+    /// Speech reserves headroom, including agent-only speech. Emotes draw inside the sprite's box and reserve none.
+    static func isShowingBubble(alertActive: Bool, agent: AgentActivitySummary = .init()) -> Bool {
+        alertActive || bubble(limitAlert: nil, agent: agent) != nil
     }
 
     /// Chrome size plus the signals the view actually fails on: wrap count vs
@@ -253,10 +237,8 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     private var onHide: (() -> Void)?
     /// Tests pin motion on or off; nil follows Low Power Mode and Reduce Motion.
     private let motionOverride: Bool?
-    /// Owned here and handed to the view once, so a prayer never rebuilds the hosting `rootView`.
-    private let prayerBurst = PrayerBurst()
-    let hearts = PetHeartState()
-    private var heartExpiry: Task<Void, Never>?
+    /// Owned here and handed to the view once, so a click never rebuilds the hosting `rootView`.
+    private let wobble = ClickWobble()
     private var isHovering = false
     /// The event text while the self-popped callout is up (nil otherwise, so it never shows on a later hover).
     private var eventPopText: String?
@@ -274,8 +256,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     /// How long the callout stays up on its own when a hatch / evolution / graduation / Ditto line arrives.
     static let eventPopDuration: Duration = .seconds(6)
 
-    /// Pop the callout only for an event not shown yet, while the pet is on screen and no speech or
-    /// hearts bubble is up. An event that arrives when it cannot pop is dropped, not queued.
+    /// Pop the callout only for an event not shown yet, while the pet is on screen and no speech bubble is up. An event that arrives when it cannot pop is dropped, not queued.
     static func shouldPopEvent(eventSeq: Int?, lastSeenSeq: Int?, petVisible: Bool, bubbleShowing: Bool) -> Bool {
         guard let eventSeq, eventSeq != lastSeenSeq else { return false }
         return petVisible && !bubbleShowing
@@ -300,12 +281,12 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         pray: { [weak self] in self?.companion.pray() },
         prayerCount: { [weak self] in self?.companion.state.eggPrayers?.count ?? 0 },
         didPray: { [weak self] in self?.refreshHoverAfterPrayer() },
-        spawnEmoji: { [weak self] in self?.prayerBurst.spawn() },
+        spawnEmoji: { [weak self] in self?.touched(slot: 0, with: .prayer) },
         refreshUsage: { [weak self] in
             guard let store = self?.store else { return }
             Task { await store.refresh() }
         },
-        pet: { [weak self] in self?.petWasStroked() },
+        pet: { [weak self] in self?.touched(slot: 0) },
         clock: clock)
 
     private let clock: () -> Date
@@ -313,8 +294,9 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     init(store: UsageStore, companion: CompanionStore, defaults: UserDefaults = .standard,
          clock: @escaping () -> Date = Date.init,
          onOpenPopover: (() -> Void)? = nil, onHide: (() -> Void)? = nil,
-         motionOverride: Bool? = nil) {
+         motionOverride: Bool? = nil, crowd: PetCrowd = PetCrowd()) {
         self.clock = clock
+        self.crowd = crowd
         self.store = store
         self.companion = companion
         self.defaults = defaults
@@ -409,6 +391,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     private func agentDidChange() {
         let summary = tracker.summary
         agentModel.summary = summary
+        crowd.speechOnMain = showingBubble
         agentModel.bobs = Self.shouldBob(working: summary.working, motionAllowed: motionAllowed)
         scheduleAgentExpiry()
         if summary.done != nil {
@@ -519,8 +502,8 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         let subject = companion.representativeSubject
         CryPlayer.shared.play(speciesID: subject.speciesID, form: subject.form)
         crowd.clicked(slot: 0)
+        wobble.wobble()
         clickRouter.handle(subjectIsEgg: subject.speciesID == nil)
-        prayerBurst.spawn(glyph: PrayerBurst.heart)
     }
 
     /// Context-menu Open always opens, including when the representative is an egg.
@@ -625,6 +608,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
 
     private func sync() {
         if !agentEnabled, !tracker.agents.isEmpty || runPhase != .home { resetAgent() }
+        crowd.speechOnMain = showingBubble
         guard store.floatingPetEnabled, displayAwake else { hide(); return }
         updateFriendSide()
         show()
@@ -641,12 +625,11 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         crowd.configure(order: rowLayout.slotOrder, motionAllowed: motionAllowed, active: active)
     }
 
-    /// A click on friend `index`: it reacts, cries and wears hearts. No growth, and the main pet's click interval is untouched.
+    /// A click on friend `index`: it reacts, cries and wears a heart. No growth, and the main pet's click interval is untouched.
     func friendClicked(_ index: Int) {
         guard companion.friendSubjects.indices.contains(index) else { return }
         let friend = companion.friendSubjects[index]
         CryPlayer.shared.play(speciesID: friend.speciesID, form: friend.form)
-        friendWasStroked(index)
         crowd.clicked(slot: index + 1)
     }
 
@@ -679,14 +662,13 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     }
 
     private var showingBubble: Bool {
-        Self.isShowingBubble(alertActive: store.currentBubbleAlert != nil, heartsShowing: hearts.isShowingAny,
-                             agent: tracker.summary)
+        Self.isShowingBubble(alertActive: store.currentBubbleAlert != nil, agent: tracker.summary)
     }
 
     /// Build once per animation mode; callbacks share the controller's click and bubble routing.
     func makeHostingView(animated: Bool) -> PetHostingView {
         let hosting = PetHostingView(rootView: AnyView(
-            FloatingPetView(animated: animated, agent: agentModel, burst: prayerBurst, hearts: hearts, crowd: crowd)
+            FloatingPetView(animated: animated, agent: agentModel, wobble: wobble, crowd: crowd)
                 .environment(store).environment(companion)))
         hosting.onOpenPopover = { [weak self] in self?.openPopover() }
         hosting.onClick = { [weak self] in self?.petClicked() }
@@ -695,8 +677,8 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         hosting.onDragEnd = { [weak self] in self?.sync() }
         hosting.onStroke = { [weak self] hit in
             switch hit {
-            case .main: self?.petWasStroked()
-            case .friend(let index): self?.friendWasStroked(index)
+            case .main: self?.touched(slot: 0)
+            case .friend(let index): self?.touched(slot: index + 1)
             }
         }
         hosting.onHide = onHide
@@ -719,7 +701,7 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
             builtAnimated = wantAnimated
         }
         if let hosting = p.contentView as? PetHostingView {
-            hosting.toolTip = Self.nativeToolTip(currentHoverText(), heartsShowing: hearts.isShowingAny)
+            hosting.toolTip = currentHoverText()
             hosting.strokeDistance = max(10, CGFloat(store.floatingPetSize) * 0.15)
         }
         agentModel.bobs = Self.shouldBob(working: tracker.summary.working, motionAllowed: motionAllowed)
@@ -731,37 +713,10 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
         if hoverPanel?.isVisible == true { showHoverCallout() }
     }
 
-    private func petWasStroked() {
-        hearts.friendIndex = nil
-        hearts.isShowing = Self.heartsShowing(afterStrokeWithAlertActive: store.currentBubbleAlert != nil,
-                                             agent: tracker.summary)
-        guard hearts.isShowing else { return }
-        startHeartExpiry()
-    }
-
-    /// Hearts over friend `index`. Visual only: nothing is saved and the main pet's stroke state is untouched.
-    private func friendWasStroked(_ index: Int) {
-        guard companion.friendSubjects.indices.contains(index) else { return }
-        hearts.isShowing = false
-        let show = Self.heartsShowing(afterStrokeWithAlertActive: store.currentBubbleAlert != nil, agent: tracker.summary)
-        hearts.friendIndex = show ? index : nil
-        guard show else { return }
-        startHeartExpiry()
-    }
-
-    private func startHeartExpiry() {
-        hideHoverCallout()
-        sync()
-        // One-shot expiry, restarted by every stroke; no standing timer.
-        heartExpiry?.cancel()
-        heartExpiry = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: Self.heartDuration)
-            guard !Task.isCancelled, let self else { return }
-            self.hearts.isShowing = false
-            self.hearts.friendIndex = nil
-            self.sync()
-            if self.isHovering { self.showHoverCallout() }
-        }
+    /// A stroke or click on `slot` (0 = the main pet). Visual only: nothing is saved.
+    private func touched(slot: Int, with bubble: PetCrowd.Bubble = .heart) {
+        crowd.speechOnMain = showingBubble
+        crowd.touched(slot: slot, with: bubble)
     }
 
     /// Show the callout by itself for `eventPopDuration` when a new event arrived. One-shot task, no standing timer.
@@ -792,9 +747,6 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     private func hide() {
         eventPopExpiry?.cancel()
         eventPopText = nil
-        heartExpiry?.cancel()
-        hearts.isShowing = false
-        hearts.friendIndex = nil
         hideHoverCallout()
         crowd.stop()
         // A hidden pet comes back at home, not where it last ran to.
@@ -824,14 +776,14 @@ final class FloatingPetController: NSObject, NSWindowDelegate {
     private func refreshHoverAfterPrayer() {
         if let hosting = panel?.contentView as? PetHostingView {
             hosting.toolTip = nil
-            hosting.toolTip = Self.nativeToolTip(currentHoverText(), heartsShowing: hearts.isShowingAny)
+            hosting.toolTip = currentHoverText()
         }
         if hoverPanel?.isVisible == true { showHoverCallout() }
     }
 
     private func showHoverCallout() {
         guard let pet = panel, pet.isVisible else { return }
-        // Speech and hearts take priority over the hover/event callout.
+        // Speech takes priority over the hover/event callout.
         if showingBubble { hideHoverCallout(); return }
         let appearance = NSApp.effectiveAppearance
         let container = Self.hoverCalloutView(text: currentHoverText(), appearance: appearance)
@@ -1161,9 +1113,8 @@ struct FloatingPetView: View {
     var agent = FloatingPetAgentModel()
     /// Injectable so render tests stay offline and away from the real sprite cache.
     var spriteStore: SpriteStore = .shared
-    var burst = PrayerBurst()
-    /// Heart bubble shown after a stroke. Limit and agent speech take precedence.
-    var hearts = PetHeartState()
+    var wobble = ClickWobble()
+    /// Every emote over the pet and its friends; limit and agent speech take precedence over slot 0.
     var crowd = PetCrowd()
     @Environment(UsageStore.self) private var store
     @Environment(CompanionStore.self) private var companion
@@ -1177,7 +1128,7 @@ struct FloatingPetView: View {
             if friends.isEmpty {
                 VStack(spacing: 8) {
                     if let bubble { speechBubble(bubble).zIndex(1) }
-                    mainSprite(size: size, subject: subject, bubble: bubble)
+                    mainSprite(size: size, subject: subject)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             } else {
@@ -1186,8 +1137,6 @@ struct FloatingPetView: View {
         }
         .animation(animated ? .spring(response: 0.3, dampingFraction: 0.7) : nil,
                    value: bubble)
-        .animation(animated ? .spring(response: 0.3, dampingFraction: 0.7) : nil,
-                   value: hearts.isShowingAny)
     }
 
     private func speechBubble(_ bubble: FloatingPetController.Bubble) -> some View {
@@ -1206,7 +1155,7 @@ struct FloatingPetView: View {
         let layout = PetRowLayout(friendCount: friends.count, friendsOnLeft: crowd.friendsOnLeft,
                                   friendsFlank: crowd.friendsFlank)
         let showing = FloatingPetController.isShowingBubble(
-            alertActive: store.currentBubbleAlert != nil, heartsShowing: hearts.isShowingAny, agent: agent.summary)
+            alertActive: store.currentBubbleAlert != nil, agent: agent.summary)
         let margins = layout.margins(petSize: size, bubbleWidth: showing ? FloatingPetController.bubbleMinWidth : nil)
         let friendsWidth = layout.friendMargins(petSize: size).left
         let friendSize = PetRowLayout.friendSize(petSize: size)
@@ -1215,7 +1164,7 @@ struct FloatingPetView: View {
         return HStack(alignment: .bottom, spacing: 0) {
             ForEach(slots, id: \.self) { slot in
                 if slot == 0 {
-                    mainSprite(size: size, subject: subject, bubble: nil)
+                    mainSprite(size: size, subject: subject)
                         .overlay(alignment: .top) {
                             if let bubble {
                                 speechBubble(bubble)
@@ -1229,11 +1178,6 @@ struct FloatingPetView: View {
                                  minFrameDelay: minFrameDelay, spriteStore: spriteStore,
                                  megaEvent: companion.megaEvolveEvent, reportsVisibleTop: true)
                         .crowdMember(crowd, slot: slot, size: friendSize)
-                        .overlayPreferenceValue(SpriteVisibleTopKey.self, alignment: .top) { visibleTop in
-                            if hearts.friendIndex == slot - 1, bubble == nil {
-                                FriendHeartBubble(friendSize: friendSize, visibleTop: visibleTop, l: L(companion.language))
-                            }
-                        }
                         .frame(width: PetRowLayout.friendSlotWidth(petSize: size),
                                alignment: friendOnRight(slot) ? .trailing : .leading)
                         .zIndex(1 - 0.1 * Double(slot))
@@ -1244,8 +1188,7 @@ struct FloatingPetView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
     }
 
-    private func mainSprite(size: CGFloat, subject: CompanionStore.RepresentativeSubject,
-                            bubble: FloatingPetController.Bubble?) -> some View {
+    private func mainSprite(size: CGFloat, subject: CompanionStore.RepresentativeSubject) -> some View {
         MegaEvolveStage(megaSpriteID: subject.megaSpriteID, size: size, event: companion.megaEvolveEvent,
                         animated: animated) { mega in
             SpriteView(speciesID: mega ?? subject.speciesID, size: size, animated: animated,
@@ -1254,8 +1197,8 @@ struct FloatingPetView: View {
                        back: companion.facesBack, female: mega == nil && subject.isFemale, reportsVisibleTop: true)
         }
             .crowdMember(crowd, slot: 0, size: size)
-            // One-shot wobble per prayer; keyframes run once per trigger change, never in a loop.
-            .keyframeAnimator(initialValue: 0.0, trigger: burst.wobbleCount) { sprite, angle in
+            // One-shot wobble per click; keyframes run once per trigger change, never in a loop.
+            .keyframeAnimator(initialValue: 0.0, trigger: wobble.count) { sprite, angle in
                 sprite.rotationEffect(.degrees(angle))
             } keyframes: { _ in
                 KeyframeTrack {
@@ -1266,24 +1209,6 @@ struct FloatingPetView: View {
                 }
             }
             .frame(width: size, height: size)
-            .overlay { PrayerEmojiLayer(burst: burst, size: size, animated: animated) }
-            // Hearts hug the visible top of the sprite (not its box). Insertion pops in; removal is
-            // instant, because the panel shrinks at the same moment and a fading bubble would be
-            // drawn lower, over the pet.
-            .overlayPreferenceValue(SpriteVisibleTopKey.self, alignment: .top) { visibleTop in
-                if hearts.isShowing, bubble == nil {
-                    HeartBubbleView(l: L(companion.language))
-                        .offset(y: SpriteVisibleTop.bubbleTopOffset(
-                            visibleTop: visibleTop ?? 0,
-                            bubbleHeight: HeartBubbleArt.height,
-                            overlap: HeartBubbleArt.tailOverlap))
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.8, anchor: .bottom).combined(with: .opacity),
-                            removal: .identity))
-                        .allowsHitTesting(false)
-                }
-            }
-            // Keep the attached heart and prayer particles aligned with the bobbing sprite.
             .modifier(AgentBob(active: agent.bobs))
             .zIndex(0)
     }
@@ -1307,96 +1232,12 @@ struct FloatingPetView: View {
     }
 }
 
-/// The 🙏 particles floating up from the egg. Each one removes itself after `lifetime`; no standing timer.
-/// Pure presentation state: it never touches an RNG that feeds a hatch roll.
+/// Bumped on every click on the pet; the sprite wobbles once per change. Pure presentation state.
 @MainActor @Observable
-final class PrayerBurst {
-    struct Particle: Identifiable, Equatable {
-        let id = UUID()
-        /// 0...1 across the usable width of the pet (the emoji's own width is already excluded).
-        let xFraction: Double
-        var glyph = PrayerBurst.prayer
-    }
+final class ClickWobble {
+    private(set) var count = 0
 
-    nonisolated static let prayer = "🙏"
-    nonisolated static let heart = "💗"
-
-    /// A little longer than the 1 s float-and-fade, so a particle is gone only once it is invisible.
-    static let lifetime: Duration = .milliseconds(1100)
-    static let maxParticles = 8
-
-    private(set) var particles: [Particle] = []
-    /// Bumped on every prayer; the egg wobbles once per change.
-    private(set) var wobbleCount = 0
-
-    func spawn(glyph: String = PrayerBurst.prayer, xFraction: Double = .random(in: 0...1)) {
-        let particle = Particle(xFraction: min(max(xFraction, 0), 1), glyph: glyph)
-        particles.append(particle)
-        particles.removeFirst(max(0, particles.count - Self.maxParticles))
-        wobbleCount += 1
-        Task {
-            try? await Task.sleep(for: Self.lifetime)
-            particles.removeAll { $0.id == particle.id }
-        }
-    }
-}
-
-/// Draws the particles inside the pet's own frame, so the transparent panel never needs to grow.
-@MainActor
-struct PrayerEmojiLayer: View {
-    let burst: PrayerBurst
-    let size: CGFloat
-    let animated: Bool
-
-    /// Emoji edge for a pet size (clamped so it stays legible at 48 pt and modest at 384 pt).
-    static func emojiSize(petSize: CGFloat) -> CGFloat { min(max(petSize * 0.25, 14), 32) }
-
-    var body: some View {
-        let emojiSize = Self.emojiSize(petSize: size)
-        ZStack {
-            ForEach(burst.particles) { particle in
-                PrayerEmoji(xFraction: particle.xFraction, petSize: size, emojiSize: emojiSize, glyph: particle.glyph)
-            }
-        }
-        .frame(width: size, height: size)
-        .allowsHitTesting(false)
-    }
-}
-
-/// One particle at a fixed point of its flight (`progress` 0 = just spawned, 1 = gone).
-@MainActor
-struct PrayerEmojiFrame: View {
-    let xFraction: Double
-    let petSize: CGFloat
-    let emojiSize: CGFloat
-    let progress: Double
-    var glyph = PrayerBurst.prayer
-
-    var body: some View {
-        // Centre x keeps the glyph fully inside [0, petSize]; it rises from the lower middle to the top edge.
-        let x = emojiSize / 2 + CGFloat(xFraction) * (petSize - emojiSize)
-        let startY = petSize * 0.7
-        let endY = emojiSize / 2
-        Text(glyph)
-            .font(.system(size: emojiSize * 0.8))
-            .frame(width: emojiSize, height: emojiSize)
-            .position(x: x, y: startY + (endY - startY) * CGFloat(progress))
-            .opacity(1 - progress)
-    }
-}
-
-@MainActor
-private struct PrayerEmoji: View {
-    let xFraction: Double
-    let petSize: CGFloat
-    let emojiSize: CGFloat
-    let glyph: String
-    @State private var progress = 0.0
-
-    var body: some View {
-        PrayerEmojiFrame(xFraction: xFraction, petSize: petSize, emojiSize: emojiSize, progress: progress, glyph: glyph)
-            .onAppear { withAnimation(.easeOut(duration: 1)) { progress = 1 } }
-    }
+    func wobble() { count += 1 }
 }
 
 /// Two-frame squash toward the feet while an agent works, like the menu bar's static bob: no
@@ -1489,57 +1330,5 @@ struct PettingDetector {
         extremeX = x
         reversalTimes.append(time)
         return reversalTimes.count >= Self.requiredReversals
-    }
-}
-
-/// Whether the heart bubble is up. Owned by the controller so the hosted view is built once and only observes this.
-@MainActor @Observable
-final class PetHeartState {
-    var isShowing = false
-    /// Friend (0-based) wearing the hearts instead of the main pet.
-    var friendIndex: Int?
-    var isShowingAny: Bool { isShowing || friendIndex != nil }
-}
-
-/// Size of the stroke heart's bubble, which `SpriteVisibleTop` anchors above the sprite.
-enum HeartBubbleArt {
-    static let width: CGFloat = 34
-    static let height: CGFloat = 32
-    /// How far the tail tip sticks into the sprite's visible top (pt).
-    static let tailOverlap: CGFloat = 3
-}
-
-/// Transient heart shown after stroking the pet, in the same bubble style as the pet's speech.
-@MainActor
-struct HeartBubbleView: View {
-    let l: L
-
-    var body: some View {
-        Image(systemName: "heart.fill")
-            .font(.ptb(.headline))
-            .foregroundStyle(Palette.heart)
-            .frame(width: HeartBubbleArt.width, height: HeartBubbleArt.height - BubbleMetrics.standard.tailHeight)
-            .speechBubbleSurface()
-            .accessibilityLabel(l.floatingPetHeartsLabel)
-    }
-}
-
-/// The stroke heart over a friend: the main pet's bubble scaled to the friend, hugging its visible top.
-@MainActor
-struct FriendHeartBubble: View {
-    let friendSize: CGFloat
-    let visibleTop: CGFloat?
-    let l: L
-
-    var body: some View {
-        HeartBubbleView(l: l)
-            .scaleEffect(PetRowLayout.friendScale, anchor: .bottom)
-            .offset(y: SpriteVisibleTop.bubbleTopOffset(
-                visibleTop: visibleTop ?? 0,
-                bubbleHeight: HeartBubbleArt.height * PetRowLayout.friendScale,
-                overlap: HeartBubbleArt.tailOverlap * PetRowLayout.friendScale))
-            .transition(.asymmetric(insertion: .scale(scale: 0.8, anchor: .bottom).combined(with: .opacity),
-                                    removal: .identity))
-            .allowsHitTesting(false)
     }
 }

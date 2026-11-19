@@ -440,11 +440,10 @@ final class ReadmeScreenshotTests: XCTestCase {
         let crowd = PetCrowd(settle: .seconds(120))
         crowd.configure(order: layout.slotOrder, motionAllowed: false, active: false)
         crowd.friendsOnLeft = false
-        let hearts = PetHeartState()
-        hearts.friendIndex = 1
-        let panel = FloatingPetController.panelSize(petSize: CGFloat(usage.floatingPetSize), showingBubble: true,
+        crowd.touched(slot: 2)
+        let panel = FloatingPetController.panelSize(petSize: CGFloat(usage.floatingPetSize), showingBubble: false,
                                                     layout: layout)
-        return FloatingPetView(animated: false, spriteStore: spriteStore, hearts: hearts, crowd: crowd)
+        return FloatingPetView(animated: false, spriteStore: spriteStore, crowd: crowd)
             .environment(usage).environment(store)
             .frame(width: panel.width, height: panel.height)
             .frame(maxWidth: .infinity)

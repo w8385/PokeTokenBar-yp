@@ -52,7 +52,7 @@ final class PetEventLineTests: XCTestCase {
         XCTAssertFalse(pop(1, seen: 1), "the same event is not popped twice")
         XCTAssertFalse(pop(nil, seen: nil), "no event")
         XCTAssertFalse(pop(2, seen: 1, visible: false), "the pet is hidden")
-        XCTAssertFalse(pop(2, seen: 1, bubble: true), "a limit alert or hearts bubble wins")
+        XCTAssertFalse(pop(2, seen: 1, bubble: true), "a limit alert or agent speech wins")
         XCTAssertEqual(FloatingPetController.eventPopDuration, .seconds(6))
     }
 

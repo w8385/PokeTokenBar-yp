@@ -59,20 +59,16 @@ final class BubbleScreenshotTests: XCTestCase {
             (.dark, .darkAqua, "dark", NSColor(calibratedWhite: 0.16, alpha: 1)),
         ]
         for (scheme, appearance, name, desktop) in schemes {
-            // The family side by side: pet speech (warning, critical), the stroke heart, crowd reactions.
-            let sizes: [CGFloat] = [28, 76, 96]
+            // The family side by side: pet speech (warning, critical), then every emote.
+            let sizes: [CGFloat] = [28, 76, 96, 96]
+            let emotes: [PetCrowd.Bubble] = [.heart, .note, .cheer, .prayer]
             let sheet = HStack(alignment: .bottom, spacing: 18) {
                 SpeechBubbleView(content: .init(title: "Warning", body: "Claude 5h limit is at 80%", isCritical: false))
                 SpeechBubbleView(content: .init(title: "Critical", body: "Codex weekly limit is at 95%", isCritical: true))
-                SpriteView(speciesID: 25, size: 96, animated: false, spriteStore: sprites)
-                    .frame(width: 96, height: 96)
-                    .overlay(alignment: .top) { HeartBubbleView(l: L(.en)).offset(y: -22) }
                 ForEach(Array(sizes.enumerated()), id: \.offset) { index, size in
                     SpriteView(speciesID: 25, size: size, animated: false, spriteStore: sprites)
                         .frame(width: size, height: size)
-                        .overlay(alignment: .top) {
-                            CrowdBubble(bubble: [.heart, .note, .cheer][index % 3], size: size)
-                        }
+                        .overlay(alignment: .top) { CrowdBubble(bubble: emotes[index], size: size) }
                 }
             }
             .padding(EdgeInsets(top: 40, leading: 16, bottom: 16, trailing: 16))

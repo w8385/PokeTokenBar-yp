@@ -826,7 +826,7 @@ struct CompanionHeader: View {
         return MegaEvolveStage(megaSpriteID: mega, size: size, event: store.megaEvolveEvent) { shown in
             SpriteView(speciesID: shown ?? store.currentSpeciesID, size: size, bob: true, animated: true,
                        shiny: store.currentIsShiny, spriteStore: spriteStore, form: shown == nil ? store.currentForm : nil,
-                       back: store.facesBack, female: shown == nil && store.currentIsFemale)
+                       back: store.facesBack, female: shown == nil && store.currentIsFemale, reportsVisibleTop: true)
         }
             .crowdMember(crowd, slot: 0, size: size)
             .frame(width: size, height: size)
