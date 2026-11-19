@@ -1051,6 +1051,30 @@ read_when:
   22~25ms, 재진입 디스크 읽기 0회였다(클릭부터 화면 표시까지의 전체 시간과는 별도 측정).
   끝까지 스크롤 → 희귀도 필터 → 필터 해제 → 도감 전환·로그 재진입도 격리된 앱에서 확인했다.
   (사용자 리포트: 200개 이상 포획 로그 진입 지연, 2026-09-10.)
+- **A popover list that grows with the catalog is a `LazyVStack`, and its sections are rows, not boxes.**
+  Opening the Shop stalled about a second. Its `ScrollView` held a plain `VStack`, so "All" built and laid
+  out all 152 item cards (Held items 98, Mega 92, Evolution 45) on every open: about 1.0 s in a release
+  build with 180 owned species, at 5–7 ms of SwiftUI layout per card. The store accessors each card calls
+  cost under 1 ms for all of them together, and a warm image cache still took 1.0 s, so the cost was
+  layout, not data or disk. The TM tab added `machineShopMoves`, which ran
+  `learners(of:among:)` (a scan of every owned species) inside the sort comparator and folded the query
+  and every move name per move: 40–50 ms in release at 180 species, 650 ms in debug at 1,000. Why
+  nothing caught it: the catch-log fix above added a lazy-render guard to the Box and the log only; the
+  sweep then judged the Shop and the Bag safe because their item kinds are fixed. They are fixed, but
+  there are 150 of them. No test counted the cards the Shop builds. Fix: the Shop and the Bag lists are
+  `LazyVStack`s with the same alignment and spacing, so all 86 Shop and README renders stayed
+  byte-identical. `MachineShopSection` returns rows, not a `VStack`, so the lazy stack sees each card;
+  a nested box would be built whole. Its filter (query, type, learnable) lives in `ShopView`, so the
+  section no longer stays alive as a zero-height view during a search. The TM list builds the
+  learnable-move set once and folds each move's names once at parse time. "All" now lays out 2 item
+  icons on open and takes 36 ms; the TM tab 44 ms. A lazy stack keeps a removed `NSTextField` as a
+  hidden subview, so a test that looks for a native field skips hidden ones. Guards:
+  `ShopRenderingTests` pins a counting image for every item icon and fails when "All", Held items,
+  Evolution, Mega or the Bag lay out 20 or more (a `VStack` lays out 45–152);
+  `MachineShopTests.testTheListMatchesAPerMoveScanOfLearnersNamesAndPrices` compares the TM list with
+  the old per-move scan; `ShopSearchTests.testASearchDropsTheTMTabAndClearingItBringsTheTMQueryBack`
+  fails when the TM filter goes back into the section or the section is kept alive under a search.
+  (User report: the Shop lags on open, 2026-11-19.)
 - **앱 언어와 시스템 로케일은 다른 축이다 — SwiftUI 가 스스로 만드는 문장은 로케일을 따른다.**
   `L` 문구는 `AppLanguage` 를 따르는데 `Text(_, style: .relative)` 는 `Locale.current` 를 따라, 한국어
   Mac 에서 앱을 영어로 쓰면 "Catch log" 옆에 "3시간 46분" 이 붙는 한 화면 두 언어가 된다. 팝오버 루트
