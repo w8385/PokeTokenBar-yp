@@ -14,7 +14,16 @@ from typing import Protocol
 
 from ypoke.dex import sprite_url
 from ypoke.messages import DirectMessage
-from ypoke.trades import TRADE_LIFETIME, Trade, TradeService, entry_label, pick_options, with_current_item
+from ypoke.trades import (
+    TRADE_LIFETIME,
+    UNKNOWN_INDIVIDUAL,
+    Trade,
+    TradeService,
+    entry_label,
+    pick_options,
+    picker_block,
+    with_current_item,
+)
 
 ACCEPT_ACTION_ID = "miracle_accept"
 CANCEL_ACTION_ID = "miracle_cancel"
@@ -23,7 +32,7 @@ ACCEPT_LABEL = "교환하기"
 CANCEL_LABEL = "내리기"
 
 POST_ERRORS = {
-    "unknown_individual": "그 포켓몬은 교환할 수 없어요. 키우는 포켓몬이나 대결에 내보낸 포켓몬은 먼저 바꿔 주세요.",
+    "unknown_individual": UNKNOWN_INDIVIDUAL,
     "locked": "그 포켓몬은 이미 다른 교환에 걸려 있어요.",
     "already_open": "미라클 교환에는 한 번에 한 마리만 올릴 수 있어요. 먼저 올린 포켓몬을 내려 주세요.",
     "post_failed": "대결 채널에 올리지 못했어요. 잠시 뒤 다시 해 주세요.",
@@ -154,11 +163,7 @@ class MiracleService:
         text = f"<@{offer.poster_id}>님의 {entry_label(offer.give)}과(와) 바꿀 내 포켓몬을 골라 주세요. 고르면 바로 교환돼요."
         blocks = [
             {"type": "section", "text": {"type": "mrkdwn", "text": text}},
-            {"type": "actions", "elements": [{
-                "type": "static_select", "action_id": PICK_ACTION_ID,
-                "placeholder": {"type": "plain_text", "text": "내가 내놓을 포켓몬 고르기"},
-                "options": pick_options(offer.id, entries),
-            }]},
+            picker_block(PICK_ACTION_ID, offer.id, pick_options(offer.id, entries)),
         ]
         return MiracleReply(text, blocks=blocks)
 

@@ -1,7 +1,9 @@
+import http.client
 import json
 import re
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -9,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 
 from ypoke.names import FAILURE_TTL, SUCCESS_TTL, DisplayNames
 from ypoke.store import Store
-from ypoke.upload_server import PartyError, serve, validate_party
+from ypoke.upload_server import MAX_BODY_BYTES, PartyError, serve, validate_party
 
 PIKACHU = {"pokemon_id": 25, "level": 42, "name": "피카츄", "shiny": True, "ivs": {"hp": 31}}
 LEARNABLE = [
@@ -145,7 +147,14 @@ def test_bad_json_and_oversized_body(server):
     store, base, _ = server
     token = store.issue_token("U1")
     assert call(f"{base}/v1/party", "POST", token, b"{nope")[0] == 400
-    assert call(f"{base}/v1/party", "POST", token, b"x" * (64 * 1024 + 1)) == (413, {"ok": False, "error": "too_large"})
+    connection = http.client.HTTPConnection(urlsplit(base).netloc, timeout=5)
+    connection.putrequest("POST", "/v1/party")
+    connection.putheader("Authorization", f"Bearer {token}")
+    connection.putheader("Content-Length", str(MAX_BODY_BYTES + 1))
+    connection.endheaders()
+    response = connection.getresponse()
+    assert (response.status, json.load(response)) == (413, {"ok": False, "error": "too_large"})
+    connection.close()
 
 
 def test_validate_fills_defaults():

@@ -10,7 +10,7 @@ in `/대결 @상대 N` battles; a shorter upload sends what it has. When one fai
   and the app saves both. The DM also shows the token for pasting by hand. The channel only sees a one-line
   notice that the user got a link; the token and link stay in the DM.
   Running `/포켓몬연결` again issues a new token and revokes the old one.
-- Body: JSON, UTF-8, at most 64 KB.
+- Body: JSON, UTF-8, at most 5 MiB (room for a 2,000-entry `trade_pool`).
 
 ## `POST /v1/party`
 
@@ -242,18 +242,21 @@ Two linked coworkers swap one graduated Pokémon each. The app offers, the bot D
 both accept in Slack, and each app picks its side up on its next sync. Nothing changes in the app until
 then. Offers expire after 24 hours.
 
-`trade_pool` (in `POST /v1/party`) lists what the player can offer: up to 100 entries, newest first.
-The app leaves out the Pokémon being raised, the battle pick, and eggs. The bot only trades what is in the
-latest pool, so an app that sends no pool can neither offer nor receive.
+`trade_pool` (in `POST /v1/party`) lists what the player can offer: up to 2,000 entries, newest first.
+The app sends every tradable Pokémon up to that cap and leaves out the Pokémon being raised, the battle
+lineup, and eggs; it hides the trade and miracle buttons for anything past the cap. The bot only trades what is
+in the latest pool, so an app that sends no pool can neither offer nor receive.
 
 ```json
 {"id": "<individual id, max 64 chars, no |>", "pokemon_id": 93, "level": 100, "shiny": false,
- "name": "고우스트", "entry": {"...": "the app's full record of the individual, at most 4 KB"}}
+ "name": "고우스트", "entry": {"...": "the app's record of the individual, at most 4 KB (the app sends at most 2,000 bytes per entry)"}}
 ```
 
 The bot hands the other side's copy of `entry` back unchanged, so the receiver gets species, form, shiny, nature,
-IVs, level and original trainer as sent. It reads only `entry.tradeHeldItem` (see deliveries), and `entry.nature`
-and `entry.profile.gender` to label picker options. Entries that fail the rules above are dropped.
+IVs and level as sent. The app leaves out of `entry` what the receiver replaces on arrival: `caughtAt`,
+`originalTrainer` (the receiver sets the sender), and `profile.instanceID` (sent as `""`). It reads only
+`entry.tradeHeldItem` (see deliveries), and `entry.nature` and `entry.profile.gender` to label picker options.
+Entries that fail the rules above are dropped.
 
 | Endpoint | Purpose |
 |---|---|
@@ -273,6 +276,8 @@ Flow: the proposer's offer reaches the target as a DM with a picker of their poo
 After the target picks and accepts, the proposer gets a confirm DM; their accept completes the trade.
 Completion is refused if either Pokémon has left its owner's latest pool. Either side can decline.
 A picker option reads name, sex, level, ✨ and nature; options still equal get ` #2`, ` #3`.
+A picker of more than 100 Pokémon (Slack's cap) is an `external_select`: it lists 100 at a time and filters as the
+player types any part of the label. Its block id is the trade or offer id.
 
 ### Miracle trades
 
@@ -369,7 +374,7 @@ Trainer art is the app's own resource named by the battle `id`.
 
 ### `POST /v1/gym/battle`
 
-Auth as above, body at most 64 KB.
+Auth as above, body at most 5 MiB.
 
 ```json
 {"gym_id": "kanto-3", "team": [{"pokemon_id": 25, "level": 42, "moves": [85, 87]}, {"pokemon_id": 7, "level": 30}]}
