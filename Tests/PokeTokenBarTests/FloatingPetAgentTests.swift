@@ -112,18 +112,14 @@ final class FloatingPetAgentTests: XCTestCase {
         typealias Note = AgentActivitySummary.Note
         for agent in [AgentActivitySummary(waiting: Note(label: "web", message: nil)),
                       AgentActivitySummary(done: Note(label: "api", message: nil))] {
-            let showingBubble = C.isShowingBubble(alertActive: false, heartsShowing: false, agent: agent)
+            let showingBubble = C.isShowingBubble(alertActive: false, agent: agent)
             XCTAssertTrue(showingBubble, "agent-only speech needs the same panel headroom as limit alerts")
-            XCTAssertFalse(C.heartsShowing(afterStrokeWithAlertActive: false, agent: agent))
             XCTAssertFalse(C.shouldPopEvent(eventSeq: 2, lastSeenSeq: 1, petVisible: true,
                                             bubbleShowing: showingBubble))
         }
         let working = AgentActivitySummary(working: true)
-        XCTAssertTrue(C.heartsShowing(afterStrokeWithAlertActive: false, agent: working),
-                      "working only bobs: it must not block stroking")
-        XCTAssertTrue(C.isShowingBubble(alertActive: false, heartsShowing: true, agent: working))
-        XCTAssertFalse(C.isShowingBubble(alertActive: false, heartsShowing: false, agent: working))
-        XCTAssertFalse(C.heartsShowing(afterStrokeWithAlertActive: true, agent: working))
+        XCTAssertFalse(C.isShowingBubble(alertActive: false, agent: working), "working only bobs")
+        XCTAssertTrue(C.isShowingBubble(alertActive: true, agent: working))
     }
 
     /// Generalizing the bubble view must leave the limit-alert copy exactly as before.
@@ -394,25 +390,25 @@ final class FloatingPetAgentWiringTests: XCTestCase {
             hosting.mouseUp(with: up)
         }
         XCTAssertEqual(opened, 0, "single, double and triple clicks all pet")
-        XCTAssertTrue(fixture.controller.hearts.isShowing)
+        XCTAssertEqual(fixture.controller.crowd.bubble(0), .heart)
         XCTAssertEqual(fixture.companion.state.clickGrowth, 6 * ClickGrowth.tokensPerClick)
         XCTAssertEqual(fixture.companion.state.active?.evolution.pets, 6)
         hosting.handleOpen(nil)
         XCTAssertEqual(opened, 1, "the context menu Open still opens a hatched pet")
     }
 
-    func testClickingAHatchedPetShowsHeartsAndAnEggDoesNot() throws {
+    func testClickingAHatchedPetShowsAHeartAndAnEggAPrayer() throws {
         let hatched = try makeFixture()
         defer { hatched.controller.setDisplayAwake(false); hatched.cleanUp() }
         hatched.controller.setDisplayAwake(true)
         hatched.controller.makeHostingView(animated: false).onClick?()
-        XCTAssertTrue(hatched.controller.hearts.isShowing)
+        XCTAssertEqual(hatched.controller.crowd.bubble(0), .heart)
 
         let egg = try makeFixture(hatched: false)
         defer { egg.controller.setDisplayAwake(false); egg.cleanUp() }
         egg.controller.setDisplayAwake(true)
         egg.controller.makeHostingView(animated: false).onClick?()
-        XCTAssertFalse(egg.controller.hearts.isShowing)
+        XCTAssertEqual(egg.controller.crowd.bubble(0), .prayer)
     }
 
     func testStrokingAFriendShowsItsHeartsAndTouchesNoSavedState() throws {
@@ -422,13 +418,11 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         let hosting = fixture.controller.makeHostingView(animated: false)
         let before = try savedBytes(of: fixture.companion)
         hosting.onStroke?(.friend(0))
-        XCTAssertEqual(fixture.controller.hearts.friendIndex, 0)
-        XCTAssertFalse(fixture.controller.hearts.isShowing, "the main pet gets no hearts")
-        XCTAssertTrue(fixture.controller.hearts.isShowingAny)
+        XCTAssertEqual(fixture.controller.crowd.bubble(1), .heart)
+        XCTAssertNil(fixture.controller.crowd.bubble(0), "the main pet gets no heart")
         XCTAssertEqual(try savedBytes(of: fixture.companion), before)
         hosting.onStroke?(.main)
-        XCTAssertNil(fixture.controller.hearts.friendIndex)
-        XCTAssertTrue(fixture.controller.hearts.isShowing)
+        XCTAssertEqual(fixture.controller.crowd.bubble(0), .heart)
     }
 
     func testClickingAFriendPetsItAndAClickInTheOverlapPetsTheMainPet() throws {
@@ -451,12 +445,11 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         let mainEdge = try XCTUnwrap(xs.first { hosting.hitAtX($0) == .main && $0 > friendX })
         let overlapX = mainEdge + 1
         try click(atX: friendX)
-        XCTAssertEqual(fixture.controller.hearts.friendIndex, 0)
-        XCTAssertFalse(fixture.controller.hearts.isShowing)
+        XCTAssertEqual(fixture.controller.crowd.bubble(1), .heart)
+        XCTAssertNil(fixture.controller.crowd.bubble(0))
         XCTAssertEqual(try savedBytes(of: fixture.companion), before)
         try click(atX: overlapX)
-        XCTAssertNil(fixture.controller.hearts.friendIndex)
-        XCTAssertTrue(fixture.controller.hearts.isShowing, "the main pet wins where the friend's box overlaps it")
+        XCTAssertEqual(fixture.controller.crowd.bubble(0), .heart, "the main pet wins where the friend's box overlaps it")
     }
 
     func testClickingAWaitingHatchedPetClearsTheQuestionThenShowsHearts() throws {
@@ -466,7 +459,7 @@ final class FloatingPetAgentWiringTests: XCTestCase {
         try send("waiting", to: fixture.controller)
         fixture.controller.makeHostingView(animated: false).onClick?()
         XCTAssertEqual(fixture.controller.tracker.activity, .idle)
-        XCTAssertTrue(fixture.controller.hearts.isShowing)
+        XCTAssertEqual(fixture.controller.crowd.bubble(0), .heart)
     }
 
     /// Exercise the callback installed on the actual hosting view, so resolving the mouse-up

@@ -507,9 +507,6 @@ struct L {
     var petButton: String {
         t("쓰다듬기", "Pet", "なでる", "Acariciar", "Caresser", "Fazer carinho", "Streicheln", "Погладить")
     }
-    var floatingPetHeartsLabel: String {
-        t("펫이 기분 좋아해요", "Your pet is happy", "ペットが喜んでいます", "Tu mascota está feliz", "Votre compagnon est content", "Seu mascote está feliz", "Dein Pokémon freut sich", "Питомцу приятно")
-    }
     func floatingPetHoverTokensOnly(_ tokens: String) -> String {
         t("오늘 \(tokens) 토큰", "Today: \(tokens) tokens", "今日: \(tokens) トークン", "Hoy: \(tokens) tokens", "Aujourd'hui : \(tokens) tokens", "Hoje: \(tokens) tokens", "Heute: \(tokens) Tokens", "Токенов сегодня: \(tokens)")
     }

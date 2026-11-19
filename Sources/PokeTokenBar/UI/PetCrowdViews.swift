@@ -20,13 +20,13 @@ struct CrowdMember: ViewModifier {
                     CubicKeyframe(0, duration: 0.14)
                 }
             }
-            .overlay(alignment: .top) {
+            .overlayPreferenceValue(SpriteVisibleTopKey.self, alignment: .top) { visibleTop in
                 if let bubble = crowd.bubble(slot) {
                     CrowdBubble(bubble: bubble, size: size)
+                        .alignmentGuide(.top) { d in -CrowdBubble.topOffset(visibleTop: visibleTop, bubbleHeight: d.height) }
                         .transition(.scale(scale: 0.6, anchor: .bottom).combined(with: .opacity))
                 }
-            }
-            .animation(crowd.motionAllowed ? .spring(response: 0.3, dampingFraction: 0.7) : nil,
+            }            .animation(crowd.motionAllowed ? .spring(response: 0.3, dampingFraction: 0.7) : nil,
                        value: crowd.bubble(slot))
     }
 }
@@ -37,8 +37,8 @@ extension View {
     }
 }
 
-/// A small emoji speech bubble in the pet speech bubble's style, drawn inside the sprite's box so it never
-/// grows the floating panel. Shared by Home and the floating pet.
+/// The one emote over a Pokémon: a small speech bubble with one glyph, drawn inside the sprite's box so it never
+/// grows the floating panel. Home and the floating pet, main pet and friends, all draw this.
 @MainActor
 struct CrowdBubble: View {
     let bubble: PetCrowd.Bubble
@@ -46,12 +46,22 @@ struct CrowdBubble: View {
 
     static func emojiSize(for size: CGFloat) -> CGFloat { min(24, max(9, (size * 0.16).rounded())) }
 
+    /// How far the tail tip sticks into the sprite's visible top.
+    nonisolated static let tailOverlap: CGFloat = 2
+
+    /// Y of the bubble's top from the box top: the tail on the sprite's visible top, never above the box,
+    /// so it never grows the floating panel. A sprite that reports no visible top puts it at the box top.
+    nonisolated static func topOffset(visibleTop: CGFloat?, bubbleHeight: CGFloat) -> CGFloat {
+        max(0, SpriteVisibleTop.bubbleTopOffset(visibleTop: visibleTop ?? 0, bubbleHeight: bubbleHeight,
+                                                overlap: tailOverlap))
+    }
+
     /// The note emoji is a black glyph, unreadable on the dark bubble, so it is drawn as a text-colored symbol.
     @ViewBuilder private var glyph: some View {
-        if bubble == .note {
-            Image(systemName: "music.note").foregroundStyle(.primary)
-        } else {
-            Text(bubble.rawValue)
+        switch bubble {
+        case .note: Image(systemName: "music.note").foregroundStyle(.primary)
+        case .heart: Image(systemName: "heart.fill").foregroundStyle(Palette.heart)
+        case .cheer, .prayer: Text(bubble.rawValue)
         }
     }
 
@@ -181,7 +191,8 @@ struct HomePetRow<Main: View>: View {
             cryPlayer.play(speciesID: friend.speciesID, form: friend.form)
             crowd.clicked(slot: slot)
         } label: {
-            FriendSprite(friend: friend, size: Self.friendSize, spriteStore: spriteStore, megaEvent: store.megaEvolveEvent)
+            FriendSprite(friend: friend, size: Self.friendSize, spriteStore: spriteStore, megaEvent: store.megaEvolveEvent,
+                         reportsVisibleTop: true)
                 .crowdMember(crowd, slot: slot, size: Self.friendSize)
                 .contentShape(Rectangle())
         }

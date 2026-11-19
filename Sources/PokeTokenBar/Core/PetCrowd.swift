@@ -28,11 +28,17 @@ struct FriendSubject: Equatable, Identifiable, Sendable {
 
 /// Display-only reactions between the active Pokémon (slot 0) and its friends (slots 1…).
 /// Nothing here reaches the save or a roll. One instance per surface (Home, floating pet).
+/// It is the only place an emote over a Pokémon comes from: one bubble per slot, ranked by `Rank`.
 @MainActor
 @Observable
 final class PetCrowd {
-    enum Bubble: String, Equatable { case heart = "❤️", note = "🎵", cheer = "🎉" }
+    enum Bubble: String, Equatable { case heart = "❤️", note = "🎵", cheer = "🎉", prayer = "🙏" }
     enum Idle: Equatable { case hop, heart, note }
+    /// Speech over the main pet outranks all of these; see `speechOnMain`.
+    enum Rank: Int, Comparable {
+        case idle, cheer, touch
+        static func < (a: Rank, b: Rank) -> Bool { a.rawValue < b.rawValue }
+    }
 
     static let idleDelayRange: ClosedRange<TimeInterval> = 20...40
     /// How long a turn or bubble stays before the crowd settles back.
@@ -43,7 +49,12 @@ final class PetCrowd {
     private(set) var hopTicks: [Int] = [0, 0, 0]
     private(set) var facingRight: [Bool] = [false, false, false]
     private(set) var bubbles: [Bubble?] = [nil, nil, nil]
+    private var ranks: [Rank?] = [nil, nil, nil]
     private(set) var motionAllowed = true
+    /// A limit alert or agent message is up over slot 0: it clears slot 0's emote and keeps new ones off.
+    var speechOnMain = false {
+        didSet { if speechOnMain { bubbles[0] = nil; ranks[0] = nil } }
+    }
     /// Floating pet only: which side of the main pet the friends stand on.
     var friendsOnLeft = true
     /// Floating pet only: two friends stand on both sides of the main pet instead of on one.
@@ -75,9 +86,11 @@ final class PetCrowd {
             clearReactions()
         }
         self.motionAllowed = motionAllowed
-        if !motionAllowed { clearReactions() }
+        if !motionAllowed { facingRight = [false, false, false] }
         if active, motionAllowed, friendCount > 0 {
             if idleTask == nil { startIdleLoop() }
+        } else if active {
+            idleTask?.cancel(); idleTask = nil
         } else {
             stop()
         }
@@ -92,6 +105,7 @@ final class PetCrowd {
     private func clearReactions() {
         facingRight = [false, false, false]
         bubbles = [nil, nil, nil]
+        ranks = [nil, nil, nil]
     }
 
     private func startIdleLoop() {
@@ -135,7 +149,7 @@ final class PetCrowd {
             hop(a); hop(b)
         case .heart, .note:
             face(a, toward: b); face(b, toward: a)
-            bubbles[bubbleOn] = kind == .heart ? .heart : .note
+            show(kind == .heart ? .heart : .note, on: bubbleOn, rank: .idle)
             scheduleSettle()
         }
     }
@@ -151,18 +165,36 @@ final class PetCrowd {
         }
         if slot != 0 {
             if motionAllowed { hop(slot) }
-            bubbles[slot] = .heart
+            show(.heart, on: slot, rank: .touch)
         }
         scheduleSettle()
+    }
+
+    /// A stroke, or a click the caller reacts to itself (a prayer, a pet): only the emote, no hop or turn.
+    @discardableResult
+    func touched(slot: Int, with bubble: Bubble = .heart) -> Bool {
+        guard show(bubble, on: slot, rank: .touch) else { return false }
+        scheduleSettle()
+        return true
     }
 
     /// The active Pokémon leveled up, evolved, hatched or graduated: the friends cheer.
     func cheer() {
         for slot in order where slot != 0 {
             if motionAllowed { hop(slot) }
-            bubbles[slot] = .cheer
+            show(.cheer, on: slot, rank: .cheer)
         }
         scheduleSettle()
+    }
+
+    /// The one write to `bubbles`: an emote replaces one of the same or a lower rank and never draws over a higher one.
+    @discardableResult
+    private func show(_ bubble: Bubble, on slot: Int, rank: Rank) -> Bool {
+        guard tracks(slot), !(slot == 0 && speechOnMain) else { return false }
+        if let current = ranks[slot], current > rank { return false }
+        bubbles[slot] = bubble
+        ranks[slot] = rank
+        return true
     }
 
     func isFacingRight(_ slot: Int) -> Bool { facingRight.indices.contains(slot) && facingRight[slot] }

@@ -84,32 +84,19 @@ final class PettingDetectorTests: XCTestCase {
     }
 }
 
-/// The heart bubble: Bool state decision, priority, tooltip suppression and the pixel art.
+/// The bubble chrome, the speech headroom and the emote's anchor on the visible sprite.
 @MainActor
 final class StrokeHeartBubbleTests: XCTestCase {
-    func testStrokeShowsHeartsUnlessALimitAlertIsActive() {
-        XCTAssertTrue(FloatingPetController.heartsShowing(afterStrokeWithAlertActive: false))
-        XCTAssertFalse(FloatingPetController.heartsShowing(afterStrokeWithAlertActive: true))
+    func testOnlySpeechReservesBubbleHeadroom() {
+        XCTAssertTrue(FloatingPetController.isShowingBubble(alertActive: true))
+        XCTAssertFalse(FloatingPetController.isShowingBubble(alertActive: false))
     }
 
-    func testHeartsDurationIsAboutTwoSeconds() {
-        XCTAssertEqual(FloatingPetController.heartDuration, .milliseconds(1800))
-    }
-
-    func testHeartsOrAlertReserveBubbleHeadroom() {
-        XCTAssertTrue(FloatingPetController.isShowingBubble(alertActive: false, heartsShowing: true))
-        XCTAssertTrue(FloatingPetController.isShowingBubble(alertActive: true, heartsShowing: false))
-        XCTAssertFalse(FloatingPetController.isShowingBubble(alertActive: false, heartsShowing: false))
-    }
-
-    func testNativeToolTipIsClearedOnlyWhileHeartsShow() {
-        XCTAssertNil(FloatingPetController.nativeToolTip("Today: 1 tokens", heartsShowing: true))
-        XCTAssertEqual(FloatingPetController.nativeToolTip("Today: 1 tokens", heartsShowing: false),
-                       "Today: 1 tokens", "a limit alert alone keeps the tooltip, as on main")
-    }
-
-    func testHeartStateStartsHidden() {
-        XCTAssertFalse(PetHeartState().isShowing)
+    func testEmoteNeverRisesAboveTheSpriteBox() {
+        XCTAssertEqual(CrowdBubble.topOffset(visibleTop: 0, bubbleHeight: 20), 0, "a sprite touching its box top")
+        XCTAssertEqual(CrowdBubble.topOffset(visibleTop: nil, bubbleHeight: 20), 0, "no visible top reported")
+        XCTAssertEqual(CrowdBubble.topOffset(visibleTop: 40, bubbleHeight: 20), 40 + CrowdBubble.tailOverlap - 20,
+                       "the tail tip sits just inside the visible top")
     }
 
     func testTailTipSitsAtTheHorizontalCenterOnTheBottomEdge() {
@@ -130,16 +117,6 @@ final class StrokeHeartBubbleTests: XCTestCase {
         XCTAssertEqual(standard.cornerRadius, 12)
         XCTAssertEqual(mini.cornerRadius / standard.cornerRadius, mini.tailHeight / standard.tailHeight)
         XCTAssertEqual(mini.cornerRadius / standard.cornerRadius, mini.shadowRadius / standard.shadowRadius)
-    }
-
-    func testHeartBubbleFitsThePanelAndHeadroom() {
-        XCTAssertLessThanOrEqual(HeartBubbleArt.width, FloatingPetController.bubbleMinWidth)
-        // Worst case: the sprite touches its box top (visible top 0), so the bubble sits highest.
-        XCTAssertLessThanOrEqual(HeartBubbleArt.height - HeartBubbleArt.tailOverlap,
-                                 FloatingPetController.bubbleHeadroom)
-        let top = SpriteVisibleTop.bubbleTopOffset(visibleTop: 0, bubbleHeight: HeartBubbleArt.height,
-                                                   overlap: HeartBubbleArt.tailOverlap)
-        XCTAssertGreaterThanOrEqual(top, -FloatingPetController.bubbleHeadroom, "never clipped by the panel top")
     }
 
     // MARK: anchoring to the visible sprite
@@ -168,7 +145,7 @@ final class StrokeHeartBubbleTests: XCTestCase {
     }
 
     func testBubbleTailLandsJustInsideTheVisibleTop() {
-        let height = HeartBubbleArt.height
+        let height: CGFloat = 32
         let top = SpriteVisibleTop.bubbleTopOffset(visibleTop: 24, bubbleHeight: height, overlap: 3)
         XCTAssertEqual(top + height, 24 + 3, accuracy: 0.001, "tail tip 3pt below the visible top")
     }
@@ -235,59 +212,12 @@ final class StrokeHeartBubbleTests: XCTestCase {
         let sidesOnly = try image { row, column in (column == 0 || column == 9) && row >= 2 }
         XCTAssertEqual(SpriteVisibleTop.opaqueTopFraction(of: sidesOnly), 0.2, accuracy: 0.001)
     }
-
-    func testHeartsLabelIsLocalizedInEveryLanguage() {
-        let labels = AppLanguage.allCases.map { L($0).floatingPetHeartsLabel }
-        XCTAssertFalse(labels.contains(""))
-        XCTAssertGreaterThan(Set(labels).count, 1)
-    }
 }
 
-/// Optional sample-data renders of the heart bubble alone and above the floating egg.
+/// Optional sample-data renders of the heart emote on real sprites.
 /// Set `PTB_PETTING_RENDER_DIR` to write PNGs; otherwise skipped.
 @MainActor
 final class FloatingPetPettingRenderingTests: XCTestCase {
-    func testRenderHeartBubble() throws {
-        guard let directory = ProcessInfo.processInfo.environment["PTB_PETTING_RENDER_DIR"] else {
-            throw XCTSkip("PTB_PETTING_RENDER_DIR not set")
-        }
-        let petSize: CGFloat = 96
-        let l = L(.en)
-        for (scheme, name, desktop) in [
-            (ColorScheme.light, "light", NSColor(calibratedWhite: 0.78, alpha: 1)),
-            (ColorScheme.dark, "dark", NSColor(calibratedWhite: 0.16, alpha: 1)),
-        ] {
-            let variants: [(String, AnyView)] = [
-                ("bubble", AnyView(HeartBubbleView(l: l))),
-                ("before", AnyView(SpriteView(speciesID: nil, size: petSize, animated: false, shiny: false)
-                    .frame(width: petSize, height: petSize))),
-                ("after", AnyView(
-                    SpriteView(speciesID: nil, size: petSize, animated: false, shiny: false,
-                               reportsVisibleTop: true)
-                        .frame(width: petSize, height: petSize)
-                        .overlayPreferenceValue(SpriteVisibleTopKey.self, alignment: .top) { visibleTop in
-                            HeartBubbleView(l: l)
-                                .offset(y: SpriteVisibleTop.bubbleTopOffset(
-                                    visibleTop: visibleTop ?? 0, bubbleHeight: HeartBubbleArt.height,
-                                    overlap: HeartBubbleArt.tailOverlap))
-                        }
-                        .padding(.top, HeartBubbleArt.height))),
-            ]
-            for (label, content) in variants {
-                let renderer = ImageRenderer(content: content
-                    .padding(24)
-                    .background(Color(nsColor: desktop))
-                    .environment(\.colorScheme, scheme))
-                renderer.scale = 4
-                let image = try XCTUnwrap(renderer.nsImage)
-                let rep = try XCTUnwrap(NSBitmapImageRep(data: XCTUnwrap(image.tiffRepresentation)))
-                let png = try XCTUnwrap(rep.representation(using: .png, properties: [:]))
-                try png.write(to: URL(fileURLWithPath: directory)
-                    .appendingPathComponent("pet-\(label)-\(name).png"))
-            }
-        }
-    }
-
     /// Real sprites (downloaded into a scratch directory, never the user's cache) under the bubble,
     /// each rendered twice: plain, and with a green 1pt guide at the computed visible top.
     /// Logs the numbers behind the anchor. Needs network.
@@ -301,7 +231,6 @@ final class FloatingPetPettingRenderingTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: sprites) }
         let store = SpriteStore(directory: sprites)
         let base = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
-        let l = L(.en)
 
         // speciesID nil = the egg (loaded through the shared store, as the prayer render does).
         let cases: [(name: String, species: Int?, form: PokemonForm?)] = [
@@ -335,17 +264,16 @@ final class FloatingPetPettingRenderingTests: XCTestCase {
                         .frame(width: petSize, height: petSize)
                         .overlayPreferenceValue(SpriteVisibleTopKey.self, alignment: .top) { visibleTop in
                             ZStack(alignment: .top) {
-                                HeartBubbleView(l: l)
-                                    .offset(y: SpriteVisibleTop.bubbleTopOffset(
-                                        visibleTop: visibleTop ?? 0, bubbleHeight: HeartBubbleArt.height,
-                                        overlap: HeartBubbleArt.tailOverlap))
+                                CrowdBubble(bubble: .heart, size: petSize)
+                                    .alignmentGuide(.top) { d in
+                                        -CrowdBubble.topOffset(visibleTop: visibleTop, bubbleHeight: d.height)
+                                    }
                                 if guide {
                                     Rectangle().fill(Color.green).frame(height: 1)
                                         .offset(y: visibleTop ?? 0)
                                 }
                             }
                         }
-                        .padding(.top, HeartBubbleArt.height)
                     let renderer = ImageRenderer(content: sprite
                         .padding(24)
                         .background(Color(nsColor: NSColor(calibratedWhite: 0.78, alpha: 1)))

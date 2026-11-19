@@ -108,18 +108,4 @@ final class ClickGrowthTests: XCTestCase {
         XCTAssertLessThan(clicks, 5_000)
         XCTAssertEqual(store.state.dex.first?.finalID, 3)
     }
-
-    func testRapidClicksKeepOnlyTheNewestParticles() {
-        let burst = PrayerBurst()
-        for i in 0..<20 { burst.spawn(xFraction: Double(i) / 20) }
-        XCTAssertEqual(burst.particles.count, PrayerBurst.maxParticles)
-        XCTAssertEqual(burst.particles.last?.xFraction, 19.0 / 20)
-    }
-
-    func testHeartParticleKeepsItsGlyph() {
-        let burst = PrayerBurst()
-        burst.spawn(glyph: PrayerBurst.heart, xFraction: 0.5)
-        burst.spawn(xFraction: 0.5)
-        XCTAssertEqual(burst.particles.map(\.glyph), [PrayerBurst.heart, PrayerBurst.prayer])
-    }
 }
