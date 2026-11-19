@@ -143,7 +143,11 @@ HOOKS = {
     "blocks_ohko": "ability: an OHKO move fails on its holder (Sturdy)",
     "endures":"state, then ability, then item: a hit that would knock its holder out leaves it 1 HP",
     "on_knocked_out": "state: acts as a foe's move knocks its holder out (Destiny Bond, Grudge)",
-    "on_contact_hit": "item: hurts the user of each contact hit on its holder",
+    "on_fainted_by": "ability: acts as a foe's move knocks its holder out, after the states (Aftermath); `lost` is the "
+                     "HP the last hit took; returns an event",
+    "damps": "ability: nothing explodes while its holder is out, Aftermath included (Damp)",
+    "on_contact_hit": "item, ability: the HP each contact hit on its holder takes from the user (Rocky Helmet, Rough "
+                      "Skin)",
     "drops_contact": "ability, item: its holder's moves do not make contact (Long Reach, Punching Glove on punches, "
                      "Protective Pads)",
     "between_hits": "item: acts between the hits of a multi-hit move",
@@ -151,6 +155,7 @@ HOOKS = {
     "blocks_ailment": "ability: an ailment its holder cannot get now",
     "poisons_any_type": "ability: its holder's moves poison Poison and Steel types too (Corrosion)",
     "passes_ailment": "ability: an ailment a foe gave its holder goes to that foe too (Synchronize)",
+    "after_inflicting": "ability: acts once its holder gave the foe an ailment (Poison Puppeteer); returns the event",
     "status_as": "ability: the status its holder counts as having while it has none (Comatose)",
     "welcomes_ailment": "ability: the move chooser leaves this ailment off its holder, which it helps (Poison Heal)",
     "guards_stats": "state: a foe cannot lower the stats of a Pokémon on its side",

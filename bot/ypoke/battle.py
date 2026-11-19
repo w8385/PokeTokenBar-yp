@@ -1446,6 +1446,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                       ability=defender.ability if granted else None, changes=crash,
                       attacker_fainted=attacker.hp == 0)
     critical, hits, dealt, sturdy, endured, berry, shielded = False, 0, 0, False, "", "", False
+    barbed = False
     hooks.move(move, "draws", attacker, rng)
     fixed = hooks.move(move, "fixed_damage", attacker, defender, rng)
     resisted = defender.item if fixed is None and hooks.item(defender, "resists", move.type, multiplier,
@@ -1489,9 +1490,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         defender.times_hit += 1
         defender.hit_by_foe = defender.hit_by_foe or damage > 0
         critical, hits, dealt = critical or hit_critical, hits + 1, dealt + damage
-        if damage > 0 and makes_contact(attacker, move):
-            attacker.hp = max(0, attacker.hp - (0 if _chip_free(attacker) else hooks.item(
-                defender, "on_contact_hit", attacker, default=0)))
+        if damage > 0 and makes_contact(attacker, move) and not _chip_free(attacker):
+            barbs = hooks.ability(defender, "on_contact_hit", attacker, default=0)
+            barbed = barbed or barbs > 0
+            attacker.hp = max(0, attacker.hp - hooks.item(defender, "on_contact_hit", attacker, default=0) - barbs)
         if defender.hp == 0 or attacker.hp == 0:
             break
         held = defender.item
@@ -1501,7 +1503,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         defender.hurt = Hurt(move.physical, dealt, makes_contact(attacker, move))
     if defender.hp == 0:
         _field(defender, "on_knocked_out", attacker, move, turn, side)
-    changes, ability = (), defender.ability if sturdy else None
+        _announce(defender, hooks.ability(defender, "on_fainted_by", defender, attacker, move, damage))
+    changes, ability = (), defender.ability if sturdy or barbed else None
     if defender.hp > 0 and (not shielded or move.stat_on_user):
         changes, blocked_by = _secondary_effects(side, move, attacker, defender, rng)
         defender.ability_ignored = False
@@ -1829,6 +1832,8 @@ def _inflict(ailment: str, defender: _Fighter, side: int, rng: random.Random | N
             defender.sleep_left = rng.randint(*SLEEP_TURNS)
     if by is not None and _passed_back(ailment, defender, by):
         _ability_act(defender, changes=(_inflict(ailment, by, by.side, rng),))
+    if by is not None:
+        _announce(by, hooks.ability(by, "after_inflicting", ailment, by, defender, side, rng))
     return Change(side, defender.combatant.name, ailment)
 
 
@@ -2017,9 +2022,11 @@ def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: s
 
 
 def _hp_kept(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None) -> float:
-    """The share of its HP the user keeps after the recoil and HP cost it expects the move to take (Brave Bird,
-    Steel Beam)."""
+    """The share of its HP the user keeps after the recoil, HP cost and the foe's contact ability it expects the move
+    to take (Brave Bird, Steel Beam, Rough Skin)."""
     paid = hooks.move(move, "hp_paid", attacker, default=0)
+    if makes_contact(attacker, move) and not _chip_free(attacker):
+        paid += hooks.ability(defender, "on_contact_hit", attacker, default=0) * _expected_hits(move, attacker, 100)
     if move.drain < 0:
         dealt = _unrolled_damage(attacker, defender, move, _multiplier(move, defender, weather), weather)
         paid += min(defender.hp, dealt) * -move.drain / 100

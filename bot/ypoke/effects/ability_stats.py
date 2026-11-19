@@ -159,6 +159,14 @@ class CottonDown(Handler):
         return _act(name, holder, (change,) if change else ())
 
 
+@register("abilities", "contact-slow")
+class ContactSlow(CottonDown):
+    """Gooey, Tangling Hair: Cotton Down for contact moves only."""
+
+    def after_hit(self, name, hit):
+        return super().after_hit(name, hit) if hit.contact else None
+
+
 @register("abilities", "speed-boost")
 class SpeedBoost(Handler):
     """Raises Speed at the end of each turn the holder did not enter in."""

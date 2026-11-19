@@ -23,6 +23,9 @@ EFFECT_KEYS = frozenset({
     "prankster", "triage", "stall", "quick-draw", "mycelium-might", "unburden", "truant", "pressure", "damp", "dancer",
     "synchronize", "shed-skin", "hydration", "natural-cure", "poison-heal", "magic-guard", "comatose", "leaf-guard",
     "flower-veil", "corrosion", "early-bird", "regenerator",
+    "effect-spore", "contact-chip", "contact-slow", "aftermath", "innards-out", "cursed-body", "perish-body",
+    "ability-spread", "wandering-spirit", "pickpocket", "magician", "hit-ailment", "stench", "poison-puppeteer",
+    "spicy-spray",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
 FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
@@ -122,6 +125,15 @@ IMMUNE_TYPE = battle_data.args("abilities", "type-immunity", "type")
 AILMENT_BLOCKED = battle_data.args("abilities", "ailment-block", "ailments")
 CONTACT_AILMENT = battle_data.args("abilities", "contact-ailment", "ailment")
 CONTACT_CHANCE = 0.3
+# Effect Spore's one draw under 0.3 picks its ailment by these upper bounds.
+EFFECT_SPORE = (("sleep", 0.11), ("paralysis", 0.21), ("poison", 0.3))
+CONTACT_CHIP_SHARE = battle_data.args("abilities", "contact-chip", "share")
+AFTERMATH_SHARE = battle_data.args("abilities", "aftermath", "share")
+CURSED_BODY_CHANCE = 0.3
+HIT_AILMENT = battle_data.args("abilities", "hit-ailment", "ailment")
+HIT_AILMENT_CONTACT = battle_data.args("abilities", "hit-ailment", "contact")
+STENCH_CHANCE = 0.1
+POWDER_FLAG = "powder"
 TERRAIN_ON_ENTRY = battle_data.args("abilities", "terrain-on-entry", "terrain")
 FIELD_STAT_STATE = battle_data.args("abilities", "field-stat", "field")
 FIELD_STAT_STAT = battle_data.args("abilities", "field-stat", "stat")

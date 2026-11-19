@@ -305,6 +305,21 @@ FOCUS_CASES = {
     "poison-heal": (((18, "toxic-orb", "poison-heal", [33]),), ((101, None, None, [33]),)),
     "flower-veil": (((4, None, "flower-veil", [33]),), ((101, None, None, [45, 261]),)),
     "early-bird": (((101, None, None, [95, 33]),), ((79, None, "early-bird", [33]),)),
+    "comatose": (((18, None, "comatose", [33]),), ((36, None, None, [92, 33]),)),
+    "defiant": (((130, None, "intimidate", [33]),), ((18, None, "defiant", [33]),)),
+    "rough-skin": (((18, None, None, [33, 88]),), ((36, None, "rough-skin", [33]),)),
+    "aftermath": (((18, None, "damp", [33]), (36, None, None, [33])),
+                  ((36, None, "aftermath", [33]), (18, None, "innards-out", [33]))),
+    "item-theft": (((18, "leftovers", None, [33]), (36, None, "magician", [33])),
+                   ((36, None, "pickpocket", [33]), (18, "sitrus-berry", None, [33]))),
+    "ability-spread": (((18, None, "huge-power", [33]), (36, None, "guts", [33])),
+                       ((36, None, "mummy", [33]), (18, None, "wandering-spirit", [33]))),
+    "contact-curse": (((18, None, None, [33, 89]),), ((36, None, "cursed-body", [33]), (18, None, "perish-body", [33]))),
+    "contact-ailment": (((18, None, None, [33]),), ((36, None, "effect-spore", [33]), (18, None, "gooey", [33]))),
+    "hit-ailment": (((18, None, "poison-touch", [33]), (36, None, "poison-puppeteer", [398])),
+                    ((36, None, "stench", [33]), (18, None, "spicy-spray", [33]))),
+    "hydration": (((18, None, "hydration", [33]),), ((36, None, "drizzle", [92, 33]),)),
+    "switcheroo": (((94, None, None, [415, 33]),), ((143, "leftovers", None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
