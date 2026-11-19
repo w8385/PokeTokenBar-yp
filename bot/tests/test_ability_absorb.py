@@ -7,7 +7,7 @@ from status_moves import data_move, resolve
 from test_ability_damage import FLAMETHROWER, SWIFT, TACKLE, facing, hit
 
 from ypoke import battle
-from ypoke.battle import AbilityAct, _Weather
+from ypoke.battle import _Weather
 from ypoke.effects import hooks
 from ypoke.narration import battle_turns
 
@@ -132,12 +132,10 @@ def test_wonder_guard_lets_only_super_effective_attacks_through():
 
 
 def test_magic_bounce_sends_a_status_move_back_and_says_so():
-    _, user, foe = strike(THUNDER_WAVE, "magic-bounce")
-    assert user.status == "paralysis" and foe.status is None
-    assert [(event.ability, event.effect) for event in foe.arena.log if isinstance(event, AbilityAct)] == [
-        ("magic-bounce", "bounce")]
-    _, user, foe = strike(THUNDER_WAVE, None)
-    assert foe.status == "paralysis" and user.status is None
+    action, user, foe = strike(THUNDER_WAVE, "magic-bounce")
+    assert user.status == "paralysis" and foe.status is None and action.blocked == "magic-bounce"
+    action, user, foe = strike(THUNDER_WAVE, None)
+    assert foe.status == "paralysis" and user.status is None and not action.blocked
 
 
 def test_liquid_ooze_hurts_whoever_drains_it():
@@ -172,9 +170,19 @@ def test_the_move_chooser_steers_around_the_foes_ability(foe_ability, user_types
     assert battle._choose(arena.teams, 0, arena, None) == picked
 
 
-def test_an_absorbed_move_and_a_bounced_move_read_in_the_log():
-    action, _, _ = strike(THUNDERBOLT, "volt-absorb")
-    bounce = AbilityAct(1, 1, "상대", "magic-bounce", effect="bounce")
-    [(_, lines)] = battle_turns(battle.BattleResult(winner=0, turns=1, events=[action, bounce]))
-    assert lines[0].endswith("→ [축전]에 막힘 💚HP 회복")
-    assert lines[1] == "🔴 상대 [매직미러] 기술을 되받아쳤다"
+@pytest.mark.parametrize(("move", "ability", "line"), [
+    (THUNDERBOLT, "volt-absorb", "🔵 사용자 › 10만볼트 → [축전]에 막힘 💚HP 회복"),
+    (THUNDER_WAVE, "magic-bounce", "🔵 사용자 › 전기자석파 → [매직미러]로 되받아쳤다 ⚡마비"),
+    (TAUNT, "magic-bounce", "🔵 사용자 › 도발 → [매직미러]로 되받아쳤다 😤도발"),
+])
+def test_an_absorbed_move_and_a_bounced_move_read_in_the_log(move, ability, line):
+    action, _, _ = strike(move, ability)
+    assert battle_turns(battle.BattleResult(winner=0, turns=1, events=[action]))[0][1] == [line]
+
+
+def test_a_move_bounced_by_magic_coat_reads_in_the_log():
+    user, foe, arena = facing(None, None)
+    resolve(foe, user, data_move(277), arena)
+    action = resolve(user, foe, THUNDER_WAVE, arena)
+    [(_, lines)] = battle_turns(battle.BattleResult(winner=0, turns=1, events=[action]))
+    assert lines == ["🔵 사용자 › 전기자석파 → 🪞매직코트로 되받아쳤다 ⚡마비"]

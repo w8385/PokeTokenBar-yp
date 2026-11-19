@@ -183,9 +183,8 @@ def test_powder_blows_up_a_fire_move_and_electrify_turns_a_move_electric():
 def test_magic_coat_bounces_a_status_move_back():
     user, foe, arena = fighters()
     resolve(user, foe, MAGIC_COAT, arena)
-    resolve(foe, user, GROWL, arena)
+    assert resolve(foe, user, GROWL, arena).blocked == "magic-coat"
     assert user.stages["attack"] == 0 and foe.stages["attack"] == -1
-    assert arena.log[-1] == battle.VolatileEnd(1, 0, "사용자", "magic-coat")
 
 
 def test_the_chooser_waits_with_magic_coat_only_for_a_foe_that_keeps_using_its_status_move():

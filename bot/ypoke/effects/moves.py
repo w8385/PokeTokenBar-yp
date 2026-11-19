@@ -27,15 +27,14 @@ class StatusMove(Handler):
                 return {"failed": True, "blocked": shield}
             taken = next(iter(battle._field(foe, "reflects", move)), "")
             if not taken and hooks.ability(foe, "reflects", move, default=False):
-                arena.log.append(battle.AbilityAct(turn, 1 - side, foe.combatant.name, foe.ability, effect="bounce"))
-                user, foe, side = foe, user, 1 - side
+                taken = foe.ability
         elif self.snatchable:
             taken = next(iter(battle._field(foe, "snatches", move)), "")
         if taken:
-            arena.log.append(battle.VolatileEnd(turn, 1 - side, foe.combatant.name, taken))
             user, foe, side = foe, user, 1 - side
         effect, changes = self._apply(move, user, foe, side, turn, arena, rng)
-        return {"failed": not effect, "effect": effect, "changes": changes, "attacker_fainted": attacker.hp == 0}
+        return {"failed": not effect, "effect": effect, "changes": changes, "attacker_fainted": attacker.hp == 0,
+                "blocked": taken}
 
     def targets_foe(self, move):
         return self.hits_foe

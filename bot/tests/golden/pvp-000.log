@@ -1038,35 +1038,25 @@ Action turn=23 side=1 attacker='P14' defender='P116' move='다이스트림' mult
 Action turn=23 side=0 attacker='P116' defender='P14' move='미러코트' defender_hp=70 failed=True attacker_hp=89 move_id=243
 Action turn=24 side=1 attacker='P14' defender='P116' move='미러코트' defender_hp=89 failed=True attacker_hp=70 move_id=243
 Action turn=24 side=0 attacker='P116' defender='P14' move='미러코트' defender_hp=70 failed=True attacker_hp=89 move_id=243
-Action turn=25 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 effect='heal-foe' move_id=666
-AbilityAct turn=25 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=25 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 blocked='magic-bounce' effect='heal-foe' move_id=666
 Action turn=25 side=1 attacker='P14' defender='P116' move='미러코트' failed=True attacker_hp=70 move_id=243
-Action turn=26 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 failed=True move_id=666
-AbilityAct turn=26 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=26 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 failed=True blocked='magic-bounce' move_id=666
 Action turn=26 side=1 attacker='P14' defender='P116' move='미러코트' failed=True attacker_hp=70 move_id=243
-Action turn=27 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 failed=True move_id=666
-AbilityAct turn=27 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=27 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 failed=True blocked='magic-bounce' move_id=666
 Action turn=27 side=1 attacker='P14' defender='P116' move='미러코트' failed=True attacker_hp=70 move_id=243
-Action turn=28 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 failed=True move_id=666
-AbilityAct turn=28 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=28 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 failed=True blocked='magic-bounce' move_id=666
 Action turn=28 side=1 attacker='P14' defender='P116' move='미러코트' failed=True attacker_hp=70 move_id=243
-Action turn=29 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 failed=True move_id=666
-AbilityAct turn=29 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=29 side=0 attacker='P116' defender='P14' move='플라워힐' defender_hp=70 failed=True blocked='magic-bounce' move_id=666
 Action turn=29 side=1 attacker='P14' defender='P116' move='미러코트' failed=True attacker_hp=70 move_id=243
-Action turn=30 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) effect='heal' move_id=668
-AbilityAct turn=30 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=30 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) blocked='magic-bounce' effect='heal' move_id=668
 Action turn=30 side=1 attacker='P14' defender='P116' move='미러코트' failed=True move_id=243
-Action turn=31 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) effect='heal' move_id=668
-AbilityAct turn=31 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=31 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) blocked='magic-bounce' effect='heal' move_id=668
 Action turn=31 side=1 attacker='P14' defender='P116' move='미러코트' failed=True move_id=243
-Action turn=32 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) effect='heal' move_id=668
-AbilityAct turn=32 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=32 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) blocked='magic-bounce' effect='heal' move_id=668
 Action turn=32 side=1 attacker='P14' defender='P116' move='미러코트' failed=True move_id=243
-Action turn=33 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) effect='heal' move_id=668
-AbilityAct turn=33 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=33 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) blocked='magic-bounce' effect='heal' move_id=668
 Action turn=33 side=1 attacker='P14' defender='P116' move='미러코트' failed=True move_id=243
-Action turn=34 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) effect='heal' move_id=668
-AbilityAct turn=34 side=1 pokemon='P14' ability='magic-bounce' effect='bounce'
+Action turn=34 side=0 attacker='P116' defender='P14' move='힘흡수' changes=(Change(side=0, pokemon='P116', kind='attack', stages=-1),) blocked='magic-bounce' effect='heal' move_id=668
 Action turn=34 side=1 attacker='P14' defender='P116' move='미러코트' failed=True move_id=243
 Action turn=35 side=0 attacker='P116' defender='P14' move='발버둥' recoil=True defender_hp=96 attacker_hp=75 move_id=165
 Action turn=35 side=1 attacker='P14' defender='P116' move='미러코트' defender_hp=75 failed=True attacker_hp=96 move_id=243
