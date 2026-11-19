@@ -104,6 +104,16 @@ extension L {
             return t("방금 도착해 진화를 확인하는 중이에요.", "It just arrived and is still being checked for evolution.", "届いたばかりで、進化を確認中です。", "Acaba de llegar y se está comprobando su evolución.", "Il vient d'arriver, son évolution est en cours de vérification.", "Acabou de chegar e a evolução está sendo verificada.", "Es ist gerade angekommen, die Entwicklung wird noch geprüft.", "Только что прибыл, эволюция ещё проверяется.")
         case .unavailable:
             return t("이 포켓몬은 교환할 수 없어요.", "This Pokémon can't be traded.", "このポケモンは交換できません。", "Este Pokémon no se puede intercambiar.", "Ce Pokémon ne peut pas être échangé.", "Este Pokémon não pode ser trocado.", "Dieses Pokémon kann nicht getauscht werden.", "Этого покемона нельзя обменять.")
+        case .poolFull:
+            let count = TradePool.maxEntries
+            return t("교환할 수 있는 포켓몬은 최근 \(count)마리까지만 봇에 올라가요. 이 포켓몬은 그보다 오래돼 교환할 수 없어요.",
+                     "Only your newest \(count) tradable Pokémon go to the bot. This one is older, so it can't be traded.",
+                     "ボットに送られるのは交換できる最新の\(count)匹までです。このポケモンはそれより古いため交換できません。",
+                     "Solo tus \(count) Pokémon intercambiables más recientes llegan al bot. Este es más antiguo, así que no se puede intercambiar.",
+                     "Seuls tes \(count) Pokémon échangeables les plus récents vont au bot. Celui-ci est plus ancien, il ne peut pas être échangé.",
+                     "Só os seus \(count) Pokémon trocáveis mais recentes vão para o bot. Este é mais antigo, então não pode ser trocado.",
+                     "Nur deine neuesten \(count) tauschbaren Pokémon gehen an den Bot. Dieses ist älter und kann nicht getauscht werden.",
+                     "Боту передаются только \(count) последних покемонов для обмена. Этот старше, поэтому его нельзя обменять.")
         }
     }
 

@@ -64,6 +64,9 @@ METHODS=(
   SaveTransferTests/testEveryCompanionStateFieldIsClassifiedForTransfer
   GymModelTests/testGymViewsNeverShowTheBotsRegionName
   GymModelTests/testRegionNamesFollowTheAppLanguageNotTheBotsKoreanName
+  # Read the bot's caps from bot/ypoke, so a bot-only change can break them.
+  TradePoolCapacityTests/testTheBotKeepsEveryEntryAndByteTheAppCanSend
+  TradePoolCapacityTests/testEveryPokemonOfA300PokemonBoxGoesInThePoolUnderTheBotsBodyLimit
   # Language sweeps the name rule does not catch.
   ActivityVisualizationTests/testTitleStatesTheWindowLength
   AdditionalClaudeAccountsStoreTests/testTheBubbleDropsAnAccountThatDoesNotFit

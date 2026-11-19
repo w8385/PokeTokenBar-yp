@@ -125,13 +125,14 @@ enum TradeRefusal: Equatable, Sendable {
     case arriving
     /// Released, traded away, or a species this build cannot show.
     case unavailable
+    /// Past the newest `TradePool.maxEntries` tradable ones, so the bot never gets it.
+    case poolFull
 }
 
 enum TradePool {
-    static let maxEntries = 100
-    /// The bot refuses a body over 64 KB; the party itself needs a few hundred bytes.
-    static let maxBytes = 48_000
-    static let maxEntryBytes = 4_000
+    static let maxEntries = 2_000
+    static let maxEntryBytes = 2_000
+    static let maxBytes = 2 + maxEntries * (maxEntryBytes + 1)
 
     /// Everyone in the battle lineup (up to six), which also covers the auto fighter when nothing is picked.
     static func fightingIDs(state: CompanionState, slots: [BattleEntrySlot]) -> Set<String> {
@@ -149,26 +150,33 @@ enum TradePool {
         return nil
     }
 
-    /// The individuals this player may offer, newest first and trimmed to what the bot accepts.
+    /// The tradable individuals newest first, cut at `maxEntries`: who `build` sends.
+    static func listed(state: CompanionState, fightingIDs: Set<String>) -> [DexEntry] {
+        Array(state.dex
+            .filter { refusal(for: $0, fightingIDs: fightingIDs, activeID: nil, raisedID: state.raisedEntryID) == nil }
+            .sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
+            .prefix(maxEntries))
+    }
+
     static func build(state: CompanionState, fightingIDs: Set<String>, name: (DexEntry) -> String) -> [TradePoolEntry] {
-        var entries: [TradePoolEntry] = []
-        var bytes = 2
-        let owned = state.dex.sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
-        for entry in owned where refusal(for: entry, fightingIDs: fightingIDs, activeID: nil,
-                                         raisedID: state.raisedEntryID) == nil {
-            let held = state.heldItems[entry.id].flatMap(ItemKind.init(rawValue:))?.tradeItemKey
-            guard entries.count < maxEntries, let item = poolEntry(for: entry, name: name(entry), heldItem: held),
-                  let size = try? encoder.encode(item).count, size <= maxEntryBytes,
-                  bytes + size + 1 <= maxBytes else { continue }
-            entries.append(item)
-            bytes += size + 1
-        }
-        return entries
+        listed(state: state, fightingIDs: fightingIDs).compactMap { wire(for: $0, state: state, name: name) }
+    }
+
+    static func listingRefusal(for entry: DexEntry, state: CompanionState, fightingIDs: Set<String>) -> TradeRefusal? {
+        listed(state: state, fightingIDs: fightingIDs).contains { $0.id == entry.id } ? nil : .poolFull
     }
 
     static func encode(_ pool: [TradePoolEntry]) throws -> Data { try encoder.encode(pool) }
 
-    /// The entry as it travels: no per-language name table (the receiver refetches it).
+    private static func wire(for entry: DexEntry, state: CompanionState, name: (DexEntry) -> String) -> TradePoolEntry? {
+        let held = state.heldItems[entry.id].flatMap(ItemKind.init(rawValue:))?.tradeItemKey
+        guard let item = poolEntry(for: entry, name: name(entry), heldItem: held),
+              let size = try? encoder.encode(item).count, size <= maxEntryBytes else { return nil }
+        return item
+    }
+
+    /// The entry as it travels: without what the receiver replaces on arrival (`receivedEntry`). `instanceID` stays
+    /// as an empty string because older apps cannot decode a profile without it.
     private static func poolEntry(for entry: DexEntry, name: String, heldItem: String?) -> TradePoolEntry? {
         var wire = entry
         wire.names = nil
@@ -176,6 +184,9 @@ enum TradePool {
         wire.tradedTo = nil
         wire.tradeHeldItem = heldItem
         wire.tradePartnerID = nil
+        wire.caughtAt = nil
+        wire.originalTrainer = nil
+        wire.profile?.instanceID = ""
         guard let profile = wire.profile, isSendable(wire) else { return nil }
         let pokemonID = PartyBuilder.member(speciesID: wire.finalID, form: wire.form, shiny: wire.isShiny,
                                             profile: profile, nature: wire.nature).pokemonID

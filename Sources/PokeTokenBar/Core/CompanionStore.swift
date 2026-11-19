@@ -4043,17 +4043,22 @@ final class CompanionStore {
         TradePool.build(state: state, fightingIDs: fightingIDs, name: dexEntryName)
     }
 
+    /// Nil only for an individual in the pool the app sends, so the post and offer buttons match what the bot holds.
     func tradeRefusal(for entry: DexEntry, fightingIDs: Set<String>) -> TradeRefusal? {
+        ownerRefusal(for: entry, fightingIDs: fightingIDs)
+            ?? TradePool.listingRefusal(for: entry, state: state, fightingIDs: fightingIDs)
+    }
+
+    /// The pool in the order the bot keeps it, newest first.
+    func tradableEntries(fightingIDs: Set<String>) -> [DexEntry] {
+        TradePool.listed(state: state, fightingIDs: fightingIDs)
+            .filter { ownerRefusal(for: $0, fightingIDs: fightingIDs) == nil }
+    }
+
+    private func ownerRefusal(for entry: DexEntry, fightingIDs: Set<String>) -> TradeRefusal? {
         if state.storedLines[entry.id] != nil { return .unavailable }
         return TradePool.refusal(for: entry, fightingIDs: fightingIDs, activeID: activeDexEntry?.id,
                           raisedID: state.raisedEntryID, lineParked: isLineParked)
-    }
-
-    /// Newest first, the same order the bot's pool uses.
-    func tradableEntries(fightingIDs: Set<String>) -> [DexEntry] {
-        state.dex
-            .filter { tradeRefusal(for: $0, fightingIDs: fightingIDs) == nil }
-            .sorted { ($0.caughtAt ?? .distantPast) > ($1.caughtAt ?? .distantPast) }
     }
 
     /// Applies completed trades once each and returns the ids safe to acknowledge (applied now or earlier).
