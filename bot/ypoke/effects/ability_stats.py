@@ -15,6 +15,18 @@ class KoBoost(Handler):
         return _raised(name, hit.user, abilities.KO_RAISES[name])
 
 
+@register("abilities", "battle-bond")
+class BattleBond(Handler):
+    """The first foe the holder knocks out with a move raises `args.raises`, once a battle."""
+
+    def after_hit_as_user(self, name, hit):
+        user = hit.user
+        if hit.target.hp > 0 or user.hp == 0 or name in user.once:
+            return None
+        user.once.add(name)
+        return _raised(name, user, abilities.ONCE_KO_RAISES[name])
+
+
 @register("abilities", "beast-boost")
 class BeastBoost(Handler):
     """Knocking a foe out with a move raises the holder's highest stat, before stages; the first in a tie."""

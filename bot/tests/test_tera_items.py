@@ -58,7 +58,8 @@ def mon(name, item=None, speed=80, moves=(TACKLE,), **fields):
                      moves=moves, item=item, **fields)
 
 
-STELLAR = MegaForm(types=("normal",), base=BaseStats(160, 105, 110, 130, 110, 85), form_id=10277, kind="stellar")
+STELLAR = MegaForm(types=("normal",), base=BaseStats(160, 105, 110, 130, 110, 85), ability_id="teraform-zero",
+                   form_id=10277, kind="stellar")
 MEGA = MegaForm(types=("fire", "dragon"), base=BaseStats(78, 130, 111, 130, 85, 100), ability="단단한발톱")
 STRONG = replace(mon("강함", speed=200), base=BaseStats(100, 255, 100, 255, 100, 200))
 

@@ -32,6 +32,7 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
         moves = _retyped(moves, JUDGMENT, plate)
     if pokemon_id == tera_forms.OGERPON and len(types) > 1:
         moves = _retyped(moves, IVY_CUDGEL, types[1])
+    ability = data.get("ability_id") if data.get("ability_id") in abilities.NAMES else member.get("ability")
     return Combatant(
         name=member.get("name") or data["name_ko"],
         level=min(member["level"], BATTLE_LEVEL),
@@ -42,14 +43,24 @@ def combatant(pokeapi: PokeAPIService, member: dict) -> Combatant:
         moves=moves,
         rental=member.get("rental", False),
         nature=member.get("nature"),
-        ability=data.get("ability_id") if data.get("ability_id") in abilities.NAMES else member.get("ability"),
+        ability=ability,
         item=item,
         mega=_mega(pokeapi, pokemon_id, item, tuple(move.id for move in moves)),
         pokemon_id=pokemon_id,
         can_evolve=_can_evolve(pokeapi, member),
         tera=pokemon_id == tera_forms.TERAPAGOS,
         weight=data.get("weight", 0),
+        forms=_ability_forms(pokeapi, pokemon_id, ability, data),
     )
+
+
+def _ability_forms(pokeapi: PokeAPIService, pokemon_id: int, ability: str | None, data: dict) -> tuple[MegaForm, ...]:
+    """The forms the Pokémon's ability can switch it to; none for a species the ability does not change."""
+    forms = []
+    for kind, form_id in abilities.FORMS.get(ability, {}).get(pokemon_id, {}).items():
+        form = data if form_id is None else pokeapi.pokemon(form_id)
+        forms.append(MegaForm(types=tuple(form["types"]), base=base_stats(form), form_id=form_id, kind=kind))
+    return tuple(forms)
 
 
 def _item_typed(move: Move, item: str | None) -> Move:
@@ -93,8 +104,8 @@ def _can_evolve(pokeapi: PokeAPIService, member: dict) -> bool:
 def _mega(pokeapi: PokeAPIService, pokemon_id: int, item: str | None, move_ids: tuple[int, ...]) -> MegaForm | None:
     if item == items.STELLAR_CRYSTAL:
         data = pokeapi.pokemon(tera_forms.STELLAR_FORM)
-        return MegaForm(types=tuple(data["types"]), base=base_stats(data), form_id=tera_forms.STELLAR_FORM,
-                        kind="stellar")
+        return MegaForm(types=tuple(data["types"]), base=base_stats(data), ability_id=tera_forms.STELLAR_ABILITY,
+                        form_id=tera_forms.STELLAR_FORM, kind="stellar")
     form_id = mega_form_id(item, pokemon_id) or move_mega_form_id(pokemon_id, move_ids, item)
     if form_id is None:
         return None

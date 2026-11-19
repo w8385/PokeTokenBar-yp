@@ -8,7 +8,7 @@ import urllib.request
 from collections.abc import Collection, Sequence
 from concurrent.futures import ThreadPoolExecutor
 
-from ypoke import battle_data, items, tera_forms
+from ypoke import abilities, battle_data, items, tera_forms
 from ypoke.battle import BaseStats
 from ypoke.mega_stones import mega_form_id, move_mega_form_id
 from ypoke.move_effects import STATUS_MOVES, attacks, wants_status_moves
@@ -217,6 +217,8 @@ def _forms_of(member: dict) -> list[tuple[str, int]]:
     mega = mega_form_id(item, pokemon_id) or move_mega_form_id(pokemon_id, tuple(member.get("moves") or ()), item)
     if mega is not None:
         forms.append(("mega", mega))
+    ability_forms = abilities.FORMS.get(member.get("ability"), {}).get(pokemon_id, {})
+    forms += [("pokemon", form_id) for form_id in ability_forms.values() if form_id is not None]
     return forms
 
 
