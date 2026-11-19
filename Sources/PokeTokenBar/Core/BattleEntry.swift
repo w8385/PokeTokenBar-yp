@@ -286,6 +286,17 @@ final class BattleEntryStore {
         chooseMove(current[b], at: a, for: instanceID, pokemonID: pokemonID, current: current)
     }
 
+    /// Drops move position `index` (0-based) of `current`, saving the rest in order as the custom list.
+    /// The last move stays.
+    func forgetMove(at index: Int, for instanceID: String, pokemonID: Int, current: [Int]) {
+        guard current.count > 1, current.indices.contains(index) else { return }
+        var moves = current
+        moves.remove(at: index)
+        let machine = (moveChoices[instanceID].flatMap { $0.pokemonID == pokemonID ? $0.machine : nil } ?? [])
+            .filter(moves.contains)
+        moveChoices[instanceID] = MoveChoice(pokemonID: pokemonID, moves: moves, machine: machine)
+    }
+
     func resetMoves(for instanceID: String) {
         moveChoices[instanceID] = nil
     }
