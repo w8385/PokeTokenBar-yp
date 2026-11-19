@@ -10,7 +10,7 @@ PROTECT, KINGS_SHIELD, SPIKY_SHIELD, BANEFUL_BUNKER = data_move(182), data_move(
 QUICK_GUARD, CRAFTY_SHIELD, MAT_BLOCK, ENDURE = data_move(501), data_move(578), data_move(561), data_move(203)
 SUBSTITUTE, SHED_TAIL, WISH = data_move(164), data_move(880), data_move(273)
 GROWL, HYPER_VOICE, SWORDS_DANCE, FLAIL = data_move(45), data_move(304), data_move(14), data_move(175)
-LEER = data_move(43)
+LEER, BODY_SLAM, EARTHQUAKE = data_move(43), data_move(34), data_move(89)
 EMBER = Move("불꽃세례", "fire", 40, physical=False, accuracy=100)
 QUICK_ATTACK = Move("전광석화", "normal", 40, physical=True, accuracy=100, priority=1)
 HUGE_HIT = Move("큰기술", "normal", 250, physical=True, accuracy=100)
@@ -51,23 +51,34 @@ def test_a_repeat_protect_works_one_time_in_three_per_straight_success():
     assert not resolve(user, foe, PROTECT, arena, seed=0, turn=3).failed
 
 
-def test_the_shields_punish_a_physical_attack():
+def test_the_shields_punish_a_contact_attack():
     user, foe, arena = fighters()
     resolve(user, foe, KINGS_SHIELD, arena)
-    assert resolve(foe, user, TACKLE, arena).changes == (Change(1, "상대", "attack", -1),)
+    assert resolve(foe, user, BODY_SLAM, arena).changes == (Change(1, "상대", "attack", -1),)
     assert not resolve(foe, user, GROWL, arena).failed
     user.volatiles.clear()
     user.memory.clear()
     resolve(user, foe, SPIKY_SHIELD, arena)
-    resolve(foe, user, TACKLE, arena)
+    resolve(foe, user, BODY_SLAM, arena)
     assert foe.hp == foe.max_hp - foe.max_hp // 8
     user.volatiles.clear()
     user.memory.clear()
     resolve(user, foe, BANEFUL_BUNKER, arena)
     resolve(foe, user, EMBER, arena)
     assert foe.status is None
-    resolve(foe, user, TACKLE, arena)
+    resolve(foe, user, BODY_SLAM, arena)
     assert foe.status == "poison"
+
+
+def test_the_shields_leave_a_physical_attack_without_contact_alone():
+    user, foe, arena = fighters()
+    resolve(user, foe, KINGS_SHIELD, arena)
+    assert resolve(foe, user, EARTHQUAKE, arena).changes == ()
+    user.volatiles.clear()
+    user.memory.clear()
+    resolve(user, foe, SPIKY_SHIELD, arena)
+    resolve(foe, user, EARTHQUAKE, arena)
+    assert foe.hp == foe.max_hp
 
 
 def test_quick_guard_stops_priority_and_crafty_shield_stops_status_moves():

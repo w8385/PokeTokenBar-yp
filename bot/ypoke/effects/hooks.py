@@ -111,14 +111,16 @@ HOOKS = {
     "blocks_ohko": "ability: an OHKO move fails on its holder (Sturdy)",
     "endures":"state, then ability, then item: a hit that would knock its holder out leaves it 1 HP",
     "on_knocked_out": "state: acts as a foe's move knocks its holder out (Destiny Bond, Grudge)",
-    "on_contact_hit": "item: hurts the user of each physical hit on its holder",
+    "on_contact_hit": "item: hurts the user of each contact hit on its holder",
+    "drops_contact": "ability, item: its holder's moves do not make contact (Long Reach, Punching Glove on punches, "
+                     "Protective Pads)",
     "between_hits": "item: acts between the hits of a multi-hit move",
     "guards_ailment": "state: an ailment a Pokémon on its side cannot get, from anyone or only from a foe",
     "blocks_ailment": "ability: an ailment its holder cannot get",
     "guards_stats": "state: a foe cannot lower the stats of a Pokémon on its side",
     "secondary": "move: acts on a target the hits left standing, after the ailment and stat changes, unless a "
                  "Substitute took them (flinch); returns the changes",
-    "on_contact": "ability: may hit back at a physical move's user once the move is over",
+    "on_contact": "ability: may hit back at a contact move's user once the move is over",
     "modify_drain": "item: the HP a draining move gives back",
     "after_move_as_user": "item: acts after its holder's move dealt damage, after recoil and drain",
     "after_move_as_target": "item: acts after a move dealt damage to its holder",

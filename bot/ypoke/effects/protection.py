@@ -88,13 +88,13 @@ def aimed(move) -> bool:
 
 @register("moves", "kings-shield", "obstruct", "silk-trap")
 class DropShield(Protect):
-    """Stops attacks only; a physical one also lowers its user's stat."""
+    """Stops attacks only; a contact one also lowers its user's stat."""
 
     blocks_status = False
     DROPS = {"kings-shield": ("attack", -1), "obstruct": ("defense", -2), "silk-trap": ("speed", -1)}
 
     def punishes(self, name, move, attacker, side, rng):
-        if not move.physical or not attacking(move):
+        if not attacking(move) or not battle.makes_contact(attacker, move):
             return ()
         dropped = shift(attacker, side, *self.DROPS[name])
         return (dropped,) if dropped else ()
@@ -102,23 +102,23 @@ class DropShield(Protect):
 
 @register("moves", "spiky-shield")
 class SpikyShield(Protect):
-    """A physical move's user loses 1/8 of its max HP."""
+    """A contact move's user loses 1/8 of its max HP."""
 
     def punishes(self, name, move, attacker, side, rng):
-        if move.physical and attacking(move):
+        if attacking(move) and battle.makes_contact(attacker, move):
             attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // SPIKY_SHARE))
         return ()
 
 
 @register("moves", "baneful-bunker", "burning-bulwark")
 class AilmentShield(Protect):
-    """A physical move's user is poisoned (Baneful Bunker) or burned (Burning Bulwark)."""
+    """A contact move's user is poisoned (Baneful Bunker) or burned (Burning Bulwark)."""
 
     AILMENTS = {"baneful-bunker": "poison", "burning-bulwark": "burn"}
 
     def punishes(self, name, move, attacker, side, rng):
         ailment = self.AILMENTS[name]
-        if (not move.physical or not attacking(move) or not battle._open_to(ailment, attacker, True)
+        if (not attacking(move) or not battle.makes_contact(attacker, move) or not battle._open_to(ailment, attacker, True)
                 or hooks.ability(attacker, "blocks_ailment", ailment, default=False)):
             return ()
         return (battle._inflict(ailment, attacker, side, rng),)

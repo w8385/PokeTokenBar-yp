@@ -35,6 +35,10 @@ least one entry. Keys shared by a group take their parameters from `args` (`"typ
 Fields from PokéAPI, rewritten on regeneration: `names` (app languages PokéAPI has), `category`, `summary`, and for
 moves `slug`, `type`, `class`, `power`, `accuracy`, `priority`, `pp` and `meta`.
 
+The `"contact"` move flag comes from Pokémon Showdown's `data/moves.ts` (`flags.contact`), because PokéAPI has none:
+`bot/tools/generate_battle_data.py --showdown-contact <moves.ts>` sets it from the commit in `SHOWDOWN_COMMIT`.
+Showdown is MIT-licensed; its license is in `LICENSE-showdown`.
+
 Hand-set fields, kept on regeneration: `effect`, `args`, `flags` (`["punch"]`), `note`, `bot_name` (the bot's Korean
 name when it differs from the official one), `pokeapi` (the PokéAPI slug when it differs from the key; `null` for an
 item PokéAPI lacks, whose `names` are then hand-set too) and `names_extra`.

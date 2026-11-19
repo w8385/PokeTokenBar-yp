@@ -50,7 +50,7 @@ class ShellTrap(Condition):
     """Goes off only after a physical hit struck the user this turn."""
 
     def use(self, move, user, foe, side, turn, weather, arena, rng):
-        return None if user.hurt is not None and user.hurt[0] else {"failed": True, "blocked": self.key}
+        return None if user.hurt is not None and user.hurt.physical else {"failed": True, "blocked": self.key}
 
     def wasted(self, move, user, target):
         picked = picked_move(target)
@@ -59,10 +59,10 @@ class ShellTrap(Condition):
 
 @register("moves", "beak-blast")
 class BeakBlast(Condition):
-    """Burns a foe whose physical hit struck the user this turn before the beak went off."""
+    """Burns a foe whose contact hit struck the user this turn before the beak went off."""
 
     def after_move(self, move, user, target, dealt):
-        if (user.hurt is None or not user.hurt[0] or target.hp == 0 or not battle._open_to("burn", target, True)
+        if (user.hurt is None or not user.hurt.contact or target.hp == 0 or not battle._open_to("burn", target, True)
                 or hooks.ability(target, "blocks_ailment", "burn", default=False)):
             return ()
         return (battle._inflict("burn", target, target.side, None),)

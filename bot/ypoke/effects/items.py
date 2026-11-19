@@ -3,6 +3,7 @@
 
 from ypoke import battle, items, tera_forms
 from ypoke.effects import Handler, elsewhere, hooks, register
+from ypoke.move_effects import PUNCH_MOVES
 
 CHOICE_STATS = {"choice-scarf": "speed", "choice-band": "attack", "choice-specs": "special_attack"}
 
@@ -176,6 +177,15 @@ class PunchingGlove(Handler):
     def modify_damage(self, name, move_type, effectiveness, physical, punch):
         return items.BAND_MULTIPLIER if punch else 1.0
 
+    def drops_contact(self, name, move):
+        return move.id in PUNCH_MOVES
+
+
+@register("items", "protective-pads")
+class ProtectivePads(Handler):
+    def drops_contact(self, name, move):
+        return True
+
 
 @register("items", "muscle-band", "wise-glasses")
 class Band(Handler):
@@ -215,8 +225,8 @@ class RockyHelmet(Handler):
     def on_contact_hit(self, name, user):
         return max(1, user.max_hp // items.ROCKY_HELMET_FRACTION)
 
-    def after_move_as_target(self, name, fighter, move, multiplier, dealt):
-        return move.physical and dealt > 0
+    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
+        return dealt > 0 and battle.makes_contact(attacker, move)
 
 
 @register("items", "big-root")
@@ -239,7 +249,7 @@ class ShellBell(Handler):
 
 @register("items", "weakness-policy")
 class WeaknessPolicy(Handler):
-    def after_move_as_target(self, name, fighter, move, multiplier, dealt):
+    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
         if not (multiplier > 1 and dealt > 0 and fighter.hp > 0):
             return False
         for key in ("attack", "special_attack"):

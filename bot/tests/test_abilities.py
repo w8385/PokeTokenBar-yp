@@ -10,7 +10,7 @@ from ypoke.battle import (
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
 TACKLE = Move("몸통박치기", "normal", 40, physical=True, accuracy=100)
-SLAM = Move("메가톤펀치", "normal", 80, physical=True, accuracy=100)
+SLAM = Move("힘껏치기", "normal", 80, physical=True, accuracy=100, id=21)
 EARTHQUAKE = Move("지진", "ground", 100, physical=True, accuracy=100)
 FLAMETHROWER = Move("화염방사", "fire", 90, physical=False, accuracy=100)
 ICE_BEAM = Move("냉동빔", "ice", 90, physical=False, accuracy=100)
@@ -231,7 +231,7 @@ def hit_back(defender_ability, move=SLAM, attacker_ability=None, attacker_types=
 
 
 @pytest.mark.parametrize("ability,ailment", [("static", "paralysis"), ("flame-body", "burn"), ("poison-point", "poison")])
-def test_a_contact_ability_sometimes_afflicts_a_physical_attacker(ability, ailment):
+def test_a_contact_ability_sometimes_afflicts_a_contact_attacker(ability, ailment):
     landed = hit_back(ability)
     assert 50 < landed < 130
     attacker = fighter(moves=[SLAM])

@@ -7,7 +7,7 @@ from test_attack_two_turn import act, armed
 from test_battle import TACKLE
 
 from ypoke import battle, narration
-from ypoke.battle import Action, Change
+from ypoke.battle import Action, Change, Hurt
 from ypoke.effects import hooks
 
 SUCKER_PUNCH, UPPER_HAND, QUICK_ATTACK, FAKE_OUT = attack(389), attack(918), attack(98), attack(252)
@@ -71,9 +71,9 @@ def test_shell_trap_goes_off_only_after_a_physical_hit_and_beak_blast_burns_the_
     user, foe, arena = duel()
     armed(user, SHELL_TRAP, BEAK_BLAST)
     assert act(user, foe, arena).blocked == "shell-trap"
-    user.hurt = (False, 10)
+    user.hurt = Hurt(False, 10, False)
     assert act(user, foe, arena).failed
-    user.hurt = (True, 10)
+    user.hurt = Hurt(True, 10, True)
     assert act(user, foe, arena).defender_hp < 100
     foe_picks(foe, SURF)
     assert battle._move_score(user, foe, SHELL_TRAP, None) == 0
@@ -82,6 +82,14 @@ def test_shell_trap_goes_off_only_after_a_physical_hit_and_beak_blast_burns_the_
     user, foe, arena = duel()
     armed(user, BEAK_BLAST)
     assert act(user, foe, arena).changes == () and foe.status is None
+
+
+def test_beak_blast_burns_only_a_hitter_that_made_contact():
+    user, foe, arena = duel()
+    armed(user, BEAK_BLAST)
+    user.hurt = Hurt(True, 10, False)
+    action = act(user, foe, arena)
+    assert action.defender_hp < 100 and foe.status is None
 
 
 def test_last_resort_waits_for_every_other_move_and_belch_for_a_berry():

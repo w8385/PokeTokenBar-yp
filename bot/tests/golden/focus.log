@@ -5640,3 +5640,381 @@ Action turn=15 side=0 attacker='P819' defender='P143' move='몸통박치기' def
 Action turn=15 side=1 attacker='P143' defender='P819' move='몸통박치기' defender_hp=23 attacker_hp=1 move_id=33
 Action turn=16 side=0 attacker='P819' defender='P143' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=23 move_id=33
 result winner=0 turns=16 remaining=((23,), (0,)) statuses=((None,), (None,))
+## focus contact 0
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[370] mega=None
+side=0 P68 Lv50 ('dragon', 'bug') item=protective-pads ability=None nature=None moves=[370] mega=None
+side=0 P724 Lv50 ('grass', 'ghost') item=None ability=long-reach nature=None moves=[370] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[447, 89] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=static nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=93 move_id=33
+Action turn=1 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=87 attacker_hp=76 defender_item='rocky-helmet' move_id=370
+Action turn=2 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=66 attacker_hp=87 move_id=33
+Action turn=2 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1), Change(side=0, pokemon='P25', kind='paralysis', stages=0)) defender_hp=75 attacker_hp=50 ability='static' defender_item='rocky-helmet' move_id=370
+Action turn=3 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=36 attacker_hp=75 move_id=33
+Action turn=3 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=63 attacker_hp=20 defender_item='rocky-helmet' move_id=370
+Action turn=4 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=3 attacker_hp=63 move_id=33
+Action turn=4 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=50 attacker_fainted=True attacker_hp=0 defender_item='rocky-helmet' move_id=370
+SendOut turn=4 side=0 pokemon='P68' member=1
+Action turn=5 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=88 attacker_hp=50 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=42 attacker_hp=88 move_id=370
+Action turn=6 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=69 attacker_hp=42 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=33 attacker_hp=69 move_id=370
+Action turn=7 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=43 attacker_hp=33 move_id=33
+Action turn=7 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=23 attacker_hp=43 move_id=370
+Action turn=8 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=11 attacker_hp=23 move_id=33
+Action turn=8 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=14 attacker_hp=11 move_id=370
+Action turn=9 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=14 move_id=33
+SendOut turn=9 side=0 pokemon='P724' member=2
+Action turn=10 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P724', kind='defense', stages=-1), Change(side=0, pokemon='P724', kind='special_defense', stages=-1)) defender_hp=1 move_id=370
+Action turn=10 side=1 attacker='P143' defender='P724' move='몸통박치기' multiplier=0 attacker_hp=1 move_id=33
+Action turn=11 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 defender_hp=0 knockout=True move_id=370
+result winner=0 turns=11 remaining=((0, 0, 100, None), (0,)) statuses=(('paralysis', None, None, None), (None,))
+## focus contact 1
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[370] mega=None
+side=0 P68 Lv50 ('dragon', 'bug') item=protective-pads ability=None nature=None moves=[370] mega=None
+side=0 P724 Lv50 ('grass', 'ghost') item=None ability=long-reach nature=None moves=[370] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[447, 89] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=static nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=94 move_id=33
+Action turn=1 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=87 attacker_hp=77 defender_item='rocky-helmet' move_id=370
+Action turn=2 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=67 attacker_hp=87 move_id=33
+Action turn=2 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1), Change(side=0, pokemon='P25', kind='paralysis', stages=0)) defender_hp=75 attacker_hp=51 ability='static' defender_item='rocky-helmet' move_id=370
+Action turn=3 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=39 attacker_hp=75 move_id=33
+Action turn=3 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=58 attacker_hp=23 defender_item='rocky-helmet' move_id=370
+Action turn=4 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=6 attacker_hp=58 move_id=33
+Action turn=4 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=44 attacker_fainted=True attacker_hp=0 defender_item='rocky-helmet' move_id=370
+SendOut turn=4 side=0 pokemon='P68' member=1
+Action turn=5 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=34 move_id=370
+Action turn=5 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=81 attacker_hp=34 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=25 attacker_hp=81 move_id=370
+Action turn=6 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=52 attacker_hp=25 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=25 attacker_hp=25 move_id=33
+Action turn=7 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=14 attacker_hp=25 move_id=370
+Action turn=8 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=3 attacker_hp=25 move_id=370
+Action turn=8 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=3 move_id=33
+SendOut turn=8 side=0 pokemon='P724' member=2
+Action turn=9 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 defender_hp=0 knockout=True move_id=370
+result winner=0 turns=9 remaining=((0, 0, 100, None), (0,)) statuses=(('paralysis', None, None, None), (None,))
+## focus contact 2
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[370] mega=None
+side=0 P68 Lv50 ('dragon', 'bug') item=protective-pads ability=None nature=None moves=[370] mega=None
+side=0 P724 Lv50 ('grass', 'ghost') item=None ability=long-reach nature=None moves=[370] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[447, 89] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=static nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=94 move_id=33
+Action turn=1 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=88 attacker_hp=77 defender_item='rocky-helmet' move_id=370
+Action turn=2 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=67 attacker_hp=88 move_id=33
+Action turn=2 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=75 attacker_hp=51 defender_item='rocky-helmet' move_id=370
+Action turn=3 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=36 attacker_hp=75 move_id=33
+Action turn=3 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=62 attacker_hp=19 defender_item='rocky-helmet' move_id=370
+Action turn=4 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=1 attacker_hp=62 move_id=33
+Action turn=4 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1), Change(side=0, pokemon='P25', kind='paralysis', stages=0)) defender_hp=50 attacker_fainted=True attacker_hp=0 ability='static' defender_item='rocky-helmet' move_id=370
+SendOut turn=4 side=0 pokemon='P68' member=1
+Action turn=5 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=42 move_id=370
+Action turn=5 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=81 attacker_hp=42 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=34 attacker_hp=81 move_id=370
+Action turn=6 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=54 attacker_hp=34 move_id=33
+Action turn=7 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=25 attacker_hp=54 move_id=370
+Action turn=7 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=20 attacker_hp=25 move_id=33
+Action turn=8 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=17 attacker_hp=20 move_id=370
+Action turn=8 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=17 move_id=33
+SendOut turn=8 side=0 pokemon='P724' member=2
+Action turn=9 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P724', kind='defense', stages=-1), Change(side=0, pokemon='P724', kind='special_defense', stages=-1)) defender_hp=3 move_id=370
+Action turn=9 side=1 attacker='P143' defender='P724' move='몸통박치기' multiplier=0 attacker_hp=3 move_id=33
+Action turn=10 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 defender_hp=0 knockout=True move_id=370
+result winner=0 turns=10 remaining=((0, 0, 100, None), (0,)) statuses=(('paralysis', None, None, None), (None,))
+## focus contact 3
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[370] mega=None
+side=0 P68 Lv50 ('dragon', 'bug') item=protective-pads ability=None nature=None moves=[370] mega=None
+side=0 P724 Lv50 ('grass', 'ghost') item=None ability=long-reach nature=None moves=[370] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[447, 89] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=static nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=92 move_id=33
+Action turn=1 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=88 attacker_hp=75 defender_item='rocky-helmet' move_id=370
+Action turn=2 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=64 attacker_hp=88 move_id=33
+Action turn=2 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=74 attacker_hp=48 defender_item='rocky-helmet' move_id=370
+Action turn=3 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=32 attacker_hp=74 move_id=33
+Action turn=3 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=62 attacker_hp=15 defender_item='rocky-helmet' move_id=370
+Action turn=4 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=62 move_id=33
+SendOut turn=4 side=0 pokemon='P68' member=1
+Action turn=5 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=84 attacker_hp=62 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=53 attacker_hp=84 move_id=370
+Action turn=6 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=62 attacker_hp=53 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=44 attacker_hp=62 move_id=370
+Action turn=7 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=32 attacker_hp=44 move_id=33
+Action turn=7 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=35 attacker_hp=32 move_id=370
+Action turn=8 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=35 move_id=33
+SendOut turn=8 side=0 pokemon='P724' member=2
+Action turn=9 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P724', kind='defense', stages=-1), Change(side=0, pokemon='P724', kind='special_defense', stages=-1)) defender_hp=20 move_id=370
+Action turn=9 side=1 attacker='P143' defender='P724' move='몸통박치기' multiplier=0 attacker_hp=20 move_id=33
+Action turn=10 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P724', kind='defense', stages=-1), Change(side=0, pokemon='P724', kind='special_defense', stages=-1)) defender_hp=5 move_id=370
+Action turn=10 side=1 attacker='P143' defender='P724' move='몸통박치기' multiplier=0 attacker_hp=5 move_id=33
+Action turn=11 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 defender_hp=0 knockout=True move_id=370
+result winner=0 turns=11 remaining=((0, 0, 100, None), (0,)) statuses=((None, None, None, None), (None,))
+## focus contact 4
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[370] mega=None
+side=0 P68 Lv50 ('dragon', 'bug') item=protective-pads ability=None nature=None moves=[370] mega=None
+side=0 P724 Lv50 ('grass', 'ghost') item=None ability=long-reach nature=None moves=[370] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[447, 89] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=static nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=94 move_id=33
+Action turn=1 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=88 attacker_hp=77 defender_item='rocky-helmet' move_id=370
+Action turn=2 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=68 attacker_hp=88 move_id=33
+Action turn=2 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1), Change(side=0, pokemon='P25', kind='paralysis', stages=0)) defender_hp=74 attacker_hp=51 ability='static' defender_item='rocky-helmet' move_id=370
+Action turn=3 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 critical=True defender_hp=33 attacker_hp=74 move_id=33
+Action turn=3 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=60 attacker_hp=16 defender_item='rocky-helmet' move_id=370
+Action turn=4 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=1 attacker_hp=60 move_id=33
+Action turn=4 side=0 attacker='P25' defender='P143' move='' defender_hp=60 blocked='paralysis' attacker_hp=1
+Action turn=5 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=60 move_id=33
+SendOut turn=5 side=0 pokemon='P68' member=1
+Action turn=6 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=88 attacker_hp=60 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=50 attacker_hp=88 move_id=370
+Action turn=7 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=71 attacker_hp=50 move_id=33
+Action turn=7 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=41 attacker_hp=71 move_id=370
+Action turn=8 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=46 attacker_hp=41 move_id=33
+Action turn=8 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=32 attacker_hp=46 move_id=370
+Action turn=9 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=16 attacker_hp=32 move_id=33
+Action turn=9 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=22 attacker_hp=16 move_id=370
+Action turn=10 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=22 move_id=33
+SendOut turn=10 side=0 pokemon='P724' member=2
+Action turn=11 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P724', kind='defense', stages=-1), Change(side=0, pokemon='P724', kind='special_defense', stages=-1)) defender_hp=7 move_id=370
+Action turn=11 side=1 attacker='P143' defender='P724' move='몸통박치기' multiplier=0 attacker_hp=7 move_id=33
+Action turn=12 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 critical=True defender_hp=0 knockout=True move_id=370
+result winner=0 turns=12 remaining=((0, 0, 100, None), (0,)) statuses=(('paralysis', None, None, None), (None,))
+## focus contact 5
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[370] mega=None
+side=0 P68 Lv50 ('dragon', 'bug') item=protective-pads ability=None nature=None moves=[370] mega=None
+side=0 P724 Lv50 ('grass', 'ghost') item=None ability=long-reach nature=None moves=[370] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[447, 89] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=static nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=93 move_id=33
+Action turn=1 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=86 attacker_hp=76 defender_item='rocky-helmet' move_id=370
+Action turn=2 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=65 attacker_hp=86 move_id=33
+Action turn=2 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1), Change(side=0, pokemon='P25', kind='paralysis', stages=0)) defender_hp=73 attacker_hp=49 ability='static' defender_item='rocky-helmet' move_id=370
+Action turn=3 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=33 attacker_hp=73 move_id=33
+Action turn=3 side=0 attacker='P25' defender='P143' move='' defender_hp=73 blocked='paralysis' attacker_hp=33
+Action turn=4 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=18 attacker_hp=73 move_id=33
+Action turn=4 side=0 attacker='P25' defender='P143' move='' defender_hp=73 blocked='paralysis' attacker_hp=18
+Action turn=5 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=4 attacker_hp=73 move_id=33
+Action turn=5 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=59 attacker_fainted=True attacker_hp=0 defender_item='rocky-helmet' move_id=370
+SendOut turn=5 side=0 pokemon='P68' member=1
+Action turn=6 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=86 attacker_hp=59 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=50 attacker_hp=86 move_id=370
+Action turn=7 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=64 attacker_hp=50 move_id=33
+Action turn=7 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=40 attacker_hp=64 move_id=370
+Action turn=8 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=39 attacker_hp=40 move_id=33
+Action turn=8 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=31 attacker_hp=39 move_id=370
+Action turn=9 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=4 attacker_hp=31 move_id=33
+Action turn=9 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=22 attacker_hp=4 move_id=370
+Action turn=10 side=1 attacker='P143' defender='P68' move='몸통박치기' critical=True defender_hp=0 knockout=True attacker_hp=22 move_id=33
+SendOut turn=10 side=0 pokemon='P724' member=2
+Action turn=11 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 critical=True defender_hp=0 knockout=True move_id=370
+result winner=0 turns=11 remaining=((0, 0, 100, None), (0,)) statuses=(('paralysis', None, None, None), (None,))
+## focus contact 6
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[370] mega=None
+side=0 P68 Lv50 ('dragon', 'bug') item=protective-pads ability=None nature=None moves=[370] mega=None
+side=0 P724 Lv50 ('grass', 'ghost') item=None ability=long-reach nature=None moves=[370] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[447, 89] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=static nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=91 move_id=33
+Action turn=1 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=81 attacker_hp=75 defender_item='rocky-helmet' move_id=370
+Action turn=2 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=63 attacker_hp=81 move_id=33
+Action turn=2 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=68 attacker_hp=47 defender_item='rocky-helmet' move_id=370
+Action turn=3 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=31 attacker_hp=68 move_id=33
+Action turn=3 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=56 attacker_hp=15 defender_item='rocky-helmet' move_id=370
+Action turn=4 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=56 move_id=33
+SendOut turn=4 side=0 pokemon='P68' member=1
+Action turn=5 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=87 attacker_hp=56 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=47 attacker_hp=87 move_id=370
+Action turn=6 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=69 attacker_hp=47 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=38 attacker_hp=69 move_id=370
+Action turn=7 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=46 attacker_hp=38 move_id=33
+Action turn=7 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=28 attacker_hp=46 move_id=370
+Action turn=8 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=17 attacker_hp=28 move_id=33
+Action turn=8 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=19 attacker_hp=17 move_id=370
+Action turn=9 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=19 move_id=33
+SendOut turn=9 side=0 pokemon='P724' member=2
+Action turn=10 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P724', kind='defense', stages=-1), Change(side=0, pokemon='P724', kind='special_defense', stages=-1)) defender_hp=6 move_id=370
+Action turn=10 side=1 attacker='P143' defender='P724' move='몸통박치기' multiplier=0 attacker_hp=6 move_id=33
+Action turn=11 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 defender_hp=0 knockout=True move_id=370
+result winner=0 turns=11 remaining=((0, 0, 100, None), (0,)) statuses=((None, None, None, None), (None,))
+## focus contact 7
+side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[370] mega=None
+side=0 P68 Lv50 ('dragon', 'bug') item=protective-pads ability=None nature=None moves=[370] mega=None
+side=0 P724 Lv50 ('grass', 'ghost') item=None ability=long-reach nature=None moves=[370] mega=None
+side=0 P3 Lv50 ('electric',) item=None ability=None nature=None moves=[447, 89] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=static nature=None moves=[33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=92 move_id=33
+Action turn=1 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=87 attacker_hp=75 defender_item='rocky-helmet' move_id=370
+Action turn=2 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=61 attacker_hp=87 move_id=33
+Action turn=2 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=73 attacker_hp=45 defender_item='rocky-helmet' move_id=370
+Action turn=3 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=28 attacker_hp=73 move_id=33
+Action turn=3 side=0 attacker='P25' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P25', kind='defense', stages=-1), Change(side=0, pokemon='P25', kind='special_defense', stages=-1)) defender_hp=60 attacker_hp=12 defender_item='rocky-helmet' move_id=370
+Action turn=4 side=1 attacker='P143' defender='P25' move='몸통박치기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=60 move_id=33
+SendOut turn=4 side=0 pokemon='P68' member=1
+Action turn=5 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=87 attacker_hp=60 move_id=33
+Action turn=5 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=49 attacker_hp=87 move_id=370
+Action turn=6 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=68 attacker_hp=49 move_id=33
+Action turn=6 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=39 attacker_hp=68 move_id=370
+Action turn=7 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=41 attacker_hp=39 move_id=33
+Action turn=7 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=28 attacker_hp=41 move_id=370
+Action turn=8 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=7 attacker_hp=28 move_id=33
+Action turn=8 side=0 attacker='P68' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P68', kind='defense', stages=-1), Change(side=0, pokemon='P68', kind='special_defense', stages=-1)) defender_hp=19 attacker_hp=7 move_id=370
+Action turn=9 side=1 attacker='P143' defender='P68' move='몸통박치기' defender_hp=0 knockout=True attacker_hp=19 move_id=33
+SendOut turn=9 side=0 pokemon='P724' member=2
+Action turn=10 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P724', kind='defense', stages=-1), Change(side=0, pokemon='P724', kind='special_defense', stages=-1)) defender_hp=5 move_id=370
+Action turn=10 side=1 attacker='P143' defender='P724' move='몸통박치기' multiplier=0 attacker_hp=5 move_id=33
+Action turn=11 side=0 attacker='P724' defender='P143' move='인파이트' multiplier=0.5 defender_hp=0 knockout=True move_id=370
+result winner=0 turns=11 remaining=((0, 0, 100, None), (0,)) statuses=((None, None, None, None), (None,))
+## focus contact-sash 0
+side=0 P908 Lv50 ('ground', 'ice') item=focus-sash ability=None nature=None moves=[870] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=None nature=None moves=[776] mega=None
+Action turn=1 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=54 move_id=776
+Action turn=1 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=93 attacker_hp=54 move_id=870
+Action turn=2 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=10 attacker_hp=93 move_id=776
+Action turn=2 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=86 attacker_hp=10 move_id=870
+Action turn=3 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=86 move_id=776
+result winner=1 turns=3 remaining=((0,), (86,)) statuses=((None,), (None,))
+## focus contact-sash 1
+side=0 P908 Lv50 ('ground', 'ice') item=focus-sash ability=None nature=None moves=[870] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=None nature=None moves=[776] mega=None
+Action turn=1 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=62 move_id=776
+Action turn=1 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=93 attacker_hp=62 move_id=870
+Action turn=2 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=20 attacker_hp=93 move_id=776
+Action turn=2 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=86 attacker_hp=20 move_id=870
+Action turn=3 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=86 move_id=776
+result winner=1 turns=3 remaining=((0,), (86,)) statuses=((None,), (None,))
+## focus contact-sash 2
+side=0 P908 Lv50 ('ground', 'ice') item=focus-sash ability=None nature=None moves=[870] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=None nature=None moves=[776] mega=None
+Action turn=1 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=60 move_id=776
+Action turn=1 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=92 attacker_hp=60 move_id=870
+Action turn=2 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=17 attacker_hp=92 move_id=776
+Action turn=2 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=85 attacker_hp=17 move_id=870
+Action turn=3 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=85 move_id=776
+result winner=1 turns=3 remaining=((0,), (85,)) statuses=((None,), (None,))
+## focus contact-sash 3
+side=0 P908 Lv50 ('ground', 'ice') item=focus-sash ability=None nature=None moves=[870] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=None nature=None moves=[776] mega=None
+Action turn=1 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=60 move_id=776
+Action turn=1 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=92 attacker_hp=60 move_id=870
+Action turn=2 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=25 attacker_hp=92 move_id=776
+Action turn=2 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=84 attacker_hp=25 move_id=870
+Action turn=3 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=84 move_id=776
+result winner=1 turns=3 remaining=((0,), (84,)) statuses=((None,), (None,))
+## focus contact-sash 4
+side=0 P908 Lv50 ('ground', 'ice') item=focus-sash ability=None nature=None moves=[870] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=None nature=None moves=[776] mega=None
+Action turn=1 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=59 move_id=776
+Action turn=1 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=94 attacker_hp=59 move_id=870
+Action turn=2 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=19 attacker_hp=94 move_id=776
+Action turn=2 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=88 attacker_hp=19 move_id=870
+Action turn=3 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=88 move_id=776
+result winner=1 turns=3 remaining=((0,), (88,)) statuses=((None,), (None,))
+## focus contact-sash 5
+side=0 P908 Lv50 ('ground', 'ice') item=focus-sash ability=None nature=None moves=[870] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=None nature=None moves=[776] mega=None
+Action turn=1 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=67 move_id=776
+Action turn=1 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=93 attacker_hp=67 move_id=870
+Action turn=2 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=32 attacker_hp=93 move_id=776
+Action turn=2 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=87 attacker_hp=32 move_id=870
+Action turn=3 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=87 move_id=776
+result winner=1 turns=3 remaining=((0,), (87,)) statuses=((None,), (None,))
+## focus contact-sash 6
+side=0 P908 Lv50 ('ground', 'ice') item=focus-sash ability=None nature=None moves=[870] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=None nature=None moves=[776] mega=None
+Action turn=1 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=51 move_id=776
+Action turn=1 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=95 attacker_hp=51 move_id=870
+Action turn=2 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=1 attacker_hp=95 move_id=776
+Action turn=2 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=89 attacker_hp=1 move_id=870
+Action turn=3 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=89 move_id=776
+result winner=1 turns=3 remaining=((0,), (89,)) statuses=((None,), (None,))
+## focus contact-sash 7
+side=0 P908 Lv50 ('ground', 'ice') item=focus-sash ability=None nature=None moves=[870] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=rocky-helmet ability=None nature=None moves=[776] mega=None
+Action turn=1 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=62 move_id=776
+Action turn=1 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=93 attacker_hp=62 move_id=870
+Action turn=2 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=22 attacker_hp=93 move_id=776
+Action turn=2 side=0 attacker='P908' defender='P143' move='트릭플라워' multiplier=0.5 critical=True defender_hp=85 attacker_hp=22 move_id=870
+Action turn=3 side=1 attacker='P143' defender='P908' move='바디프레스' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=85 move_id=776
+result winner=1 turns=3 remaining=((0,), (85,)) statuses=((None,), (None,))
+## focus clear-smog 0
+side=0 P89 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[499] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[14, 33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P89' move='칼춤' changes=(Change(side=1, pokemon='P143', kind='attack', stages=2),) effect='swords-dance' move_id=14
+Action turn=1 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 changes=(Change(side=1, pokemon='P143', kind='reset', stages=0),) defender_hp=66 move_id=499
+Action turn=2 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=91 attacker_hp=66 move_id=33
+Action turn=2 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=33 attacker_hp=91 move_id=499
+Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=83 attacker_hp=33 move_id=33
+Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=83 move_id=499
+result winner=0 turns=3 remaining=((83,), (0,)) statuses=((None,), (None,))
+## focus clear-smog 1
+side=0 P89 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[499] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[14, 33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P89' move='칼춤' changes=(Change(side=1, pokemon='P143', kind='attack', stages=2),) effect='swords-dance' move_id=14
+Action turn=1 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 changes=(Change(side=1, pokemon='P143', kind='reset', stages=0),) defender_hp=65 move_id=499
+Action turn=2 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=90 attacker_hp=65 move_id=33
+Action turn=2 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=27 attacker_hp=90 move_id=499
+Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=81 attacker_hp=27 move_id=33
+Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=81 move_id=499
+result winner=0 turns=3 remaining=((81,), (0,)) statuses=((None,), (None,))
+## focus clear-smog 2
+side=0 P89 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[499] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[14, 33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P89' move='칼춤' changes=(Change(side=1, pokemon='P143', kind='attack', stages=2),) effect='swords-dance' move_id=14
+Action turn=1 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 changes=(Change(side=1, pokemon='P143', kind='reset', stages=0),) defender_hp=66 move_id=499
+Action turn=2 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=91 attacker_hp=66 move_id=33
+Action turn=2 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=29 attacker_hp=91 move_id=499
+Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=82 attacker_hp=29 move_id=33
+Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=499
+result winner=0 turns=3 remaining=((82,), (0,)) statuses=((None,), (None,))
+## focus clear-smog 3
+side=0 P89 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[499] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[14, 33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P89' move='칼춤' changes=(Change(side=1, pokemon='P143', kind='attack', stages=2),) effect='swords-dance' move_id=14
+Action turn=1 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 changes=(Change(side=1, pokemon='P143', kind='reset', stages=0),) defender_hp=60 move_id=499
+Action turn=2 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=92 attacker_hp=60 move_id=33
+Action turn=2 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=14 attacker_hp=92 move_id=499
+Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=82 attacker_hp=14 move_id=33
+Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=499
+result winner=0 turns=3 remaining=((82,), (0,)) statuses=((None,), (None,))
+## focus clear-smog 4
+side=0 P89 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[499] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[14, 33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P89' move='칼춤' changes=(Change(side=1, pokemon='P143', kind='attack', stages=2),) effect='swords-dance' move_id=14
+Action turn=1 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 changes=(Change(side=1, pokemon='P143', kind='reset', stages=0),) defender_hp=67 move_id=499
+Action turn=2 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=92 attacker_hp=67 move_id=33
+Action turn=2 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=30 attacker_hp=92 move_id=499
+Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=84 attacker_hp=30 move_id=33
+Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=84 move_id=499
+result winner=0 turns=3 remaining=((84,), (0,)) statuses=((None,), (None,))
+## focus clear-smog 5
+side=0 P89 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[499] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[14, 33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P89' move='칼춤' changes=(Change(side=1, pokemon='P143', kind='attack', stages=2),) effect='swords-dance' move_id=14
+Action turn=1 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 changes=(Change(side=1, pokemon='P143', kind='reset', stages=0),) defender_hp=65 move_id=499
+Action turn=2 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=92 attacker_hp=65 move_id=33
+Action turn=2 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=32 attacker_hp=92 move_id=499
+Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=83 attacker_hp=32 move_id=33
+Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=83 move_id=499
+result winner=0 turns=3 remaining=((83,), (0,)) statuses=((None,), (None,))
+## focus clear-smog 6
+side=0 P89 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[499] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[14, 33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P89' move='칼춤' changes=(Change(side=1, pokemon='P143', kind='attack', stages=2),) effect='swords-dance' move_id=14
+Action turn=1 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 changes=(Change(side=1, pokemon='P143', kind='reset', stages=0),) defender_hp=65 move_id=499
+Action turn=2 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=91 attacker_hp=65 move_id=33
+Action turn=2 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=24 attacker_hp=91 move_id=499
+Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=82 attacker_hp=24 move_id=33
+Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=499
+result winner=0 turns=3 remaining=((82,), (0,)) statuses=((None,), (None,))
+## focus clear-smog 7
+side=0 P89 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[499] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[14, 33] mega=None
+Action turn=1 side=1 attacker='P143' defender='P89' move='칼춤' changes=(Change(side=1, pokemon='P143', kind='attack', stages=2),) effect='swords-dance' move_id=14
+Action turn=1 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 changes=(Change(side=1, pokemon='P143', kind='reset', stages=0),) defender_hp=65 move_id=499
+Action turn=2 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=91 attacker_hp=65 move_id=33
+Action turn=2 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=32 attacker_hp=91 move_id=499
+Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defender_hp=82 attacker_hp=32 move_id=33
+Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=499
+result winner=0 turns=3 remaining=((82,), (0,)) statuses=((None,), (None,))

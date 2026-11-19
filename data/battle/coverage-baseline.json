@@ -1,9 +1,9 @@
 {
  "items": {
   "counts": {
-   "implemented": 189,
+   "implemented": 192,
    "inert": 173,
-   "todo": 135
+   "todo": 132
   },
   "todo": [
    "ability-shield",
@@ -103,11 +103,9 @@
    "power-herb",
    "power-lens",
    "power-weight",
-   "protective-pads",
    "psychic-gem",
    "psychic-memory",
    "psychic-seed",
-   "punching-glove",
    "quick-powder",
    "rawst-berry",
    "razor-fang",
@@ -116,7 +114,6 @@
    "rock-gem",
    "rock-incense",
    "rock-memory",
-   "rocky-helmet",
    "room-service",
    "rose-incense",
    "rowap-berry",
@@ -145,9 +142,9 @@
  },
  "abilities": {
   "counts": {
-   "implemented": 37,
+   "implemented": 41,
    "inert": 81,
-   "todo": 256
+   "todo": 252
   },
   "todo": [
    "aerilate",
@@ -208,7 +205,6 @@
    "fairy-aura",
    "filter",
    "fire-mane",
-   "flame-body",
    "flare-boost",
    "flash-fire",
    "flower-gift",
@@ -253,7 +249,6 @@
    "lingering-aroma",
    "liquid-ooze",
    "liquid-voice",
-   "long-reach",
    "magic-bounce",
    "magic-guard",
    "magician",
@@ -290,7 +285,6 @@
    "piercing-drill",
    "pixilate",
    "poison-heal",
-   "poison-point",
    "poison-puppeteer",
    "poison-touch",
    "power-construct",
@@ -351,7 +345,6 @@
    "stalwart",
    "stamina",
    "stance-change",
-   "static",
    "steadfast",
    "steam-engine",
    "steelworker",
