@@ -144,6 +144,7 @@ extension CompanionStore {
                                 inLineupOnly: Bool = false, tradableOnly: Bool = false,
                                 level: BoxLevelFilter = .any, fightingIDs: Set<String> = []) -> [BoxIndividual] {
         let matcher = DexSearchMatcher(query)
+        let listed = tradableOnly ? Set(TradePool.listed(state: state, fightingIDs: fightingIDs).map(\.id)) : []
         let result = boxIndividuals.filter { individual in
             if let speciesID, individual.speciesID != speciesID { return false }
             if shinyOnly, !individual.entry.isShiny { return false }
@@ -153,7 +154,9 @@ extension CompanionStore {
             if let region, !region.dexRange.contains(individual.speciesID) { return false }
             if !level.admits(individual.level) { return false }
             if inLineupOnly, !fightingIDs.contains(individual.id) { return false }
-            if tradableOnly, !isTradableNow(individual, fightingIDs: fightingIDs) { return false }
+            if tradableOnly, !listed.contains(individual.id) || !isTradableNow(individual, fightingIDs: fightingIDs) {
+                return false
+            }
             if !types.isEmpty,
                !speciesTypes(individual.speciesID).contains(where: { PokemonType(apiName: $0).map(types.contains) ?? false }) {
                 return false

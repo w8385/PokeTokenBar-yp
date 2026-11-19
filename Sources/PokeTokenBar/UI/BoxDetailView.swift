@@ -282,7 +282,7 @@ struct BoxDetailView: View {
 
     @ViewBuilder
     private var tradeNotes: some View {
-        if let refusal = tradeRefusal, refusal == .raising || refusal == .parked || refusal == .fighting,
+        if let refusal = tradeRefusal, refusal != .arriving, refusal != .unavailable,
            uploader?.hasToken == true {
             Text(l.tradeRefusalText(refusal)).font(.caption2).foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
