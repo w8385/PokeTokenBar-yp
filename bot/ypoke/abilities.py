@@ -25,7 +25,7 @@ EFFECT_KEYS = frozenset({
     "flower-veil", "corrosion", "early-bird", "regenerator",
     "effect-spore", "contact-chip", "contact-slow", "aftermath", "innards-out", "cursed-body", "perish-body",
     "ability-spread", "wandering-spirit", "pickpocket", "magician", "hit-ailment", "stench", "poison-puppeteer",
-    "spicy-spray",
+    "spicy-spray", "mold-breaker", "neutralizing-gas", "trace",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
 FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
