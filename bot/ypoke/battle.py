@@ -1012,10 +1012,16 @@ class _Fighter:
         return None if self.ability_ignored else self.combatant.ability
 
     def residual_damage(self) -> int:
+        due = self.residual_due()
         if self.status == "toxic":
             self.toxic_ticks += 1
-            return max(1, self.max_hp * self.toxic_ticks // TOXIC_DAMAGE_FRACTION)
-        return max(1, self.max_hp // RESIDUAL_FRACTIONS[self.status])
+        return due
+
+    def residual_due(self) -> int:
+        """The HP its burn or poison takes at the next end of turn; 0 without one."""
+        if self.status == "toxic":
+            return max(1, self.max_hp * (self.toxic_ticks + 1) // TOXIC_DAMAGE_FRACTION)
+        return max(1, self.max_hp // RESIDUAL_FRACTIONS[self.status]) if self.status in RESIDUAL_FRACTIONS else 0
 
     def stat(self, key: str, weather: str | None = None, staged: bool = True) -> float:
         stage = self.stages[key] if staged else 0
@@ -1099,8 +1105,9 @@ def _weather_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], weather: _We
         return None
     fainted = None
     for side, fighter in enumerate(fighters):
-        if fighter.hp > 0 and _chipped_by(fighter, weather.kind):
-            fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // WEATHER_CHIP_FRACTION))
+        chip = _weather_chip(fighter, weather.kind)
+        if fighter.hp > 0 and chip:
+            fighter.hp = max(0, fighter.hp - chip)
             events.append(WeatherDamage(
                 turn, side, fighter.combatant.name, fighter.hp_percent, fighter.hp == 0, weather.kind,
             ))
@@ -1136,6 +1143,10 @@ def _append(events: list[Event], event: Event | tuple[Event, ...] | None) -> Non
         events.extend(event)
     elif event is not None:
         events.append(event)
+
+
+def _weather_chip(fighter: _Fighter, weather: str | None) -> int:
+    return max(1, fighter.max_hp // WEATHER_CHIP_FRACTION) if _chipped_by(fighter, weather) else 0
 
 
 def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:

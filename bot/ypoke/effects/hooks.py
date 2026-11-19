@@ -135,6 +135,7 @@ HOOKS = {
     "blocks_weather_chip": "ability: weather does not chip its holder",
     "end_of_turn": "state, then item: heals, hurts or inflicts at the end of a turn, after weather",
     "volatile_end": "state: a Pokémon's own state acts or counts down at the end of a turn, after the items",
+    "tick_due": "state: the HP a Pokémon's own state takes from it at the next end of turn",
     "keeps_weather": "ability: the weather lasts only while a holder is out",
 }
 

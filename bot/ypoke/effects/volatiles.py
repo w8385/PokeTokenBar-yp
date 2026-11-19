@@ -77,9 +77,13 @@ def faster(user, foe, weather) -> bool:
 
 
 def hurt(fighter, share: int) -> int:
-    lost = min(fighter.hp, max(1, fighter.max_hp // share))
+    lost = min(fighter.hp, due(fighter, share))
     fighter.hp -= lost
     return lost
+
+
+def due(fighter, share: int) -> int:
+    return max(1, fighter.max_hp // share)
 
 
 def ticked(fighter, side: int, turn: int, kind: str, **fields):
@@ -96,6 +100,9 @@ class LeechSeed(State):
 
     def _worth(self, move, user, foe, team, foes, weather):
         return foe.hp * 2 > foe.max_hp
+
+    def tick_due(self, name, fighter):
+        return due(fighter, LEECH_SHARE)
 
     def _tick(self, name, fighter, side, turn):
         drained = hurt(fighter, LEECH_SHARE)
