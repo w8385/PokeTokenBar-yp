@@ -60,6 +60,8 @@ EFFECT_KEYS = frozenset({
 def typed(move, weather: str | None, user=None):
     """Weather Ball takes the weather's type and Terrain Pulse its grounded `user`'s terrain's; any other move comes
     back as it is. The user's ability may then change its type (Pixilate)."""
+    if user is not None:
+        weather = hooks.ability(user, "own_weather", weather, default=weather)
     moved = hooks.move(move, "modify_type", weather, user, default=move)
     kind = None if user is None else hooks.ability(user, "retypes", moved)
     return moved if kind is None or kind == moved.type else replace(moved, type=kind)
@@ -68,7 +70,8 @@ def typed(move, weather: str | None, user=None):
 def power(move, user, target, weather: str | None, multiplier: float, hit: int | None = None) -> float:
     """`multiplier` is the type effectiveness on `target`; `hit` the 0-based hit of a multi-hit move, None for the
     mean hit."""
-    scene = Scene(user, target, weather, multiplier, hit, move.max_hits)
+    scene = Scene(user, target, hooks.ability(user, "own_weather", weather, default=weather), multiplier, hit,
+                  move.max_hits)
     return hooks.move(move, "base_power", move.power, scene, default=move.power)
 
 

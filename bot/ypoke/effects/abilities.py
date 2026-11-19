@@ -38,6 +38,21 @@ class WeatherOnEntry(Handler):
         return kind == battle.STRONG_WINDS and abilities.WEATHER_ON_ENTRY[name] == kind
 
 
+@register("abilities", "primal-weather")
+class PrimalWeather(Handler):
+    """Desolate Land, Primordial Sea: entering starts `args.weather` with no countdown. Only strong winds or the other
+    one replace it, it ends once no holder is out, and damaging moves of the type it douses fail."""
+
+    def on_entry(self, name, fighter, foe, side, weather):
+        kind = abilities.PRIMAL_WEATHER[name]
+        if not _start_weather(weather, kind, fighter, lasting=True):
+            return None
+        return battle.AbilityTrigger(side, fighter.combatant.name, name, weather=kind)
+
+    def keeps_weather(self, name, kind):
+        return abilities.PRIMAL_WEATHER[name] == kind
+
+
 @register("abilities", "weather-on-hit")
 class WeatherOnHit(Handler):
     """Sand Spit: a damaging move that hits the holder starts `args.weather`."""
@@ -157,7 +172,7 @@ class ContactAilment(Handler):
 @register("abilities", "weather-chip-immune")
 class WeatherChipImmune(Handler):
     def blocks_weather_chip(self, name, weather):
-        return weather is not None and abilities.WEATHER_CHIP_IMMUNE[name] == weather
+        return abilities.in_weather(weather, abilities.WEATHER_CHIP_IMMUNE[name])
 
 
 @register("abilities", "long-reach")
@@ -196,11 +211,13 @@ class Protean(Handler):
                     or attacker.combatant.types == (move.type,) or hooks.move(move, "hits_later", default=False))
 
 
-def _start_weather(weather, kind, setter) -> bool:
-    """Starts `kind` for the turns the setter's item gives; a weather already there or strong winds keep it out."""
-    if weather.kind == kind or weather.kind == battle.STRONG_WINDS and kind != battle.STRONG_WINDS:
+def _start_weather(weather, kind, setter, lasting=False) -> bool:
+    """Starts `kind` for the turns the setter's item gives. The same weather keeps it out, and held weather (strong
+    winds, Desolate Land's) keeps out all but strong winds and another `lasting` one."""
+    if (weather.current == kind and weather.lasting == lasting
+            or weather.held and not lasting and kind != battle.STRONG_WINDS):
         return False
-    weather.kind = kind
+    weather.kind, weather.lasting = kind, lasting
     default = battle.WEATHER_TURNS
     weather.turns_left = hooks.item(setter, "weather_turns", kind, default, default=default)
     return True

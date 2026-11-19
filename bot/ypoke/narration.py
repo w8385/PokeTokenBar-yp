@@ -154,7 +154,7 @@ CHANGE_TEXT = {
     "uproar": "📢소란 시작", "rollout": "🔒구르기 시작", "fatigue": "💫지쳐서 혼란", "woke": "⏰잠에서 깼다",
     "guard-lifted": "🛡️방어가 풀렸다", "flash-fire": "🔥불꽃 위력 상승",
 }
-# What an ability did, by `AbilityAct.effect` or `AbilityEntry.effect`; `{detail}` is a type, item or ability name.
+# What an ability did, by `AbilityAct.effect` or `AbilityEntry.effect`; `{detail}` is a type, item, ability or stat.
 ABILITY_EFFECT_TEXT = {
     "first": "선제공격", "guard": "능력이 떨어지지 않는다", "charge": "⚡충전", "weather": "{detail}",
     "terrain": "{detail}", "hazard": "상대 쪽에 {detail} 깔림", "dance": "따라 춤췄다",
@@ -162,6 +162,7 @@ ABILITY_EFFECT_TEXT = {
     "stole": "{detail} 훔쳤다", "breaks": "상대 특성을 무시한다", "gas": "상대 특성이 사라졌다",
     "trace": "{detail} 복사", "retype": "{detail} 타입이 되었다", "retype-back": "원래 타입으로 돌아왔다",
     "zero": "날씨와 필드가 사라졌다", "disguise": "탈이 대신 맞았다", "spit": "삼킨 것을 뱉었다",
+    "paradox": "{detail} 강화",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
 ABILITY_BLOCKED_TEXT = {
@@ -535,7 +536,7 @@ def _ability_effect(effect: str, detail: str) -> str:
     if not effect:
         return ""
     name = (TYPE_NAMES_KO.get(detail) or ITEM_NAMES.get(detail) or ABILITY_NAMES.get(detail)
-            or WEATHER_ICON.get(detail) or STATE_LABEL.get(detail) or detail)
+            or WEATHER_ICON.get(detail) or STATE_LABEL.get(detail) or STAT_SHORT.get(detail) or detail)
     return ABILITY_EFFECT_TEXT[effect].format(detail=name)
 
 

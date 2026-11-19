@@ -83,7 +83,7 @@ class Download(Handler):
     def on_entry(self, name, fighter, foe, side, weather):
         if foe.hp == 0:
             return None
-        stat = "special_attack" if _staged(foe, "defense") >= _staged(foe, "special_defense") else "attack"
+        stat = "special_attack" if staged(foe, "defense") >= staged(foe, "special_defense") else "attack"
         changes = _shifted(fighter, ((stat, 1),))
         return battle.AbilityEntry(side, fighter.combatant.name, name, changes=changes) if changes else None
 
@@ -266,6 +266,7 @@ def _act(name, holder, changes, **details):
     return battle.AbilityAct(turn, holder.side, holder.combatant.name, name, changes=tuple(changes), **details)
 
 
-def _staged(fighter, stat) -> float:
+def staged(fighter, stat) -> float:
+    """The stat with its stages and no other modifier (Download, Protosynthesis)."""
     stage = fighter.stages[stat]
     return fighter.stats[stat] * ((2 + stage) / 2 if stage >= 0 else 2 / (2 - stage))

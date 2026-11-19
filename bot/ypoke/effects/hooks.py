@@ -55,6 +55,7 @@ HOOKS = {
     "breaks_abilities": "ability: its holder's move leaves the target's breakable ability out (Mold Breaker)",
     "suppresses_abilities": "ability: the foe's abilities do nothing while its holder is out (Neutralizing Gas)",
     "clears_weather": "ability: the weather does nothing while its holder is out (Air Lock)",
+    "own_weather": "ability: the weather its holder's own moves act in, in place of the field's (Mega Sol)",
     "calls": "move: the move used in its place, after PP (Metronome); None when the call fails",
     "charges": "move: its user charges (Solar Beam) or hides (Fly) this turn and hits on the next; returns the "
                 "`effect` it shows (\"\" to hit now) and the changes, or None to hit now",

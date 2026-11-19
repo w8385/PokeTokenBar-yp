@@ -142,26 +142,16 @@
  },
  "abilities": {
   "counts": {
-   "implemented": 265,
+   "implemented": 275,
    "inert": 92,
-   "todo": 17
+   "todo": 7
   },
   "todo": [
-   "air-lock",
-   "bad-dreams",
    "cheek-pouch",
-   "cloud-nine",
    "cud-chew",
-   "desolate-land",
    "gluttony",
    "harvest",
-   "ice-body",
    "klutz",
-   "mega-sol",
-   "primordial-sea",
-   "protosynthesis",
-   "quark-drive",
-   "rain-dish",
    "ripen",
    "sticky-hold"
   ]
