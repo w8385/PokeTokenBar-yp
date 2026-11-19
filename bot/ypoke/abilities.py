@@ -110,9 +110,6 @@ TERRAIN_ON_ENTRY = battle_data.args("abilities", "terrain-on-entry", "terrain")
 FIELD_STAT_STATE = battle_data.args("abilities", "field-stat", "field")
 FIELD_STAT_STAT = battle_data.args("abilities", "field-stat", "stat")
 FIELD_STAT_MULTIPLIER = battle_data.args("abilities", "field-stat", "multiplier")
-WEATHER_ON_HIT = battle_data.args("abilities", "weather-on-hit", "weather")
-EVASION_WEATHER = battle_data.args("abilities", "weather-evasion", "weather")
-WEATHER_EVASION_ACCURACY = 0.8
 SHED_SKIN_CHANCE = 0.33
 
 NAMES = battle_data.bot_names("abilities")

@@ -24,13 +24,22 @@ def sandstorm(user, foe, arena):
     arena.weather = _Weather("sandstorm", 5)
 
 
+def snow(user, foe, arena):
+    arena.weather = _Weather("snow", 5)
+
+
+def hail(user, foe, arena):
+    arena.weather = _Weather("hail", 5)
+
+
 @pytest.mark.parametrize(("ability", "on_foe", "move", "prep", "expected"), [
     ("compound-eyes", False, TACKLE, None, 1.3), ("victory-star", False, TACKLE, None, 1.1),
     ("keen-eye", False, TACKLE, foe_evasive, 5 / 3), ("keen-eye", False, TACKLE, None, 1.0),
     ("minds-eye", False, TACKLE, foe_evasive, 5 / 3), ("unaware", False, TACKLE, foe_evasive, 5 / 3),
     ("tangled-feet", True, TACKLE, confused, 0.5), ("tangled-feet", True, TACKLE, None, 1.0),
     ("sand-veil", True, TACKLE, sandstorm, 0.8), ("sand-veil", True, TACKLE, None, 1.0),
-    ("snow-cloak", True, TACKLE, sandstorm, 1.0),
+    ("snow-cloak", True, TACKLE, sandstorm, 1.0), ("snow-cloak", True, TACKLE, snow, 0.8),
+    ("snow-cloak", True, TACKLE, hail, 0.8), ("sand-veil", True, TACKLE, hail, 1.0),
     ("wonder-skin", True, THUNDER_WAVE, None, 50 / 90), ("wonder-skin", True, TACKLE, None, 1.0),
 ])
 def test_the_ability_scales_accuracy_only_where_it_applies(ability, on_foe, move, prep, expected):
