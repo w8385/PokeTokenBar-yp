@@ -2125,44 +2125,59 @@ WeatherEnd turn=8 weather='strong-winds'
 SendOut turn=8 side=1 pokemon='P448' member=1
 MegaEvolution turn=9 side=1 pokemon='P448' ability='그래스메이커' form_id=10059
 AbilityField side=1 pokemon='P448' ability='grassy-surge' terrain='grassy-terrain'
-Action turn=9 side=1 attacker='P448' defender='P270' move='손바닥치기' multiplier=2.0 defender_hp=47 hits=2 move_id=292
-Action turn=9 side=0 attacker='P270' defender='P448' move='유턴' multiplier=2.0 defender_hp=57 attacker_hp=47 pivoted=True move_id=369
+Action turn=9 side=0 attacker='P270' defender='P448' move='유턴' multiplier=2.0 defender_hp=58 attacker_hp=69 pivoted=True move_id=369
 SendOut turn=9 side=0 pokemon='P584' member=3
+Action turn=9 side=1 attacker='P448' defender='P584' move='트릭룸' attacker_hp=58 effect='trick-room' move_id=433
 TerrainHeal turn=9 side=1 pokemon='P448' hp=63
-Action turn=10 side=1 attacker='P448' defender='P584' move='손바닥치기' multiplier=2.0 defender_hp=61 hits=5 attacker_hp=63 move_id=292
-Action turn=10 side=0 attacker='P584' defender='P448' move='스카이어퍼' multiplier=2.0 defender_hp=34 attacker_hp=61 move_id=327
-TerrainHeal turn=10 side=0 pokemon='P584' hp=67
-TerrainHeal turn=10 side=1 pokemon='P448' hp=39
-Action turn=11 side=1 attacker='P448' defender='P584' move='손바닥치기' multiplier=2.0 critical=True defender_hp=32 hits=4 attacker_hp=39 move_id=292
-Action turn=11 side=0 attacker='P584' defender='P448' move='스카이어퍼' multiplier=2.0 defender_hp=8 attacker_hp=32 move_id=327
-TerrainHeal turn=11 side=0 pokemon='P584' hp=38
-TerrainHeal turn=11 side=1 pokemon='P448' hp=14
-Action turn=12 side=1 attacker='P448' defender='P584' move='기사회생' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=14 move_id=179
-TerrainHeal turn=12 side=1 pokemon='P448' hp=20
-SendOut turn=12 side=0 pokemon='P799' member=4
-Action turn=13 side=1 attacker='P448' defender='P799' move='기사회생' defender_hp=85 attacker_hp=3 defender_item='rocky-helmet' move_id=179
-Action turn=13 side=0 attacker='P799' defender='P448' move='철제광선' changes=(Change(side=0, pokemon='P799', kind='hp-cost', stages=0),) defender_hp=0 knockout=True attacker_hp=35 move_id=796
-TerrainHeal turn=13 side=0 pokemon='P799' hp=41
+Action turn=10 side=0 attacker='P584' defender='P448' move='스카이어퍼' multiplier=2.0 defender_hp=34 move_id=327
+Action turn=10 side=1 attacker='P448' defender='P584' move='손바닥치기' multiplier=2.0 defender_hp=62 hits=5 attacker_hp=34 move_id=292
+TerrainHeal turn=10 side=0 pokemon='P584' hp=68
+TerrainHeal turn=10 side=1 pokemon='P448' hp=40
+Action turn=11 side=0 attacker='P584' defender='P448' move='스카이어퍼' missed=True multiplier=2.0 defender_hp=40 attacker_hp=68 move_id=327
+Action turn=11 side=1 attacker='P448' defender='P584' move='손바닥치기' multiplier=2.0 defender_hp=38 hits=4 attacker_hp=40 move_id=292
+TerrainHeal turn=11 side=0 pokemon='P584' hp=43
+TerrainHeal turn=11 side=1 pokemon='P448' hp=46
+Action turn=12 side=0 attacker='P584' defender='P448' move='스카이어퍼' multiplier=2.0 defender_hp=16 attacker_hp=43 move_id=327
+Action turn=12 side=1 attacker='P448' defender='P584' move='손바닥치기' multiplier=2.0 defender_hp=21 hits=3 attacker_hp=16 move_id=292
+TerrainHeal turn=12 side=0 pokemon='P584' hp=26
+TerrainHeal turn=12 side=1 pokemon='P448' hp=22
+Action turn=13 side=0 attacker='P584' defender='P448' move='스카이어퍼' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=26 move_id=327
+TerrainHeal turn=13 side=0 pokemon='P584' hp=32
+TrickRoomEnd turn=13
 FieldEnd turn=13 kind='grassy-terrain'
 SendOut turn=13 side=1 pokemon='P569' member=2
-Action turn=14 side=0 attacker='P799' defender='P569' move='지구던지기' multiplier=0.5 defender_hp=72 attacker_hp=41 move_id=69
-Action turn=14 side=1 attacker='P569' defender='P799' move='방어지령' changes=(Change(side=1, pokemon='P569', kind='defense', stages=1), Change(side=1, pokemon='P569', kind='special_defense', stages=1)) defender_hp=41 attacker_hp=72 effect='stages' move_id=455
-Action turn=15 side=0 attacker='P799' defender='P569' move='가드스왑' defender_hp=72 attacker_hp=41 effect='stage-swap' move_id=385
-Action turn=15 side=1 attacker='P569' defender='P799' move='오리진즈슈퍼노바' defender_hp=21 attacker_hp=72 move_id=703
-Action turn=16 side=0 attacker='P799' defender='P569' move='지구던지기' multiplier=0.5 defender_hp=43 attacker_hp=21 move_id=69
-Action turn=16 side=1 attacker='P569' defender='P799' move='분노의주먹' defender_hp=3 attacker_hp=27 defender_item='rocky-helmet' move_id=889
-Action turn=17 side=0 attacker='P799' defender='P569' move='지구던지기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=3 move_id=69
-SendOut turn=17 side=1 pokemon='P439' member=3
+Action turn=14 side=1 attacker='P569' defender='P584' move='오리진즈슈퍼노바' defender_hp=0 knockout=True move_id=703
+SendOut turn=14 side=0 pokemon='P799' member=4
+Action turn=15 side=0 attacker='P799' defender='P569' move='철제광선' changes=(Change(side=0, pokemon='P799', kind='hp-cost', stages=0),) defender_hp=6 attacker_hp=50 move_id=796
+Action turn=15 side=1 attacker='P569' defender='P799' move='방어지령' changes=(Change(side=1, pokemon='P569', kind='defense', stages=1), Change(side=1, pokemon='P569', kind='special_defense', stages=1)) defender_hp=50 attacker_hp=6 effect='stages' move_id=455
+Action turn=16 side=0 attacker='P799' defender='P569' move='지구던지기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=50 move_id=69
+SendOut turn=16 side=1 pokemon='P439' member=3
 AbilityField side=1 pokemon='P439' ability='misty-surge' terrain='misty-terrain'
-Action turn=18 side=0 attacker='P799' defender='P439' move='지구던지기' defender_hp=71 attacker_hp=3 move_id=69
-Action turn=18 side=1 attacker='P439' defender='P799' move='섀도다이브' defender_hp=3 attacker_hp=71 effect='vanished' move_id=467
-Action turn=19 side=0 attacker='P799' defender='P439' move='혼내기' missed=True defender_hp=71 attacker_hp=3 move_id=386
-Action turn=19 side=1 attacker='P439' defender='P799' move='섀도다이브' defender_hp=0 knockout=True attacker_hp=54 defender_item='rocky-helmet' move_id=467
-SendOut turn=19 side=0 pokemon='P270' member=2
+Action turn=17 side=0 attacker='P799' defender='P439' move='지구던지기' defender_hp=71 attacker_hp=50 move_id=69
+Action turn=17 side=1 attacker='P439' defender='P799' move='섀도다이브' defender_hp=50 attacker_hp=71 effect='vanished' move_id=467
+Action turn=18 side=0 attacker='P799' defender='P439' move='혼내기' missed=True defender_hp=71 attacker_hp=50 move_id=386
+Action turn=18 side=1 attacker='P439' defender='P799' move='섀도다이브' critical=True defender_hp=26 attacker_hp=54 defender_item='rocky-helmet' move_id=467
+Action turn=19 side=0 attacker='P799' defender='P439' move='지구던지기' defender_hp=25 attacker_hp=26 move_id=69
+Action turn=19 side=1 attacker='P439' defender='P799' move='섀도다이브' defender_hp=26 attacker_hp=25 effect='vanished' move_id=467
+Action turn=20 side=0 attacker='P799' defender='P439' move='혼내기' missed=True defender_hp=25 attacker_hp=26 move_id=386
+Action turn=20 side=1 attacker='P439' defender='P799' move='섀도다이브' defender_hp=10 attacker_hp=8 defender_item='rocky-helmet' move_id=467
+Action turn=21 side=0 attacker='P799' defender='P439' move='지구던지기' defender_hp=0 knockout=True attacker_hp=10 move_id=69
+FieldEnd turn=21 kind='misty-terrain'
+SendOut turn=21 side=1 pokemon='P292' member=4
+Action turn=22 side=0 attacker='P799' defender='P292' move='혼내기' multiplier=2.0 defender_hp=54 attacker_hp=10 move_id=386
+Action turn=22 side=1 attacker='P292' defender='P799' move='바디퍼지' changes=(Change(side=1, pokemon='P292', kind='speed', stages=2),) defender_hp=10 attacker_hp=54 effect='stages' move_id=475
+Action turn=23 side=1 attacker='P292' defender='P799' move='트리플악셀' missed=True multiplier=0.5 defender_hp=10 attacker_hp=54 move_id=813
+Action turn=23 side=0 attacker='P799' defender='P292' move='혼내기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=10 move_id=386
+SendOut turn=23 side=1 pokemon='P802' member=5
+Action turn=24 side=0 attacker='P799' defender='P802' move='혼내기' multiplier=2.0 defender_hp=49 attacker_hp=10 move_id=386
+Action turn=24 side=1 attacker='P802' defender='P799' move='콸콸오라' defender_hp=0 knockout=True attacker_hp=49 move_id=736
+SendOut turn=24 side=0 pokemon='P270' member=2
 AbilityTrigger side=0 pokemon='P270' ability='orichalcum-pulse' weather='sun'
-Action turn=20 side=0 attacker='P270' defender='P439' move='화룡점정' multiplier=0.5 changes=(Change(side=0, pokemon='P270', kind='defense', stages=-1), Change(side=0, pokemon='P270', kind='special_defense', stages=-1)) defender_hp=39 attacker_hp=47 move_id=620
-Action turn=20 side=1 attacker='P439' defender='P270' move='둥실둥실폴' defender_hp=0 knockout=True attacker_hp=39 move_id=731
-result winner=1 turns=20 remaining=((0, 0, 0, 0, 0), (0, 0, 0, 39, None, None)) statuses=((None, None, None, None, None), (None, None, None, None, None, None))
+Action turn=25 side=1 attacker='P802' defender='P270' move='콸콸오라' defender_hp=36 attacker_hp=49 move_id=736
+Action turn=25 side=0 attacker='P270' defender='P802' move='화룡점정' changes=(Change(side=0, pokemon='P270', kind='defense', stages=-1), Change(side=0, pokemon='P270', kind='special_defense', stages=-1)) defender_hp=9 attacker_hp=36 move_id=620
+Action turn=26 side=1 attacker='P802' defender='P270' move='콸콸오라' missed=True defender_hp=36 attacker_hp=9 move_id=736
+Action turn=26 side=0 attacker='P270' defender='P802' move='화룡점정' defender_hp=0 knockout=True attacker_hp=36 move_id=620
+result winner=0 turns=26 remaining=((0, 0, 36, 0, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None), (None, None, None, None, None, None))
 ## pvp 119
 side=0 P866 Lv50 ('water', 'fairy') item=silk-scarf ability=torrent nature=modest moves=[497, 498, 762, 799] mega=None
 side=0 P560 Lv50 ('water', 'fairy') item=scraftinite ability=contrary nature=modest moves=[505, 506, 841, 896] mega=('mega', 10289, 'static')

@@ -28,7 +28,7 @@ BRAVE_BIRD = Move("브레이브버드", "flying", 120, physical=True, accuracy=1
 
 
 @pytest.mark.parametrize("side", [0, 1])
-def test_trick_room_lets_the_slower_pokemon_move_first_for_five_turns(side):
+def test_trick_room_lets_the_slower_pokemon_move_first_for_five_turns_and_is_set_again_once_it_ends(side):
     setter = wall("느림보", ["psychic"], (TRICK_ROOM, TACKLE), speed=20)
     result = simulate(sides(setter, wall("날쌘돌이", speed=150), side), seed=1)
     assert [event.effect for event in actions(result) if event.side == side][0] == "trick-room"
@@ -36,7 +36,18 @@ def test_trick_room_lets_the_slower_pokemon_move_first_for_five_turns(side):
     assert [first_mover(result, turn) for turn in range(2, 6)] == [side] * 4
     assert TrickRoomEnd(5) in result.events
     assert first_mover(result, 6) == 1 - side
-    assert sum(event.effect == "trick-room" for event in actions(result)) == 1
+    set_turns = [event.turn for event in actions(result) if event.effect == "trick-room"]
+    assert set_turns[:2] == [1, 6]
+    assert not any(event.effect == "trick-room-off" for event in actions(result))
+
+
+@pytest.mark.parametrize("side", [0, 1])
+def test_trick_room_is_set_when_the_setter_and_the_next_member_are_slower_though_the_team_mean_is_faster(side):
+    johto_hidden = (wall("폴리곤2", ["normal"], (TRICK_ROOM, TACKLE), speed=60), wall("마기라스", speed=61),
+                    wall("핫삼", speed=65), wall("스이쿤", speed=85), wall("앤테이", speed=100),
+                    wall("라이코", speed=115), wall("칠색조", speed=90), wall("루기아", speed=110))
+    result = simulate(sides(johto_hidden, (wall("상대", speed=85),), side), seed=1)
+    assert next(event for event in actions(result) if event.side == side).effect == "trick-room"
 
 
 @pytest.mark.parametrize("side", [0, 1])
