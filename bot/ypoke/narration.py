@@ -417,7 +417,7 @@ def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
     elif isinstance(event, AbilityTransform):
         effect = f"{event.into}{_direction_particle(event.into)} 변신"
     elif isinstance(event, AbilityRetype):
-        effect = f"{TYPE_NAMES_KO[event.into]} 타입이 되었다"
+        effect = f"{TYPE_NAMES_KO.get(event.into, event.into)} 타입이 되었다"
     else:
         effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
     return f"[{ABILITY_NAMES[event.ability]}] {effect}"
