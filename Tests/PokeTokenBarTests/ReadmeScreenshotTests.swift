@@ -60,6 +60,38 @@ final class ReadmeScreenshotTests: XCTestCase {
         XCTAssertNotEqual(first, laterTonight, "the day/night dial ignores the companion's clock")
     }
 
+    func testReadmeShotIgnoresTheHostsScreens() async throws {
+        let suite = "readme-home-screens-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("readme-home-screens-\(UUID())")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        defer { OffscreenRender.pinWindowlessBackingScale() }
+        try await preloadSprites()
+        let usage = try await sampleUsage(defaults: defaults)
+        let updater = UpdateChecker(currentVersion: "3.5.0", defaults: defaults, fetchLatest: { nil })
+        let uploader = await BoxDexFixture.makeUploader(defaults: defaults, scratch: scratch)
+        let entry = BattleEntryStore(defaults: defaults)
+        let (store, cleanup) = try await homeStore(language: .en, defaults: defaults, clock: { Self.pinnedNow })
+        defer { cleanup() }
+        func render(onScreensOfScale hostScale: CGFloat) async throws -> Data {
+            OffscreenRender.setWindowlessBackingScale(hostScale)
+            let nav = PopoverNavigation()
+            nav.tab = .home
+            let host = try await hosted(Self.popover(usage: usage, store: store, updater: updater, uploader: uploader,
+                                                     entry: entry, nav: nav), "home", height: nil)
+            let png = try OffscreenRender.png(of: host, scale: 2)
+            XCTAssertEqual(OffscreenRender.windowlessBackingScaleInEffect, OffscreenRender.windowlessBackingScale,
+                           "OffscreenRender left the backing scale of a \(hostScale)x desktop in place")
+            return png
+        }
+
+        let externalDisplay = try await render(onScreensOfScale: 1)
+        let retina = try await render(onScreensOfScale: 2)
+        XCTAssertEqual(externalDisplay, retina, "AppKit controls drew at the host screens' scale")
+    }
+
     func testStoredFriendsShotPreloadsEverySprite() async throws {
         let suite = "readme-stored-friends-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
