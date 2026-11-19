@@ -2201,10 +2201,12 @@ def _stopped(attacker: _Fighter, defender: _Fighter, move: Move) -> str:
 
 
 def _wasted_on(attacker: _Fighter, defender: _Fighter, move: Move) -> bool:
-    """The move would fail on the defender or its ability would bounce it back (Magic Bounce)."""
-    bounced = hooks.move(move, "targets_foe", default=False) and hooks.ability(defender, "reflects", move,
-                                                                              default=False)
-    return bool(_stopped(attacker, defender, move)) or bounced
+    """The move would fail on the defender or its ability would bounce it back (Magic Bounce), unless the user's
+    ability leaves that ability out (Mold Breaker)."""
+    with _ability_ignored(attacker, defender, move):
+        bounced = hooks.move(move, "targets_foe", default=False) and hooks.ability(defender, "reflects", move,
+                                                                                  default=False)
+        return bool(_stopped(attacker, defender, move)) or bounced
 
 
 def _stats_for(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None = None) -> tuple[float, float]:

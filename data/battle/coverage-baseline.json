@@ -142,9 +142,9 @@
  },
  "abilities": {
   "counts": {
-   "implemented": 239,
+   "implemented": 244,
    "inert": 81,
-   "todo": 54
+   "todo": 49
   },
   "todo": [
    "air-lock",
@@ -173,9 +173,7 @@
    "magnet-pull",
    "mega-sol",
    "mimicry",
-   "mold-breaker",
    "multitype",
-   "neutralizing-gas",
    "power-construct",
    "primordial-sea",
    "propeller-tail",
@@ -195,9 +193,6 @@
    "tera-shell",
    "tera-shift",
    "teraform-zero",
-   "teravolt",
-   "trace",
-   "turboblaze",
    "wimp-out",
    "zen-mode",
    "zero-to-hero"

@@ -318,8 +318,19 @@ FOCUS_CASES = {
     "contact-ailment": (((18, None, None, [33]),), ((36, None, "effect-spore", [33]), (18, None, "gooey", [33]))),
     "hit-ailment": (((18, None, "poison-touch", [33]), (36, None, "poison-puppeteer", [398])),
                     ((36, None, "stench", [33]), (18, None, "spicy-spray", [33]))),
-    "hydration": (((18, None, "hydration", [33]),), ((36, None, "drizzle", [92, 33]),)),
     "switcheroo": (((94, None, None, [415, 33]),), ((143, "leftovers", None, [33]),)),
+    "mold-breaker": (((18, None, "mold-breaker", [89, 33]),), ((36, None, "levitate", [33]),)),
+    "neutralizing-gas": (((130, None, "intimidate", [33]),), ((36, None, "neutralizing-gas", [33]),)),
+    "trace": (((18, None, "trace", [33]),), ((130, None, "intimidate", [33]),)),
+    "imposter": (((132, None, "imposter", [33]),), ((6, None, None, [370]),)),
+    "dry-skin": (((18, None, None, [57]),), ((36, None, "dry-skin", [33]),)),
+    "toxic-debris": (((18, None, None, [33]),), ((36, None, "toxic-debris", [33]), (36, None, None, [33]))),
+    "hydration": (((18, None, "hydration", [33]),), ((36, None, "drizzle", [92, 33]),)),
+    "leaf-guard": (((18, None, "leaf-guard", [33]),), ((36, None, "drought", [92, 33]),)),
+    "mycelium-might": (((18, None, "mycelium-might", [92, 33]),), ((36, None, None, [33]),)),
+    "unaware": (((18, None, None, [14, 33]),), ((36, None, "unaware", [33]),)),
+    "unnerve": (((18, "sitrus-berry", None, [33]),), ((36, None, "unnerve", [33]),)),
+    "weather-rock": (((18, "damp-rock", "drizzle", [33]),), ((36, None, None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

@@ -155,7 +155,8 @@ ABILITY_EFFECT_TEXT = {
     "first": "선제공격", "guard": "능력이 떨어지지 않는다", "charge": "⚡충전", "weather": "{detail}",
     "terrain": "{detail}", "hazard": "상대 쪽에 {detail} 깔림", "dance": "따라 춤췄다",
     "disable": "{detail} 🚫사슬묶기", "perish": "🎵멸망 카운트", "spread": "특성 전염", "swap": "특성 교환",
-    "stole": "{detail} 훔쳤다",
+    "stole": "{detail} 훔쳤다", "breaks": "상대 특성을 무시한다", "gas": "상대 특성이 사라졌다",
+    "trace": "{detail} 복사",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
 ABILITY_BLOCKED_TEXT = {
