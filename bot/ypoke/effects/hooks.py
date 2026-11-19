@@ -78,7 +78,7 @@ HOOKS = {
     "hit_count": "move: how many times it hits this time, in place of the data's hit range (Beat Up)",
     "rolls_each_hit": "move: each hit after the first draws for accuracy and a miss ends the move (Triple Kick)",
     "accuracy_as_user": "item: multiplies the user's accuracy, before the target's item",
-    "accuracy_as_target": "item: multiplies the accuracy of a move used on its holder",
+    "accuracy_as_target": "item, ability: multiplies the accuracy of a move used on its holder",
     "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
     "exposes": "state: the type of its holder whose immunity a move type ignores, and its raised evasion (Foresight)",
     "type_multiplier": "move: multiplies how well it hits these types, after the type chart (Freeze-Dry on Water, "
@@ -127,12 +127,16 @@ HOOKS = {
     "modify_drain": "item: the HP a draining move gives back",
     "after_move_as_user": "item: acts after its holder's move dealt damage, after recoil and drain",
     "after_move_as_target": "item: acts after a move dealt damage to its holder",
+    "after_hit": "ability: answers a damaging move that hit its holder once the move is over (Sand Spit); returns an "
+                 "event",
     "after_move": "move: acts once the damage is dealt; may return more changes",
     "pays_hp": "move: its user pays HP once the move is used, hit or miss (Steel Beam); returns the change",
     "faints_user":"move: its user faints once it is used",
     "switches_user_out": "move: its user switches out after a hit",
     "remember": "move: the team notes an effect move that worked, so it is not picked again",
     "blocks_weather_chip": "ability: weather does not chip its holder",
+    "cures_status": "ability: may cure its holder's status at the end of a turn, before the status hurts (Shed Skin); "
+                    "returns the event",
     "end_of_turn": "state, then item: heals, hurts or inflicts at the end of a turn, after weather",
     "volatile_end": "state: a Pokémon's own state acts or counts down at the end of a turn, after the items",
     "tick_due": "state: the HP a Pokémon's own state takes from it at the next end of turn",
