@@ -49,7 +49,7 @@ SCREENS = (
     ("NaturePicker.swift", ("screenshot-nature-picker",)),
     ("BoxTrainingControls.swift", ("screenshot-nature-picker",)),
     ("MoveTrainingSection.swift", ("screenshot-pokemon-profile", "screenshot-move-order", "screenshot-status-moves",
-                                   "screenshot-egg-moves")),
+                                   "screenshot-egg-moves", "screenshot-forget-moves")),
     ("ExpShareSlot.swift", ("screenshot-exp-share",)),
     ("GymReplayView.swift", ("screenshot-gym-replay",)),
     ("GymResultView.swift", ("screenshot-gym-replay", "screenshot-hidden-boss")),

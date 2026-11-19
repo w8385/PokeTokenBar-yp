@@ -159,6 +159,17 @@ final class ReadmeScreenshotTests: XCTestCase {
             entry.chooseMove(move, at: index, for: BoxDexFixture.charizardID, pokemonID: 6, current: chosen)
             chosen = entry.chosenMoves(for: BoxDexFixture.charizardID, pokemonID: 6)
         }
+        let forgetSuite = "readme-forget-\(UUID())"
+        let forgetDefaults = try XCTUnwrap(UserDefaults(suiteName: forgetSuite))
+        defer { forgetDefaults.removePersistentDomain(forName: forgetSuite) }
+        let forgetEntry = BattleEntryStore(defaults: forgetDefaults)
+        _ = forgetEntry.add(BoxDexFixture.charizardID)
+        var kept: [Int] = []
+        for (index, move) in [14, 337, 53, 225].enumerated() {
+            forgetEntry.chooseMove(move, at: index, for: BoxDexFixture.charizardID, pokemonID: 6, current: kept)
+            kept = forgetEntry.chosenMoves(for: BoxDexFixture.charizardID, pokemonID: 6)
+        }
+        forgetEntry.forgetMove(at: 3, for: BoxDexFixture.charizardID, pokemonID: 6, current: kept)
         let battleSuite = "readme-battle-\(UUID())"
         let battleDefaults = try XCTUnwrap(UserDefaults(suiteName: battleSuite))
         defer { battleDefaults.removePersistentDomain(forName: battleSuite) }
@@ -209,6 +220,8 @@ final class ReadmeScreenshotTests: XCTestCase {
                            "screenshot-status-moves\(suffix)", in: dir, height: nil)
             try await shot(moveOrder(store: store, uploader: uploader, entry: entry),
                            "screenshot-move-order\(suffix)", in: dir, height: nil)
+            try await shot(moveOrder(store: store, uploader: uploader, entry: forgetEntry),
+                           "screenshot-forget-moves\(suffix)", in: dir, height: nil)
             try await shot(statusMoves(store: store, uploader: eggUploader, entry: entry),
                            "screenshot-egg-moves\(suffix)", in: dir, height: nil)
             try await shot(popover { $0.openBoxDetail(id: StoredFriendScreenshotTests.bulbasaurID) },
