@@ -98,15 +98,30 @@ extension CompanionStore {
         Self.closestCandidate(moveOnCandidates().filter { canRaise(entryID: $0.id) }, excluding: [id])
     }
 
-    /// The bag copy goes straight to the closest Pokémon that can use it; with none it stays in the bag.
-    func giveBagExpShareToCandidate() {
-        guard itemCount(.expShare) > 0,
-              let pick = Self.closestCandidate(moveOnCandidates(), excluding: expShareExcluded) else { return }
-        attachExpShare(to: pick.id)
+    /// Each bag copy goes to the closest Pokémon that can use it, one per Pokémon; with none left it stays in the bag.
+    /// Returns the notice lines. The caller saves.
+    func giveBagExpSharesToCandidates() -> [String] {
+        guard autoMoveOn, itemCount(.expShare) > 0 else { return [] }
+        let candidates = moveOnCandidates()
+        var excluded = expShareExcluded
+        var lines: [String] = []
+        while itemCount(.expShare) > 0, let pick = Self.closestCandidate(candidates, excluding: excluded) {
+            excluded.insert(pick.id)
+            if placeBagExpShare(on: pick.id) { lines.append(l.expShareFromBagLine(to: candidateName(pick.id))) }
+        }
+        return lines
+    }
+
+    /// A copy on the Pokémon move-on just raised would sit idle there, so it goes to the closest candidate.
+    func passExpShare(offRaised raised: (id: String, name: String)?) -> [String] {
+        guard let raised, holdsExpShare(raised.id),
+              let pick = Self.closestCandidate(moveOnCandidates(), excluding: expShareExcluded),
+              moveExpShare(from: raised.id, to: pick.id) else { return [] }
+        return [l.expShareMovedLine(raised.name, to: candidateName(pick.id))]
     }
 
     private var expShareExcluded: Set<String> {
-        Set(state.expShareHolders + [state.raisedEntryID].compactMap { $0 })
+        Set(state.expShareHolders + [state.raisedEntryID].compactMap { $0 }).union(state.expShareTakenOff)
     }
 
     func requirementsText(_ requirements: [EvolutionRequirement]) -> String {
@@ -122,7 +137,8 @@ extension CompanionStore {
 
     // MARK: Candidates
 
-    /// Stored lines and graduates whose next step still needs XP and waits on nothing the player must do.
+    /// Stored lines and graduates whose next step or Box graduation still needs XP and waits on nothing the player
+    /// must do.
     func moveOnCandidates() -> [MoveOnCandidate] {
         var result: [MoveOnCandidate] = []
         for (id, stored) in state.storedLines {
@@ -144,16 +160,24 @@ extension CompanionStore {
         return EvolutionRules.rule(for: mon.plannedPathIDs[next])
     }
 
+    /// At its last planned form, the XP left to Box graduation. An Everstone doesn't stop that once the loaded line
+    /// shows no step left; an old save's plan can end before the line does.
     private func storedXPLeft(id: String, _ stored: StoredLine) -> Int? {
         let mon = stored.mon
-        guard !isTradeLocked(id), mon.dittoDisguise == nil || mon.dittoRevealed, !holdsEverstone(id),
-              mon.plannedPathIDs.indices.contains(mon.stageIndex + 1),
+        guard !isTradeLocked(id), mon.dittoDisguise == nil || mon.dittoRevealed,
+              !holdsEverstone(id) || isKnownFinalForm(mon),
               !isKeptWaiting(id, species: mon.currentID) else { return nil }
         let left = max(0, stageThreshold(for: mon) - mon.usedAtStage)
         guard let rule = plannedStoredStep(mon), !rule.paths.isEmpty else { return left }
         let context = storedLineContext(stored)
         guard !rule.waitsOnPlayer(in: context) else { return nil }
         return max(left, rule.stageXPLeft(in: context))
+    }
+
+    func isKnownFinalForm(_ mon: MonState) -> Bool {
+        guard !mon.plannedPathIDs.indices.contains(mon.stageIndex + 1),
+              let node = expShareLines[mon.baseID]?.tree.node(withID: mon.currentID) else { return false }
+        return growthOptions(of: node, gender: mon.profile?.gender).isEmpty
     }
 
     private func graduateXPLeft(_ entry: DexEntry) -> Int? {
@@ -178,7 +202,7 @@ extension CompanionStore {
             if let pick = Self.closestCandidate(moveOnCandidates(), excluding: expShareExcluded),
                moveExpShare(from: holder, to: pick.id) {
                 lines.append(l.expShareMovedLine(from, to: candidateName(pick.id)))
-            } else if detachExpShare(from: holder) {
+            } else if returnExpShareToBag(from: holder) {
                 lines.append(l.expShareBaggedLine(from))
             }
         }

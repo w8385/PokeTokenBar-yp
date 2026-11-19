@@ -404,6 +404,21 @@ read_when:
   **Guards:** `BoxGraduationTests` (graduation, copy hand-off, short of XP at level 100, Everstone on both sides,
   one notice for two, the copyless old-save line). Disabling the Box graduation fails 6 tests; dropping the
   hand-off fails 6; checking holders only fails the old-save test.
+- **An Exp. Share in the Bag waited on an event that might never come.** Only a stuck move-on put a bag copy on a
+  candidate, so a bought copy, one bagged when no candidate existed, or one a graduated holder gave back stayed in
+  the Bag. A stored final form short of graduation XP was not a candidate either (`storedXPLeft` needed a next
+  planned step), so once its copy left it could never get one back and never graduate in the Box.
+  **Why it slipped:** the periodic check only starts when `hasExpShareWork` sees a holder or a full copyless final
+  form, and the tests called `checkExpShareEvolution()` directly, which skips that gate. A new kind of work added
+  inside a gated pass also needs the gate to see it.
+  **Fix:** the periodic pass gives each bag copy to the closest candidate (gate: auto move-on on and a copy in the
+  Bag); a stored final form counts with the XP left to graduation. A Pokémon the player took a copy off by hand
+  (`expShareTakenOff`) is skipped by every automatic move until the player attaches one again. A copy on the
+  Pokémon move-on raises passes to the next closest instead of idling. An Everstone keeps a stored line out unless
+  its loaded line shows no step left; an old save's plan can end mid-line, so the last planned form alone isn't
+  proof.
+  **Guards:** `BagExpSharePassTests`. The gate test runs through `checkEvolutionGate()`; dropping the new gate term
+  fails it while the direct-call tests pass.
 
 ## 외부 로그·사용량 소스
 

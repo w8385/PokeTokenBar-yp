@@ -561,9 +561,9 @@ final class SaveTransferTests: XCTestCase {
         // graduateEvolution = 진행 — 진화를 건너뛰고 졸업한 개체의 진화 진행이라 그 개체(dex)와 함께 간다.
         // storedLines = 진행 — 박스에 보관한 키우던 포켓몬이라 그 기록(dex)과 함께 간다.
         // expShareHolders = 진행 — 달아 둔 학습장치는 inventory 밖에 있으니 같이 가야 사라지지 않는다.
-        // stuckWatch·keepWaiting = 진행 — 키우는 개체와 그 개체에 대한 선택이라 개체와 함께 간다.
+        // stuckWatch·keepWaiting·expShareTakenOff = 진행 — 개체에 대한 플레이어의 선택이라 개체와 함께 간다.
         let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs", "gymBadges",
-                                     "graduateEvolution", "storedLines", "expShareHolders", "stuckWatch", "keepWaiting",
+                                     "graduateEvolution", "storedLines", "expShareHolders", "expShareTakenOff", "stuckWatch", "keepWaiting",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
                                      "collectedFinals", "inventory", "heldItems",

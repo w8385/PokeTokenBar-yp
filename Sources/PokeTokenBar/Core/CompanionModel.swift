@@ -1370,6 +1370,8 @@ struct CompanionState: Codable, Sendable {
     var storedLines: [String: StoredLine] = [:]
     /// Instance IDs holding an Exp. Share, oldest first. Attached copies are out of `inventory`.
     var expShareHolders: [String] = []
+    /// Instance IDs the player took an Exp. Share off; automatic moves skip them until the player attaches one again.
+    var expShareTakenOff: Set<String> = []
     var stuckWatch: StuckWatch? = nil
     /// Instance ID → the species it was when the player chose to keep waiting; void once it evolves.
     var keepWaiting: [String: Int] = [:]
@@ -1456,6 +1458,7 @@ struct CompanionState: Codable, Sendable {
         storedLines        = c.lenient([String: Lossy<StoredLine>].self, forKey: .storedLines, default: [:])
             .compactMapValues(\.value)
         expShareHolders    = c.lenient([String].self, forKey: .expShareHolders, default: [])
+        expShareTakenOff   = c.lenient(Set<String>.self, forKey: .expShareTakenOff, default: [])
         stuckWatch         = c.lenientOptional(StuckWatch.self, forKey: .stuckWatch)
         keepWaiting        = c.lenient([String: Int].self, forKey: .keepWaiting, default: [:])
         // 도감은 항목별 격리 — 손상 항목 하나가 도감 전체를 날리지 않게.
@@ -1533,6 +1536,11 @@ struct CompanionState: Codable, Sendable {
         guard !keepWaiting.isEmpty else { return }
         let owned = ownedInstanceIDs
         keepWaiting = keepWaiting.filter { owned.contains($0.key) }
+    }
+
+    mutating func dropOrphanedExpShareTakenOff() {
+        guard !expShareTakenOff.isEmpty else { return }
+        expShareTakenOff.formIntersection(ownedInstanceIDs)
     }
 
     /// 졸업 기록 또는 현재 개체가 실제로 도달한 단계에 이 종이 포함되는가.

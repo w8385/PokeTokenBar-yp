@@ -329,6 +329,7 @@ final class ReadmeScreenshotTests: XCTestCase {
         state.expShareHolders = [BoxDexFixture.pikachuID]
         state.friendEntryIDs = [BoxDexFixture.charizardID]
         StoredFriendScreenshotTests.addBulbasaur(&state)
+        state.expShareTakenOff = [StoredFriendScreenshotTests.bulbasaurID]
         state.gymBadges.update("kanto") { $0.gyms = [1, 2, 3] }
     }
 

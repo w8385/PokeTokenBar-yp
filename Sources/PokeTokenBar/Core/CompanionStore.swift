@@ -1608,12 +1608,16 @@ final class CompanionStore {
     private func moveOn(_ stuck: StuckRaised) {
         state.stuckWatch = nil
         let next: MoveOnNext
+        var raised: (id: String, name: String)?
         if stuck.isGraduate {
             let parkedName = parkedLineName ?? l.parkedEggName
             state.resumeParkedLine(now: clock())
             addFriendIfSlotFree(stuck.id)
-            if let pick = raiseCandidate(excluding: stuck.id), raise(entryID: pick.id) {
-                next = .raise(candidateName(pick.id))
+            let pick = raiseCandidate(excluding: stuck.id)
+            let name = pick.map { candidateName($0.id) }
+            if let pick, let name, raise(entryID: pick.id) {
+                next = .raise(name)
+                raised = (pick.id, name)
             } else {
                 settleRaisedChange()
                 next = .resume(parkedName)
@@ -1628,15 +1632,17 @@ final class CompanionStore {
                 raise(entryID: pick.id)
             }
             next = .raise(name)
+            raised = (pick.id, name)
         } else {
             storeActiveForNewEgg(tier: nil, pendingHatchID: nil, attachesBagCopy: false)
             next = .egg
         }
-        giveBagExpShareToCandidate()
+        let given = passExpShare(offRaised: raised) + giveBagExpSharesToCandidates()
         save()
         AppLog.write("move on: \(stuck.speciesID) stuck, next \(next)")
         notifyCompanionEvent(l.moveOnTitle,
-                             l.moveOnBody(stuck.name, requirementsText(stuck.needs), next, toGraduates: stuck.isGraduate))
+                             ([l.moveOnBody(stuck.name, requirementsText(stuck.needs), next, toGraduates: stuck.isGraduate)]
+                              + given).joined(separator: "\n"))
     }
 
     // MARK: Skipping a blocked evolution
@@ -1780,17 +1786,31 @@ final class CompanionStore {
 
     @discardableResult
     func attachExpShare(to instanceID: String) -> Bool {
-        guard canAttachExpShare(to: instanceID) else { return false }
-        let left = itemCount(.expShare) - 1
-        state.inventory[ItemKind.expShare.rawValue] = left > 0 ? left : nil
-        state.expShareHolders.append(instanceID)
+        guard placeBagExpShare(on: instanceID) else { return false }
+        state.expShareTakenOff.remove(instanceID)
         save()
         Task { await checkExpShareEvolution() }
         return true
     }
 
-    /// A shop or scout egg puts one copy from the bag on the Pokémon it sends to the Box.
-    var eggSwapAttachesExpShare: Bool { itemCount(.expShare) > 0 }
+    /// Moves one bag copy onto `instanceID` without saving or starting a check. The caller saves.
+    func placeBagExpShare(on instanceID: String) -> Bool {
+        guard canAttachExpShare(to: instanceID) else { return false }
+        let left = itemCount(.expShare) - 1
+        state.inventory[ItemKind.expShare.rawValue] = left > 0 ? left : nil
+        state.expShareHolders.append(instanceID)
+        return true
+    }
+
+    func isExpShareTakenOff(_ instanceID: String?) -> Bool {
+        instanceID.map(state.expShareTakenOff.contains) ?? false
+    }
+
+    /// A shop or scout egg puts one copy from the bag on the Pokémon it sends to the Box, unless the player took one
+    /// off it.
+    var eggSwapAttachesExpShare: Bool {
+        itemCount(.expShare) > 0 && !isExpShareTakenOff(state.active?.profile?.instanceID)
+    }
 
     /// A shop or scout egg makes the Pokémon it sends to the Box a friend while a slot is free.
     var eggSwapAddsFriend: Bool { state.friendEntryIDs.count < CompanionState.maxFriends }
@@ -1801,12 +1821,20 @@ final class CompanionStore {
         state.friendEntryIDs.append(key)
     }
 
+    /// The player's detach: automatic moves leave this Pokémon alone until the player attaches a copy to it again.
     @discardableResult
     func detachExpShare(from instanceID: String) -> Bool {
+        guard returnExpShareToBag(from: instanceID) else { return false }
+        state.expShareTakenOff.insert(instanceID)
+        save()
+        return true
+    }
+
+    /// The caller saves.
+    func returnExpShareToBag(from instanceID: String) -> Bool {
         guard let index = state.expShareHolders.firstIndex(of: instanceID) else { return false }
         state.expShareHolders.remove(at: index)
         state.inventory[ItemKind.expShare.rawValue, default: 0] += 1
-        save()
         return true
     }
 
@@ -1836,6 +1864,7 @@ final class CompanionStore {
               let index = state.expShareHolders.firstIndex(of: source) else { return false }
         state.expShareHolders.remove(at: index)
         state.expShareHolders.append(target)
+        state.expShareTakenOff.remove(target)
         save()
         Task { await checkExpShareEvolution() }
         return true
@@ -1893,11 +1922,17 @@ final class CompanionStore {
 
     private var graduatingStoredLines: [(id: String, baseID: Int)] { expShareStoredLines + fullStoredLinesWithoutCopy }
 
-    private var hasExpShareWork: Bool { !state.expShareHolders.isEmpty || !fullStoredLinesWithoutCopy.isEmpty }
+    private var hasExpShareWork: Bool {
+        !state.expShareHolders.isEmpty || !fullStoredLinesWithoutCopy.isEmpty || (autoMoveOn && itemCount(.expShare) > 0)
+    }
 
     /// Loads each holder's line once, then takes any step that is open now (a clock gate opens on its own).
     func checkExpShareEvolution() async {
+        let everstoneLastForms = state.storedLines.filter { id, stored in
+            holdsEverstone(id) && stored.mon.stageIndex + 1 >= stored.mon.plannedPathIDs.count
+        }.map(\.value.mon.baseID)
         let baseIDs = Set(expShareGraduates.map(\.baseID)).union(graduatingStoredLines.map(\.baseID))
+            .union(everstoneLastForms)
         for baseID in baseIDs where expShareLines[baseID] == nil {
             guard loadingExpShareLines.insert(baseID).inserted else { continue }
             defer { loadingExpShareLines.remove(baseID) }
@@ -1915,7 +1950,7 @@ final class CompanionStore {
             if isStoredLineGraduating(id: holder.id, in: line),
                let name = graduateStoredLine(id: holder.id, in: line) { graduated.append(l.boxGraduatedLine(name)) }
         }
-        let moved = moveIdleExpShares()
+        let moved = moveIdleExpShares() + giveBagExpSharesToCandidates()
         if evolved || !graduated.isEmpty || !moved.isEmpty { save() }
         guard !graduated.isEmpty || !moved.isEmpty else { return }
         notifyCompanionEvent(graduated.isEmpty ? l.expShareMovedTitle : l.notifGraduateTitle,
@@ -2922,7 +2957,7 @@ final class CompanionStore {
     func storeActiveForNewEgg(tier: Rarity?, pendingHatchID: Int?, shiny: Bool = false, attachesBagCopy: Bool = true) {
         if let storedID = storeActiveInBox() {
             addFriendIfSlotFree(storedID)
-            if attachesBagCopy { attachExpShare(to: storedID) }
+            if attachesBagCopy, !isExpShareTakenOff(storedID) { attachExpShare(to: storedID) }
         }
         state.reconcileRepresentativeSelection()
         activeGeneration += 1
@@ -4239,6 +4274,7 @@ final class CompanionStore {
         state.returnOrphanedHeldItems()
         state.returnOrphanedExpShares()
         state.dropOrphanedKeepWaiting()
+        state.dropOrphanedExpShareTakenOff()
         state.dropOrphanedGraduateEvolution()
         refreshRepresentativeSubject()
         refreshFriendSubjects()
