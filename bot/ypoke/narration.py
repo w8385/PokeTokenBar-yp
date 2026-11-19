@@ -152,7 +152,8 @@ CHANGE_TEXT = {
 }
 # What an ability did, by `AbilityAct.effect` or `AbilityEntry.effect`; `{detail}` is a type, item or ability name.
 ABILITY_EFFECT_TEXT = {
-    "first": "선제공격", "guard": "능력이 떨어지지 않는다",
+    "first": "선제공격", "guard": "능력이 떨어지지 않는다", "charge": "⚡충전", "weather": "{detail}",
+    "terrain": "{detail}", "hazard": "상대 쪽에 {detail} 깔림",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
 ABILITY_BLOCKED_TEXT = {"truant": " 게으름을 피우고 있다", "magic-bounce": "로 되받아쳤다"}
@@ -435,9 +436,9 @@ def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
         effect = f"{TYPE_NAMES_KO.get(event.into, event.into)} 타입이 되었다"
     elif isinstance(event, AbilityEntry):
         effect = " ".join(filter(None, [_ability_effect(event.effect, event.detail),
-                                        *(_change_tag(change, event.side) for change in event.changes)]))
+                                        *(_change_tag(change, -1) for change in event.changes)]))
     else:
-        effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, event.side)
+        effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, -1)
     return " ".join(filter(None, [f"[{ABILITY_NAMES[event.ability]}]", effect]))
 
 
@@ -500,18 +501,23 @@ def _event_lines(event: Event) -> list[str]:
 
 
 def _ability_line(event: AbilityAct, marker: str) -> str:
+    """The holder's own changes read bare; the changes it made on the foe follow `→ foe`."""
+    on_foe = [change for change in event.changes if change.side != event.side]
     parts = [f"{marker} {event.pokemon} [{ABILITY_NAMES[event.ability]}]", _ability_effect(event.effect, event.detail),
-             *(_change_tag(change, event.side) for change in event.changes),
+             *(_change_tag(change, -1) for change in event.changes if change.side == event.side),
              f"{event.hp}%" if event.hp is not None else ""]
     if event.foe:
         parts.append(f"→ {event.foe}" + (f" {event.foe_hp}%" if event.foe_hp is not None else ""))
+    elif on_foe:
+        parts.append(" ".join([f"→ {on_foe[0].pokemon}", *(_change_tag(change, -1) for change in on_foe)]))
     return " ".join(filter(None, parts))
 
 
 def _ability_effect(effect: str, detail: str) -> str:
     if not effect:
         return ""
-    name = TYPE_NAMES_KO.get(detail) or ITEM_NAMES.get(detail) or ABILITY_NAMES.get(detail) or detail
+    name = (TYPE_NAMES_KO.get(detail) or ITEM_NAMES.get(detail) or ABILITY_NAMES.get(detail)
+            or WEATHER_ICON.get(detail) or STATE_LABEL.get(detail) or detail)
     return ABILITY_EFFECT_TEXT[effect].format(detail=name)
 
 

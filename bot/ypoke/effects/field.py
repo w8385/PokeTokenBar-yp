@@ -78,6 +78,7 @@ class SideState(StatusMove):
         if self.key in arena.sides[side]:
             return "", ()
         arena.sides[side][self.key] = _state_turns(user, self.key, self.turns)
+        battle._announce(user, hooks.ability(user, "on_side_state", self.key, user))
         return self.key, ()
 
     def _new(self, team, side, arena):
@@ -461,6 +462,28 @@ class TerrainOnEntry(Handler):
         if fighter.arena is None or not _set_terrain(fighter.arena, terrain, fighter):
             return None
         return battle.AbilityField(side, fighter.combatant.name, name, terrain=terrain)
+
+
+@register("abilities", "terrain-on-hit")
+class TerrainOnHit(Handler):
+    """Seed Sower: a damaging move that hits the holder sets `args.terrain`."""
+
+    def after_hit(self, name, hit):
+        holder, terrain = hit.target, abilities.TERRAIN_ON_HIT[name]
+        if hit.shielded or holder.arena is None or not _set_terrain(holder.arena, terrain, holder):
+            return None
+        return battle.AbilityAct(hit.turn, holder.side, holder.combatant.name, name, effect="terrain", detail=terrain)
+
+
+@register("abilities", "hazard-on-hit")
+class HazardOnFoeHit(Handler):
+    """Toxic Debris: a physical move that hits the holder lays `args.hazard` on the user's side."""
+
+    def after_hit(self, name, hit):
+        holder, hazard = hit.target, abilities.HAZARD_ON_HIT[name]
+        if hit.shielded or not hit.move.physical or holder.arena is None or not _lay(holder.arena, hit.side, hazard):
+            return None
+        return battle.AbilityAct(hit.turn, holder.side, holder.combatant.name, name, effect="hazard", detail=hazard)
 
 
 @register("abilities", "field-stat")

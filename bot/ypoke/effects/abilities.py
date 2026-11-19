@@ -49,14 +49,10 @@ class WeatherOnHit(Handler):
         return battle.AbilityTrigger(holder.side, holder.combatant.name, name, weather=kind)
 
 
-def _start_weather(weather, kind, setter) -> bool:
-    """Starts `kind` for the turns the setter's item gives; a weather already there or strong winds keep it out."""
-    if weather.kind == kind or weather.kind == battle.STRONG_WINDS and kind != battle.STRONG_WINDS:
-        return False
-    weather.kind = kind
-    default = battle.WEATHER_TURNS
-    weather.turns_left = hooks.item(setter, "weather_turns", kind, default, default=default)
-    return True
+@register("abilities", "unnerve")
+class Unnerve(Handler):
+    def unnerves(self, name):
+        return True
 
 
 @register("abilities", "gale-wings")
@@ -170,12 +166,6 @@ class LongReach(Handler):
         return True
 
 
-@register("abilities", "contrary")
-class Contrary(Handler):
-    def stage_factor(self, name):
-        return -1
-
-
 @register("abilities", "imposter")
 class Imposter(Handler):
     """Entering transforms the holder into the foe, as the move Transform does."""
@@ -201,3 +191,13 @@ class Protean(Handler):
         attacker.memory[PROTEAN] = True
         reshape(attacker, types=(move.type,))
         return battle.AbilityRetype(side, attacker.combatant.name, name, into=move.type)
+
+
+def _start_weather(weather, kind, setter) -> bool:
+    """Starts `kind` for the turns the setter's item gives; a weather already there or strong winds keep it out."""
+    if weather.kind == kind or weather.kind == battle.STRONG_WINDS and kind != battle.STRONG_WINDS:
+        return False
+    weather.kind = kind
+    default = battle.WEATHER_TURNS
+    weather.turns_left = hooks.item(setter, "weather_turns", kind, default, default=default)
+    return True

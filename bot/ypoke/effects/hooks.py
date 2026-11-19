@@ -45,6 +45,8 @@ HOOKS = {
     "thaws_user": "move: a frozen user thaws to use it, and a frozen target it hits thaws (Scald)",
     "bans_move": "state: a move that cannot be used at all, after sleep and freeze and before confusion and PP",
     "bans_foe_move": "state: a move the foe facing its holder cannot use (Imprison), with `bans_move`",
+    "after_banned": "ability: acts once a state kept its holder from moving (Steadfast after a flinch); returns an "
+                    "event",
     "skips_turn": "ability: its holder loafs around instead of acting this turn (Truant)",
     "pp_cost": "ability: the extra PP a foe's move aimed at its holder costs (Pressure)",
     "locks_move": "item, ability: its holder repeats the move it used",
@@ -150,6 +152,8 @@ HOOKS = {
     "guards_stat": "ability: a foe cannot lower this stat of its holder (Clear Body, Hyper Cutter)",
     "reflects_drop": "ability: a foe's stat drop lands on the foe instead (Mirror Armor)",
     "on_stat_lowered": "ability: answers a foe lowering its holder's stat (Defiant); returns an event",
+    "on_foe_raised": "ability: answers a stage raise that landed on the foe facing its holder (Opportunist); returns "
+                     "an event",
     "answers_intimidate": "ability: acts in place of Intimidate's drop (Guard Dog); returns an event",
     "after_intimidate": "ability: acts once Intimidate lowered its holder's Attack (Rattled); returns an event",
     "blocks_secondary": "ability: a foe's move's added effects do not land on its holder (Shield Dust)",
@@ -184,6 +188,10 @@ HOOKS = {
     "status_damage": "ability: replaces its holder's poison or burn damage at the end of a turn (Poison Heal); returns "
                      "the event",
     "on_switch_out": "ability: acts as its holder leaves the field by its own move (Regenerator); returns an event",
+    "on_foe_fainted": "ability: acts as the foe facing its holder faints, before its side sends the next one "
+                      "(Soul-Heart); returns an event",
+    "on_side_state": "ability: acts as its holder's move sets a state on its side (Wind Rider on Tailwind); returns "
+                     "an event",
     "idles_item": "ability: its holder's item does nothing (Klutz)",
     "unnerves": "ability: the foe facing its holder cannot eat berries (Unnerve)",
 }

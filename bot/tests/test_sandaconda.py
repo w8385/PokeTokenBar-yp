@@ -74,7 +74,7 @@ def test_shed_skin_cures_its_holder_at_the_end_of_a_turn_one_time_in_three():
     battle._cure_upkeep(1, (holder, foe), events, SimpleNamespace(random=lambda: 0.1))
     assert holder.status is None
     assert events == [AbilityTrigger(0, "사다이사", "shed-skin", change=Change(0, "사다이사", "cure"))]
-    assert narration._entry_segment(events[0]) == "🔵 사다이사 [탈피] 자신 상태 회복"
+    assert narration._entry_segment(events[0]) == "🔵 사다이사 [탈피] 상태 회복"
 
 
 def test_shed_skin_cures_before_the_status_hurts_at_the_end_of_the_turn():

@@ -277,8 +277,18 @@ FOCUS_CASES = {
     "scrappy": (((130, None, "intimidate", [33]), (306, None, "heavy-metal", [484])),
                 ((115, None, "scrappy", [33]), (2, None, None, [275, 499]))),
     "serene-grace": (((18, None, "serene-grace", [52]),), ((36, None, None, [33]),)),
+    "magic-bounce": (((101, None, None, [86, 33]),), ((79, None, "magic-bounce", [33]),)),
+    "mirror-armor": (((130, None, "intimidate", [33]),), ((143, None, "mirror-armor", [33]),)),
+    "mimic": (((122, None, None, [102, 33]),), ((143, None, None, [33]),)),
     "liquid-ooze": (((3, None, None, [202, 73, 254]), (248, None, "sand-stream", [33])),
                     ((72, None, "liquid-ooze", [33]), (1, None, "overcoat", [33]))),
+    "guard-dog": (((130, None, "intimidate", [33]),), ((143, None, "guard-dog", [33]),)),
+    "rattled": (((130, None, "intimidate", [33]),), ((128, None, "rattled", [33]),)),
+    "opportunist": (((101, None, None, [14, 33]),), ((79, None, "opportunist", [33]),)),
+    "steadfast": (((79, None, None, [442, 403]),), ((101, None, "steadfast", [33]),)),
+    "wind-rider": (((101, None, "wind-rider", [366, 33]),), ((79, None, None, [33]),)),
+    "wind-power": (((101, None, "wind-power", [366, 85]),), ((79, None, None, [33]),)),
+    "adaptability": (((474, None, "adaptability", [370, 161]),), ((143, None, None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
