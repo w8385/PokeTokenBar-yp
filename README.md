@@ -186,14 +186,14 @@ Pi can route more than one model through a single session log. Usage is now attr
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile.png" width="300" alt="A Box Pokémon's profile with its held item, Exp. Share slot and moves"><br><br><img src="assets/screenshot-status-moves.png" width="300" alt="The move picker with level-up moves and a Status moves group"><br><br><img src="assets/screenshot-move-order.png" width="300" alt="Four move slots as separate cards, each filled one with up and down arrows"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile.png" width="300" alt="A Box Pokémon's profile with its held item, Exp. Share slot and moves"><br><br><img src="assets/screenshot-status-moves.png" width="300" alt="The move picker with level-up moves and a Status moves group"><br><br><img src="assets/screenshot-move-order.png" width="300" alt="Four move slots as separate cards, each filled one with up and down arrows and a Forget button"><br><br><img src="assets/screenshot-forget-moves.png" width="300" alt="Charizard with three moves after forgetting one; the fourth slot is empty"></td>
 <td width="55%" valign="middle">
 <h3>Every Pokémon has its own profile</h3>
 Open a Pokémon in the <b>Box</b> to inspect it: level, gender, nature, ability, IVs, calculated stats, held item, and moves. Species descriptions, abilities, and moves use your selected language, with English as the fallback when PokéAPI has no translation.
 <br><br>
 <b>Status moves</b> join the move picker in their own group when the Pokémon learns them by level-up, by TM or as an egg move. Every Gen 9 status move that does something in a one-on-one battle works: stat changes, healing, Protect and Substitute, status conditions, Taunt and Encore, the screens, hazards and terrains, type, ability and item changers, Baton Pass and the other switching moves, and move callers like Metronome. A few do nothing in singles and stay out of the picker: Whirlwind and Roar, the trapping moves (Mean Look, Block, Spider Web, Fairy Lock), After You and Quash, Attract and Captivate, Wide Guard and Instruct. In battles your Pokémon uses them by the same rules as the trainers.
 <br><br>
-Each move slot is its own card. The <b>▲/▼</b> buttons on a filled slot swap it with the one above or below, so you can change the order without picking the moves again.
+Each move slot is its own card. The <b>▲/▼</b> buttons on a filled slot swap it with the one above or below, so you can change the order without picking the moves again. The <b>⊖</b> (Forget) button empties a slot, so the Pokémon battles with only the moves you keep; at least one move stays.
 </td>
 </tr>
 <tr>

@@ -187,14 +187,14 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ko.png" width="300" alt="지닌 도구·학습장치 칸·기술이 보이는 박스 포켓몬 프로필"><br><br><img src="assets/screenshot-status-moves-ko.png" width="300" alt="레벨업 기술과 변화 기술 묶음이 보이는 기술 선택"><br><br><img src="assets/screenshot-move-order-ko.png" width="300" alt="카드로 나뉜 기술칸 네 개와 채워진 칸의 위·아래 화살표"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ko.png" width="300" alt="지닌 도구·학습장치 칸·기술이 보이는 박스 포켓몬 프로필"><br><br><img src="assets/screenshot-status-moves-ko.png" width="300" alt="레벨업 기술과 변화 기술 묶음이 보이는 기술 선택"><br><br><img src="assets/screenshot-move-order-ko.png" width="300" alt="카드로 나뉜 기술칸 네 개와 채워진 칸의 위·아래 화살표와 잊기 버튼"><br><br><img src="assets/screenshot-forget-moves-ko.png" width="300" alt="기술 하나를 잊어 세 개만 남고 네 번째 칸이 빈 리자몽"></td>
 <td width="55%" valign="middle">
 <h3>포켓몬마다 고유한 프로필</h3>
 <b>박스</b>에서 포켓몬을 열면 레벨·성별·성격·특성·개체값·계산된 능력치·지닌 도구·기술을 확인할 수 있습니다. 종 설명과 특성·기술은 선택 언어로 표시하고, PokéAPI에 번역이 없으면 영어를 사용합니다.
 <br><br>
 <b>변화 기술</b>도 기술 선택의 별도 묶음으로 고를 수 있습니다. 레벨업·기술머신·알 기술로 배우면 나옵니다. 1대1 배틀에서 효과가 있는 9세대 변화 기술은 전부 작동합니다. 랭크 변화, 회복, 방어·대타출동, 상태이상, 도발·앙코르, 벽·함정·필드, 타입·특성·도구를 바꾸는 기술, 배턴터치 같은 교체 기술, 손가락흔들기 같은 기술을 불러오는 기술까지입니다. 싱글 배틀에서 아무 일도 하지 않는 몇 개는 기술 선택에 나오지 않습니다. 날려버리기·울부짖기, 묶는 기술(검은눈빛·블록·거미집·페어리록), 당신먼저·순서미루기, 헤롱헤롱·유혹, 와이드가드·지휘입니다. 배틀에서는 트레이너와 같은 규칙으로 씁니다.
 <br><br>
-기술칸은 칸마다 카드로 나뉩니다. 채워진 칸의 <b>▲/▼</b> 버튼을 누르면 위나 아래 칸과 자리를 바꿔서, 기술을 다시 고르지 않고 순서만 바꿀 수 있습니다.
+기술칸은 칸마다 카드로 나뉩니다. 채워진 칸의 <b>▲/▼</b> 버튼을 누르면 위나 아래 칸과 자리를 바꿔서, 기술을 다시 고르지 않고 순서만 바꿀 수 있습니다. <b>⊖</b>(잊기) 버튼으로 칸을 비우면 남긴 기술로만 싸웁니다. 기술은 하나 이상 남습니다.
 </td>
 </tr>
 <tr>
