@@ -548,6 +548,9 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
             events.append(action)
             events.extend(arena.log)
             arena.log.clear()
+            events.extend(_danced(turn, side, fighters, action, choices[side], weather, rng, arena))
+            events.extend(arena.log)
+            arena.log.clear()
             loser = _exhausted(teams, (side, 1 - side) if _self_ko(teams[side].active, choices[side]) else (1 - side, side))
             if loser is not None:
                 break
@@ -1288,13 +1291,15 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         fighters[side].last_used = index
         if arena is not None:
             arena.last_move, arena.last_move_turn = used, turn
-        paid = hooks.move(used, "pays_hp", fighters[side]) if not action.failed or action.blocked else None
+        damped = _damped(fighters[side], used)
+        paid = hooks.move(used, "pays_hp", fighters[side]) if (
+            not action.failed or action.blocked) and not damped else None
         if paid is not None:
             action = replace(action, changes=(*action.changes, paid), attacker_hp=fighters[side].hp_percent,
                              attacker_fainted=fighters[side].hp == 0)
-    if action.move and _self_ko(fighters[side], index) and not _damped(fighters[side]):
-        fighters[side].hp = 0
-        return replace(action, attacker_hp=0, attacker_fainted=True)
+        if _self_ko(fighters[side], index) and not damped:
+            fighters[side].hp = 0
+            return replace(action, attacker_hp=0, attacker_fainted=True)
     return action
 
 
@@ -1302,10 +1307,36 @@ def _self_ko(fighter: _Fighter, index: int | None) -> bool:
     return index is not None and hooks.move(fighter.combatant.moves[index], "faints_user", default=False)
 
 
-def _damped(fighter: _Fighter) -> bool:
-    """A foe's ability keeps self-KO moves from working at all (Damp)."""
+def _damped(fighter: _Fighter, move: Move) -> bool:
+    """A foe's ability keeps the self-KO move from working at all (Damp), unless the user's ability or the move
+    ignores it."""
     foe = fighter.arena.foe_of(fighter) if fighter.arena is not None else None
-    return foe is not None and foe.hp > 0 and hooks.ability(foe, "prevents_self_ko", default=False)
+    if foe is None or foe.hp == 0:
+        return False
+    with _ability_ignored(fighter, foe, move):
+        return hooks.ability(foe, "prevents_self_ko", move, default=False)
+
+
+def _danced(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], action: Action, choice: int | None,
+            weather: _Weather, rng: random.Random, arena: _Arena) -> tuple[Event, ...]:
+    """The foe repeats the dance the user just used (Dancer), asleep or flinched too, with no PP and no lock into
+    it. A copy is not copied again, nor a dance a called move (Metronome) brought."""
+    user, dancer = fighters[side], fighters[1 - side]
+    move = _chosen(user, choice)
+    if (not action.move or action.via or not move.flagged(abilities.DANCE_FLAG) or user.hp == 0 or dancer.hp == 0
+            or tuple(_field(dancer, "hides", move, dancer))
+            or not hooks.ability(dancer, "copies_dance", default=False)):
+        return ()
+    held = set(dancer.volatiles)
+    with _ability_ignored(dancer, user, move):
+        copied = _strike(turn, 1 - side, dancer, user, _retyped(dancer, move_power.typed(move, weather.kind, dancer)),
+                         (), weather, rng, arena)
+    locks = set(dancer.volatiles) - held
+    for key in locks:
+        del dancer.volatiles[key]
+    copied = replace(copied, move_id=move.id,
+                     changes=tuple(change for change in copied.changes if change.kind not in locks))
+    return AbilityAct(turn, 1 - side, dancer.combatant.name, dancer.ability, effect="dance"), copied
 
 
 def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, weather: _Weather,
@@ -1809,6 +1840,8 @@ def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: s
         return forced
     best = _best_move(attacker, defender, weather)
     self_ko = _usable(attacker, "self-ko")
+    if self_ko is not None and _wasted_on(attacker, defender, attacker.combatant.moves[self_ko]):
+        self_ko = None
     if best is None and attacker.locked is None and self_ko is not None:
         return self_ko
     if self_ko is not None and team.has_next and attacker.locked is None and (

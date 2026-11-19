@@ -3,7 +3,7 @@ from dataclasses import replace
 
 import pytest
 
-from ypoke import foe_items, foe_moves, gyms, items, tera_forms
+from ypoke import abilities, foe_items, foe_moves, gyms, items, tera_forms
 from ypoke.battle import (
     AbilityTrigger, BaseStats, BattleResult, Carry, Combatant, FormShift, MegaEvolution, Move, StatusDamage,
     WeatherEnd, _act, _Fighter, _unrolled_damage, _Weather, simulate,
@@ -115,10 +115,15 @@ def test_an_origin_item_gives_its_own_species_the_origin_forme_with_an_implement
     giratina = build(487, "griseous-core")
     assert giratina.base.hp == ORIGIN["hp"] and giratina.ability == "levitate" and giratina.item == "griseous-core"
     dialga = build(483, "adamant-crystal", ability="sturdy")
-    assert dialga.base.hp == ORIGIN["hp"] and dialga.ability == "sturdy"
+    assert dialga.base.hp == ORIGIN["hp"] and dialga.ability == "pressure"
     wrong = build(487, "adamant-crystal")
     assert wrong.item is None and wrong.base.hp == PLAIN["hp"]
     assert tera_forms.usable_item("lustrous-globe", 487) is None
+
+
+def test_an_origin_forme_keeps_the_given_ability_when_its_own_does_nothing(monkeypatch):
+    monkeypatch.delitem(abilities.NAMES, "pressure")
+    assert build(483, "adamant-crystal", ability="sturdy").ability == "sturdy"
 
 
 def test_an_origin_item_boosts_dragon_and_its_second_type_and_shows_the_forme_on_entry():
