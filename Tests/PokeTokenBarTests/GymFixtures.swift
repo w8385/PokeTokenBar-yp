@@ -132,5 +132,17 @@ enum GymFixtures {
         return events
     }
 
+    /// `replayEvents` with Foe1 (Aegislash) taking its Blade Forme through Stance Change as it first attacks.
+    static var stanceChangeReplayEvents: [[String: Any]] {
+        var events = replayEvents.map { event -> [String: Any] in
+            guard event["type"] as? String == "move", event["side"] as? Int == 1, event["member"] as? Int == 1 else {
+                return event
+            }
+            return event.merging(["move": "섀도크루"]) { $1 }
+        }
+        events.insert(form(3, side: 1, member: 1, id: 10026, kind: "blade"), at: 10)
+        return events
+    }
+
     static func carryJSON(hp: Int, status: String? = nil) -> [String: Any] { ["hp": hp, "status": status as Any? ?? NSNull()] }
 }

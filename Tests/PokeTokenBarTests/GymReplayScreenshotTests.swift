@@ -97,6 +97,30 @@ final class GymReplayScreenshotTests: XCTestCase {
         }
     }
 
+    func testCaptureTheStanceChangeReplay() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_GYM_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_GYM_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let foes = [(3, "이상해꽃"), (681, "킬가르도")]
+        for (species, _) in mine { _ = await SpriteLoader.image(speciesID: species, back: true) }
+        for species in foes.map(\.0) + [10026] { _ = await SpriteLoader.image(speciesID: species) }
+        let teams = (fighters(mine, hp: [0, 100, nil]), fighters(foes, hp: [0, 0]))
+        let before = GymFixtures.stanceChangeReplayEvents.filter { $0["type"] as? String != "form" }
+        for (name, events) in [("before", before), ("after", GymFixtures.stanceChangeReplayEvents)] {
+            let outcome = try GymBattleOutcome.decode(GymFixtures.outcomeData(
+                gymID: "kanto-1", kind: "gym", won: true, turns: 5, events: events, teams: teams))
+            let player = GymReplayPlayer(try XCTUnwrap(GymReplay(outcome)), shown: name == "before" ? 11 : 12)
+            for language in [AppLanguage.ko, .en] {
+                try write(GymReplayView(player: player, outcome: outcome, l: L(language), autoplay: false)
+                    .padding(Spacing.lg),
+                          language: language, height: 260,
+                          to: directory.appendingPathComponent("gym-replay-stance-change-\(name)-\(language.rawValue).png"))
+            }
+        }
+    }
+
     /// A lost Elite Four step right after Skip: the replay's last frame and its next step.
     func testCaptureTheLostRunStepAfterSkip() async throws {
         guard let output = ProcessInfo.processInfo.environment["PTB_GYM_SCREENSHOT_DIR"] else {
