@@ -8,6 +8,7 @@ delivery list until that app acknowledges it. Contract: bot/API.md.
 import json
 import sqlite3
 import uuid
+from collections import Counter
 from collections.abc import Callable
 from contextlib import closing
 from dataclasses import dataclass
@@ -27,6 +28,16 @@ ACCEPT_ACTION_ID = "trade_accept"
 DECLINE_ACTION_ID = "trade_decline"
 OPEN_STATUSES = ("offered", "countered")
 DEFAULT_PARTNER = "동료"
+OPTION_TEXT_LIMIT = 75
+DUPLICATE_SUFFIX_ROOM = len(f" #{MAX_POOL}")
+GENDER_SYMBOLS = {"male": "♂", "female": "♀"}
+NATURE_NAMES_KO = {
+    "hardy": "노력", "lonely": "외로움", "brave": "용감", "adamant": "고집", "naughty": "개구쟁이",
+    "bold": "대담", "docile": "온순", "relaxed": "무사태평", "impish": "장난꾸러기", "lax": "촐랑",
+    "timid": "겁쟁이", "hasty": "성급", "serious": "성실", "jolly": "명랑", "naive": "천진난만",
+    "modest": "조심", "mild": "의젓", "quiet": "냉정", "bashful": "수줍음", "rash": "덜렁",
+    "calm": "차분", "gentle": "얌전", "sassy": "건방", "careful": "신중", "quirky": "변덕",
+}
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS trade_pools (
@@ -53,6 +64,18 @@ CREATE TABLE IF NOT EXISTS trade_handles (
 );
 CREATE INDEX IF NOT EXISTS trades_proposer ON trades (proposer_id);
 CREATE INDEX IF NOT EXISTS trades_target ON trades (target_id);
+CREATE TABLE IF NOT EXISTS miracle_offers (
+    id TEXT PRIMARY KEY,
+    poster_id TEXT NOT NULL,
+    give_id TEXT NOT NULL,
+    give_json TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    card_ts TEXT,
+    acceptor_id TEXT,
+    back_json TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS miracle_one_open ON miracle_offers (poster_id) WHERE status = 'open';
 """
 
 _NOT_YOURS = "이 교환은 당신 차례가 아니에요."
@@ -235,8 +258,8 @@ class TradeService:
             return TradeReply(f"{_label(trade.give)}은(는) 지금 교환할 수 없어요. 앱에서 대결·육성에 쓰고 있지 않은지 확인해 주세요.", ok=False)
         if self._pool_entry(trade.target_id, trade.back_id) is None:
             return TradeReply(f"상대의 {_label(trade.back)}은(는) 지금 교환할 수 없어요. 상대가 앱에서 바꾸면 다시 눌러 주세요.", ok=False)
-        give = _with_current_item(trade.give, self._pool_entry(trade.proposer_id, trade.give_id))
-        back = _with_current_item(trade.back, self._pool_entry(trade.target_id, trade.back_id))
+        give = with_current_item(trade.give, self._pool_entry(trade.proposer_id, trade.give_id))
+        back = with_current_item(trade.back, self._pool_entry(trade.target_id, trade.back_id))
         done = self._update(
             trade.id,
             "UPDATE trades SET status = 'completed', give_json = ?, back_json = ? WHERE id = ? AND status = 'countered'",
@@ -269,8 +292,7 @@ class TradeService:
         return None
 
     def _offer_dm(self, trade: Trade) -> DirectMessage:
-        locked = self._locked_ids(trade.target_id)
-        options = [_option(trade.id, entry) for entry in self._pool(trade.target_id) if entry["id"] not in locked]
+        options = pick_options(trade.id, self.free_entries(trade.target_id))
         proposer = self._name(trade.proposer_id)
         text = f"<@{trade.proposer_id}>님이 {_label(trade.give)}을(를) 내놓고 교환을 제안했어요. 24시간 안에 답해 주세요."
         blocks: list[dict] = [{"type": "section", "text": {"type": "mrkdwn", "text": f"*교환 제안*\n{text}"}}]
@@ -316,14 +338,43 @@ class TradeService:
         self._expire()
         return sorted(self._locked_ids(user_id))
 
+    def free_entries(self, user_id: str) -> list[dict]:
+        """The user's pool without the individuals already in an open trade or miracle offer."""
+        locked = self._locked_ids(user_id)
+        return [entry for entry in self._pool(user_id) if entry["id"] not in locked]
+
+    def is_locked(self, user_id: str, individual_id: str) -> bool:
+        return individual_id in self._locked_ids(user_id)
+
+    def pool_entry(self, user_id: str, individual_id: str | None) -> dict | None:
+        return self._pool_entry(user_id, individual_id)
+
+    def name(self, user_id: str) -> str:
+        return self._name(user_id)
+
+    def connect(self) -> sqlite3.Connection:
+        return self._connect()
+
+    @staticmethod
+    def insert_completed(connection: sqlite3.Connection, trade: Trade) -> None:
+        """A trade finished elsewhere (a miracle offer), written as completed so both apps pick it up as a delivery."""
+        connection.execute(
+            "INSERT INTO trades (id, proposer_id, target_id, give_id, give_json, back_id, back_json, status, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', ?)",
+            (trade.id, trade.proposer_id, trade.target_id, trade.give_id, json.dumps(trade.give, ensure_ascii=False),
+             trade.back_id, json.dumps(trade.back, ensure_ascii=False), _stamp(trade.created_at)),
+        )
+
     def _locked_ids(self, user_id: str, except_trade: str | None = None) -> set[str]:
-        """The user's individuals tied up in open trades: what they offered, and what they picked back."""
+        """The user's individuals tied up in open trades: what they offered, what they picked back, and their
+        open miracle offer."""
         with closing(self._connect()) as connection:
             rows = connection.execute(
                 "SELECT give_id FROM trades WHERE status IN ('offered', 'countered') AND proposer_id = ?1 AND id != ?2 "
                 "UNION SELECT back_id FROM trades WHERE status IN ('offered', 'countered') AND target_id = ?1 "
-                "AND back_id IS NOT NULL AND id != ?2",
-                (user_id, except_trade or ""),
+                "AND back_id IS NOT NULL AND id != ?2 "
+                "UNION SELECT give_id FROM miracle_offers WHERE status = 'open' AND poster_id = ?1 AND created_at >= ?3",
+                (user_id, except_trade or "", _stamp(self._now() - TRADE_LIFETIME)),
             ).fetchall()
         return {row[0] for row in rows}
 
@@ -423,7 +474,34 @@ def _normalize_entry(item: object) -> dict | None:
     }
 
 
-def _with_current_item(snapshot: dict, current: dict | None) -> dict:
+def pick_options(owner_id: str, entries: list[dict]) -> list[dict]:
+    """Slack select options for `entries`, valued `owner_id|individual id`, each with a distinct label."""
+    return [{"text": {"type": "plain_text", "text": text}, "value": f"{owner_id}|{entry['id']}"}
+            for entry, text in zip(entries, option_labels(entries))]
+
+
+def option_labels(entries: list[dict]) -> list[str]:
+    """Name, sex, level, shiny and nature, so same-species individuals differ; still-equal labels get ` #2`, ` #3`."""
+    bases = [_detailed_label(entry)[:OPTION_TEXT_LIMIT - DUPLICATE_SUFFIX_ROOM] for entry in entries]
+    totals = Counter(bases)
+    seen: Counter[str] = Counter()
+    labels = []
+    for base in bases:
+        seen[base] += 1
+        labels.append(base if totals[base] == 1 or seen[base] == 1 else f"{base} #{seen[base]}")
+    return labels
+
+
+def _detailed_label(entry: dict) -> str:
+    detail = entry.get("entry") or {}
+    profile = detail.get("profile") if isinstance(detail.get("profile"), dict) else {}
+    sex = GENDER_SYMBOLS.get(profile.get("gender"), "")
+    nature = NATURE_NAMES_KO.get(detail.get("nature"))
+    parts = [f"{entry['name']}{sex} Lv.{entry['level']}", "✨" if entry["shiny"] else None, nature]
+    return " ".join(part for part in parts if part)
+
+
+def with_current_item(snapshot: dict, current: dict | None) -> dict:
     """The offered entry carrying the trade item the owner holds now, so an item taken off after the offer is not also delivered."""
     entry = dict(snapshot["entry"])
     item = current["entry"].get(HELD_ITEM_KEY) if current else None
@@ -461,8 +539,8 @@ def _confirm_text(trade: Trade, target_name: str) -> str:
             f"내 {_label(trade.give)}과(와) 바꿀까요?")
 
 
-def _option(trade_id: str, entry: dict) -> dict:
-    return {"text": {"type": "plain_text", "text": _label(entry)[:75]}, "value": f"{trade_id}|{entry['id']}"}
+def entry_label(entry: dict | None) -> str:
+    return _label(entry)
 
 
 def _label(entry: dict | None) -> str:

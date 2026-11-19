@@ -11,19 +11,27 @@ from slack_sdk import WebClient
 
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
 from ypoke.gym_battle import GymBattles
+from ypoke.miracle import ACCEPT_ACTION_ID as MIRACLE_ACCEPT_ACTION_ID
+from ypoke.miracle import CANCEL_ACTION_ID as MIRACLE_CANCEL_ACTION_ID
+from ypoke.miracle import PICK_ACTION_ID as MIRACLE_PICK_ACTION_ID
+from ypoke.miracle import MiracleService
 from ypoke.names import DisplayNames
 from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
 from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, TradeService
 from ypoke.transport import (
+    SlackBoard,
     deliver,
     mention_listener,
+    miracle_listener,
     post_direct_messages,
     rematch_listener,
     slash_listener,
     trade_listener,
 )
 from ypoke.upload_server import serve
+
+MIRACLE_SWEEP_INTERVAL = 300
 
 
 def main() -> None:
@@ -44,6 +52,7 @@ def main() -> None:
     names = DisplayNames(app.client)
     names.warm(store.linked_user_ids())
     trades = TradeService(store, name_for=names, bot_user_id=handler.bot_user_id)
+    miracle = MiracleService(trades, SlackBoard(app.client, home_channel) if home_channel else None)
     serve(
         store,
         os.environ.get("YPOKE_HTTP_HOST", "0.0.0.0"),
@@ -54,8 +63,10 @@ def main() -> None:
         trades,
         lambda messages: post_direct_messages(app.client, messages),
         GymBattles(pokeapi),
+        miracle=miracle,
     )
     threading.Thread(target=_warm_stored_parties, args=(pokeapi, store), daemon=True).start()
+    threading.Thread(target=_sweep_miracle_offers, args=(miracle,), daemon=True).start()
     for name in COMMAND_NAMES:
         app.command(name)(slash_listener(handler))
     # Slack still sends an interaction for a URL button and shows a warning unless it is acked.
@@ -64,6 +75,9 @@ def main() -> None:
     app.action(PICK_ACTION_ID)(trade_listener(trades, "pick"))
     app.action(ACCEPT_ACTION_ID)(trade_listener(trades, "accept"))
     app.action(DECLINE_ACTION_ID)(trade_listener(trades, "decline"))
+    app.action(MIRACLE_ACCEPT_ACTION_ID)(miracle_listener(miracle, "accept"))
+    app.action(MIRACLE_CANCEL_ACTION_ID)(miracle_listener(miracle, "cancel"))
+    app.action(MIRACLE_PICK_ACTION_ID)(miracle_listener(miracle, "pick"))
     app.event("app_mention")(mention_listener(handler))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 
@@ -104,6 +118,16 @@ def _warm(pokeapi: PokeAPIService, members: list[dict]) -> None:
         logging.getLogger(__name__).warning("PokéAPI warming failed", exc_info=True)
         return
     logging.getLogger(__name__).info("warmed %d Pokémon in %.1fs", count, time.monotonic() - started)
+
+
+def _sweep_miracle_offers(miracle: MiracleService) -> None:
+    """Expired offers also end when anyone uses the feature; this marks their cards when nobody does."""
+    while True:
+        try:
+            miracle.sweep()
+        except Exception:
+            logging.getLogger(__name__).exception("miracle sweep failed")
+        time.sleep(MIRACLE_SWEEP_INTERVAL)
 
 
 def _warm_stored_parties(pokeapi: PokeAPIService, store: Store) -> None:

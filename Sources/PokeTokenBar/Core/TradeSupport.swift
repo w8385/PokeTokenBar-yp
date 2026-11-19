@@ -50,6 +50,40 @@ struct TradeDelivery: Decodable, Sendable {
     }
 }
 
+/// The player's open miracle trade offer (`GET /v1/miracle`).
+struct MiracleOffer: Decodable, Equatable, Sendable {
+    let offerID: String
+    let giveID: String
+    let name: String
+    let expiresAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case offerID = "offer_id"
+        case giveID = "give_id"
+        case expiresAt = "expires_at"
+    }
+}
+
+struct MiracleReply: Decodable, Sendable {
+    let offer: MiracleOffer?
+}
+
+enum MiracleStatus: Equatable, Sendable {
+    /// The bot has no battle channel, or predates miracle trades.
+    case unavailable
+    case nothingListed
+    case open(MiracleOffer)
+}
+
+enum MiraclePost: Equatable, Sendable {
+    case posted(MiracleOffer)
+    /// The bot said no; the text is its short reason.
+    case refused(String)
+    case unavailable
+    case failed
+}
+
 struct TradeCoworker: Decodable, Equatable, Sendable, Identifiable {
     let id: String
     let name: String

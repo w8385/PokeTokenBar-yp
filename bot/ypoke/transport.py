@@ -18,6 +18,7 @@ from ypoke.commands import (
     reply_thread_ts,
     result_blocks,
 )
+from ypoke.miracle import MiracleService
 from ypoke.trades import TradeService
 
 DM_FALLBACK_NOTE = "(대결을 신청한 곳에 올릴 수 없어서 DM으로 보내요)"
@@ -121,6 +122,57 @@ def trade_listener(trades: TradeService, kind: str):
             respond(text=reply.text, response_type="ephemeral", replace_original=False)
 
     return listener
+
+
+def miracle_listener(miracle: MiracleService, kind: str):
+    """A miracle card button or the private picker: `kind` is `accept`, `cancel` or `pick`. Answers are private;
+    only a final pick replaces the picker it came from. The card itself is edited through the board."""
+
+    def listener(ack, body, action, respond, client) -> None:
+        ack()
+        user_id = body["user"]["id"]
+        value = action.get("value") or (action.get("selected_option") or {}).get("value") or ""
+        offer_id, _, individual_id = value.partition("|")
+        log_command("button", user_id, f"miracle_{kind}", offer_id)
+        try:
+            if kind == "pick":
+                reply = miracle.pick(user_id, offer_id, individual_id)
+            elif kind == "accept":
+                reply = miracle.open_picker(user_id, offer_id)
+            else:
+                reply = miracle.take_down(user_id, offer_id)
+        except Exception:
+            log.exception("miracle button failed")
+            respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            return
+        post_direct_messages(client, reply.direct_messages)
+        if kind == "pick" and reply.final:
+            respond(text=reply.text, replace_original=True)
+        else:
+            respond(text=reply.text, blocks=reply.blocks, response_type="ephemeral", replace_original=False)
+
+    return listener
+
+
+class SlackBoard:
+    """The battle channel where miracle cards are posted and edited."""
+
+    def __init__(self, client: WebClient, channel: str):
+        self._client = client
+        self._channel = channel
+
+    def post(self, text: str, blocks: list[dict]) -> str | None:
+        try:
+            return self._client.chat_postMessage(channel=self._channel, text=text, blocks=blocks)["ts"]
+        except Exception:
+            log.warning("could not post a miracle card")
+            return None
+
+    def update(self, ts: str, text: str, blocks: list[dict]) -> None:
+        try:
+            self._client.chat_update(channel=self._channel, ts=ts, text=text, blocks=blocks)
+        except Exception:
+            log.warning("could not edit a miracle card")
 
 
 def send_direct_messages(client: WebClient, reply: Reply) -> None:

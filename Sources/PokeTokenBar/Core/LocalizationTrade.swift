@@ -107,6 +107,30 @@ extension L {
         }
     }
 
+    // MARK: Miracle trade
+
+    var miraclePostButton: String {
+        t("미라클 교환에 올리기", "Put up for Miracle Trade", "ミラクル交換に出す", "Ofrecer en Intercambio Milagro",
+          "Proposer en Échange Miracle", "Oferecer na Troca Milagrosa", "Für Wundertausch anbieten", "Выставить на чудо-обмен")
+    }
+    var miracleListed: String {
+        t("미라클 교환에 올라가 있어요", "Up for Miracle Trade", "ミラクル交換に出しています", "En Intercambio Milagro",
+          "Proposé en Échange Miracle", "Na Troca Milagrosa", "Im Wundertausch angeboten", "Выставлен на чудо-обмен")
+    }
+    var miracleListedHint: String {
+        t("대결 채널 카드에서 먼저 자기 포켓몬을 고른 사람과 바로 바뀌어요. 24시간 뒤 내려가요.",
+          "The first coworker to pick one of theirs on the battle channel card trades with you at once. It comes down after 24 hours.",
+          "対戦チャンネルのカードで最初に自分のポケモンを選んだ人とすぐに交換されます。24時間で取り下げられます。",
+          "El primer compañero que elija uno de los suyos en la tarjeta del canal de combate lo intercambia al instante. Se retira a las 24 horas.",
+          "Le premier collègue qui choisit l'un des siens sur la carte du canal de combat l'échange aussitôt. Retiré après 24 h.",
+          "O primeiro colega que escolher um dos seus no cartão do canal de batalha troca na hora. Sai do ar após 24 horas.",
+          "Wer auf der Karte im Kampfkanal zuerst eines seiner Pokémon wählt, tauscht sofort. Nach 24 Stunden wird es zurückgezogen.",
+          "Первый коллега, выбравший своего покемона на карточке в боевом канале, сразу совершит обмен. Через 24 часа предложение снимется.")
+    }
+    var miracleTakeDown: String {
+        t("내리기", "Take down", "取り下げる", "Retirar", "Retirer", "Retirar", "Zurückziehen", "Снять")
+    }
+
     // MARK: Arrival and evolution
 
     func tradeArrivalReceived(_ pokemon: String, from sender: String) -> String {

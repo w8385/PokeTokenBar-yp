@@ -17,6 +17,8 @@ from ypoke.dex import normalize_dex
 from ypoke.move_effects import wants_status_moves
 from ypoke.moves import MAX_MOVES, default_move_ids
 from ypoke.messages import DirectMessage
+from ypoke.miracle import POST_ERRORS as MIRACLE_POST_ERRORS
+from ypoke.miracle import MiracleService
 from ypoke.store import Store
 from ypoke.tera_forms import usable_item
 from ypoke.trades import PROPOSE_ERRORS, TradeService
@@ -76,6 +78,7 @@ def serve(
     name_for: NameFor = lambda user_id: None,
     trades: TradeService | None = None, notify: Notify = lambda messages: None,
     gyms: GymApi | None = None, clock: Callable[[], float] = time.monotonic,
+    miracle: MiracleService | None = None,
 ) -> ThreadingHTTPServer:
     """Start the upload server on a daemon thread and return it.
 
@@ -84,11 +87,12 @@ def serve(
     `name_for(user_id)` returns a Slack display name, or None when it cannot be found.
     With `trades`, the trade endpoints are served and `notify` sends the DMs a new offer produces.
     With `gyms`, the gym endpoints are served; `clock` times their rate limit.
+    With an available `miracle`, the miracle trade endpoints are served; otherwise they answer `unavailable`.
     """
     handler = type("BoundUploadHandler", (_UploadHandler,), {
         "store": store, "on_upload": staticmethod(on_upload), "moves_for": staticmethod(moves_for),
         "name_for": staticmethod(name_for), "trades": trades, "notify": staticmethod(notify),
-        "gyms": gyms, "gym_limit": RateLimit(GYM_BATTLE_INTERVAL, clock),
+        "gyms": gyms, "gym_limit": RateLimit(GYM_BATTLE_INTERVAL, clock), "miracle": miracle,
     })
     server = ThreadingHTTPServer((host, port), handler)
     threading.Thread(target=server.serve_forever, name="upload-server", daemon=True).start()
@@ -192,17 +196,22 @@ class _UploadHandler(BaseHTTPRequestHandler):
     notify: Notify
     gyms: GymApi | None
     gym_limit: RateLimit
+    miracle: MiracleService | None
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
         if url.path == "/v1/health":
             self._reply(200, {"ok": True})
             return
-        if url.path not in ("/v1/party", "/v1/moves", "/v1/coworkers", "/v1/trades", "/v1/gyms"):
+        if url.path not in ("/v1/party", "/v1/moves", "/v1/coworkers", "/v1/trades", "/v1/gyms", "/v1/miracle"):
             self._reply(404, {"ok": False, "error": "not_found"})
             return
         user_id = self._authenticated_user()
         if user_id is None:
+            return
+        if url.path == "/v1/miracle":
+            if self._miracle_available():
+                self._reply(200, {"ok": True, "offer": self.miracle.status(user_id)})
             return
         if url.path == "/v1/gyms":
             if self.gyms is None:
@@ -223,7 +232,8 @@ class _UploadHandler(BaseHTTPRequestHandler):
         self._reply(200, {"ok": True, "party": stored.party, "uploaded_at": stored.uploaded_at})
 
     def do_POST(self) -> None:
-        if self.path not in ("/v1/party", "/v1/trades", "/v1/trades/ack", "/v1/gym/battle"):
+        if self.path not in ("/v1/party", "/v1/trades", "/v1/trades/ack", "/v1/gym/battle", "/v1/miracle",
+                             "/v1/miracle/cancel"):
             self._reply(404, {"ok": False, "error": "not_found"})
             return
         user_id = self._authenticated_user()
@@ -232,7 +242,11 @@ class _UploadHandler(BaseHTTPRequestHandler):
         payload = self._read_json()
         if payload is _REPLIED:
             return
-        if self.path == "/v1/gym/battle":
+        if self.path == "/v1/miracle":
+            self._post_miracle(user_id, payload)
+        elif self.path == "/v1/miracle/cancel":
+            self._cancel_miracle(user_id)
+        elif self.path == "/v1/gym/battle":
             self._gym_battle(user_id, payload)
         elif self.path == "/v1/trades":
             self._propose(user_id, payload)
@@ -270,6 +284,8 @@ class _UploadHandler(BaseHTTPRequestHandler):
         if self.trades is not None:
             if "trade_pool" in payload:
                 self.trades.save_pool(user_id, payload["trade_pool"])
+                if self.miracle is not None:
+                    self.miracle.pool_changed(user_id)
             body["trades"] = {"deliveries": self.trades.deliveries(user_id), "locked_ids": self.trades.locked_ids(user_id)}
         self.on_upload(user_id, party)
         self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for)})
@@ -325,6 +341,34 @@ class _UploadHandler(BaseHTTPRequestHandler):
             return
         self.notify(result.direct_messages)
         self._reply(200, {"ok": True, "trade_id": result.trade_id})
+
+    def _post_miracle(self, user_id: str, payload: object) -> None:
+        if not self._miracle_available():
+            return
+        give_id = payload.get("give") if isinstance(payload, dict) else None
+        if not isinstance(give_id, str):
+            self._reply(400, {"ok": False, "error": "give is a required string"})
+            return
+        result = self.miracle.post(user_id, give_id)
+        if result.error:
+            self._reply(400, {"ok": False, "error": result.error, "message": MIRACLE_POST_ERRORS[result.error]})
+            return
+        self._reply(200, {"ok": True, "offer": result.offer})
+
+    def _cancel_miracle(self, user_id: str) -> None:
+        if not self._miracle_available():
+            return
+        if self.miracle.cancel_mine(user_id):
+            self._reply(200, {"ok": True})
+        else:
+            self._reply(400, {"ok": False, "error": "none_open", "message": "미라클 교환에 올린 포켓몬이 없어요."})
+
+    def _miracle_available(self) -> bool:
+        """Answers 404 `unavailable` when there is no battle channel to post in; the app then hides the feature."""
+        if self.miracle is None or not self.miracle.available:
+            self._reply(404, {"ok": False, "error": "unavailable"})
+            return False
+        return True
 
     def _acknowledge(self, user_id: str, payload: object) -> None:
         trade_ids = payload.get("trade_ids") if isinstance(payload, dict) else None
