@@ -195,8 +195,16 @@ def outlasts(user, foe, weather) -> bool:
 
 def end_of_turn_loss(fighter, weather) -> int:
     """Weather chip, burn or poison and the Pokémon's own states, without the heals between them."""
-    return (battle._weather_chip(fighter, weather) + fighter.residual_due()
+    return (battle._weather_chip(fighter, weather) + _status_loss(fighter)
             + sum(hooks.key("moves", kind, "tick_due", fighter, default=0) for kind in list(fighter.volatiles)))
+
+
+def _status_loss(fighter) -> int:
+    due = fighter.residual_due()
+    if due == 0 or battle._chip_free(fighter) or hooks.ability(fighter, "welcomes_ailment", fighter.status,
+                                                                default=False):
+        return 0
+    return hooks.ability(fighter, "modify_status_damage", due, fighter.status, default=due)
 
 
 @register("moves", "substitute")

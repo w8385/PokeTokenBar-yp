@@ -1,4 +1,5 @@
 import random
+from dataclasses import replace
 
 import pytest
 from status_moves import choose, data_move, pair, put, resolve, weather
@@ -228,6 +229,17 @@ def test_endure_outlasts_a_foe_that_its_status_or_state_finishes_at_the_end_of_t
     assert end_of_a_turn_of_endure(teams, arena, weather(None)) == 1 and user.hp > 0
     foe.hp = foe.max_hp
     assert choose(teams, arena) == 1
+
+
+@pytest.mark.parametrize(("ability", "status", "share", "endures"), [
+    ("magic-guard", "poison", 8, False), ("poison-heal", "toxic", 16, False), ("heatproof", "burn", 16, False),
+    (None, "burn", 16, True),
+])
+def test_endure_does_not_count_on_a_status_the_foes_ability_turns_aside(ability, status, share, endures):
+    teams, arena, _, foe = facing_a_finishing_hit()
+    foe.combatant = replace(foe.combatant, ability=ability)
+    foe.status, foe.hp = status, foe.max_hp // share
+    assert choose(teams, arena) == (0 if endures else 1)
 
 
 def facing_a_finishing_hit(user_types=("ground",), foe_types=("normal",)):
