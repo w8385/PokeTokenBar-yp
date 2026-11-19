@@ -1,4 +1,5 @@
 import AppKit
+import ObjectiveC
 import SwiftUI
 import XCTest
 
@@ -39,6 +40,7 @@ enum OffscreenRender {
     /// way on every machine; the `colorScheme` environment alone does not reach AppKit controls.
     static func host<Content: View>(_ content: Content, size: CGSize,
                                     appearance: NSAppearance.Name? = nil) -> NSHostingView<AnyView> {
+        pinWindowlessBackingScale()
         let host = NSHostingView(rootView: AnyView(content.withoutAnimations()))
         host.frame = NSRect(origin: .zero, size: size)
         if let appearance { host.appearance = NSAppearance(named: appearance) }
@@ -48,7 +50,32 @@ enum OffscreenRender {
 
     /// `host` for tests that need the controller (`sizeThatFits`).
     static func controller<Content: View>(_ content: Content) -> NSHostingController<AnyView> {
-        NSHostingController(rootView: AnyView(content.withoutAnimations()))
+        pinWindowlessBackingScale()
+        return NSHostingController(rootView: AnyView(content.withoutAnimations()))
+    }
+
+    static let windowlessBackingScale: CGFloat = 2
+
+    /// AppKit takes a windowless view's backing scale from `+[NSScreen _fallbackBackingScaleFactor]`, which follows
+    /// the connected screens: 1 with only a 1080p display attached, 2 with a Retina one.
+    static func pinWindowlessBackingScale() {
+        setWindowlessBackingScale(windowlessBackingScale)
+    }
+
+    static func setWindowlessBackingScale(_ scale: CGFloat) {
+        let selector = NSSelectorFromString("_setFallbackBackingScaleFactor:")
+        guard let method = class_getClassMethod(NSScreen.self, selector) else {
+            preconditionFailure("+[NSScreen _setFallbackBackingScaleFactor:] is gone; README renders would follow the host's screens")
+        }
+        typealias Setter = @convention(c) (AnyClass, Selector, CGFloat) -> Void
+        unsafeBitCast(method_getImplementation(method), to: Setter.self)(NSScreen.self, selector, scale)
+    }
+
+    static var windowlessBackingScaleInEffect: CGFloat {
+        let selector = NSSelectorFromString("_fallbackBackingScaleFactor")
+        guard let method = class_getClassMethod(NSScreen.self, selector) else { return -1 }
+        typealias Getter = @convention(c) (AnyClass, Selector) -> CGFloat
+        return unsafeBitCast(method_getImplementation(method), to: Getter.self)(NSScreen.self, selector)
     }
 
     /// Lays `view` out until `ready` holds, then until its tree reads the same on three passes in a row.
@@ -125,6 +152,7 @@ enum OffscreenRender {
     /// `bitmapImageRepForCachingDisplay` follows the main screen, so the same test saw 1x or 2x pixels
     /// depending on the display. This allocates the bitmap itself.
     static func fixedBitmap(of view: NSView, scale: CGFloat) throws -> NSBitmapImageRep {
+        pinWindowlessBackingScale()
         view.layoutSubtreeIfNeeded()
         let bounds = view.bounds
         let bitmap = try XCTUnwrap(NSBitmapImageRep(
@@ -163,6 +191,7 @@ enum OffscreenRender {
     /// `close()` when done.
     static func windowHosting(_ view: NSView, appearance: NSAppearance.Name? = nil) -> NSWindow {
         NSApplication.shared.setActivationPolicy(.prohibited)
+        pinWindowlessBackingScale()
         let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -10_000, y: -10_000), size: view.frame.size),
                               styleMask: .borderless, backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
