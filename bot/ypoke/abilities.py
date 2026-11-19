@@ -30,6 +30,7 @@ EFFECT_KEYS = frozenset({
     "hunger-switch", "forecast", "flower-gift", "zero-to-hero", "mimicry", "color-change", "rks-system",
     "battle-bond", "tera-shell", "teraform-zero", "tera-shift", "multitype", "embody-aspect",
     "clears-weather", "primal-weather", "weather-heal", "bad-dreams", "mega-sol", "paradox-boost",
+    "cheek-pouch", "cud-chew", "harvest", "klutz", "ripen", "sticky-hold",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
 FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
@@ -133,6 +134,10 @@ PARADOX_FIELD = battle_data.args("abilities", "paradox-boost", "field")
 PARADOX_BOOST = 5325 / 4096
 PARADOX_SPEED_BOOST = 1.5
 PARADOX_STATS = ("attack", "defense", "special_attack", "special_defense", "speed")
+CHEEK_POUCH_SHARE = 3
+RIPEN_FACTOR = 2
+HARVEST_CHANCE = 0.5
+HARVEST_SURE_WEATHER = "sun"
 RESISTED_TYPES = battle_data.args("abilities", "type-resist", "types")
 IMMUNE_TYPE = battle_data.args("abilities", "type-immunity", "type")
 AILMENT_BLOCKED = battle_data.args("abilities", "ailment-block", "ailments")

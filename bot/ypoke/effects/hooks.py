@@ -210,6 +210,9 @@ HOOKS = {
     "on_side_state": "ability: acts as its holder's move sets a state on its side (Wind Rider on Tailwind); returns "
                      "an event",
     "idles_item": "ability: its holder's item does nothing (Klutz)",
+    "keeps_item": "ability: no other Pokémon can take, eat or destroy its holder's item (Sticky Hold)",
+    "berry_factor": "ability: multiplies what its holder's berries heal or resist (Ripen)",
+    "on_berry_eaten": "ability: acts as its holder uses up a berry (Cheek Pouch, Cud Chew); returns an event",
     "unnerves": "ability: the foe facing its holder cannot eat berries (Unnerve)",
 }
 

@@ -1506,8 +1506,9 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         else:
             hit_critical, damage = False, fixed
         if resisted and hit == 0:
-            damage, defender.item = max(1, int(damage * items.RESIST_BERRY_MULTIPLIER)), None
-            defender.ate_berry = True
+            ripened = hooks.ability(defender, "berry_factor", default=1)
+            damage = max(1, int(damage * items.RESIST_BERRY_MULTIPLIER / ripened))
+            use_berry(defender)
         if any(_field(defender, "takes_hit", damage, attacker, defender, move)):
             hits, critical, shielded = hits + 1, critical or hit_critical, True
             continue
@@ -1573,7 +1574,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
             attacker.hp = min(attacker.max_hp, attacker.hp + healed)
     attacker_item = _attacker_item_effect(attacker, move, dealt, drained)
     defender_item = endured or _defender_item_effect(defender, attacker, move, multiplier, dealt) or berry or resisted
-    changes = (*changes, *(hooks.move(move, "after_move", attacker, defender, dealt) or ()))
+    with _ability_ignored(attacker, defender, move):
+        changes = (*changes, *(hooks.move(move, "after_move", attacker, defender, dealt) or ()))
     action = Action(
         turn, side, *names, move.name, multiplier=multiplier, critical=critical, changes=changes, recoil=recoil,
         defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
@@ -1614,6 +1616,13 @@ def _announce(fighter: "_Fighter", event) -> None:
     """Logs what an ability did mid-action, shown after the action."""
     if event is not None and fighter.arena is not None:
         _append(fighter.arena.log, event)
+
+
+def use_berry(fighter: "_Fighter") -> None:
+    """The fighter uses up the berry it holds, and its ability may answer (Cheek Pouch)."""
+    berry = fighter.item
+    fighter.item, fighter.ate_berry = None, True
+    _announce(fighter, hooks.ability(fighter, "on_berry_eaten", fighter, berry))
 
 
 def _unnerved(fighter: "_Fighter", item: str) -> bool:

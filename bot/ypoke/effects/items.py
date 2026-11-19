@@ -48,8 +48,9 @@ class SitrusBerry(Handler):
 
     @staticmethod
     def _eat(fighter):
-        fighter.hp = min(fighter.max_hp, fighter.hp + max(1, fighter.max_hp // items.SITRUS_HEAL_FRACTION))
-        fighter.item, fighter.ate_berry = None, True
+        heal = max(1, fighter.max_hp // items.SITRUS_HEAL_FRACTION) * hooks.ability(fighter, "berry_factor", default=1)
+        fighter.hp = min(fighter.max_hp, fighter.hp + heal)
+        battle.use_berry(fighter)
 
 
 @register("items", "lum-berry")
@@ -62,7 +63,7 @@ class LumBerry(Handler):
     def eaten(self, name, fighter, side, turn):
         cured = self.craves(name, fighter)
         fighter.status, fighter.confusion_left, fighter.sleep_left = None, 0, 0
-        fighter.item, fighter.ate_berry = None, True
+        battle.use_berry(fighter)
         return battle.ItemEffect(turn, side, fighter.combatant.name, name, "cure" if cured else "eaten")
 
     def craves(self, name, fighter):
@@ -200,7 +201,7 @@ class ResistBerry(Handler):
         return kind == move_type and (effectiveness > 1 or kind == "normal")
 
     def eaten(self, name, fighter, side, turn):
-        fighter.item, fighter.ate_berry = None, True
+        battle.use_berry(fighter)
         return battle.ItemEffect(turn, side, fighter.combatant.name, name, "eaten")
 
 

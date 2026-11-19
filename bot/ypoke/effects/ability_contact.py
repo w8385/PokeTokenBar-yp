@@ -5,7 +5,7 @@ and `user` are `battle._Fighter`s; a `hit` is a `battle.Hit`."""
 from ypoke import abilities, battle
 from ypoke.effects import Handler, hooks, register
 from ypoke.effects.changers import FIXED_ABILITIES, reshape
-from ypoke.effects.item_moves import hold, movable
+from ypoke.effects.item_moves import hold, yields
 from ypoke.effects.secondary import meta
 from ypoke.effects.volatiles import PERISH_COUNT, Disable
 from ypoke.move_power import holds_item
@@ -199,7 +199,7 @@ def _hurt(name, holder, user, damage: int):
 def _stolen(name, taker, giver):
     """The taker, holding nothing, takes the giver's item; the `AbilityAct`, or None when it cannot."""
     item = giver.item
-    if taker.hp == 0 or holds_item(taker) or item is None or not movable(giver):
+    if taker.hp == 0 or holds_item(taker) or item is None or not yields(giver):
         return None
     hold(giver, None)
     hold(taker, item)

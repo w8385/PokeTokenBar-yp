@@ -85,6 +85,11 @@ def holds_removable_item(fighter) -> bool:
     return not bound and (pokemon_id is None or mega_form_id(item, pokemon_id) is None)
 
 
+def kept(fighter) -> bool:
+    """Its ability keeps what it holds from any other Pokémon (Sticky Hold)."""
+    return holds_item(fighter) and hooks.ability(fighter, "keeps_item", default=False)
+
+
 def holds_item(fighter) -> bool:
     """An item the battle does not know is never used up, so it is held until Knock Off takes it."""
     held = fighter.combatant.item

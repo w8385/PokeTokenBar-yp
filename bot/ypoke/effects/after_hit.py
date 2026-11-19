@@ -5,7 +5,7 @@ moves' (`fighter.volatiles[key]` holds the turns left). `user`, `target` and `fi
 from ypoke import battle, move_power
 from ypoke.effects import Handler, hooks, register
 from ypoke.effects.changers import FIXED_ABILITIES, reshape
-from ypoke.effects.item_moves import hold, movable, received
+from ypoke.effects.item_moves import hold, received, yields
 from ypoke.effects.secondary import afflict
 from ypoke.effects.stats import arg, shift
 from ypoke.effects.volatiles import due, hurt, ticked
@@ -30,7 +30,7 @@ class StealItem(Handler):
     by_id = True
 
     def after_move(self, move, user, target, dealt):
-        if dealt <= 0 or user.hp == 0 or move_power.holds_item(user) or target.item is None or not movable(target):
+        if dealt <= 0 or user.hp == 0 or move_power.holds_item(user) or target.item is None or not yields(target):
             return ()
         item = target.item
         hold(target, None)
@@ -47,7 +47,7 @@ class EatBerry(Handler):
 
     def after_move(self, move, user, target, dealt):
         berry = target.item
-        if dealt <= 0 or user.hp == 0 or not hooks.has("items", berry, "eaten"):
+        if dealt <= 0 or user.hp == 0 or not hooks.has("items", berry, "eaten") or move_power.kept(target):
             return ()
         hold(target, None)
         held = user.item
@@ -65,7 +65,7 @@ class BurnBerry(Handler):
 
     def secondary(self, move, user, target, side, rng):
         berry = target.item
-        if not hooks.has("items", berry, "eaten"):
+        if not hooks.has("items", berry, "eaten") or move_power.kept(target):
             return ()
         hold(target, None)
         log(user).append(battle.ItemEffect(turn(user), 1 - side, target.combatant.name, berry, "burnt"))

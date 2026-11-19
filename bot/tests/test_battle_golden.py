@@ -353,6 +353,10 @@ FOCUS_CASES = {
     "battle-bond": (((658, None, "battle-bond", [370]),), ((36, None, None, [33]), (18, None, None, [33]))),
     "serene-grace": (((18, None, "serene-grace", [52]),), ((36, None, None, [33]),)),
     "sturdy": (((10, None, "sturdy", [33]),), ((6, None, None, [370, 53]),)),
+    "cloud-nine": (((18, None, "cloud-nine", [33]),), ((36, None, "drizzle", [33]),)),
+    "shed-skin": (((18, None, "shed-skin", [33]),), ((36, None, None, [92, 33]),)),
+    "ripen": (((18, None, None, [33]),), ((36, "sitrus-berry", "ripen", [33]),)),
+    "sticky-hold": (((18, None, None, [282, 168]),), ((36, "leftovers", "sticky-hold", [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]
