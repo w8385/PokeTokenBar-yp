@@ -48,7 +48,7 @@ class ChillyReception(SelfSwitch):
     def _apply(self, move, user, foe, side, turn, arena, rng):
         effect, changes = super()._apply(move, user, foe, side, turn, arena, rng)
         weather = arena.weather
-        if not effect or weather.kind in (SNOW, battle.STRONG_WINDS):
+        if not effect or weather.current == SNOW or weather.held:
             return effect and STAYS_DRY, changes
         weather.kind = SNOW
         weather.turns_left = hooks.item(user, "weather_turns", SNOW, battle.WEATHER_TURNS, default=battle.WEATHER_TURNS)

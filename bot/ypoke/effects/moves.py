@@ -116,8 +116,8 @@ class ThunderWave(StatusMove):
 @register("moves", "weather")
 class WeatherMove(Handler):
     def use(self, move, user, foe, side, turn, weather, arena, rng):
-        if weather.kind in (move.weather, battle.STRONG_WINDS):
-            return {"failed": True, "weather": battle.STRONG_WINDS if weather.kind == battle.STRONG_WINDS else None}
+        if weather.current == move.weather or weather.held:
+            return {"failed": True, "weather": weather.current if weather.held else None}
         turns = hooks.item(user, "weather_turns", move.weather, battle.WEATHER_TURNS, default=battle.WEATHER_TURNS)
         weather.kind, weather.turns_left = move.weather, turns
         return {"weather": move.weather}

@@ -38,7 +38,7 @@ BATTLE_STATS = ("attack", "defense", "special_attack", "special_defense", "speed
 STAGES = (*BATTLE_STATS, "accuracy", "evasion")
 WEATHER_TURNS = 5
 STRONG_WINDS = "strong-winds"
-# Under Desolate Land's sun or Primordial Sea's rain, damaging moves of this type fail.
+# Under Desolate Land's sun or Primordial Sea's rain, damaging moves of this type fail; Air Lock lifts it.
 PRIMAL_DOUSED = {"sun": "water", "rain": "fire"}
 WEATHER_CHIP_FRACTION = 16
 WEATHER_MOVE_BOOST = {
@@ -655,7 +655,7 @@ def _status_upkeep(turn: int, teams: tuple["_Team", "_Team"], fighters: tuple["_
 
 def _calm_winds(turn: int, teams: tuple["_Team", "_Team"], weather: "_Weather", events: list[Event]) -> None:
     """Strong winds and lasting weather end once no Pokémon holding them up is out; no other weather comes back."""
-    if (weather.current == STRONG_WINDS or weather.lasting) and not any(
+    if weather.held and not any(
             team.active.hp > 0 and hooks.ability(team.active, "keeps_weather", weather.current, default=False)
             for team in teams):
         events.append(WeatherEnd(turn, weather.current))
@@ -884,6 +884,11 @@ class _Weather:
     @kind.setter
     def kind(self, value: str | None) -> None:
         self.current = value
+
+    @property
+    def held(self) -> bool:
+        """Strong winds and lasting weather have no countdown, and no weather move or common ability replaces them."""
+        return self.current == STRONG_WINDS or self.lasting
 
 
 @dataclass
@@ -1263,7 +1268,7 @@ def _weather_upkeep(turn: int, fighters: tuple[_Fighter, _Fighter], weather: _We
             ))
             if fighter.hp == 0 and fainted is None:
                 fainted = side
-    if weather.current == STRONG_WINDS or weather.lasting:
+    if weather.held:
         return fainted
     weather.turns_left -= 1
     if weather.turns_left == 0:
@@ -1400,7 +1405,8 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
     if called is None:
         return Action(turn, side, *names, move.name, failed=True, recovered=recovered, defender_hp=defender.hp_percent,
                       attacker_hp=attacker.hp_percent)
-    effect, charged = (None if readied else hooks.move(called, "charges", attacker, side, weather.kind)) or ("", ())
+    effect, charged = (None if readied else hooks.move(called, "charges", attacker, side,
+                                                       _move_weather(attacker, weather.kind))) or ("", ())
     if effect:
         return Action(turn, side, *names, called.name, effect=effect, changes=charged, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
@@ -1437,7 +1443,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         return Action(turn, side, *names, move.name, failed=True, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     _announce(attacker, hooks.ability(attacker, "before_move", move, attacker, side, turn))
-    if move.damaging and weather.lasting and weather.kind and move.type == PRIMAL_DOUSED.get(weather.kind):
+    if _doused(move, weather):
         return Action(turn, side, *names, move.name, failed=True, weather=weather.kind, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
     stopped = _stopped(attacker, defender, move)
@@ -1733,7 +1739,7 @@ def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multipl
     power = _power(attacker, defender, move, weather, multiplier, hit)
     damage = ((2 * level // 5 + 2) * power * attack / max(1, defense)) // DAMAGE_DIVISOR + 2
     return (
-        damage * _stab(attacker, move) * multiplier * _weather_boost(move, weather)
+        damage * _stab(attacker, move) * multiplier * _weather_boost(move, _move_weather(attacker, weather))
         * _damage_taken(attacker, defender, move, multiplier, critical) * _item_boost(attacker, move, multiplier)
         * _screen(attacker, defender, move, critical) * _exposed(attacker, defender)
     )
@@ -2003,8 +2009,10 @@ def _surely_finishes(attacker: _Fighter, defender: _Fighter, move: Move, weather
 
 def _best_weather_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> int | None:
     best, best_swing = None, WEATHER_SWING_MIN
+    if weather == STRONG_WINDS or attacker.arena is not None and attacker.arena.weather.held:
+        return None
     for index, move in enumerate(attacker.combatant.moves):
-        if attacker.pp[index] > 0 and move.weather and weather not in (move.weather, STRONG_WINDS):
+        if attacker.pp[index] > 0 and move.weather and weather != move.weather:
             swing = _weather_swing(attacker, defender, weather, move.weather)
             if swing >= best_swing:
                 best, best_swing = index, swing
@@ -2037,9 +2045,11 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
     with _ability_ignored(attacker, defender, move):
         if (_banned(attacker, move) or _stopped(attacker, defender, move) or _dodges(attacker, defender, move)
                 or hooks.move(move, "fails", attacker, defender, default=False)
-                or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)):
+                or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)
+                or attacker.arena is not None and _doused(move, attacker.arena.weather)):
             return 0.0
-        return (_damage_score(attacker, defender, move, weather) * hooks.move(move, "score_share", weather, default=1.0)
+        share = hooks.move(move, "score_share", _move_weather(attacker, weather), default=1.0)
+        return (_damage_score(attacker, defender, move, weather) * share
                 * _hp_kept(attacker, defender, move, weather))
 
 
@@ -2054,7 +2064,8 @@ def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: s
     return (
         _power(attacker, defender, move, weather, multiplier) * _expected_hits(move, attacker, accuracy)
         * _expected_stab(attacker, move) * multiplier
-        * _weather_boost(move, weather) * _damage_taken(attacker, defender, move, multiplier, False)
+        * _weather_boost(move, _move_weather(attacker, weather))
+        * _damage_taken(attacker, defender, move, multiplier, False)
         * _item_boost(attacker, move, multiplier)
         * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False) * _exposed(attacker, defender)
     )
@@ -2108,6 +2119,15 @@ def _item_boost(attacker: _Fighter, move: Move, multiplier: float) -> float:
 def _weather_boost(move: Move, weather: str | None) -> float:
     boost = WEATHER_MOVE_BOOST.get(weather, {}).get(move.type, 1.0)
     return hooks.move(move, "modify_weather_boost", weather, boost, default=boost)
+
+
+def _doused(move: Move, weather: _Weather) -> bool:
+    return weather.lasting and move.damaging and move.type == PRIMAL_DOUSED.get(weather.kind)
+
+
+def _move_weather(attacker: _Fighter, weather: str | None) -> str | None:
+    """The weather the attacker's own moves act in: its ability may set its own (Mega Sol)."""
+    return hooks.ability(attacker, "own_weather", weather, default=weather)
 
 
 def _power(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | None, multiplier: float,

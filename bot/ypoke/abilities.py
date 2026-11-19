@@ -29,6 +29,7 @@ EFFECT_KEYS = frozenset({
     "zen-mode", "schooling", "stance-change", "shields-down", "power-construct", "disguise", "ice-face", "gulp-missile",
     "hunger-switch", "forecast", "flower-gift", "zero-to-hero", "mimicry", "color-change", "rks-system",
     "battle-bond", "tera-shell", "teraform-zero", "tera-shift", "multitype", "embody-aspect",
+    "clears-weather", "primal-weather", "weather-heal", "bad-dreams", "mega-sol", "paradox-boost",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
 FLAG_POWER = battle_data.args("abilities", "flag-power", "power")
@@ -123,6 +124,15 @@ SUPREME_OVERLORD_MAX_FALLEN = 5
 WEATHER_CHIP_IMMUNE = battle_data.args("abilities", "weather-chip-immune", "weather")
 WEATHER_DOUBLES_SPEED = battle_data.args("abilities", "weather-speed", "weather")
 WEATHER_ON_ENTRY = battle_data.args("abilities", "weather-on-entry", "weather")
+PRIMAL_WEATHER = battle_data.args("abilities", "primal-weather", "weather")
+WEATHER_HEAL = battle_data.args("abilities", "weather-heal", "weather")
+WEATHER_HEAL_SHARE = 16
+BAD_DREAMS_SHARE = 8
+MEGA_SOL_WEATHER = "sun"
+PARADOX_FIELD = battle_data.args("abilities", "paradox-boost", "field")
+PARADOX_BOOST = 5325 / 4096
+PARADOX_SPEED_BOOST = 1.5
+PARADOX_STATS = ("attack", "defense", "special_attack", "special_defense", "speed")
 RESISTED_TYPES = battle_data.args("abilities", "type-resist", "types")
 IMMUNE_TYPE = battle_data.args("abilities", "type-immunity", "type")
 AILMENT_BLOCKED = battle_data.args("abilities", "ailment-block", "ailments")

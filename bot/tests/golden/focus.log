@@ -6019,125 +6019,132 @@ Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defen
 Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=499
 result winner=0 turns=3 remaining=((82,), (0,)) statuses=((None,), (None,))
 ## focus mega-order 0
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'earth-eater')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'drought')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'chilling-neigh')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'comatose')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='가뭄' form_id=10035
-AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
-MegaEvolution turn=1 side=0 pokemon='P398' ability='흙먹기' form_id=10308
+MegaEvolution turn=1 side=1 pokemon='P6' ability='절대안깸' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='백의울음' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=91 move_id=370
-Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=70 attacker_hp=91 move_id=53
-Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=83 attacker_hp=70 move_id=370
-Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=30 attacker_hp=83 move_id=53
-Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=75 attacker_hp=30 move_id=370
-Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=75 move_id=53
-result winner=1 turns=3 remaining=((0,), (75,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=80 attacker_hp=91 move_id=53
+Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=83 attacker_hp=80 move_id=370
+Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=54 attacker_hp=83 move_id=53
+Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=75 attacker_hp=54 move_id=370
+Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=20 attacker_hp=75 move_id=53
+Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=66 attacker_hp=20 move_id=370
+Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=66 move_id=53
+result winner=1 turns=4 remaining=((0,), (66,)) statuses=((None,), (None,))
 ## focus mega-order 1
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'earth-eater')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'drought')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'chilling-neigh')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'comatose')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='가뭄' form_id=10035
-AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
-MegaEvolution turn=1 side=0 pokemon='P398' ability='흙먹기' form_id=10308
+MegaEvolution turn=1 side=1 pokemon='P6' ability='절대안깸' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='백의울음' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=92 move_id=370
-Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=70 attacker_hp=92 move_id=53
-Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=78 attacker_hp=70 move_id=370
-Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 critical=True defender_hp=8 attacker_hp=78 move_id=53
-Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=70 attacker_hp=8 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=80 attacker_hp=92 move_id=53
+Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=78 attacker_hp=80 move_id=370
+Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 critical=True defender_hp=40 attacker_hp=78 move_id=53
+Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=70 attacker_hp=40 move_id=370
 Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 critical=True defender_hp=0 knockout=True attacker_hp=70 move_id=53
 result winner=1 turns=3 remaining=((0,), (70,)) statuses=((None,), (None,))
 ## focus mega-order 2
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'earth-eater')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'drought')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'chilling-neigh')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'comatose')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='가뭄' form_id=10035
-AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
-MegaEvolution turn=1 side=0 pokemon='P398' ability='흙먹기' form_id=10308
+MegaEvolution turn=1 side=1 pokemon='P6' ability='절대안깸' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='백의울음' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=92 move_id=370
-Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=68 attacker_hp=92 move_id=53
-Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=79 attacker_hp=68 move_id=370
-Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=26 attacker_hp=79 move_id=53
-Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=71 attacker_hp=26 move_id=370
-Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=71 move_id=53
-result winner=1 turns=3 remaining=((0,), (71,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=79 attacker_hp=92 move_id=53
+Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=79 attacker_hp=79 move_id=370
+Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=51 attacker_hp=79 move_id=53
+Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=71 attacker_hp=51 move_id=370
+Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=15 attacker_hp=71 move_id=53
+Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=63 attacker_hp=15 move_id=370
+Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=63 move_id=53
+result winner=1 turns=4 remaining=((0,), (63,)) statuses=((None,), (None,))
 ## focus mega-order 3
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'earth-eater')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'drought')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'chilling-neigh')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'comatose')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='가뭄' form_id=10035
-AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
-MegaEvolution turn=1 side=0 pokemon='P398' ability='흙먹기' form_id=10308
+MegaEvolution turn=1 side=1 pokemon='P6' ability='절대안깸' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='백의울음' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=91 move_id=370
-Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=72 attacker_hp=91 move_id=53
-Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=83 attacker_hp=72 move_id=370
-Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=27 attacker_hp=83 move_id=53
-Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=75 attacker_hp=27 move_id=370
-Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=75 move_id=53
-result winner=1 turns=3 remaining=((0,), (75,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=81 attacker_hp=91 move_id=53
+Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=83 attacker_hp=81 move_id=370
+Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=52 attacker_hp=83 move_id=53
+Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=75 attacker_hp=52 move_id=370
+Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=19 attacker_hp=75 move_id=53
+Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=67 attacker_hp=19 move_id=370
+Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=67 move_id=53
+result winner=1 turns=4 remaining=((0,), (67,)) statuses=((None,), (None,))
 ## focus mega-order 4
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'earth-eater')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'drought')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'chilling-neigh')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'comatose')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='가뭄' form_id=10035
-AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
-MegaEvolution turn=1 side=0 pokemon='P398' ability='흙먹기' form_id=10308
+MegaEvolution turn=1 side=1 pokemon='P6' ability='절대안깸' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='백의울음' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=91 move_id=370
-Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 critical=True defender_hp=52 attacker_hp=91 move_id=53
-Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=81 attacker_hp=52 move_id=370
-Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=11 attacker_hp=81 move_id=53
-Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=73 attacker_hp=11 move_id=370
-Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=73 move_id=53
-result winner=1 turns=3 remaining=((0,), (73,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 critical=True defender_hp=68 attacker_hp=91 move_id=53
+Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=81 attacker_hp=68 move_id=370
+Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=41 attacker_hp=81 move_id=53
+Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=73 attacker_hp=41 move_id=370
+Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='burn', stages=0),) defender_hp=5 attacker_hp=73 move_id=53
+StatusDamage turn=3 side=0 pokemon='P398' hp=0 fainted=True
+result winner=1 turns=3 remaining=((0,), (73,)) statuses=(('burn',), (None,))
 ## focus mega-order 5
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'earth-eater')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'drought')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'chilling-neigh')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'comatose')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='가뭄' form_id=10035
-AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
-MegaEvolution turn=1 side=0 pokemon='P398' ability='흙먹기' form_id=10308
+MegaEvolution turn=1 side=1 pokemon='P6' ability='절대안깸' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='백의울음' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=92 move_id=370
-Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=76 attacker_hp=92 move_id=53
-Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=84 attacker_hp=76 move_id=370
-Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=43 attacker_hp=84 move_id=53
-Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=75 attacker_hp=43 move_id=370
-Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=75 move_id=53
-result winner=1 turns=3 remaining=((0,), (75,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=85 attacker_hp=92 move_id=53
+Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=84 attacker_hp=85 move_id=370
+Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=63 attacker_hp=84 move_id=53
+Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=75 attacker_hp=63 move_id=370
+Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=33 attacker_hp=75 move_id=53
+Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=67 attacker_hp=33 move_id=370
+Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=1 attacker_hp=67 move_id=53
+Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=58 attacker_hp=1 move_id=370
+Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=58 move_id=53
+result winner=1 turns=5 remaining=((0,), (58,)) statuses=((None,), (None,))
 ## focus mega-order 6
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'earth-eater')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'drought')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'chilling-neigh')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'comatose')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='가뭄' form_id=10035
-AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
-MegaEvolution turn=1 side=0 pokemon='P398' ability='흙먹기' form_id=10308
+MegaEvolution turn=1 side=1 pokemon='P6' ability='절대안깸' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='백의울음' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=90 move_id=370
-Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=72 attacker_hp=90 move_id=53
-Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=81 attacker_hp=72 move_id=370
-Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=36 attacker_hp=81 move_id=53
-Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=72 attacker_hp=36 move_id=370
-Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=72 move_id=53
-result winner=1 turns=3 remaining=((0,), (72,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=82 attacker_hp=90 move_id=53
+Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=81 attacker_hp=82 move_id=370
+Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=57 attacker_hp=81 move_id=53
+Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=72 attacker_hp=57 move_id=370
+Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=27 attacker_hp=72 move_id=53
+Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=63 attacker_hp=27 move_id=370
+Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=63 move_id=53
+result winner=1 turns=4 remaining=((0,), (63,)) statuses=((None,), (None,))
 ## focus mega-order 7
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'earth-eater')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'drought')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'chilling-neigh')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'comatose')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='가뭄' form_id=10035
-AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
-MegaEvolution turn=1 side=0 pokemon='P398' ability='흙먹기' form_id=10308
+MegaEvolution turn=1 side=1 pokemon='P6' ability='절대안깸' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='백의울음' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=91 move_id=370
-Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=72 attacker_hp=91 move_id=53
-Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=82 attacker_hp=72 move_id=370
-Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=34 attacker_hp=82 move_id=53
-Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=73 attacker_hp=34 move_id=370
-Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=73 move_id=53
-result winner=1 turns=3 remaining=((0,), (73,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=81 attacker_hp=91 move_id=53
+Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=82 attacker_hp=81 move_id=370
+Action turn=2 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=56 attacker_hp=82 move_id=53
+Action turn=3 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=73 attacker_hp=56 move_id=370
+Action turn=3 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=25 attacker_hp=73 move_id=53
+Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=64 attacker_hp=25 move_id=370
+Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=64 move_id=53
+result winner=1 turns=4 remaining=((0,), (64,)) statuses=((None,), (None,))
 ## focus contrary 0
 side=0 P213 Lv50 ('dark',) item=None ability=contrary nature=None moves=[14, 370] mega=None
 side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=intimidate nature=None moves=[45, 555] mega=None
