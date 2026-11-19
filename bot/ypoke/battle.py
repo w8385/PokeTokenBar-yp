@@ -13,10 +13,11 @@ import random
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
+from typing import NamedTuple
 
 from ypoke import abilities, items, move_power, tera_forms
 from ypoke.effects import hooks
-from ypoke.move_effects import CHOSEN_DAMAGE_EFFECTS, POWERLESS_ATTACKS, PUNCH_MOVES, STATUS_MOVES
+from ypoke.move_effects import CHOSEN_DAMAGE_EFFECTS, CONTACT_MOVES, POWERLESS_ATTACKS, PUNCH_MOVES, STATUS_MOVES
 from ypoke.type_chart import effectiveness
 
 STAB_MULTIPLIER = 1.5
@@ -871,6 +872,14 @@ class _Team:
         return len(waiting) + len(alive), sum(waiting) + sum(fighter.hp / fighter.max_hp for fighter in alive)
 
 
+class Hurt(NamedTuple):
+    """The foe's hits that struck a Pokémon this turn: their category, damage and whether they made contact."""
+
+    physical: bool
+    dealt: int
+    contact: bool
+
+
 @dataclass
 class _Fighter:
     combatant: Combatant
@@ -890,7 +899,7 @@ class _Fighter:
     danced: bool = False
     acted: bool = False
     hit_by_foe: bool = False
-    hurt: tuple[bool, int] | None = None
+    hurt: Hurt | None = None
     lowered: bool = False
     turn_stages: dict[str, int] | None = None
     flopped: bool = False
@@ -1244,7 +1253,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         defender.times_hit += 1
         defender.hit_by_foe = defender.hit_by_foe or damage > 0
         critical, hits, dealt = critical or hit_critical, hits + 1, dealt + damage
-        if move.physical and damage > 0:
+        if damage > 0 and makes_contact(attacker, move):
             attacker.hp = max(0, attacker.hp - hooks.item(defender, "on_contact_hit", attacker, default=0))
         if defender.hp == 0 or attacker.hp == 0:
             break
@@ -1252,14 +1261,14 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         if hit < hit_count - 1 and hooks.item(defender, "between_hits", defender, default=False):
             berry = held
     if dealt > 0:
-        defender.hurt = (move.physical, dealt)
+        defender.hurt = Hurt(move.physical, dealt, makes_contact(attacker, move))
     if defender.hp == 0:
         _field(defender, "on_knocked_out", attacker, move, turn, side)
     changes, ability = (), defender.ability if sturdy else None
     if defender.hp > 0 and (not shielded or move.stat_on_user):
         changes, blocked_by = _secondary_effects(side, move, attacker, defender, rng)
         defender.ability_ignored = False
-        contact = _contact_effect(side, move, attacker, defender, rng)
+        contact = None if shielded else _contact_effect(side, move, attacker, defender, rng)
         if contact:
             changes, ability = (*changes, contact), defender.ability
         ability = ability or blocked_by
@@ -1273,7 +1282,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         healed = max(1, dealt * move.drain // 100)
         attacker.hp = min(attacker.max_hp, attacker.hp + hooks.item(attacker, "modify_drain", healed, default=healed))
     attacker_item = _attacker_item_effect(attacker, move, dealt, drained)
-    defender_item = endured or _defender_item_effect(defender, move, multiplier, dealt) or berry or resisted
+    defender_item = endured or _defender_item_effect(defender, attacker, move, multiplier, dealt) or berry or resisted
     changes = (*changes, *(hooks.move(move, "after_move", attacker, defender, dealt) or ()))
     return Action(
         turn, side, *names, move.name, multiplier=multiplier, critical=critical, changes=changes, recoil=recoil,
@@ -1302,11 +1311,17 @@ def _attacker_item_effect(attacker: _Fighter, move: Move, dealt: int, drained: b
     return item if hooks.item(attacker, "after_move_as_user", attacker, move, dealt, drained, default=False) else ""
 
 
-def _defender_item_effect(defender: _Fighter, move: Move, multiplier: float, dealt: int) -> str:
+def _defender_item_effect(defender: _Fighter, attacker: _Fighter, move: Move, multiplier: float, dealt: int) -> str:
     """The target's item that acted on the move (Rocky Helmet, already applied per hit; Weakness Policy), or ""."""
     item = defender.item
-    acted = hooks.item(defender, "after_move_as_target", defender, move, multiplier, dealt, default=False)
+    acted = hooks.item(defender, "after_move_as_target", defender, attacker, move, multiplier, dealt, default=False)
     return item if acted else ""
+
+
+def makes_contact(attacker: _Fighter, move: Move) -> bool:
+    """The move touches its target (Showdown's contact flag), unless the user's ability or item says it does not."""
+    return (move.id in CONTACT_MOVES and not hooks.ability(attacker, "drops_contact", default=False)
+            and not hooks.item(attacker, "drops_contact", move, default=False))
 
 
 def _start_of_action(attacker: _Fighter, move: Move, rng: random.Random) -> tuple[tuple[str, ...], str]:

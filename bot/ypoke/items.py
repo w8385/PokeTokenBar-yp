@@ -34,12 +34,13 @@ TOXIC_ORB = "toxic-orb"
 CHARCOAL = "charcoal"
 STELLAR_CRYSTAL = "stellar-crystal"
 PUNCHING_GLOVE = "punching-glove"
+PROTECTIVE_PADS = "protective-pads"
 EFFECT_KEYS = frozenset({
     LEFTOVERS, CHOICE_SCARF, CHOICE_BAND, CHOICE_SPECS, FOCUS_SASH, FOCUS_BAND, LIFE_ORB, EXPERT_BELT, ASSAULT_VEST,
     EVIOLITE, ROCKY_HELMET, SITRUS_BERRY, LUM_BERRY, WHITE_HERB, BLACK_SLUDGE, SHELL_BELL, BIG_ROOT, MUSCLE_BAND,
     WISE_GLASSES, SCOPE_LENS, RAZOR_CLAW, QUICK_CLAW, BRIGHT_POWDER, WIDE_LENS, WEAKNESS_POLICY, PUNCHING_GLOVE,
     "type-boost", "resist-berry", "plate", "origin-boost", "weather-rock", "status-orb", "state-extender",
-    "hazard-boots",
+    "hazard-boots", PROTECTIVE_PADS,
 })
 
 TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",

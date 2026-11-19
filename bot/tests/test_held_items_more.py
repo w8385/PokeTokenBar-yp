@@ -14,7 +14,7 @@ from ypoke.pokeapi import PokeAPIService, _evolves_further
 from ypoke.store import Store
 
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
-TACKLE = Move("몸통박치기", "normal", 40, physical=True, accuracy=100)
+TACKLE = Move("몸통박치기", "normal", 40, physical=True, accuracy=100, id=33)
 EMBER = Move("불꽃세례", "fire", 40, physical=False, accuracy=100)
 RAIN_DANCE = Move("비바라기", None, 0, physical=False, weather="rain")
 SUNNY_DAY = Move("쾌청", None, 0, physical=False, weather="sun")
@@ -107,7 +107,7 @@ def test_eviolite_raises_both_defenses_only_while_the_holder_can_still_evolve():
     assert young.stat("attack") == plain.stat("attack")
 
 
-def test_rocky_helmet_hurts_a_physical_attacker_by_a_sixth_and_ignores_special_moves():
+def test_rocky_helmet_hurts_a_contact_attacker_by_a_sixth_and_ignores_special_moves():
     helmet = mon("헬멧", items.ROCKY_HELMET, hp=255, defense=255, special_defense=255)
     action, (attacker, _) = duel(mon("공격수", hp=100), helmet)
     assert action.defender_item == items.ROCKY_HELMET
@@ -441,7 +441,7 @@ def test_can_evolve_reads_the_species_chain_once_and_caches_it(monkeypatch):
     assert len(calls) == 3
 
 
-DOUBLE_HIT = Move("연타", "normal", 40, physical=True, accuracy=100, min_hits=2, max_hits=2)
+DOUBLE_HIT = Move("더블어택", "normal", 40, physical=True, accuracy=100, min_hits=2, max_hits=2, id=458)
 
 
 def test_rocky_helmet_hurts_between_hits_and_a_fainted_attacker_stops_hitting():

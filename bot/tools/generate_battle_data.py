@@ -3,9 +3,14 @@
 Run from `bot/`: `python3 tools/generate_battle_data.py <cache.db>`. The cache is a scratch SQLite file (never the bot's
 database); a rerun reads PokéAPI bodies from it. Hand-set fields (`HAND_FIELDS`) of an existing entry are kept as they
 are; a new entry gets an effect from `_default_effect` (inert by rule, plain damage by rule, else "todo").
+
+PokéAPI has no contact flag. `python3 tools/generate_battle_data.py --showdown-contact <moves.ts>` sets the "contact"
+flag of every move from Pokémon Showdown's `data/moves.ts` (`flags.contact`, MIT, `data/battle/LICENSE-showdown`) at
+`SHOWDOWN_COMMIT`, matching Showdown's `num` to the move id.
 """
 
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -18,6 +23,8 @@ from ypoke import battle_data, pokeapi  # noqa: E402
 from ypoke.store import Store  # noqa: E402
 
 HAND_FIELDS = ("effect", "args", "flags", "note", "bot_name", "pokeapi", "names_extra")
+SHOWDOWN_COMMIT = "5b88c476113d51a939bddbcd00b5cd182a5d8058"
+SHOWDOWN_ENTRY = re.compile(r"\n\t[a-z0-9]+: \{\n(.*?)\n\t\},?(?=\n)", re.DOTALL)
 FETCH_WORKERS = 4
 FETCH_ATTEMPTS = 5
 LANGUAGES = {"ko": ("ko",), "en": ("en",), "ja": ("ja-hrkt", "ja"), "es": ("es",), "fr": ("fr",), "de": ("de",),
@@ -128,12 +135,40 @@ PLAIN_DAMAGE_SUMMARIES = frozenset({
 
 
 def main() -> None:
+    if sys.argv[1] == "--showdown-contact":
+        _set_contact(Path(sys.argv[2]).read_text())
+        return
     store = Store(sys.argv[1])
     for kind, build in (("items", _items), ("abilities", _abilities), ("moves", _moves)):
         old = battle_data.read(kind) if battle_data.path(kind).exists() else {}
         fresh = build(store, old)
         battle_data.write(kind, {key: _merged(fresh[key], old.get(key)) for key in fresh})
         print(f"{kind}: {len(fresh)} entries", file=sys.stderr)
+
+
+def _set_contact(showdown_moves: str) -> None:
+    contact = _showdown_contact(showdown_moves)
+    moves = battle_data.read("moves")
+    for move_id, entry in moves.items():
+        flags = [flag for flag in entry.get("flags", ()) if flag != "contact"]
+        flags += ["contact"] if int(move_id) in contact else []
+        if flags:
+            entry["flags"] = flags
+        else:
+            entry.pop("flags", None)
+    battle_data.write("moves", moves)
+    print(f"moves: {sum(int(move_id) in contact for move_id in moves)} make contact", file=sys.stderr)
+
+
+def _showdown_contact(showdown_moves: str) -> set[int]:
+    """The move ids (Showdown `num`) whose `flags` have `contact`."""
+    contact = set()
+    for body in SHOWDOWN_ENTRY.findall(showdown_moves):
+        num = re.search(r"^\t\tnum: (\d+),", body, re.MULTILINE)
+        flags = re.search(r"^\t\tflags: \{([^}]*)\}", body, re.MULTILINE)
+        if num and flags and re.search(r"\bcontact: 1\b", flags.group(1)):
+            contact.add(int(num.group(1)))
+    return contact
 
 
 def _merged(fresh: dict, old: dict | None) -> dict:

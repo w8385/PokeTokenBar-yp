@@ -123,6 +123,5 @@ class OHKO(Handler):
 def _taken(move, user) -> int | None:
     if user.hurt is None:
         return None
-    physical, damage = user.hurt
     category = arg(move, "category")
-    return damage if category is None or (category == "physical") == physical else None
+    return user.hurt.dealt if category is None or (category == "physical") == user.hurt.physical else None

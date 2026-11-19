@@ -8,7 +8,7 @@ EFFECT_KEYS = frozenset({
     "pinch-type-boost", "intimidate", "type-immunity", "attack-doubled", "type-resist", "technician", "sturdy",
     "adaptability", "guts", "weather-speed", "weather-on-entry", "contact-ailment", "ailment-block", "sand-force",
     "weather-chip-immune", "gale-wings", "supreme-overlord", "terrain-on-entry", "field-stat", "screen-cleaner",
-    "infiltrator", "airborne",
+    "infiltrator", "airborne", "long-reach",
 })
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")

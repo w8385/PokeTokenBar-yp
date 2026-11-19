@@ -248,6 +248,11 @@ FOCUS_CASES = {
     "baton-pass": (((133, None, None, [14, 226, 33]), (143, None, None, [33])), ((143, None, None, [33]),)),
     "focus-energy": (((56, None, None, [116, 33]),), ((143, None, None, [33]),)),
     "stuff-cheeks": (((819, "sitrus-berry", None, [747, 33]),), ((143, None, None, [33]),)),
+    "contact": (((25, None, None, [370]), (68, "protective-pads", None, [370]), (724, None, "long-reach", [370]),
+                 (3, None, None, [447, 89])),
+                ((143, "rocky-helmet", "static", [33]),)),
+    "contact-sash": (((908, "focus-sash", None, [870]),), ((143, "rocky-helmet", None, [776]),)),
+    "clear-smog": (((89, None, None, [499]),), ((143, None, None, [14, 33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

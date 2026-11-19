@@ -120,11 +120,9 @@ class AilmentBlock(Handler):
 
 @register("abilities", "contact-ailment")
 class ContactAilment(Handler):
-    """A physical move counts as contact: PokéAPI has no contact flag."""
-
     def on_contact(self, name, side, move, user, holder, rng):
         ailment = abilities.CONTACT_AILMENT[name]
-        if not move.physical or hooks.ability(user, "blocks_ailment", ailment, default=False):
+        if not battle.makes_contact(user, move) or hooks.ability(user, "blocks_ailment", ailment, default=False):
             return None
         if not battle._open_to(ailment, user, True) or rng.random() >= abilities.CONTACT_CHANCE:
             return None
@@ -135,3 +133,9 @@ class ContactAilment(Handler):
 class WeatherChipImmune(Handler):
     def blocks_weather_chip(self, name, weather):
         return weather is not None and abilities.WEATHER_CHIP_IMMUNE[name] == weather
+
+
+@register("abilities", "long-reach")
+class LongReach(Handler):
+    def drops_contact(self, name):
+        return True
