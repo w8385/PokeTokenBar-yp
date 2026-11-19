@@ -162,7 +162,7 @@ ABILITY_EFFECT_TEXT = {
     "stole": "{detail} 훔쳤다", "breaks": "상대 특성을 무시한다", "gas": "상대 특성이 사라졌다",
     "trace": "{detail} 복사", "retype": "{detail} 타입이 되었다", "retype-back": "원래 타입으로 돌아왔다",
     "zero": "날씨와 필드가 사라졌다", "disguise": "탈이 대신 맞았다", "spit": "삼킨 것을 뱉었다",
-    "paradox": "{detail} 강화",
+    "paradox": "{detail} 강화", "harvest": "{detail} 수확", "chew": "{detail} 되새김",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
 ABILITY_BLOCKED_TEXT = {

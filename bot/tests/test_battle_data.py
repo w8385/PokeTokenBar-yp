@@ -30,7 +30,8 @@ def test_a_new_todo_entry_fails_the_ratchet():
 
 def test_a_baseline_id_that_is_no_longer_todo_fails_the_ratchet():
     data, baseline = _data(), _baseline()
-    stale = baseline["abilities"]["todo"][0]
+    stale = next(iter(data["abilities"]))
+    baseline["abilities"]["todo"] = [stale]
     data["abilities"][stale]["effect"] = {"inert": "test"}
     assert any(stale in error and "no longer todo" in error for error in coverage_errors(data, baseline, BOT_KEYS))
 

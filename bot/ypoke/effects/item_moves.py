@@ -37,7 +37,12 @@ class Trick(StatusMove):
 
 
 def swappable(user, foe) -> bool:
-    return (user.item is not None or foe.item is not None) and movable(user) and movable(foe)
+    return (user.item is not None or foe.item is not None) and movable(user) and yields(foe)
+
+
+def yields(fighter) -> bool:
+    """A foe can take what it holds: it is `movable` and not `kept`."""
+    return movable(fighter) and not move_power.kept(fighter)
 
 
 def movable(fighter) -> bool:
@@ -121,16 +126,20 @@ class CorrosiveGas(StatusMove):
 
     def wanted(self, move, team, foes, side, arena, weather):
         user, foe = team.active, foes.active
-        return (foe.item is not None and move_power.holds_removable_item(foe) and not burdens(foe.item, foe)
+        return (foe.item is not None and self._melts(foe) and not burdens(foe.item, foe)
                 and reaches(move, user, foe))
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
-        if not move_power.holds_removable_item(foe):
+        if not self._melts(foe):
             return "", ()
         if foe.item is not None:
             arena.log.append(battle.ItemEffect(turn, 1 - side, foe.combatant.name, foe.item, "lost"))
         hold(foe, None)
         return self.key, ()
+
+    @staticmethod
+    def _melts(foe) -> bool:
+        return move_power.holds_removable_item(foe) and not move_power.kept(foe)
 
 
 @register("moves", "teatime")

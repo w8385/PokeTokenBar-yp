@@ -142,19 +142,11 @@
  },
  "abilities": {
   "counts": {
-   "implemented": 275,
-   "inert": 92,
-   "todo": 7
+   "implemented": 281,
+   "inert": 93,
+   "todo": 0
   },
-  "todo": [
-   "cheek-pouch",
-   "cud-chew",
-   "gluttony",
-   "harvest",
-   "klutz",
-   "ripen",
-   "sticky-hold"
-  ]
+  "todo": []
  },
  "moves": {
   "counts": {

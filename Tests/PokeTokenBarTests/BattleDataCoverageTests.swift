@@ -128,9 +128,9 @@ final class BattleDataCoverageTests: XCTestCase {
     }
 
     func testABaselineIDThatIsNoLongerTodoFailsTheRatchet() throws {
-        let baseline = try XCTUnwrap(BattleData.baseline()["abilities"])
-        let stale = try XCTUnwrap(baseline.todo.first)
         var entries = try BattleData.entries("abilities")
+        let stale = try XCTUnwrap(entries.keys.min())
+        let baseline = try BattleData.KindBaseline(counts: XCTUnwrap(BattleData.baseline()["abilities"]).counts, todo: [stale])
         entries[stale] = try decoded(#"{"effect": {"inert": "test"}}"#)
         let errors = BattleData.ratchetErrors(kind: "abilities", entries: entries, baseline: baseline)
         XCTAssertTrue(errors.contains("abilities \(stale): in the baseline but no longer todo"), "\(errors)")
