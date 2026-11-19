@@ -1809,6 +1809,16 @@ read_when:
   Class sweep: the trade buttons move `status` with a guarded `UPDATE … WHERE status = …` and the pending battles
   with `claim_pending`, so both already act once. Known edge: a press whose battle fails on PokéAPI still spends
   the card; `/대결` remains.
+- **Every option in a Pokémon select must read differently.** The direct trade's pick select labelled each option
+  with name and level only, so two Lv.15 Eevees with different natures, sexes or shininess read the same and the
+  receiver could not tell which one they gave. The tests used pools of distinct species, so no test held two
+  look-alikes. Now `trades.option_labels` adds sex, ✨ and the Korean nature, and any labels still equal get
+  ` #2`, ` #3` (the suffix fits inside Slack's 75-character limit). The miracle trade picker uses the same labels
+  (`test_select_labels_tell_same_species_individuals_apart`,
+  `test_the_direct_trade_picker_uses_the_same_distinct_labels`); removing the
+  suffix fails 3 tests. Class sweep: the miracle picker and the direct pick select are the bot's only Pokémon
+  selects; the card text and DMs name one Pokémon each. Known gap: the app's trade grid shows sprite and level
+  only, so two look-alikes there are told apart by place, not by text.
 
 ## Tests and the user's desktop
 
