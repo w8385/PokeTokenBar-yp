@@ -10,7 +10,7 @@ from ypoke.battle import AbilityAct, Action, BattleResult, Change
 from ypoke.narration import battle_turns
 
 TACKLE, EARTHQUAKE, SURF, POWER_UP_PUNCH = attack(33), attack(89), attack(57), attack(612)
-POISON_JAB, DOUBLE_HIT, ROCK_THROW = attack(398), attack(458), attack(88)
+POISON_JAB, DOUBLE_HIT, ROCK_THROW, GRASS_KNOT = attack(398), attack(458), attack(88), attack(447)
 WEAK = {"attack": 10, "special_attack": 10}
 TRIGGERS, MISSES = 0.25, 0.5
 SURE = 0.05
@@ -63,6 +63,7 @@ def test_effect_spore_draws_one_ailment_for_a_contact_move(move, user_ability, u
 @pytest.mark.parametrize(("foe_ability", "move", "user_ability", "hurt"), [
     ("rough-skin", TACKLE, None, True), ("iron-barbs", TACKLE, None, True), ("rough-skin", EARTHQUAKE, None, False),
     ("rough-skin", TACKLE, "magic-guard", False), (None, TACKLE, None, False),
+    ("rough-skin", GRASS_KNOT, None, True), ("rough-skin", SURF, None, False),
 ])
 def test_rough_skin_takes_an_eighth_per_contact_hit(foe_ability, move, user_ability, hurt):
     action, user, _ = struck(move, foe_ability, user_ability, MISSES)
