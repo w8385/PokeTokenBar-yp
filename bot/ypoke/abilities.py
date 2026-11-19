@@ -8,7 +8,8 @@ EFFECT_KEYS = frozenset({
     "pinch-type-boost", "intimidate", "type-immunity", "attack-doubled", "type-resist", "technician", "sturdy",
     "adaptability", "guts", "weather-speed", "weather-on-entry", "contact-ailment", "ailment-block", "sand-force",
     "weather-chip-immune", "gale-wings", "supreme-overlord", "terrain-on-entry", "field-stat", "screen-cleaner",
-    "infiltrator", "airborne", "long-reach", "contrary", "imposter", "protean",
+    "infiltrator", "airborne", "long-reach", "contrary", "imposter", "protean", "weather-on-hit", "weather-evasion",
+    "shed-skin",
 })
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
@@ -33,6 +34,10 @@ TERRAIN_ON_ENTRY = battle_data.args("abilities", "terrain-on-entry", "terrain")
 FIELD_STAT_STATE = battle_data.args("abilities", "field-stat", "field")
 FIELD_STAT_STAT = battle_data.args("abilities", "field-stat", "stat")
 FIELD_STAT_MULTIPLIER = battle_data.args("abilities", "field-stat", "multiplier")
+WEATHER_ON_HIT = battle_data.args("abilities", "weather-on-hit", "weather")
+EVASION_WEATHER = battle_data.args("abilities", "weather-evasion", "weather")
+WEATHER_EVASION_ACCURACY = 0.8
+SHED_SKIN_CHANCE = 0.33
 
 NAMES = battle_data.bot_names("abilities")
 
@@ -41,3 +46,8 @@ def power_multiplier(ability: str | None, move_type: str | None, power: float, l
                      weather: str | None = None, fallen_allies: int = 0) -> float:
     return hooks.call("abilities", ability, "modify_power", move_type, power, low_hp, weather, fallen_allies,
                       default=1.0)
+
+
+def in_weather(weather: str | None, wanted: str) -> bool:
+    """Snow abilities count hail too, the older games' snow."""
+    return weather is not None and (weather == wanted or wanted == "snow" and weather == "hail")

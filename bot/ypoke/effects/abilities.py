@@ -20,15 +20,33 @@ class Intimidate(Handler):
 class WeatherOnEntry(Handler):
     def on_entry(self, name, fighter, foe, side, weather):
         kind = abilities.WEATHER_ON_ENTRY[name]
-        if weather.kind == kind or weather.kind == battle.STRONG_WINDS and kind != battle.STRONG_WINDS:
+        if not _start_weather(weather, kind, fighter):
             return None
-        weather.kind = kind
-        default = battle.WEATHER_TURNS
-        weather.turns_left = hooks.item(fighter, "weather_turns", kind, default, default=default)
         return battle.AbilityTrigger(side, fighter.combatant.name, name, weather=kind)
 
     def keeps_weather(self, name, kind):
         return kind == battle.STRONG_WINDS and abilities.WEATHER_ON_ENTRY[name] == kind
+
+
+@register("abilities", "weather-on-hit")
+class WeatherOnHit(Handler):
+    """Sand Spit: a damaging move that hits the holder starts `args.weather`."""
+
+    def after_hit(self, name, hit):
+        holder, kind = hit.target, abilities.WEATHER_ON_HIT[name]
+        if hit.shielded or holder.arena is None or not _start_weather(holder.arena.weather, kind, holder):
+            return None
+        return battle.AbilityTrigger(holder.side, holder.combatant.name, name, weather=kind)
+
+
+def _start_weather(weather, kind, setter) -> bool:
+    """Starts `kind` for the turns the setter's item gives; a weather already there or strong winds keep it out."""
+    if weather.kind == kind or weather.kind == battle.STRONG_WINDS and kind != battle.STRONG_WINDS:
+        return False
+    weather.kind = kind
+    default = battle.WEATHER_TURNS
+    weather.turns_left = hooks.item(setter, "weather_turns", kind, default, default=default)
+    return True
 
 
 @register("abilities", "gale-wings")

@@ -6019,13 +6019,12 @@ Action turn=3 side=1 attacker='P143' defender='P89' move='몸통박치기' defen
 Action turn=3 side=0 attacker='P89' defender='P143' move='클리어스모그' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=499
 result winner=0 turns=3 remaining=((82,), (0,)) statuses=((None,), (None,))
 ## focus mega-order 0
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'drizzle')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'sturdy')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'thick-fat')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'swarm')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='옹골참' form_id=10035
-MegaEvolution turn=1 side=0 pokemon='P398' ability='잔비' form_id=10308
-AbilityTrigger side=0 pokemon='P398' ability='drizzle' weather='rain'
+MegaEvolution turn=1 side=1 pokemon='P6' ability='벌레의알림' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='두꺼운지방' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=91 move_id=370
 Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=90 attacker_hp=91 move_id=53
 Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=83 attacker_hp=90 move_id=370
@@ -6038,17 +6037,15 @@ StatusDamage turn=4 side=0 pokemon='P398' hp=35 fainted=False
 Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=63 attacker_hp=35 move_id=370
 Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=14 attacker_hp=63 move_id=53
 StatusDamage turn=5 side=0 pokemon='P398' hp=8 fainted=False
-WeatherEnd turn=5 weather='rain'
 Action turn=6 side=0 attacker='P398' defender='P6' move='발버둥' recoil=True defender_hp=59 attacker_fainted=True attacker_hp=0 move_id=165
 result winner=1 turns=6 remaining=((0,), (59,)) statuses=(('burn',), (None,))
 ## focus mega-order 1
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'drizzle')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'sturdy')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'thick-fat')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'swarm')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='옹골참' form_id=10035
-MegaEvolution turn=1 side=0 pokemon='P398' ability='잔비' form_id=10308
-AbilityTrigger side=0 pokemon='P398' ability='drizzle' weather='rain'
+MegaEvolution turn=1 side=1 pokemon='P6' ability='벌레의알림' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='두꺼운지방' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=92 move_id=370
 Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=90 attacker_hp=92 move_id=53
 Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=78 attacker_hp=90 move_id=370
@@ -6059,17 +6056,15 @@ Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplie
 Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=27 attacker_hp=61 move_id=53
 Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=52 attacker_hp=27 move_id=370
 Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=7 attacker_hp=52 move_id=53
-WeatherEnd turn=5 weather='rain'
 Action turn=6 side=0 attacker='P398' defender='P6' move='발버둥' recoil=True defender_hp=44 attacker_fainted=True attacker_hp=0 move_id=165
 result winner=1 turns=6 remaining=((0,), (44,)) statuses=((None,), (None,))
 ## focus mega-order 2
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'drizzle')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'sturdy')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'thick-fat')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'swarm')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='옹골참' form_id=10035
-MegaEvolution turn=1 side=0 pokemon='P398' ability='잔비' form_id=10308
-AbilityTrigger side=0 pokemon='P398' ability='drizzle' weather='rain'
+MegaEvolution turn=1 side=1 pokemon='P6' ability='벌레의알림' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='두꺼운지방' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=92 move_id=370
 Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=89 attacker_hp=92 move_id=53
 Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=79 attacker_hp=89 move_id=370
@@ -6080,17 +6075,15 @@ Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplie
 Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=38 attacker_hp=63 move_id=53
 Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=55 attacker_hp=38 move_id=370
 Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=13 attacker_hp=55 move_id=53
-WeatherEnd turn=5 weather='rain'
 Action turn=6 side=0 attacker='P398' defender='P6' move='발버둥' recoil=True defender_hp=47 attacker_fainted=True attacker_hp=0 move_id=165
 result winner=1 turns=6 remaining=((0,), (47,)) statuses=((None,), (None,))
 ## focus mega-order 3
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'drizzle')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'sturdy')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'thick-fat')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'swarm')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='옹골참' form_id=10035
-MegaEvolution turn=1 side=0 pokemon='P398' ability='잔비' form_id=10308
-AbilityTrigger side=0 pokemon='P398' ability='drizzle' weather='rain'
+MegaEvolution turn=1 side=1 pokemon='P6' ability='벌레의알림' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='두꺼운지방' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=91 move_id=370
 Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=91 attacker_hp=91 move_id=53
 Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=83 attacker_hp=91 move_id=370
@@ -6101,17 +6094,15 @@ Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplie
 Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=39 attacker_hp=67 move_id=53
 Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=58 attacker_hp=39 move_id=370
 Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=17 attacker_hp=58 move_id=53
-WeatherEnd turn=5 weather='rain'
 Action turn=6 side=0 attacker='P398' defender='P6' move='발버둥' recoil=True defender_hp=50 attacker_fainted=True attacker_hp=0 move_id=165
 result winner=1 turns=6 remaining=((0,), (50,)) statuses=((None,), (None,))
 ## focus mega-order 4
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'drizzle')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'sturdy')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'thick-fat')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'swarm')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='옹골참' form_id=10035
-MegaEvolution turn=1 side=0 pokemon='P398' ability='잔비' form_id=10308
-AbilityTrigger side=0 pokemon='P398' ability='drizzle' weather='rain'
+MegaEvolution turn=1 side=1 pokemon='P6' ability='벌레의알림' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='두꺼운지방' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=91 move_id=370
 Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 critical=True defender_hp=84 attacker_hp=91 move_id=53
 Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=81 attacker_hp=84 move_id=370
@@ -6126,13 +6117,12 @@ Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplie
 Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=63 move_id=53
 result winner=1 turns=5 remaining=((0,), (63,)) statuses=(('burn',), (None,))
 ## focus mega-order 5
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'drizzle')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'sturdy')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'thick-fat')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'swarm')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='옹골참' form_id=10035
-MegaEvolution turn=1 side=0 pokemon='P398' ability='잔비' form_id=10308
-AbilityTrigger side=0 pokemon='P398' ability='drizzle' weather='rain'
+MegaEvolution turn=1 side=1 pokemon='P6' ability='벌레의알림' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='두꺼운지방' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=92 move_id=370
 Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=92 attacker_hp=92 move_id=53
 Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=84 attacker_hp=92 move_id=370
@@ -6143,18 +6133,16 @@ Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplie
 Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=51 attacker_hp=67 move_id=53
 Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=58 attacker_hp=51 move_id=370
 Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=30 attacker_hp=58 move_id=53
-WeatherEnd turn=5 weather='rain'
 Action turn=6 side=0 attacker='P398' defender='P6' move='발버둥' recoil=True defender_hp=51 attacker_hp=5 move_id=165
 Action turn=6 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=51 move_id=53
 result winner=1 turns=6 remaining=((0,), (51,)) statuses=((None,), (None,))
 ## focus mega-order 6
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'drizzle')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'sturdy')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'thick-fat')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'swarm')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='옹골참' form_id=10035
-MegaEvolution turn=1 side=0 pokemon='P398' ability='잔비' form_id=10308
-AbilityTrigger side=0 pokemon='P398' ability='drizzle' weather='rain'
+MegaEvolution turn=1 side=1 pokemon='P6' ability='벌레의알림' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='두꺼운지방' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=90 move_id=370
 Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=91 attacker_hp=90 move_id=53
 Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=81 attacker_hp=91 move_id=370
@@ -6167,17 +6155,15 @@ StatusDamage turn=4 side=0 pokemon='P398' hp=41 fainted=False
 Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=58 attacker_hp=41 move_id=370
 Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=22 attacker_hp=58 move_id=53
 StatusDamage turn=5 side=0 pokemon='P398' hp=16 fainted=False
-WeatherEnd turn=5 weather='rain'
 Action turn=6 side=0 attacker='P398' defender='P6' move='발버둥' recoil=True defender_hp=54 attacker_fainted=True attacker_hp=0 move_id=165
 result winner=1 turns=6 remaining=((0,), (54,)) statuses=(('burn',), (None,))
 ## focus mega-order 7
-side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'drizzle')
-side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'sturdy')
+side=0 P398 Lv50 ('water', 'fairy') item=staraptite ability=intimidate nature=None moves=[370] mega=('mega', 10308, 'thick-fat')
+side=1 P6 Lv50 ('fighting',) item=charizardite-y ability=intimidate nature=None moves=[53, 33] mega=('mega', 10035, 'swarm')
 AbilityTrigger side=1 pokemon='P6' ability='intimidate' change=Change(side=0, pokemon='P398', kind='attack', stages=-1)
 AbilityTrigger side=0 pokemon='P398' ability='intimidate' change=Change(side=1, pokemon='P6', kind='attack', stages=-1)
-MegaEvolution turn=1 side=1 pokemon='P6' ability='옹골참' form_id=10035
-MegaEvolution turn=1 side=0 pokemon='P398' ability='잔비' form_id=10308
-AbilityTrigger side=0 pokemon='P398' ability='drizzle' weather='rain'
+MegaEvolution turn=1 side=1 pokemon='P6' ability='벌레의알림' form_id=10035
+MegaEvolution turn=1 side=0 pokemon='P398' ability='두꺼운지방' form_id=10308
 Action turn=1 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=91 move_id=370
 Action turn=1 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=91 attacker_hp=91 move_id=53
 Action turn=2 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=82 attacker_hp=91 move_id=370
@@ -6188,7 +6174,6 @@ Action turn=4 side=0 attacker='P398' defender='P6' move='인파이트' multiplie
 Action turn=4 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=44 attacker_hp=64 move_id=53
 Action turn=5 side=0 attacker='P398' defender='P6' move='인파이트' multiplier=0.5 changes=(Change(side=0, pokemon='P398', kind='defense', stages=-1), Change(side=0, pokemon='P398', kind='special_defense', stages=-1)) defender_hp=56 attacker_hp=44 move_id=370
 Action turn=5 side=1 attacker='P6' defender='P398' move='화염방사' multiplier=0.5 defender_hp=19 attacker_hp=56 move_id=53
-WeatherEnd turn=5 weather='rain'
 Action turn=6 side=0 attacker='P398' defender='P6' move='발버둥' recoil=True defender_hp=48 attacker_fainted=True attacker_hp=0 move_id=165
 result winner=1 turns=6 remaining=((0,), (48,)) statuses=((None,), (None,))
 ## focus contrary 0
@@ -7462,8 +7447,8 @@ result winner=0 turns=13 remaining=((100,), (0,)) statuses=((None,), (None,))
 ## focus imposter 0
 side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
 side=0 P132 Lv50 ('fighting',) item=None ability=imposter nature=None moves=[144] mega=None
-side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'static')
-MegaEvolution turn=1 side=1 pokemon='P6' ability='정전기' form_id=10034
+side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'surge-surfer')
+MegaEvolution turn=1 side=1 pokemon='P6' ability='서핑테일' form_id=10034
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 move_id=85
 Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=57 move_id=53
 Action turn=2 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=57 move_id=85
@@ -7479,8 +7464,8 @@ result winner=0 turns=5 remaining=((0, 46), (0,)) statuses=((None, None), (None,
 ## focus imposter 1
 side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
 side=0 P132 Lv50 ('fighting',) item=None ability=imposter nature=None moves=[144] mega=None
-side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'static')
-MegaEvolution turn=1 side=1 pokemon='P6' ability='정전기' form_id=10034
+side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'surge-surfer')
+MegaEvolution turn=1 side=1 pokemon='P6' ability='서핑테일' form_id=10034
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 move_id=85
 Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=56 move_id=53
 Action turn=2 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=56 move_id=85
@@ -7496,8 +7481,8 @@ result winner=0 turns=4 remaining=((0, 41), (0,)) statuses=(('burn', None), (Non
 ## focus imposter 2
 side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
 side=0 P132 Lv50 ('fighting',) item=None ability=imposter nature=None moves=[144] mega=None
-side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'static')
-MegaEvolution turn=1 side=1 pokemon='P6' ability='정전기' form_id=10034
+side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'surge-surfer')
+MegaEvolution turn=1 side=1 pokemon='P6' ability='서핑테일' form_id=10034
 Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 changes=(Change(side=0, pokemon='P25', kind='burn', stages=0),) defender_hp=62 move_id=53
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=62 move_id=85
 StatusDamage turn=1 side=0 pokemon='P25' hp=56 fainted=False
@@ -7514,8 +7499,8 @@ result winner=0 turns=5 remaining=((0, 26), (0,)) statuses=(('burn', None), (Non
 ## focus imposter 3
 side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
 side=0 P132 Lv50 ('fighting',) item=None ability=imposter nature=None moves=[144] mega=None
-side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'static')
-MegaEvolution turn=1 side=1 pokemon='P6' ability='정전기' form_id=10034
+side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'surge-surfer')
+MegaEvolution turn=1 side=1 pokemon='P6' ability='서핑테일' form_id=10034
 Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=50 move_id=53
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=50 move_id=85
 Action turn=2 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=0 knockout=True move_id=53
@@ -7526,8 +7511,8 @@ result winner=0 turns=3 remaining=((0, 100), (0,)) statuses=((None, None), (None
 ## focus imposter 4
 side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
 side=0 P132 Lv50 ('fighting',) item=None ability=imposter nature=None moves=[144] mega=None
-side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'static')
-MegaEvolution turn=1 side=1 pokemon='P6' ability='정전기' form_id=10034
+side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'surge-surfer')
+MegaEvolution turn=1 side=1 pokemon='P6' ability='서핑테일' form_id=10034
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 move_id=85
 Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 changes=(Change(side=0, pokemon='P25', kind='burn', stages=0),) defender_hp=56 move_id=53
 StatusDamage turn=1 side=0 pokemon='P25' hp=49 fainted=False
@@ -7545,8 +7530,8 @@ result winner=0 turns=5 remaining=((0, 32), (0,)) statuses=(('burn', None), (Non
 ## focus imposter 5
 side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
 side=0 P132 Lv50 ('fighting',) item=None ability=imposter nature=None moves=[144] mega=None
-side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'static')
-MegaEvolution turn=1 side=1 pokemon='P6' ability='정전기' form_id=10034
+side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'surge-surfer')
+MegaEvolution turn=1 side=1 pokemon='P6' ability='서핑테일' form_id=10034
 Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=57 move_id=53
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=57 move_id=85
 Action turn=2 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=10 move_id=53
@@ -7561,8 +7546,8 @@ result winner=0 turns=5 remaining=((0, 32), (0,)) statuses=((None, None), (None,
 ## focus imposter 6
 side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
 side=0 P132 Lv50 ('fighting',) item=None ability=imposter nature=None moves=[144] mega=None
-side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'static')
-MegaEvolution turn=1 side=1 pokemon='P6' ability='정전기' form_id=10034
+side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'surge-surfer')
+MegaEvolution turn=1 side=1 pokemon='P6' ability='서핑테일' form_id=10034
 Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=44 move_id=53
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=44 move_id=85
 Action turn=2 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=0 knockout=True move_id=53
@@ -7575,8 +7560,8 @@ result winner=1 turns=4 remaining=((0, 0), (5,)) statuses=((None, None), (None,)
 ## focus imposter 7
 side=0 P25 Lv50 ('poison', 'steel') item=None ability=None nature=None moves=[85] mega=None
 side=0 P132 Lv50 ('fighting',) item=None ability=imposter nature=None moves=[144] mega=None
-side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'static')
-MegaEvolution turn=1 side=1 pokemon='P6' ability='정전기' form_id=10034
+side=1 P6 Lv50 ('fighting',) item=charizardite-x ability=None nature=None moves=[53, 33] mega=('mega', 10034, 'surge-surfer')
+MegaEvolution turn=1 side=1 pokemon='P6' ability='서핑테일' form_id=10034
 Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 changes=(Change(side=0, pokemon='P25', kind='burn', stages=0),) defender_hp=60 move_id=53
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=60 move_id=85
 StatusDamage turn=1 side=0 pokemon='P25' hp=54 fainted=False
@@ -8090,3 +8075,268 @@ Action turn=3 side=0 attacker='P18' defender='P36' move='10만볼트' defender_h
 Action turn=3 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=54 attacker_hp=18 move_id=33
 Action turn=4 side=0 attacker='P18' defender='P36' move='10만볼트' defender_hp=0 knockout=True attacker_hp=54 move_id=85
 result winner=0 turns=4 remaining=((54,), (0,)) statuses=((None,), ('paralysis',))
+## focus sandaconda 0
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-spit nature=None moves=[89, 203, 283] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-veil nature=None moves=[89, 201] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=shed-skin nature=None moves=[89, 34] mega=None
+side=1 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[92, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[92, 34] mega=None
+Action turn=1 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=92 move_id=33
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=1 side=0 attacker='P844' defender='P36' move='지진' defender_hp=74 attacker_hp=92 move_id=89
+WeatherDamage turn=1 side=1 pokemon='P36' hp=69 fainted=False weather='sandstorm'
+Action turn=2 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=84 attacker_hp=69 move_id=33
+Action turn=2 side=0 attacker='P844' defender='P36' move='지진' defender_hp=46 attacker_hp=84 move_id=89
+WeatherDamage turn=2 side=1 pokemon='P36' hp=40 fainted=False weather='sandstorm'
+Action turn=3 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=76 attacker_hp=40 move_id=33
+Action turn=3 side=0 attacker='P844' defender='P36' move='지진' defender_hp=18 attacker_hp=76 move_id=89
+WeatherDamage turn=3 side=1 pokemon='P36' hp=12 fainted=False weather='sandstorm'
+Action turn=4 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=68 attacker_hp=12 move_id=33
+Action turn=4 side=0 attacker='P844' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=68 move_id=89
+SendOut turn=4 side=1 pokemon='P143' member=1
+Action turn=5 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=60 move_id=34
+Action turn=5 side=0 attacker='P844' defender='P143' move='죽기살기' defender_hp=54 attacker_hp=60 move_id=283
+WeatherDamage turn=5 side=1 pokemon='P143' hp=47 fainted=False weather='sandstorm'
+WeatherEnd turn=5 weather='sandstorm'
+Action turn=6 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 changes=(Change(side=0, pokemon='P844', kind='paralysis', stages=0),) defender_hp=53 attacker_hp=47 move_id=34
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=6 side=0 attacker='P844' defender='P143' move='지진' defender_hp=36 attacker_hp=53 move_id=89
+WeatherDamage turn=6 side=1 pokemon='P143' hp=30 fainted=False weather='sandstorm'
+Action turn=7 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=45 attacker_hp=30 move_id=34
+Action turn=7 side=0 attacker='P844' defender='P143' move='' defender_hp=30 blocked='paralysis' attacker_hp=45
+WeatherDamage turn=7 side=1 pokemon='P143' hp=23 fainted=False weather='sandstorm'
+Action turn=8 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=37 attacker_hp=23 move_id=34
+Action turn=8 side=0 attacker='P844' defender='P143' move='지진' defender_hp=11 attacker_hp=37 move_id=89
+WeatherDamage turn=8 side=1 pokemon='P143' hp=5 fainted=False weather='sandstorm'
+Action turn=9 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=30 attacker_hp=5 move_id=34
+Action turn=9 side=0 attacker='P844' defender='P143' move='지진' defender_hp=0 knockout=True attacker_hp=30 move_id=89
+result winner=0 turns=9 remaining=((30, None, None), (0, 0)) statuses=(('paralysis', None, None), (None, None))
+## focus sandaconda 1
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-spit nature=None moves=[89, 203, 283] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-veil nature=None moves=[89, 201] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=shed-skin nature=None moves=[89, 34] mega=None
+side=1 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[92, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[92, 34] mega=None
+Action turn=1 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=92 move_id=33
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=1 side=0 attacker='P844' defender='P36' move='지진' defender_hp=71 attacker_hp=92 move_id=89
+WeatherDamage turn=1 side=1 pokemon='P36' hp=65 fainted=False weather='sandstorm'
+Action turn=2 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=84 attacker_hp=65 move_id=33
+Action turn=2 side=0 attacker='P844' defender='P36' move='지진' critical=True defender_hp=21 attacker_hp=84 move_id=89
+WeatherDamage turn=2 side=1 pokemon='P36' hp=15 fainted=False weather='sandstorm'
+Action turn=3 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=76 attacker_hp=15 move_id=33
+Action turn=3 side=0 attacker='P844' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=76 move_id=89
+SendOut turn=3 side=1 pokemon='P143' member=1
+Action turn=4 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 changes=(Change(side=0, pokemon='P844', kind='paralysis', stages=0),) defender_hp=68 move_id=34
+Action turn=4 side=0 attacker='P844' defender='P143' move='' blocked='paralysis' attacker_hp=68
+WeatherDamage turn=4 side=1 pokemon='P143' hp=94 fainted=False weather='sandstorm'
+Action turn=5 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=61 attacker_hp=94 move_id=34
+Action turn=5 side=0 attacker='P844' defender='P143' move='죽기살기' defender_hp=53 attacker_hp=61 move_id=283
+WeatherDamage turn=5 side=1 pokemon='P143' hp=47 fainted=False weather='sandstorm'
+WeatherEnd turn=5 weather='sandstorm'
+Action turn=6 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=53 attacker_hp=47 move_id=34
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=6 side=0 attacker='P844' defender='P143' move='지진' defender_hp=33 attacker_hp=53 move_id=89
+WeatherDamage turn=6 side=1 pokemon='P143' hp=27 fainted=False weather='sandstorm'
+Action turn=7 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=46 attacker_hp=27 move_id=34
+Action turn=7 side=0 attacker='P844' defender='P143' move='지진' defender_hp=13 attacker_hp=46 move_id=89
+WeatherDamage turn=7 side=1 pokemon='P143' hp=7 fainted=False weather='sandstorm'
+Action turn=8 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=39 attacker_hp=7 move_id=34
+Action turn=8 side=0 attacker='P844' defender='P143' move='' defender_hp=7 blocked='paralysis' attacker_hp=39
+WeatherDamage turn=8 side=1 pokemon='P143' hp=1 fainted=False weather='sandstorm'
+Action turn=9 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=31 attacker_hp=1 move_id=34
+Action turn=9 side=0 attacker='P844' defender='P143' move='지진' defender_hp=0 knockout=True attacker_hp=31 move_id=89
+result winner=0 turns=9 remaining=((31, None, None), (0, 0)) statuses=(('paralysis', None, None), (None, None))
+## focus sandaconda 2
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-spit nature=None moves=[89, 203, 283] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-veil nature=None moves=[89, 201] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=shed-skin nature=None moves=[89, 34] mega=None
+side=1 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[92, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[92, 34] mega=None
+Action turn=1 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=92 move_id=33
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=1 side=0 attacker='P844' defender='P36' move='지진' defender_hp=76 attacker_hp=92 move_id=89
+WeatherDamage turn=1 side=1 pokemon='P36' hp=70 fainted=False weather='sandstorm'
+Action turn=2 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=84 attacker_hp=70 move_id=33
+Action turn=2 side=0 attacker='P844' defender='P36' move='지진' defender_hp=47 attacker_hp=84 move_id=89
+WeatherDamage turn=2 side=1 pokemon='P36' hp=41 fainted=False weather='sandstorm'
+Action turn=3 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=75 attacker_hp=41 move_id=33
+Action turn=3 side=0 attacker='P844' defender='P36' move='지진' defender_hp=16 attacker_hp=75 move_id=89
+WeatherDamage turn=3 side=1 pokemon='P36' hp=10 fainted=False weather='sandstorm'
+Action turn=4 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=66 attacker_hp=10 move_id=33
+Action turn=4 side=0 attacker='P844' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=66 move_id=89
+SendOut turn=4 side=1 pokemon='P143' member=1
+Action turn=5 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=58 move_id=34
+Action turn=5 side=0 attacker='P844' defender='P143' move='죽기살기' defender_hp=48 attacker_hp=58 move_id=283
+WeatherDamage turn=5 side=1 pokemon='P143' hp=42 fainted=False weather='sandstorm'
+WeatherEnd turn=5 weather='sandstorm'
+Action turn=6 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 changes=(Change(side=0, pokemon='P844', kind='paralysis', stages=0),) defender_hp=50 attacker_hp=42 move_id=34
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=6 side=0 attacker='P844' defender='P143' move='지진' defender_hp=28 attacker_hp=50 move_id=89
+WeatherDamage turn=6 side=1 pokemon='P143' hp=22 fainted=False weather='sandstorm'
+Action turn=7 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=42 attacker_hp=22 move_id=34
+Action turn=7 side=0 attacker='P844' defender='P143' move='지진' defender_hp=6 attacker_hp=42 move_id=89
+WeatherDamage turn=7 side=1 pokemon='P143' hp=0 fainted=True weather='sandstorm'
+result winner=0 turns=7 remaining=((42, None, None), (0, 0)) statuses=(('paralysis', None, None), (None, None))
+## focus sandaconda 3
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-spit nature=None moves=[89, 203, 283] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-veil nature=None moves=[89, 201] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=shed-skin nature=None moves=[89, 34] mega=None
+side=1 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[92, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[92, 34] mega=None
+Action turn=1 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=91 move_id=33
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=1 side=0 attacker='P844' defender='P36' move='지진' defender_hp=75 attacker_hp=91 move_id=89
+WeatherDamage turn=1 side=1 pokemon='P36' hp=69 fainted=False weather='sandstorm'
+Action turn=2 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=82 attacker_hp=69 move_id=33
+Action turn=2 side=0 attacker='P844' defender='P36' move='지진' defender_hp=40 attacker_hp=82 move_id=89
+WeatherDamage turn=2 side=1 pokemon='P36' hp=34 fainted=False weather='sandstorm'
+Action turn=3 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=74 attacker_hp=34 move_id=33
+Action turn=3 side=0 attacker='P844' defender='P36' move='지진' defender_hp=9 attacker_hp=74 move_id=89
+WeatherDamage turn=3 side=1 pokemon='P36' hp=3 fainted=False weather='sandstorm'
+Action turn=4 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=66 attacker_hp=3 move_id=33
+Action turn=4 side=0 attacker='P844' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=66 move_id=89
+SendOut turn=4 side=1 pokemon='P143' member=1
+Action turn=5 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 critical=True defender_hp=54 move_id=34
+Action turn=5 side=0 attacker='P844' defender='P143' move='죽기살기' defender_hp=45 attacker_hp=54 move_id=283
+WeatherDamage turn=5 side=1 pokemon='P143' hp=39 fainted=False weather='sandstorm'
+WeatherEnd turn=5 weather='sandstorm'
+Action turn=6 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=46 attacker_hp=39 move_id=34
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=6 side=0 attacker='P844' defender='P143' move='지진' defender_hp=24 attacker_hp=46 move_id=89
+WeatherDamage turn=6 side=1 pokemon='P143' hp=18 fainted=False weather='sandstorm'
+Action turn=7 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=38 attacker_hp=18 move_id=34
+Action turn=7 side=0 attacker='P844' defender='P143' move='지진' defender_hp=2 attacker_hp=38 move_id=89
+WeatherDamage turn=7 side=1 pokemon='P143' hp=0 fainted=True weather='sandstorm'
+result winner=0 turns=7 remaining=((38, None, None), (0, 0)) statuses=((None, None, None), (None, None))
+## focus sandaconda 4
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-spit nature=None moves=[89, 203, 283] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-veil nature=None moves=[89, 201] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=shed-skin nature=None moves=[89, 34] mega=None
+side=1 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[92, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[92, 34] mega=None
+Action turn=1 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=91 move_id=33
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=1 side=0 attacker='P844' defender='P36' move='지진' defender_hp=76 attacker_hp=91 move_id=89
+WeatherDamage turn=1 side=1 pokemon='P36' hp=69 fainted=False weather='sandstorm'
+Action turn=2 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=82 attacker_hp=69 move_id=33
+Action turn=2 side=0 attacker='P844' defender='P36' move='지진' defender_hp=42 attacker_hp=82 move_id=89
+WeatherDamage turn=2 side=1 pokemon='P36' hp=36 fainted=False weather='sandstorm'
+Action turn=3 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=73 attacker_hp=36 move_id=33
+Action turn=3 side=0 attacker='P844' defender='P36' move='지진' defender_hp=9 attacker_hp=73 move_id=89
+WeatherDamage turn=3 side=1 pokemon='P36' hp=3 fainted=False weather='sandstorm'
+Action turn=4 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=65 attacker_hp=3 move_id=33
+Action turn=4 side=0 attacker='P844' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=65 move_id=89
+SendOut turn=4 side=1 pokemon='P143' member=1
+Action turn=5 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=56 move_id=34
+Action turn=5 side=0 attacker='P844' defender='P143' move='죽기살기' defender_hp=44 attacker_hp=56 move_id=283
+WeatherDamage turn=5 side=1 pokemon='P143' hp=38 fainted=False weather='sandstorm'
+WeatherEnd turn=5 weather='sandstorm'
+Action turn=6 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 changes=(Change(side=0, pokemon='P844', kind='paralysis', stages=0),) defender_hp=48 attacker_hp=38 move_id=34
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=6 side=0 attacker='P844' defender='P143' move='지진' defender_hp=23 attacker_hp=48 move_id=89
+WeatherDamage turn=6 side=1 pokemon='P143' hp=17 fainted=False weather='sandstorm'
+Action turn=7 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=40 attacker_hp=17 move_id=34
+Action turn=7 side=0 attacker='P844' defender='P143' move='지진' defender_hp=3 attacker_hp=40 move_id=89
+WeatherDamage turn=7 side=1 pokemon='P143' hp=0 fainted=True weather='sandstorm'
+result winner=0 turns=7 remaining=((40, None, None), (0, 0)) statuses=(('paralysis', None, None), (None, None))
+## focus sandaconda 5
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-spit nature=None moves=[89, 203, 283] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-veil nature=None moves=[89, 201] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=shed-skin nature=None moves=[89, 34] mega=None
+side=1 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[92, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[92, 34] mega=None
+Action turn=1 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=93 move_id=33
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=1 side=0 attacker='P844' defender='P36' move='지진' defender_hp=76 attacker_hp=93 move_id=89
+WeatherDamage turn=1 side=1 pokemon='P36' hp=70 fainted=False weather='sandstorm'
+Action turn=2 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=86 attacker_hp=70 move_id=33
+Action turn=2 side=0 attacker='P844' defender='P36' move='지진' defender_hp=44 attacker_hp=86 move_id=89
+WeatherDamage turn=2 side=1 pokemon='P36' hp=38 fainted=False weather='sandstorm'
+Action turn=3 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=79 attacker_hp=38 move_id=33
+Action turn=3 side=0 attacker='P844' defender='P36' move='지진' defender_hp=14 attacker_hp=79 move_id=89
+WeatherDamage turn=3 side=1 pokemon='P36' hp=8 fainted=False weather='sandstorm'
+Action turn=4 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=72 attacker_hp=8 move_id=33
+Action turn=4 side=0 attacker='P844' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=72 move_id=89
+SendOut turn=4 side=1 pokemon='P143' member=1
+Action turn=5 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 critical=True changes=(Change(side=0, pokemon='P844', kind='paralysis', stages=0),) defender_hp=62 move_id=34
+Action turn=5 side=0 attacker='P844' defender='P143' move='' blocked='paralysis' attacker_hp=62
+WeatherDamage turn=5 side=1 pokemon='P143' hp=94 fainted=False weather='sandstorm'
+WeatherEnd turn=5 weather='sandstorm'
+Action turn=6 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=55 attacker_hp=94 move_id=34
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=6 side=0 attacker='P844' defender='P143' move='죽기살기' defender_hp=46 attacker_hp=55 move_id=283
+WeatherDamage turn=6 side=1 pokemon='P143' hp=40 fainted=False weather='sandstorm'
+Action turn=7 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=49 attacker_hp=40 move_id=34
+Action turn=7 side=0 attacker='P844' defender='P143' move='지진' defender_hp=28 attacker_hp=49 move_id=89
+WeatherDamage turn=7 side=1 pokemon='P143' hp=22 fainted=False weather='sandstorm'
+Action turn=8 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=42 attacker_hp=22 move_id=34
+Action turn=8 side=0 attacker='P844' defender='P143' move='지진' defender_hp=10 attacker_hp=42 move_id=89
+WeatherDamage turn=8 side=1 pokemon='P143' hp=4 fainted=False weather='sandstorm'
+Action turn=9 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=36 attacker_hp=4 move_id=34
+Action turn=9 side=0 attacker='P844' defender='P143' move='지진' defender_hp=0 knockout=True attacker_hp=36 move_id=89
+result winner=0 turns=9 remaining=((36, None, None), (0, 0)) statuses=(('paralysis', None, None), (None, None))
+## focus sandaconda 6
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-spit nature=None moves=[89, 203, 283] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-veil nature=None moves=[89, 201] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=shed-skin nature=None moves=[89, 34] mega=None
+side=1 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[92, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[92, 34] mega=None
+Action turn=1 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=91 move_id=33
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=1 side=0 attacker='P844' defender='P36' move='지진' critical=True defender_hp=62 attacker_hp=91 move_id=89
+WeatherDamage turn=1 side=1 pokemon='P36' hp=56 fainted=False weather='sandstorm'
+Action turn=2 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=82 attacker_hp=56 move_id=33
+Action turn=2 side=0 attacker='P844' defender='P36' move='지진' critical=True defender_hp=12 attacker_hp=82 move_id=89
+WeatherDamage turn=2 side=1 pokemon='P36' hp=6 fainted=False weather='sandstorm'
+Action turn=3 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=73 attacker_hp=6 move_id=33
+Action turn=3 side=0 attacker='P844' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=73 move_id=89
+SendOut turn=3 side=1 pokemon='P143' member=1
+Action turn=4 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=66 move_id=34
+Action turn=4 side=0 attacker='P844' defender='P143' move='죽기살기' defender_hp=58 attacker_hp=66 move_id=283
+WeatherDamage turn=4 side=1 pokemon='P143' hp=52 fainted=False weather='sandstorm'
+Action turn=5 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=59 attacker_hp=52 move_id=34
+Action turn=5 side=0 attacker='P844' defender='P143' move='지진' defender_hp=37 attacker_hp=59 move_id=89
+WeatherDamage turn=5 side=1 pokemon='P143' hp=31 fainted=False weather='sandstorm'
+WeatherEnd turn=5 weather='sandstorm'
+Action turn=6 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 changes=(Change(side=0, pokemon='P844', kind='paralysis', stages=0),) defender_hp=52 attacker_hp=31 move_id=34
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=6 side=0 attacker='P844' defender='P143' move='' defender_hp=31 blocked='paralysis' attacker_hp=52
+WeatherDamage turn=6 side=1 pokemon='P143' hp=25 fainted=False weather='sandstorm'
+Action turn=7 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=45 attacker_hp=25 move_id=34
+Action turn=7 side=0 attacker='P844' defender='P143' move='지진' defender_hp=11 attacker_hp=45 move_id=89
+WeatherDamage turn=7 side=1 pokemon='P143' hp=5 fainted=False weather='sandstorm'
+Action turn=8 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=38 attacker_hp=5 move_id=34
+Action turn=8 side=0 attacker='P844' defender='P143' move='지진' defender_hp=0 knockout=True attacker_hp=38 move_id=89
+result winner=0 turns=8 remaining=((38, None, None), (0, 0)) statuses=(('paralysis', None, None), (None, None))
+## focus sandaconda 7
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-spit nature=None moves=[89, 203, 283] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=sand-veil nature=None moves=[89, 201] mega=None
+side=0 P844 Lv50 ('steel', 'poison') item=None ability=shed-skin nature=None moves=[89, 34] mega=None
+side=1 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[92, 33] mega=None
+side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[92, 34] mega=None
+Action turn=1 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=91 move_id=33
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=1 side=0 attacker='P844' defender='P36' move='지진' defender_hp=72 attacker_hp=91 move_id=89
+WeatherDamage turn=1 side=1 pokemon='P36' hp=66 fainted=False weather='sandstorm'
+Action turn=2 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=82 attacker_hp=66 move_id=33
+Action turn=2 side=0 attacker='P844' defender='P36' move='지진' defender_hp=41 attacker_hp=82 move_id=89
+WeatherDamage turn=2 side=1 pokemon='P36' hp=36 fainted=False weather='sandstorm'
+Action turn=3 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=73 attacker_hp=36 move_id=33
+Action turn=3 side=0 attacker='P844' defender='P36' move='지진' defender_hp=9 attacker_hp=73 move_id=89
+WeatherDamage turn=3 side=1 pokemon='P36' hp=3 fainted=False weather='sandstorm'
+Action turn=4 side=1 attacker='P36' defender='P844' move='몸통박치기' multiplier=0.5 defender_hp=64 attacker_hp=3 move_id=33
+Action turn=4 side=0 attacker='P844' defender='P36' move='지진' defender_hp=0 knockout=True attacker_hp=64 move_id=89
+SendOut turn=4 side=1 pokemon='P143' member=1
+Action turn=5 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=56 move_id=34
+Action turn=5 side=0 attacker='P844' defender='P143' move='죽기살기' defender_hp=46 attacker_hp=56 move_id=283
+WeatherDamage turn=5 side=1 pokemon='P143' hp=39 fainted=False weather='sandstorm'
+WeatherEnd turn=5 weather='sandstorm'
+Action turn=6 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 changes=(Change(side=0, pokemon='P844', kind='paralysis', stages=0),) defender_hp=48 attacker_hp=39 move_id=34
+AbilityTrigger side=0 pokemon='P844' ability='sand-spit' weather='sandstorm'
+Action turn=6 side=0 attacker='P844' defender='P143' move='지진' defender_hp=26 attacker_hp=48 move_id=89
+WeatherDamage turn=6 side=1 pokemon='P143' hp=20 fainted=False weather='sandstorm'
+Action turn=7 side=1 attacker='P143' defender='P844' move='누르기' multiplier=0.5 defender_hp=40 attacker_hp=20 move_id=34
+Action turn=7 side=0 attacker='P844' defender='P143' move='지진' defender_hp=5 attacker_hp=40 move_id=89
+WeatherDamage turn=7 side=1 pokemon='P143' hp=0 fainted=True weather='sandstorm'
+result winner=0 turns=7 remaining=((40, None, None), (0, 0)) statuses=(('paralysis', None, None), (None, None))

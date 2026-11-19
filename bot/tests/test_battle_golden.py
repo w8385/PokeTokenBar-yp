@@ -264,6 +264,9 @@ FOCUS_CASES = {
     "aqua-ring": (((18, None, None, [392, 33]),), ((36, None, None, [33]),)),
     "ingrain": (((18, None, None, [275, 33]),), ((36, None, None, [33]),)),
     "charge": (((18, None, None, [268, 85]),), ((36, None, None, [33]),)),
+    "sandaconda": (((844, None, "sand-spit", [89, 203, 283]), (844, None, "sand-veil", [89, 201]),
+                    (844, None, "shed-skin", [89, 34])),
+                   ((36, None, None, [92, 33]), (143, None, None, [92, 34]))),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

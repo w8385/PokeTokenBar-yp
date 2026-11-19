@@ -142,9 +142,9 @@
  },
  "abilities": {
   "counts": {
-   "implemented": 45,
+   "implemented": 48,
    "inert": 81,
-   "todo": 248
+   "todo": 245
   },
   "todo": [
    "aerilate",
@@ -309,8 +309,6 @@
    "rocky-payload",
    "rough-skin",
    "sand-rush",
-   "sand-spit",
-   "sand-veil",
    "sap-sipper",
    "schooling",
    "scrappy",
@@ -319,7 +317,6 @@
    "shadow-shield",
    "shadow-tag",
    "sharpness",
-   "shed-skin",
    "sheer-force",
    "shell-armor",
    "shield-dust",

@@ -64,8 +64,8 @@ TRICK_ROOM_TURNS = 5
 STEALTH_ROCK_FRACTION = 8
 STATUS_EFFECTS = tuple(dict.fromkeys(STATUS_MOVES.values()))
 SWORDS_DANCE_STAGES = 2
-END_OF_TURN = ("status", "weather", "terrain", "items", "volatiles", "yawn", "sides", "trick-room", "rooms", "field",
-               "winds", "replace")
+END_OF_TURN = ("cures", "status", "weather", "terrain", "items", "volatiles", "yawn", "sides", "trick-room", "rooms",
+               "field", "winds", "replace")
 _NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
 _NATURE_NAMES = (
     "hardy lonely brave adamant naughty bold docile relaxed impish lax timid hasty serious jolly naive "
@@ -544,6 +544,9 @@ def _end_of_turn(turn: int, teams: tuple["_Team", "_Team"], weather: "_Weather",
 
 def _end_of_turn_step(step: str, turn: int, teams: tuple["_Team", "_Team"], fighters: tuple["_Fighter", "_Fighter"],
                       weather: "_Weather", arena: "_Arena", rng: random.Random, events: list[Event]) -> int | None:
+    if step == "cures":
+        _cure_upkeep(turn, fighters, events, rng)
+        return None
     if step == "status":
         return _status_upkeep(turn, teams, fighters, events)
     if step == "weather":
@@ -572,6 +575,13 @@ def _end_of_turn_step(step: str, turn: int, teams: tuple["_Team", "_Team"], figh
     else:
         return _replace_fainted(teams, turn, arena, weather, rng, events)
     return None
+
+
+def _cure_upkeep(turn: int, fighters: tuple["_Fighter", "_Fighter"], events: list[Event],
+                 rng: random.Random) -> None:
+    for side, fighter in enumerate(fighters):
+        if fighter.hp > 0 and fighter.status is not None:
+            _append(events, hooks.ability(fighter, "cures_status", fighter, side, turn, rng))
 
 
 def _status_upkeep(turn: int, teams: tuple["_Team", "_Team"], fighters: tuple["_Fighter", "_Fighter"],
@@ -1262,7 +1272,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     if accuracy is None:
         accuracy = (move.accuracy or 0) * _accuracy_stages(attacker, defender, move) * (
             hooks.item(attacker, "accuracy_as_user", default=1.0)
-            * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy"))
+            * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy")) * (
+            hooks.ability(defender, "accuracy_as_target", move, defender, default=1.0))
     checks_accuracy = (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
                        and not _sure_hit(attacker, defender))
     if checks_accuracy and rng.random() * 100 >= accuracy:
@@ -1347,12 +1358,48 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     attacker_item = _attacker_item_effect(attacker, move, dealt, drained)
     defender_item = endured or _defender_item_effect(defender, attacker, move, multiplier, dealt) or berry or resisted
     changes = (*changes, *(hooks.move(move, "after_move", attacker, defender, dealt) or ()))
-    return Action(
+    action = Action(
         turn, side, *names, move.name, multiplier=multiplier, critical=critical, changes=changes, recoil=recoil,
         defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
         recovered=recovered, hits=hits, drained=drained, attacker_hp=attacker.hp_percent, ability=ability,
         attacker_item=attacker_item, defender_item=defender_item,
     )
+    if hits:
+        hit = Hit(side, turn, attacker, defender, move, dealt, hits, critical, multiplier, shielded, rng)
+        _announce(defender, hooks.ability(defender, "after_hit", hit))
+    return action
+
+
+@dataclass(frozen=True)
+class Hit:
+    """A damaging move that hit, for the abilities that answer it once the move is over: `side` is the user's,
+    `dealt` the damage past any Substitute (`shielded`), `hits` how many landed."""
+
+    side: int
+    turn: int
+    user: "_Fighter"
+    target: "_Fighter"
+    move: Move
+    dealt: int
+    hits: int
+    critical: bool
+    multiplier: float
+    shielded: bool
+    rng: random.Random
+
+    @property
+    def contact(self) -> bool:
+        return makes_contact(self.user, self.move)
+
+
+def _announce(fighter: "_Fighter", event) -> None:
+    """Logs what an ability did mid-action, shown after the action."""
+    if event is not None and fighter.arena is not None:
+        _append(fighter.arena.log, event)
+
+
+def _weather_of(fighter: "_Fighter") -> str | None:
+    return fighter.arena.weather.kind if fighter.arena is not None else None
 
 
 def _crash(attacker: _Fighter, move: Move) -> tuple[Change, ...]:
