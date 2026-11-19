@@ -1,10 +1,11 @@
 from dataclasses import replace
 
 import pytest
+from attacks import attack
 
 from ypoke import pokeapi
 from ypoke.battle import (
-    AbilityTrigger, Action, BaseStats, BattleResult, Combatant, MegaEvolution, MegaForm, Move, SendOut, simulate,
+    AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, MegaEvolution, MegaForm, Move, SendOut, simulate,
 )
 from ypoke.commands import Reply, result_blocks
 from ypoke.mega_stones import MEGA_STONES, mega_form_id
@@ -15,6 +16,7 @@ from ypoke.store import Store
 IVS = BaseStats(15, 15, 15, 15, 15, 15)
 TACKLE = Move("몸통박치기", "normal", 40, physical=True, accuracy=100)
 MEGA = MegaForm(types=("fire", "dragon"), base=BaseStats(78, 130, 111, 130, 85, 100), ability="단단한발톱")
+CLOSE_COMBAT = attack(370)
 
 
 def mon(name, mega=None, types=("normal",), speed=80):
@@ -43,7 +45,7 @@ def test_mega_holder_evolves_before_turn_one_and_fights_with_mega_stats():
     assert result.winner == 0
 
 
-def test_a_holder_further_back_evolves_as_it_is_sent_out():
+def test_a_holder_further_back_evolves_at_the_start_of_the_turn_after_it_is_sent_out():
     strong = replace(mon("강함", speed=200), base=BaseStats(100, 255, 100, 255, 100, 200))
     team = (replace(mon("첫째"), level=5), mon("둘째", MEGA))
     events = simulate((team, (strong,)), seed=3).events
@@ -51,7 +53,8 @@ def test_a_holder_further_back_evolves_as_it_is_sent_out():
     assert len(evolutions) == 1
     evolution = events[evolutions[0]]
     assert (evolution.side, evolution.pokemon) == (0, "둘째")
-    assert [type(event).__name__ for event in events[evolutions[0] - 1:evolutions[0]]] == ["SendOut"]
+    sent = events[evolutions[0] - 1]
+    assert isinstance(sent, SendOut) and evolution.turn == sent.turn + 1
 
 
 def test_only_the_first_holder_of_a_side_evolves():
@@ -67,7 +70,7 @@ def test_each_side_gets_its_own_mega_evolution():
         (0, "가"), (1, "나")]
 
 
-def test_a_mega_ability_fires_when_the_holder_is_sent_out_mid_battle():
+def test_a_mega_ability_fires_when_a_holder_sent_out_mid_battle_mega_evolves():
     drought = replace(MEGA, ability="가뭄", ability_id="drought")
     strong = replace(mon("강함", speed=200), base=BaseStats(100, 255, 100, 255, 100, 200))
     team = (replace(mon("첫째"), level=5), mon("둘째", drought))
@@ -85,18 +88,40 @@ def test_mega_swaps_in_the_mega_speed_and_types():
     assert without.side == 1
 
 
-def test_a_known_mega_ability_takes_effect_on_entry():
+def test_a_mega_ability_with_an_entry_effect_acts_as_its_holder_mega_evolves():
     drought = replace(MEGA, ability="가뭄", ability_id="drought")
     holder = replace(mon("리자몽", drought), ability="blaze")
-    triggers = [event for event in simulate((holder, mon("상대")), seed=3).events if isinstance(event, AbilityTrigger)]
+    events = simulate((holder, mon("상대")), seed=3).events
+    triggers = [event for event in events if isinstance(event, AbilityTrigger)]
     assert [(trigger.ability, trigger.weather) for trigger in triggers] == [("drought", "sun")]
+    assert isinstance(events[events.index(triggers[0]) - 1], MegaEvolution)
 
 
-def test_an_unknown_mega_ability_replaces_the_base_one_with_nothing():
+def test_the_base_ability_acts_on_entry_and_an_unknown_mega_ability_does_nothing_after():
     tough_claws = replace(MEGA, ability_id="tough-claws")
     holder = replace(mon("리자몽", tough_claws), ability="intimidate")
     events = simulate((holder, mon("상대")), seed=3).events
-    assert not any(isinstance(event, AbilityTrigger) for event in events)
+    triggers = [index for index, event in enumerate(events) if isinstance(event, AbilityTrigger)]
+    evolution = next(index for index, event in enumerate(events) if isinstance(event, MegaEvolution))
+    assert [events[index].ability for index in triggers] == ["intimidate"]
+    assert triggers[0] < evolution
+
+
+def test_a_mega_staraptor_lead_intimidates_on_entry_then_mega_evolves_and_close_combat_raises_its_defenses():
+    contrary = MegaForm(types=("fighting", "flying"), base=BaseStats(85, 140, 100, 60, 90, 110), ability="심술꾸러기",
+                        ability_id="contrary", form_id=10308)
+    holder = replace(mon("찌르호크", contrary, types=("normal", "flying")), ability="intimidate", moves=(CLOSE_COMBAT,))
+    sturdy = replace(mon("딩루", types=("dark", "ground")), base=BaseStats(255, 125, 255, 55, 255, 45))
+    result = simulate((holder, sturdy), seed=3)
+    events = result.events
+    intimidate = next(event for event in events if isinstance(event, AbilityTrigger))
+    assert (intimidate.ability, intimidate.change) == ("intimidate", Change(1, "딩루", "attack", -1))
+    assert events.index(intimidate) < next(index for index, event in enumerate(events) if isinstance(event, MegaEvolution))
+    close_combat = next(event for event in events if isinstance(event, Action) and event.side == 0)
+    assert [(change.kind, change.stages) for change in close_combat.changes] == [("defense", 1), ("special_defense", 1)]
+    lines = battle_log(result)[0].splitlines()
+    assert lines[1:3] == ["🔵 찌르호크 [위협] 공격↓", "🔵 찌르호크 메가진화 [심술꾸러기]"]
+    assert lines[3].startswith("🔵 찌르호크 › 인파이트 → 딩루") and lines[3].endswith("효과 굉장 자신 방어↑")
 
 
 def test_missing_mega_ability_data_keeps_the_base_ability():

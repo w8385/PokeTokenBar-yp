@@ -3,7 +3,8 @@
 are `battle._Fighter`s."""
 
 from ypoke import battle, battle_data
-from ypoke.effects import register
+from ypoke.battle import shift_stage as shift
+from ypoke.effects import hooks, register
 from ypoke.effects.moves import StatusMove
 
 FOE_DROP_FLOOR = -2
@@ -42,9 +43,8 @@ class Stages(StatusMove):
         if not self._ready(move, user, foe):
             return "", ()
         if self.targets_foe(move):
-            if battle._stats_guarded(foe, not battle._infiltrates(user)):
-                return "", ()
-            landed = shift_all(foe, 1 - side, arg(move, "changes"))
+            guarded = battle._stats_guarded(foe, not battle._infiltrates(user))
+            landed = shift_all(foe, 1 - side, arg(move, "changes"), guarded)
             return ("stages" if landed else ""), landed
         cost = arg(move, "cost", 0)
         if cost and user.hp <= user.max_hp // cost:
@@ -75,7 +75,8 @@ def arg(move, field: str, default=None):
 def drop_wanted(changes, user, foe, weather) -> bool:
     if guarded(user, foe):
         return False
-    return any(stages < 0 and foe.stages[key] > FOE_DROP_FLOOR and useful(foe, user, key, weather)
+    factor = hooks.ability(foe, "stage_factor", default=1)
+    return any(stages * factor < 0 and foe.stages[key] > FOE_DROP_FLOOR and useful(foe, user, key, weather)
                for key, stages in changes)
 
 
@@ -102,22 +103,14 @@ def _attacks(fighter, physical: bool) -> bool:
 
 
 def boost_wanted(changes, user, foe, weather) -> bool:
-    return any(stages > 0 and user.stages[key] < battle.MAX_STAGE and useful(user, foe, key, weather)
+    factor = hooks.ability(user, "stage_factor", default=1)
+    return any(stages * factor > 0 and user.stages[key] < battle.MAX_STAGE and useful(user, foe, key, weather)
                for key, stages in changes)
 
 
-def shift_all(fighter, side: int, changes) -> tuple:
-    return tuple(change for key, stages in changes if (change := shift(fighter, side, key, stages)) is not None)
-
-
-def shift(fighter, side: int, key: str, stages: int):
-    """Moves one stage within ±6; the `battle.Change` that landed, None when the stage was already at its end."""
-    before = fighter.stages[key]
-    fighter.stages[key] = max(-battle.MAX_STAGE, min(battle.MAX_STAGE, before + stages))
-    if fighter.stages[key] == before:
-        return None
-    fighter.lowered = fighter.lowered or fighter.stages[key] < before
-    return battle.Change(side, fighter.combatant.name, key, fighter.stages[key] - before)
+def shift_all(fighter, side: int, changes, guarded: bool = False) -> tuple:
+    return tuple(change for key, stages in changes
+                 if (change := shift(fighter, side, key, stages, guarded)) is not None)
 
 
 @register("moves", "growth")

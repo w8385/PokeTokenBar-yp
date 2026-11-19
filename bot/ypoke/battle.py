@@ -6,7 +6,8 @@ Yawn, Thunder Wave, the pivot moves) with the field and side states: terrains, G
 Mist, Lucky Chant and the entry hazards. Abilities, items, move effects and active states act through their handlers
 in `ypoke.effects`, which this turn loop calls at the hook points of `effects.hooks.HOOKS`.
 The next member comes in when one faints; the only other switch is a pivot move's. The first member of a side
-holding its Mega Stone (or Primal orb) Mega Evolves as it enters."""
+holding its Mega Stone Mega Evolves at the start of its first turn, after its entry ability has acted; a Primal orb
+reverts its holder as it enters."""
 
 import math
 import random
@@ -473,6 +474,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
         arena.turn = turn
         for team in teams:
             team.start_turn()
+        _mega_evolutions(teams, turn, weather, rng, events)
         fighters = (teams[0].active, teams[1].active)
         choices =(_choose(teams, 0, arena, weather.kind), _choose(teams, 1, arena, weather.kind))
         for fighter, choice in zip(fighters, choices):
@@ -711,9 +713,10 @@ def _field_upkeep(turn: int, arena: "_Arena", events: list[Event]) -> None:
 
 
 def _enter_forms(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
-    """Everything a Pokémon that just entered changes about itself before the entry abilities: the Mega Evolution
-    (or Stellar form, which shares its once-per-battle slot), Terapagos' Terastal form, then its item's form."""
-    _mega_evolve(team, side, turn, events)
+    """Everything a Pokémon that just entered changes about itself before the entry abilities: its Primal Reversion
+    (which takes the side's Mega Evolution slot), Terapagos' Terastal form, then its item's form."""
+    if _mega_ready(team, at_entry=True):
+        _mega_evolve(team, side, turn, events)
     fighter = team.active
     combatant = fighter.combatant
     if combatant.tera:
@@ -723,25 +726,50 @@ def _enter_forms(team: "_Team", side: int, turn: int, events: list[Event]) -> No
         events.append(shift)
 
 
+def _mega_ready(team: "_Team", at_entry: bool) -> bool:
+    """The active member holds a form the side's once-per-battle slot still allows: a Primal orb reverts it as it
+    enters, any other form (Mega Stone, Ultra Burst, Terapagos' Stellar form) at the start of a turn."""
+    mega = team.active.combatant.mega
+    return (mega is not None and (mega.kind == "primal") == at_entry
+            and (not team.mega_used or team.unlimited_megas))
+
+
 def _mega_evolve(team: "_Team", side: int, turn: int, events: list[Event]) -> None:
-    """A Pokémon that just entered keeps its HP share, status and stat stages (a Sticky Web drop); its Mega form
-    replaces the base stats and types."""
+    """The active member keeps its HP share, status, stat stages and states; its Mega form replaces the base stats,
+    types and ability."""
     fighter = team.active
-    mega = fighter.combatant.mega
-    if mega is None or (team.mega_used and not team.unlimited_megas):
-        return
-    ability = fighter.combatant.ability
+    combatant = fighter.entered_as or fighter.combatant
+    mega = combatant.mega
+    ability = combatant.ability
     if mega.ability_id is not None:
         ability = mega.ability_id if mega.ability_id in abilities.NAMES else None
-    evolved = replace(fighter.combatant, types=mega.types, base=mega.base, ability=ability, mega=None, tera=False)
-    mega_fighter = _Fighter.enter(evolved, _carry_of(fighter))
-    mega_fighter.stages = fighter.stages
-    team.place(team.current, mega_fighter)
+    evolved = replace(combatant, types=mega.types, base=mega.base, ability=ability, mega=None, tera=False)
+    form = _Fighter.enter(evolved)
+    fighter.hp = max(1, round(fighter.hp * form.max_hp / fighter.max_hp))
+    fighter.combatant, fighter.max_hp, fighter.stats = evolved, form.max_hp, form.stats
+    fighter.entered_as = fighter.entered_stats = None
     team.mega_used = True
     if mega.kind == "stellar":
         events.append(FormShift(turn, side, fighter.combatant.name, "stellar", mega.form_id))
     else:
         events.append(MegaEvolution(turn, side, fighter.combatant.name, mega.ability, mega.form_id, mega.kind))
+
+
+def _mega_evolutions(teams: tuple["_Team", "_Team"], turn: int, weather: "_Weather", rng: random.Random,
+                     events: list[Event]) -> None:
+    """The start of a turn: each active member whose form is ready takes it, the faster first, and its new ability
+    acts as if it had just entered (Mega Charizard Y's Drought)."""
+    ready = tuple(side for side in (0, 1) if _mega_ready(teams[side], at_entry=False))
+    if not ready:
+        return
+    order = ready
+    if len(ready) == 2:
+        speeds = [team.active.stat("speed") for team in teams]
+        order = (0, 1) if speeds[0] > speeds[1] or (speeds[0] == speeds[1] and rng.random() < 0.5) else (1, 0)
+    for side in order:
+        _mega_evolve(teams[side], side, turn, events)
+        events.extend(_enter_battle((teams[0].active, teams[1].active), weather, rng, (side,)))
+    _item_triggers(turn, (teams[0].active, teams[1].active), events)
 
 
 @dataclass
@@ -1422,15 +1450,25 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
         target, target_side = (attacker, side) if move.stat_on_user else (defender, 1 - side)
         guarded = not move.stat_on_user and _stats_guarded(defender, not _infiltrates(attacker))
         for key, stages in move.stat_changes:
-            if guarded and stages < 0:
-                continue
-            before = target.stages[key]
-            target.stages[key] = max(-MAX_STAGE, min(MAX_STAGE, before + stages))
-            target.lowered = target.lowered or target.stages[key] < before
-            if target.stages[key] != before:
-                changes.append(Change(target_side, target.combatant.name, key, target.stages[key] - before))
+            change = shift_stage(target, target_side, key, stages, guarded)
+            if change is not None:
+                changes.append(change)
     changes.extend(hooks.move(move, "secondary", attacker, defender, side, rng, default=()))
     return tuple(changes), blocked_by
+
+
+def shift_stage(fighter: _Fighter, side: int, key: str, stages: int, guarded: bool = False) -> Change | None:
+    """Moves one stat stage within ±6, turned around by its holder's Contrary; the `Change` that landed, None when
+    the stage stayed or `guarded` (Mist, Clear Body) stopped a drop."""
+    stages *= hooks.ability(fighter, "stage_factor", default=1)
+    before = fighter.stages[key]
+    if guarded and stages < 0:
+        return None
+    fighter.stages[key] = max(-MAX_STAGE, min(MAX_STAGE, before + stages))
+    if fighter.stages[key] == before:
+        return None
+    fighter.lowered = fighter.lowered or fighter.stages[key] < before
+    return Change(side, fighter.combatant.name, key, fighter.stages[key] - before)
 
 
 def _contact_effect(side: int, move: Move, attacker: _Fighter, defender: _Fighter,

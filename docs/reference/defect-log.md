@@ -1757,6 +1757,23 @@ read_when:
   Nothing failed because the other pick and the focus cases still ran every handler; adding 18 moves made the length
   399 (3 × 7 × 19) and 68 handlers dropped out of the replays at once. Now `_stride` takes the first step from 3, 7
   and 5 up that shares no factor with the length, so every index is reached whatever the length.
+- **Contact is a move flag, not the physical category.** Rocky Helmet chipped a Meowscarada's Flower Trick, and Static
+  never answered Grass Knot: PokéAPI has no contact flag, so every contact check read `move.physical`, and the data
+  said so in a "physical stands in" note. Every contact test used Tackle or Body Slam, physical moves that do make
+  contact, so no test held a physical move without contact or a special one with it. Now moves carry Showdown's
+  `flags.contact` (`generate_battle_data.py --showdown-contact`) and every hook asks `battle.makes_contact`, which
+  also covers Long Reach, Punching Glove and Protective Pads. Class sweep: Rocky Helmet, the contact abilities, the
+  contact shields (King's Shield, Spiky Shield, Baneful Bunker family) and Beak Blast; Shell Trap and the counter
+  moves keep the category on purpose. `test_move_contact.py` holds one move of each kind (Flower Trick, Close
+  Combat, Grass Knot, Earthquake); putting back `return move.physical` fails 12 tests.
+- **A Mega Evolution happens at the start of its holder's turn, after its entry ability.** A Staraptor holding its
+  stone entered already Mega, so its base Intimidate never fired and its Mega ability took over at once. Mega
+  Evolution was built as one of the entry forms, and `test_an_unknown_mega_ability_replaces_the_base_one_with_nothing`
+  pinned the wrong rule (no Intimidate). Now `_mega_evolutions` runs after `start_turn` (Mega, Ultra Burst, Stellar);
+  a Primal orb still reverts on entry. The Mega ability's entry effect (Drought) fires as it evolves. Class sweep of
+  `_enter_forms`: Terapagos' Terastal form and the item forms are entry effects in the games too. Stat stage changes now
+  go through `battle.shift_stage`, where Contrary turns each one around before Mist or Clear Body judges it.
+  Known gap: a self stat change (Close Combat) still does not apply when the hit knocks the target out.
 
 ## Tests and the user's desktop
 
