@@ -44,7 +44,7 @@ PokeTokenBar turns the AI coding tokens you're already burning — Claude Code, 
 4. 🎓 **Graduate & collect.** Final form + threshold permanently archives it in your **Pokédex** — rarer takes longer (≈3 days Normal → ≈24 days Legendary at heavy use) — and a fresh egg arrives.
 5. 🍬 **Max out, get a candy.** Fill a 5-hour or weekly usage limit and you earn **Rare Candy** — spend it from the **Bag** to grow your current Pokémon.
 6. 🛒 **Spend at the Shop.** Every token you've used is spendable currency — buy **Rare Candy**, a **Mint** that sets your Pokémon's nature to the one you pick, a **Shiny Charm** that permanently raises your shiny odds, or an egg to send off your current companion and start over. Eggs come in three grades: a plain **Pokémon Egg**, a **Rare Egg** guaranteed to hatch Rare or better, and an **Epic Egg** guaranteed to hatch Epic or better. A **Scout Ticket** for each region (or all of them) shows 10 random Pokémon from it so you can pick the egg you want.
-7. 🔁 **Trade with coworkers.** Swap graduated Pokémon with a linked coworker from the Friends tab (the other side accepts in Slack), or send a graduated Pokémon straight from its Box detail. Pokémon that evolve by trade, like Haunter or Kadabra, now stop there until they're traded — or until you use a **Linking Cord** from the Shop on one in your Box. Trade evolutions that also need a held item (Onix with Metal Coat, Seadra with Dragon Scale, …) need that item equipped on the Pokémon first, in its Box detail; Karrablast and Shelmet evolve when traded for each other, or with a Linking Cord while the other one is your friend.
+7. 🔁 **Trade with coworkers.** Swap graduated Pokémon with a linked coworker from the Friends tab (the other side accepts in Slack), or send a graduated Pokémon straight from its Box detail. Or put one up for **Miracle Trade** in the battle channel: the first coworker to pick one of theirs trades with you at once. Pokémon that evolve by trade, like Haunter or Kadabra, now stop there until they're traded — or until you use a **Linking Cord** from the Shop on one in your Box. Trade evolutions that also need a held item (Onix with Metal Coat, Seadra with Dragon Scale, …) need that item equipped on the Pokémon first, in its Box detail; Karrablast and Shelmet evolve when traded for each other, or with a Linking Cord while the other one is your friend.
 
 ## Tour
 
@@ -220,6 +220,15 @@ Sometimes your Pokémon has all the EXP it needs, but its next step waits on som
 An Exp. Share on a Box Pokémon that can't use more EXP moves to the next closest one, or back to the Bag. A fully grown holder with no step left graduates by itself into your Pokédex, and its Exp. Share moves on the same way. An Exp. Share left in the Bag goes on the Pokémon closest to its next step by itself, but never back on one you took it off yourself. Turn all of this off under <b>Settings › General</b>.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-move-on.png" width="300" alt="Home with a Munchlax that needs 30 pets, the time left until it moves to the Box, and Keep waiting"></td>
+</tr>
+<tr>
+<td width="45%" align="center"><img src="assets/screenshot-miracle-trade.png" width="300" alt="An Eevee's Box page up for Miracle Trade, with the Take down button"></td>
+<td width="55%" valign="middle">
+<h3>✨ Miracle Trade</h3>
+<b>Put up for Miracle Trade</b> on a tradable Pokémon's Box page posts it as a card in the YPoke battle channel. The first coworker to press <b>교환하기</b> (Trade) on the card and pick one of their own tradable Pokémon trades with you at once. The card then shows who got what, you both get a DM, and both Pokémon arrive like any other trade. You can have one offer up at a time. It is kept out of other trades, comes down with <b>Take down</b> on the Box page or the card, and expires after 24 hours. The button shows only when the bot has a battle channel.
+<br><br>
+Pokémon pick lists in Slack now tell look-alikes apart by sex, shininess and nature, then #2/#3.
+</td>
 </tr>
 <tr>
 <td width="55%" valign="middle">
