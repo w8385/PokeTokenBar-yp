@@ -1,3 +1,4 @@
+import ast
 import hashlib
 import json
 import math
@@ -283,7 +284,6 @@ FOCUS_CASES = {
     "weather-rock": (((18, "damp-rock", "drizzle", [33]),), ((36, None, None, [33]),)),
     "adaptability": (((474, None, "adaptability", [370, 161]),), ((143, None, None, [33]),)),
     "leaf-guard": (((18, None, "leaf-guard", [33]),), ((36, None, "drought", [92, 33]),)),
-    "serene-grace": (((18, None, "serene-grace", [52]),), ((36, None, None, [33]),)),
     "no-guard": (((68, None, "no-guard", [223]),), ((143, None, None, [33]),)),
     "synchronize": (((65, None, "synchronize", [33]),), ((36, None, None, [92, 33]),)),
     "comatose": (((775, None, "comatose", [33]),), ((36, None, None, [92, 33]),)),
@@ -305,7 +305,7 @@ FOCUS_CASES = {
     "poison-heal": (((18, "toxic-orb", "poison-heal", [33]),), ((101, None, None, [33]),)),
     "flower-veil": (((4, None, "flower-veil", [33]),), ((101, None, None, [45, 261]),)),
     "early-bird": (((101, None, None, [95, 33]),), ((79, None, "early-bird", [33]),)),
-    "comatose": (((18, None, "comatose", [33]),), ((36, None, None, [92, 33]),)),
+    "comatose-toxic": (((18, None, "comatose", [33]),), ((36, None, None, [92, 33]),)),
     "defiant": (((130, None, "intimidate", [33]),), ((18, None, "defiant", [33]),)),
     "rough-skin": (((18, None, None, [33, 88]),), ((36, None, "rough-skin", [33]),)),
     "aftermath": (((18, None, "damp", [33]), (36, None, None, [33])),
@@ -318,19 +318,16 @@ FOCUS_CASES = {
     "contact-ailment": (((18, None, None, [33]),), ((36, None, "effect-spore", [33]), (18, None, "gooey", [33]))),
     "hit-ailment": (((18, None, "poison-touch", [33]), (36, None, "poison-puppeteer", [398])),
                     ((36, None, "stench", [33]), (18, None, "spicy-spray", [33]))),
-    "switcheroo": (((94, None, None, [415, 33]),), ((143, "leftovers", None, [33]),)),
     "mold-breaker": (((18, None, "mold-breaker", [89, 33]),), ((36, None, "levitate", [33]),)),
     "neutralizing-gas": (((130, None, "intimidate", [33]),), ((36, None, "neutralizing-gas", [33]),)),
     "trace": (((18, None, "trace", [33]),), ((130, None, "intimidate", [33]),)),
-    "imposter": (((132, None, "imposter", [33]),), ((6, None, None, [370]),)),
+    "imposter-entry": (((132, None, "imposter", [33]),), ((6, None, None, [370]),)),
     "dry-skin": (((18, None, None, [57]),), ((36, None, "dry-skin", [33]),)),
     "toxic-debris": (((18, None, None, [33]),), ((36, None, "toxic-debris", [33]), (36, None, None, [33]))),
     "hydration": (((18, None, "hydration", [33]),), ((36, None, "drizzle", [92, 33]),)),
-    "leaf-guard": (((18, None, "leaf-guard", [33]),), ((36, None, "drought", [92, 33]),)),
     "mycelium-might": (((18, None, "mycelium-might", [92, 33]),), ((36, None, None, [33]),)),
     "unaware": (((18, None, None, [14, 33]),), ((36, None, "unaware", [33]),)),
     "unnerve": (((18, "sitrus-berry", None, [33]),), ((36, None, "unnerve", [33]),)),
-    "weather-rock": (((18, "damp-rock", "drizzle", [33]),), ((36, None, None, [33]),)),
     "zen-mode": (((555, None, "zen-mode", [33]),), ((36, None, None, [370]),)),
     "schooling": (((746, None, "schooling", [33]),), ((36, None, None, [370]),)),
     "stance-change": (((681, None, "stance-change", [588, 33]),), ((36, None, None, [33]),)),
@@ -344,14 +341,13 @@ FOCUS_CASES = {
     "flower-gift": (((421, None, "flower-gift", [33]),), ((36, None, "drought", [33]),)),
     "zero-to-hero": (((964, None, "zero-to-hero", [369]), (36, None, None, [33])), ((6, None, None, [33]),)),
     "mimicry": (((18, None, "mimicry", [33]),), ((36, None, "electric-surge", [33]),)),
-    "protean": (((18, None, "protean", [52, 57]),), ((36, None, "libero", [33]),)),
+    "protean-libero": (((18, None, "protean", [52, 57]),), ((36, None, "libero", [33]),)),
     "color-change": (((18, None, "color-change", [33]),), ((36, None, None, [52]),)),
     "rks-system": (((773, "fire-memory", "rks-system", [718]),), ((36, None, None, [33]),)),
     "tera-shell": (((36, None, "tera-shell", [33]),), ((6, None, None, [370]),)),
     "teraform-zero": (((36, None, None, [33]), (1024, "stellar-crystal", "tera-shift", [33])),
                       ((6, None, "drought", [370]),)),
     "battle-bond": (((658, None, "battle-bond", [370]),), ((36, None, None, [33]), (18, None, None, [33]))),
-    "serene-grace": (((18, None, "serene-grace", [52]),), ((36, None, None, [33]),)),
     "sturdy": (((10, None, "sturdy", [33]),), ((6, None, None, [370, 53]),)),
     "cloud-nine": (((18, None, "cloud-nine", [33]),), ((36, None, "drizzle", [33]),)),
     "shed-skin": (((18, None, "shed-skin", [33]),), ((36, None, None, [92, 33]),)),
@@ -371,6 +367,14 @@ def test_fixed_seed_replays_match_the_golden_event_logs(name):
     first = next((index for index, (want, got) in enumerate(zip(expected, actual)) if want != got),
                  min(len(expected), len(actual)))
     assert actual == expected, f"{name}.log line {first + 1}: {actual[first:first + 1]} != {expected[first:first + 1]}"
+
+
+def test_no_focus_case_name_repeats():
+    tree = ast.parse(Path(__file__).read_text())
+    cases = next(node.value for node in tree.body
+                 if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", None) == "FOCUS_CASES")
+    names = [key.value for key in cases.keys]
+    assert sorted({name for name in names if names.count(name) > 1}) == []
 
 
 @pytest.mark.parametrize("start", range(0, PVP_SCENARIOS, PVP_PER_FILE))
