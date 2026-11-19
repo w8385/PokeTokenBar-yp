@@ -47,6 +47,7 @@ BLOCKED_TAG = {
     "heal-block": "🚫회복봉인으로 못 씀", "imprison": "🔒봉인되어 못 씀", "powder": "💥분진이 터졌다",
     "flinch": "😖풀죽어서 못 움직임", "throat-chop": "🤐소리 기술을 못 씀", "recharge": "😮‍💨반동으로 못 움직임",
     "lost-focus": "😵집중이 흐트러졌다", "shell-trap": "🐚트랩이 터지지 않았다",
+    "magic-coat": "🪞매직코트로 되받아쳤다", "snatch": "🫳가로채기에 빼앗겼다",
 }
 RECOVERED_TAG = {"sleep": "💤깸", "freeze": "🧊풀림", "confusion": "💫풀림"}
 FORM_CAPTION = {
@@ -151,12 +152,12 @@ CHANGE_TEXT = {
 }
 # What an ability did, by `AbilityAct.effect` or `AbilityEntry.effect`; `{detail}` is a type, item or ability name.
 ABILITY_EFFECT_TEXT = {
-    "first": "선제공격", "guard": "능력이 떨어지지 않는다", "bounce": "기술을 되받아쳤다",
+    "first": "선제공격", "guard": "능력이 떨어지지 않는다",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
-ABILITY_BLOCKED_TEXT = {"truant": " 게으름을 피우고 있다"}
+ABILITY_BLOCKED_TEXT = {"truant": " 게으름을 피우고 있다", "magic-bounce": "로 되받아쳤다"}
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
-                     "magic-coat": "발동 (되받아침)", "snatch": "발동 (가로챔)", "binding": "풀려났다"}
+                     "binding": "풀려났다"}
 
 
 Image = tuple[str, str]
@@ -530,7 +531,8 @@ def _action_line(event: Action, marker: str) -> str:
     if event.blocked == "confusion":
         return f"{head} 💫혼란 자해 {event.attacker_hp}%"
     if event.blocked and event.move:
-        tags = [_change_tag(change, event.side) for change in event.changes]
+        tags = [ON_FOE_TEXT.get(event.effect, ""), *(_change_tag(change, event.side) for change in event.changes)]
+        tags = list(filter(None, tags))
         return " ".join([f"{head} › {event.move} → {_blocked_tag(event.blocked)}", *tags])
     if event.blocked:
         return f"{head} {_blocked_tag(event.blocked)}"
