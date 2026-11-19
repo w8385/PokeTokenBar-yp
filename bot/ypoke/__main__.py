@@ -24,6 +24,7 @@ from ypoke.transport import (
     deliver,
     mention_listener,
     miracle_listener,
+    options_listener,
     post_direct_messages,
     rematch_listener,
     slash_listener,
@@ -78,6 +79,8 @@ def main() -> None:
     app.action(MIRACLE_ACCEPT_ACTION_ID)(miracle_listener(miracle, "accept"))
     app.action(MIRACLE_CANCEL_ACTION_ID)(miracle_listener(miracle, "cancel"))
     app.action(MIRACLE_PICK_ACTION_ID)(miracle_listener(miracle, "pick"))
+    app.options(PICK_ACTION_ID)(options_listener(trades))
+    app.options(MIRACLE_PICK_ACTION_ID)(options_listener(trades))
     app.event("app_mention")(mention_listener(handler))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 

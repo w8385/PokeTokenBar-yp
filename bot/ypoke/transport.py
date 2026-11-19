@@ -124,6 +124,20 @@ def trade_listener(trades: TradeService, kind: str):
     return listener
 
 
+def options_listener(trades: TradeService):
+    """Loads a typed-ahead picker (trade or miracle): the block id is the trade or offer the options are for."""
+
+    def listener(ack, body, payload) -> None:
+        try:
+            options = trades.suggest(body["user"]["id"], payload.get("block_id") or "", payload.get("value") or "")
+        except Exception:
+            log.exception("picker options failed")
+            options = []
+        ack(options=options)
+
+    return listener
+
+
 def miracle_listener(miracle: MiracleService, kind: str):
     """A miracle card button or the private picker: `kind` is `accept`, `cancel` or `pick`. Answers are private;
     only a final pick replaces the picker it came from. The card itself is edited through the board."""

@@ -19,7 +19,7 @@ from ypoke.store import Store
 
 TRADE_LIFETIME = timedelta(hours=24)
 HISTORY_WINDOW = timedelta(days=3)
-MAX_POOL = 100
+MAX_POOL = 2000
 HELD_ITEM_KEY = "tradeHeldItem"
 MAX_ENTRY_BYTES = 4096
 MAX_OPEN_OFFERS = 3
@@ -29,6 +29,7 @@ DECLINE_ACTION_ID = "trade_decline"
 OPEN_STATUSES = ("offered", "countered")
 DEFAULT_PARTNER = "동료"
 OPTION_TEXT_LIMIT = 75
+PICKER_LIMIT = 100
 DUPLICATE_SUFFIX_ROOM = len(f" #{MAX_POOL}")
 GENDER_SYMBOLS = {"male": "♂", "female": "♀"}
 NATURE_NAMES_KO = {
@@ -81,12 +82,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS miracle_one_open ON miracle_offers (poster_id)
 _NOT_YOURS = "이 교환은 당신 차례가 아니에요."
 _NOT_TRADABLE = "그 포켓몬은 지금 교환할 수 없어요. 앱에서 키우는 포켓몬이나 대결에 내보낸 포켓몬은 먼저 바꿔 주세요."
 
+UNKNOWN_INDIVIDUAL = "그 포켓몬 정보가 아직 봇에 없어요. 앱을 열어 동기화한 뒤 다시 해 주세요."
+
 NameFor = Callable[[str], str | None]
 
 PROPOSE_ERRORS = {
     "self": "자기 자신과는 교환할 수 없어요.",
     "unknown_user": "그 사람은 아직 교환할 수 있는 포켓몬을 올리지 않았어요.",
-    "unknown_individual": "그 포켓몬은 교환할 수 없어요. 키우는 포켓몬이나 대결에 내보낸 포켓몬은 먼저 바꿔 주세요.",
+    "unknown_individual": UNKNOWN_INDIVIDUAL,
     "locked": "그 포켓몬은 이미 다른 교환에 걸려 있어요.",
     "too_many": "진행 중인 교환 제안이 너무 많아요. 끝난 뒤에 다시 해 주세요.",
 }
@@ -155,13 +158,13 @@ class TradeService:
         """Everyone else with something to trade."""
         with closing(self._connect()) as connection:
             rows = connection.execute(
-                "SELECT slack_user_id, pool_json FROM trade_pools WHERE slack_user_id != ?", (user_id,)
+                "SELECT slack_user_id FROM trade_pools WHERE slack_user_id != ? AND pool_json != '[]'", (user_id,)
             ).fetchall()
-        return [
-            {"id": self._handle(other), "name": self._name(other)}
-            for other, pool_json in rows
-            if other != self._bot_user_id and json.loads(pool_json)
-        ]
+        return [{"id": self._handle(other), "name": self._name(other)} for (other,) in rows if other != self._bot_user_id]
+
+    def suggest(self, user_id: str, owner_id: str, query: str) -> list[dict]:
+        """A typed-ahead picker's options: the user's own free Pokémon matching `query`, valued for `owner_id`."""
+        return matching_options(owner_id, self.free_entries(user_id), query)
 
     def propose(self, user_id: str, to_id: str, give_id: str) -> ProposeResult:
         """An offer of the user's `give_id` to `to_id`, who gets a DM to pick one back."""
@@ -299,11 +302,7 @@ class TradeService:
         buttons = [{"type": "button", "action_id": DECLINE_ACTION_ID, "value": trade.id,
                     "text": {"type": "plain_text", "text": "거절"}}]
         if options:
-            blocks.append({"type": "actions", "elements": [{
-                "type": "static_select", "action_id": PICK_ACTION_ID,
-                "placeholder": {"type": "plain_text", "text": "내가 내놓을 포켓몬 고르기"},
-                "options": options,
-            }]})
+            blocks.append(picker_block(PICK_ACTION_ID, trade.id, options))
             buttons.insert(0, {"type": "button", "style": "primary", "action_id": ACCEPT_ACTION_ID, "value": trade.id,
                                "text": {"type": "plain_text", "text": "수락"}})
         else:
@@ -472,6 +471,25 @@ def _normalize_entry(item: object) -> dict | None:
         "name": name.strip()[:40] if isinstance(name, str) and name.strip() else f"#{pokemon_id}",
         "entry": detail,
     }
+
+
+def picker_block(action_id: str, owner_id: str, options: list[dict]) -> dict:
+    """A select of `options`. Past Slack's 100 it loads them as the player types (`matching_options`); the block id
+    carries `owner_id` for that lookup."""
+    select = {"action_id": action_id, "placeholder": {"type": "plain_text", "text": "내가 내놓을 포켓몬 고르기"}}
+    if len(options) <= PICKER_LIMIT:
+        select |= {"type": "static_select", "options": options}
+    else:
+        select |= {"type": "external_select", "min_query_length": 0}
+    return {"type": "actions", "block_id": owner_id, "elements": [select]}
+
+
+def matching_options(owner_id: str, entries: list[dict], query: str) -> list[dict]:
+    """The options whose label holds every word of `query`, first 100. Labels come from the whole list, so a
+    ` #2` stays the same whatever is typed."""
+    words = query.casefold().split()
+    options = pick_options(owner_id, entries)
+    return [option for option in options if all(word in option["text"]["text"].casefold() for word in words)][:PICKER_LIMIT]
 
 
 def pick_options(owner_id: str, entries: list[dict]) -> list[dict]:

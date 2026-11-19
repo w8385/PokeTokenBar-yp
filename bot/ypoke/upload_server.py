@@ -23,7 +23,7 @@ from ypoke.store import Store
 from ypoke.tera_forms import usable_item
 from ypoke.trades import PROPOSE_ERRORS, TradeService
 
-MAX_BODY_BYTES = 64 * 1024
+MAX_BODY_BYTES = 5 * 1024 * 1024
 MAX_PARTY_SIZE = 6
 RECENT_BATTLE_LIMIT = 5
 COWORKER_LIMIT = 30
