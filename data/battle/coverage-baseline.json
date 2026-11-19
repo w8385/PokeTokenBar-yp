@@ -143,38 +143,27 @@
  "abilities": {
   "counts": {
    "implemented": 265,
-   "inert": 81,
-   "todo": 28
+   "inert": 92,
+   "todo": 17
   },
   "todo": [
    "air-lock",
-   "arena-trap",
    "bad-dreams",
    "cheek-pouch",
    "cloud-nine",
    "cud-chew",
-   "cute-charm",
    "desolate-land",
-   "emergency-exit",
    "gluttony",
    "harvest",
    "ice-body",
-   "illusion",
    "klutz",
-   "magnet-pull",
    "mega-sol",
    "primordial-sea",
-   "propeller-tail",
    "protosynthesis",
    "quark-drive",
    "rain-dish",
    "ripen",
-   "rivalry",
-   "shadow-tag",
-   "stalwart",
-   "sticky-hold",
-   "suction-cups",
-   "wimp-out"
+   "sticky-hold"
   ]
  },
  "moves": {
