@@ -9,7 +9,7 @@ final class LimitProgressRenderingTests: XCTestCase {
         let suite = "LimitProgressRendering-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let store = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let store = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
 
         func renderedPercent(_ used: Double) throws -> Double {
             let view = LimitProgressBar(usedPercent: used, tint: .blue)
@@ -43,7 +43,7 @@ final class LimitProgressRenderingTests: XCTestCase {
         let suite = "LimitPaceRendering-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let store = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let store = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let width = 200.0
         let height = 14.0
 
@@ -104,7 +104,7 @@ final class LimitProgressRenderingTests: XCTestCase {
         let suite = "LimitPaceHeight-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let store = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let store = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let width = 200.0
         let height = 20.0
 

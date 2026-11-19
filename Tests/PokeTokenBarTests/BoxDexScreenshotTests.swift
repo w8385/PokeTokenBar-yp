@@ -29,8 +29,7 @@ final class BoxDexScreenshotTests: XCTestCase {
         store.update(todayTokensByProvider: ["test": 0], todayDate: "d1", monthTotal: 0, burnTier: .idle,
                      limitWarning: false, hasUsageData: true)
         for _ in 0..<100 where store.currentLine == nil { await Task.yield() }
-        let usage = UsageStore(providers: [], discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil },
-                               claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults)
+        let usage = UsageStore.offline(providers: [], defaults: defaults)
         let updater = UpdateChecker(currentVersion: "2.5.7-yp1", defaults: defaults, fetchLatest: { nil })
         let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("box-dex-\(UUID())")
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)

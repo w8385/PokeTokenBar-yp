@@ -704,7 +704,7 @@ final class AntigravityUsageTests: XCTestCase {
         let suite = "AntigravityUsageTests.registry.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
-        let store = UsageStore(autoRefresh: false, defaults: defaults)
+        let store = UsageStore(statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         XCTAssertTrue(store.registeredProviderIDs.contains("antigravity"))
     }
 

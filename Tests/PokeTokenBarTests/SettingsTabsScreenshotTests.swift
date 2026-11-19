@@ -23,7 +23,7 @@ final class SettingsTabsScreenshotTests: XCTestCase {
         let file = scratch.appendingPathComponent("state.json")
         try JSONEncoder().encode(state).write(to: file)
         let store = CompanionStore(fileURL: file, defaults: defaults)
-        let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let uploader = PartyUploader(
             tokenStore: PartyTokenStore(fileURL: scratch.appendingPathComponent("token")), defaults: defaults,
             appVersion: "shot", exchange: { _ in (Data(), 200) }, fetch: { _ in (Data(), 404) },

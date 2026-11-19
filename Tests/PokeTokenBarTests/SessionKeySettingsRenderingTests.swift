@@ -11,7 +11,7 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suite) }
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(suite).json")
         defer { try? FileManager.default.removeItem(at: file) }
-        let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let companion = CompanionStore(fileURL: file, defaults: defaults)
         companion.setLanguage(.en)
         let navigation = PopoverNavigation(defaults: defaults)
@@ -37,7 +37,7 @@ final class SessionKeySettingsRenderingTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suite) }
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(suite).json")
         defer { try? FileManager.default.removeItem(at: file) }
-        let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let companion = CompanionStore(fileURL: file, defaults: defaults)
         companion.setLanguage(.en)
         for tab in [SettingsTab.companion, .notifications] {

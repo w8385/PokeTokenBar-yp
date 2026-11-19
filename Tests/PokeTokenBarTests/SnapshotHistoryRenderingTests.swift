@@ -95,7 +95,7 @@ final class SnapshotHistoryRenderingTests: XCTestCase {
         pinSprite(image, at: key)
         return (CompanionStore(provider: SnapshotHistoryOfflineProvider(), clock: { now },
                                fileURL: file, defaults: defaults),
-                UsageStore(providers: [], autoRefresh: false, defaults: defaults))
+                UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults))
     }
 
     private func host(_ companion: CompanionStore, _ usage: UsageStore) -> NSView {

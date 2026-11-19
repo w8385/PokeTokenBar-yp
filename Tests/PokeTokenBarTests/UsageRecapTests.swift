@@ -347,7 +347,7 @@ final class UsageRecapRenderingTests: XCTestCase {
             .write(to: url)
         let defaults = UserDefaults(suiteName: "recap-render-\(UUID().uuidString)")!
         ledger(since: key(2026, 8, 1), [(key(2026, 9, 17), 5_000), (key(2026, 8, 20), 900)]).save(to: defaults)
-        let usageStore = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let usageStore = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
 
         for language in AppLanguage.allCases {
             let companion = CompanionStore(fileURL: url, defaults: defaults)
@@ -386,7 +386,7 @@ final class UsageRecapRenderingTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         ledger(since: key(2026, 8, 1), [(key(2026, 9, 17), 12_345)]).save(to: defaults)
-        let store = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let store = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let companion = CompanionStore(fileURL: url, defaults: defaults)
 
         for language in AppLanguage.allCases {
@@ -424,7 +424,7 @@ final class UsageRecapRenderingTests: XCTestCase {
             .write(to: url)
         let defaults = UserDefaults(suiteName: "recap-unown-\(UUID().uuidString)")!
         ledger(since: key(2026, 9, 1), [(key(2026, 9, 17), 5_000)]).save(to: defaults)
-        let content = RecapContent(store: UsageStore(providers: [], autoRefresh: false, defaults: defaults),
+        let content = RecapContent(store: UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults),
                                    companion: CompanionStore(fileURL: url, defaults: defaults),
                                    scope: .week, offset: 0, now: now, calendar: calendar())
 

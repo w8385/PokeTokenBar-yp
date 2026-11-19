@@ -54,7 +54,7 @@ final class AsideUsageTests: XCTestCase, @unchecked Sendable {
         let suite = "AsideRegistration-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let ids = UsageStore(autoRefresh: false, defaults: defaults).registeredProviderIDs
+        let ids = UsageStore(statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults).registeredProviderIDs
         XCTAssertTrue(ids.contains("aside"))
         XCTAssertTrue(ids.contains("hermes"))
         XCTAssertEqual(CustomScanRoots.curatedRoots(for: "aside"), LocalAsideUsageReader.roots(customRootsValue: nil))

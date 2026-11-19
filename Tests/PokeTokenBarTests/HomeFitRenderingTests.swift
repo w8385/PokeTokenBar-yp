@@ -115,7 +115,9 @@ struct HeavyHome {
                         provider("gemini", "Gemini CLI", scale: 1)],
             claudeLimitsProvider: HeavyClaudeLimits(status: claude), discoverClaudeConfigDirs: { [] },
             readDefaultIdentity: { nil }, claudeUsageEntries: { _ in [] },
-            codexLimitsProvider: HeavyCodexLimits(status: codex), statusProvider: HeavyStatus(),
+            codexLimitsProvider: HeavyCodexLimits(status: codex), antigravityLimitsProvider: OfflineAntigravityLimits(),
+            cursorLimitsProvider: OfflineCursorLimits(), openCodeGoLimitsProvider: OfflineOpenCodeGoLimits(),
+            grokLimitsProvider: OfflineGrokLimits(), statusProvider: HeavyStatus(), sessionKeys: OfflineSessionKeys(),
             autoRefresh: false, defaults: defaults)
         await store.refresh(scheduleEmptyRetry: false)
         companion.update(todayTokensByProvider: [:], todayDate: todayKey, monthTotal: 0, burnTier: .idle,

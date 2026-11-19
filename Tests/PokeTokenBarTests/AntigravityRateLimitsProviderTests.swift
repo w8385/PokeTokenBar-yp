@@ -138,6 +138,7 @@ final class AntigravityRateLimitsProviderTests: XCTestCase {
         let store = UsageStore(
             providers: [fakeProvider],
             antigravityLimitsProvider: fakeLimits,
+            statusProvider: NoProviderStatus(),
             autoRefresh: false,
             defaults: defaults
         )
@@ -177,6 +178,7 @@ final class AntigravityRateLimitsProviderTests: XCTestCase {
         let store = UsageStore(
             providers: [fakeProvider],
             antigravityLimitsProvider: fakeLimits,
+            statusProvider: NoProviderStatus(),
             autoRefresh: false
         )
 
@@ -195,6 +197,7 @@ final class AntigravityRateLimitsProviderTests: XCTestCase {
         let store = UsageStore(
             providers: [],
             antigravityLimitsProvider: fakeLimits,
+            statusProvider: NoProviderStatus(),
             autoRefresh: false
         )
 

@@ -17,8 +17,7 @@ final class PetXPScreenshotTests: XCTestCase {
         let suite = "pet-xp-shot-\(UUID())"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let usage = UsageStore(providers: [], discoverClaudeConfigDirs: { [] }, readDefaultIdentity: { nil },
-                               claudeUsageEntries: { _ in [] }, autoRefresh: false, defaults: defaults)
+        let usage = UsageStore.offline(providers: [], defaults: defaults)
         let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("pet-xp-shot-\(UUID())")
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: scratch) }

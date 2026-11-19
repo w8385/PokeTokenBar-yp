@@ -48,7 +48,8 @@ final class LocalizationErrorsTests: XCTestCase {
         defaults.set(false, forKey: "statusChecksEnabled")
         let store = UsageStore(providers: [ErrorUsageProvider()],
             claudeLimitsProvider: ErrorClaudeProvider(), codexLimitsProvider: ErrorCodexProvider(),
-            antigravityLimitsProvider: ErrorAntigravityProvider(), sessionKeys: ErrorSessionKeys(),
+            antigravityLimitsProvider: ErrorAntigravityProvider(), statusProvider: NoProviderStatus(),
+            sessionKeys: ErrorSessionKeys(),
             autoRefresh: false, defaults: defaults)
         XCTAssertNil(store.lastErrorMessage(L(.ko)))
         store.localizationLanguage = .ko

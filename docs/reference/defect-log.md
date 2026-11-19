@@ -2149,8 +2149,9 @@ read_when:
   28 PNGs drawn at 1x were redrawn once. Guard: `ReadmeScreenshotTests.testReadmeShotIgnoresTheHostsScreens`
   renders Home on a simulated 1x desktop and on a 2x one, expects the same bytes, and checks that the
   pin is in effect after rendering. Making the pin a no-op fails it (171149 vs 171074 bytes, and
-  "left the backing scale of a 1.0x desktop in place"). After the fix, two README runs leave
-  `git status --porcelain assets/` empty.
+  "left the backing scale of a 1.0x desktop in place"). After the fix, two README runs in a row left
+  `git status --porcelain assets/` empty, but that proved less than it claimed: both runs read the same
+  live status page (next item).
   Class sweep: every test pixel goes through `OffscreenRender.fixedBitmap`, which now pins first. The 114
   classes that use `OffscreenRender` or `LayoutMeasure` pass with the pin.
   Not covered: the pin uses private AppKit SPI. If the selector disappears, `OffscreenRender` stops the
@@ -2159,3 +2160,29 @@ read_when:
   and segmented controls draw in it), Increase Contrast, and Reduce Transparency. Layout-only hosts built
   with `NSHostingController` outside `OffscreenRender` get the pin only after an earlier test in the run
   has gone through `OffscreenRender`.
+- **The README Home image gained a "Major outage · Claude Code" row because the test store read the live
+  status pages.** Train 37's redraw check left 27 of 28 families byte-identical, but
+  `assets/screenshot-home.png` changed. `ReadmeScreenshotTests` built Home's `UsageStore` without a
+  `statusProvider`, so `refresh()` fell back to `StatuspageStatusProvider` and fetched status.claude.com and
+  status.openai.com. The image showed whatever incident was open that hour.
+  Why no test caught it: `testHomeShotIgnoresTheWallClock` and the two-run proof above compare renders made
+  in one run, minutes apart. Both renders read the same live page, so they matched. A comparison inside one
+  run cannot catch an input that stays constant across the run (live network, the host's screens, the
+  system accent colour); only cutting that input off can.
+  Fix: `UsageStore.offline(providers:defaults:pinnedNow:)` (in `OfflineUsageSources.swift`) passes a fake for
+  every outside source: status (`NoProviderStatus`), every limits provider, session keys, Claude config
+  folders, identity, prompts and display sleep. The README stores and nine other screenshot tests use it.
+  The render tests that refresh (`HomeFitRenderingTests`, `ZeroUsageHomeRenderingTests`,
+  `SecureStorageAccountsScreenshotTests`) now pass the offline limits fakes they were missing.
+  Class sweep: 70 `UsageStore(` calls in Tests kept the default status provider. All 70 now pass
+  `statusProvider: NoProviderStatus()` or use `.offline`.
+  Guards: `LiveStatusGuardTests` (listed in `scripts/invariant-tests.sh`) scans Tests for any `UsageStore(`
+  call without `statusProvider:`, skipping comments and strings. `ReadmeScreenshotTests` also fails every
+  shared-session request made while Home's store refreshes and asserts there were none. Putting the old
+  store back fails both: the scan names `ReadmeScreenshotTests.swift:415`, and the three Home tests report
+  `["status.claude.com", "status.openai.com"]`.
+  Not covered: the request trap sees only `URLSession.shared`. The limits providers (Cursor, OpenCode Go,
+  Grok) build their own sessions, so the README stores rely on the fakes for them. Non-render unit tests
+  still build stores that keep one or more default limits providers or session keys (`UsageStoreTests`,
+  `AdditionalClaudeAccountsTests`, `UsageRecapTests`, `GrokUsageTests`, `AntigravityRateLimitsProviderTests`
+  and a few others); nothing guards those.

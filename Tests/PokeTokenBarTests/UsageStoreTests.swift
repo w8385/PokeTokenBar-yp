@@ -207,6 +207,7 @@ final class UsageStoreTests: XCTestCase {
                    claudeLimitsProvider: FakeClaudeLimits(status: claude),
                    codexLimitsProvider: FakeCodexLimits(status: codex),
                    antigravityLimitsProvider: FakeAntigravityLimits(status: antigravity),
+                   statusProvider: NoProviderStatus(),
                    autoRefresh: false,
                    defaults: testDefaults)
     }
@@ -338,6 +339,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                                claudeLimitsProvider: limits,
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                autoRefresh: false,
                                defaults: testDefaults)
 
@@ -943,6 +945,7 @@ final class UsageStoreTests: XCTestCase {
                                codexLimitsProvider: FakeCodexLimits(status: nil),
                                antigravityLimitsProvider: FakeAntigravityLimits(status: nil),
                                cursorLimitsProvider: cursor,
+                               statusProvider: NoProviderStatus(),
                                autoRefresh: false,
                                defaults: testDefaults)
         await store.refresh(scheduleEmptyRetry: false)
@@ -1264,7 +1267,7 @@ final class UsageStoreTests: XCTestCase {
     /// 기본 등록 프로바이더 레지스트리 무결성 — 비어 있지 않고 id 가 유일.
     /// (새 프로바이더를 배열에 등록하는 단일 지점이 살아있는지 최소 보증.)
     func testDefaultProviderRegistryHasUniqueIds() {
-        let store = UsageStore(autoRefresh: false, defaults: testDefaults)
+        let store = UsageStore(statusProvider: NoProviderStatus(), autoRefresh: false, defaults: testDefaults)
         let ids = store.registeredProviderIDs
         XCTAssertFalse(ids.isEmpty)
         XCTAssertEqual(Set(ids).count, ids.count, "프로바이더 id 중복")
@@ -1282,6 +1285,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                                claudeLimitsProvider: limits,
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                sessionKeys: StubSessionKeys(credential: .init(key: "sk", organizationID: "org")),
                                autoRefresh: false,
                                defaults: testDefaults)
@@ -1301,6 +1305,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                                claudeLimitsProvider: limits,
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                sessionKeys: StubSessionKeys(credential: nil),
                                autoRefresh: false,
                                defaults: testDefaults)
@@ -1320,6 +1325,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                               claudeLimitsProvider: FakeClaudeLimits(status: claudeLimits(fiveHourUtil: 7)),
                               codexLimitsProvider: FakeCodexLimits(status: nil),
+                              statusProvider: NoProviderStatus(),
                               sessionKeys: keys, autoRefresh: false, defaults: testDefaults)
 
         await store.saveSessionKey("  sk-ant-sid02-\(String(repeating: "a", count: 60))\n")
@@ -1338,6 +1344,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                               claudeLimitsProvider: FakeClaudeLimits(status: nil),
                               codexLimitsProvider: FakeCodexLimits(status: nil),
+                              statusProvider: NoProviderStatus(),
                               sessionKeys: keys, autoRefresh: false, defaults: testDefaults)
 
         store.localizationLanguage = .ko   // 스토어가 만든 문구를 비교하므로 언어를 고정한다
@@ -1355,6 +1362,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                               claudeLimitsProvider: FakeClaudeLimits(status: nil),
                               codexLimitsProvider: FakeCodexLimits(status: nil),
+                              statusProvider: NoProviderStatus(),
                               sessionKeys: keys, autoRefresh: false, defaults: testDefaults)
 
         store.localizationLanguage = .ko   // 스토어가 만든 문구를 비교하므로 언어를 고정한다
@@ -1372,6 +1380,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                               claudeLimitsProvider: FakeClaudeLimits(status: claudeLimits(fiveHourUtil: 7)),
                               codexLimitsProvider: FakeCodexLimits(status: nil),
+                              statusProvider: NoProviderStatus(),
                               sessionKeys: keys, autoRefresh: false, defaults: testDefaults)
         XCTAssertTrue(store.sessionKeyConfigured)
 
@@ -1390,6 +1399,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                               claudeLimitsProvider: FakeClaudeLimits(status: claudeLimits(fiveHourUtil: 7)),
                               codexLimitsProvider: FakeCodexLimits(status: nil),
+                              statusProvider: NoProviderStatus(),
                               sessionKeys: keys, autoRefresh: false, defaults: testDefaults)
 
         await store.selectSessionOrganization("org-b")
@@ -1408,6 +1418,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                               claudeLimitsProvider: FakeClaudeLimits(status: claudeLimits(fiveHourUtil: 7)),
                               codexLimitsProvider: FakeCodexLimits(status: nil),
+                              statusProvider: NoProviderStatus(),
                               sessionKeys: keys, autoRefresh: false, defaults: testDefaults)
         XCTAssertTrue(store.sessionKeyOrganizations.isEmpty, "기동 직후에는 후보를 모른다(네트워크 미조회)")
 
@@ -1424,6 +1435,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                               claudeLimitsProvider: FakeClaudeLimits(status: nil),
                               codexLimitsProvider: FakeCodexLimits(status: nil),
+                              statusProvider: NoProviderStatus(),
                               sessionKeys: keys, autoRefresh: false, defaults: testDefaults)
 
         await store.refreshSessionOrganizations()
@@ -1439,6 +1451,7 @@ final class UsageStoreTests: XCTestCase {
                                        success: claudeLimits(fiveHourUtil: 12, resetsAt: "2099-01-01T00:00:00Z"))
         let store = UsageStore(providers: [claude], claudeLimitsProvider: seq,
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                autoRefresh: false, defaults: testDefaults)
         await store.refresh(scheduleEmptyRetry: false)
         XCTAssertTrue(store.limitsAuthExpired, "401 → 세션 만료 안내 상태")
@@ -1452,6 +1465,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                                claudeLimitsProvider: SequenceClaudeLimits(errors: [LimitsError.sessionKeyInvalid]),
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                autoRefresh: false, defaults: testDefaults)
         await store.refresh(scheduleEmptyRetry: false)
         XCTAssertEqual(store.limitsAuthExpiry, .sessionKey, "세션 키 401 → 세션 키 만료로 식별돼야 한다")
@@ -1464,6 +1478,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                                claudeLimitsProvider: SequenceClaudeLimits(errors: [LimitsError.httpStatus(401)]),
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                autoRefresh: false, defaults: testDefaults)
         await store.refresh(scheduleEmptyRetry: false)
         XCTAssertEqual(store.limitsAuthExpiry, .oauth, "OAuth 401 → OAuth 만료")
@@ -1476,6 +1491,7 @@ final class UsageStoreTests: XCTestCase {
                                        success: claudeLimits(fiveHourUtil: 12, resetsAt: "2099-01-01T00:00:00Z"))
         let store = UsageStore(providers: [claude], claudeLimitsProvider: seq,
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                autoRefresh: false, defaults: testDefaults)
         await store.refresh(scheduleEmptyRetry: false)
         XCTAssertEqual(store.limitsAuthExpiry, .sessionKey)
@@ -1491,6 +1507,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                                claudeLimitsProvider: SequenceClaudeLimits(errors: [LimitsError.sessionKeyInvalid]),
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                sessionKeys: StubSessionKeys(credential: .init(key: "sk", organizationID: "org")),
                                autoRefresh: false, defaults: testDefaults)
         XCTAssertFalse(store.sessionKeyExpired, "만료 전에는 평상시 배지")
@@ -1505,6 +1522,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                                claudeLimitsProvider: SequenceClaudeLimits(errors: [LimitsError.httpStatus(401)]),
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                sessionKeys: StubSessionKeys(credential: nil),
                                autoRefresh: false, defaults: testDefaults)
         await store.refresh(scheduleEmptyRetry: false)
@@ -1516,6 +1534,7 @@ final class UsageStoreTests: XCTestCase {
         let store = UsageStore(providers: [claude],
                                claudeLimitsProvider: SequenceClaudeLimits(errors: [LimitsError.httpStatus(500)]),
                                codexLimitsProvider: FakeCodexLimits(status: nil),
+                               statusProvider: NoProviderStatus(),
                                autoRefresh: false, defaults: testDefaults)
         await store.refresh(scheduleEmptyRetry: false)
         XCTAssertFalse(store.limitsAuthExpired, "500 은 세션 만료 아님 — 오탐 방지")
@@ -1927,6 +1946,7 @@ extension UsageStoreTests {
                           codexLimitsProvider: FakeCodexLimits(status: nil),
                           antigravityLimitsProvider: FakeAntigravityLimits(status: nil),
                           openCodeGoLimitsProvider: limits,
+                          statusProvider: NoProviderStatus(),
                           autoRefresh: false,
                           defaults: testDefaults)
     }
@@ -2046,6 +2066,7 @@ extension UsageStoreTests {
                           codexLimitsProvider: FakeCodexLimits(status: nil),
                           antigravityLimitsProvider: FakeAntigravityLimits(status: nil),
                           grokLimitsProvider: limits,
+                          statusProvider: NoProviderStatus(),
                           autoRefresh: false,
                           defaults: testDefaults)
     }

@@ -159,7 +159,7 @@ final class CustomScanRootsTests: XCTestCase {
         let suite = "ptb.store.scan.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
-        let store = UsageStore(autoRefresh: false, defaults: defaults)
+        let store = UsageStore(statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         store.setCustomScanRoots("~/codex-extra", for: "codex")
         XCTAssertEqual(store.customScanRoots(for: "codex"), "~/codex-extra")
         XCTAssertEqual(store.customScanRoots(for: "gemini"), "")
@@ -356,7 +356,7 @@ final class CustomScanRootsTests: XCTestCase {
         let suite = "ptb.scan.sweep.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
-        let ids = UsageStore(autoRefresh: false, defaults: defaults).registeredProviderIDs
+        let ids = UsageStore(statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults).registeredProviderIDs
         XCTAssertFalse(ids.isEmpty)
 
         let sources = URL(fileURLWithPath: #filePath)

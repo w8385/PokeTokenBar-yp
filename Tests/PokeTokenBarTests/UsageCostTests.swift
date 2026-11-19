@@ -227,7 +227,7 @@ final class UsageCostTests: XCTestCase {
         defaults.set(false, forKey: "statusChecksEnabled")
         defaults.set(true, forKey: "showCostInMenu")
         let providers = [CostTestProvider(id: "priced", entries: [entry()]), CostTestProvider(id: "unknown", entries: [entry("new-model")])]
-        let store = UsageStore(providers: providers, autoRefresh: false, defaults: defaults)
+        let store = UsageStore(providers: providers, statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         await store.refresh(scheduleEmptyRetry: false)
         let expected = CostCoverage(estimated: true, unknown: true)
         XCTAssertEqual(store.todayUsageCost.coverage, expected)

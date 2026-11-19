@@ -134,7 +134,7 @@ final class FriendsTests: XCTestCase {
         try JSONEncoder().encode(state).write(to: url)
         let companion = CompanionStore(provider: StubProvider(value: line), clock: { clock.now }, fileURL: url,
                                        rng: SeededRNG(seed: 7), defaults: defaults)
-        let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let controller = FloatingPetController(store: usage, companion: companion, defaults: defaults,
                                                motionOverride: true)
         controller.setDisplayAwake(false)
@@ -161,7 +161,7 @@ final class FriendsTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         let url = tempURL()
         let companion = CompanionStore(provider: StubProvider(value: line), fileURL: url, defaults: defaults)
-        let usage = UsageStore(providers: [], autoRefresh: false, defaults: defaults)
+        let usage = UsageStore(providers: [], statusProvider: NoProviderStatus(), autoRefresh: false, defaults: defaults)
         let controller = FloatingPetController(store: usage, companion: companion, defaults: defaults,
                                                motionOverride: true)
         controller.setDisplayAwake(false)
