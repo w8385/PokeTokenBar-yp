@@ -191,7 +191,8 @@ def battle_card(
         for side, roster in enumerate(sides)
     )
     decisive = _decisive_line(result) if len(sides[0]) > 1 or len(sides[1]) > 1 else None
-    entries = _log_entries(result, MAX_LOG_BLOCKS)
+    shiny = frozenset((side, member.name) for side, roster in enumerate(sides) for member in roster if member.shiny)
+    entries = _log_entries(result, MAX_LOG_BLOCKS, shiny)
     return Card(
         columns, _title(trainers, result), _detail(sides, result), (decisive,) if decisive else (),
         tuple(text for text, _ in entries), _winner_sprite(sides[result.winner], result),
@@ -208,13 +209,20 @@ def _detail(sides: tuple[Sequence[Combatant], Sequence[Combatant]], result: Batt
 
 
 def _winner_sprite(roster: Sequence[Combatant], result: BattleResult) -> tuple[str, str] | None:
-    """The image URL and name of the winner's Pokémon that was still standing last."""
+    """The image URL and name of the winner's Pokémon that was still standing last, in the form it ended in:
+    its Mega, Primal, Tera or held-item form, never the form a transformed Ditto copied."""
     hps = result.remaining[result.winner] if result.winner < len(result.remaining) else ()
     standing = [index for index, hp in enumerate(hps) if hp and index < len(roster)]
     if not standing or roster[standing[-1]].pokemon_id is None:
         return None
     member = roster[standing[-1]]
-    return sprite_url(member.pokemon_id, member.shiny), member.name
+    form_id = _final_forms(result.events).get((result.winner, member.name), member.pokemon_id)
+    return sprite_url(form_id, member.shiny), member.name
+
+
+def _final_forms(events: Sequence[Event]) -> dict[tuple[int, str], int]:
+    return {(event.side, event.pokemon): event.form_id for event in events
+            if isinstance(event, (MegaEvolution, FormShift)) and event.form_id is not None}
 
 
 def _column(side: int, trainer: str, roster: Sequence[Combatant], hps: Sequence[int | None],
@@ -301,8 +309,9 @@ def battle_log(result: BattleResult, budget: int = MAX_LOG_BLOCKS) -> tuple[str,
     return tuple(text for text, _ in _log_entries(result, budget))
 
 
-def _log_entries(result: BattleResult, budget: int) -> list[tuple[str, tuple[Image, ...]]]:
-    turns = _turns(result.events)
+def _log_entries(result: BattleResult, budget: int,
+                 shiny: frozenset[tuple[int, str]] = frozenset()) -> list[tuple[str, tuple[Image, ...]]]:
+    turns = _turns(result.events, shiny)
     ends = len(turns)
     while True:
         entries = _entries(turns, ends)
@@ -340,9 +349,9 @@ def _entries(turns: list[_Turn], ends: int) -> list[tuple[str, tuple[Image, ...]
     return entries
 
 
-def _turns(events: list[Event]) -> list[_Turn]:
+def _turns(events: list[Event], shiny: frozenset[tuple[int, str]] = frozenset()) -> list[_Turn]:
     """Group events by turn. Entry events (no turn of their own) join the send-out they directly follow;
-    those before any turn open turn 1."""
+    those before any turn open turn 1. `shiny` holds the (side, name) of the shiny members."""
     turns: list[_Turn] = []
     opening: list[str] = []
     opening_images: list[Image] = []
@@ -352,7 +361,8 @@ def _turns(events: list[Event]) -> list[_Turn]:
             (turns[-1].lines if turns else opening).append(_form_line(event))
             if event.form_id is not None:
                 (turns[-1].images if turns else opening_images).append(
-                    (sprite_url(event.form_id, False), f"{event.pokemon} {FORM_CAPTION[event.kind]}"))
+                    (sprite_url(event.form_id, (event.side, event.pokemon) in shiny),
+                     f"{event.pokemon} {FORM_CAPTION[event.kind]}"))
             continue
         if isinstance(event, (AbilityTrigger, MegaEvolution)):
             current = turns[-1].lines if turns else opening
@@ -362,7 +372,8 @@ def _turns(events: list[Event]) -> list[_Turn]:
                 current.append(_entry_segment(event))
             if isinstance(event, MegaEvolution) and event.form_id is not None:
                 (turns[-1].images if turns else opening_images).append(
-                    (sprite_url(event.form_id, False), f"{event.pokemon} {FORM_CHANGE[event.kind][0]}"))
+                    (sprite_url(event.form_id, (event.side, event.pokemon) in shiny),
+                     f"{event.pokemon} {FORM_CHANGE[event.kind][0]}"))
             continue
         if not isinstance(event, SendOut):
             sent = {}

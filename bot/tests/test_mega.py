@@ -145,6 +145,7 @@ def test_narration_announces_the_mega_evolution():
 
 
 MEGA_ART = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10034.png"
+SHINY_MEGA_ART = MEGA_ART.replace("/10034.png", "/shiny/10034.png")
 
 
 def log_blocks(card):
@@ -157,7 +158,7 @@ def test_the_opening_mega_image_sits_in_the_first_turns_log_block():
     holder, plain = replace(mon("리자몽", form), shiny=True), mon("상대")
     card = battle_card(("<@UA>", "<@UB>"), ((holder,), (plain,)), simulate((holder, plain), seed=3))
     first, second = log_blocks(card)[:2]
-    assert first["elements"][0] == {"type": "image", "image_url": MEGA_ART, "alt_text": "리자몽 메가진화"}
+    assert first["elements"][0] == {"type": "image", "image_url": SHINY_MEGA_ART, "alt_text": "리자몽 메가진화"}
     assert "리자몽 메가진화 [단단한발톱]" in first["elements"][1]["text"]
     assert [element["type"] for element in second["elements"]] == ["mrkdwn"]
 
