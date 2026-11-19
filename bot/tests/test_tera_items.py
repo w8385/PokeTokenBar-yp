@@ -105,11 +105,12 @@ def test_terapagos_enters_every_battle_in_terastal_form_without_an_item():
         FormShift(1, 0, "테라파고스", "terastal", 10276)]
 
 
-def test_the_crystal_gives_terapagos_the_stellar_form_to_enter_with():
+def test_the_crystal_takes_terapagos_from_its_terastal_entry_form_to_stellar_at_the_start_of_its_first_turn():
     fighter = build(1024, "stellar-crystal")
     assert fighter.mega == STELLAR
     events = simulate(((fighter,), (mon("상대"),)), seed=3).events
-    assert shifts(events) == [FormShift(1, 0, "테라파고스", "stellar", 10277)]
+    assert shifts(events) == [FormShift(1, 0, "테라파고스", "terastal", 10276),
+                              FormShift(1, 0, "테라파고스", "stellar", 10277)]
     assert not any(isinstance(event, MegaEvolution) for event in events)
 
 
@@ -210,7 +211,7 @@ def test_only_the_first_of_a_mega_holder_and_a_stellar_holder_transforms():
     stellar_first = (mon("테라파고스", "stellar-crystal", mega=STELLAR, tera=True), mon("메가", mega=MEGA))
     events = simulate((stellar_first, (STRONG,)), seed=3).events
     assert not any(isinstance(event, MegaEvolution) for event in events)
-    assert [event.kind for event in shifts(events)] == ["stellar"]
+    assert [event.kind for event in shifts(events)] == ["terastal", "stellar"]
 
 
 def test_a_foe_finale_gets_its_own_mega_after_one_of_the_first_members_used_the_teams():
@@ -235,7 +236,7 @@ def test_the_player_keeps_one_mega_per_battle_when_the_foe_has_a_finale():
 def test_each_side_gets_its_own_stellar_form():
     holder = mon("테라파고스", "stellar-crystal", mega=STELLAR, tera=True)
     events = simulate(((holder,), (replace(holder, name="상대테라"),)), seed=3).events
-    assert sorted((event.side, event.kind) for event in shifts(events)) == [(0, "stellar"), (1, "stellar")]
+    assert sorted(event.side for event in shifts(events, "stellar")) == [0, 1]
 
 
 def test_without_these_items_the_battle_has_no_form_shifts():
@@ -247,7 +248,7 @@ def test_the_log_announces_the_mask_and_the_forms_in_one_line_each():
     lines = battle_turns(mask)[0][1]
     assert lines[0] == "🔵 오거폰의 가면이 빛났다! 자신 공격↑"
     stellar = simulate(((mon("테라파고스", "stellar-crystal", mega=STELLAR, tera=True),), (mon("상대"),)), seed=3)
-    assert battle_turns(stellar)[0][1][0] == "🔵 테라파고스는 스텔라폼이 되었다!"
+    assert battle_turns(stellar)[0][1][:2] == ["🔵 테라파고스는 테라스탈폼이 되었다!", "🔵 테라파고스는 스텔라폼이 되었다!"]
     terastal = simulate(((mon("테라파고스", tera=True),), (mon("상대"),)), seed=3)
     assert battle_turns(terastal)[0][1][0] == "🔵 테라파고스는 테라스탈폼이 되었다!"
 
@@ -259,4 +260,4 @@ def test_the_log_announces_the_mask_and_the_forms_in_one_line_each():
 ])
 def test_the_form_line_uses_the_members_name_with_the_matching_particle(name, line):
     stellar = simulate(((mon(name, "stellar-crystal", mega=STELLAR, tera=True),), (mon("상대"),)), seed=3)
-    assert battle_turns(stellar)[0][1][0] == line
+    assert battle_turns(stellar)[0][1][1] == line

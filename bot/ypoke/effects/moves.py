@@ -65,15 +65,13 @@ class SwordsDance(StatusMove):
 
     def wanted(self, move, team, foes, side, arena, weather):
         user = team.active
-        return not user.danced and user.hp * 2 > user.max_hp and user.stages["attack"] < battle.MAX_STAGE
+        return (not user.danced and user.hp * 2 > user.max_hp and user.stages["attack"] < battle.MAX_STAGE
+                and hooks.ability(user, "stage_factor", default=1) > 0)
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         user.danced = True
-        stages = min(battle.SWORDS_DANCE_STAGES, battle.MAX_STAGE - user.stages["attack"])
-        if stages <= 0:
-            return "", ()
-        user.stages["attack"] += stages
-        return "swords-dance", (battle.Change(side, user.combatant.name, "attack", stages),)
+        change = battle.shift_stage(user, side, "attack", battle.SWORDS_DANCE_STAGES)
+        return ("", ()) if change is None else ("swords-dance", (change,))
 
 
 @register("moves", "yawn")

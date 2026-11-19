@@ -44,7 +44,7 @@
 "compound-eyes": {"names": {"ko": "복안", "en": "Compound Eyes", "ja": "ふくがん", "es": "Ojo Compuesto", "fr": "Œil Composé", "de": "Facettenauge"}, "summary": "Increases moves' accuracy to 1.3×.", "effect": "todo"},
 "confidence": {"names": {"en": "Confidence"}, "summary": "", "effect": {"inert": "Pokémon Conquest ability: not in the main series"}},
 "conqueror": {"names": {"en": "Conqueror"}, "summary": "", "effect": {"inert": "Pokémon Conquest ability: not in the main series"}},
-"contrary": {"names": {"ko": "심술꾸러기", "en": "Contrary", "ja": "あまのじゃく", "es": "Respondón", "fr": "Contestation", "de": "Umkehrung"}, "summary": "Inverts stat changes.", "effect": "todo"},
+"contrary": {"names": {"ko": "심술꾸러기", "en": "Contrary", "ja": "あまのじゃく", "es": "Respondón", "fr": "Contestation", "de": "Umkehrung"}, "summary": "Inverts stat changes.", "effect": "contrary"},
 "corrosion": {"names": {"ko": "부식", "en": "Corrosion", "ja": "ふしょく", "es": "Corrosión", "fr": "Corrosion", "de": "Korrosion"}, "summary": "This Pokémon can inflict poison on Poison and Steel Pokémon.", "effect": "todo"},
 "costar": {"names": {"ko": "협연", "en": "Costar", "ja": "きょうえん", "es": "Unísono", "fr": "Collab", "de": "Synchronauftritt"}, "summary": "Copies ally's stat changes on entering battle.", "effect": {"inert": "affects allies only: doubles"}},
 "cotton-down": {"names": {"ko": "솜털", "en": "Cotton Down", "ja": "わたげ", "es": "Pelusa", "fr": "Effilochage", "de": "Wollflaum"}, "summary": "When Ignores moves and abilities that draw in moves.", "effect": "todo"},

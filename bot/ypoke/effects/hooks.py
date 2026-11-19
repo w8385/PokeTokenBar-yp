@@ -13,8 +13,8 @@ from ypoke.effects import hook_names, loaded
 HOOKS = {
     "hazard": "state: an entry hazard acts on a Pokémon entering its side, in the order the hazards were set",
     "ignores_hazards": "item: the hazards that hurt, poison or slow do nothing to its holder",
-    "on_entry_form": "item: a held-item form takes hold as its holder enters, after the hazards and Mega Evolution",
-    "on_entry": "ability: acts as its holder enters, the faster entering Pokémon first",
+    "on_entry_form": "item: a held-item form takes hold as its holder enters, after the hazards and Primal Reversion",
+    "on_entry": "ability: acts as its holder enters, the faster entering Pokémon first, and as it Mega Evolves",
     "state_turns": "item: how long a field or side state its holder sets lasts",
     "on_update": "item: a one-use item reacts to its holder's state after an entry, an action or the end of a turn",
     "forces_move": "state: the move index its holder must pick (Encore)",
@@ -36,6 +36,7 @@ HOOKS = {
     "modify_stat": "item, then ability: multiplies a stat after its stage (paralysis halves Speed in between)",
     "field_stat": "ability: multiplies a stat in a weather or terrain, after `modify_stat`",
     "side_stat": "state: multiplies a stat of the Pokémon on its side, last",
+    "stage_factor": "ability: multiplies every stat stage change on its holder before the guards (Contrary's -1)",
     "acts_asleep": "move: its user uses it while asleep (Sleep Talk); the sleep still counts down",
     "thaws_user": "move: a frozen user thaws to use it, and a frozen target it hits thaws (Scald)",
     "bans_move": "state: a move that cannot be used at all, after sleep and freeze and before confusion and PP",

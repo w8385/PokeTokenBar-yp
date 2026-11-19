@@ -8,12 +8,8 @@ from ypoke.effects import Handler, hooks, register
 @register("abilities", "intimidate")
 class Intimidate(Handler):
     def on_entry(self, name, fighter, foe, side, weather):
-        if foe.stages["attack"] <= -battle.MAX_STAGE or battle._stats_guarded(foe):
-            return None
-        foe.stages["attack"] -= 1
-        foe.lowered = True
-        change = battle.Change(1 - side, foe.combatant.name, "attack", -1)
-        return battle.AbilityTrigger(side, fighter.combatant.name, name, change=change)
+        change = battle.shift_stage(foe, 1 - side, "attack", -1, battle._stats_guarded(foe))
+        return None if change is None else battle.AbilityTrigger(side, fighter.combatant.name, name, change=change)
 
 
 @register("abilities", "weather-on-entry")
@@ -139,3 +135,9 @@ class WeatherChipImmune(Handler):
 class LongReach(Handler):
     def drops_contact(self, name):
         return True
+
+
+@register("abilities", "contrary")
+class Contrary(Handler):
+    def stage_factor(self, name):
+        return -1

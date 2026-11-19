@@ -298,12 +298,11 @@ class ToxicSpikes(Hazard):
 @register("moves", "sticky-web")
 class StickyWeb(Hazard):
     def hazard(self, name, layers, fighter, side, turn, rng):
-        if (not battle._grounded(fighter) or _booted(fighter) or battle._stats_guarded(fighter)
-                or fighter.stages["speed"] <= -battle.MAX_STAGE):
+        if not battle._grounded(fighter) or _booted(fighter):
             return None
-        fighter.stages["speed"] -= 1
-        fighter.lowered = True
-        change = battle.Change(side, fighter.combatant.name, "speed", -1)
+        change = battle.shift_stage(fighter, side, "speed", -1, battle._stats_guarded(fighter))
+        if change is None:
+            return None
         return battle.HazardHit(turn, side, fighter.combatant.name, name, fighter.hp_percent, change=change)
 
 
@@ -354,12 +353,8 @@ class TidyUp(StatusMove):
         user.danced = True
         gone = [*_cleared(arena, side, fs.HAZARDS, move.name, "hazards"),
                 *_cleared(arena, 1 - side, fs.HAZARDS, move.name, "hazards")]
-        changes = []
-        for key in ("attack", "speed"):
-            if user.stages[key] < battle.MAX_STAGE:
-                user.stages[key] += 1
-                changes.append(battle.Change(side, user.combatant.name, key, 1))
-        return (self.key if gone or changes else ""), tuple(changes)
+        changes = stats.shift_all(user, side, (("attack", 1), ("speed", 1)))
+        return (self.key if gone or changes else ""), changes
 
 
 @register("moves", "rapid-spin")

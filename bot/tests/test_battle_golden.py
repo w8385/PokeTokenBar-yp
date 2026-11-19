@@ -253,6 +253,10 @@ FOCUS_CASES = {
                 ((143, "rocky-helmet", "static", [33]),)),
     "contact-sash": (((908, "focus-sash", None, [870]),), ((143, "rocky-helmet", None, [776]),)),
     "clear-smog": (((89, None, None, [499]),), ((143, None, None, [14, 33]),)),
+    "mega-order": (((398, "staraptite", "intimidate", [370]),), ((6, "charizardite-y", "intimidate", [53, 33]),)),
+    "contrary": (((213, None, "contrary", [14, 370]),), ((143, None, "intimidate", [45, 555]),)),
+    "stockpile": (((80, None, None, [254, 255]), (79, None, None, [880]), (25, None, None, [33])),
+                  ((143, None, None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

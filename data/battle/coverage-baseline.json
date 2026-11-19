@@ -142,9 +142,9 @@
  },
  "abilities": {
   "counts": {
-   "implemented": 41,
+   "implemented": 42,
    "inert": 81,
-   "todo": 252
+   "todo": 251
   },
   "todo": [
    "aerilate",
@@ -176,7 +176,6 @@
    "comatose",
    "competitive",
    "compound-eyes",
-   "contrary",
    "corrosion",
    "cotton-down",
    "cud-chew",

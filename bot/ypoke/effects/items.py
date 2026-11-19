@@ -19,10 +19,7 @@ class FormItem(Handler):
 class OgerponMask(Handler):
     def on_entry_form(self, name, fighter, side, turn):
         form_id, stat = tera_forms.MASKS[name]
-        change = None
-        if fighter.stages[stat] < battle.MAX_STAGE:
-            fighter.stages[stat] += 1
-            change = battle.Change(side, fighter.combatant.name, stat, 1)
+        change = battle.shift_stage(fighter, side, stat, 1)
         return battle.FormShift(turn, side, fighter.combatant.name, "mask", form_id, change)
 
     def modify_damage(self, name, move_type, effectiveness, physical, punch):
@@ -253,7 +250,7 @@ class WeaknessPolicy(Handler):
         if not (multiplier > 1 and dealt > 0 and fighter.hp > 0):
             return False
         for key in ("attack", "special_attack"):
-            fighter.stages[key] = min(battle.MAX_STAGE, fighter.stages[key] + 2)
+            battle.shift_stage(fighter, fighter.side, key, 2)
         fighter.item = None
         return True
 
@@ -293,7 +290,8 @@ class StatusOrb(Handler):
         return battle._open_to(ailment, holder) and not hooks.ability(holder, "blocks_ailment", ailment, default=False)
 
 
-elsewhere("items", "mega_stones: sets Combatant.mega, which battle._mega_evolve applies on entry",
+elsewhere("items", "mega_stones: sets Combatant.mega, which battle._mega_evolve applies at the start "
+          "of its holder's first turn (a Primal orb on entry)",
           "mega-stone", "primal-orb", "ultra-burst")
 elsewhere("items", "combatants and tera_forms: Terapagos' Stellar form, which shares the Mega Evolution slot",
           "stellar-crystal")

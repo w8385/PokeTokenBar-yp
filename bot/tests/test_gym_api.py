@@ -475,21 +475,22 @@ def test_the_champions_mega_holder_takes_its_mega_form_right_after_its_switch(se
     store, base, _, _ = server
     status, body, _ = battle(base, store.issue_token("U1"), "kanto-champion", strong_team(6))
     assert status == 200
-    assert_one_form_right_after_its_switch(body, champion_mega())
+    assert_forms_right_after_its_switch(body, champion_mega())
 
 
 @pytest.mark.parametrize("team,expected", [
-    ([{"pokemon_id": 6, "level": 50, "held_item": "charizardite-x"}], (0, 0, 10034, "mega")),
-    ([{"pokemon_id": 1024, "level": 50}], (0, 0, 10276, "terastal")),
-    ([{"pokemon_id": 1024, "level": 50, "held_item": "stellar-crystal"}], (0, 0, 10277, "stellar")),
-    ([{"pokemon_id": 487, "level": 50, "held_item": "griseous-core"}], (0, 0, 10007, "origin")),
+    ([{"pokemon_id": 6, "level": 50, "held_item": "charizardite-x"}], [(0, 0, 10034, "mega")]),
+    ([{"pokemon_id": 1024, "level": 50}], [(0, 0, 10276, "terastal")]),
+    ([{"pokemon_id": 1024, "level": 50, "held_item": "stellar-crystal"}],
+     [(0, 0, 10276, "terastal"), (0, 0, 10277, "stellar")]),
+    ([{"pokemon_id": 487, "level": 50, "held_item": "griseous-core"}], [(0, 0, 10007, "origin")]),
 ])
 def test_a_players_form_comes_after_its_switch_and_before_its_first_move(server, team, expected):
     store, base, _, _ = server
     status, body, _ = battle(base, store.issue_token("U1"), "kanto-1", team)
     assert status == 200
-    kinds = assert_one_form_right_after_its_switch(body, expected)
-    assert kinds[:3] == ["switch", "form", "move"]
+    kinds = assert_forms_right_after_its_switch(body, *expected)
+    assert kinds[:len(expected) + 2] == ["switch", *["form"] * len(expected), "move"]
 
 
 def champion_mega():
@@ -498,17 +499,17 @@ def champion_mega():
                 if (form_id := mega_form_id(foe["held_item"], foe["pokemon_id"])))
 
 
-def assert_one_form_right_after_its_switch(body, expected):
-    """`expected` is the form event's (side, member, pokemon_id, kind); returns that member's switch, form and move
-    event types in order."""
+def assert_forms_right_after_its_switch(body, *expected):
+    """`expected` are one member's form events' (side, member, pokemon_id, kind); returns that member's switch, form
+    and move event types in order."""
     events = body["events"]
     forms = [event for event in events if event["type"] == "form"]
-    assert [(e["side"], e["member"], e["pokemon_id"], e["kind"]) for e in forms] == [expected]
+    assert [(e["side"], e["member"], e["pokemon_id"], e["kind"]) for e in forms] == list(expected)
     assert set(forms[0]) == {"turn", "type", "side", "member", "pokemon_id", "kind"}
-    side, member = expected[:2]
+    side, member = expected[0][:2]
     kinds = [event["type"] for event in events
              if event["side"] == side and event["member"] == member and event["type"] in ("switch", "form", "move")]
-    assert kinds[:2] == ["switch", "form"]
+    assert kinds[:len(expected) + 1] == ["switch", *["form"] * len(expected)]
     assert_replay_matches_the_rosters(body)
     return kinds
 
