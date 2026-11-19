@@ -4,6 +4,7 @@ import SwiftUI
 /// the bot says it can use now: level-up moves up to its level, TM moves at any level once the TM is owned, attacking
 /// egg moves once a Mirror Herb is used, and the battle's status moves in their own group. An unowned TM is listed
 /// locked with its price and an inline buy button; egg moves are listed locked under one Mirror Herb button.
+/// Forgetting a move leaves its slot empty, down to one move.
 @MainActor
 struct MoveTrainingSection: View {
     let store: CompanionStore
@@ -135,6 +136,19 @@ struct MoveTrainingSection: View {
                         swap(index, index + 1, selected: selected)
                     }
                 }
+                Button {
+                    change {
+                        battleEntry.forgetMove(at: index, for: candidate.id, pokemonID: member.pokemonID,
+                                               current: selected)
+                    }
+                    editing = nil
+                } label: {
+                    Image(systemName: "minus.circle").frame(width: 20, height: 20)
+                }
+                .buttonStyle(.borderless)
+                .help(l.moveSlotForget)
+                .accessibilityLabel(l.moveSlotForget)
+                .disabled(selected.count <= 1)
             }
         }
         .padding(.trailing, Spacing.md)
