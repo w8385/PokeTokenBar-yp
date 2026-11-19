@@ -4,10 +4,12 @@ import pytest
 
 from ypoke import effects, items
 from ypoke.battle import (
-    AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, ItemHeal, MegaEvolution, Move, SendOut,
-    StatusDamage, WeatherDamage, WeatherEnd, simulate,
+    AbilityTransform, AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, FormShift, ItemHeal,
+    MegaEvolution, Move, SendOut, StatusDamage, WeatherDamage, WeatherEnd, simulate,
 )
-from ypoke.dex import bar
+from ypoke.dex import NO_SHINY_ART, bar, sprite_url
+from ypoke.mega_stones import MEGA_STONES, PRIMAL_ORBS, ULTRA_BURSTS
+from ypoke.tera_forms import ITEM_FORMS, STELLAR_FORM, TERASTAL_FORM
 from ypoke.effects.volatiles import State
 from ypoke.narration import (
     MAX_LOG_BLOCKS, MAX_TAGS, PRACTICE_NOTE, SKIPPED_MARK, VOLATILE_LABEL, battle_card, battle_header, battle_log,
@@ -279,6 +281,56 @@ def test_the_winners_last_standing_pokemon_is_the_sprite_and_a_shiny_gets_the_sh
     assert url.endswith("/shiny/7.png") and name == "꼬부기"
     plain = battle_card(TRAINERS, sides, result_for([], ((90, None), (0,))))
     assert plain.sprite[0].endswith("/25.png") and "shiny" not in plain.sprite[0]
+
+
+MEGA_CHARIZARD_Y = 10035
+
+
+def test_a_winner_still_mega_evolved_at_the_end_is_the_mega_form_sprite():
+    sides = ((mon("리자몽", pokemon_id=6),), (mon("이브이", pokemon_id=133),))
+    events = [MegaEvolution(1, 0, "리자몽", "drought", MEGA_CHARIZARD_Y), act(1, 0, knockout=True, defender_hp=0)]
+    card = battle_card(TRAINERS, sides, result_for(events, ((60,), (0,))))
+    assert card.sprite == (sprite_url(MEGA_CHARIZARD_Y, False), "리자몽")
+
+
+def test_a_mega_that_fainted_earlier_leaves_the_last_standing_member_in_its_base_form():
+    sides = ((mon("리자몽", pokemon_id=6), mon("피카츄", pokemon_id=25)), (mon("이브이", pokemon_id=133),))
+    events = [MegaEvolution(1, 0, "리자몽", "drought", MEGA_CHARIZARD_Y), SendOut(2, 0, "피카츄", 1)]
+    card = battle_card(TRAINERS, sides, result_for(events, ((0, 30), (0,))))
+    assert card.sprite == (sprite_url(25, False), "피카츄")
+
+
+def test_a_terapagos_ends_in_the_last_form_it_took():
+    sides = ((mon("테라파고스", pokemon_id=1024),), (mon("이브이", pokemon_id=133),))
+    events = [FormShift(1, 0, "테라파고스", "terastal", 10276), FormShift(2, 0, "테라파고스", "stellar", 10277)]
+    card = battle_card(TRAINERS, sides, result_for(events, ((50,), (0,))))
+    assert card.sprite[0] == sprite_url(10277, False)
+
+
+def test_a_transformed_ditto_standing_at_the_end_is_still_ditto():
+    sides = ((mon("메타몽", pokemon_id=132),), (mon("리자몽", pokemon_id=6),))
+    events = [AbilityTransform(0, "메타몽", "imposter", into="리자몽", form_id=MEGA_CHARIZARD_Y, own_form_id=132)]
+    card = battle_card(TRAINERS, sides, result_for(events, ((40,), (0,))))
+    assert card.sprite == (sprite_url(132, False), "메타몽")
+
+
+def test_a_shiny_mega_is_the_shiny_mega_art_in_the_header_and_the_log():
+    sides = ((mon("리자몽", pokemon_id=6, shiny=True),), (mon("이브이", pokemon_id=133, shiny=True),))
+    events = [MegaEvolution(1, 0, "리자몽", "drought", MEGA_CHARIZARD_Y), act(1, 0, knockout=True, defender_hp=0)]
+    card = battle_card(TRAINERS, sides, result_for(events, ((60,), (0,))))
+    assert card.sprite[0].endswith(f"/shiny/{MEGA_CHARIZARD_Y}.png")
+    assert [url for url, _ in card.log_images[0]] == [card.sprite[0]]
+
+
+def test_a_form_with_no_shiny_artwork_falls_back_to_its_plain_art():
+    assert {sprite_url(form_id, True) for form_id in NO_SHINY_ART} == {sprite_url(form_id, False) for form_id in NO_SHINY_ART}
+    assert sprite_url(MEGA_CHARIZARD_Y, True).endswith(f"/shiny/{MEGA_CHARIZARD_Y}.png")
+
+
+def test_every_form_without_shiny_artwork_is_a_form_the_battle_can_show():
+    shown = {form for _, form in (*MEGA_STONES.values(), *PRIMAL_ORBS.values(), *ULTRA_BURSTS.values())}
+    shown |= {form for _, form, _ in ITEM_FORMS.values()} | {TERASTAL_FORM, STELLAR_FORM}
+    assert NO_SHINY_ART <= shown
 
 
 def test_no_sprite_without_a_species_id():

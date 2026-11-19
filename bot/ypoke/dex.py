@@ -12,9 +12,12 @@ REGIONS = {
 BAR_CELLS = 10
 FALLBACK_PER_LINE = 3
 _SPRITES = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork"
+# Forms whose official artwork has no shiny image (Terapagos Stellar, Mega Garchomp Z, Mega Tatsugiri).
+NO_SHINY_ART = frozenset({10277, 10309, 10322})
 
 
 def sprite_url(pokemon_id: int, shiny: bool) -> str:
+    shiny = shiny and pokemon_id not in NO_SHINY_ART
     return f"{_SPRITES}/{'shiny/' if shiny else ''}{pokemon_id}.png"
 
 

@@ -1806,6 +1806,18 @@ read_when:
   presses play one battle; the listener then drops the actions block from the card (a failed edit is only logged).
   The key is the card's own `ts`, not the thread root: every later card lives in the first card's thread
   (`test_the_new_cards_button_works_once_even_inside_the_old_cards_thread`). Removing the claim fails 6 tests.
+- **A picture of a battler is drawn from the form it ended in, not from its roster entry.** The result card's header
+  showed a winner that had Mega Evolved in its base form: `_winner_sprite` read the `Combatant`'s `pokemon_id`, which
+  never changes, while the forms live only in `MegaEvolution`/`FormShift` events. The turn-log images read those events
+  but passed `shiny=False`, and `test_the_opening_mega_image_sits_in_the_first_turns_log_block` pinned a shiny
+  holder's plain art. The header tests built cards with no events, so none held a form. Now `_final_forms` replays the
+  events (last form per side and name) for the header, and the log images take each member's shiny state. A
+  transformed Ditto stays Ditto (`AbilityTransform` is not a form). Three forms have no shiny official artwork (Stellar
+  Terapagos, Mega Garchomp Z, Mega Tatsugiri: a HEAD sweep of all 106 battle form ids), and Slack can reject a whole
+  message on an image URL that 404s, so `sprite_url` falls back to the plain art for `dex.NO_SHINY_ART`. Class sweep of
+  battler pictures: the gym replay already follows forms; `recent_battles` sends lead species ids by contract; the
+  lineup columns are text. Tests in `test_narration.py` (Mega standing, Mega fainted, Terapagos, Ditto, shiny Mega);
+  ignoring the form events fails three.
   Class sweep: the trade buttons move `status` with a guarded `UPDATE … WHERE status = …` and the pending battles
   with `claim_pending`, so both already act once. Known edge: a press whose battle fails on PokéAPI still spends
   the card; `/대결` remains.
