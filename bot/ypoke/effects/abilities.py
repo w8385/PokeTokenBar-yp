@@ -79,7 +79,7 @@ class Guts(Handler):
 @register("abilities", "weather-speed")
 class WeatherSpeed(Handler):
     def modify_stat(self, name, stat, weather, fighter):
-        doubled = stat == "speed" and weather is not None and abilities.WEATHER_DOUBLES_SPEED[name] == weather
+        doubled = stat == "speed" and abilities.in_weather(weather, abilities.WEATHER_DOUBLES_SPEED[name])
         return 2.0 if doubled else 1.0
 
 

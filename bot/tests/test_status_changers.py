@@ -115,14 +115,14 @@ def test_the_chooser_soaks_a_foe_only_when_its_attacks_hit_the_new_type_harder()
 
 def test_the_chooser_takes_a_working_ability_only_when_its_own_does_nothing():
     teams, arena = pair((ROLE_PLAY, TACKLE))
-    put_abilities(teams, "truant", "levitate")
+    put_abilities(teams, "run-away", "levitate")
     assert choose(teams, arena) == 0
     put_abilities(teams, "blaze", "levitate")
     assert choose(teams, arena) == 1
     teams, arena = pair((GASTRO_ACID, TACKLE))
     put_abilities(teams, "blaze", "levitate")
     assert choose(teams, arena) == 0
-    put_abilities(teams, "blaze", "truant")
+    put_abilities(teams, "blaze", "run-away")
     assert choose(teams, arena) == 1
 
 

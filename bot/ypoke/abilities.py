@@ -20,6 +20,7 @@ EFFECT_KEYS = frozenset({
     "rattled", "half-hp-boost", "anger-point", "charge-on-hit", "tailwind-charge", "tailwind-boost", "cotton-down",
     "speed-boost", "moody", "contrary", "simple", "mirror-armor", "guard-dog", "opportunist", "steadfast", "unnerve",
     "weather-on-hit", "terrain-on-hit", "hazard-on-hit",
+    "prankster", "triage", "stall", "quick-draw", "mycelium-might", "unburden", "truant", "pressure", "damp", "dancer",
     "shed-skin",
 })
 POWER_FLAG = battle_data.args("abilities", "flag-power", "flag")
@@ -87,6 +88,13 @@ STEADFAST_BAN = "flinch"
 WEATHER_ON_HIT = battle_data.args("abilities", "weather-on-hit", "weather")
 TERRAIN_ON_HIT = battle_data.args("abilities", "terrain-on-hit", "terrain")
 HAZARD_ON_HIT = battle_data.args("abilities", "hazard-on-hit", "hazard")
+PRANKSTER_PRIORITY = 1
+PRANKSTER_FOILED_TYPE = "dark"
+TRIAGE_PRIORITY = 3
+TRIAGE_FLAG = "heal"
+QUICK_DRAW_CHANCE = 0.3
+DAMP_MOVES = battle_data.args("abilities", "damp", "moves")
+DANCE_FLAG = "dance"
 LOW_HP_FRACTION = 3
 LOW_HP_BOOSTED_TYPE = battle_data.args("abilities", "pinch-type-boost", "type")
 LOW_HP_BOOST = 1.5

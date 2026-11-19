@@ -153,10 +153,12 @@ CHANGE_TEXT = {
 # What an ability did, by `AbilityAct.effect` or `AbilityEntry.effect`; `{detail}` is a type, item or ability name.
 ABILITY_EFFECT_TEXT = {
     "first": "선제공격", "guard": "능력이 떨어지지 않는다", "charge": "⚡충전", "weather": "{detail}",
-    "terrain": "{detail}", "hazard": "상대 쪽에 {detail} 깔림",
+    "terrain": "{detail}", "hazard": "상대 쪽에 {detail} 깔림", "dance": "따라 춤췄다",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
-ABILITY_BLOCKED_TEXT = {"truant": " 게으름을 피우고 있다", "magic-bounce": "로 되받아쳤다"}
+ABILITY_BLOCKED_TEXT = {
+    "truant": " 게으름을 피우고 있다", "magic-bounce": "로 되받아쳤다", "prankster": " 악 타입에는 통하지 않았다",
+}
 VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "grudge": "발동 (그 기술 PP 0)",
                      "binding": "풀려났다"}
 
