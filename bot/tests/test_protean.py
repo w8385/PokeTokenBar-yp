@@ -78,6 +78,23 @@ def test_protean_waits_while_its_user_sleeps():
     assert action.blocked == "sleep" and user.combatant.types == ("grass", "dark") and not arena.log
 
 
+def test_the_ai_expects_protean_stab_on_an_off_type_move_until_it_has_changed_type():
+    arena = _Arena()
+    user, foe = put(MEOWSCARADA, arena), put(PALKIA, arena, 1)
+    plain = put(replace(MEOWSCARADA, ability="overgrow"), _Arena())
+    expected = battle._move_score(user, foe, PLAY_ROUGH, None)
+    assert expected == battle._move_score(plain, foe, PLAY_ROUGH, None) * battle.STAB_MULTIPLIER
+    strike(user, foe, FLOWER_TRICK, arena)
+    assert battle._move_score(user, foe, PLAY_ROUGH, None) == battle._move_score(plain, foe, PLAY_ROUGH, None)
+
+
+def test_the_ai_expects_no_protean_stab_while_terastallized():
+    foe = put(PALKIA, _Arena(), 1)
+    tera = put(replace(MEOWSCARADA, tera=True), _Arena())
+    plain = put(replace(MEOWSCARADA, tera=True, ability="overgrow"), _Arena())
+    assert battle._move_score(tera, foe, PLAY_ROUGH, None) == battle._move_score(plain, foe, PLAY_ROUGH, None)
+
+
 def struck(combatant, move):
     """The damage `move` from `combatant` deals Palkia, and its user afterwards."""
     arena = _Arena()

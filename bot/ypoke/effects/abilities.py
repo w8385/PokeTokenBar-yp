@@ -185,12 +185,15 @@ class Protean(Handler):
     Terastallized or already only that type."""
 
     def before_move(self, name, move, attacker, side, turn):
-        if (PROTEAN in attacker.memory or not move.type or attacker.combatant.tera
-                or attacker.combatant.types == (move.type,) or hooks.move(move, "hits_later", default=False)):
+        if not self.retypes_for(name, move, attacker):
             return None
         attacker.memory[PROTEAN] = True
         reshape(attacker, types=(move.type,))
         return battle.AbilityRetype(side, attacker.combatant.name, name, into=move.type)
+
+    def retypes_for(self, name, move, attacker):
+        return not (PROTEAN in attacker.memory or not move.type or attacker.combatant.tera
+                    or attacker.combatant.types == (move.type,) or hooks.move(move, "hits_later", default=False))
 
 
 def _start_weather(weather, kind, setter) -> bool:
