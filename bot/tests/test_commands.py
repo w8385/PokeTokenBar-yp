@@ -187,7 +187,7 @@ def test_a_six_member_rematch_replays_six_against_six(store):
     store.save_party("UA", [member(25, 50)] * 6)
     store.issue_token("UB")
     store.save_party("UB", [member(7, 50)] * 6)
-    reply = handler(store).rematch("UA", "UA:UB:6:UA", Where("CCHAN", "1.1"))
+    reply = handler(store).rematch("UA", "UA:UB:6:UA", Where("CCHAN", "1.1"), "1.1")
     assert [len(side) for side in lineups(reply)] == [6, 6]
 
 

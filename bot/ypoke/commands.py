@@ -26,6 +26,7 @@ REMATCH_ACTION_ID = "rematch"
 REMATCH_LABEL = "다시 붙기"
 REMATCH_DENIED = "대결한 두 사람만 누를 수 있어요."
 REMATCH_LOSER_ONLY = "다시 붙기는 진 쪽만 누를 수 있어요."
+REMATCH_USED = "이미 다시 붙었어요."
 SECTION_TEXT_LIMIT = 3000
 FIELD_TEXT_LIMIT = 2000
 ECHO_ARG_LIMIT = 200
@@ -99,7 +100,7 @@ class Reply:
     """`echo` names who ran which slash command; it heads the visible messages (`in_channel` or `public`).
 
     A battle result is one message: `summary` (the header line, also its `text`), `card` (header, lineups and
-    turn log) and `rematch` (the button value).
+    turn log) and `rematch` (the button value). `spent_card` is set when this press used up the pressed card's button.
     `public` is a line the channel sees beside a private `text`. `image_url` is shown beside `text`.
     `fields` (Slack's 2-column grid) follow `lead`, the part of `text` above them, in the blocks; `text` stays the fallback.
     """
@@ -111,6 +112,7 @@ class Reply:
     summary: str | None = None
     card: Card | None = None
     rematch: str | None = None
+    spent_card: bool = False
     public: str | None = None
     image_url: str | None = None
     fields: tuple[str, ...] = ()
@@ -181,8 +183,9 @@ class CommandHandler:
         line = command_echo(user_id, command, text) if echo else None
         return _echoed(self._dispatch(user_id, text, command, where, line), line)
 
-    def rematch(self, user_id: str, value: str, where: Where) -> Reply:
-        """The 다시 붙기 button: the two who fought may rerun the matchup; in a recorded battle only the loser."""
+    def rematch(self, user_id: str, value: str, where: Where, card_ts: str) -> Reply:
+        """The 다시 붙기 button on the result card posted at `card_ts` in `where.channel_id`: the two who fought may
+        rerun the matchup, in a recorded battle only the loser, and each card's button works once."""
         parsed = _REMATCH_VALUE.fullmatch(value)
         if parsed is None:
             return Reply(REMATCH_DENIED)
@@ -195,8 +198,11 @@ class CommandHandler:
                 return Reply(REMATCH_DENIED)
             if user_id != loser_id:
                 return Reply(REMATCH_LOSER_ONLY)
+        if not self._store.claim_rematch(where.channel_id, card_ts):
+            return Reply(REMATCH_USED)
         line = f"<@{user_id}> 님이 {REMATCH_LABEL}를 눌렀어요"
-        return _echoed(self._start(challenger_id, opponent_id, where, line, int(size or 1)), line)
+        reply = _echoed(self._start(challenger_id, opponent_id, where, line, int(size or 1)), line)
+        return replace(reply, spent_card=True)
 
     def run_pending(self, user_id: str) -> list[Delivery]:
         """After `user_id` uploads: play every pending challenge of theirs whose sides are now both ready, once."""

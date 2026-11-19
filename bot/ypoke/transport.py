@@ -76,14 +76,24 @@ def rematch_listener(handler: CommandHandler):
         thread_ts = message.get("thread_ts") or message["ts"]
         log_command("button", user_id, "rematch", action["value"])
         try:
-            reply = handler.rematch(user_id, action["value"], Where(channel_id, thread_ts))
+            reply = handler.rematch(user_id, action["value"], Where(channel_id, thread_ts), message["ts"])
         except Exception:
             log.exception("rematch failed")
             reply = Reply(ERROR_TEXT)
+        if reply.spent_card:
+            _drop_buttons(client, channel_id, message)
         send_direct_messages(client, reply)
         publish_in_thread(client, channel_id, user_id, thread_ts, reply, respond)
 
     return listener
+
+
+def _drop_buttons(client: WebClient, channel_id: str, message: dict) -> None:
+    blocks = [block for block in message.get("blocks", []) if block["type"] != "actions"]
+    try:
+        client.chat_update(channel=channel_id, ts=message["ts"], text=message.get("text", ""), blocks=blocks)
+    except Exception:
+        log.warning("could not remove the rematch button from the result card")
 
 
 def trade_listener(trades: TradeService, kind: str):

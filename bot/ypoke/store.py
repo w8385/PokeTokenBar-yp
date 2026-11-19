@@ -52,6 +52,12 @@ CREATE TABLE IF NOT EXISTS link_prompts (
     slack_user_id TEXT PRIMARY KEY,
     prompted_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS rematch_claims (
+    channel_id TEXT NOT NULL,
+    card_ts TEXT NOT NULL,
+    claimed_at TEXT NOT NULL,
+    PRIMARY KEY (channel_id, card_ts)
+);
 """
 
 
@@ -301,6 +307,15 @@ class Store:
             cursor = connection.execute(
                 "DELETE FROM pending_challenges WHERE challenger_id = ? AND opponent_id = ? AND created_at = ?",
                 (challenge.challenger_id, challenge.opponent_id, _timestamp(challenge.created_at)),
+            )
+        return cursor.rowcount == 1
+
+    def claim_rematch(self, channel_id: str, card_ts: str) -> bool:
+        """Use up the rematch button of the result card at (`channel_id`, `card_ts`); True only for the first caller."""
+        with closing(self._connect()) as connection, connection:
+            cursor = connection.execute(
+                "INSERT OR IGNORE INTO rematch_claims (channel_id, card_ts, claimed_at) VALUES (?, ?, ?)",
+                (channel_id, card_ts, _now()),
             )
         return cursor.rowcount == 1
 
