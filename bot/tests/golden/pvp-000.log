@@ -2237,19 +2237,23 @@ TrickRoomEnd turn=10
 SendOut turn=10 side=0 pokemon='P809' member=1
 AbilityTrigger side=0 pokemon='P809' ability='primordial-sea' weather='rain'
 Action turn=11 side=0 attacker='P809' defender='P439' move='소금물' defender_hp=44 move_id=362
-Action turn=11 side=1 attacker='P439' defender='P809' move='우드해머' multiplier=0.5 recoil=True defender_hp=93 attacker_hp=42 move_id=452
-Action turn=11 side=0 attacker='P420' defender='P439' move='파멸의소원' multiplier=0.5 defender_hp=27 attacker_hp=0
+Action turn=11 side=1 attacker='P439' defender='P809' move='트릭룸' attacker_hp=44 effect='trick-room' move_id=433
+Action turn=11 side=0 attacker='P420' defender='P439' move='파멸의소원' multiplier=0.5 defender_hp=30 attacker_hp=0
+Action turn=12 side=1 attacker='P439' defender='P809' move='우드해머' multiplier=0.5 recoil=True defender_hp=93 attacker_hp=28 move_id=452
 Action turn=12 side=0 attacker='P809' defender='P439' move='소금물' defender_hp=0 knockout=True attacker_hp=93 move_id=362
 SendOut turn=12 side=1 pokemon='P788' member=2
-Action turn=13 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=62 attacker_hp=93 move_id=403
-Action turn=13 side=1 attacker='P788' defender='P809' move='방어지령' changes=(Change(side=1, pokemon='P788', kind='defense', stages=1), Change(side=1, pokemon='P788', kind='special_defense', stages=1)) defender_hp=93 attacker_hp=62 effect='stages' move_id=455
-Action turn=14 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=36 attacker_hp=93 move_id=403
-Action turn=14 side=1 attacker='P788' defender='P809' move='매그니튜드' defender_hp=87 attacker_hp=36 move_id=222
-Action turn=15 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=11 attacker_hp=87 move_id=403
-Action turn=15 side=1 attacker='P788' defender='P809' move='' defender_hp=87 blocked='flinch' attacker_hp=11
+Action turn=13 side=1 attacker='P788' defender='P809' move='방어지령' changes=(Change(side=1, pokemon='P788', kind='defense', stages=1), Change(side=1, pokemon='P788', kind='special_defense', stages=1)) defender_hp=93 effect='stages' move_id=455
+Action turn=13 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=74 attacker_hp=93 move_id=403
+Action turn=14 side=1 attacker='P788' defender='P809' move='매그니튜드' defender_hp=79 attacker_hp=74 move_id=222
+Action turn=14 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=51 attacker_hp=79 move_id=403
+Action turn=15 side=1 attacker='P788' defender='P809' move='매그니튜드' defender_hp=65 attacker_hp=51 move_id=222
+Action turn=15 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=28 attacker_hp=65 move_id=403
 WeatherEnd turn=15 weather='rain'
-Action turn=16 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=87 move_id=403
-result winner=0 turns=16 remaining=((0, 87, None, None), (0, 0, 0)) statuses=((None, None, None, None), ('toxic', None, None))
+TrickRoomEnd turn=15
+Action turn=16 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=3 attacker_hp=65 move_id=403
+Action turn=16 side=1 attacker='P788' defender='P809' move='매그니튜드' defender_hp=43 attacker_hp=3 move_id=222
+Action turn=17 side=0 attacker='P809' defender='P788' move='에어슬래시' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=43 move_id=403
+result winner=0 turns=17 remaining=((0, 43, None, None), (0, 0, 0)) statuses=((None, None, None, None), ('toxic', None, None))
 ## pvp 34
 side=0 P95 Lv50 ('ice', 'water') item=None ability=drizzle nature=modest moves=[497, 498, 299, 701] mega=None
 side=0 P51 Lv50 ('dark',) item=white-herb ability=guts nature=None moves=[505, 506, 4, 552] mega=None

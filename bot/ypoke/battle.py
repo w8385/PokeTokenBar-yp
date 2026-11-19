@@ -1598,13 +1598,6 @@ def _threatened(fighter: _Fighter, foe: _Fighter, weather: str | None) -> bool:
                if foe.pp[index] > 0 and move.damaging)
 
 
-def _team_speed(team: "_Team") -> float:
-    """The mean Speed of the team's members still able to fight, counting the ones not yet in at their full stat."""
-    speeds = [fighter.stat("speed") for fighter in team.fighters.values() if fighter.hp > 0]
-    speeds += [_Fighter.enter(team.roster[index]).stat("speed") for index in team.queue if index not in team.fighters]
-    return sum(speeds) / len(speeds)
-
-
 def _best_move(attacker: _Fighter, defender: _Fighter, weather: str | None) -> int | None:
     """Index of the move to use; None means Struggle.
 

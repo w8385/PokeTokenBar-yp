@@ -44,15 +44,23 @@ class StatusMove(Handler):
         raise NotImplementedError
 
 
+LEAD_WEIGHT = 2
+
+
 @register("moves", "trick-room")
 class TrickRoom(StatusMove):
     def wanted(self, move, team, foes, side, arena, weather):
-        user = team.active
-        return (user.fresh and self.key not in team.used and not arena.trick_room
-                and battle._team_speed(team) < foes.active.stat("speed", weather))
-
-    def remember(self, name, team):
-        team.used.add(name)
+        """Never while it is up (using it again would end it). Otherwise when more of the team, the user and the
+        next member counting double, is slower than the foe in the field than faster."""
+        if arena.trick_room:
+            return False
+        foe_speed = foes.active.stat("speed", weather)
+        members = [(team.active, LEAD_WEIGHT)] + [
+            (team.fighters.get(index) or battle._Fighter.enter(team.roster[index], team.carried[index]),
+             LEAD_WEIGHT if position == 0 else 1)
+            for position, index in enumerate(team.queue)]
+        speeds = [(fighter.stat("speed", weather), weight) for fighter, weight in members if fighter.hp > 0]
+        return sum(weight * ((speed < foe_speed) - (speed > foe_speed)) for speed, weight in speeds) > 0
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         arena.trick_room = 0 if arena.trick_room else battle.TRICK_ROOM_TURNS

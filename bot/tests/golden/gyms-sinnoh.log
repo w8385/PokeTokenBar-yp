@@ -1653,53 +1653,41 @@ ItemHeal turn=9 side=1 pokemon='P488' item='leftovers' hp=91
 SendOut turn=9 side=0 pokemon='P857' member=2
 AbilityTrigger side=0 pokemon='P857' ability='desolate-land' weather='sun'
 Action turn=10 side=0 attacker='P857' defender='P488' move='에어로블라스트' defender_hp=62 move_id=177
-Action turn=10 side=1 attacker='P488' defender='P857' move='냉동빔' multiplier=2.0 changes=(Change(side=0, pokemon='P857', kind='freeze', stages=0),) defender_hp=51 attacker_hp=62 move_id=58
+Action turn=10 side=1 attacker='P488' defender='P857' move='트릭룸' attacker_hp=62 effect='trick-room' move_id=433
 ItemHeal turn=10 side=1 pokemon='P488' item='leftovers' hp=68
+Action turn=11 side=1 attacker='P488' defender='P857' move='냉동빔' multiplier=2.0 changes=(Change(side=0, pokemon='P857', kind='freeze', stages=0),) defender_hp=51 attacker_hp=68 move_id=58
 Action turn=11 side=0 attacker='P857' defender='P488' move='에어로블라스트' critical=True defender_hp=28 recovered=('freeze',) attacker_hp=51 move_id=177
-Action turn=11 side=1 attacker='P488' defender='P857' move='냉동빔' multiplier=2.0 defender_hp=3 attacker_hp=28 move_id=58
 ItemHeal turn=11 side=1 pokemon='P488' item='leftovers' hp=34
+Action turn=12 side=1 attacker='P488' defender='P857' move='냉동빔' multiplier=2.0 defender_hp=3 attacker_hp=34 move_id=58
 Action turn=12 side=0 attacker='P857' defender='P488' move='에어로블라스트' defender_hp=7 attacker_hp=3 move_id=177
-Action turn=12 side=1 attacker='P488' defender='P857' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=7 move_id=58
 ItemHeal turn=12 side=1 pokemon='P488' item='leftovers' hp=13
-SendOut turn=12 side=0 pokemon='P915' member=3
-Action turn=13 side=0 attacker='P915' defender='P488' move='투닥투닥프렌드타임' defender_hp=0 knockout=True move_id=726
-SendOut turn=13 side=1 pokemon='P484' member=3
-FormShift turn=13 side=1 pokemon='P484' kind='origin' form_id=10246
-Action turn=14 side=0 attacker='P915' defender='P484' move='페이탈클로' defender_hp=78 move_id=827
-Action turn=14 side=1 attacker='P484' defender='P915' move='불대문자' defender_hp=61 attacker_hp=78 move_id=126
+Action turn=13 side=1 attacker='P488' defender='P857' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=13 move_id=58
+ItemHeal turn=13 side=1 pokemon='P488' item='leftovers' hp=19
+SendOut turn=13 side=0 pokemon='P915' member=3
+Action turn=14 side=1 attacker='P488' defender='P915' move='문포스' multiplier=2.0 defender_hp=42 attacker_hp=19 move_id=585
+Action turn=14 side=0 attacker='P915' defender='P488' move='투닥투닥프렌드타임' defender_hp=0 knockout=True attacker_hp=42 move_id=726
 WeatherEnd turn=14 weather='sun'
-Action turn=15 side=0 attacker='P915' defender='P484' move='페이탈클로' changes=(Change(side=1, pokemon='P484', kind='sleep', stages=0),) defender_hp=57 attacker_hp=61 move_id=827
-Action turn=15 side=1 attacker='P484' defender='P915' move='' defender_hp=61 blocked='sleep' attacker_hp=57
-Action turn=16 side=0 attacker='P915' defender='P484' move='페이탈클로' defender_hp=34 attacker_hp=61 move_id=827
-Action turn=16 side=1 attacker='P484' defender='P915' move='' defender_hp=61 blocked='sleep' attacker_hp=34
-Action turn=17 side=0 attacker='P915' defender='P484' move='페이탈클로' defender_hp=10 attacker_hp=61 move_id=827
-Action turn=17 side=1 attacker='P484' defender='P915' move='' defender_hp=61 blocked='sleep' attacker_hp=10
-Action turn=18 side=0 attacker='P915' defender='P484' move='페이탈클로' defender_hp=0 knockout=True attacker_hp=61 move_id=827
-SendOut turn=18 side=1 pokemon='P483' member=4
-FormShift turn=18 side=1 pokemon='P483' kind='origin' form_id=10245
-Action turn=19 side=0 attacker='P915' defender='P483' move='페이탈클로' defender_hp=66 attacker_hp=61 move_id=827
-Action turn=19 side=1 attacker='P483' defender='P915' move='용성군' changes=(Change(side=1, pokemon='P483', kind='special_attack', stages=-2),) defender_hp=17 attacker_hp=66 move_id=434
-Action turn=20 side=0 attacker='P915' defender='P483' move='페이탈클로' changes=(Change(side=1, pokemon='P483', kind='poison', stages=0),) defender_hp=33 attacker_hp=17 move_id=827
-Action turn=20 side=1 attacker='P483' defender='P915' move='용성군' missed=True defender_hp=17 attacker_hp=33 move_id=434
-StatusDamage turn=20 side=1 pokemon='P483' hp=20 fainted=False kind='poison'
-Action turn=21 side=0 attacker='P915' defender='P483' move='페이탈클로' defender_hp=0 knockout=True attacker_hp=17 move_id=827
-SendOut turn=21 side=1 pokemon='P487' member=5
-FormShift turn=21 side=1 pokemon='P487' kind='origin' form_id=10007
-Action turn=22 side=0 attacker='P915' defender='P487' move='페이탈클로' multiplier=2.0 defender_hp=46 attacker_hp=17 move_id=827
-Action turn=22 side=1 attacker='P487' defender='P915' move='드래곤클로' defender_hp=0 knockout=True attacker_hp=46 move_id=337
-SendOut turn=22 side=0 pokemon='P245' member=4
-Action turn=23 side=1 attacker='P487' defender='P245' move='드래곤클로' defender_hp=68 attacker_hp=46 move_id=337
-Action turn=23 side=0 attacker='P245' defender='P487' move='더블펀처' multiplier=2.0 defender_hp=0 knockout=True hits=2 attacker_hp=68 move_id=742
-SendOut turn=23 side=1 pokemon='P491' member=6
-MegaEvolution turn=24 side=1 pokemon='P491' ability='질풍날개' form_id=10312
-Action turn=24 side=1 attacker='P491' defender='P245' move='냉동빔' multiplier=2.0 defender_hp=16 move_id=58
-Action turn=24 side=0 attacker='P245' defender='P491' move='더블펀처' multiplier=0.5 defender_hp=77 hits=2 attacker_hp=16 move_id=742
-Action turn=25 side=1 attacker='P491' defender='P245' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=77 move_id=58
-SendOut turn=25 side=0 pokemon='P406' member=5
-Action turn=26 side=1 attacker='P491' defender='P406' move='악의파동' multiplier=2.0 defender_hp=22 attacker_hp=77 move_id=399
-Action turn=26 side=0 attacker='P406' defender='P491' move='' defender_hp=77 blocked='flinch' attacker_hp=22
-Action turn=27 side=0 attacker='P406' defender='P491' move='잠재댄스' defender_hp=45 attacker_hp=22 move_id=686
-AbilityRetype side=0 pokemon='P406' ability='libero' into='psychic'
-Action turn=27 side=1 attacker='P491' defender='P406' move='악의파동' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=45 move_id=399
-result winner=1 turns=27 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 45, None)) statuses=((None, None, None, None, None, None), (None, None, None, 'sleep', 'poison', None, None, None))
-won=False carry=null body=0e26d7e71979a4a045654ced89d8a877b093698439b1f78a04553ef7819b6619
+TrickRoomEnd turn=14
+SendOut turn=14 side=1 pokemon='P484' member=3
+FormShift turn=14 side=1 pokemon='P484' kind='origin' form_id=10246
+Action turn=15 side=0 attacker='P915' defender='P484' move='페이탈클로' changes=(Change(side=1, pokemon='P484', kind='sleep', stages=0),) defender_hp=77 attacker_hp=42 move_id=827
+Action turn=15 side=1 attacker='P484' defender='P915' move='' defender_hp=42 blocked='sleep' attacker_hp=77
+Action turn=16 side=0 attacker='P915' defender='P484' move='페이탈클로' defender_hp=57 attacker_hp=42 move_id=827
+Action turn=16 side=1 attacker='P484' defender='P915' move='' defender_hp=42 blocked='sleep' attacker_hp=57
+Action turn=17 side=0 attacker='P915' defender='P484' move='페이탈클로' defender_hp=34 attacker_hp=42 move_id=827
+Action turn=17 side=1 attacker='P484' defender='P915' move='공간절단' defender_hp=16 recovered=('sleep',) attacker_hp=34 move_id=460
+Action turn=18 side=0 attacker='P915' defender='P484' move='페이탈클로' changes=(Change(side=1, pokemon='P484', kind='paralysis', stages=0),) defender_hp=12 attacker_hp=16 move_id=827
+Action turn=18 side=1 attacker='P484' defender='P915' move='공간절단' defender_hp=0 knockout=True attacker_hp=12 move_id=460
+SendOut turn=18 side=0 pokemon='P245' member=4
+Action turn=19 side=0 attacker='P245' defender='P484' move='더블펀처' defender_hp=0 knockout=True move_id=742
+SendOut turn=19 side=1 pokemon='P483' member=4
+FormShift turn=19 side=1 pokemon='P483' kind='origin' form_id=10245
+Action turn=20 side=1 attacker='P483' defender='P245' move='불대문자' multiplier=2.0 defender_hp=25 move_id=126
+Action turn=20 side=0 attacker='P245' defender='P483' move='더블펀처' multiplier=0.5 defender_hp=78 hits=2 attacker_hp=25 move_id=742
+Action turn=21 side=1 attacker='P483' defender='P245' move='불대문자' missed=True multiplier=2.0 defender_hp=25 attacker_hp=78 move_id=126
+Action turn=21 side=0 attacker='P245' defender='P483' move='더블펀처' multiplier=0.5 defender_hp=56 hits=2 attacker_hp=25 move_id=742
+Action turn=22 side=1 attacker='P483' defender='P245' move='불대문자' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=56 move_id=126
+SendOut turn=22 side=0 pokemon='P406' member=5
+Action turn=23 side=1 attacker='P483' defender='P406' move='대지의힘' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=56 move_id=414
+result winner=1 turns=23 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 56, None, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, 'paralysis', None, None, None, None))
+won=False carry=null body=4a346085ae7c0c905a414d0773e2928bf5b3f8ecbab1805e5ad9f2664d53c421
