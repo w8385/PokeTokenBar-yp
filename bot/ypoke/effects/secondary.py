@@ -70,11 +70,11 @@ class Thaw(Handler):
 
 def afflict(ailment: str, user, target, side: int, rng):
     """The ailment lands on the target unless its type, a state or its ability keeps it off; None when it does not."""
-    if not battle._open_to(ailment, target, not battle._infiltrates(user)):
+    if not battle._open_to(ailment, target, not battle._infiltrates(user), user):
         return None
     if battle._blocks_ailment(target, ailment):
         return None
-    return battle._inflict(ailment, target, 1 - side, rng)
+    return battle._inflict(ailment, target, 1 - side, rng, user)
 
 
 def chance(move, rng, user, target, field: str = "ailment_chance") -> bool:

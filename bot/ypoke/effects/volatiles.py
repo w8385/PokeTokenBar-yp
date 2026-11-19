@@ -125,13 +125,13 @@ class Nightmare(State):
     on past this turn."""
 
     def _ready(self, move, user, foe, arena):
-        return foe.status == "sleep"
+        return battle._status_of(foe) == "sleep"
 
     def _worth(self, move, user, foe, team, foes, weather):
-        return foe.sleep_left > 0
+        return foe.sleep_left > 0 or foe.status is None
 
     def _tick(self, name, fighter, side, turn):
-        if fighter.status != "sleep":
+        if battle._status_of(fighter) != "sleep":
             del fighter.volatiles[name]
             return None
         hurt(fighter, DAMAGE_SHARE)

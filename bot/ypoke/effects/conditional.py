@@ -65,7 +65,7 @@ class BeakBlast(Condition):
         if (user.hurt is None or not user.hurt.contact or target.hp == 0 or not battle._open_to("burn", target, True)
                 or battle._blocks_ailment(target, "burn")):
             return ()
-        return (battle._inflict("burn", target, target.side, None),)
+        return (battle._inflict("burn", target, target.side, None, user),)
 
 
 @register("moves", "last-resort")
@@ -106,7 +106,7 @@ class TargetAsleep(Condition):
     """Dream Eater: only on a sleeping target."""
 
     def fails(self, move, user, target):
-        return target.status != "sleep"
+        return battle._status_of(target) != "sleep"
 
 
 @register("moves", "user-asleep")
@@ -117,7 +117,7 @@ class UserAsleep(Condition):
         return True
 
     def fails(self, move, user, target):
-        return user.status != "sleep"
+        return battle._status_of(user) != "sleep"
 
 
 @register("moves", "no-repeat")

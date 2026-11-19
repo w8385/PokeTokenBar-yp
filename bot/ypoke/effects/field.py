@@ -379,10 +379,10 @@ class MortalSpin(RapidSpin):
         if dealt <= 0:
             return None
         _spun_free(user, move)
-        if (target.hp == 0 or not battle._open_to("poison", target, not battle._infiltrates(user))
+        if (target.hp == 0 or not battle._open_to("poison", target, not battle._infiltrates(user), user)
                 or battle._blocks_ailment(target, "poison")):
             return None
-        return (battle._inflict("poison", target, target.side, None),)
+        return (battle._inflict("poison", target, target.side, None, user),)
 
 
 class FieldMove(Handler):

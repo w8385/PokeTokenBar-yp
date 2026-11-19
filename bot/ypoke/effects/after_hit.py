@@ -295,7 +295,7 @@ class WakesTarget(Handler):
     by_id = True
 
     def base_power(self, move, power, scene):
-        return power * arg(move, "power", 2) if scene.target.status == arg(move, "status") else power
+        return power * arg(move, "power", 2) if battle._status_of(scene.target) == arg(move, "status") else power
 
     def secondary(self, move, user, target, side, rng):
         if target.status != arg(move, "status"):

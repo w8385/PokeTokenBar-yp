@@ -126,7 +126,7 @@ class AilmentShield(Protect):
         if (not attacking(move) or not battle.makes_contact(attacker, move) or not battle._open_to(ailment, attacker, True)
                 or battle._blocks_ailment(attacker, ailment)):
             return ()
-        return (battle._inflict(ailment, attacker, side, rng),)
+        return (battle._inflict(ailment, attacker, side, rng, attacker.arena and attacker.arena.foe_of(attacker)),)
 
 
 @register("moves", "mat-block")

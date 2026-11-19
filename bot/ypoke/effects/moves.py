@@ -104,12 +104,13 @@ class ThunderWave(StatusMove):
 
     def wanted(self, move, team, foes, side, arena, weather):
         user, foe = team.active, foes.active
-        return foe.stat("speed", weather) > user.stat("speed", weather) and battle._paralyzable(move, foe)
+        return (foe.stat("speed", weather) > user.stat("speed", weather) and battle._paralyzable(move, foe)
+                and not battle._passed_back("paralysis", foe, user))
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         if not battle._paralyzable(move, foe, not battle._infiltrates(user)):
             return "", ()
-        return "thunder-wave", (battle._inflict("paralysis", foe, 1 - side, rng),)
+        return "thunder-wave", (battle._inflict("paralysis", foe, 1 - side, rng, user),)
 
 
 @register("moves", "weather")
@@ -227,7 +228,7 @@ def _knocked_off(base: int, scene) -> float:
 POWER_RULES = {
     "power-last-respects": lambda base, scene: base + base * scene.user.fallen_allies,
     "power-by-user-hp": _by_hp,
-    "power-hex": lambda base, scene: _doubled(base, scene.target.status is not None),
+    "power-hex": lambda base, scene: _doubled(base, battle._status_of(scene.target) is not None),
     "facade": lambda base, scene: _doubled(base, scene.user.status in move_power.FACADE_STATUSES),
     "power-brine": lambda base, scene: _doubled(base, scene.target.hp * 2 <= scene.target.max_hp),
     "power-vs-poisoned": lambda base, scene: _doubled(base, scene.target.status in move_power.POISONED),

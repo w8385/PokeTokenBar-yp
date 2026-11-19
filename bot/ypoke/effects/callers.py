@@ -137,10 +137,11 @@ class SleepTalk(Caller):
 
     def wanted(self, move, team, foes, side, arena, weather):
         user = team.active
-        return user.status == "sleep" and user.sleep_left > 0 and bool(own_calls(move, user))
+        asleep = user.sleep_left > 0 if user.status == "sleep" else battle._status_of(user) == "sleep"
+        return asleep and bool(own_calls(move, user))
 
     def _pick(self, move, user, foe, side, arena, rng):
-        pool = own_calls(move, user) if user.status == "sleep" else ()
+        pool = own_calls(move, user) if battle._status_of(user) == "sleep" else ()
         return rng.choice(pool) if pool else None
 
 

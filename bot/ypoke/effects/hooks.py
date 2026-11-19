@@ -41,6 +41,7 @@ HOOKS = {
     "field_stat": "ability: multiplies a stat in a weather or terrain, after `modify_stat`",
     "side_stat": "state: multiplies a stat of the Pokémon on its side, last",
     "stage_factor": "ability: multiplies every stat stage change on its holder before the guards (Contrary's -1, Simple's 2)",
+    "wakes_early": "ability: the extra sleep turns that pass each time its holder tries to act asleep (Early Bird)",
     "acts_asleep": "move: its user uses it while asleep (Sleep Talk); the sleep still counts down",
     "thaws_user": "move: a frozen user thaws to use it, and a frozen target it hits thaws (Scald)",
     "bans_move": "state: a move that cannot be used at all, after sleep and freeze and before confusion and PP",
@@ -148,6 +149,10 @@ HOOKS = {
     "between_hits": "item: acts between the hits of a multi-hit move",
     "guards_ailment": "state: an ailment a Pokémon on its side cannot get, from anyone or only from a foe",
     "blocks_ailment": "ability: an ailment its holder cannot get now",
+    "poisons_any_type": "ability: its holder's moves poison Poison and Steel types too (Corrosion)",
+    "passes_ailment": "ability: an ailment a foe gave its holder goes to that foe too (Synchronize)",
+    "status_as": "ability: the status its holder counts as having while it has none (Comatose)",
+    "welcomes_ailment": "ability: the move chooser leaves this ailment off its holder, which it helps (Poison Heal)",
     "guards_stats": "state: a foe cannot lower the stats of a Pokémon on its side",
     "guards_stat": "ability: a foe cannot lower this stat of its holder (Clear Body, Hyper Cutter)",
     "reflects_drop": "ability: a foe's stat drop lands on the foe instead (Mirror Armor)",
@@ -187,7 +192,7 @@ HOOKS = {
     "keeps_weather": "ability: the weather lasts only while a holder is out",
     "modify_status_damage": "ability: the poison or burn damage its holder takes at the end of a turn (Heatproof)",
     "status_damage": "ability: replaces its holder's poison or burn damage at the end of a turn (Poison Heal); returns "
-                     "the event",
+                     "the events, () when none shows",
     "on_switch_out": "ability: acts as its holder leaves the field by its own move (Regenerator); returns an event",
     "on_foe_fainted": "ability: acts as the foe facing its holder faints, before its side sends the next one "
                       "(Soul-Heart); returns an event",
