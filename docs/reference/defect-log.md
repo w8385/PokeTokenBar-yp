@@ -1900,6 +1900,22 @@ read_when:
   Sand Veil, Sand Rush, Sand Force, Ice Body in their weather; Rock Head's recoil), damage taken (Thick Fat, Filter,
   Solid Rock, Prism Armor, Multiscale, Shadow Shield, Fluffy, Ice Scales, Heatproof, Aura Guard, Purifying Salt, Water
   Bubble, Punk Rock), Unaware, and the passive stat and power multipliers.
+- **A lineup rule enforced only in the app's picker is not a rule.** A coworker's `/대결 6` sent six Eternatus (one
+  holding Black Sludge) and won 6:5. Nothing limited a species, and the item clause lived in the app's picker and
+  upload, so a save from before it or a hand-made upload got past both. The bot trusted whatever party it stored.
+  **Why no test caught it:** no test held a repeated species, and the bot's own fixtures used `[member(25, 50)] * 6`
+  in 17 tests, which pinned six Pikachu as a normal party.
+  Now `bot/ypoke/entry_rules.py` applies the species clause (national species via `form_species.json`, so forms and
+  Megas count once) and then the item clause among the members left, at every battle prep (`_prepare` for slash,
+  mention, rematch, practice and pending; `gym_battle.battle` keeps the team length and benches the duplicate). The
+  card says so per side. The app's picker, Box slot control and `place` refuse a second of a species, and the upload,
+  gym, Elite Four and hideout teams send `BattleEntry.fighters` (first of each species).
+  **Guards:** `bot/tests/test_entry_rules.py` (six Eternatus send one; Rotom + Rotom-Wash; the gym API and a hideout
+  carry), `SpeciesClauseTests` (picker, pre-rule save, `GymTeam` ids match members). Dropping the bot filter fails 6
+  tests, dropping the app filter fails 3, and turning off the app's picker check fails the picker test.
+  **Class sweep (a rule enforced at one end only):** the item clause now runs at battle time too; the upload already
+  stripped duplicate items. `/파티` still shows the stored party as uploaded. `TradePool.fightingIDs` keeps the full
+  lineup, so a benched duplicate stays trade-locked like any picked member.
 
 ## Tests and the user's desktop
 

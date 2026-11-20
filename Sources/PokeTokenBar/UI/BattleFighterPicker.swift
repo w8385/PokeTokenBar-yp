@@ -11,6 +11,8 @@ struct BattleFighterPicker: View {
     let excluding: Set<String>
     /// Candidates shown but not pickable: their item matches another lineup member's.
     let blocked: Set<String>
+    /// Candidates shown but not pickable: their species is already in another slot.
+    let sameSpecies: Set<String>
     /// Whether "follow the Pokémon being raised" is offered; only a lone pick can do that.
     let allowsAuto: Bool
     /// A candidate id, or nil for "follow the Pokémon being raised".
@@ -24,12 +26,13 @@ struct BattleFighterPicker: View {
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 4)
 
     init(store: CompanionStore, current: String?, excluding: Set<String> = [], blocked: Set<String> = [],
-         allowsAuto: Bool = true, initialQuery: String = "", onPick: @escaping (String?) -> Void,
-         onBack: @escaping () -> Void) {
+         sameSpecies: Set<String> = [], allowsAuto: Bool = true, initialQuery: String = "",
+         onPick: @escaping (String?) -> Void, onBack: @escaping () -> Void) {
         self.store = store
         self.current = current
         self.excluding = excluding
         self.blocked = blocked
+        self.sameSpecies = sameSpecies
         self.allowsAuto = allowsAuto
         self.onPick = onPick
         self.onBack = onBack
@@ -72,9 +75,9 @@ struct BattleFighterPicker: View {
                                                held: store.heldItemRef(of: candidate.id)) {
                                     onPick(candidate.id)
                                 }
-                                .disabled(blocked.contains(candidate.id))
-                                .opacity(blocked.contains(candidate.id) ? 0.4 : 1)
-                                .help(blocked.contains(candidate.id) ? l.battleItemClause : "")
+                                .disabled(refusal(of: candidate.id) != nil)
+                                .opacity(refusal(of: candidate.id) != nil ? 0.4 : 1)
+                                .help(refusal(of: candidate.id) ?? "")
                             }
                         }
                     }
@@ -82,6 +85,11 @@ struct BattleFighterPicker: View {
                 }
             }
         }
+    }
+
+    /// Why `id` cannot take this slot; nil when it can.
+    func refusal(of id: String) -> String? {
+        sameSpecies.contains(id) ? store.l.battleSpeciesClause : blocked.contains(id) ? store.l.battleItemClause : nil
     }
 
     private func rarityChips(_ all: [BattleCandidate]) -> some View {

@@ -30,6 +30,8 @@ struct BattleView: View {
                 current: current,
                 excluding: Set(lineup.map(\.id)).subtracting(current.map { [$0] } ?? []),
                 blocked: BattleEntry.itemBlockedCandidates(state: store.state, slots: entry.slots, replacing: current),
+                sameSpecies: BattleEntry.speciesBlockedCandidates(state: store.state, slots: entry.slots,
+                                                                  replacing: current),
                 allowsAuto: lineup.count <= 1 && target != .add,
                 initialQuery: initialPickerQuery,
                 onPick: { id in

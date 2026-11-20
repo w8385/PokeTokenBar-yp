@@ -13,14 +13,20 @@ struct BattleEntrySection: View {
 
     var body: some View {
         let lineup = BattleEntry.lineup(state: companion.state, slots: entry.slots)
-        let megaLead = lineup.firstIndex { transformsInBattle($0) }
         let duplicates = BattleEntry.duplicateItemHolders(state: companion.state, slots: entry.slots)
+        let sameSpecies = BattleEntry.duplicateSpecies(state: companion.state, slots: entry.slots)
+        let megaLead = lineup.firstIndex { !sameSpecies.contains($0.id) && transformsInBattle($0) }
         if lineup.isEmpty {
             rentalRow
         } else {
             ForEach(Array(lineup.enumerated()), id: \.element.id) { index, fighter in
-                entryRow(fighter: fighter, index: index, count: lineup.count, megaLead: megaLead)
-                if duplicates.contains(fighter.id) {
+                entryRow(fighter: fighter, index: index, count: lineup.count, megaLead: megaLead,
+                         benched: sameSpecies.contains(fighter.id))
+                if sameSpecies.contains(fighter.id) {
+                    Text(l.battleSpeciesDuplicateWarning).font(.caption2).foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 12).padding(.bottom, 4)
+                } else if duplicates.contains(fighter.id) {
                     Text(l.battleItemDuplicateWarning).font(.caption2).foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 12).padding(.bottom, 4)
@@ -79,7 +85,8 @@ struct BattleEntrySection: View {
         BattleStatPreview.speciesID(of: fighter, in: companion)
     }
 
-    private func entryRow(fighter: BattleCandidate, index: Int, count: Int, megaLead: Int?) -> some View {
+    private func entryRow(fighter: BattleCandidate, index: Int, count: Int, megaLead: Int?,
+                          benched: Bool) -> some View {
         let dexEntry = companion.dexEntry(for: fighter)
         let speciesID = speciesID(of: fighter)
         let level = fighter.member.level
@@ -95,6 +102,7 @@ struct BattleEntrySection: View {
                            form: megaSprite == nil ? dexEntry?.form : nil,
                            female: megaSprite == nil && dexEntry?.profile?.gender == .female)
                     .frame(width: 56, height: 56)
+                    .opacity(benched ? 0.4 : 1)
                     .overlay(alignment: .bottomTrailing) {
                         if let held = companion.heldItemRef(of: fighter.id) { HeldItemBadge(ref: held, size: 22) }
                     }
