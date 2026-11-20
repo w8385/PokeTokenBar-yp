@@ -33,7 +33,8 @@ HOOKS = {
     "retypes": "ability: the type its holder's move takes after `modify_type` (Pixilate), None to keep it",
     "modify_priority": "ability, move: added to the move's priority",
     "moves_last": "ability: its holder moves last in its priority bracket with this move (Stall)",
-    "moves_first": "item, then ability: a draw that puts its holder first in its priority bracket (holders only draw)",
+    "moves_first": "item, then ability: a draw or a berry that puts its holder first in its priority bracket (holders "
+                   "only draw)",
     "swaps_stat": "state: the stat whose raw value stands in for another (Wonder Room)",
     "suppresses_items": "state: the held items of the Pokémon it covers do nothing (Magic Room, Embargo)",
     "modify_stat": "item, then ability: multiplies a stat after its stage (paralysis halves Speed in between)",
@@ -100,6 +101,7 @@ HOOKS = {
     "rolls_each_hit": "move: each hit after the first draws for accuracy and a miss ends the move (Triple Kick)",
     "accuracy_as_user": "item, ability: multiplies the user's accuracy, before the target's",
     "accuracy_as_target": "item, ability: multiplies the accuracy of a move used on its holder",
+    "primed_accuracy": "item: multiplies the accuracy of the next move of the Pokémon that ate it (Micle Berry)",
     "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
     "ignores_evasion": "ability: the target's evasion stage does nothing to its holder's moves (Keen Eye)",
     "ignores_foe_stages": "ability: the foe's stat stages do nothing against its holder (Unaware)",
@@ -212,6 +214,8 @@ HOOKS = {
     "idles_item": "ability: its holder's item does nothing (Klutz)",
     "keeps_item": "ability: no other Pokémon can take, eat or destroy its holder's item (Sticky Hold)",
     "berry_factor": "ability: multiplies what its holder's berries heal or resist (Ripen)",
+    "pinch_fraction": "ability: its holder eats the berries meant for a quarter of its HP at this share instead "
+                      "(Gluttony at a half: 2)",
     "on_berry_eaten": "ability: acts as its holder uses up a berry (Cheek Pouch, Cud Chew); returns an event",
     "unnerves": "ability: the foe facing its holder cannot eat berries (Unnerve)",
 }

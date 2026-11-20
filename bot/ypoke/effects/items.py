@@ -112,7 +112,7 @@ class Eviolite(Handler):
 
 @register("items", "quick-claw")
 class QuickClaw(Handler):
-    def moves_first(self, name, rng):
+    def moves_first(self, name, fighter, rng):
         return rng.random() < items.QUICK_CLAW_CHANCE
 
 

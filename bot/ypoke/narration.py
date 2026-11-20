@@ -61,6 +61,7 @@ FORM_CAPTION = {
 ITEM_EFFECT_TEXT = {
     "cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독",
     "got": "손에 넣음", "eaten": "먹음", "lost": "녹아 없어짐", "burnt": "불타 없어짐",
+    "confusion": "💫혼란", "focus": "🎯급소율↑", "accuracy": "🎯다음 기술 명중↑", "pp": "PP 회복",
 }
 TRICK_ROOM_ICON = "🔀"
 ROCK_ICON = "🪨"
@@ -508,7 +509,9 @@ def _event_lines(event: Event) -> list[str]:
         return [f"{marker} {event.pokemon} @{ITEM_NAMES[event.item]} {event.hp}%",
                 *([_faint_line(event.pokemon)] if event.fainted else [])]
     if isinstance(event, ItemEffect):
-        return [f"{marker} {event.pokemon} @{ITEM_NAMES[event.item]} {ITEM_EFFECT_TEXT[event.effect]}"]
+        tags = [_change_tag(change, -1) for change in event.changes]
+        return [" ".join([f"{marker} {event.pokemon} @{ITEM_NAMES[event.item]} {ITEM_EFFECT_TEXT[event.effect]}",
+                          *tags])]
     if isinstance(event, VolatileTick):
         shown = f"{event.count}" if event.count is not None else f"{event.hp}%"
         return [f"{marker} {event.pokemon} {VOLATILE_LABEL[event.kind]} {shown}",

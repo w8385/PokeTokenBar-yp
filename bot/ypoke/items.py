@@ -35,12 +35,14 @@ CHARCOAL = "charcoal"
 STELLAR_CRYSTAL = "stellar-crystal"
 PUNCHING_GLOVE = "punching-glove"
 PROTECTIVE_PADS = "protective-pads"
+BERRY_KEYS = ("stat-berry", "starf-berry", "lansat-berry", "micle-berry", "custap-berry", "flavor-berry", "oran-berry",
+              "leppa-berry", "cure-berry", "enigma-berry", "recoil-berry", "guard-berry")
 EFFECT_KEYS = frozenset({
     LEFTOVERS, CHOICE_SCARF, CHOICE_BAND, CHOICE_SPECS, FOCUS_SASH, FOCUS_BAND, LIFE_ORB, EXPERT_BELT, ASSAULT_VEST,
     EVIOLITE, ROCKY_HELMET, SITRUS_BERRY, LUM_BERRY, WHITE_HERB, BLACK_SLUDGE, SHELL_BELL, BIG_ROOT, MUSCLE_BAND,
     WISE_GLASSES, SCOPE_LENS, RAZOR_CLAW, QUICK_CLAW, BRIGHT_POWDER, WIDE_LENS, WEAKNESS_POLICY, PUNCHING_GLOVE,
     "type-boost", "resist-berry", "plate", "origin-boost", "weather-rock", "status-orb", "state-extender",
-    "hazard-boots", PROTECTIVE_PADS,
+    "hazard-boots", PROTECTIVE_PADS, *BERRY_KEYS,
 })
 
 TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",
@@ -61,6 +63,13 @@ WEATHER_ROCKS = battle_data.args("items", "weather-rock", "weathers")
 OGERPON_MASKS = tuple(battle_data.with_key("items", "ogerpon-mask"))
 ORB_AILMENTS = battle_data.args("items", "status-orb", "ailment")
 EXTENDED_STATES = battle_data.args("items", "state-extender", "states")
+STAT_BERRIES = battle_data.args("items", "stat-berry", "stat")
+# A flavor berry confuses a holder whose nature lowers this stat.
+FLAVOR_BERRIES = battle_data.args("items", "flavor-berry", "disliked")
+CURE_BERRIES = battle_data.args("items", "cure-berry", "cures")
+# The move class (physical: True) whose hit sets the berry off.
+RECOIL_BERRIES = battle_data.args("items", "recoil-berry", "physical")
+GUARD_BERRIES = battle_data.args("items", "guard-berry", "physical")
 ITEM_NAMES = battle_data.bot_names("items", unless="mega-stone")
 LEFTOVERS_FRACTION = 16
 BLACK_SLUDGE_HURT_FRACTION = 8
@@ -81,6 +90,14 @@ RESIST_BERRY_MULTIPLIER = 0.5
 BRIGHT_POWDER_ACCURACY = 0.9
 WIDE_LENS_ACCURACY = 1.1
 ROCK_WEATHER_TURNS = 8
+PINCH_FRACTION = 4
+ORAN_HEAL = 10
+FLAVOR_HEAL_FRACTION = 3
+LEPPA_PP = 10
+ENIGMA_HEAL_FRACTION = 4
+RECOIL_BERRY_FRACTION = 8
+STARF_STAGES = 2
+MICLE_ACCURACY = 1.2
 
 
 def known(item: str | None) -> str | None:
