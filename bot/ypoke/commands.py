@@ -16,6 +16,19 @@ from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_ur
 from ypoke.messages import DirectMessage
 from ypoke.narration import PRACTICE_NOTE, Card, battle_card, battle_header
 from ypoke.pokeapi import PokeAPIService
+from ypoke.remote_ops import RemoteOps
+from ypoke.remote_views import (
+    BAG_COMMAND,
+    BOX_COMMAND,
+    MIRACLE_COMMAND,
+    PARTY_COMMAND,
+    REMOTE_COMMANDS,
+    REMOTE_WORDS,
+    SHOP_COMMAND,
+    TRADE_COMMAND,
+    TRAINING_COMMAND,
+    RemoteViews,
+)
 from ypoke.store import PendingChallenge, Record, Store
 from ypoke.upload_server import MAX_PARTY_SIZE
 
@@ -50,7 +63,9 @@ RECORD_COMMAND = "/전적"
 RANKING_COMMAND = "/랭킹"
 DEX_COMMAND = "/도감"
 UMBRELLA_COMMAND = "/ypoke"
-COMMAND_NAMES = (BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, DEX_COMMAND, UMBRELLA_COMMAND)
+COMMAND_NAMES = (
+    BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, DEX_COMMAND, UMBRELLA_COMMAND, *REMOTE_COMMANDS,
+)
 MENTION_WORDS = {
     "대결": BATTLE_COMMAND,
     "battle": BATTLE_COMMAND,
@@ -58,6 +73,7 @@ MENTION_WORDS = {
     "랭킹": RANKING_COMMAND,
     "연결": LINK_COMMAND,
     "도감": DEX_COMMAND,
+    **REMOTE_WORDS,
 }
 HELP_WORDS = frozenset({"", "help", "도움말"})
 HELP_PUBLIC_LINE = f"YPoke 명령 목록은 `{UMBRELLA_COMMAND}`로 누구나 볼 수 있어요."
@@ -73,9 +89,15 @@ HELP_TEXT = (
     f"`{RECORD_COMMAND} [@누구]` 승패를 이 채널에 올려요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
     f"`{DEX_COMMAND} [@누구]` 도감 수·이로치 수·지역별 진행·대표 포켓몬을 이 채널에 올려요. 앱을 켜 둬야 도감이 올라가요.\n"
-    "명령 결과는 누가 어떤 명령을 썼는지와 함께 채널에 올라가요. 연결 링크·토큰과 잘못 쓴 명령의 안내는 나만 봐요.\n"
-    f"`{UMBRELLA_COMMAND}` 이 도움말이에요. `{UMBRELLA_COMMAND} 도감`처럼 뒤에 명령을 붙여도 돼요.\n"
-    "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`도 돼요.\n"
+    "위 명령 결과는 누가 어떤 명령을 썼는지와 함께 채널에 올라가요. 연결 링크·토큰과 잘못 쓴 명령의 안내는 나만 봐요.\n"
+    "*내 포켓몬 (나만 봐요)*\n"
+    "앱이 회사에서 마지막으로 동기화한 내용에 슬랙에서 한 작업을 더해서 보여 줘요.\n"
+    f"`{PARTY_COMMAND}` 대결 파티의 순서·레벨·성격·특성·도구·기술을 보여 줘요.\n"
+    f"`{BOX_COMMAND} [이름] [쪽]` 박스 포켓몬을 쪽마다 보여 줘요. 이름으로 찾을 수 있어요.\n"
+    f"`{BAG_COMMAND}` 쓸 수 있는 토큰·가방 도구·대기 중인 슬랙 작업을 보여 줘요.\n"
+    f"`{SHOP_COMMAND}`·`{TRAINING_COMMAND}`·`{TRADE_COMMAND}`·`{MIRACLE_COMMAND}` 곧 열려요.\n"
+    f"`{UMBRELLA_COMMAND}` 이 도움말이에요. `{UMBRELLA_COMMAND} 도감`·`{UMBRELLA_COMMAND} 파티`처럼 뒤에 명령을 붙여도 돼요.\n"
+    "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`·`@YPoke 파티`도 돼요.\n"
     "*앱 대결 탭*\n"
     "체육관·아지트·사천왕 도전은 앱 대결 탭에서 해요. 슬랙 명령은 없어요.\n"
     "*교환*\n"
@@ -105,6 +127,7 @@ class Reply:
     turn log) and `rematch` (the button value). `spent_card` is set when this press used up the pressed card's button.
     `public` is a line the channel sees beside a private `text`. `image_url` is shown beside `text`.
     `fields` (Slack's 2-column grid) follow `lead`, the part of `text` above them, in the blocks; `text` stays the fallback.
+    `blocks`, when set, are the whole private message.
     """
 
     text: str
@@ -119,6 +142,7 @@ class Reply:
     image_url: str | None = None
     fields: tuple[str, ...] = ()
     lead: str | None = None
+    blocks: tuple[dict, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -154,8 +178,11 @@ class CommandHandler:
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
         bot_user_id: str | None = None,
         home_channel: str | None = None,
+        remote: RemoteOps | None = None,
     ):
         self._store = store
+        self._remote = remote or RemoteOps(store, now)
+        self._views = RemoteViews(store, self._remote, self._species_name)
         self._pokeapi = pokeapi
         self._public_url = public_url
         self._now = now
@@ -238,6 +265,9 @@ class CommandHandler:
             return self._dex(user_id, mention.group(1) if mention else user_id)
         if command == RANKING_COMMAND:
             return self._ranking()
+        if command in REMOTE_COMMANDS:
+            screen = self._views.handle(user_id, command, text)
+            return Reply(screen.text, blocks=tuple(screen.blocks))
         if command == BATTLE_COMMAND and mention:
             if mention.group(1) == user_id:
                 return Reply("자기 자신과는 대결할 수 없어요.")
@@ -393,7 +423,7 @@ class CommandHandler:
 
     def _prepare(self, challenger_id: str, opponent_id: str, size: int) -> _Match | None:
         """Both sides' first `size` combatants, or None while a side has no upload. Raises OSError when PokéAPI is down."""
-        challenger = self._store.party(challenger_id)
+        challenger = self._remote.party(challenger_id)
         if challenger is None:
             return None
         entry = challenger.party[:size]
@@ -403,7 +433,7 @@ class CommandHandler:
                     for species, member in zip(bot_entry(seed, len(entry)), entry)]
             return _Match(challenger_id, opponent_id, self._combatants(entry, wild), seed, practice=True,
                           pokemon=(entry[0]["pokemon_id"], wild[0]["pokemon_id"]), size=size)
-        opponent = self._store.party(opponent_id)
+        opponent = self._remote.party(opponent_id)
         if opponent is None:
             return None
         rival = opponent.party[:size]
@@ -544,6 +574,8 @@ def result_blocks(reply: Reply) -> list[dict]:
 
 def message_blocks(reply: Reply, visible: bool) -> list[dict] | None:
     """Blocks of a plain reply: the lead (with the echo line when `visible`) and thumbnail, then the field grid."""
+    if reply.blocks:
+        return list(reply.blocks)
     if not reply.fields:
         text = "\n".join(filter(None, (reply.echo, reply.text))) if visible else reply.text
         return image_blocks(text, reply.image_url)

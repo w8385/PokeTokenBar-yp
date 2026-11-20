@@ -19,6 +19,7 @@ from ypoke.commands import (
     UMBRELLA_COMMAND,
     command_echo,
 )
+from ypoke.remote_views import REMOTE_COMMANDS
 from ypoke.store import Store
 from ypoke.transport import mention_listener
 
@@ -133,3 +134,13 @@ def test_no_token_link_or_response_url_ever_reaches_a_public_message(store, monk
     for secret in [*tokens, REGISTER_LINK, "hooks.example", "legacy-secret"]:
         assert secret not in shared
     assert all(token in kept for token in tokens)
+
+
+@pytest.mark.parametrize(("command", "text"), [
+    *((command, "") for command in REMOTE_COMMANDS), (UMBRELLA_COMMAND, "파티"), (UMBRELLA_COMMAND, "박스 피카"),
+])
+def test_the_remote_views_and_stubs_are_only_seen_by_the_caller(store, command, text):
+    public, private = run(store, command, text)
+    assert public == []
+    [ephemeral] = private
+    assert ephemeral["blocks"]

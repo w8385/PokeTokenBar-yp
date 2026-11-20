@@ -46,7 +46,43 @@
       {
         "command": "/ypoke",
         "description": "YPoke 도움말. 뒤에 명령을 붙여도 돼요",
-        "usage_hint": "[대결 @상대 | 전적 | 랭킹 | 도감 | 연결]",
+        "usage_hint": "[대결 @상대 | 전적 | 랭킹 | 도감 | 연결 | 파티 | 박스 | 가방]",
+        "should_escape": true
+      },
+      {
+        "command": "/파티",
+        "description": "내 대결 파티의 레벨·성격·특성·도구·기술 보기 (나만 봐요)",
+        "should_escape": true
+      },
+      {
+        "command": "/박스",
+        "description": "내 박스 포켓몬 보기. 이름으로 찾고 쪽을 넘겨요 (나만 봐요)",
+        "usage_hint": "[이름] [쪽]",
+        "should_escape": true
+      },
+      {
+        "command": "/가방",
+        "description": "쓸 수 있는 토큰·가방 도구·대기 중인 작업 보기 (나만 봐요)",
+        "should_escape": true
+      },
+      {
+        "command": "/상점",
+        "description": "상점 (곧 열려요)",
+        "should_escape": true
+      },
+      {
+        "command": "/트레이닝",
+        "description": "트레이닝 (곧 열려요)",
+        "should_escape": true
+      },
+      {
+        "command": "/교환",
+        "description": "교환 (곧 열려요)",
+        "should_escape": true
+      },
+      {
+        "command": "/미라클",
+        "description": "미라클 교환 (곧 열려요)",
         "should_escape": true
       }
     ]

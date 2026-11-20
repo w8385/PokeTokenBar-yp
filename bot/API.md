@@ -52,6 +52,14 @@ Replaces the caller's stored party.
 | `moves` | array | optional, up to 4 distinct PokéAPI move ids, each a move from `GET /v1/moves` at that level, level-up or machine (TM), an attacking egg move when `mirror_herb` is `true` (as `egg=1` lists it), or one of its `status=1` status moves (learnable as described there, egg moves included). Any other move is rejected with `400`. Missing or empty: the 4 most recently learned level-up moves |
 | `mirror_herb` | bool | optional, default `false`. The individual has had a Mirror Herb used on it in the app, so its attacking egg moves count as learnable for `moves` and in its battles. The bot trusts it the way it trusts TM ownership. Anything but a boolean is rejected with `400` |
 | `trade_pool` | array | optional, a top-level key beside `party`. The Pokémon the player may trade, see [Trades](#trades). Left out by older apps; a pool that fails validation is ignored and never fails the upload |
+| `remote_ops` | int | optional, top-level. `1` says this app applies [remote ops](#remote-ops). Without it the fields below are ignored, and Slack commands that queue ops ask the player to update the app |
+| `applied_op_id` | int | optional, top-level, with `remote_ops`. The highest op id this app has applied or cancelled; `0` or missing for none |
+| `wallet` | int | optional, top-level, with `remote_ops`. The tokens the player can spend now |
+| `bag` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "count"}]`: the bag. `key` is the app's inventory key (`rareCandy`, `mega-stone:charizardite-x`, `tm:85`); held items are not in it. Up to 2,000 lines |
+| `shop` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "price", "category", "single"}]`: what the shop sells now, at the app's prices. `single: true` is bought once |
+
+Malformed `remote_ops` fields and lines are dropped, never a `400`. Each upload replaces them, so a later upload
+from an older app turns remote ops off again.
 
 ### `dex` (optional)
 
@@ -301,6 +309,29 @@ loses its buttons. A pick that is no longer in the acceptor's pool is refused pr
 The app polls about every minute and re-sends the pool when it changes or every 5 minutes, so a finished
 trade shows up in the app within about a minute. One app per token: a second Mac may pick up the delivery
 first, and the first to acknowledge wins.
+
+## Remote ops
+
+Slack commands change what the bot uses for a player right away and queue the same change as an op for the app.
+The bot's view of a player (battles, `/파티`, `/박스`, `/가방`) is the last upload with every pending op whose id is
+above that upload's `applied_op_id` replayed on top, in id order. An upload that has not applied an op yet
+therefore never undoes it, and an op is never counted twice.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/ops` | `{"ok": true, "ops": [{"id", "kind", "payload", "created_at"}]}`: the caller's pending ops, oldest first. `id` grows per player and is never reused |
+| `POST /v1/ops/ack` | `{"applied": [1, 2], "cancelled": [{"id": 3, "reason": "unsupported"}]}` → `{"ok": true}`. At most 500 ids. `reason` is a short lowercase code (`[a-z][a-z0-9_]*`, max 40); the bot words it in Korean |
+
+App sync order: `GET /v1/ops`, apply each op in id order and save (with the highest id handled), `POST /v1/party`
+with `applied_op_id`, then ack after the upload succeeds. An op whose target is gone or that the player cannot
+afford is cancelled with a reason; the rest still apply. An unknown `kind` is cancelled with `unsupported`. Apply
+each id once: a lost ack only means the same ops come back, and the app acks them again with the same results.
+
+Only ops an ack moves out of pending count. The bot DMs the player one message per ack listing them
+(✅ applied, ❌ cancelled with the reason). A repeated or empty ack sends nothing.
+
+A bot from before remote ops answers `404` on `/v1/ops`; the app then skips ops until it restarts or the server or token
+changes.
 
 ## Gyms (PvE)
 

@@ -63,8 +63,11 @@ CREATE TABLE IF NOT EXISTS rematch_claims (
 
 @dataclass(frozen=True)
 class StoredParty:
+    """`remote` is what the last upload said about remote ops (`remote_ops.normalize_remote`); None from an older app."""
+
     party: list[dict]
     uploaded_at: str
+    remote: dict | None = None
 
 
 @dataclass(frozen=True)
@@ -122,8 +125,10 @@ class Store:
             for column in ("challenger_pokemon", "opponent_pokemon", "turns"):
                 if column not in battle_columns:
                     connection.execute(f"ALTER TABLE battles ADD COLUMN {column} INTEGER")
-            if "dex_json" not in {row[1] for row in connection.execute("PRAGMA table_info(users)")}:
-                connection.execute("ALTER TABLE users ADD COLUMN dex_json TEXT")
+            user_columns = {row[1] for row in connection.execute("PRAGMA table_info(users)")}
+            for column in ("dex_json", "remote_json"):
+                if column not in user_columns:
+                    connection.execute(f"ALTER TABLE users ADD COLUMN {column} TEXT")
 
     def issue_token(self, slack_user_id: str, keep_existing: bool = False) -> str:
         """Create a new upload token for the user. Unless `keep_existing`, every previous token is revoked."""
@@ -155,14 +160,17 @@ class Store:
             ).fetchone()
         return row[0] if row else None
 
-    def save_party(self, slack_user_id: str, party: list[dict], dex: dict | None = None) -> None:
-        """Replace the party. A missing `dex` (an older app) keeps the last one stored."""
+    def save_party(self, slack_user_id: str, party: list[dict], dex: dict | None = None,
+                   remote: dict | None = None) -> None:
+        """Replace the party and, with it, the remote-ops snapshot (None for an older app, which clears it).
+        A missing `dex` (an older app) keeps the last one stored."""
         with closing(self._connect()) as connection, connection:
             connection.execute(
-                "UPDATE users SET party_json = ?, uploaded_at = ?, dex_json = COALESCE(?, dex_json) "
+                "UPDATE users SET party_json = ?, uploaded_at = ?, dex_json = COALESCE(?, dex_json), remote_json = ? "
                 "WHERE slack_user_id = ?",
                 (json.dumps(party, ensure_ascii=False), _now(),
-                 json.dumps(dex, ensure_ascii=False) if dex is not None else None, slack_user_id),
+                 json.dumps(dex, ensure_ascii=False) if dex is not None else None,
+                 json.dumps(remote, ensure_ascii=False) if remote is not None else None, slack_user_id),
             )
 
     def linked_user_ids(self) -> list[str]:
@@ -183,10 +191,12 @@ class Store:
     def party(self, slack_user_id: str) -> StoredParty | None:
         with closing(self._connect()) as connection:
             row = connection.execute(
-                "SELECT party_json, uploaded_at FROM users WHERE slack_user_id = ? AND party_json IS NOT NULL",
+                "SELECT party_json, uploaded_at, remote_json FROM users WHERE slack_user_id = ? AND party_json IS NOT NULL",
                 (slack_user_id,),
             ).fetchone()
-        return StoredParty(party=json.loads(row[0]), uploaded_at=row[1]) if row else None
+        if row is None:
+            return None
+        return StoredParty(party=json.loads(row[0]), uploaded_at=row[1], remote=json.loads(row[2]) if row[2] else None)
 
     def record_battle(
         self,
