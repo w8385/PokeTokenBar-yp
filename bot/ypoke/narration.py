@@ -62,6 +62,7 @@ ITEM_EFFECT_TEXT = {
     "cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독",
     "got": "손에 넣음", "eaten": "먹음", "lost": "녹아 없어짐", "burnt": "불타 없어짐",
     "confusion": "💫혼란", "focus": "🎯급소율↑", "accuracy": "🎯다음 기술 명중↑", "pp": "PP 회복",
+    "spent": "써서 위력↑",
 }
 TRICK_ROOM_ICON = "🔀"
 ROCK_ICON = "🪨"

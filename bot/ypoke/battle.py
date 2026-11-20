@@ -1522,6 +1522,10 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     if hooks.ability(attacker, "always_crits", defender, default=False):
         crit_stage = len(CRITICAL_CHANCES) - 1
     no_crit = any(_field(defender, "guards_crit")) or hooks.ability(defender, "guards_crit", default=False)
+    spent = hooks.item(attacker, "spent_on", attacker, move, default=None)
+    if spent is not None:
+        attacker.primed = spent
+        _announce(attacker, ItemEffect(turn, side, attacker.combatant.name, spent, "spent"))
     hit_count = _hit_count(move, attacker, rng)
     rolls_each_hit = (checks_accuracy and hooks.move(move, "rolls_each_hit", default=False)
                       and not hooks.ability(attacker, "skips_hit_rolls", default=False))
@@ -1568,6 +1572,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         held = defender.item
         if hit < hit_count - 1 and hooks.item(defender, "between_hits", defender, default=False):
             berry = held
+    if spent is not None:
+        attacker.primed = None
     if dealt > 0:
         defender.hurt = Hurt(move.physical, dealt, makes_contact(attacker, move))
     if defender.hp == 0:
@@ -2175,6 +2181,7 @@ def _power(attacker: _Fighter, defender: _Fighter, move: Move, weather: str | No
         return move.power
     power = move_power.power(move, attacker, defender, weather, multiplier, hit)
     extra_hit = hooks.ability(attacker, "extra_hit_power", default=1.0) if hit and move.max_hits <= 1 else 1.0
+    power *= hooks.call("items", attacker.primed, "primed_power", default=1.0)
     return power * (hooks.ability(attacker, "modify_power", move, power, attacker, defender, weather, default=1.0)
                     * hooks.ability(defender, "modify_foe_power", move, defender, default=1.0)) * math.prod(
         _field(attacker, "field_power", move, attacker, defender)) * (_hidden(defender, move) or 1.0) * extra_hit
