@@ -5,9 +5,9 @@ import XCTest
 enum BotItemSource {
     /// The `ypoke.items` tables `foe_items.py` can pick from, by the effect key their entries run in `items.json`.
     static let tableKeys = [
-        "TYPE_BOOST_ITEMS": "type-boost", "RESIST_BERRIES": "resist-berry", "PLATES": "plate",
-        "WEATHER_ROCKS": "weather-rock", "OGERPON_MASKS": "ogerpon-mask", "ORIGIN_BOOSTS": "origin-boost",
-        "ORB_AILMENTS": "status-orb",
+        "TYPE_BOOST_ITEMS": ["type-boost"], "RESIST_BERRIES": ["resist-berry"], "PLATES": ["plate"],
+        "WEATHER_ROCKS": ["weather-rock"], "OGERPON_MASKS": ["ogerpon-mask"], "ORIGIN_BOOSTS": ["origin-boost"],
+        "ORB_AILMENTS": ["status-orb"], "SPECIES_ITEMS": ["origin-boost", "species-stat", "species-crit"],
     ]
 
     static func read(_ path: String) throws -> String {
@@ -24,10 +24,12 @@ enum BotItemSource {
         var slugs = Set(teams.matches(of: /\(\d+, "([a-z0-9-]+)", \(/).map { String($0.1) })
         let picker = try read("bot/ypoke/foe_items.py")
         for name in Set(picker.matches(of: /\bitems\.([A-Z][A-Z0-9_]*)\b/).map { String($0.1) }) {
-            if let key = tableKeys[name] {
-                let table = try BattleData.items(running: key)
-                XCTAssertFalse(table.isEmpty, "no item runs \(key)")
-                slugs.formUnion(table)
+            if let keys = tableKeys[name] {
+                for key in keys {
+                    let table = try BattleData.items(running: key)
+                    XCTAssertFalse(table.isEmpty, "no item runs \(key)")
+                    slugs.formUnion(table)
+                }
             } else {
                 slugs.insert(name.lowercased().replacingOccurrences(of: "_", with: "-"))
             }
@@ -74,8 +76,8 @@ final class NPCHeldItemsTests: XCTestCase {
     }
 
     func testTheCheckFailsForAnItemTheAppLacks() throws {
-        try expectFailure(saying: "the app has no item booster-energy") {
-            try assertSoldAndKnown(["booster-energy"], sold: shopEntries(), known: ["booster-energy"])
+        try expectFailure(saying: "the app has no item destiny-knot") {
+            try assertSoldAndKnown(["destiny-knot"], sold: shopEntries(), known: ["destiny-knot"])
         }
     }
 

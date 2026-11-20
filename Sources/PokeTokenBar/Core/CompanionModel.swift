@@ -155,6 +155,25 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     case revealGlass, dnaSplicers, reinsOfUnity
     /// Unlocks one individual's attacking egg moves for good; used up.
     case mirrorHerb
+    /// The rest of the battle items, whose bot slug is the case name in kebab case (`ChampionItems.swift`).
+    case normalGem, fireGem, waterGem, electricGem, grassGem, iceGem, fightingGem, poisonGem, groundGem
+    case flyingGem, psychicGem, bugGem, rockGem, ghostGem, dragonGem, darkGem, steelGem, fairyGem
+    case fireMemory, waterMemory, electricMemory, grassMemory, iceMemory, fightingMemory, poisonMemory, groundMemory
+    case flyingMemory, psychicMemory, bugMemory, rockMemory, ghostMemory, dragonMemory, darkMemory, steelMemory, fairyMemory
+    case burnDrive, chillDrive, douseDrive, shockDrive
+    case seaIncense, waveIncense, rockIncense, roseIncense, oddIncense, laxIncense, fullIncense
+    case cheriBerry, chestoBerry, pechaBerry, rawstBerry, aspearBerry, persimBerry, oranBerry, leppaBerry
+    case figyBerry, wikiBerry, magoBerry, aguavBerry, iapapaBerry
+    case liechiBerry, ganlonBerry, salacBerry, petayaBerry, apicotBerry, lansatBerry, starfBerry, micleBerry, custapBerry
+    case enigmaBerry, keeBerry, marangaBerry, jabocaBerry, rowapBerry
+    case electricSeed, grassySeed, mistySeed, psychicSeed
+    case machoBrace, powerWeight, powerBracer, powerBelt, powerLens, powerBand, powerAnklet
+    case lightBall, thickClub, metalPowder, quickPowder, luckyPunch, stick, adamantOrb, lustrousOrb, griseousOrb, soulDew
+    case absorbBulb, cellBattery, luminousMoss, snowball
+    case abilityShield, adrenalineOrb, airBalloon, bindingBand, blunderPolicy, boosterEnergy, clearAmulet, covertCloak
+    case floatStone, gripClaw, heavyDutyBoots, ironBall, laggingTail, loadedDice, mentalHerb, metronome, powerHerb
+    case protectivePads, ringTarget, roomService, safetyGoggles, stickyBarb, throatSpray, utilityUmbrella, zoomLens
+    case lightClay, terrainExtender
 
     /// 봇에 보내는 지닌 도구 슬러그(PokéAPI 아이템 이름, `bot/API.md` `held_item`). nil = 지닌 도구 아님.
     var heldItemSlug: String? {
@@ -212,8 +231,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .hearthflameMask: return "hearthflame-mask"
         case .cornerstoneMask: return "cornerstone-mask"
         case .stellarCrystal: return "stellar-crystal"
-        case .metalCoat: return "metal-coat"
-        case .razorClaw: return "razor-claw"
+        case .metalCoat, .razorClaw, .kingsRock, .razorFang, .deepSeaTooth, .deepSeaScale: return evolutionHeldSlug
         default: return championItemSlug
         }
     }
@@ -249,7 +267,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         default: return championHolderSpeciesID
         }
     }
-    /// A battle item sold in the held-item tier. Metal Coat and Razor Claw also act in battle but stay evolution items.
+    /// A battle item sold in the held-item tier. The evolution items that act in battle stay evolution items.
     var isHeldItem: Bool { heldItemSlug != nil && !isEvolutionHeld }
     /// The shop sells one copy at a time, counting the bag and every holder.
     var isSingleCopy: Bool { self == .stellarCrystal }
@@ -276,7 +294,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         }
     }
 
-    /// PokéAPI name of an evolution item that is held, not used up. Metal Coat and Razor Claw are also uploaded as battle items.
+    /// PokéAPI name of an evolution item that is held, not used up. The ones with a battle effect are also uploaded.
     var evolutionHeldSlug: String? {
         switch self {
         case .ovalStone: return "oval-stone"
@@ -365,6 +383,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .duskStone: return "dusk-stone"
         case .dawnStone: return "dawn-stone"
         case .iceStone: return "ice-stone"
+        default: return nil
         }
     }
     var isEvolutionStone: Bool { evolutionItemName != nil }
@@ -420,7 +439,7 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
         case .goldBottleCap: return BottleCap.goldPrice
         case .revealGlass, .dnaSplicers, .reinsOfUnity: return FormTool.price
         case .mirrorHerb: return MirrorHerb.price
-        case _ where isHeldItem: return HeldItem.price
+        case _ where isHeldItem: return HeldItem.price(of: self)
         default: return EvolutionStone.price
         }
     }
@@ -444,6 +463,15 @@ enum EvolutionStone {
 /// 지닌 도구 상수 — 소모되지 않고 배틀 포켓몬에 달았다 뗄 수 있다.
 enum HeldItem {
     static let price = PokemonBalance.Price.heldItem
+    /// Gems are used up after one boosted move.
+    static let gemPrice = PokemonBalance.Price.gem
+    /// Items that mostly hold their own holder back, like the power items and the Iron Ball.
+    static let burdenPrice = PokemonBalance.Price.burden
+
+    static func price(of kind: ItemKind) -> Int {
+        if ItemKind.gems.contains(kind) { return gemPrice }
+        return ItemKind.burdens.contains(kind) ? burdenPrice : price
+    }
 }
 
 /// 상점·가방의 분류 탭. 빈 분류는 화면에서 숨긴다 — 아이템을 추가하는 쪽이 `ItemKind.category` 한 줄만 채운다.
@@ -473,9 +501,11 @@ extension ItemKind {
         case .tartApple, .sweetApple, .syrupyApple, .crackedPot, .chippedPot, .auspiciousArmor, .maliciousArmor,
              .galaricaCuff, .galaricaWreath, .unremarkableTeacup, .masterpieceTeacup, .metalAlloy, .peatBlock,
              .blackAugurite, .scrollOfDarkness, .scrollOfWaters: return nil
-        case .ovalStone, .razorFang, .strawberrySweet: return nil
-        case .kingsRock, .dragonScale, .upGrade, .dubiousDisc, .electirizer, .magmarizer, .protector,
-             .reaperCloth, .deepSeaTooth, .deepSeaScale, .sachet, .whippedDream, .prismScale: return nil
+        case .ovalStone, .strawberrySweet: return nil
+        case .dragonScale, .upGrade, .dubiousDisc, .electirizer, .magmarizer, .protector,
+             .reaperCloth, .sachet, .whippedDream, .prismScale: return nil
+        case .kingsRock, .razorFang: return .attack
+        case .deepSeaTooth, .deepSeaScale: return .signature
         case .choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses: return .attack
         case .charcoal, .mysticWater, .miracleSeed, .magnet, .neverMeltIce, .blackBelt, .poisonBarb, .softSand,
              .sharpBeak, .twistedSpoon, .silverPowder, .hardStone, .spellTag, .dragonFang, .blackGlasses,
@@ -496,6 +526,7 @@ extension ItemKind {
              .skyPlate, .mindPlate, .insectPlate, .stonePlate, .spookyPlate, .dracoPlate, .dreadPlate, .ironPlate,
              .pixiePlate: return .typeBoost
         case .everstone: return .other
+        default: return moreBattleGroup
         }
     }
 }
@@ -521,17 +552,17 @@ enum BattleItemGroup: String, CaseIterable, Sendable {
         .heatRock, .dampRock, .smoothRock, .icyRock,
         .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
     ] + ItemKind.primalOrbs + [.ultranecroziumZ] + ItemKind.originItems + ItemKind.crownedItems + [
-        .everstone,
-    ]
+        .everstone, .kingsRock, .razorFang, .deepSeaTooth, .deepSeaScale,
+    ] + ItemKind.moreBattleItems
 
     private static func rank(_ kind: ItemKind) -> Int {
-        if let type = kind.boostedType, let index = PokemonType.allCases.firstIndex(where: { $0.rawValue == type }) {
-            return index
-        }
-        if let type = kind.plateType, let index = PokemonType.allCases.firstIndex(where: { $0.rawValue == type }) {
-            return PokemonType.allCases.count + index
-        }
-        return listedOrder.firstIndex(of: kind) ?? listedOrder.count
+        let types = PokemonType.allCases.count
+        func typeIndex(_ type: String?) -> Int? { PokemonType.allCases.firstIndex { $0.rawValue == type } }
+        if let index = typeIndex(kind.boostedType) { return index }
+        if let index = typeIndex(kind.plateType) { return types + index }
+        if let index = typeIndex(kind.gemType) { return 2 * types + index }
+        if let index = ItemKind.typeIncenses.firstIndex(of: kind) { return 3 * types + index }
+        return 4 * types + (listedOrder.firstIndex(of: kind) ?? listedOrder.count)
     }
 }
 

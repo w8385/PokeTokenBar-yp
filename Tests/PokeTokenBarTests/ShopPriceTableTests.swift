@@ -11,6 +11,8 @@ final class ShopPriceTableTests: XCTestCase {
             ("mint", Mint.price, 2_000_000),
             ("evolution stone", EvolutionStone.price, 20_000_000),
             ("held item", HeldItem.price, 60_000_000),
+            ("type gem", HeldItem.gemPrice, 20_000_000),
+            ("power item, Iron Ball and other burdens", HeldItem.burdenPrice, 5_000_000),
             ("shiny charm", ShinyCharm.price, 60_000_000),
             ("exp. share, first", ExpShare.prices[0], 60_000_000),
             ("exp. share, second", ExpShare.prices[1], 120_000_000),

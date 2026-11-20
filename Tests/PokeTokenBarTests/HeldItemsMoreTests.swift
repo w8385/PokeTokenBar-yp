@@ -152,6 +152,26 @@ final class MoreHeldItemsTests: XCTestCase {
     private var newItems: [ItemKind] {
         ItemKind.allCases.filter(\.isHeldItem)
     }
+    private let evolutionBattleItems: [ItemKind] = [.metalCoat, .razorClaw, .kingsRock, .razorFang, .deepSeaTooth, .deepSeaScale]
+
+    func testGemsAndBurdensHaveTheirOwnPriceTier() {
+        for kind in ItemKind.gems { XCTAssertEqual(kind.shopPrice, HeldItem.gemPrice, "\(kind)") }
+        for kind in ItemKind.burdens { XCTAssertEqual(kind.shopPrice, HeldItem.burdenPrice, "\(kind)") }
+        for kind in ItemKind.moreBattleItems where !(ItemKind.gems + ItemKind.burdens).contains(kind) {
+            XCTAssertEqual(kind.shopPrice, HeldItem.price, "\(kind)")
+        }
+        XCTAssertEqual(ItemKind.moreBattleItems.count, Set(ItemKind.moreBattleItems).count, "no item is listed twice")
+    }
+
+    func testFamilyEffectTextNamesTheTypeTheStatOrTheSpecies() {
+        XCTAssertEqual(L(.ko).heldItemEffect(.fireGem), "불꽃타입 기술을 처음 쓸 때 위력이 1.3배가 되고 없어져요.")
+        XCTAssertEqual(L(.en).heldItemEffect(.seaIncense), "Water-type moves deal ×1.2 damage.")
+        XCTAssertEqual(L(.en).heldItemEffect(.salacBerry), "At 1/4 HP or less, raises Spe by 1 stage.")
+        XCTAssertEqual(L(.en).heldItemEffect(.powerWeight), "Halves the holder's Speed.")
+        XCTAssertTrue(L(.ja).heldItemEffect(.lightBall).contains("ピカチュウ"))
+        XCTAssertTrue(L(.ko).itemAppNote(.kingsRock).contains("풀죽어요"))
+        XCTAssertTrue(L(.en).heldItemEffect(.deepSeaTooth).contains("Clamperl"))
+    }
 
     func testEveryItemTheBotKnowsCanBeBoughtAndNothingElseIsUploaded() throws {
         let known = try BattleData.knownItems()
@@ -185,7 +205,7 @@ final class MoreHeldItemsTests: XCTestCase {
     }
 
     func testMetalCoatAndRazorClawFightWithoutLeavingTheEvolutionShelf() {
-        for kind in [ItemKind.metalCoat, .razorClaw] {
+        for kind in evolutionBattleItems {
             XCTAssertEqual(kind.heldItemSlug, kind.evolutionHeldSlug)
             XCTAssertFalse(kind.isHeldItem)
             XCTAssertEqual(kind.category, .evolution)
@@ -196,7 +216,7 @@ final class MoreHeldItemsTests: XCTestCase {
     }
 
     func testEquippedItemsAreUploadedBySlug() {
-        for kind in newItems + [.metalCoat, .razorClaw] {
+        for kind in newItems + evolutionBattleItems {
             var state = CompanionState()
             state.heldItems = ["a": kind.rawValue]
             XCTAssertEqual(state.heldItemSlug(of: "a"), kind.heldItemSlug, "\(kind)")
@@ -204,7 +224,7 @@ final class MoreHeldItemsTests: XCTestCase {
     }
 
     func testEveryBattleItemHasAnOfficialNameAndAnEffectInEveryLanguage() {
-        for kind in newItems + [.metalCoat, .razorClaw] {
+        for kind in newItems + evolutionBattleItems {
             for language in AppLanguage.allCases {
                 let l = L(language)
                 XCTAssertFalse(l.heldItemEffect(kind).isEmpty, "\(kind) \(language)")
