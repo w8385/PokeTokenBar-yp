@@ -147,7 +147,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             } ?? []
         }, dexSource: { [weak companion] in
             companion.map { DexSummary($0) }
-        }, trades: trades)
+        }, trades: trades, remoteOps: RemoteOpsSync(store: companion))
         partyUploader.onBattleInfo = { [weak companion] in companion?.syncBattles($0.recentBattles) }
         Task { await companion.resolveTradeEvolutions() }
         partyUploader.start()
