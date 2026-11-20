@@ -603,7 +603,7 @@ side=0 P94 Lv45 ('grass', 'ghost') item=gengarite ability=mega-launcher nature=m
 side=0 P837 Lv50 ('flying',) item=shock-drive ability=mirror-armor nature=adamant moves=[148, 149, 127, 228] mega=None
 side=0 P384 Lv44 ('fighting',) item=shuca-berry ability=moxie nature=jolly moves=[620, 160, 887, 412] mega=('mega', 10079, 'iron-barbs')
 side=0 P426 Lv50 ('rock',) item=silk-scarf ability=natural-cure nature=quiet moves=[167, 168, 514, 454] mega=None
-side=0 P1024 Lv45 ('steel', 'poison') item=stellar-crystal ability=oblivious nature=jolly moves=[176, 178, 123, 660] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv45 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=jolly moves=[176, 178, 123, 660] mega=('stellar', 10277, 'teraform-zero')
 side=0 P137 Lv49 ('bug', 'ground') item=sitrus-berry ability=own-tempo nature=timid moves=[187, 191, 891, 387] mega=None
 side=1 P573 Lv50 ('dark',) item=sky-plate ability=piercing-drill nature=None moves=[200, 201, 82, 840] mega=None
 side=1 P780 Lv41 ('fighting',) item=drampanite ability=poison-touch nature=brave moves=[208, 210, 739, 788] mega=('mega', 10302, 'defiant')
@@ -655,7 +655,7 @@ FormShift turn=17 side=0 pokemon='P1024' kind='terastal' form_id=10276
 Action turn=18 side=0 attacker='P1024' defender='P663' move='만나자마자' multiplier=2.0 defender_hp=0 knockout=True move_id=660
 SendOut turn=18 side=1 pokemon='P436' member=4
 Action turn=19 side=0 attacker='P1024' defender='P436' move='목화포자' changes=(Change(side=1, pokemon='P436', kind='speed', stages=-2),) effect='stages' move_id=178
-Action turn=19 side=1 attacker='P436' defender='P1024' move='누르기' multiplier=0.5 defender_hp=92 move_id=34
+Action turn=19 side=1 attacker='P436' defender='P1024' move='누르기' multiplier=0.5 defender_hp=92 ability='tera-shell' move_id=34
 Action turn=20 side=0 attacker='P1024' defender='P436' move='스모그' missed=True attacker_hp=92 move_id=123
 Action turn=20 side=1 attacker='P436' defender='P1024' move='자기암시' defender_hp=92 effect='psych-up' move_id=244
 Action turn=21 side=0 attacker='P1024' defender='P436' move='목화포자' changes=(Change(side=1, pokemon='P436', kind='speed', stages=-2),) attacker_hp=92 effect='stages' move_id=178
@@ -923,7 +923,7 @@ Action turn=15 side=0 attacker='P431' defender='P85' move='사이코키네시스
 result winner=0 turns=15 remaining=((0, 0, 0, 33, None), (0, 0, 0)) statuses=((None, None, None, None, None), (None, None, 'poison'))
 ## pvp 97
 side=0 P925 Lv42 ('poison', 'steel') item=black-glasses ability=neuroforce nature=jolly moves=[907, 908, 426, 687] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=opportunist nature=modest moves=[915, 916, 412, 904] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=modest moves=[915, 916, 412, 904] mega=('stellar', 10277, 'teraform-zero')
 side=0 P598 Lv50 ('grass', 'ghost') item=blue-orb ability=parental-bond nature=modest moves=[14, 16, 408, 198] mega=None
 side=1 P270 Lv50 ('normal',) item=bug-gem ability=purifying-salt nature=timid moves=[74, 76, 138, 337] mega=None
 side=1 P246 Lv50 ('rock',) item=bug-memory ability=rain-dish nature=jolly moves=[82, 83, 822, 257] mega=None
@@ -1234,7 +1234,7 @@ Action turn=7 side=0 attacker='P813' defender='P384' move='바디프레스' mult
 Action turn=7 side=1 attacker='P384' defender='P813' move='신통력' defender_hp=50 attacker_hp=13 move_id=326
 Action turn=8 side=0 attacker='P813' defender='P384' move='바디프레스' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=38 ability='iron-barbs' move_id=776
 SendOut turn=8 side=1 pokemon='P308' member=2
-Action turn=9 side=0 attacker='P813' defender='P308' move='야금야금' defender_hp=87 attacker_hp=38 move_id=498
+Action turn=9 side=0 attacker='P813' defender='P308' move='야금야금' defender_hp=87 attacker_hp=38 ability='shadow-shield' move_id=498
 Action turn=9 side=1 attacker='P308' defender='P813' move='브레이브차지' changes=(Change(side=1, pokemon='P308', kind='special_attack', stages=1), Change(side=1, pokemon='P308', kind='special_defense', stages=1)) defender_hp=38 attacker_hp=87 effect='stages' move_id=850
 Action turn=10 side=0 attacker='P813' defender='P308' move='야금야금' defender_hp=58 attacker_hp=38 move_id=498
 Action turn=10 side=1 attacker='P308' defender='P813' move='불대문자' defender_hp=0 knockout=True attacker_hp=58 move_id=126

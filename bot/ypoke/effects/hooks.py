@@ -160,6 +160,8 @@ HOOKS = {
                    "bonus (Protean)",
     "modify_weather_boost": "move: replaces the weather's multiplier",
     "modify_damage_taken": "ability: multiplies damage its holder takes from a foe, after the weather",
+    "lessens_hit": "ability: it is about to lessen a foe's hit on its holder, so the hit's log names it (Tera Shell, "
+                   "Multiscale)",
     "modify_damage_dealt": "ability: multiplies damage its holder deals a foe, with the target's ability",
     "modify_damage": "item: multiplies damage its holder deals, last",
     "screen": "state: multiplies damage to its side; the lowest one counts, and a critical hit passes it",

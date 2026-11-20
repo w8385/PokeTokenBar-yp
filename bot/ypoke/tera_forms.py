@@ -8,6 +8,7 @@ TERAPAGOS = 1024
 TERASTAL_FORM = 10276
 STELLAR_FORM = 10277
 STELLAR_ABILITY = "teraform-zero"
+TERASTAL_ABILITY = "tera-shell"
 ARCEUS = 493
 FORM_ITEM = "form-item"
 OGERPON_MASK = "ogerpon-mask"

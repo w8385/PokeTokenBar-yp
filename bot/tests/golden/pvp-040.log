@@ -1565,7 +1565,7 @@ Action turn=7 side=1 attacker='P375' defender='P33' move='화염방사' defender
 SendOut turn=7 side=0 pokemon='P958' member=1
 Action turn=8 side=0 attacker='P958' defender='P375' move='지오컨트롤' changes=(Change(side=0, pokemon='P958', kind='special_attack', stages=2), Change(side=0, pokemon='P958', kind='special_defense', stages=2), Change(side=0, pokemon='P958', kind='speed', stages=2)) effect='stages' move_id=601
 Action turn=8 side=1 attacker='P375' defender='P958' move='화염방사' multiplier=2.0 defender_hp=63 move_id=53
-Action turn=9 side=0 attacker='P958' defender='P375' move='꽃가루경단' multiplier=0.5 defender_hp=69 attacker_hp=63 move_id=676
+Action turn=9 side=0 attacker='P958' defender='P375' move='꽃가루경단' multiplier=0.5 defender_hp=69 attacker_hp=63 ability='tera-shell' move_id=676
 Action turn=9 side=1 attacker='P375' defender='P958' move='둥실둥실폴' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=69 move_id=731
 SendOut turn=9 side=0 pokemon='P384' member=2
 MegaEvolution turn=10 side=0 pokemon='P384' ability='철가시' form_id=10079
@@ -2328,7 +2328,7 @@ SendOut turn=1 side=1 pokemon='P524' member=1
 AbilityTrigger side=1 pokemon='P524' ability='supersweet-syrup' change=Change(side=0, pokemon='P701', kind='evasion', stages=-1)
 Action turn=2 side=1 attacker='P524' defender='P701' move='단단해지기' changes=(Change(side=1, pokemon='P524', kind='defense', stages=1),) effect='stages' move_id=106
 Action turn=2 side=0 attacker='P701' defender='P524' move='짓밟기' defender_hp=83 move_id=23
-Action turn=3 side=1 attacker='P524' defender='P701' move='요정의바람' multiplier=2.0 defender_hp=87 attacker_hp=83 move_id=584
+Action turn=3 side=1 attacker='P524' defender='P701' move='요정의바람' multiplier=2.0 defender_hp=87 attacker_hp=83 ability='shadow-shield' move_id=584
 Action turn=3 side=0 attacker='P701' defender='P524' move='짓밟기' defender_hp=63 attacker_hp=87 move_id=23
 Action turn=4 side=1 attacker='P524' defender='P701' move='요정의바람' multiplier=2.0 defender_hp=65 attacker_hp=63 move_id=584
 Action turn=4 side=0 attacker='P701' defender='P524' move='짓밟기' defender_hp=43 attacker_hp=65 move_id=23

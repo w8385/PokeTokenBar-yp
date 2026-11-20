@@ -18369,62 +18369,62 @@ result winner=0 turns=2 remaining=((77,), (0,)) statuses=((None,), (None,))
 ## focus tera-shell 0
 side=0 P36 Lv50 ('normal',) item=None ability=tera-shell nature=None moves=[33] mega=None
 side=1 P6 Lv50 ('fighting',) item=None ability=None nature=None moves=[370] mega=None
-Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=51 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=51 ability='tera-shell' move_id=370
 Action turn=1 side=0 attacker='P36' defender='P6' move='몸통박치기' defender_hp=65 attacker_hp=51 move_id=33
 Action turn=2 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=65 move_id=370
 result winner=1 turns=2 remaining=((0,), (65,)) statuses=((None,), (None,))
 ## focus tera-shell 1
 side=0 P36 Lv50 ('normal',) item=None ability=tera-shell nature=None moves=[33] mega=None
 side=1 P6 Lv50 ('fighting',) item=None ability=None nature=None moves=[370] mega=None
-Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=58 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=58 ability='tera-shell' move_id=370
 Action turn=1 side=0 attacker='P36' defender='P6' move='몸통박치기' defender_hp=68 attacker_hp=58 move_id=33
 Action turn=2 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=68 move_id=370
 result winner=1 turns=2 remaining=((0,), (68,)) statuses=((None,), (None,))
 ## focus tera-shell 2
 side=0 P36 Lv50 ('normal',) item=None ability=tera-shell nature=None moves=[33] mega=None
 side=1 P6 Lv50 ('fighting',) item=None ability=None nature=None moves=[370] mega=None
-Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=58 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=58 ability='tera-shell' move_id=370
 Action turn=1 side=0 attacker='P36' defender='P6' move='몸통박치기' defender_hp=70 attacker_hp=58 move_id=33
 Action turn=2 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=70 move_id=370
 result winner=1 turns=2 remaining=((0,), (70,)) statuses=((None,), (None,))
 ## focus tera-shell 3
 side=0 P36 Lv50 ('normal',) item=None ability=tera-shell nature=None moves=[33] mega=None
 side=1 P6 Lv50 ('fighting',) item=None ability=None nature=None moves=[370] mega=None
-Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=54 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=54 ability='tera-shell' move_id=370
 Action turn=1 side=0 attacker='P36' defender='P6' move='몸통박치기' defender_hp=75 attacker_hp=54 move_id=33
 Action turn=2 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=75 move_id=370
 result winner=1 turns=2 remaining=((0,), (75,)) statuses=((None,), (None,))
 ## focus tera-shell 4
 side=0 P36 Lv50 ('normal',) item=None ability=tera-shell nature=None moves=[33] mega=None
 side=1 P6 Lv50 ('fighting',) item=None ability=None nature=None moves=[370] mega=None
-Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=52 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=52 ability='tera-shell' move_id=370
 Action turn=1 side=0 attacker='P36' defender='P6' move='몸통박치기' critical=True defender_hp=54 attacker_hp=52 move_id=33
 Action turn=2 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=54 move_id=370
 result winner=1 turns=2 remaining=((0,), (54,)) statuses=((None,), (None,))
 ## focus tera-shell 5
 side=0 P36 Lv50 ('normal',) item=None ability=tera-shell nature=None moves=[33] mega=None
 side=1 P6 Lv50 ('fighting',) item=None ability=None nature=None moves=[370] mega=None
-Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=59 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=59 ability='tera-shell' move_id=370
 Action turn=1 side=0 attacker='P36' defender='P6' move='몸통박치기' defender_hp=71 attacker_hp=59 move_id=33
 Action turn=2 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=71 move_id=370
 result winner=1 turns=2 remaining=((0,), (71,)) statuses=((None,), (None,))
 ## focus tera-shell 6
 side=0 P36 Lv50 ('normal',) item=None ability=tera-shell nature=None moves=[33] mega=None
 side=1 P6 Lv50 ('fighting',) item=None ability=None nature=None moves=[370] mega=None
-Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=52 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=52 ability='tera-shell' move_id=370
 Action turn=1 side=0 attacker='P36' defender='P6' move='몸통박치기' defender_hp=67 attacker_hp=52 move_id=33
 Action turn=2 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=67 move_id=370
 result winner=1 turns=2 remaining=((0,), (67,)) statuses=((None,), (None,))
 ## focus tera-shell 7
 side=0 P36 Lv50 ('normal',) item=None ability=tera-shell nature=None moves=[33] mega=None
 side=1 P6 Lv50 ('fighting',) item=None ability=None nature=None moves=[370] mega=None
-Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=57 move_id=370
+Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=57 ability='tera-shell' move_id=370
 Action turn=1 side=0 attacker='P36' defender='P6' move='몸통박치기' defender_hp=72 attacker_hp=57 move_id=33
 Action turn=2 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=72 move_id=370
 result winner=1 turns=2 remaining=((0,), (72,)) statuses=((None,), (None,))
 ## focus teraform-zero 0
 side=0 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[33] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shift nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
 side=1 P6 Lv50 ('fighting',) item=None ability=drought nature=None moves=[370] mega=None
 AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
 Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
@@ -18440,7 +18440,7 @@ Action turn=4 side=1 attacker='P6' defender='P1024' move='인파이트' multipli
 result winner=1 turns=4 remaining=((0, 0), (43,)) statuses=((None, None), (None,))
 ## focus teraform-zero 1
 side=0 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[33] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shift nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
 side=1 P6 Lv50 ('fighting',) item=None ability=drought nature=None moves=[370] mega=None
 AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
 Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
@@ -18456,7 +18456,7 @@ Action turn=4 side=1 attacker='P6' defender='P1024' move='인파이트' multipli
 result winner=1 turns=4 remaining=((0, 0), (32,)) statuses=((None, None), (None,))
 ## focus teraform-zero 2
 side=0 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[33] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shift nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
 side=1 P6 Lv50 ('fighting',) item=None ability=drought nature=None moves=[370] mega=None
 AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
 Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
@@ -18470,7 +18470,7 @@ Action turn=3 side=1 attacker='P6' defender='P1024' move='인파이트' multipli
 result winner=1 turns=3 remaining=((0, 0), (63,)) statuses=((None, None), (None,))
 ## focus teraform-zero 3
 side=0 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[33] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shift nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
 side=1 P6 Lv50 ('fighting',) item=None ability=drought nature=None moves=[370] mega=None
 AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
 Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
@@ -18484,7 +18484,7 @@ Action turn=3 side=1 attacker='P6' defender='P1024' move='인파이트' multipli
 result winner=1 turns=3 remaining=((0, 0), (77,)) statuses=((None, None), (None,))
 ## focus teraform-zero 4
 side=0 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[33] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shift nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
 side=1 P6 Lv50 ('fighting',) item=None ability=drought nature=None moves=[370] mega=None
 AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
 Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
@@ -18498,7 +18498,7 @@ Action turn=3 side=1 attacker='P6' defender='P1024' move='인파이트' multipli
 result winner=1 turns=3 remaining=((0, 0), (74,)) statuses=((None, None), (None,))
 ## focus teraform-zero 5
 side=0 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[33] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shift nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
 side=1 P6 Lv50 ('fighting',) item=None ability=drought nature=None moves=[370] mega=None
 AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
 Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
@@ -18514,7 +18514,7 @@ Action turn=4 side=1 attacker='P6' defender='P1024' move='인파이트' multipli
 result winner=1 turns=4 remaining=((0, 0), (41,)) statuses=((None, None), (None,))
 ## focus teraform-zero 6
 side=0 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[33] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shift nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
 side=1 P6 Lv50 ('fighting',) item=None ability=drought nature=None moves=[370] mega=None
 AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
 Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
@@ -18528,7 +18528,7 @@ Action turn=3 side=1 attacker='P6' defender='P1024' move='인파이트' multipli
 result winner=1 turns=3 remaining=((0, 0), (75,)) statuses=((None, None), (None,))
 ## focus teraform-zero 7
 side=0 P36 Lv50 ('normal',) item=None ability=None nature=None moves=[33] mega=None
-side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shift nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
+side=0 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=None moves=[33] mega=('stellar', 10277, 'teraform-zero')
 side=1 P6 Lv50 ('fighting',) item=None ability=drought nature=None moves=[370] mega=None
 AbilityTrigger side=1 pokemon='P6' ability='drought' weather='sun'
 Action turn=1 side=1 attacker='P6' defender='P36' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370

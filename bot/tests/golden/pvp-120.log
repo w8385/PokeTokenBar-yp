@@ -941,7 +941,7 @@ Action turn=8 side=0 attacker='P381' defender='P384' move='쪼아대기' defende
 Action turn=8 side=1 attacker='P384' defender='P381' move='화룡점정' multiplier=0.5 changes=(Change(side=1, pokemon='P384', kind='defense', stages=-1), Change(side=1, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=20 attacker_hp=5 move_id=620
 Action turn=9 side=0 attacker='P381' defender='P384' move='쪼아대기' defender_hp=0 knockout=True attacker_hp=8 ability='iron-barbs' move_id=365
 SendOut turn=9 side=1 pokemon='P768' member=1
-Action turn=10 side=0 attacker='P381' defender='P768' move='셸블레이드' multiplier=0.5 defender_hp=90 attacker_hp=8 move_id=534
+Action turn=10 side=0 attacker='P381' defender='P768' move='셸블레이드' multiplier=0.5 defender_hp=90 attacker_hp=8 ability='tera-shell' move_id=534
 Action turn=10 side=1 attacker='P768' defender='P381' move='분함의발구르기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=90 move_id=707
 FieldEnd turn=10 kind='tailwind' side=0
 SendOut turn=10 side=0 pokemon='P128' member=5
@@ -1699,7 +1699,7 @@ Action turn=1 side=1 attacker='P981' defender='P284' move='눈물그렁그렁' c
 Action turn=1 side=0 attacker='P284' defender='P981' move='비밀이야기' changes=(Change(side=1, pokemon='P981', kind='special_attack', stages=-1),) effect='stages' move_id=590
 Action turn=2 side=1 attacker='P981' defender='P284' move='눈물그렁그렁' changes=(Change(side=0, pokemon='P284', kind='attack', stages=-1), Change(side=0, pokemon='P284', kind='special_attack', stages=-1)) effect='stages' move_id=715
 Action turn=2 side=0 attacker='P284' defender='P981' move='비밀이야기' changes=(Change(side=1, pokemon='P981', kind='special_attack', stages=-1),) effect='stages' move_id=590
-Action turn=3 side=1 attacker='P981' defender='P284' move='섀도레이' defender_hp=81 move_id=714
+Action turn=3 side=1 attacker='P981' defender='P284' move='섀도레이' defender_hp=81 ability='shadow-shield' move_id=714
 Action turn=3 side=0 attacker='P284' defender='P981' move='스팀버스트' changes=(Change(side=1, pokemon='P981', kind='burn', stages=0),) defender_hp=92 attacker_hp=81 move_id=592
 StatusDamage turn=3 side=1 pokemon='P981' hp=86 fainted=False
 Action turn=4 side=1 attacker='P981' defender='P284' move='섀도레이' defender_hp=41 attacker_hp=86 move_id=714

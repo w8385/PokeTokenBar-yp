@@ -1898,8 +1898,28 @@ read_when:
   `focus` golden.
   **Class sweep (left silent on purpose, the games do not announce them either):** chip immunity (Magic Guard; Overcoat;
   Sand Veil, Sand Rush, Sand Force, Ice Body in their weather; Rock Head's recoil), damage taken (Thick Fat, Filter,
-  Solid Rock, Prism Armor, Multiscale, Shadow Shield, Fluffy, Ice Scales, Heatproof, Aura Guard, Purifying Salt, Water
-  Bubble, Punk Rock), Unaware, and the passive stat and power multipliers.
+  Solid Rock, Prism Armor, Fluffy, Ice Scales, Heatproof, Aura Guard, Purifying Salt, Water
+  Bubble, Punk Rock), Unaware, and the passive stat and power multipliers. Multiscale, Shadow Shield and Tera Shell
+  now name themselves on the hit they cut (next entry).
+- **A form that brings its own ability must carry it, or the uploaded one stays.** A full-HP Terastal Terapagos took
+  a neutral Flamethrower from 100% to 60%: it fought with the uploaded `tera-shift`, so Tera Shell never ran.
+  `combatant()` takes `ability_id` from the form data, and only `mega_form()` (Megas, origin and rusted items) adds one;
+  `_form_data` built the Terastal form from plain `pokemon(10276)`.
+  **Why no test caught it:** the Tera Shell tests and the `focus tera-shell` golden handed `tera-shell` straight to a
+  non-Terapagos fighter, and the Terapagos tests checked the form shift and stats, never its ability.
+  Now the Terastal form sets `TERASTAL_ABILITY` (like the Stellar form's `STELLAR_ABILITY`); `combatant.tera` still
+  drives the entry form line, and the Stellar form replaces the ability with Teraform Zero. Multiscale and Shadow Shield
+  worked but were silent, so they read as broken; Tera Shell, Multiscale and Shadow Shield now answer `lessens_hit`
+  and a hit they cut carries the ability in `Action.ability` (`[테라셸]`, `[멀티스케일]`, `[스펙터가드]`). A breaker
+  (Mold Breaker, Turboblaze, Teravolt) leaves Tera Shell and Multiscale off and untagged; Shadow Shield is not breakable.
+  Set damage (Seismic Toss) is not tagged. Known edge: the hit tags keep `MAX_TAGS`, so a critical hit plus
+  `효과 별로` drops the ability tag, and the ability tag can push a status or stat change tag out.
+  **Class sweep of forms built from `pokemon(form_id)`:** Terapagos Terastal (fixed); Ogerpon's masks keep the
+  member's ability on purpose (Embody Aspect is the mask item, `test_a_mask_keeps_the_members_own_ability_and_nickname`);
+  the `abilities.FORMS` forms keep the ability that switches them, as in the games. Origin, rusted, Mega, Primal and Ultra
+  Burst forms go through `mega_form()` and the Stellar form through `STELLAR_ABILITY`; Arceus' plates change types only.
+  **Guards:** `test_lessened_hit_log.py`. Dropping the Terastal ability fails 2 tests and the goldens; dropping the tag
+  fails 6 and the goldens.
 - **A lineup rule enforced only in the app's picker is not a rule.** A coworker's `/대결 6` sent six Eternatus (one
   holding Black Sludge) and won 6:5. Nothing limited a species, and the item clause lived in the app's picker and
   upload, so a save from before it or a hand-made upload got past both. The bot trusted whatever party it stored.

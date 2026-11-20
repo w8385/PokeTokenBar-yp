@@ -1536,6 +1536,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     if spent is not None:
         attacker.primed = spent
         _announce(attacker, ItemEffect(turn, side, attacker.combatant.name, spent, "spent"))
+    lessening = fixed is None and hooks.ability(defender, "lessens_hit", defender, default=False)
+    lessened = None
     hit_count = _hit_count(move, attacker, rng)
     rolls_each_hit = (checks_accuracy and hooks.move(move, "rolls_each_hit", default=False)
                       and not hooks.ability(attacker, "skips_hit_rolls", default=False)
@@ -1562,6 +1564,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
             continue
         damage = min(defender.hp, damage)
         lethal, from_full, held = damage >= defender.hp, defender.hp == defender.max_hp > 1, defender.item
+        if lessening and from_full:
+            lessened = defender.ability
         if lethal and hooks.move(move, "spares", default=False):
             damage = defender.hp - 1
         elif lethal and any(_field(defender, "endures", defender, from_full, rng)):
@@ -1590,7 +1594,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     if defender.hp == 0:
         _field(defender, "on_knocked_out", attacker, move, turn, side)
         _announce(defender, hooks.ability(defender, "on_fainted_by", defender, attacker, move, damage))
-    changes, ability = (), defender.ability if sturdy or barbed else None
+    changes, ability = (), defender.ability if sturdy or barbed else lessened
     if defender.hp > 0 and (not shielded or move.stat_on_user):
         changes, blocked_by = _secondary_effects(side, move, attacker, defender, rng)
         defender.ability_ignored = False

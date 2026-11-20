@@ -189,6 +189,9 @@ class FullHPTaken(Handler):
     def modify_damage_taken(self, name, move, multiplier, holder, user):
         return 0.5 if holder.hp == holder.max_hp else 1.0
 
+    def lessens_hit(self, name, holder):
+        return holder.hp == holder.max_hp
+
 
 @register("abilities", "taken")
 class Taken(Handler):

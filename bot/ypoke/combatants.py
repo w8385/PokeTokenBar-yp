@@ -75,17 +75,22 @@ def _retyped(moves: tuple[Move, ...], move_id: int, kind: str) -> tuple[Move, ..
 
 def _form_data(pokeapi: PokeAPIService, pokemon_id: int, item: str | None) -> dict:
     """The `pokemon()` data the Pokémon fights with: its own, Ogerpon's with the mask's form, Terapagos' Terastal
-    form, an origin or rusted item's form (with its first ability as `"ability_id"`). The name stays the species' own."""
+    form (with Tera Shell as `"ability_id"`), an origin or rusted item's form (with its first ability). The name stays
+    the species' own."""
     data = pokeapi.pokemon(pokemon_id)
     if item in tera_forms.ITEM_FORMS:
         return {**data, **{key: value for key, value in pokeapi.mega_form(tera_forms.ITEM_FORMS[item][1]).items()
                            if key != "name_ko"}}
-    form_id = tera_forms.TERASTAL_FORM if pokemon_id == tera_forms.TERAPAGOS else None
-    if item in tera_forms.MASKS:
-        form_id = tera_forms.MASKS[item][0]
+    if pokemon_id == tera_forms.TERAPAGOS:
+        return {**data, **_form(pokeapi, tera_forms.TERASTAL_FORM), "ability_id": tera_forms.TERASTAL_ABILITY}
+    form_id = tera_forms.MASKS[item][0] if item in tera_forms.MASKS else None
     if form_id is None:
         return data
-    return {**data, **{key: value for key, value in pokeapi.pokemon(form_id).items() if key != "name_ko"}}
+    return {**data, **_form(pokeapi, form_id)}
+
+
+def _form(pokeapi: PokeAPIService, form_id: int) -> dict:
+    return {key: value for key, value in pokeapi.pokemon(form_id).items() if key != "name_ko"}
 
 
 def _can_evolve(pokeapi: PokeAPIService, member: dict) -> bool:
