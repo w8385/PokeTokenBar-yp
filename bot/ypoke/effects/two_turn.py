@@ -21,6 +21,11 @@ class ChargeTurn(Handler):
         raised = shift_all(user, side, arg(move, "raise", ()))
         if weather in arg(move, "skips_in", ()):
             return "", raised
+        if hooks.item(user, "skips_charge", default=False):
+            herb, user.item = user.item, None
+            battle._announce(user, battle.ItemEffect(user.arena.turn if user.arena else 0, side, user.combatant.name,
+                                                     herb, "charged"))
+            return "", raised
         user.volatiles[self.key] = move
         return self._shown(move), raised
 
@@ -30,8 +35,9 @@ class ChargeTurn(Handler):
     def forces_move(self, name, attacker):
         return attacker.last_used
 
-    def score_share(self, move, weather):
-        return 1.0 if weather in arg(move, "skips_in", ()) else TWO_TURN_SHARE
+    def score_share(self, move, weather, user):
+        skips = weather in arg(move, "skips_in", ()) or hooks.item(user, "skips_charge", default=False)
+        return 1.0 if skips else TWO_TURN_SHARE
 
     def _shown(self, move) -> str:
         return self.key
@@ -76,5 +82,5 @@ class Recharge(Handler):
         if not fighter.volatiles[name]:
             del fighter.volatiles[name]
 
-    def score_share(self, move, weather):
+    def score_share(self, move, weather, user):
         return TWO_TURN_SHARE

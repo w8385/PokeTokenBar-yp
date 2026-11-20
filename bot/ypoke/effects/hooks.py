@@ -21,7 +21,8 @@ HOOKS = {
     "forces_move": "state: the move index its holder must pick (Encore)",
     "readied": "state: the move its holder charged last turn, used now with no PP whatever it picked (Solar Beam)",
     "wanted": "move: whether the move chooser picks this effect move now",
-    "score_share": "move: the share of its damage the move chooser counts for a turn (half for a move that takes two)",
+    "score_share": "move: the share of its damage the move chooser counts for a turn (half for a move that takes two, "
+                   "unless the user's item skips the charge)",
     "wasted": "move: the move chooser expects the move to fail this turn (Focus Punch against a foe that attacks)",
     "hp_paid": "move: the HP the move chooser expects its user to pay for it beyond recoil (Steel Beam, a crash on a "
                "miss)",
@@ -104,6 +105,10 @@ HOOKS = {
     "primed_accuracy": "item: multiplies the accuracy of the next move of the Pokémon that ate it (Micle Berry)",
     "spent_on": "item: used up as its holder's move is about to hit (a gem); returns the item, None when it stays",
     "primed_power": "item: multiplies the power of the move it was spent on (a gem)",
+    "floats": "item: its holder floats over Ground moves and is not grounded (Air Balloon)",
+    "on_miss": "item: acts once its holder's move missed on the accuracy draw (Blunder Policy); returns an event",
+    "after_use": "item: acts once its holder's move worked, hit or status (Throat Spray); returns an event",
+    "skips_charge": "item: its holder's two-turn move hits at once, which uses the item up (Power Herb)",
     "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
     "ignores_evasion": "ability: the target's evasion stage does nothing to its holder's moves (Keen Eye)",
     "ignores_foe_stages": "ability: the foe's stat stages do nothing against its holder (Unaware)",
@@ -172,10 +177,11 @@ HOOKS = {
     "guards_stat": "ability: a foe cannot lower this stat of its holder (Clear Body, Hyper Cutter)",
     "reflects_drop": "ability: a foe's stat drop lands on the foe instead (Mirror Armor)",
     "on_stat_lowered": "ability: answers a foe lowering its holder's stat (Defiant); returns an event",
-    "on_foe_raised": "ability: answers a stage raise that landed on the foe facing its holder (Opportunist); returns "
-                     "an event",
+    "on_foe_raised": "ability, then item: answers a stage raise that landed on the foe facing its holder "
+                     "(Opportunist); the ability returns an event, the item keeps it for its `on_update` (Mirror Herb)",
     "answers_intimidate": "ability: acts in place of Intimidate's drop (Guard Dog); returns an event",
-    "after_intimidate": "ability: acts once Intimidate lowered its holder's Attack (Rattled); returns an event",
+    "after_intimidate": "ability, then item: acts once Intimidate lowered its holder's Attack (Rattled, Adrenaline "
+                        "Orb); returns an event",
     "blocks_secondary": "ability: a foe's move's added effects do not land on its holder (Shield Dust)",
     "secondary_chance": "ability: multiplies the chance of its holder's move's added effects (Serene Grace)",
     "secondary": "move: acts on a target the hits left standing, after the ailment and stat changes, unless a "

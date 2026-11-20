@@ -23,6 +23,7 @@ class Intimidate(Handler):
             return None
         change = battle.shift_stage(foe, 1 - side, "attack", -1, by=fighter)
         battle._announce(foe, hooks.ability(foe, "after_intimidate", foe, 1 - side))
+        battle._announce(foe, hooks.item(foe, "after_intimidate", foe))
         return battle.AbilityTrigger(side, fighter.combatant.name, name, change=change)
 
 

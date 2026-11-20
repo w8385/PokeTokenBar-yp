@@ -42,7 +42,8 @@ EFFECT_KEYS = frozenset({
     EVIOLITE, ROCKY_HELMET, SITRUS_BERRY, LUM_BERRY, WHITE_HERB, BLACK_SLUDGE, SHELL_BELL, BIG_ROOT, MUSCLE_BAND,
     WISE_GLASSES, SCOPE_LENS, RAZOR_CLAW, QUICK_CLAW, BRIGHT_POWDER, WIDE_LENS, WEAKNESS_POLICY, PUNCHING_GLOVE,
     "type-boost", "resist-berry", "plate", "origin-boost", "weather-rock", "status-orb", "state-extender",
-    "hazard-boots", PROTECTIVE_PADS, *BERRY_KEYS, "gem",
+    "hazard-boots", PROTECTIVE_PADS, *BERRY_KEYS, "gem", "air-balloon", "hit-stat-item", "blunder-policy",
+    "throat-spray", "adrenaline-orb", "room-service", "mirror-herb", "mental-herb", "power-herb",
 })
 
 TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",
@@ -71,6 +72,9 @@ CURE_BERRIES = battle_data.args("items", "cure-berry", "cures")
 RECOIL_BERRIES = battle_data.args("items", "recoil-berry", "physical")
 GUARD_BERRIES = battle_data.args("items", "guard-berry", "physical")
 GEMS = _in_type_order(battle_data.args("items", "gem", "type"))
+# item slug -> (the move type whose hit sets it off, the stat it raises a stage)
+HIT_STAT_ITEMS = {slug: (entry["args"]["type"], entry["args"]["stat"])
+                  for slug, entry in battle_data.with_key("items", "hit-stat-item").items()}
 ITEM_NAMES = battle_data.bot_names("items", unless="mega-stone")
 LEFTOVERS_FRACTION = 16
 BLACK_SLUDGE_HURT_FRACTION = 8
@@ -100,6 +104,7 @@ RECOIL_BERRY_FRACTION = 8
 STARF_STAGES = 2
 MICLE_ACCURACY = 1.2
 GEM_MULTIPLIER = 1.3
+BLUNDER_POLICY_STAGES = 2
 
 
 def known(item: str | None) -> str | None:
