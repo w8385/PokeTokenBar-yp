@@ -270,6 +270,9 @@ class TeraShell(Handler):
             return multiplier
         return min(multiplier, abilities.TERA_SHELL_EFFECTIVENESS)
 
+    def lessens_hit(self, name, holder):
+        return holder.hp == holder.max_hp
+
 
 @register("abilities", "teraform-zero")
 class TeraformZero(Handler):

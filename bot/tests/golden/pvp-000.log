@@ -473,7 +473,7 @@ side=0 P384 Lv50 ('fighting',) item=jaboca-berry ability=solid-rock nature=jolly
 side=1 P264 Lv50 ('rock',) item=kee-berry ability=sticky-hold nature=jolly moves=[316, 319, 68, 10001] mega=None
 side=1 P831 Lv44 ('electric',) item=kings-rock ability=supersweet-syrup nature=jolly moves=[327, 328, 34, 565] mega=None
 side=1 P866 Lv46 ('water', 'fairy') item=lagging-tail ability=swift-swim nature=modest moves=[340, 343, 915, 833] mega=None
-Action turn=1 side=1 attacker='P264' defender='P948' move='다크러시' defender_hp=89 move_id=10001
+Action turn=1 side=1 attacker='P264' defender='P948' move='다크러시' defender_hp=89 ability='shadow-shield' move_id=10001
 Action turn=1 side=0 attacker='P948' defender='P264' move='벌레의저항' changes=(Change(side=1, pokemon='P264', kind='special_attack', stages=-1),) defender_hp=85 attacker_hp=89 move_id=522
 Action turn=2 side=0 attacker='P948' defender='P264' move='벌레의저항' changes=(Change(side=1, pokemon='P264', kind='special_attack', stages=-1),) defender_hp=71 attacker_hp=89 move_id=522
 Action turn=2 side=1 attacker='P264' defender='P948' move='카운터' defender_hp=89 failed=True attacker_hp=71 move_id=68
@@ -633,7 +633,7 @@ result winner=0 turns=21 remaining=((0, 0, 0, 100, 3), (0, 0, 0, 0)) statuses=((
 side=0 P604 Lv50 ('psychic', 'fire') item=misty-seed ability=ice-body nature=jolly moves=[749, 750, 520, 574] mega=None
 side=0 P805 Lv50 ('ghost', 'grass') item=muscle-band ability=imposter nature=jolly moves=[775, 776, 450, 457] mega=None
 side=0 P150 Lv50 ('fighting',) item=mewtwonite-y ability=intimidate nature=adamant moves=[794, 795, 423, 333] mega=('mega', 10044, 'full-metal-body')
-side=0 P1024 Lv46 ('steel', 'poison') item=never-melt-ice ability=keen-eye nature=None moves=[802, 803, 61, 830] mega=None
+side=0 P1024 Lv46 ('steel', 'poison') item=never-melt-ice ability=tera-shell nature=None moves=[802, 803, 61, 830] mega=None
 side=1 P381 Lv50 ('electric',) item=latiosite ability=magma-armor nature=None moves=[836, 837, 245, 442] mega=('mega', 10063, 'hunger-switch')
 side=1 P430 Lv50 ('steel', 'poison') item=oran-berry ability=mimicry nature=quiet moves=[849, 850, 34, 131] mega=None
 side=1 P998 Lv50 ('ground', 'ice') item=baxcalibrite ability=moody nature=modest moves=[861, 862, 503, 153] mega=('mega', 10325, 'flower-gift')
@@ -1067,7 +1067,7 @@ Action turn=20 side=1 attacker='P598' defender='P252' move='최면술' changes=(
 Action turn=21 side=0 attacker='P252' defender='P598' move='' defender_hp=58 blocked='sleep'
 Action turn=21 side=1 attacker='P598' defender='P252' move='요가포즈' changes=(Change(side=1, pokemon='P598', kind='attack', stages=1),) attacker_hp=58 effect='stages' move_id=96
 Action turn=22 side=0 attacker='P252' defender='P598' move='바람일으키기' multiplier=2.0 defender_hp=17 recovered=('sleep',) move_id=16
-Action turn=22 side=1 attacker='P598' defender='P252' move='묵사발' multiplier=0.5 defender_hp=71 attacker_hp=17 move_id=462
+Action turn=22 side=1 attacker='P598' defender='P252' move='묵사발' multiplier=0.5 defender_hp=71 attacker_hp=17 ability='tera-shell' move_id=462
 Action turn=23 side=0 attacker='P252' defender='P598' move='바람일으키기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=71 move_id=16
 SendOut turn=23 side=1 pokemon='P996' member=4
 Action turn=24 side=1 attacker='P996' defender='P252' move='싫은소리' changes=(Change(side=0, pokemon='P252', kind='defense', stages=-2),) defender_hp=71 effect='stages' move_id=103
@@ -1801,7 +1801,7 @@ Action turn=10 side=0 attacker='P595' defender='P901' move='섀도본' multiplie
 Action turn=10 side=1 attacker='P901' defender='P595' move='풀의맹세' multiplier=0.5 defender_hp=72 attacker_hp=15 move_id=520
 Action turn=11 side=0 attacker='P595' defender='P901' move='섀도본' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=72 move_id=708
 SendOut turn=11 side=1 pokemon='P215' member=2
-Action turn=12 side=0 attacker='P595' defender='P215' move='섀도본' changes=(Change(side=1, pokemon='P215', kind='defense', stages=-1),) defender_hp=85 attacker_hp=72 move_id=708
+Action turn=12 side=0 attacker='P595' defender='P215' move='섀도본' changes=(Change(side=1, pokemon='P215', kind='defense', stages=-1),) defender_hp=85 attacker_hp=72 ability='shadow-shield' move_id=708
 Action turn=12 side=1 attacker='P215' defender='P595' move='드래곤에너지' defender_hp=29 attacker_hp=85 move_id=820
 Action turn=13 side=0 attacker='P595' defender='P215' move='섀도본' defender_hp=40 attacker_hp=29 move_id=708
 Action turn=13 side=1 attacker='P215' defender='P595' move='드래곤에너지' defender_hp=10 attacker_hp=40 move_id=820
@@ -2052,7 +2052,7 @@ side=0 P813 Lv50 ('electric',) item=stone-plate ability=rock-head nature=None mo
 side=0 P199 Lv50 ('fire', 'psychic') item=tanga-berry ability=sand-spit nature=jolly moves=[903, 904, 521, 412] mega=None
 side=0 P349 Lv50 ('poison', 'steel') item=None ability=scrappy nature=jolly moves=[911, 912, 237, 886] mega=None
 side=1 P528 Lv50 ('fighting',) item=None ability=shields-down nature=None moves=[23, 26, 764, 734] mega=None
-side=1 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=sniper nature=quiet moves=[37, 39, 496, 440] mega=('stellar', 10277, 'teraform-zero')
+side=1 P1024 Lv50 ('steel', 'poison') item=stellar-crystal ability=tera-shell nature=quiet moves=[37, 39, 496, 440] mega=('stellar', 10277, 'teraform-zero')
 side=1 P350 Lv50 ('ground', 'ice') item=toxic-orb ability=soul-heart nature=timid moves=[49, 50, 299, 64] mega=None
 side=1 P1025 Lv50 ('fairy', 'dragon') item=toxic-plate ability=stall nature=quiet moves=[68, 69, 785, 492] mega=None
 side=1 P982 Lv41 ('psychic', 'fire') item=twisted-spoon ability=steam-engine nature=jolly moves=[79, 80, 554, 123] mega=None
