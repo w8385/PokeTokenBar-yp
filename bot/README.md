@@ -78,9 +78,15 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   app's coworker list use it at once; the app applies it at its next office sync or cancels it with a DM reason.
 - `/상점 [이름]` buys from the app's shop when the app lists `buy` in `remote_ops_kinds`: a menu per category (typed
   past 100 items), then the item with a button per quantity the balance covers. The balance is the last synced
-  wallet less the pending buys; a buy past it is refused on the spot. Each buy queues one `buy` op
+  wallet less the pending buys and training; a buy past it is refused on the spot. Each buy queues one `buy` op
   ([API.md](API.md#the-buy-op)); the items are in `/가방` and the `/파티` item menu at once. An older app gets the
-  list without buttons. `/트레이닝`, `/교환` and `/미라클` answer "곧 열려요" for now.
+  list without buttons. `/교환` and `/미라클` answer "곧 열려요" for now.
+- `/트레이닝 [이름]` does the app's training tab when the app lists `train` in `remote_ops_kinds`: pick a party or Box
+  Pokémon (or open it from the 트레이닝 button on a `/파티` slot), then Mint (nature), Ability Capsule and Patch,
+  Bottle Cap (one IV), Gold Bottle Cap, Mirror Herb, form change (with the form key item) and moves. Each control
+  says whether it uses a bag item or tokens; Mint and Mirror Herb are bought at the shop price when the bag has none.
+  Each action queues one `train` op ([API.md](API.md#the-train-op)) that battles use at once. An older app gets the
+  list read-only.
 - The upload response carries the app's "최근 대결" and "동료" lists ([API.md](API.md)). Display names come from Slack
   `users.info` (scope `users:read`, cached an hour); without the scope the names are `null` and the app shows a generic label.
 - Slack runs no slash commands in threads, so mentions cover them all and answer in the thread:

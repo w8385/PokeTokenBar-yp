@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from ypoke.move_effects import STATUS_MOVES
 from ypoke.remote_lineup import LINEUP, MACHINE_PREFIX, MAX_MEMBERS, REASONS, rule_break, set_lineup
 from ypoke.remote_ops import RemoteOps, View
+from ypoke.remote_train import TRAIN
 from ypoke.remote_views import PARTY_COMMAND, RemoteViews, Screen, box_screen, member_lines, party_title, sync_line
 from ypoke.trades import OPTION_TEXT_LIMIT, PICKER_LIMIT, option_labels
 
@@ -20,6 +21,7 @@ SET_MOVES_ACTION = "lineup_set_moves"
 DEFAULT_MOVES_ACTION = "lineup_default_moves"
 BACK_ACTION = "lineup_back"
 BOX_ADD_ACTION = "lineup_box_add"
+TRAINING_OPEN_ACTION = "train_open"
 ADD_SLOT = "+"
 MAX_MOVES = 4
 RULE_NOTE = "한 종에 한 마리, 같은 도구는 한 마리만 들 수 있어요. 규칙에 걸리는 포켓몬·도구는 목록에 없어요."
@@ -132,6 +134,8 @@ class LineupEditor:
         if orders:
             controls.append({"type": "overflow", "action_id": ORDER_ACTION,
                              "options": [_option(word, f"{verb}|{member['id']}") for verb, word in orders]})
+        if TRAIN in view.kinds:
+            controls.append(_button(TRAINING_OPEN_ACTION, "트레이닝", member["id"]))
         return [control for control in controls if control is not None]
 
     def _swap_select(self, view: View, slot: str, placeholder: str) -> dict | None:
@@ -308,7 +312,7 @@ def _moves_screen(view: View, member: dict, name: str, learnable: list[dict]) ->
     names = {move["id"]: move["name"] for move in learnable}
     title = f"*{name} Lv.{member['level']}의 기술* (최대 {MAX_MOVES}개)"
     now = " / ".join(names[move_id] for move_id in chosen) or "레벨에 맞는 기본 기술"
-    groups = _move_groups(learnable, set(chosen))
+    groups = move_groups(learnable, set(chosen))
     picked = [option for group in groups for option in group["options"] if int(option["value"]) in chosen]
     select = {"type": "multi_static_select", "action_id": SET_MOVES_ACTION, "max_selected_items": MAX_MOVES,
               "placeholder": {"type": "plain_text", "text": "기술 고르기"}, "option_groups": groups}
@@ -326,7 +330,7 @@ def _moves_screen(view: View, member: dict, name: str, learnable: list[dict]) ->
     return Screen(title, blocks)
 
 
-def _move_groups(learnable: list[dict], chosen: set[int]) -> list[dict]:
+def move_groups(learnable: list[dict], chosen: set[int]) -> list[dict]:
     """The learnable moves by how they are learned, at most Slack's 100 in all; the chosen ones always stay."""
     room = PICKER_LIMIT - len(chosen)
     grouped: dict[str, list[dict]] = {key: [] for key, _ in MOVE_GROUPS}

@@ -25,6 +25,7 @@ from ypoke.lineup_editor import LineupEditor
 from ypoke.miracle import MiracleService
 from ypoke.shop_editor import ShopEditor
 from ypoke.trades import TradeService
+from ypoke.training_editor import TrainingEditor
 
 DM_FALLBACK_NOTE = "(대결을 신청한 곳에 올릴 수 없어서 DM으로 보내요)"
 ERROR_TEXT = "대결 봇에서 오류가 났어요. 잠시 뒤 다시 해 주세요."
@@ -150,9 +151,9 @@ def options_listener(trades: TradeService):
     return listener
 
 
-def editor_listener(editor: LineupEditor | ShopEditor):
-    """A `/파티` or `/상점` control. The new screen replaces the private message the press came from; a refusal is a
-    private note under it."""
+def editor_listener(editor: LineupEditor | ShopEditor | TrainingEditor):
+    """A `/파티`, `/상점` or `/트레이닝` control. The new screen replaces the private message the press came from; a
+    refusal is a private note under it."""
 
     def listener(ack, body, action, respond) -> None:
         ack()
@@ -172,7 +173,7 @@ def editor_listener(editor: LineupEditor | ShopEditor):
     return listener
 
 
-def editor_options_listener(editor: LineupEditor | ShopEditor):
+def editor_options_listener(editor: LineupEditor | ShopEditor | TrainingEditor):
     """Loads a menu past Slack's 100 options: the block id is the lineup slot's individual id or the shop category."""
 
     def listener(ack, body, payload) -> None:

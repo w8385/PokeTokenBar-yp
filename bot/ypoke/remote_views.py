@@ -176,6 +176,10 @@ def _kst(stamp: str) -> str:
     return f"{local.month}월 {local.day}일 {local:%H:%M}"
 
 
+def ability_name(key: str) -> str:
+    return _data_name("abilities", key) or key
+
+
 def _data_name(kind: str, key: str | None) -> str | None:
     if not key:
         return None

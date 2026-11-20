@@ -156,6 +156,17 @@ class PokeAPIService:
         self._store.cache(key, data)
         return data
 
+    def abilities(self, pokemon_id: int) -> list[dict]:
+        """`{"name", "slot", "hidden"}` of the `/pokemon` id, by slot."""
+        key = f"abilities-v1/{pokemon_id}"
+        cached = self._store.cached(key)
+        if cached is not None:
+            return cached
+        data = [{"name": entry["ability"]["name"], "slot": entry["slot"], "hidden": entry["is_hidden"]}
+                for entry in _get_json(f"{API_BASE}/pokemon/{pokemon_id}")["abilities"]]
+        self._store.cache(key, data)
+        return data
+
     def learnset(self, pokemon_id: int) -> list[dict]:
         """`{"move_id", "level", "source"}` from the newest main game the Pokémon is in: level-up moves by level, then machine moves by id."""
         key = f"learnset-v2/{pokemon_id}"

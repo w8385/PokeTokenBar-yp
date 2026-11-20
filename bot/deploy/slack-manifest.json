@@ -73,7 +73,8 @@
       },
       {
         "command": "/트레이닝",
-        "description": "트레이닝 (곧 열려요)",
+        "description": "민트·특성캡슐·병뚜껑·흉내허브·폼·기술 트레이닝 (나만 봐요)",
+        "usage_hint": "[이름]",
         "should_escape": true
       },
       {

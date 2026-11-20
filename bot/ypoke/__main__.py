@@ -26,6 +26,8 @@ from ypoke.shop_editor import ACTION_PREFIX as SHOP_ACTION_PREFIX
 from ypoke.shop_editor import PICK_ACTION as SHOP_PICK_ACTION
 from ypoke.store import Store
 from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, TradeService
+from ypoke.training_editor import ACTION_PREFIX as TRAINING_ACTION_PREFIX
+from ypoke.training_editor import PICK_ACTION as TRAINING_PICK_ACTION
 from ypoke.transport import (
     SlackBoard,
     deliver,
@@ -99,6 +101,8 @@ def main() -> None:
     app.options(SWAP_ACTION)(editor_options_listener(handler.editor))
     app.action(re.compile(f"^{SHOP_ACTION_PREFIX}"))(editor_listener(handler.shop))
     app.options(SHOP_PICK_ACTION)(editor_options_listener(handler.shop))
+    app.action(re.compile(f"^{TRAINING_ACTION_PREFIX}"))(editor_listener(handler.training))
+    app.options(TRAINING_PICK_ACTION)(editor_options_listener(handler.training))
     app.event("app_mention")(mention_listener(handler, pictures))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 

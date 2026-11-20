@@ -224,4 +224,4 @@ def test_an_app_that_does_not_apply_buy_ops_gets_a_read_only_shop_and_a_refusal(
 
 
 def test_the_help_explains_the_shop_and_the_spendable_balance():
-    assert f"`{SHOP_COMMAND} [이름]`" in HELP_TEXT and "대기 중인 구매를 뺀" in HELP_TEXT
+    assert f"`{SHOP_COMMAND} [이름]`" in HELP_TEXT and "대기 중인 구매·트레이닝을 뺀" in HELP_TEXT
