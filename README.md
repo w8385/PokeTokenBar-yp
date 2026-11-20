@@ -228,6 +228,8 @@ An Exp. Share on a Box Pokémon that can't use more EXP moves to the next closes
 <b>Put up for Miracle Trade</b> on a tradable Pokémon's Box page posts it as a card in the YPoke battle channel. The first coworker to press <b>교환하기</b> (Trade) on the card and pick one of their own tradable Pokémon trades with you at once. The card then shows who got what, you both get a DM, and both Pokémon arrive like any other trade. You can have one offer up at a time. It is kept out of other trades, comes down with <b>Take down</b> on the Box page or the card, and expires after 24 hours. The button shows only when the bot has a battle channel.
 <br><br>
 Pokémon pick lists in Slack now tell look-alikes apart by sex, shininess and nature, then #2/#3.
+<br><br>
+Away from the office, the Slack commands <code>/파티</code>, <code>/박스</code> and <code>/가방</code> show only you your battle party, Box, and bag with your token balance, as the app last synced them at the office.
 </td>
 </tr>
 <tr>

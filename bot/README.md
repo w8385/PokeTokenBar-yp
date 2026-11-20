@@ -61,11 +61,16 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
 - `/ypoke` (or `/ypoke help`, `/ypoke 도움말`) shows the help privately and posts one public line pointing at
   `/ypoke`. `/ypoke 도감 @누구` (or any command word after `/ypoke`) runs that command; an unknown word gets the
   help privately with nothing public.
+- `/파티`, `/박스 [이름] [쪽]` and `/가방` show the caller, privately, their battle party, Box (25 per page, filtered
+  by name) and bag with the token balance and the Slack ops still waiting for the app ([API.md](API.md#remote-ops)).
+  Each reply is the app's last upload with those ops replayed and says when the app last synced at the office. A bag
+  needs an app that sends `remote_ops`; an older one gets a line asking to update. `/상점`, `/트레이닝`, `/교환` and
+  `/미라클` answer "곧 열려요" for now.
 - The upload response carries the app's "최근 대결" and "동료" lists ([API.md](API.md)). Display names come from Slack
   `users.info` (scope `users:read`, cached an hour); without the scope the names are `null` and the app shows a generic label.
 - Slack runs no slash commands in threads, so mentions cover them all and answer in the thread:
   `@YPoke 대결 @상대`, `@YPoke 대결` (practice), `@YPoke 전적 [@누구]`, `@YPoke 랭킹`,
-  `@YPoke 도감 [@누구]`, `@YPoke 연결` (link by DM). `@YPoke` alone shows help. A top-level mention starts a thread.
+  `@YPoke 도감 [@누구]`, `@YPoke 연결` (link by DM), `@YPoke 파티`. `@YPoke` alone shows help. A top-level mention starts a thread.
 
 ## Run locally
 
