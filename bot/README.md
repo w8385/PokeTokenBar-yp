@@ -70,7 +70,12 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
 - `/파티`, `/박스 [이름] [쪽]` and `/가방` show the caller, privately, their battle party, Box (25 per page, filtered
   by name) and bag with the token balance and the Slack ops still waiting for the app ([API.md](API.md#remote-ops)).
   Each reply is the app's last upload with those ops replayed and says when the app last synced at the office. A bag
-  needs an app that sends `remote_ops`; an older one gets a line asking to update. `/상점`, `/트레이닝`, `/교환` and
+  needs an app that sends `remote_ops`; an older one gets a line asking to update.
+- `/파티` also edits the lineup when the app lists `lineup` in `remote_ops_kinds`: per slot 바꾸기 (party or Box),
+  아래로/빼기, 기술 (up to four: level-up, Mirror Herb egg moves, owned TMs) and 도구 (from the bag, with counts).
+  `/박스 <이름>` adds a 엔트리에 넣기 button. Choices that would break the species or item clause are not offered.
+  Each change queues one `lineup` op with the whole lineup ([API.md](API.md#the-lineup-op)), so `/대결` and the
+  app's coworker list use it at once; the app applies it at its next office sync or cancels it with a DM reason. `/상점`, `/트레이닝`, `/교환` and
   `/미라클` answer "곧 열려요" for now.
 - The upload response carries the app's "최근 대결" and "동료" lists ([API.md](API.md)). Display names come from Slack
   `users.info` (scope `users:read`, cached an hour); without the scope the names are `null` and the app shows a generic label.

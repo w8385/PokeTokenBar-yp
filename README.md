@@ -229,7 +229,7 @@ An Exp. Share on a Box Pokémon that can't use more EXP moves to the next closes
 <br><br>
 Pokémon pick lists in Slack now tell look-alikes apart by sex, shininess and nature, then #2/#3.
 <br><br>
-Away from the office, the Slack commands <code>/파티</code>, <code>/박스</code> and <code>/가방</code> show only you your battle party, Box, and bag with your token balance, as the app last synced them at the office.
+Away from the office, the Slack commands <code>/파티</code>, <code>/박스</code> and <code>/가방</code> show only you your battle party, Box, and bag with your token balance, as the app last synced them at the office. <code>/파티</code> also changes your battle lineup, moves and held items, and <code>/박스</code> can add a Pokémon to it; coworkers' <code>/대결</code> uses the new lineup at once, and the app picks it up at its next office sync.
 </td>
 </tr>
 <tr>
