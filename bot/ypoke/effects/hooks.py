@@ -102,6 +102,8 @@ HOOKS = {
     "accuracy_as_user": "item, ability: multiplies the user's accuracy, before the target's",
     "accuracy_as_target": "item, ability: multiplies the accuracy of a move used on its holder",
     "primed_accuracy": "item: multiplies the accuracy of the next move of the Pokémon that ate it (Micle Berry)",
+    "spent_on": "item: used up as its holder's move is about to hit (a gem); returns the item, None when it stays",
+    "primed_power": "item: multiplies the power of the move it was spent on (a gem)",
     "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
     "ignores_evasion": "ability: the target's evasion stage does nothing to its holder's moves (Keen Eye)",
     "ignores_foe_stages": "ability: the foe's stat stages do nothing against its holder (Unaware)",

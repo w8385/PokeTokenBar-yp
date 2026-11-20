@@ -371,6 +371,10 @@ FOCUS_CASES = {
                      (143, "leppa-berry", None, [33]))),
     "cheek-pouch": (((143, "sitrus-berry", "cheek-pouch", [33]),), ((143, None, None, [33]),)),
     "sheer-force": (((6, "life-orb", "sheer-force", [53, 58]),), ((143, None, None, [33]),)),
+    "gems": (((143, "normal-gem", None, [33, 52]), (6, "fire-gem", None, [53, 33]), (130, "water-gem", None, [57])),
+             ((143, None, None, [33]), (36, None, None, [33]), (36, None, None, [33]))),
+    "soul-heart": (((801, "choice-specs", "soul-heart", [85, 53, 57, 94]),), ((129, None, None, [33]),
+                                                                            (129, None, None, [33]))),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

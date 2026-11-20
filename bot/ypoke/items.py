@@ -42,7 +42,7 @@ EFFECT_KEYS = frozenset({
     EVIOLITE, ROCKY_HELMET, SITRUS_BERRY, LUM_BERRY, WHITE_HERB, BLACK_SLUDGE, SHELL_BELL, BIG_ROOT, MUSCLE_BAND,
     WISE_GLASSES, SCOPE_LENS, RAZOR_CLAW, QUICK_CLAW, BRIGHT_POWDER, WIDE_LENS, WEAKNESS_POLICY, PUNCHING_GLOVE,
     "type-boost", "resist-berry", "plate", "origin-boost", "weather-rock", "status-orb", "state-extender",
-    "hazard-boots", PROTECTIVE_PADS, *BERRY_KEYS,
+    "hazard-boots", PROTECTIVE_PADS, *BERRY_KEYS, "gem",
 })
 
 TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",
@@ -70,6 +70,7 @@ CURE_BERRIES = battle_data.args("items", "cure-berry", "cures")
 # The move class (physical: True) whose hit sets the berry off.
 RECOIL_BERRIES = battle_data.args("items", "recoil-berry", "physical")
 GUARD_BERRIES = battle_data.args("items", "guard-berry", "physical")
+GEMS = _in_type_order(battle_data.args("items", "gem", "type"))
 ITEM_NAMES = battle_data.bot_names("items", unless="mega-stone")
 LEFTOVERS_FRACTION = 16
 BLACK_SLUDGE_HURT_FRACTION = 8
@@ -98,6 +99,7 @@ ENIGMA_HEAL_FRACTION = 4
 RECOIL_BERRY_FRACTION = 8
 STARF_STAGES = 2
 MICLE_ACCURACY = 1.2
+GEM_MULTIPLIER = 1.3
 
 
 def known(item: str | None) -> str | None:

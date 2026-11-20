@@ -172,6 +172,20 @@ class OriginBoost(Handler):
         return items.BOOST_MULTIPLIER if boosted else 1.0
 
 
+@register("items", "gem")
+class Gem(Handler):
+    """Spent as its holder's damaging move of its type is about to hit, which then has more power."""
+
+    def spent_on(self, name, fighter, move):
+        if not move.damaging or move.type != items.GEMS[name]:
+            return None
+        fighter.item = None
+        return name
+
+    def primed_power(self, name):
+        return items.GEM_MULTIPLIER
+
+
 @register("items", "punching-glove")
 class PunchingGlove(Handler):
     def modify_damage(self, name, move_type, effectiveness, physical, punch):
