@@ -4,11 +4,13 @@ import logging
 import os
 import threading
 import time
+from pathlib import Path
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient
 
+from ypoke.battle_render import MatchupPictures
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
 from ypoke.gym_battle import GymBattles
 from ypoke.miracle import ACCEPT_ACTION_ID as MIRACLE_ACCEPT_ACTION_ID
@@ -38,8 +40,10 @@ MIRACLE_SWEEP_INTERVAL = 300
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-    store = Store(os.environ.get("YPOKE_DB", "ypoke.sqlite3"))
+    database = os.environ.get("YPOKE_DB", "ypoke.sqlite3")
+    store = Store(database)
     pokeapi = PokeAPIService(store)
+    pictures = MatchupPictures(store, Path(os.environ.get("YPOKE_PICTURE_DIR") or Path(database).parent / "pictures"))
     app = App(token=os.environ["SLACK_BOT_TOKEN"])
     home_channel = os.environ.get("YPOKE_HOME_CHANNEL") or None
     if home_channel:
@@ -61,7 +65,7 @@ def main() -> None:
         store,
         os.environ.get("YPOKE_HTTP_HOST", "0.0.0.0"),
         int(os.environ.get("YPOKE_HTTP_PORT", "8790")),
-        lambda user_id, party: _after_upload(pokeapi, handler, app.client, user_id, party),
+        lambda user_id, party: _after_upload(pokeapi, handler, app.client, user_id, party, pictures),
         pokeapi.attacking_moves,
         names,
         trades,
@@ -73,10 +77,10 @@ def main() -> None:
     threading.Thread(target=_warm_stored_parties, args=(pokeapi, store), daemon=True).start()
     threading.Thread(target=_sweep_miracle_offers, args=(miracle,), daemon=True).start()
     for name in COMMAND_NAMES:
-        app.command(name)(slash_listener(handler))
+        app.command(name)(slash_listener(handler, pictures))
     # Slack still sends an interaction for a URL button and shows a warning unless it is acked.
     app.action(REGISTER_ACTION_ID)(lambda ack: ack())
-    app.action(REMATCH_ACTION_ID)(rematch_listener(handler))
+    app.action(REMATCH_ACTION_ID)(rematch_listener(handler, pictures))
     app.action(PICK_ACTION_ID)(trade_listener(trades, "pick"))
     app.action(ACCEPT_ACTION_ID)(trade_listener(trades, "accept"))
     app.action(DECLINE_ACTION_ID)(trade_listener(trades, "decline"))
@@ -85,7 +89,7 @@ def main() -> None:
     app.action(MIRACLE_PICK_ACTION_ID)(miracle_listener(miracle, "pick"))
     app.options(PICK_ACTION_ID)(options_listener(trades))
     app.options(MIRACLE_PICK_ACTION_ID)(options_listener(trades))
-    app.event("app_mention")(mention_listener(handler))
+    app.event("app_mention")(mention_listener(handler, pictures))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 
 
@@ -97,15 +101,17 @@ def _join(app: App, channel: str) -> None:
 
 
 def _after_upload(
-    pokeapi: PokeAPIService, handler: CommandHandler, client: WebClient, user_id: str, party: list[dict]
+    pokeapi: PokeAPIService, handler: CommandHandler, client: WebClient, user_id: str, party: list[dict],
+    pictures: MatchupPictures,
 ) -> None:
     threading.Thread(
-        target=_run_after_upload, args=(pokeapi, handler, client, user_id, party), daemon=True
+        target=_run_after_upload, args=(pokeapi, handler, client, user_id, party, pictures), daemon=True
     ).start()
 
 
 def _run_after_upload(
-    pokeapi: PokeAPIService, handler: CommandHandler, client: WebClient, user_id: str, party: list[dict]
+    pokeapi: PokeAPIService, handler: CommandHandler, client: WebClient, user_id: str, party: list[dict],
+    pictures: MatchupPictures | None = None,
 ) -> None:
     _warm(pokeapi, party)
     try:
@@ -114,7 +120,7 @@ def _run_after_upload(
         logging.getLogger(__name__).exception("pending battles failed")
         return
     for delivery in deliveries:
-        deliver(client, delivery)
+        deliver(client, delivery, pictures)
 
 
 def _warm(pokeapi: PokeAPIService, members: list[dict]) -> None:

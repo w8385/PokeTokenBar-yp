@@ -9,9 +9,13 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather, and every ability and held item in `data/battle/` that has a battle effect).
   The channel gets a result card: a context line ("who ran which command", since Slack shows nobody a typed slash
   command), the winner with the format (`1:1`, `3:3`, `6:6`, …) and turn count, both lineups side by side with each
-  Pokémon's fate, up to three highlight lines and a "다시 붙기" button. The compact log, one line per turn, is the
-  first reply in that message's thread. The bot posts it with `chat.postMessage`, so it must be a member of
-  the channel; where it cannot (a DM, a private channel it is not in) the card and then the log go as two
+  Pokémon's fate, up to three highlight lines and a "다시 붙기" button. The turn log goes in the card's thread:
+  one full-width section per turn, with a picture of both active Pokémon (challenger left, facing right) above the
+  turn whenever the pair changes (lead, switch-in, Mega or another lasting form). A long log splits into several
+  replies of at most 50 blocks. Pictures are drawn with Pillow, uploaded once with `files.upload_v2` (scope
+  `files:write`) and reused by file id; when an upload fails the log shows the two small sprites on one line instead.
+  The bot posts with `chat.postMessage`, so it must be a member of
+  the channel; where it cannot (a DM, a private channel it is not in) the card and then the log go as separate
   messages through the response URL instead. Each Pokémon uses its
   move with the highest expected damage every turn. Only win/loss is recorded. With no mention it shows
   help.
@@ -20,7 +24,7 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   arguments, no mention), a target that is not linked or has no dex yet, the help text itself, and anything with
   a token or link; those replies are ephemeral and carry no context line. A mention reply stays in the mention's
   thread (card, then the log) with the same public/private split and needs no echo line.
-- "다시 붙기" reruns the same matchup and format (the same size) with the current uploads and posts in the same thread. Only the two who
+- "다시 붙기" reruns the same matchup and format (the same size) with the current uploads and posts its card where the old card was (the channel, or the mention's thread) with its own log thread. Only the two who
   fought can press it, and in a recorded battle only the loser (others get a private notice); a practice battle
   reruns as practice, and a side with no upload goes through the pending flow below. Each card's button works once:
   the press removes it from the card, and a press that races it gets a private "이미 다시 붙었어요". The new card
@@ -87,7 +91,8 @@ set -a; . ./.env; set +a; uv run python -m ypoke
 Env ([.env.example](.env.example)): `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN` (required),
 `YPOKE_PUBLIC_URL` (how apps reach the upload server, sent in the `/포켓몬연결` link),
 `YPOKE_DB` (SQLite path), `YPOKE_HTTP_HOST` (default `0.0.0.0`), `YPOKE_HTTP_PORT` (default `8790`),
-`YPOKE_HOME_CHANNEL` (optional channel id: the bot joins it at startup and help links to it).
+`YPOKE_HOME_CHANNEL` (optional channel id: the bot joins it at startup and help links to it),
+`YPOKE_PICTURE_DIR` (sprite and matchup picture cache, default `pictures/` next to `YPOKE_DB`).
 
 ## Slack app
 
@@ -109,7 +114,7 @@ Created from [deploy/slack-manifest.json](deploy/slack-manifest.json); icon is
 Install or update:
 
 ```bash
-rsync -a --delete --exclude .venv --exclude __pycache__ --exclude '*.sqlite3*' --exclude .env \
+rsync -a --delete --exclude .venv --exclude __pycache__ --exclude '*.sqlite3*' --exclude .env --exclude pictures \
   bot/ <user>@<bot-host>:ypoke/bot/
 ssh <user>@<bot-host> 'mkdir -p ~/ypoke/data/battle'
 rsync -a --delete data/battle/ <user>@<bot-host>:ypoke/data/battle/

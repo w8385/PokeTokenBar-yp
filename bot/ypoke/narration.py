@@ -1,8 +1,9 @@
 """Battle result card and turn log, built only from events the simulation produced."""
 
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
+from ypoke.abilities import FORMS as ABILITY_FORMS
 from ypoke.abilities import NAMES as ABILITY_NAMES
 from ypoke.battle import (
     BATTLE_LEVEL, AbilityAct, AbilityEntry, AbilityField, AbilityRetype, AbilityTransform, AbilityTrigger, Action,
@@ -176,14 +177,39 @@ VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "gr
                      "binding": "풀려났다"}
 
 
-Image = tuple[str, str]
+ABILITY_FORM_KINDS = frozenset(kind for forms in ABILITY_FORMS.values() for kinds in forms.values() for kind in kinds) | {"base"}
+
+
+@dataclass(frozen=True)
+class Portrait:
+    """One active Pokémon as drawn: `form_id` is the `/pokemon` id of the form it shows."""
+
+    form_id: int
+    shiny: bool
+    name: str
+
+    @property
+    def url(self) -> str:
+        return sprite_url(self.form_id, self.shiny)
+
+
+@dataclass(frozen=True)
+class Matchup:
+    """The two active Pokémon: `left` is the challenger's."""
+
+    left: Portrait
+    right: Portrait
+
+    @property
+    def caption(self) -> str:
+        return f"{SIDE_MARKERS[0]} {self.left.name} vs {SIDE_MARKERS[1]} {self.right.name}"
 
 
 @dataclass(frozen=True)
 class Card:
-    """What the result message shows. `log` is one mrkdwn text per turn (`*N턴*` then one action per line)
-    and a `⋯ N턴 생략` text for each gap; `log_images` holds, per log text, the Mega form images shown beside it;
-    `highlights` is the deciding knockout of a full-lineup battle."""
+    """What the result card and its thread log show. `log` is one mrkdwn text per turn (`*N턴*` then one action per
+    line) and a `⋯ N턴 생략` text for each gap; `log_matchups[i]` is the matchup drawn above `log[i]`, set where the
+    active pair or a Mega form changes; `highlights` is the deciding knockout of a full-lineup battle."""
 
     columns: tuple[str, str]
     title: str = ""
@@ -191,7 +217,7 @@ class Card:
     highlights: tuple[str, ...] = ()
     log: tuple[str, ...] = ()
     sprite: tuple[str, str] | None = None
-    log_images: tuple[tuple[Image, ...], ...] = ()
+    log_matchups: tuple[Matchup | None, ...] = ()
     practice: bool = False
     note: str | None = None
     rules: tuple[str, ...] = ()
@@ -216,12 +242,11 @@ def battle_card(
         for side, roster in enumerate(sides)
     )
     decisive = _decisive_line(result) if len(sides[0]) > 1 or len(sides[1]) > 1 else None
-    shiny = frozenset((side, member.name) for side, roster in enumerate(sides) for member in roster if member.shiny)
-    entries = _log_entries(result, MAX_LOG_BLOCKS, shiny)
+    entries = _log_entries(result, MAX_LOG_BLOCKS, sides)
     return Card(
         columns, _title(trainers, result), _detail(sides, result), (decisive,) if decisive else (),
         tuple(text for text, _ in entries), _winner_sprite(sides[result.winner], result),
-        tuple(images for _, images in entries), practice,
+        tuple(matchup for _, matchup in entries), practice,
     )
 
 
@@ -326,7 +351,7 @@ class _Turn:
     number: int
     lines: list[str]
     essential: bool = False
-    images: list[Image] = field(default_factory=list)
+    matchup: Matchup | None = None
 
     def render(self) -> str:
         return "\n".join([f"*{self.number}턴*", *self.lines])
@@ -339,8 +364,8 @@ def battle_log(result: BattleResult, budget: int = MAX_LOG_BLOCKS) -> tuple[str,
 
 
 def _log_entries(result: BattleResult, budget: int,
-                 shiny: frozenset[tuple[int, str]] = frozenset()) -> list[tuple[str, tuple[Image, ...]]]:
-    turns = _turns(result.events, shiny)
+                 sides: tuple[Sequence[Combatant], Sequence[Combatant]] | None = None) -> list[tuple[str, Matchup | None]]:
+    turns = _turns(result.events, sides)
     ends = len(turns)
     while True:
         entries = _entries(turns, ends)
@@ -364,34 +389,65 @@ def split_side(line: str) -> tuple[int | None, str]:
     return None, line
 
 
-def _entries(turns: list[_Turn], ends: int) -> list[tuple[str, tuple[Image, ...]]]:
-    entries: list[tuple[str, tuple[Image, ...]]] = []
+def _entries(turns: list[_Turn], ends: int) -> list[tuple[str, Matchup | None]]:
+    """A matchup that starts on a left-out turn is drawn above that gap's `⋯ N턴 생략` text."""
+    entries: list[tuple[str, Matchup | None]] = []
     skipped = 0
+    gap_matchup: Matchup | None = None
     for index, turn in enumerate(turns):
         if index < ends or index >= len(turns) - ends or turn.essential:
             if skipped:
-                entries.append((f"{SKIPPED_MARK} {skipped}턴 생략", ()))
-                skipped = 0
-            entries.append((turn.render(), tuple(turn.images)))
+                entries.append((f"{SKIPPED_MARK} {skipped}턴 생략", gap_matchup))
+                skipped, gap_matchup = 0, None
+            entries.append((turn.render(), turn.matchup))
         else:
             skipped += 1
+            gap_matchup = turn.matchup or gap_matchup
     return entries
 
 
-def _turns(events: list[Event], shiny: frozenset[tuple[int, str]] = frozenset()) -> list[_Turn]:
+class _Lineups:
+    """Which member of each side is out and the form each member shows. Only send-ins, Mega Evolutions and lasting
+    forms count; ability forms that flip back and forth (Stance Change, Hunger Switch) stay in the text."""
+
+    def __init__(self, sides: tuple[Sequence[Combatant], Sequence[Combatant]]):
+        self._sides = sides
+        self._active = [0, 0]
+        self._forms: dict[tuple[int, int], int] = {}
+
+    def apply(self, event: Event) -> None:
+        if isinstance(event, SendOut):
+            self._active[event.side] = event.member if event.member >= 0 else self._active[event.side] + 1
+        elif isinstance(event, (MegaEvolution, FormShift)) and event.form_id is not None and (
+                isinstance(event, MegaEvolution) or event.kind not in ABILITY_FORM_KINDS):
+            self._forms[(event.side, self._active[event.side])] = event.form_id
+
+    def matchup(self) -> Matchup | None:
+        portraits = []
+        for side, roster in enumerate(self._sides):
+            member = self._active[side]
+            if member >= len(roster) or roster[member].pokemon_id is None:
+                return None
+            combatant = roster[member]
+            form_id = self._forms.get((side, member), combatant.pokemon_id)
+            portraits.append(Portrait(form_id, combatant.shiny, combatant.name))
+        return Matchup(*portraits)
+
+
+def _turns(events: list[Event], sides: tuple[Sequence[Combatant], Sequence[Combatant]] | None = None) -> list[_Turn]:
     """Group events by turn. Entry events (no turn of their own) join the send-out they directly follow;
-    those before any turn open turn 1. `shiny` holds the (side, name) of the shiny members."""
+    those before any turn open turn 1. With `sides`, a turn whose matchup differs from the last one drawn
+    carries it."""
     turns: list[_Turn] = []
     opening: list[str] = []
-    opening_images: list[Image] = []
     sent: dict[int, int] = {}
+    lineups = _Lineups(sides) if sides is not None else None
+    drawn: Matchup | None = None
     for event in events:
+        if lineups is not None:
+            lineups.apply(event)
         if isinstance(event, FormShift):
             (turns[-1].lines if turns else opening).append(_form_line(event))
-            if event.form_id is not None:
-                (turns[-1].images if turns else opening_images).append(
-                    (sprite_url(event.form_id, (event.side, event.pokemon) in shiny),
-                     f"{event.pokemon} {FORM_CAPTION[event.kind]}"))
             continue
         if isinstance(event, (AbilityTrigger, MegaEvolution)):
             current = turns[-1].lines if turns else opening
@@ -399,10 +455,6 @@ def _turns(events: list[Event], shiny: frozenset[tuple[int, str]] = frozenset())
                 current[sent[event.side]] += f" {_entry_effect(event)}"
             else:
                 current.append(_entry_segment(event))
-            if isinstance(event, MegaEvolution) and event.form_id is not None:
-                (turns[-1].images if turns else opening_images).append(
-                    (sprite_url(event.form_id, (event.side, event.pokemon) in shiny),
-                     f"{event.pokemon} {FORM_CHANGE[event.kind][0]}"))
             continue
         if isinstance(event, AbilityAct) and not turns:
             opening += _event_lines(event)
@@ -410,8 +462,10 @@ def _turns(events: list[Event], shiny: frozenset[tuple[int, str]] = frozenset())
         if not isinstance(event, SendOut):
             sent = {}
         if not turns or turns[-1].number != event.turn:
-            turns.append(_Turn(event.turn, opening, images=opening_images))
-            opening, opening_images = [], []
+            matchup = lineups.matchup() if lineups is not None else None
+            turns.append(_Turn(event.turn, opening, matchup=matchup if matchup != drawn else None))
+            drawn = matchup or drawn
+            opening = []
         turn = turns[-1]
         lines = _event_lines(event)
         if isinstance(event, SendOut):
