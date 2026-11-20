@@ -1329,6 +1329,8 @@ struct CompanionState: Codable, Sendable {
     var tokenModeSince: Date?
     var lastUsageAt: Date?
     var idleHintDismissed = false
+    /// A new save never had the leftovers; one without the field decodes as false.
+    var leftoverEvolutionItemsReturned = true
     /// Gym badges, Hall of Fame and hideout marks; a save from before gyms has none.
     var gymBadges = GymBadges()
 
@@ -1399,6 +1401,7 @@ struct CompanionState: Codable, Sendable {
         tokenModeSince     = c.lenientOptional(Date.self, forKey: .tokenModeSince)
         lastUsageAt        = c.lenientOptional(Date.self, forKey: .lastUsageAt)
         idleHintDismissed  = c.lenient(Bool.self, forKey: .idleHintDismissed, default: false)
+        leftoverEvolutionItemsReturned = c.lenient(Bool.self, forKey: .leftoverEvolutionItemsReturned, default: false)
         gymBadges          = c.lenient(GymBadges.self, forKey: .gymBadges, default: GymBadges())
     }
 
@@ -1430,6 +1433,26 @@ struct CompanionState: Codable, Sendable {
             guard !owned.contains(instanceID) || !known else { continue }
             if known { inventory[key, default: 0] += 1 }
             heldItems[instanceID] = nil
+        }
+    }
+
+    /// Once per save: an evolution item with no battle use, left on a Pokémon past the step that names it and named by
+    /// no step out of its species, goes back to the bag.
+    mutating func returnLeftoverEvolutionItems() {
+        guard !leftoverEvolutionItemsReturned else { return }
+        leftoverEvolutionItemsReturned = true
+        var chains: [String: [Int]] = [:]
+        for entry in dex where entry.releasedAt == nil { chains[entry.id] = entry.chainOrder + [entry.finalID] }
+        for (id, line) in storedLines { chains[id] = Array(line.mon.pathIDs.prefix(line.mon.stageIndex + 1)) }
+        if let mon = active, let id = mon.profile?.instanceID { chains[id] = Array(mon.pathIDs.prefix(mon.stageIndex + 1)) }
+        for (id, key) in heldItems {
+            guard let kind = ItemKind(rawValue: key), kind.isEvolutionHeld, kind.heldItemSlug == nil,
+                  let chain = chains[id], let species = chain.last else { continue }
+            let naming = EvolutionRules.table.filter { $0.heldItemsUsed.contains(kind) }
+            guard naming.contains(where: { chain.contains($0.species) }),
+                  !naming.contains(where: { $0.from == species }) else { continue }
+            heldItems[id] = nil
+            inventory[key, default: 0] += 1
         }
     }
 
