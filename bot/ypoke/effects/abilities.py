@@ -32,7 +32,7 @@ class WeatherOnEntry(Handler):
         kind = abilities.WEATHER_ON_ENTRY[name]
         if not _start_weather(weather, kind, fighter):
             return None
-        return battle.AbilityTrigger(side, fighter.combatant.name, name, weather=kind)
+        return battle.AbilityTrigger(side, fighter.combatant.name, name, weather=kind, cleared_by=weather.cleared_by)
 
     def keeps_weather(self, name, kind):
         return kind == battle.STRONG_WINDS and abilities.WEATHER_ON_ENTRY[name] == kind
@@ -47,7 +47,7 @@ class PrimalWeather(Handler):
         kind = abilities.PRIMAL_WEATHER[name]
         if not _start_weather(weather, kind, fighter, lasting=True):
             return None
-        return battle.AbilityTrigger(side, fighter.combatant.name, name, weather=kind)
+        return battle.AbilityTrigger(side, fighter.combatant.name, name, weather=kind, cleared_by=weather.cleared_by)
 
     def keeps_weather(self, name, kind):
         return abilities.PRIMAL_WEATHER[name] == kind
@@ -61,7 +61,8 @@ class WeatherOnHit(Handler):
         holder, kind = hit.target, abilities.WEATHER_ON_HIT[name]
         if hit.shielded or holder.arena is None or not _start_weather(holder.arena.weather, kind, holder):
             return None
-        return battle.AbilityTrigger(holder.side, holder.combatant.name, name, weather=kind)
+        return battle.AbilityTrigger(holder.side, holder.combatant.name, name, weather=kind,
+                                     cleared_by=holder.arena.weather.cleared_by)
 
 
 @register("abilities", "unnerve")

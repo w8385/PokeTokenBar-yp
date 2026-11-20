@@ -703,6 +703,7 @@ side=1 P514 Lv50 ('psychic', 'fire') item=None ability=damp nature=modest moves=
 side=1 P618 Lv50 ('fighting',) item=haban-berry ability=defeatist nature=adamant moves=[809, 810, 533, 549] mega=None
 side=1 P148 Lv41 ('grass', 'ghost') item=hard-stone ability=download nature=timid moves=[820, 822, 844, 543] mega=None
 side=1 P191 Lv50 ('bug', 'ground') item=None ability=dry-skin nature=brave moves=[835, 836, 454, 844] mega=None
+AbilityEntry side=1 pokemon='P481' ability='cloud-nine' effect='clears-weather'
 Action turn=1 side=1 attacker='P481' defender='P751' move='소울비트' changes=(Change(side=1, pokemon='P481', kind='attack', stages=1), Change(side=1, pokemon='P481', kind='defense', stages=1), Change(side=1, pokemon='P481', kind='special_attack', stages=1), Change(side=1, pokemon='P481', kind='special_defense', stages=1), Change(side=1, pokemon='P481', kind='speed', stages=1)) attacker_hp=67 effect='stages' move_id=775
 Action turn=1 side=0 attacker='P751' defender='P481' move='DD래리어트' multiplier=2.0 defender_hp=25 move_id=663
 Action turn=2 side=1 attacker='P481' defender='P751' move='방전' multiplier=0.5 changes=(Change(side=0, pokemon='P751', kind='paralysis', stages=0),) defender_hp=89 attacker_hp=25 move_id=435
@@ -2125,6 +2126,7 @@ Action turn=2 side=0 attacker='P890' defender='P895' move='포이즌테일' defe
 Action turn=2 side=1 attacker='P895' defender='P890' move='트랩셸' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=57 move_id=704
 ItemHeal turn=2 side=1 pokemon='P895' item='black-sludge' hp=45
 SendOut turn=2 side=0 pokemon='P257' member=1
+AbilityEntry side=0 pokemon='P257' ability='cloud-nine' effect='clears-weather'
 Action turn=3 side=1 attacker='P895' defender='P257' move='섀도애로우즈스트라이크' defender_hp=28 attacker_hp=45 move_id=695
 Action turn=3 side=0 attacker='P257' defender='P895' move='나이트버스트' multiplier=2.0 changes=(Change(side=1, pokemon='P895', kind='accuracy', stages=-1),) defender_hp=19 attacker_hp=28 move_id=539
 ItemHeal turn=3 side=1 pokemon='P895' item='black-sludge' hp=7
