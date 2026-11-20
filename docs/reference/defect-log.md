@@ -419,6 +419,19 @@ read_when:
   proof.
   **Guards:** `BagExpSharePassTests`. The gate test runs through `checkEvolutionGate()`; dropping the new gate term
   fails it while the direct-call tests pass.
+- **An evolution spends what the new form names, not only what the open path asked for.** Milotic opens by 60 pets
+  in the app but names a held Prism Scale for its trade step. A Feebas holding a Prism Scale evolved by pets and kept
+  the scale, so the player saw "I gave it the item, it evolved, the item wasn't used". Slowking had the same split
+  (Galarica Wreath path, King's Rock trade). The graduate path also cleared the held item by `profile.instanceID`
+  while `heldItems` is keyed by the dex id.
+  **Why it slipped:** the spend walked the requirements of the path that opened, and every held-item test evolved
+  through a `.holds` path, where the path and the item agree.
+  An old save that planned through a held-item trade step (Onix → Steelix) also grows there with an empty path.
+  **Fix:** `EvolutionRule.heldItemsUsed` (every `.holds` item plus the trade item) is spent on every way in: raised,
+  graduate, Box, stone. A one-time load pass (`leftoverEvolutionItemsReturned`) returns an evolution item with no
+  battle use from a Pokémon past the step that names it.
+  **Guards:** `EvolutionItemSpendTests`; its sweep tests pin the rules whose path differs from their item to {199, 350}
+  and the trade-only item steps to the 14 held-item trades, so a new one has to be looked at.
 - **Hard-coded balance numbers in tests hide which scale they assume.** Removing the difficulty slider moved every
   threshold and price ÷10. Some 80 assertions across 31 tests still held the old ×10 literals (25M stages, 100M candy
   prices, 1M egg). Some tests passed only because of the old ratio between two numbers: "one candy advances at most

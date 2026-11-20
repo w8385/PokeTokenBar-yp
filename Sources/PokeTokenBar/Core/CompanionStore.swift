@@ -1351,7 +1351,7 @@ final class CompanionStore {
                     replanEvolution(from: node, to: next, base: a)
                     AppLog.write("evolve: replanned path for base \(a.baseID)")
                 }
-                spendEvolutionRequirements(of: openPath, instanceID: a.profile?.instanceID)
+                spendEvolutionRequirements(of: openPath, into: next.speciesID, instanceID: a.profile?.instanceID)
                 completeEvolution(of: a, to: next, in: line, usedAtStage: a.usedAtStage - thr)   // 초과분 이월
             }
         }
@@ -1496,18 +1496,18 @@ final class CompanionStore {
         speciesIndex?.entry(id)?.types ?? pokemonDetailsByID[id]?.types ?? []
     }
 
-    /// The held item and bag item a satisfied path used up.
-    private func spendEvolutionRequirements(of path: [EvolutionRequirement], instanceID: String?) {
-        for requirement in path {
-            switch requirement {
-            case .holds:
-                if let instanceID { state.heldItems[instanceID] = nil }
-            case .bag(let kind):
-                state.inventory[kind.rawValue] = max(0, itemCount(kind) - 1)
-            default:
-                break
-            }
+    /// The bag items a satisfied path used up, and the held item the new form names.
+    private func spendEvolutionRequirements(of path: [EvolutionRequirement], into speciesID: Int, instanceID: String?) {
+        for case .bag(let kind) in path {
+            state.inventory[kind.rawValue] = max(0, itemCount(kind) - 1)
         }
+        spendHeldEvolutionItem(of: instanceID, into: speciesID)
+    }
+
+    private func spendHeldEvolutionItem(of instanceID: String?, into speciesID: Int) {
+        guard let instanceID, let held = heldItem(of: instanceID),
+              EvolutionRules.rule(for: speciesID)?.heldItemsUsed.contains(held) == true else { return }
+        state.heldItems[instanceID] = nil
     }
 
     /// The form the raised Pokémon is waiting to take and what it still lacks; nil when nothing special waits.
@@ -1713,7 +1713,7 @@ final class CompanionStore {
                 EvolutionRules.openPath(into: option.speciesID, in: context).map { (speciesID: option.speciesID, path: $0) }
             }.first
             guard let step else { break }
-            spendEvolutionRequirements(of: step.path, instanceID: entry.profile?.instanceID)
+            spendEvolutionRequirements(of: step.path, into: step.speciesID, instanceID: entry.id)
             evolveGraduate(at: index, to: step.speciesID, in: line, progress: context.progress, celebrate: celebrate)
             evolved = true
         }
@@ -1967,6 +1967,7 @@ final class CompanionStore {
                 mon.plannedPathIDs = replannedPath(from: step.node, to: step.next, base: mon)
                 mon.totalForms = mon.plannedPathIDs.count
             }
+            spendHeldEvolutionItem(of: id, into: step.next.speciesID)
             completeStoredEvolution(id: id, mon, to: step.next, in: line, spentAtStore: stored.spentAtStore)
             evolved = true
         }
@@ -2730,7 +2731,7 @@ final class CompanionStore {
             let context = evolutionContext(for: a)
             guard rest.allSatisfy({ $0.isMet(in: context) }) else { return .notReady }
         }
-        spendEvolutionRequirements(of: rest, instanceID: a.profile?.instanceID)
+        spendEvolutionRequirements(of: rest, into: next.speciesID, instanceID: a.profile?.instanceID)
         state.inventory[kind.rawValue] = itemCount(kind) - 1
         replanEvolution(from: node, to: next, base: a)
         completeEvolution(of: a, to: next, in: line, usedAtStage: a.usedAtStage)
@@ -4232,6 +4233,7 @@ final class CompanionStore {
         // 극단값은 그대로 남아, 앱이 매 기동마다 같은 값을 읽어 산술 트랩으로 죽는 상태를 못 벗어난다
         // (디코드는 *성공*하므로 위의 .corrupt 복구도 발동하지 않는다). 여기서 걸면 자가 복구된다.
         state = SaveTransfer.sanitized(s)
+        state.returnLeftoverEvolutionItems()
     }
     func save() {
         if deferTimeSaves {

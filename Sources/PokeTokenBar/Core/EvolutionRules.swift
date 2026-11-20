@@ -126,6 +126,15 @@ struct EvolutionRule: Sendable {
     var isItemOnly: Bool {
         !paths.isEmpty && paths.allSatisfy { path in path.contains { if case .bag = $0 { return true } else { return false } } }
     }
+
+    /// Held items any way into this species names. Evolving here uses one up, whichever way opened.
+    var heldItemsUsed: Set<ItemKind> {
+        var items = Set(paths.joined().compactMap { requirement -> ItemKind? in
+            if case .holds(let kind) = requirement { return kind } else { return nil }
+        })
+        if case .holding(let kind)? = trade { items.insert(kind) }
+        return items
+    }
 }
 
 /// Maps the PokéAPI evolution conditions the XP loop cannot read to app-native conditions. Keyed by the evolved
