@@ -1962,6 +1962,15 @@ read_when:
   the ability target it would use before calling its own training, so a stale op cancels whole. **Guards:**
   `bot/tests/test_remote_training.py`; dropping the replay's wallet deduction fails 4 tests, including the refusal
   of a second Mint bought past the balance. `RemoteTrainTests`; dropping the app's price check fails the cancel test.
+  Trades are the one reader that stays on the upload: a trade gives away the pool entry the app sent, and the app
+  applies the delivery to its own saved Pokémon. So the replay cannot fix a trade; pending ops hold what they touch
+  instead (`RemoteOps.holds`, passed to `TradeService` as `holds`). A Box Pokémon a pending `lineup` puts in battle
+  is `in_lineup` (offering it would make the app cancel the whole lineup with `trade_locked`), and one a pending op
+  changes (`OpKind.changes`, today `train`) is `pending_change` (the coworker would get the untrained snapshot and the
+  app would cancel the training). The hold sits in `TradeService` itself, so `POST /v1/trades`, `POST /v1/miracle`,
+  the DM picker, the Miracle picker, `free_entries` and `/교환`·`/미라클` all refuse the same way. A held item needs
+  no new rule: `locked_ids` already keep it in place. **Guards:** `bot/tests/test_remote_trade.py`; pointing the
+  lineup hold at the raw upload fails 2 tests, dropping the pending-change hold fails 1.
 
 ## Tests and the user's desktop
 
