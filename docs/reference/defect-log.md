@@ -1948,6 +1948,12 @@ read_when:
   **Guards:** `bot/tests/test_remote_lineup.py` (replay readers, old upload, ack, epoch); pointing `battle_overview`,
   `leads_except` or `GET /v1/party` back at the raw upload fails 2, 2 and 1 tests. `RemoteLineupTests` (all or
   nothing, restart, clauses); skipping the app's item check fails the missing-item test.
+  The same holds for money: a `buy` op takes its cost off the replayed `wallet` and puts the items in the replayed
+  `bag`, so the spendable balance in `/상점`, `/가방` and the `/파티` item menu all read `RemoteOps.view`; only `view`
+  reads `wallet`, `bag` and `shop` from the upload (`rg 'remote\.get\("(wallet|bag|shop)"' bot/ypoke`). Shop lines
+  carry `equip`/`held_item` so a bought copy is holdable before the app syncs. **Guards:**
+  `bot/tests/test_remote_shop.py`; dropping the replay's wallet deduction fails 4 tests, including the refusal past
+  the pending buys. `RemoteBuyTests`; dropping the app's balance check fails the short-balance cancel.
 
 ## Tests and the user's desktop
 
