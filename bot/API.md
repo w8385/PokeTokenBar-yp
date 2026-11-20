@@ -51,11 +51,16 @@ Replaces the caller's stored party.
 | `ivs` | object | optional. Each key optional, `0..31`, default `15` |
 | `moves` | array | optional, up to 4 distinct PokéAPI move ids, each a move from `GET /v1/moves` at that level, level-up or machine (TM), an attacking egg move when `mirror_herb` is `true` (as `egg=1` lists it), or one of its `status=1` status moves (learnable as described there, egg moves included). Any other move is rejected with `400`. Missing or empty: the 4 most recently learned level-up moves |
 | `mirror_herb` | bool | optional, default `false`. The individual has had a Mirror Herb used on it in the app, so its attacking egg moves count as learnable for `moves` and in its battles. The bot trusts it the way it trusts TM ownership. Anything but a boolean is rejected with `400` |
+| `id` | string | optional, the individual's id (max 64 chars, no `\|` or whitespace; dropped otherwise). Members with one can be changed from Slack ([`lineup`](#the-lineup-op)); a rental has none |
+| `item_key`, `item_name` | string | optional, sent together: the app's inventory key of the held item (max 80 chars) and its Korean name (max 60). `held_item` is still what battles use; these say which bag copy goes back when it comes off |
+| `machine` | array | optional, the entries of `moves` that are TM moves, so a Slack edit keeps them only while the TM is owned |
 | `trade_pool` | array | optional, a top-level key beside `party`. The Pokémon the player may trade, see [Trades](#trades). Left out by older apps; a pool that fails validation is ignored and never fails the upload |
 | `remote_ops` | int | optional, top-level. `1` says this app applies [remote ops](#remote-ops). Without it the fields below are ignored, and Slack commands that queue ops ask the player to update the app |
 | `applied_op_id` | int | optional, top-level, with `remote_ops`. The highest op id this app has applied or cancelled; `0` or missing for none |
 | `wallet` | int | optional, top-level, with `remote_ops`. The tokens the player can spend now |
-| `bag` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "count"}]`: the bag. `key` is the app's inventory key (`rareCandy`, `mega-stone:charizardite-x`, `tm:85`); held items are not in it. Up to 2,000 lines |
+| `bag` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "count"}]`: the bag. `key` is the app's inventory key (`rareCandy`, `mega-stone:charizardite-x`, `tm:85`); held items are not in it. Up to 2,000 lines. A line a Pokémon can hold adds `"equip": true` and, when it acts in battle, `"held_item": "<slug>"` |
+| `remote_ops_kinds` | array | optional, top-level, with `remote_ops`. The op kinds this app applies (`["lineup"]`). Slack refuses to queue a kind the last upload did not list |
+| `ops_epoch` | string | optional, top-level, with `remote_ops`. The `epoch` of the `GET /v1/ops` reply `applied_op_id` counts against. Another epoch means a different bot database, so the bot reads `applied_op_id` as `0` |
 | `shop` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "price", "category", "single"}]`: what the shop sells now, at the app's prices. `single: true` is bought once |
 
 Malformed `remote_ops` fields and lines are dropped, never a `400`. Each upload replaces them, so a later upload
@@ -274,8 +279,12 @@ in the latest pool, so an app that sends no pool can neither offer nor receive.
 
 ```json
 {"id": "<individual id, max 64 chars, no |>", "pokemon_id": 93, "level": 100, "shiny": false,
- "name": "고우스트", "entry": {"...": "the app's record of the individual, at most 4 KB (the app sends at most 2,000 bytes per entry)"}}
+ "name": "고우스트", "entry": {"...": "the app's record of the individual, at most 4 KB (the app sends at most 2,000 bytes per entry)"},
+ "member": {"...": "optional: the party member it would battle as, checked like a `party` entry"}}
 ```
+
+`member` lets Slack put a Box Pokémon in the battle lineup ([`lineup`](#the-lineup-op)); the bot takes its `id`
+from the entry and drops a `member` that fails the party rules. Deliveries never carry it.
 
 The bot hands the other side's copy of `entry` back unchanged, so the receiver gets species, form, shiny, nature,
 IVs and level as sent. The app leaves out of `entry` what the receiver replaces on arrival: `caughtAt`,
@@ -336,7 +345,7 @@ therefore never undoes it, and an op is never counted twice.
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /v1/ops` | `{"ok": true, "ops": [{"id", "kind", "payload", "created_at"}]}`: the caller's pending ops, oldest first. `id` grows per player and is never reused |
+| `GET /v1/ops` | `{"ok": true, "ops": [{"id", "kind", "payload", "created_at"}], "epoch": "<string>"}`: the caller's pending ops, oldest first. `id` grows per player and is never reused within one `epoch`; a new epoch is a new bot database, where ids start over |
 | `POST /v1/ops/ack` | `{"applied": [1, 2], "cancelled": [{"id": 3, "reason": "unsupported"}]}` → `{"ok": true}`. At most 500 ids. `reason` is a short lowercase code (`[a-z][a-z0-9_]*`, max 40); the bot words it in Korean |
 
 App sync order: `GET /v1/ops`, apply each op in id order and save (with the highest id handled), `POST /v1/party`
@@ -349,6 +358,30 @@ Only ops an ack moves out of pending count. The bot DMs the player one message p
 
 A bot from before remote ops answers `404` on `/v1/ops`; the app then skips ops until it restarts or the server or token
 changes.
+
+When the `epoch` differs from the one the app last saw, the app forgets its highest handled id and its results
+before applying, then sends the new `ops_epoch`. The first epoch an app sees is only recorded.
+
+### The `lineup` op
+
+`/파티` and the `엔트리에 넣기` button of `/박스 <이름>` queue one op per change, each with the whole target lineup:
+
+```json
+{"members": [{"id": "<individual id>", "pokemon_id": 25, "name": "피카츄", "moves": [85, 89], "machine": [89],
+              "item": "leftovers"}]}
+```
+
+`members` is the battle order, 1 to 6. `moves` empty means the level's defaults; `machine` names its TM moves.
+`item` is the inventory key the member holds, or null for none. A member whose `item` differs from what it holds
+now gives that item back to the bag first; then each new item takes one bag copy. Pokémon leaving the lineup keep
+their items. A new `lineup` op replaces the player's pending ones (they leave pending as `superseded` and are never
+acked), so the app sees only the latest.
+
+The app applies all of it or nothing, and cancels with one of: `gone` (an individual is released or traded),
+`evolved` (its `pokemon_id` changed), `trade_locked`, `no_item` (no bag copy), `no_machine` (a TM move whose TM is
+not owned), `not_learnable` (another move it can no longer learn), `species_clause`, `item_clause`, `invalid` (a
+payload it cannot read). The bot's
+replay checks the same rules against its copy and leaves a breaking op out.
 
 ## Gyms (PvE)
 

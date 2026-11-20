@@ -12,6 +12,7 @@ from collections.abc import Collection
 from typing import Callable, Protocol
 from urllib.parse import parse_qs, urlsplit
 
+import ypoke.remote_lineup  # noqa: F401  registers the lineup op kind the replayed reads need
 from ypoke import entry_rules
 from ypoke.battle import CARRIED_STATUSES
 from ypoke.dex import normalize_dex
@@ -31,6 +32,7 @@ COWORKER_LIMIT = 30
 COWORKER_WINDOW = timedelta(days=30)
 GYM_BATTLE_INTERVAL = 3.0
 ABILITY_NAME = re.compile(r"[a-z][a-z-]{0,39}")
+INDIVIDUAL_ID = re.compile(r"[^|\s]{1,64}")
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
 MovesFor = Callable[..., list[dict]]
@@ -158,8 +160,26 @@ def validate_carried(carried: object, size: int) -> list[dict | None] | None:
     return states
 
 
-def battle_overview(store: Store, user_id: str, name_for: NameFor) -> dict:
-    """The uploader's last battles and the other users' current lead Pokémon, with display names and no Slack ids."""
+def with_battle_members(raw_pool: object) -> object:
+    """The uploaded pool with each entry's `member` (the party member it would battle as) normalized like a party
+    member and given the entry's id, or dropped when it is not valid."""
+    if not isinstance(raw_pool, list):
+        return raw_pool
+    pool = []
+    for item in raw_pool:
+        if isinstance(item, dict) and "member" in item:
+            item = dict(item)
+            try:
+                item["member"] = {**_validate_member("trade_pool", 0, item["member"]), "id": item.get("id")}
+            except PartyError:
+                del item["member"]
+        pool.append(item)
+    return pool
+
+
+def battle_overview(store: Store, user_id: str, name_for: NameFor, remote: RemoteOps) -> dict:
+    """The uploader's last battles and the other users' current lead Pokémon (with their Slack ops replayed), with
+    display names and no Slack ids."""
     recent = [
         {
             "opponent_name": name_for(battle.opponent_id),
@@ -173,7 +193,7 @@ def battle_overview(store: Store, user_id: str, name_for: NameFor) -> dict:
     ]
     coworkers = [
         {"name": name_for(lead.user_id), "pokemon_id": lead.pokemon_id, "level": lead.level, "shiny": lead.shiny}
-        for lead in store.leads_except(user_id, datetime.now(UTC) - COWORKER_WINDOW, COWORKER_LIMIT)
+        for lead in remote.leads_except(user_id, datetime.now(UTC) - COWORKER_WINDOW, COWORKER_LIMIT)
     ]
     return {"recent_battles": recent, "coworkers": coworkers}
 
@@ -204,7 +224,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
         if url.path == "/v1/ops":
             ops = [{"id": op.id, "kind": op.kind, "payload": op.payload, "created_at": op.created_at}
                    for op in self.remote.pending(user_id)]
-            self._reply(200, {"ok": True, "ops": ops})
+            self._reply(200, {"ok": True, "ops": ops, "epoch": self.remote.epoch})
             return
         if url.path == "/v1/miracle":
             if self._miracle_available():
@@ -222,7 +242,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
         if url.path == "/v1/moves":
             self._learnable_moves(parse_qs(url.query))
             return
-        stored = self.store.party(user_id)
+        stored = self.remote.party(user_id)
         if stored is None:
             self._reply(404, {"ok": False, "error": "no_party"})
             return
@@ -278,16 +298,16 @@ class _UploadHandler(BaseHTTPRequestHandler):
         except OSError:
             self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
             return
-        self.store.save_party(user_id, party, normalize_dex(payload), normalize_remote(payload))
+        self.store.save_party(user_id, party, normalize_dex(payload), normalize_remote(payload, self.remote.epoch))
         body = {"ok": True, "party_size": len(party)}
         if self.trades is not None:
             if "trade_pool" in payload:
-                self.trades.save_pool(user_id, payload["trade_pool"])
+                self.trades.save_pool(user_id, with_battle_members(payload["trade_pool"]))
                 if self.miracle is not None:
                     self.miracle.pool_changed(user_id)
             body["trades"] = {"deliveries": self.trades.deliveries(user_id), "locked_ids": self.trades.locked_ids(user_id)}
         self.on_upload(user_id, party)
-        self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for)})
+        self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for, self.remote)})
 
     def _gym_battle(self, user_id: str, payload: object) -> None:
         """A practice-style fight: nothing is stored, nothing is posted, and the stored party stays as it is."""
@@ -481,6 +501,13 @@ def _validate_member(field: str, index: int, member: object) -> dict:
     held_item = member.get("held_item")
     if isinstance(held_item, str) and 0 < len(held_item.strip()) <= 40:
         normalized["held_item"] = held_item.strip().lower()
+    individual_id = member.get("id")
+    if isinstance(individual_id, str) and INDIVIDUAL_ID.fullmatch(individual_id):
+        normalized["id"] = individual_id
+    item_key, item_name = member.get("item_key"), member.get("item_name")
+    if isinstance(item_key, str) and 0 < len(item_key) <= 80 and isinstance(item_name, str) and 0 < len(item_name.strip()) <= 60:
+        normalized["item_key"] = item_key
+        normalized["item_name"] = item_name.strip()
     ivs = member.get("ivs", {})
     if not isinstance(ivs, dict):
         raise PartyError(f"{where}.ivs must be an object")
@@ -500,6 +527,10 @@ def _validate_member(field: str, index: int, member: object) -> dict:
             raise PartyError(f"{where}.moves must be a list of up to {MAX_MOVES} distinct move ids")
         if moves:
             normalized["moves"] = moves
+            machine = member.get("machine")
+            if isinstance(machine, list) and all(_is_int(move_id) for move_id in machine):
+                if picked := [move_id for move_id in moves if move_id in machine]:
+                    normalized["machine"] = picked
     return normalized
 
 

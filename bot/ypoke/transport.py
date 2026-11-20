@@ -21,6 +21,7 @@ from ypoke.commands import (
     reply_thread_ts,
     result_blocks,
 )
+from ypoke.lineup_editor import LineupEditor
 from ypoke.miracle import MiracleService
 from ypoke.trades import TradeService
 
@@ -142,6 +143,42 @@ def options_listener(trades: TradeService):
             options = trades.suggest(body["user"]["id"], payload.get("block_id") or "", payload.get("value") or "")
         except Exception:
             log.exception("picker options failed")
+            options = []
+        ack(options=options)
+
+    return listener
+
+
+def lineup_listener(editor: LineupEditor):
+    """A `/파티` editor control. The new screen replaces the private message the press came from; a refusal is a
+    private note under it."""
+
+    def listener(ack, body, action, respond) -> None:
+        ack()
+        user_id = body["user"]["id"]
+        value = action.get("value") or (action.get("selected_option") or {}).get("value") or action.get("block_id") or ""
+        selected = [option["value"] for option in action.get("selected_options") or []]
+        log_command("button", user_id, action["action_id"], value)
+        try:
+            reply = editor.act(user_id, action["action_id"], value, selected)
+        except Exception:
+            log.exception("lineup edit failed")
+            respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            return
+        respond(text=reply.screen.text, blocks=reply.screen.blocks, response_type="ephemeral",
+                replace_original=reply.replace)
+
+    return listener
+
+
+def lineup_options_listener(editor: LineupEditor):
+    """Loads the swap menu past Slack's 100 options: the block id is the slot's individual id."""
+
+    def listener(ack, body, payload) -> None:
+        try:
+            options = editor.options(body["user"]["id"], payload.get("block_id") or "", payload.get("value") or "")
+        except Exception:
+            log.exception("lineup options failed")
             options = []
         ack(options=options)
 

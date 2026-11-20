@@ -316,7 +316,8 @@ class TradeService:
         received, given_id = (trade.back, trade.give_id) if mine else (trade.give, trade.back_id)
         sender = trade.target_id if mine else trade.proposer_id
         gave = trade.give if mine else trade.back
-        return {"trade_id": trade.id, "give_id": given_id, "from_name": self._name(sender), "receive": received,
+        receive = {key: value for key, value in received.items() if key != "member"}
+        return {"trade_id": trade.id, "give_id": given_id, "from_name": self._name(sender), "receive": receive,
                 "give_held_item": gave["entry"].get(HELD_ITEM_KEY)}
 
     def _summary(self, trade: Trade, user_id: str) -> dict:
@@ -467,7 +468,7 @@ def _normalize_entry(item: object) -> dict | None:
     if not isinstance(detail, dict) or len(json.dumps(detail, ensure_ascii=False)) > MAX_ENTRY_BYTES:
         return None
     name = item.get("name")
-    return {
+    normalized = {
         "id": individual_id,
         "pokemon_id": pokemon_id,
         "level": level,
@@ -475,6 +476,10 @@ def _normalize_entry(item: object) -> dict | None:
         "name": name.strip()[:40] if isinstance(name, str) and name.strip() else f"#{pokemon_id}",
         "entry": detail,
     }
+    member = item.get("member")
+    if isinstance(member, dict) and member.get("id") == individual_id:
+        normalized["member"] = member
+    return normalized
 
 
 def picker_block(action_id: str, owner_id: str, options: list[dict]) -> dict:

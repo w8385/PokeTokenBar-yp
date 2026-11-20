@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import threading
 import time
 from pathlib import Path
@@ -13,6 +14,7 @@ from slack_sdk import WebClient
 from ypoke.battle_render import MatchupPictures
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
 from ypoke.gym_battle import GymBattles
+from ypoke.lineup_editor import ACTION_PREFIX, SWAP_ACTION
 from ypoke.miracle import ACCEPT_ACTION_ID as MIRACLE_ACCEPT_ACTION_ID
 from ypoke.miracle import CANCEL_ACTION_ID as MIRACLE_CANCEL_ACTION_ID
 from ypoke.miracle import PICK_ACTION_ID as MIRACLE_PICK_ACTION_ID
@@ -25,6 +27,8 @@ from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, Tr
 from ypoke.transport import (
     SlackBoard,
     deliver,
+    lineup_listener,
+    lineup_options_listener,
     mention_listener,
     miracle_listener,
     options_listener,
@@ -74,7 +78,7 @@ def main() -> None:
         miracle=miracle,
         remote=remote,
     )
-    threading.Thread(target=_warm_stored_parties, args=(pokeapi, store), daemon=True).start()
+    threading.Thread(target=_warm_stored_parties, args=(pokeapi, store, remote), daemon=True).start()
     threading.Thread(target=_sweep_miracle_offers, args=(miracle,), daemon=True).start()
     for name in COMMAND_NAMES:
         app.command(name)(slash_listener(handler, pictures))
@@ -89,6 +93,8 @@ def main() -> None:
     app.action(MIRACLE_PICK_ACTION_ID)(miracle_listener(miracle, "pick"))
     app.options(PICK_ACTION_ID)(options_listener(trades))
     app.options(MIRACLE_PICK_ACTION_ID)(options_listener(trades))
+    app.action(re.compile(f"^{ACTION_PREFIX}"))(lineup_listener(handler.editor))
+    app.options(SWAP_ACTION)(lineup_options_listener(handler.editor))
     app.event("app_mention")(mention_listener(handler, pictures))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 
@@ -143,10 +149,10 @@ def _sweep_miracle_offers(miracle: MiracleService) -> None:
         time.sleep(MIRACLE_SWEEP_INTERVAL)
 
 
-def _warm_stored_parties(pokeapi: PokeAPIService, store: Store) -> None:
+def _warm_stored_parties(pokeapi: PokeAPIService, store: Store, remote: RemoteOps) -> None:
     """One member at a time so live battles still get request slots."""
     for user_id in store.linked_user_ids():
-        stored = store.party(user_id)
+        stored = remote.party(user_id)
         for member in stored.party if stored else []:
             _warm(pokeapi, [member])
 
