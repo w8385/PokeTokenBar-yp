@@ -1954,6 +1954,14 @@ read_when:
   carry `equip`/`held_item` so a bought copy is holdable before the app syncs. **Guards:**
   `bot/tests/test_remote_shop.py`; dropping the replay's wallet deduction fails 4 tests, including the refusal past
   the pending buys. `RemoteBuyTests`; dropping the app's balance check fails the short-balance cancel.
+  A `train` op spends the same way: a Mint or Mirror Herb with none in the bag takes the shop price off the replayed
+  `wallet`, every other action takes its item off the replayed `bag`, so a pending training lowers what `/상점` can
+  spend and a pending buy is what `/트레이닝` uses. The replay edits the member in both `party` and `trade_pool`, so
+  every reader above sees the new nature, ability, IVs, form or moves. Slack runs the same pure check
+  (`remote_train.train`) before queueing that the replay runs after, and the app checks the price, the bag item and
+  the ability target it would use before calling its own training, so a stale op cancels whole. **Guards:**
+  `bot/tests/test_remote_training.py`; dropping the replay's wallet deduction fails 4 tests, including the refusal
+  of a second Mint bought past the balance. `RemoteTrainTests`; dropping the app's price check fails the cancel test.
 
 ## Tests and the user's desktop
 
