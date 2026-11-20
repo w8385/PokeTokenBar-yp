@@ -163,6 +163,7 @@ ABILITY_EFFECT_TEXT = {
     "trace": "{detail} 복사", "retype": "{detail} 타입이 되었다", "retype-back": "원래 타입으로 돌아왔다",
     "zero": "날씨와 필드가 사라졌다", "disguise": "탈이 대신 맞았다", "spit": "삼킨 것을 뱉었다",
     "paradox": "{detail} 강화", "harvest": "{detail} 수확", "chew": "{detail} 되새김",
+    "clears-weather": "날씨 효과 없음",
 }
 # Text after the ability name when it stopped a move, in place of "에 막힘".
 ABILITY_BLOCKED_TEXT = {
@@ -458,7 +459,11 @@ def _entry_effect(event: AbilityTrigger | MegaEvolution) -> str:
                                         *(_change_tag(change, -1) for change in event.changes)]))
     else:
         effect = WEATHER_ICON[event.weather] if event.weather else _change_tag(event.change, -1)
-    return " ".join(filter(None, [f"[{ABILITY_NAMES[event.ability]}]", effect]))
+    return " ".join(filter(None, [f"[{ABILITY_NAMES[event.ability]}]", effect, _cleared_note(event.cleared_by)]))
+
+
+def _cleared_note(ability: str) -> str:
+    return f"({ABILITY_NAMES[ability]}: 효과 없음)" if ability else ""
 
 
 def _direction_particle(name: str) -> str:
@@ -513,7 +518,7 @@ def _event_lines(event: Event) -> list[str]:
     if isinstance(event, AbilityAct):
         return [_ability_line(event, marker), *([_faint_line(event.pokemon)] if event.fainted else []),
                 *([_faint_line(event.foe)] if event.foe_fainted else [])]
-    lines =[_action_line(event, marker)]
+    lines = [" ".join(filter(None, [_action_line(event, marker), _cleared_note(event.cleared_by)]))]
     if event.attacker_fainted:
         lines.append(_faint_line(event.attacker))
     return lines

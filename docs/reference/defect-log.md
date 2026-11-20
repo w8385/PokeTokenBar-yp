@@ -1870,6 +1870,23 @@ read_when:
   **Guards:** `TradePoolCapacityTests` (300 → all 300, body under the bot's limit read from the bot source; button and
   pool agree past the cap), `bot/tests/test_trade_pool_full.py` (oldest of 300 posts and trades; pickers past 100 find
   and pick the 130th). Injecting the old caps fails both.
+- **An ability that cancels something visible in the log must say so in the log.** A duel of Rayquaza (Air Lock)
+  against Sandaconda showed Sand Spit's 🏜️ and then no sand chip, which read as a bug. The engine was right, but Air
+  Lock and Cloud Nine emitted no event, so nothing in the Slack log or the gym log said why.
+  **Why no test caught it:** `test_air_lock_stops_the_sandstorm_chip_while_the_weather_counts_down` pinned the state
+  (no `WeatherDamage`, the countdown), not what a reader sees.
+  Now the holder announces itself on entry (`[에어록] 날씨 효과 없음`, joined to a later send-out line), and a weather
+  that starts while it is out carries `cleared_by`, narrated as `(에어록: 효과 없음)` (entry abilities, Sand Spit,
+  weather moves, Chilly Reception). The announcement keeps the old entry order and its speed-tie draw
+  (`_entry_takes_turns`): the event-log goldens gained 16 announcement lines and 8 `cleared_by` fields and nothing
+  else, the gym logs did not change, and the 48 digest battles match the old text once the new text is stripped
+  (their hashes changed with the event repr). Tests: `test_weather_clearer_log.py`; dropping the entry
+  announcement fails 5, dropping the note fails 6, and letting the announcement join the entry order fails the
+  `focus` golden.
+  **Class sweep (left silent on purpose, the games do not announce them either):** chip immunity (Magic Guard; Overcoat;
+  Sand Veil, Sand Rush, Sand Force, Ice Body in their weather; Rock Head's recoil), damage taken (Thick Fat, Filter,
+  Solid Rock, Prism Armor, Multiscale, Shadow Shield, Fluffy, Ice Scales, Heatproof, Aura Guard, Purifying Salt, Water
+  Bubble, Punk Rock), Unaware, and the passive stat and power multipliers.
 
 ## Tests and the user's desktop
 

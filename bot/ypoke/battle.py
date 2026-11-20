@@ -220,17 +220,20 @@ class Action:
     pivoted: bool = False
     move_id: int = 0
     via: str = ""
+    cleared_by: str = ""
 
 
 @dataclass(frozen=True)
 class AbilityTrigger:
-    """An ability that took effect as the Pokémon entered: it lowered the foe's stat (`change`) or started `weather`."""
+    """An ability that took effect as the Pokémon entered: it lowered the foe's stat (`change`) or started `weather`,
+    which the ability `cleared_by` (Air Lock) of a Pokémon out keeps from acting."""
 
     side: int
     pokemon: str
     ability: str
     change: Change | None = None
     weather: str | None = None
+    cleared_by: str = ""
 
 
 @dataclass(frozen=True)
@@ -876,10 +879,17 @@ class _Weather:
 
     @property
     def kind(self) -> str | None:
-        if self.current is not None and self.teams and any(
-                team.active.hp > 0 and hooks.ability(team.active, "clears_weather", default=False) for team in self.teams):
+        if self.current is not None and self.cleared_by:
             return None
         return self.current
+
+    @property
+    def cleared_by(self) -> str:
+        """The ability of the Pokémon out that keeps any weather from acting (Air Lock), or ""."""
+        for team in self.teams or ():
+            if team.active.hp > 0 and hooks.ability(team.active, "clears_weather", default=False):
+                return team.active.ability
+        return ""
 
     @kind.setter
     def kind(self, value: str | None) -> None:
@@ -1186,7 +1196,7 @@ def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: r
     """Entry abilities of the `entering` sides fire faster Pokémon first, so the slower weather setter's weather stays."""
     order = entering
     speeds = [fighter.stat("speed") for fighter in fighters]
-    if len(entering) == 2 and all(hooks.has("abilities", fighter.ability, "on_entry") for fighter in fighters):
+    if len(entering) == 2 and all(_entry_takes_turns(fighter) for fighter in fighters):
         order = (0, 1) if speeds[0] > speeds[1] or (speeds[0] == speeds[1] and rng.random() < 0.5) else (1, 0)
     triggers: list = []
     for side in order:
@@ -1197,6 +1207,12 @@ def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: r
         triggers.extend(log)
         log.clear()
     return triggers
+
+
+def _entry_takes_turns(fighter: _Fighter) -> bool:
+    """Air Lock only announces itself on entry, so it leaves the entry order and its speed-tie draw alone."""
+    return (hooks.has("abilities", fighter.ability, "on_entry")
+            and not hooks.has("abilities", fighter.ability, "clears_weather"))
 
 
 def _turn_order(fighters: tuple[_Fighter, _Fighter], choices: tuple[int | None, int | None],
@@ -1459,10 +1475,12 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         return Action(turn, side, *names, move.name, missed=True, recovered=recovered, defender_hp=defender.hp_percent,
                       attacker_hp=attacker.hp_percent, changes=_crash(attacker, move),
                       attacker_fainted=attacker.hp == 0)
+    before = weather.current
     used = hooks.move(move, "use", attacker, defender, side, turn, weather, arena, rng)
     if used is not None:
+        started = weather.current is not None and weather.current != before
         return Action(turn, side, *names, move.name, recovered=recovered, defender_hp=defender.hp_percent,
-                      attacker_hp=attacker.hp_percent, **used)
+                      attacker_hp=attacker.hp_percent, cleared_by=weather.cleared_by if started else "", **used)
     hooks.move(move, "before_hit", attacker, defender)
     multiplier = _multiplier(move, defender, weather.kind)
     accuracy = hooks.move(move, "own_accuracy", attacker, defender)

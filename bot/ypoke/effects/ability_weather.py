@@ -9,6 +9,9 @@ from ypoke.effects.ability_stats import staged
 class ClearsWeather(Handler):
     """Air Lock, Cloud Nine: the weather does nothing while the holder is out, and keeps counting down."""
 
+    def on_entry(self, name, fighter, foe, side, weather):
+        return battle.AbilityEntry(side, fighter.combatant.name, name, effect="clears-weather")
+
     def clears_weather(self, name):
         return True
 

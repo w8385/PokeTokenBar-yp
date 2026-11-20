@@ -865,6 +865,7 @@ Action turn=1 side=0 attacker='P438' defender='P55' move='깜짝베기' multipli
 Action turn=1 side=1 attacker='P55' defender='P438' move='화염방사' defender_hp=65 attacker_hp=49 move_id=53
 Action turn=2 side=0 attacker='P438' defender='P55' move='깜짝베기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=65 move_id=400
 SendOut turn=2 side=1 pokemon='P736' member=1
+AbilityEntry side=1 pokemon='P736' ability='cloud-nine' effect='clears-weather'
 Action turn=3 side=1 attacker='P736' defender='P438' move='풀피리' missed=True defender_hp=65 move_id=320
 Action turn=3 side=0 attacker='P438' defender='P736' move='깜짝베기' defender_hp=88 attacker_hp=65 move_id=400
 Action turn=4 side=1 attacker='P736' defender='P438' move='풀피리' missed=True defender_hp=65 attacker_hp=88 move_id=320
@@ -2206,6 +2207,7 @@ Action turn=8 side=0 attacker='P261' defender='P362' move='모래지옥' multipl
 Action turn=8 side=1 attacker='P362' defender='P261' move='일렉트릭네트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=10 move_id=527
 VolatileEnd turn=8 side=1 pokemon='P362' kind='binding'
 SendOut turn=8 side=0 pokemon='P475' member=2
+AbilityEntry side=0 pokemon='P475' ability='cloud-nine' effect='clears-weather'
 MegaEvolution turn=9 side=0 pokemon='P475' ability='미러아머' form_id=10068
 Action turn=9 side=0 attacker='P475' defender='P362' move='뼈다귀부메랑' multiplier=2.0 defender_hp=0 knockout=True move_id=155
 SendOut turn=9 side=1 pokemon='P962' member=2

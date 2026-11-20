@@ -18766,7 +18766,8 @@ result winner=1 turns=5 remaining=((0,), (21,)) statuses=((None,), (None,))
 ## focus cloud-nine 0
 side=0 P18 Lv50 ('normal',) item=None ability=cloud-nine nature=None moves=[33] mega=None
 side=1 P36 Lv50 ('normal',) item=None ability=drizzle nature=None moves=[33] mega=None
-AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain'
+AbilityEntry side=0 pokemon='P18' ability='cloud-nine' effect='clears-weather'
+AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain' cleared_by='cloud-nine'
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=67 move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=73 attacker_hp=67 move_id=33
 Action turn=2 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=36 attacker_hp=73 move_id=33
@@ -18778,7 +18779,8 @@ result winner=0 turns=4 remaining=((25,), (0,)) statuses=((None,), (None,))
 ## focus cloud-nine 1
 side=0 P18 Lv50 ('normal',) item=None ability=cloud-nine nature=None moves=[33] mega=None
 side=1 P36 Lv50 ('normal',) item=None ability=drizzle nature=None moves=[33] mega=None
-AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain'
+AbilityEntry side=0 pokemon='P18' ability='cloud-nine' effect='clears-weather'
+AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain' cleared_by='cloud-nine'
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=71 move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=73 attacker_hp=71 move_id=33
 Action turn=2 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=41 attacker_hp=73 move_id=33
@@ -18790,7 +18792,8 @@ result winner=0 turns=4 remaining=((9,), (0,)) statuses=((None,), (None,))
 ## focus cloud-nine 2
 side=0 P18 Lv50 ('normal',) item=None ability=cloud-nine nature=None moves=[33] mega=None
 side=1 P36 Lv50 ('normal',) item=None ability=drizzle nature=None moves=[33] mega=None
-AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain'
+AbilityEntry side=0 pokemon='P18' ability='cloud-nine' effect='clears-weather'
+AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain' cleared_by='cloud-nine'
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=75 move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=76 attacker_hp=75 move_id=33
 Action turn=2 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=47 attacker_hp=76 move_id=33
@@ -18802,7 +18805,8 @@ result winner=0 turns=4 remaining=((29,), (0,)) statuses=((None,), (None,))
 ## focus cloud-nine 3
 side=0 P18 Lv50 ('normal',) item=None ability=cloud-nine nature=None moves=[33] mega=None
 side=1 P36 Lv50 ('normal',) item=None ability=drizzle nature=None moves=[33] mega=None
-AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain'
+AbilityEntry side=0 pokemon='P18' ability='cloud-nine' effect='clears-weather'
+AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain' cleared_by='cloud-nine'
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=66 move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=74 attacker_hp=66 move_id=33
 Action turn=2 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=31 attacker_hp=74 move_id=33
@@ -18812,7 +18816,8 @@ result winner=0 turns=3 remaining=((44,), (0,)) statuses=((None,), (None,))
 ## focus cloud-nine 4
 side=0 P18 Lv50 ('normal',) item=None ability=cloud-nine nature=None moves=[33] mega=None
 side=1 P36 Lv50 ('normal',) item=None ability=drizzle nature=None moves=[33] mega=None
-AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain'
+AbilityEntry side=0 pokemon='P18' ability='cloud-nine' effect='clears-weather'
+AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain' cleared_by='cloud-nine'
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=70 move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=79 attacker_hp=70 move_id=33
 Action turn=2 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=44 attacker_hp=79 move_id=33
@@ -18824,7 +18829,8 @@ result winner=0 turns=4 remaining=((32,), (0,)) statuses=((None,), (None,))
 ## focus cloud-nine 5
 side=0 P18 Lv50 ('normal',) item=None ability=cloud-nine nature=None moves=[33] mega=None
 side=1 P36 Lv50 ('normal',) item=None ability=drizzle nature=None moves=[33] mega=None
-AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain'
+AbilityEntry side=0 pokemon='P18' ability='cloud-nine' effect='clears-weather'
+AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain' cleared_by='cloud-nine'
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=72 move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=74 attacker_hp=72 move_id=33
 Action turn=2 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=43 attacker_hp=74 move_id=33
@@ -18836,7 +18842,8 @@ result winner=0 turns=4 remaining=((20,), (0,)) statuses=((None,), (None,))
 ## focus cloud-nine 6
 side=0 P18 Lv50 ('normal',) item=None ability=cloud-nine nature=None moves=[33] mega=None
 side=1 P36 Lv50 ('normal',) item=None ability=drizzle nature=None moves=[33] mega=None
-AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain'
+AbilityEntry side=0 pokemon='P18' ability='cloud-nine' effect='clears-weather'
+AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain' cleared_by='cloud-nine'
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=63 move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' critical=True defender_hp=59 attacker_hp=63 move_id=33
 Action turn=2 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=28 attacker_hp=59 move_id=33
@@ -18846,7 +18853,8 @@ result winner=0 turns=3 remaining=((13,), (0,)) statuses=((None,), (None,))
 ## focus cloud-nine 7
 side=0 P18 Lv50 ('normal',) item=None ability=cloud-nine nature=None moves=[33] mega=None
 side=1 P36 Lv50 ('normal',) item=None ability=drizzle nature=None moves=[33] mega=None
-AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain'
+AbilityEntry side=0 pokemon='P18' ability='cloud-nine' effect='clears-weather'
+AbilityTrigger side=1 pokemon='P36' ability='drizzle' weather='rain' cleared_by='cloud-nine'
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=69 move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=71 attacker_hp=69 move_id=33
 Action turn=2 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=36 attacker_hp=71 move_id=33

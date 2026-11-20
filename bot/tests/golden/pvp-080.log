@@ -2012,6 +2012,7 @@ ItemHeal turn=9 side=0 pokemon='P158' item='black-sludge' hp=5
 Action turn=10 side=0 attacker='P158' defender='P824' move='엄습하는일격' changes=(Change(side=1, pokemon='P824', kind='special_attack', stages=-1),) defender_hp=51 attacker_hp=5 move_id=806
 Action turn=10 side=1 attacker='P824' defender='P158' move='발버둥' recoil=True defender_hp=0 knockout=True attacker_hp=26 move_id=165
 SendOut turn=10 side=0 pokemon='P811' member=3
+AbilityEntry side=0 pokemon='P811' ability='air-lock' effect='clears-weather'
 Action turn=11 side=0 attacker='P811' defender='P824' move='프리즈볼트' defender_hp=26 effect='charge-turn' move_id=553
 Action turn=11 side=1 attacker='P824' defender='P811' move='발버둥' recoil=True defender_hp=69 attacker_hp=2 move_id=165
 Action turn=12 side=0 attacker='P811' defender='P824' move='프리즈볼트' missed=True multiplier=2.0 defender_hp=2 attacker_hp=69 move_id=553

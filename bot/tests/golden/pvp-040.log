@@ -109,6 +109,7 @@ side=1 P79 Lv50 ('poison', 'steel') item=None ability=bad-dreams nature=None mov
 side=1 P351 Lv42 ('flying',) item=white-herb ability=berserk nature=timid moves=[50, 54, 729, 730] mega=None
 side=1 P493 Lv50 ('fairy',) item=pixie-plate ability=chilling-neigh nature=adamant moves=[69, 73, 729, 684] mega=None
 side=1 P183 Lv50 ('electric',) item=wise-glasses ability=comatose nature=timid moves=[80, 81, 812, 788] mega=None
+AbilityEntry side=1 pokemon='P558' ability='air-lock' effect='clears-weather'
 Action turn=1 side=0 attacker='P787' defender='P558' move='하바네로엑기스' changes=(Change(side=1, pokemon='P558', kind='attack', stages=2), Change(side=1, pokemon='P558', kind='defense', stages=-2)) effect='stages' move_id=858
 Action turn=1 side=1 attacker='P558' defender='P787' move='가위자르기' missed=True multiplier=0.0 move_id=12
 Action turn=2 side=0 attacker='P787' defender='P558' move='찍찍베기' critical=True defender_hp=0 knockout=True hits=9 move_id=860
@@ -1199,6 +1200,7 @@ Action turn=19 side=0 attacker='P445' defender='P96' move='섀도다이브' defe
 Action turn=20 side=1 attacker='P96' defender='P445' move='폭풍' missed=True defender_hp=4 attacker_hp=6 move_id=542
 Action turn=20 side=0 attacker='P445' defender='P96' move='섀도다이브' defender_hp=0 knockout=True attacker_hp=4 move_id=467
 SendOut turn=20 side=1 pokemon='P956' member=3
+AbilityEntry side=1 pokemon='P956' ability='cloud-nine' effect='clears-weather'
 Action turn=21 side=1 attacker='P956' defender='P445' move='하이드로캐논' multiplier=0.5 defender_hp=0 knockout=True move_id=308
 SendOut turn=21 side=0 pokemon='P473' member=1
 Action turn=22 side=1 attacker='P956' defender='P473' move='' blocked='recharge'
@@ -1514,6 +1516,7 @@ Action turn=6 side=1 attacker='P984' defender='P970' move='엄청난힘' changes
 Action turn=6 side=0 attacker='P970' defender='P984' move='트리플악셀' missed=True defender_hp=72 attacker_hp=6 move_id=813
 Action turn=7 side=1 attacker='P984' defender='P970' move='엄청난힘' changes=(Change(side=1, pokemon='P984', kind='attack', stages=-1), Change(side=1, pokemon='P984', kind='defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=72 move_id=276
 SendOut turn=7 side=0 pokemon='P913' member=1
+AbilityEntry side=0 pokemon='P913' ability='air-lock' effect='clears-weather'
 Action turn=8 side=1 attacker='P984' defender='P913' move='휘적휘적포' multiplier=0.5 defender_hp=82 drained=True attacker_hp=80 move_id=902
 Action turn=8 side=0 attacker='P913' defender='P984' move='사이코웨이브' defender_hp=61 attacker_hp=82 move_id=149
 AbilityAct turn=8 side=1 pokemon='P984' ability='cotton-down' changes=(Change(side=0, pokemon='P913', kind='speed', stages=-1),)
