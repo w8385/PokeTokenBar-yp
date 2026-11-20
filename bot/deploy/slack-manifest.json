@@ -67,7 +67,8 @@
       },
       {
         "command": "/상점",
-        "description": "상점 (곧 열려요)",
+        "description": "앱 상점에서 사기. 이름으로 찾아요 (나만 봐요)",
+        "usage_hint": "[이름]",
         "should_escape": true
       },
       {

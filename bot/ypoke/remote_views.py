@@ -50,7 +50,7 @@ class RemoteViews:
         if view is None:
             return _plain(NO_UPLOAD if self._store.is_linked(user_id) else NOT_LINKED)
         if command not in (PARTY_COMMAND, BOX_COMMAND, BAG_COMMAND):
-            return _screen([self._remote.edit_refusal(user_id) or COMING_SOON], view)
+            return text_screen([self._remote.edit_refusal(user_id) or COMING_SOON], view)
         if command == PARTY_COMMAND:
             return self._party(view)
         if command == BOX_COMMAND:
@@ -61,7 +61,7 @@ class RemoteViews:
         lines = [party_title(view)]
         for index, member in enumerate(view.party, start=1):
             lines += member_lines(index, member, member.get("name") or self._species_name(member["pokemon_id"]))
-        return _screen(lines, view)
+        return text_screen(lines, view)
 
 
 def party_title(view: View) -> str:
@@ -95,11 +95,11 @@ def box_screen(view: View, text: str, accessory: Callable[[dict], dict | None] |
     query = " ".join(words)
     labelled = list(zip(option_labels(view.pool), view.pool))
     if not labelled:
-        return _screen(["*내 박스*", "박스가 비어 있어요. 앱이 박스를 올리면 여기서 보여요."], view)
+        return text_screen(["*내 박스*", "박스가 비어 있어요. 앱이 박스를 올리면 여기서 보여요."], view)
     if query:
         labelled = [(label, entry) for label, entry in labelled if query.lower() in entry["name"].lower()]
         if not labelled:
-            return _screen([f"*내 박스* '{query}' 검색", f"'{query}'에 맞는 포켓몬이 없어요."], view)
+            return text_screen([f"*내 박스* '{query}' 검색", f"'{query}'에 맞는 포켓몬이 없어요."], view)
     pages = (len(labelled) + BOX_PAGE_SIZE - 1) // BOX_PAGE_SIZE
     page = min(max(page, 1), pages)
     start = (page - 1) * BOX_PAGE_SIZE
@@ -113,7 +113,7 @@ def box_screen(view: View, text: str, accessory: Callable[[dict], dict | None] |
                                  next_page, view)
     if next_page:
         lines.append(next_page)
-    return _screen(lines, view)
+    return text_screen(lines, view)
 
 
 def _box_with_buttons(title: str, rows: list[tuple[str, dict | None]], next_page: str | None, view: View) -> Screen:
@@ -140,14 +140,14 @@ def _bag(view: View) -> Screen:
         lines += [f"• {line['name']} ×{line['count']}" for line in items] or ["가방이 비어 있어요."]
     lines.append("*대기 중인 슬랙 작업*")
     lines += [f"{index}. {describe(op.kind, op.payload)}" for index, op in enumerate(view.pending, 1)] or ["없어요."]
-    return _screen(lines, view)
+    return text_screen(lines, view)
 
 
 def _plain(text: str) -> Screen:
     return Screen(text, [{"type": "section", "text": {"type": "mrkdwn", "text": text}}])
 
 
-def _screen(lines: list[str], view: View) -> Screen:
+def text_screen(lines: list[str], view: View) -> Screen:
     """Lines in as many sections as they need, then when the snapshot was taken."""
     blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": chunk}} for chunk in _chunks(lines)]
     stamp = sync_line(view)

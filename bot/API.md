@@ -59,9 +59,9 @@ Replaces the caller's stored party.
 | `applied_op_id` | int | optional, top-level, with `remote_ops`. The highest op id this app has applied or cancelled; `0` or missing for none |
 | `wallet` | int | optional, top-level, with `remote_ops`. The tokens the player can spend now |
 | `bag` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "count"}]`: the bag. `key` is the app's inventory key (`rareCandy`, `mega-stone:charizardite-x`, `tm:85`); held items are not in it. Up to 2,000 lines. A line a Pokémon can hold adds `"equip": true` and, when it acts in battle, `"held_item": "<slug>"` |
-| `remote_ops_kinds` | array | optional, top-level, with `remote_ops`. The op kinds this app applies (`["lineup"]`). Slack refuses to queue a kind the last upload did not list |
+| `remote_ops_kinds` | array | optional, top-level, with `remote_ops`. The op kinds this app applies (`["buy", "lineup"]`). Slack refuses to queue a kind the last upload did not list |
 | `ops_epoch` | string | optional, top-level, with `remote_ops`. The `epoch` of the `GET /v1/ops` reply `applied_op_id` counts against. Another epoch means a different bot database, so the bot reads `applied_op_id` as `0` |
-| `shop` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "price", "category", "single"}]`: what the shop sells now, at the app's prices. `single: true` is bought once |
+| `shop` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "price", "category", "category_name", "single"}]`: what the shop sells now, at the app's prices. `category_name` is the Korean tab name (max 20). `single: true` is bought one at a time (once, or the next copy costs more). A line a Pokémon can hold adds `"equip": true` and `"held_item"` as on the bag line |
 
 Malformed `remote_ops` fields and lines are dropped, never a `400`. Each upload replaces them, so a later upload
 from an older app turns remote ops off again.
@@ -382,6 +382,25 @@ The app applies all of it or nothing, and cancels with one of: `gone` (an indivi
 not owned), `not_learnable` (another move it can no longer learn), `species_clause`, `item_clause`, `invalid` (a
 payload it cannot read). The bot's
 replay checks the same rules against its copy and leaves a breaking op out.
+
+### The `buy` op
+
+`/상점` queues one op per purchase:
+
+```json
+{"key": "rareCandy", "name": "이상한사탕", "count": 5, "price": 100}
+```
+
+`key` is a `shop` line's key, `count` 1 to 99 (1 for a `single` line), `price` the unit price the player saw. The
+bot's view adds `count` to the bag line (a new line copies `equip` and `held_item` from the shop line), takes
+`price × count` off `wallet` and drops a `single` line from `shop`, so `/가방`, `/상점` and the `/파티` item menu see
+it at once and a later `lineup` op can equip it. Slack refuses a buy past the replayed `wallet` (the last upload's
+less the pending buys); there is no credit.
+
+The app buys through its own shop on its current state, all or nothing, and cancels with one of: `not_sold` (the
+shop no longer sells it, or it is owned now), `price_changed` (any change from `price`), `no_tokens`, `invalid`. Ops
+apply in id order, so a buy followed by a `lineup` op that equips the item applies both; when the buy cancels, that
+lineup cancels with `no_item` unless the bag has another copy.
 
 ## Gyms (PvE)
 

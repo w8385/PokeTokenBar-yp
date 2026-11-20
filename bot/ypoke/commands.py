@@ -31,6 +31,7 @@ from ypoke.remote_views import (
     TRAINING_COMMAND,
     RemoteViews,
 )
+from ypoke.shop_editor import ShopEditor
 from ypoke.store import PendingChallenge, Record, Store
 from ypoke.upload_server import MAX_PARTY_SIZE
 
@@ -101,7 +102,9 @@ HELP_TEXT = (
     f"바꾼 라인업은 `{BATTLE_COMMAND}`에 바로 쓰이고 앱은 다음에 회사에서 동기화할 때 받아요.\n"
     f"`{BOX_COMMAND} [이름] [쪽]` 박스 포켓몬을 쪽마다 보여 줘요. 이름으로 찾으면 `엔트리에 넣기` 버튼이 붙어요.\n"
     f"`{BAG_COMMAND}` 쓸 수 있는 토큰·가방 도구·대기 중인 슬랙 작업을 보여 줘요.\n"
-    f"`{SHOP_COMMAND}`·`{TRAINING_COMMAND}`·`{TRADE_COMMAND}`·`{MIRACLE_COMMAND}` 곧 열려요.\n"
+    f"`{SHOP_COMMAND} [이름]` 앱 상점의 물건을 앱 값으로 사요. 쓸 수 있는 토큰은 마지막 동기화 잔액에서 대기 중인 구매를 뺀 만큼이에요. "
+    f"산 물건은 `{BAG_COMMAND}`와 `{PARTY_COMMAND}` 도구에 바로 들어오고, 앱은 다음에 회사에서 동기화할 때 사요.\n"
+    f"`{TRAINING_COMMAND}`·`{TRADE_COMMAND}`·`{MIRACLE_COMMAND}` 곧 열려요.\n"
     f"`{UMBRELLA_COMMAND}` 이 도움말이에요. `{UMBRELLA_COMMAND} 도감`·`{UMBRELLA_COMMAND} 파티`처럼 뒤에 명령을 붙여도 돼요.\n"
     "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`·`@YPoke 파티`도 돼요.\n"
     "*앱 대결 탭*\n"
@@ -191,6 +194,7 @@ class CommandHandler:
         self._remote = remote or RemoteOps(store, now)
         self._views = RemoteViews(store, self._remote, self._species_name)
         self.editor = LineupEditor(self._remote, self._views, pokeapi.attacking_moves, self._species_name)
+        self.shop = ShopEditor(self._remote, self._views)
         self._pokeapi = pokeapi
         self._public_url = public_url
         self._now = now
@@ -274,8 +278,8 @@ class CommandHandler:
         if command == RANKING_COMMAND:
             return self._ranking()
         if command in REMOTE_COMMANDS:
-            edits = command in (PARTY_COMMAND, BOX_COMMAND)
-            screen = (self.editor if edits else self._views).handle(user_id, command, text)
+            screens = {PARTY_COMMAND: self.editor, BOX_COMMAND: self.editor, SHOP_COMMAND: self.shop}
+            screen = screens.get(command, self._views).handle(user_id, command, text)
             return Reply(screen.text, blocks=tuple(screen.blocks))
         if command == BATTLE_COMMAND and mention:
             if mention.group(1) == user_id:
