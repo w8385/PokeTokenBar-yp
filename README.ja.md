@@ -145,7 +145,7 @@ PokeTokenBar は、あなたがすでに使っている AI コーディングト
 <td width="45%" align="center"><img src="assets/screenshot-held-items-ja.png" width="300" alt="こうげき強化・タイプ強化の見出しの下に並ぶショップとバッグのもちもの"></td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-shop-search-ja.png" width="300" alt="orb で検索したショップ — いのちのたま・かえんだま・どくどくだまがいつもの見出しの下に並ぶ"></td>
+<td width="45%" align="center"><img src="assets/screenshot-shop-search-ja.png" width="300" alt="orb で検索したショップ — いのちのたま・ビビリだまがいつもの見出しの下に並ぶ"></td>
 <td width="55%" valign="middle">
 <h3>🔎 ショップ全体を検索</h3>
 チップの上の検索欄ひとつで、すべての道具・メガストーン・タマゴ・スカウト券・わざマシンを探せます。名前はアプリの8言語のどれでも一致するので「orb」でもいのちのたまが見つかり、効果の説明はいまの言語で探します。結果はどのチップを選んでいてもショップの見出しと順番のまま並び、検索欄を空にすると元の画面に戻ります。
