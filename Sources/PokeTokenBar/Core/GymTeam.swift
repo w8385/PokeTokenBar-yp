@@ -13,7 +13,7 @@ enum GymTeam {
     /// The same members a Slack battle gets: see `BattleEntry.party`.
     static func team(state: CompanionState, slots: [BattleEntrySlot], moveChoices: [String: MoveChoice],
                      rentalSpeciesID: Int) -> Team {
-        let ids = BattleEntry.lineup(state: state, slots: slots).map(\.id)
+        let ids = BattleEntry.fighters(state: state, slots: slots).map(\.id)
         let members = BattleEntry.party(state: state, slots: slots, moveChoices: moveChoices, rentalSpeciesID: rentalSpeciesID)
         return Team(ids: ids.isEmpty ? [rentalID(rentalSpeciesID)] : ids, members: members)
     }

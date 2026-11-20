@@ -156,7 +156,8 @@ final class TeraItemsTests: XCTestCase {
         }
         let twins = try store(held: ["ogerpon": ItemKind.tealMask.rawValue, "ogerpon2": ItemKind.tealMask.rawValue])
         let both = ["ogerpon", "ogerpon2"].map { BattleEntrySlot(instanceID: $0) }
-        XCTAssertEqual(BattleEntry.duplicateItemHolders(state: twins.state, slots: both), ["ogerpon2"])
+        XCTAssertEqual(BattleEntry.duplicateSpecies(state: twins.state, slots: both), ["ogerpon2"])
+        XCTAssertEqual(BattleEntry.duplicateItemHolders(state: twins.state, slots: both), [])
     }
 
     func testAMaskOnTheWrongSpeciesIsNotAClashButTwoRealHoldersAre() throws {

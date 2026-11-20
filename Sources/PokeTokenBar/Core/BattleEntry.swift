@@ -21,6 +21,8 @@ struct BattleCandidate: Sendable, Identifiable {
     let member: PartyMember
     let dexEntry: DexEntry?
     var isRaised = false
+    /// National species; `member.pokemonID` is the form's variety id (Rotom-Wash is 10009).
+    let speciesID: Int
 }
 
 /// What the Battle tab's picker is choosing for.
@@ -50,7 +52,7 @@ enum BattleEntry {
                 member: PartyBuilder.member(speciesID: active.currentID, form: active.form,
                                             shiny: active.displaysShiny, profile: active.profile,
                                             nature: active.nature, heldItem: state.heldItemSlug(of: id)),
-                dexEntry: nil, isRaised: true))
+                dexEntry: nil, isRaised: true, speciesID: active.currentID))
         }
         for entry in state.dex where entry.releasedAt == nil {
             owned.append(BattleCandidate(
@@ -58,7 +60,7 @@ enum BattleEntry {
                 member: PartyBuilder.member(speciesID: entry.finalID, form: entry.form,
                                             shiny: entry.isShiny, profile: entry.profile,
                                             nature: entry.nature, heldItem: state.heldItemSlug(of: entry.id)),
-                dexEntry: entry, isRaised: entry.id == state.raisedEntryID))
+                dexEntry: entry, isRaised: entry.id == state.raisedEntryID, speciesID: entry.finalID))
         }
         return owned.filter { PartyBuilder.isAcceptedPokemonID($0.member.pokemonID) }
     }
@@ -81,11 +83,41 @@ enum BattleEntry {
         return picked.isEmpty ? autoFighter(state: state).map { [$0] } ?? [] : Array(picked)
     }
 
-    /// Lineup members holding an item an earlier member already holds (a save from before the item clause).
+    /// The lineup members that battle: the first of each species in slot order.
+    static func fighters(state: CompanionState, slots: [BattleEntrySlot]) -> [BattleCandidate] {
+        var seen = Set<Int>()
+        return lineup(state: state, slots: slots).filter { seen.insert($0.speciesID).inserted }
+    }
+
+    /// Lineup members that sit out because an earlier member is the same species (a save from before the rule).
+    static func duplicateSpecies(state: CompanionState, slots: [BattleEntrySlot]) -> Set<String> {
+        let fighting = Set(fighters(state: state, slots: slots).map(\.id))
+        return Set(lineup(state: state, slots: slots).map(\.id).filter { !fighting.contains($0) })
+    }
+
+    /// Whether `id` joining `ids` (taking over `replacing`'s place) would put a species in the lineup twice.
+    /// A member already in `ids` only moves or leaves, so it never clashes.
+    static func speciesClash(_ id: String, replacing: String?, among ids: [String], state: CompanionState) -> Bool {
+        guard !ids.contains(id) else { return false }
+        let species = Dictionary(candidates(in: state).map { ($0.id, $0.speciesID) }, uniquingKeysWith: { first, _ in first })
+        guard let own = species[id] else { return false }
+        return ids.contains { $0 != replacing && species[$0] == own }
+    }
+
+    /// Candidates the picker must not offer: their species is already in the lineup in another slot.
+    static func speciesBlockedCandidates(state: CompanionState, slots: [BattleEntrySlot], replacing: String?) -> Set<String> {
+        let all = candidates(in: state)
+        let ids = lineup(state: state, slots: slots).map(\.id)
+        let species = Dictionary(all.map { ($0.id, $0.speciesID) }, uniquingKeysWith: { first, _ in first })
+        let taken = Set(ids.filter { $0 != replacing }.compactMap { species[$0] })
+        return Set(all.filter { !ids.contains($0.id) && taken.contains($0.speciesID) }.map(\.id))
+    }
+
+    /// Fighters holding an item an earlier fighter already holds (a save from before the item clause).
     static func duplicateItemHolders(state: CompanionState, slots: [BattleEntrySlot]) -> Set<String> {
         var seen = Set<String>()
         var duplicates = Set<String>()
-        for candidate in lineup(state: state, slots: slots) {
+        for candidate in fighters(state: state, slots: slots) {
             guard let key = countedItem(of: candidate.id, species: candidate.member.pokemonID, state: state) else { continue }
             if !seen.insert(key).inserted { duplicates.insert(candidate.id) }
         }
@@ -124,11 +156,11 @@ enum BattleEntry {
         return Set(candidates(in: state).map(\.id).filter { itemClash($0, replacing: replacing, among: ids, state: state) })
     }
 
-    /// The party uploaded for Slack battles: the whole lineup with each member's chosen moves, or the rental starter
+    /// The party uploaded for Slack battles: the fighters with each member's chosen moves, or the rental starter
     /// when nothing is owned yet. A later member holding the same item as an earlier one goes without it.
     static func party(state: CompanionState, slots: [BattleEntrySlot], moveChoices: [String: MoveChoice],
                       rentalSpeciesID: Int) -> [PartyMember] {
-        let lineup = lineup(state: state, slots: slots)
+        let lineup = fighters(state: state, slots: slots)
         let duplicates = duplicateItemHolders(state: state, slots: slots)
         guard !lineup.isEmpty else {
             return [PartyMember(pokemonID: rentalSpeciesID, level: rentalLevel, shiny: false, ivs: nil, rental: true)]
@@ -315,8 +347,11 @@ final class BattleEntryStore {
             : slots
         var next = current
         let replaced = index < current.count ? current[index].instanceID : nil
-        if BattleEntry.itemClash(candidate.id, replacing: replaced, among: current.map(\.instanceID),
-                                 state: store.state) { return false }
+        let ids = current.map(\.instanceID)
+        if BattleEntry.itemClash(candidate.id, replacing: replaced, among: ids, state: store.state)
+            || BattleEntry.speciesClash(candidate.id, replacing: replaced, among: ids, state: store.state) {
+            return false
+        }
         if let from = current.firstIndex(where: { $0.instanceID == candidate.id }) {
             let to = min(index, current.count - 1)
             if from == to, index == to {

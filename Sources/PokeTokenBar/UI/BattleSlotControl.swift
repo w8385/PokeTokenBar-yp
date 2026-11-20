@@ -21,9 +21,13 @@ struct BattleSlotControl: View {
                 let holder = index < lineup.count ? lineup[index] : nil
                 let isMine = mine == index
                 let last = isMine && lineup.count == 1
-                let clash = !isMine && candidate.map {
+                let sameSpecies = !isMine && candidate.map {
+                    BattleEntry.speciesClash($0.id, replacing: holder?.id, among: lineup.map(\.id), state: store.state)
+                } == true
+                let itemClash = !isMine && candidate.map {
                     BattleEntry.itemClash($0.id, replacing: holder?.id, among: lineup.map(\.id), state: store.state)
                 } == true
+                let clash = sameSpecies || itemClash
                 Button {
                     if battleEntry.place(entry, at: index, in: store) { onChange() }
                 } label: {
@@ -32,7 +36,8 @@ struct BattleSlotControl: View {
                 .buttonStyle(.plain)
                 .disabled(locked || last || clash)
                 .opacity(clash ? 0.4 : 1)
-                .help(locked ? l.battleSlotLocked : clash ? l.battleItemClause : last ? l.battleSlotLast
+                .help(locked ? l.battleSlotLocked : sameSpecies ? l.battleSpeciesClause
+                      : itemClash ? l.battleItemClause : last ? l.battleSlotLast
                       : isMine ? l.battleSlotRemove(index + 1) : l.battleSlotPlace(index + 1))
                 .accessibilityLabel(isMine ? l.battleSlotRemove(index + 1) : l.battleSlotPlace(index + 1))
             }
