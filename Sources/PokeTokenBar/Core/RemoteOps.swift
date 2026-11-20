@@ -47,7 +47,8 @@ enum RemoteOpAppliers {
         [RemoteLineup.kind: { [weak battleEntry] store, payload in
             guard let battleEntry else { return RemoteOpReason.unsupported }
             return RemoteLineup.apply(payload, store: store, battleEntry: battleEntry)
-        }]
+        },
+         RemoteBuy.kind: { store, payload in RemoteBuy.apply(payload, store: store) }]
     }
 }
 
@@ -61,13 +62,17 @@ struct RemoteBagLine: Encodable, Equatable, Sendable {
     var heldItem: String? = nil
 }
 
-/// One thing the shop sells now. `single` is bought once.
+/// One thing the shop sells now. `single` is bought one at a time; `equip` and `heldItem` are as on the bag line the
+/// bought copy becomes.
 struct RemoteShopLine: Encodable, Equatable, Sendable {
     let key: String
     let name: String
     let price: Int
     let category: String
+    let categoryName: String
     let single: Bool
+    var equip: Bool? = nil
+    var heldItem: String? = nil
 }
 
 /// What the bot needs to answer Slack commands while the app is away.

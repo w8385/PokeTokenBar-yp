@@ -46,21 +46,43 @@ extension CompanionStore {
         var lines: [RemoteShopLine] = listed.compactMap { kind in
             guard seen.insert(kind).inserted, let price = price(of: kind), !isSoldOut(kind) else { return nil }
             return RemoteShopLine(key: kind.rawValue, name: ko.itemName(kind), price: price,
-                                  category: kind.category.rawValue, single: kind.isBoughtOnce || kind.isSingleCopy)
+                                  category: kind.category.rawValue, categoryName: ko.categoryName(kind.category),
+                                  single: kind.isBoughtOneAtATime, equip: kind.isEquippable ? true : nil,
+                                  heldItem: kind.heldItemSlug)
         }
         lines += MegaStone.all.filter { megaStoneOwnedTotal($0) == 0 }.map {
             RemoteShopLine(key: $0.inventoryKey, name: ko.megaStoneName($0), price: price(of: .megaStone($0)),
-                           category: ItemCategory.megaStone.rawValue, single: true)
+                           category: ItemCategory.megaStone.rawValue, categoryName: ko.categoryName(.megaStone),
+                           single: true, equip: true, heldItem: $0.slug)
         }
         lines += machineShopMoves().filter { !ownsTM($0.id) }.map {
             RemoteShopLine(key: MachineMove.inventoryKey($0.id), name: "\(ko.moveGroupMachine) \($0.name(.ko))",
                            price: tmPrice(power: $0.power, isWeather: $0.isWeather),
-                           category: ItemCategory.machine.rawValue, single: true)
+                           category: ItemCategory.machine.rawValue, categoryName: ko.categoryName(.machine), single: true)
         }
         lines += ScoutPool.all.map {
             RemoteShopLine(key: $0.inventoryKey, name: ko.scoutTicketName($0), price: scoutPrice,
-                           category: ItemCategory.scout.rawValue, single: false)
+                           category: ItemCategory.scout.rawValue, categoryName: ko.categoryName(.scout), single: false)
         }
         return lines
+    }
+
+    /// Buys `count` of what the shop sells under an inventory key through the shop's own purchase, without the undo
+    /// a purchase on the shop screen offers. False when nothing was bought.
+    func buyFromShop(_ key: String, count: Int) -> Bool {
+        let bought: Bool
+        if let kind = ItemKind(rawValue: key) {
+            bought = buy(kind, count: count)
+        } else if let stone = MegaStone.stone(inventoryKey: key) {
+            bought = count == 1 && buy(stone)
+        } else if let move = machineShopMoves().first(where: { MachineMove.inventoryKey($0.id) == key }) {
+            bought = count == 1 && buyTM(moveID: move.id, power: move.power, isWeather: move.isWeather)
+        } else if let pool = ScoutPool.all.first(where: { $0.inventoryKey == key }), availableTokens >= scoutPrice * count {
+            bought = (0..<count).allSatisfy { _ in buyScoutTicket(pool) }
+        } else {
+            bought = false
+        }
+        if bought, let receipt = purchaseReceipts[key] { dismissReceipt(receipt) }
+        return bought
     }
 }

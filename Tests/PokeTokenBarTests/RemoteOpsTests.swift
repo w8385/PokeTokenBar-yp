@@ -109,14 +109,14 @@ final class RemoteOpsTests: XCTestCase {
         let suite = "remote-ops-\(UUID().uuidString)"
         suites.append(suite)
         let sync = RemoteOpsSync(store: store, battleEntry: BattleEntryStore(defaults: try XCTUnwrap(UserDefaults(suiteName: suite))))
-        XCTAssertEqual(sync.kinds, [RemoteLineup.kind])
+        XCTAssertEqual(sync.kinds, [RemoteBuy.kind, RemoteLineup.kind])
 
         sync.apply([RemoteOp(id: 1, kind: "test_count", payload: Data())])
         XCTAssertEqual(store.state.remoteOpResults, [RemoteOpResult(id: 1, reason: RemoteOpReason.unsupported)])
 
         let bot = RemoteOpsBot()
         try await uploader(bot, sync: sync).tick()
-        XCTAssertEqual(bot.uploads.first?["remote_ops_kinds"] as? [String], [RemoteLineup.kind])
+        XCTAssertEqual(bot.uploads.first?["remote_ops_kinds"] as? [String], [RemoteBuy.kind, RemoteLineup.kind])
     }
 
     // MARK: Epoch
@@ -271,7 +271,12 @@ final class RemoteOpsTests: XCTestCase {
         XCTAssertEqual(bag.first?["count"] as? Int, 3)
         XCTAssertEqual(bag.last?["name"] as? String, "기술머신 10만볼트")
         let shop = try XCTUnwrap(json["shop"] as? [[String: Any]])
-        XCTAssertEqual(Set(shop.first.map { Array($0.keys) } ?? []), ["key", "name", "price", "category", "single"])
+        let candy = shop.first { $0["key"] as? String == ItemKind.rareCandy.rawValue }
+        XCTAssertEqual(Set(candy.map { Array($0.keys) } ?? []), ["key", "name", "price", "category", "category_name", "single"])
+        let leftovers = try XCTUnwrap(shop.first { $0["key"] as? String == ItemKind.leftovers.rawValue })
+        XCTAssertEqual(leftovers["equip"] as? Bool, true)
+        XCTAssertEqual(leftovers["held_item"] as? String, "leftovers")
+        XCTAssertEqual(leftovers["category_name"] as? String, "지닌 도구")
         XCTAssertFalse(shop.contains { $0["key"] as? String == MegaStone.all[0].inventoryKey })
         XCTAssertFalse(shop.contains { $0["key"] as? String == MachineMove.inventoryKey(85) })
         XCTAssertTrue(shop.contains { $0["key"] as? String == MachineMove.inventoryKey(87) })
