@@ -254,6 +254,8 @@ The move picker now lists a Pokémon's attacking <b>egg moves</b> after its TMs.
 <h3>⚔️ Gyms, the Elite Four, and a badge case</h3>
 With the <a href="bot/README.md">YPoke</a> link set up, the <b>Battle</b> tab has three sub-tabs. <b>Entry</b> holds up to six Pokémon that fight in order, <b>Battle</b> holds the gyms, and <b>History</b> lists your recent battles. When one faints the next comes in; nothing switches mid-battle. A lineup takes one Pokémon per species (forms and Megas count as their species), and no two of them hold the same item; the bot applies both rules to every battle. <b>Auto</b> sends the Pokémon you're raising. Each row shows the stats it fights with at its battle level, with ↑ and ↓ on the stats its nature raises and lowers, and follows the Pokémon's form.
 <br><br>
+A battle with a coworker in Slack (<code>/대결</code>) posts its result card in the channel and the turn log in the card's thread. Each time the matchup changes, the log shows a large picture of both Pokémon, the challenger's on the left.
+<br><br>
 Under <b>Gyms</b>, each region has eight leaders with their own type and team, in a two-column grid. Your entry fights at Lv50 or below, and nothing is posted to Slack. A win earns the badge and can grant a TM. Below the gyms, the <b>hideout</b> is a run of battles in a row: your team is fully healed before each one, and a loss starts the run again. Eight badges open the <b>Elite Four</b> run below it. The <b>badge case</b> shows each region's badges.
 </td>
 </tr>
