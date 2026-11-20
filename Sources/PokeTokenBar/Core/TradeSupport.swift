@@ -12,6 +12,9 @@ struct TradePoolEntry: Codable, Sendable {
     let shiny: Bool
     let name: String
     let entry: DexEntry
+    /// The party member it would battle as, so Slack can put it in the lineup. `TradePool.encode` sends it in
+    /// the party's snake-case keys; deliveries never carry it.
+    var member: PartyMember? = nil
 
     enum CodingKeys: String, CodingKey {
         case id, level, shiny, name, entry
@@ -158,22 +161,48 @@ enum TradePool {
             .prefix(maxEntries))
     }
 
-    static func build(state: CompanionState, fightingIDs: Set<String>, name: (DexEntry) -> String) -> [TradePoolEntry] {
-        listed(state: state, fightingIDs: fightingIDs).compactMap { wire(for: $0, state: state, name: name) }
+    static func build(state: CompanionState, fightingIDs: Set<String>, moveChoices: [String: MoveChoice] = [:],
+                      name: (DexEntry) -> String) -> [TradePoolEntry] {
+        let ownedMachines = MachineMove.ownedIDs(in: state.inventory)
+        return listed(state: state, fightingIDs: fightingIDs).compactMap { entry in
+            wire(for: entry, state: state, name: name, choice: moveChoices[entry.id], ownedMachines: ownedMachines)
+        }
     }
 
     static func listingRefusal(for entry: DexEntry, state: CompanionState, fightingIDs: Set<String>) -> TradeRefusal? {
         listed(state: state, fightingIDs: fightingIDs).contains { $0.id == entry.id } ? nil : .poolFull
     }
 
-    static func encode(_ pool: [TradePoolEntry]) throws -> Data { try encoder.encode(pool) }
+    static func encode(_ pool: [TradePoolEntry]) throws -> Data {
+        guard pool.contains(where: { $0.member != nil }) else { return try encoder.encode(pool) }
+        let objects = try pool.map { item -> Any in
+            var object = try JSONSerialization.jsonObject(with: encoder.encode(item)) as? [String: Any] ?? [:]
+            if let member = item.member {
+                object["member"] = try JSONSerialization.jsonObject(with: memberEncoder.encode(member))
+            }
+            return object
+        }
+        return try JSONSerialization.data(withJSONObject: objects, options: .sortedKeys)
+    }
 
-    private static func wire(for entry: DexEntry, state: CompanionState, name: (DexEntry) -> String) -> TradePoolEntry? {
+    /// An entry too big with its battle member goes without it rather than leave the pool.
+    private static func wire(for entry: DexEntry, state: CompanionState, name: (DexEntry) -> String,
+                             choice: MoveChoice?, ownedMachines: Set<Int>) -> TradePoolEntry? {
         let held = state.heldItems[entry.id].flatMap(ItemKind.init(rawValue:))?.tradeItemKey
-        guard let item = poolEntry(for: entry, name: name(entry), heldItem: held),
+        guard var item = poolEntry(for: entry, name: name(entry), heldItem: held),
               let size = try? encoder.encode(item).count, size <= maxEntryBytes else { return nil }
+        let base = PartyBuilder.member(speciesID: entry.finalID, form: entry.form, shiny: entry.isShiny,
+                                       profile: entry.profile, nature: entry.nature,
+                                       heldItem: state.heldItemSlug(of: entry.id))
+        let member = BattleEntry.uploaded(base, id: entry.id, state: state, choice: choice, ownedMachines: ownedMachines)
+        if let extra = try? memberEncoder.encode(member).count, size + extra + memberSlack <= maxEntryBytes {
+            item.member = member
+        }
         return item
     }
+
+    /// Room for the `"member":` key and `encode`'s re-serialization of the entry.
+    private static let memberSlack = 64
 
     /// The entry as it travels: without what the receiver replaces on arrival (`receivedEntry`). `instanceID` stays
     /// as an empty string because older apps cannot decode a profile without it.
@@ -201,6 +230,13 @@ enum TradePool {
 
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        return encoder
+    }()
+
+    private static let memberEncoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.outputFormatting = .sortedKeys
         return encoder
     }()

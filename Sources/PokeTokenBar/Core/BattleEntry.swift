@@ -167,14 +167,36 @@ enum BattleEntry {
         }
         let ownedMachines = MachineMove.ownedIDs(in: state.inventory)
         return lineup.map { candidate in
-            var member = candidate.member
-            if duplicates.contains(candidate.id) { member.heldItem = nil }
-            if let choice = moveChoices[candidate.id], choice.pokemonID == member.pokemonID {
-                let usable = choice.moves.filter { !choice.machine.contains($0) || ownedMachines.contains($0) }
-                if !usable.isEmpty { member.moves = usable }
+            var member = uploaded(candidate.member, id: candidate.id, state: state,
+                                  choice: moveChoices[candidate.id], ownedMachines: ownedMachines)
+            if duplicates.contains(candidate.id) {
+                member.heldItem = nil
+                member.itemKey = nil
+                member.itemName = nil
             }
             return member
         }
+    }
+
+    /// `member` as the bot gets it: with its id, the inventory key and name of its item, and its chosen moves
+    /// (TM moves only while the TM is owned).
+    static func uploaded(_ member: PartyMember, id: String, state: CompanionState, choice: MoveChoice?,
+                         ownedMachines: Set<Int>) -> PartyMember {
+        var member = member
+        member.id = id
+        if let key = state.heldItems[id], let name = RemoteLineup.itemName(key) {
+            member.itemKey = key
+            member.itemName = name
+        }
+        if let choice, choice.pokemonID == member.pokemonID {
+            let usable = choice.moves.filter { !choice.machine.contains($0) || ownedMachines.contains($0) }
+            if !usable.isEmpty {
+                member.moves = usable
+                let machine = usable.filter(choice.machine.contains)
+                if !machine.isEmpty { member.machine = machine }
+            }
+        }
+        return member
     }
 }
 
@@ -331,6 +353,18 @@ final class BattleEntryStore {
 
     func resetMoves(for instanceID: String) {
         moveChoices[instanceID] = nil
+    }
+
+    /// Takes a lineup set in Slack as the picks, with each member's moves; no moves means the level's defaults.
+    func adopt(_ members: [RemoteLineup.Member]) {
+        slots = members.map { BattleEntrySlot(instanceID: $0.id) }
+        var choices = moveChoices
+        for member in members {
+            choices[member.id] = member.moves.isEmpty
+                ? nil
+                : MoveChoice(pokemonID: member.pokemonID, moves: member.moves, machine: member.machine)
+        }
+        moveChoices = choices
     }
 
     /// Puts `entry` in battle slot `index` (0-based) of the lineup the Battle tab shows. Tapping its own slot

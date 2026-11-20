@@ -575,7 +575,7 @@ final class SaveTransferTests: XCTestCase {
                                      // 안내 문구 타이밍뿐이라 따라가도 해가 없다.
                                      "growthMode", "timeCredit", "tokenModeSince", "lastUsageAt", "idleHintDismissed",
                                      // 슬랙 원격 작업 기록 = 진행 — 그 작업이 바꾼 inventory·dex 와 함께 가야 옮긴 기기에서 다시 적용되지 않는다.
-                                     "remoteOpsLastID", "remoteOpResults"]
+                                     "remoteOpsLastID", "remoteOpResults", "remoteOpsEpoch"]
         let deviceLedger: Set<String> = ["installBaselineSet", "claimedTodayTokensByProvider", "lastDate"]
         let accountLedger: Set<String> = ["candyGrantTier", "candyWindowEpoch", "candyFeatureSeeded"]
         let devicePreference: Set<String> = ["language"]

@@ -9,6 +9,7 @@ private final class RemoteOpsBot: @unchecked Sendable {
     private var _acks: [[String: Any]] = []
     var opsStatus = 200
     var ops = #"[]"#
+    var epoch: String?
     var ackStatus = 200
 
     var calls: [String] { lock.withLock { _calls } }
@@ -22,7 +23,9 @@ private final class RemoteOpsBot: @unchecked Sendable {
         return lock.withLock {
             _calls.append("\(method) \(path)")
             switch (method, path) {
-            case ("GET", "/v1/ops"): return (Data(#"{"ok":true,"ops":\#(ops)}"#.utf8), opsStatus)
+            case ("GET", "/v1/ops"):
+                let epochField = epoch.map { #","epoch":"\#($0)""# } ?? ""
+                return (Data(#"{"ok":true,"ops":\#(ops)\#(epochField)}"#.utf8), opsStatus)
             case ("POST", "/v1/ops/ack"):
                 _acks.append(body ?? [:])
                 return (Data(#"{"ok":true}"#.utf8), ackStatus)
@@ -101,10 +104,55 @@ final class RemoteOpsTests: XCTestCase {
         XCTAssertEqual(store.state.remoteOpsLastID, 2)
     }
 
-    func testTheShippedRegistryCancelsEveryKindAsUnsupported() throws {
+    func testTheShippedRegistryAppliesLineupAndSendsOnlyTheKindsItKnows() async throws {
         let store = try makeStore(at: saveURL())
-        store.applyRemoteOps([RemoteOp(id: 1, kind: "test_count", payload: Data())])
+        let suite = "remote-ops-\(UUID().uuidString)"
+        suites.append(suite)
+        let sync = RemoteOpsSync(store: store, battleEntry: BattleEntryStore(defaults: try XCTUnwrap(UserDefaults(suiteName: suite))))
+        XCTAssertEqual(sync.kinds, [RemoteLineup.kind])
+
+        sync.apply([RemoteOp(id: 1, kind: "test_count", payload: Data())])
         XCTAssertEqual(store.state.remoteOpResults, [RemoteOpResult(id: 1, reason: RemoteOpReason.unsupported)])
+
+        let bot = RemoteOpsBot()
+        try await uploader(bot, sync: sync).tick()
+        XCTAssertEqual(bot.uploads.first?["remote_ops_kinds"] as? [String], [RemoteLineup.kind])
+    }
+
+    // MARK: Epoch
+
+    func testANewBotDatabaseStartsTheOpIdsOverAndDropsTheOldResults() async throws {
+        let store = try makeStore(at: saveURL())
+        let applied = Applied()
+        let bot = RemoteOpsBot()
+        bot.ops = "[\(op(4, "test_count"))]"
+        bot.epoch = "first"
+        bot.ackStatus = 500
+        let uploader = try uploader(bot, sync: sync(store, applied))
+
+        await uploader.tick()
+        XCTAssertEqual(store.state.remoteOpsEpoch, "first")
+        XCTAssertEqual(bot.uploads.last?["ops_epoch"] as? String, "first")
+        XCTAssertEqual(store.state.remoteOpsLastID, 4)
+
+        bot.epoch = "second"
+        bot.ops = "[\(op(1, "test_count"))]"
+        bot.ackStatus = 200
+        await uploader.tick(now: Date().addingTimeInterval(600))
+
+        XCTAssertEqual(applied.count, 2)
+        XCTAssertEqual(store.state.remoteOpsLastID, 1)
+        XCTAssertEqual(bot.uploads.last?["ops_epoch"] as? String, "second")
+        XCTAssertEqual(bot.uploads.last?["applied_op_id"] as? Int, 1)
+        XCTAssertEqual(bot.acks.last?["applied"] as? [Int], [1])
+    }
+
+    func testTheFirstEpochIsOnlyRecorded() throws {
+        let store = try makeStore(at: saveURL()) { $0.remoteOpsLastID = 9 }
+        store.adoptRemoteOpsEpoch("first")
+        store.adoptRemoteOpsEpoch("first")
+        XCTAssertEqual(store.state.remoteOpsLastID, 9)
+        XCTAssertEqual(store.state.remoteOpsEpoch, "first")
     }
 
     func testARefusedAckKeepsTheResultsForTheNextSync() async throws {
@@ -349,7 +397,10 @@ final class RemoteOpsTests: XCTestCase {
                              acknowledged: { [weak store] ids in store?.acknowledgeRemoteOps(ids) },
                              snapshot: { [weak store] in
                                  store?.remoteSnapshot ?? RemoteSnapshot(wallet: 0, bag: [], shop: [])
-                             })
+                             },
+                             kinds: appliers.keys.sorted(),
+                             adoptEpoch: { [weak store] epoch in store?.adoptRemoteOpsEpoch(epoch) },
+                             epoch: { [weak store] in store?.state.remoteOpsEpoch })
     }
 
     private func op(_ id: Int, _ kind: String) -> String {

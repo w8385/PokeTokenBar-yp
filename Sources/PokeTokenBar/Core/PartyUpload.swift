@@ -19,6 +19,13 @@ struct PartyMember: Encodable, Equatable, Sendable {
     var heldItem: String? = nil
     /// True when a Mirror Herb was used on it, so the bot accepts its attacking egg moves; nil is left out of the JSON.
     var mirrorHerb: Bool? = nil
+    /// The individual's instance id, so Slack can name it in a `lineup` op; nil for a rental.
+    var id: String? = nil
+    /// The inventory key and Korean name of the item it holds.
+    var itemKey: String? = nil
+    var itemName: String? = nil
+    /// The entries of `moves` that are TM moves.
+    var machine: [Int]? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
@@ -30,6 +37,8 @@ struct PartyPayload: Encodable, Equatable, Sendable {
     var appliedOpID: Int? = nil
     var bag: [RemoteBagLine]? = nil
     var shop: [RemoteShopLine]? = nil
+    var remoteOpsKinds: [String]? = nil
+    var opsEpoch: String? = nil
 
     init(appVersion: String?, party: [PartyMember], dex: DexSummary? = nil) {
         self.appVersion = appVersion
@@ -37,12 +46,15 @@ struct PartyPayload: Encodable, Equatable, Sendable {
         self.dex = dex
     }
 
-    init(appVersion: String?, party: [PartyMember], dex: DexSummary?, appliedOpID: Int, snapshot: RemoteSnapshot) {
+    init(appVersion: String?, party: [PartyMember], dex: DexSummary?, appliedOpID: Int, snapshot: RemoteSnapshot,
+         kinds: [String] = [], epoch: String? = nil) {
         self.init(appVersion: appVersion, party: party, dex: dex)
         remoteOps = 1
         self.appliedOpID = appliedOpID
         bag = snapshot.bag
         shop = snapshot.shop
+        remoteOpsKinds = kinds
+        opsEpoch = epoch
     }
 
     /// `tradePool` is added after the snake-case pass, which would rename the keys inside its entries. `wallet` is
@@ -308,7 +320,9 @@ final class PartyUploader {
               let (data, status) = try? await fetch(request)
         else { return }
         if status == 404 { opsUnsupported = true }
-        guard status == 200, let ops = RemoteOp.decodeList(data), !ops.isEmpty else { return }
+        guard status == 200 else { return }
+        if let epoch = RemoteOp.epoch(of: data) { remoteOps.adoptEpoch(epoch) }
+        guard let ops = RemoteOp.decodeList(data), !ops.isEmpty else { return }
         remoteOps.apply(ops)
     }
 
@@ -317,9 +331,9 @@ final class PartyUploader {
         guard !party.isEmpty else { return }
         let appliedOpID = remoteOps?.lastID()
         let snapshot = remoteOps?.snapshot()
-        let payload = if let appliedOpID, let snapshot {
+        let payload = if let remoteOps, let appliedOpID, let snapshot {
             PartyPayload(appVersion: appVersion, party: party, dex: dexSource(), appliedOpID: appliedOpID,
-                         snapshot: snapshot)
+                         snapshot: snapshot, kinds: remoteOps.kinds, epoch: remoteOps.epoch())
         } else {
             PartyPayload(appVersion: appVersion, party: party, dex: dexSource())
         }

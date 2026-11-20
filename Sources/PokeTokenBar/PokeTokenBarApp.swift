@@ -134,7 +134,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let trades = TradeSync(
             pool: { [weak companion, battleEntry] in
                 companion.map { store in
-                    store.tradePool(fightingIDs: TradePool.fightingIDs(state: store.state, slots: battleEntry.slots))
+                    store.tradePool(fightingIDs: TradePool.fightingIDs(state: store.state, slots: battleEntry.slots),
+                                    moveChoices: battleEntry.moveChoices)
                 } ?? []
             },
             apply: { [weak companion] deliveries in companion?.applyTrades(deliveries) ?? [] },
@@ -147,7 +148,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             } ?? []
         }, dexSource: { [weak companion] in
             companion.map { DexSummary($0) }
-        }, trades: trades, remoteOps: RemoteOpsSync(store: companion))
+        }, trades: trades, remoteOps: RemoteOpsSync(store: companion, battleEntry: battleEntry))
         partyUploader.onBattleInfo = { [weak companion] in companion?.syncBattles($0.recentBattles) }
         Task { await companion.resolveTradeEvolutions() }
         partyUploader.start()
