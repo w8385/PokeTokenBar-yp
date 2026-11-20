@@ -18,7 +18,7 @@ class DelayedHit(Handler):
 
     by_id = True
 
-    def score_share(self, move, weather):
+    def score_share(self, move, weather, user):
         return SHARE
 
     def fails(self, move, user, target):

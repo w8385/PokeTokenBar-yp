@@ -375,6 +375,11 @@ FOCUS_CASES = {
              ((143, None, None, [33]), (36, None, None, [33]), (36, None, None, [33]))),
     "soul-heart": (((801, "choice-specs", "soul-heart", [85, 53, 57, 94]),), ((129, None, None, [33]),
                                                                             (129, None, None, [33]))),
+    "adrenaline-orb": (((130, None, "intimidate", [33]),), ((143, "adrenaline-orb", None, [33]),)),
+    "blunder-policy": (((143, "blunder-policy", None, [192]),), ((143, None, None, [33]),)),
+    "power-herb": (((3, "power-herb", None, [76]),), ((143, None, None, [33]),)),
+    "throat-spray": (((143, "throat-spray", None, [304]),), ((143, None, None, [33]),)),
+    "mental-herb": (((143, "mental-herb", None, [33]),), ((143, None, "cursed-body", [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

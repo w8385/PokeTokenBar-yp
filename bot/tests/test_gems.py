@@ -3,13 +3,13 @@ from dataclasses import replace
 import pytest
 from test_ability_items import holding
 from test_battle import TACKLE
-from status_moves import resolve
+from status_moves import data_move, resolve
 
 from ypoke import battle, items
 from ypoke.battle import ItemEffect
 from ypoke.narration import battle_log
 
-GROWL = battle.Move("울음소리", "normal", 0, physical=False, accuracy=100, stat_changes=(("attack", -1),))
+GROWL = data_move(45)
 
 
 def struck(gem, move, foe_types=("normal",)):

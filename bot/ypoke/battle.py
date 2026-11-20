@@ -1359,6 +1359,8 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         if paid is not None:
             action = replace(action, changes=(*action.changes, paid), attacker_hp=fighters[side].hp_percent,
                              attacker_fainted=fighters[side].hp == 0)
+        if not (action.failed or action.missed or action.multiplier == 0):
+            _announce(fighters[side], hooks.item(fighters[side], "after_use", fighters[side], used))
         if _self_ko(fighters[side], index) and not damped:
             fighters[side].hp = 0
             return replace(action, attacker_hp=0, attacker_fainted=True)
@@ -1499,6 +1501,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     checks_accuracy = (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
                        and not _sure_hit(attacker, defender))
     if checks_accuracy and rng.random() * 100 >= accuracy:
+        _announce(attacker, hooks.item(attacker, "on_miss", attacker))
         crash = _crash(attacker, move)
         return Action(turn, side, *names, move.name, missed=True, multiplier=multiplier, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=crash,
@@ -1861,6 +1864,7 @@ def shift_stage(fighter: _Fighter, side: int, key: str, stages: int, *, guarded:
     foe = fighter.arena.foe_of(fighter) if fighter.arena is not None else None
     if change.stages > 0 and not copied and foe is not None and foe is not fighter and foe.hp > 0:
         _announce(foe, hooks.ability(foe, "on_foe_raised", foe, key, change.stages))
+        hooks.item(foe, "on_foe_raised", foe, key, change.stages)
     return change
 
 
@@ -2091,7 +2095,7 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
                 or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)
                 or attacker.arena is not None and _doused(move, attacker.arena.weather)):
             return 0.0
-        share = hooks.move(move, "score_share", _move_weather(attacker, weather), default=1.0)
+        share = hooks.move(move, "score_share", _move_weather(attacker, weather), attacker, default=1.0)
         return (_damage_score(attacker, defender, move, weather) * share
                 * _hp_kept(attacker, defender, move, weather))
 
@@ -2208,7 +2212,8 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
                                              or hooks.move(move, "hits_airborne", default=False))
     if not forced_down and hooks.ability(defender, "immune_to", move, defender, default=False):
         return 0.0
-    if not forced_down and move.type == "ground" and any(_field(defender, "lifts")):
+    if not forced_down and move.type == "ground" and (any(_field(defender, "lifts"))
+                                                      or hooks.item(defender, "floats", default=False)):
         return 0.0
     types = defender.combatant.types
     if forced_down or weather == STRONG_WINDS and effectiveness(move.type, ("flying",)) > 1:
@@ -2240,7 +2245,7 @@ def _grounded(fighter: _Fighter) -> bool:
     if any(_field(fighter, "grounds")):
         return True
     return ("flying" not in fighter.combatant.types and not hooks.ability(fighter, "airborne", default=False)
-            and not any(_field(fighter, "lifts")))
+            and not any(_field(fighter, "lifts")) and not hooks.item(fighter, "floats", default=False))
 
 
 def _banned(fighter: _Fighter, move: Move) -> str:
