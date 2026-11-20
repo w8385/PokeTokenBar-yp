@@ -34,6 +34,12 @@ class CudChew(Handler):
         return battle.AbilityAct(turn, side, fighter.combatant.name, name, effect="chew", detail=berry), event
 
 
+@register("abilities", "gluttony")
+class Gluttony(Handler):
+    def pinch_fraction(self, name):
+        return abilities.GLUTTONY_PINCH_FRACTION
+
+
 @register("abilities", "harvest")
 class Harvest(Handler):
     """At the end of each turn, a berry the holder ate grows back: half the time, always in sun."""

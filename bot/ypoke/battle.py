@@ -435,13 +435,15 @@ class ItemHeal:
 @dataclass(frozen=True)
 class ItemEffect:
     """An item that acted without moving HP: `effect` is "cure" (Lum Berry), "restore" (White Herb), "first"
-    (Quick Claw) or the status a Flame or Toxic Orb inflicted ("burn", "toxic")."""
+    (Quick Claw) or the status a Flame or Toxic Orb inflicted ("burn", "toxic"); `changes` are the stat stages it
+    moved (Liechi Berry)."""
 
     turn: int
     side: int
     pokemon: str
     item: str
     effect: str
+    changes: tuple[Change, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -515,7 +517,7 @@ def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[
     Both sides follow the same rules and the same move choice (`_choose`).
     """
     rng = random.Random(seed)
-    arena = _Arena()
+    arena = _Arena(rng=rng)
     teams = (_Team(_roster(sides[0]), carried, arena=arena, side=0),
              _Team(_roster(sides[1]), finale=finale, unlimited_megas=unlimited_megas, arena=arena, side=1))
     arena.teams = teams
@@ -924,6 +926,7 @@ class _Arena:
     last_move: Move | None = None
     last_move_turn: int = -1
     weather: _Weather = field(default_factory=_Weather)
+    rng: random.Random = field(default_factory=lambda: random.Random(0), repr=False, compare=False)
 
     def states(self, side: int) -> tuple[str, ...]:
         """The effect keys of the states that act on `side`: the terrain, Gravity, the rooms, then that side's timed
@@ -1073,6 +1076,7 @@ class _Fighter:
     choice: int | None = None
     entered_turn: int = 0
     berry: str | None = None
+    primed: str | None = None
     once: set[str] = field(default_factory=set)
     arena: _Arena | None = field(default=None, repr=False, compare=False)
     side: int = field(default=0, repr=False, compare=False)
@@ -1082,7 +1086,7 @@ class _Fighter:
         (`volatiles`, `memory`), a changed type, ability, stat or moveset and what this and the last turn did to it;
         the times it was hit stay."""
         self.stages = dict.fromkeys(STAGES, 0)
-        self.volatiles, self.memory, self.last_used = {}, {}, None
+        self.volatiles, self.memory, self.last_used, self.primed = {}, {}, None, None
         if self.entered_as is not None:
             self.combatant, self.entered_as = self.entered_as, None
         if self.entered_stats is not None:
@@ -1249,8 +1253,13 @@ def _quick_claws(turn: int, fighters: tuple[_Fighter, _Fighter], choices: tuple[
                  weather: str | None, rng: random.Random, events: list[Event],
                  trick_room: bool = False) -> tuple[bool, bool]:
     """Which Quick Claw holders may move first this turn (20% each; no draw without the item). Only a claw that
-    puts a holder that would move second ahead of a foe in the same priority bracket is logged."""
-    claws = tuple(hooks.item(fighter, "moves_first", rng, default=False) for fighter in fighters)
+    puts a holder that would move second ahead of a foe in the same priority bracket is logged, and so is a berry
+    used up for it (Custap Berry)."""
+    held = tuple(fighter.item for fighter in fighters)
+    claws = tuple(hooks.item(fighter, "moves_first", fighter, rng, default=False) for fighter in fighters)
+    for side, fighter in enumerate(fighters):
+        if claws[side] and fighter.item != held[side]:
+            events.append(ItemEffect(turn, side, fighter.combatant.name, held[side], "first"))
     drawn = tuple(not claw and hooks.ability(fighter, "moves_first", _chosen(fighter, choice), rng, default=False)
                   for fighter, choice, claw in zip(fighters, choices, claws))
     firsts = (claws[0] or drawn[0], claws[1] or drawn[1])
@@ -1258,7 +1267,7 @@ def _quick_claws(turn: int, fighters: tuple[_Fighter, _Fighter], choices: tuple[
         return firsts
     for side, fighter in enumerate(fighters):
         mine, theirs = fighter.stat("speed", weather), fighters[1 - side].stat("speed", weather)
-        if firsts[side] and (mine >= theirs if trick_room else mine <= theirs):
+        if firsts[side] and (mine >= theirs if trick_room else mine <= theirs) and fighter.item == held[side]:
             events.append(ItemEffect(turn, side, fighter.combatant.name, fighter.item, "first") if claws[side] else
                           AbilityAct(turn, side, fighter.combatant.name, fighter.ability, effect="first"))
     return firsts
@@ -1486,6 +1495,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     accuracy = hooks.move(move, "own_accuracy", attacker, defender)
     if accuracy is None:
         accuracy = _accuracy(attacker, defender, move)
+    attacker.primed = None
     checks_accuracy = (move.accuracy is not None and not hooks.move(move, "skips_accuracy", weather.kind, default=False)
                        and not _sure_hit(attacker, defender))
     if checks_accuracy and rng.random() * 100 >= accuracy:
@@ -2243,7 +2253,9 @@ def _foe_field(fighter: _Fighter, hook: str, *args) -> list:
 def _accuracy(attacker: _Fighter, defender: _Fighter, move: Move) -> float:
     return ((move.accuracy or 0) * _accuracy_stages(attacker, defender, move)
             * (hooks.item(attacker, "accuracy_as_user", default=1.0)
-               * hooks.item(defender, "accuracy_as_target", default=1.0)) * math.prod(_field(attacker, "modify_accuracy"))
+               * hooks.item(defender, "accuracy_as_target", default=1.0)
+               * hooks.call("items", attacker.primed, "primed_accuracy", default=1.0))
+            * math.prod(_field(attacker, "modify_accuracy"))
             * hooks.ability(attacker, "accuracy_as_user", move, default=1.0)
             * hooks.ability(defender, "accuracy_as_target", move, defender, default=1.0))
 
