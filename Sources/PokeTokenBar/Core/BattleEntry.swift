@@ -196,6 +196,7 @@ enum BattleEntry {
                 if !machine.isEmpty { member.machine = machine }
             }
         }
+        if let individual = TrainableIndividual.find(id: id, in: state) { member.addTrainingHints(individual) }
         return member
     }
 }
@@ -353,6 +354,11 @@ final class BattleEntryStore {
 
     func resetMoves(for instanceID: String) {
         moveChoices[instanceID] = nil
+    }
+
+    /// Sets the whole move list of `instanceID`; nil goes back to the bot's defaults.
+    func setMoves(_ choice: MoveChoice?, for instanceID: String) {
+        moveChoices[instanceID] = choice
     }
 
     /// Takes a lineup set in Slack as the picks, with each member's moves; no moves means the level's defaults.

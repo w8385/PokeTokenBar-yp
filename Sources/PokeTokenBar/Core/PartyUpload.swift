@@ -26,6 +26,22 @@ struct PartyMember: Encodable, Equatable, Sendable {
     var itemName: String? = nil
     /// The entries of `moves` that are TM moves.
     var machine: [Int]? = nil
+    /// What Slack's `/트레이닝` needs to check a `train` op the way the app will (`bot/API.md` "The `train` op").
+    var abilitySlot: Int? = nil
+    var abilityHidden: Bool? = nil
+    var eggMoves: Bool? = nil
+    var form: String? = nil
+    /// The inventory key of the item that switches its forms; the form fields below are set only with it.
+    var formTool: String? = nil
+    var ownAbility: String? = nil
+    var forms: [RemoteFormOption]? = nil
+}
+
+/// A form a form-tool species can switch to. `ability` is the form's fixed ability; nil keeps the individual's own.
+struct RemoteFormOption: Encodable, Equatable, Sendable {
+    let form: String
+    let pokemonID: Int
+    var ability: String? = nil
 }
 
 struct PartyPayload: Encodable, Equatable, Sendable {
@@ -323,6 +339,7 @@ final class PartyUploader {
         guard status == 200 else { return }
         if let epoch = RemoteOp.epoch(of: data) { remoteOps.adoptEpoch(epoch) }
         guard let ops = RemoteOp.decodeList(data), !ops.isEmpty else { return }
+        await remoteOps.prepare(ops)
         remoteOps.apply(ops)
     }
 
