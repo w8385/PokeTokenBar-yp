@@ -10,6 +10,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from functools import partial
 from urllib.parse import urlencode
 
+from ypoke import entry_rules
 from ypoke.battle import Combatant, simulate
 from ypoke.combatants import combatant
 from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_url
@@ -167,6 +168,7 @@ class _Match:
     practice: bool
     pokemon: tuple[int, int]
     size: int
+    notes: tuple[str, ...] = ()
 
 
 class CommandHandler:
@@ -426,19 +428,23 @@ class CommandHandler:
         challenger = self._remote.party(challenger_id)
         if challenger is None:
             return None
-        entry = challenger.party[:size]
+        mine = entry_rules.lineup(challenger.party)
+        entry = mine.fighters[:size]
+        notes = mine.notes(f"<@{challenger_id}>", size)
         seed = secrets.randbits(31)
         if opponent_id == self._bot_user_id:
             wild = [{"pokemon_id": species, "level": member["level"], "shiny": False, "ivs": {}}
                     for species, member in zip(bot_entry(seed, len(entry)), entry)]
             return _Match(challenger_id, opponent_id, self._combatants(entry, wild), seed, practice=True,
-                          pokemon=(entry[0]["pokemon_id"], wild[0]["pokemon_id"]), size=size)
+                          pokemon=(entry[0]["pokemon_id"], wild[0]["pokemon_id"]), size=size, notes=notes)
         opponent = self._remote.party(opponent_id)
         if opponent is None:
             return None
-        rival = opponent.party[:size]
+        theirs = entry_rules.lineup(opponent.party)
+        rival = theirs.fighters[:size]
         return _Match(challenger_id, opponent_id, self._combatants(entry, rival), seed, practice=False,
-                      pokemon=(entry[0]["pokemon_id"], rival[0]["pokemon_id"]), size=size)
+                      pokemon=(entry[0]["pokemon_id"], rival[0]["pokemon_id"]), size=size,
+                      notes=notes + theirs.notes(f"<@{opponent_id}>", size))
 
     def _result(self, match: _Match) -> Reply:
         result = simulate(match.sides, match.seed)
@@ -457,7 +463,7 @@ class CommandHandler:
             summary,
             in_channel=True,
             summary=summary,
-            card=battle_card(trainers, match.sides, result, match.practice),
+            card=replace(battle_card(trainers, match.sides, result, match.practice), rules=match.notes),
             rematch=rematch,
         )
 
@@ -547,7 +553,7 @@ def result_blocks(reply: Reply) -> list[dict]:
     the rematch button, then the turn log as grey context blocks."""
     card = reply.card
     blocks: list[dict] = []
-    context = [line for line in (reply.echo, card.note, PRACTICE_NOTE if card.practice else None) if line]
+    context = [line for line in (reply.echo, card.note, PRACTICE_NOTE if card.practice else None, *card.rules) if line]
     if context:
         blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": line} for line in context]})
     header = {"type": "section", "text": {"type": "mrkdwn", "text": fit(

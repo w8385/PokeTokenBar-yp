@@ -194,6 +194,7 @@ class Card:
     log_images: tuple[tuple[Image, ...], ...] = ()
     practice: bool = False
     note: str | None = None
+    rules: tuple[str, ...] = ()
 
 
 def battle_header(

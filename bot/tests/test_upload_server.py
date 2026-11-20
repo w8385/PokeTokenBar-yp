@@ -168,11 +168,18 @@ def _items(party):
 
 
 def test_duplicate_held_item_is_kept_on_the_first_member_only():
-    party = [{"pokemon_id": 6, "level": 50, "held_item": "charizardite-x"},
-             {"pokemon_id": 6, "level": 50, "held_item": "Charizardite-X"},
+    party = [{"pokemon_id": 6, "level": 50, "held_item": "leftovers"},
+             {"pokemon_id": 3, "level": 50, "held_item": "Leftovers"},
              {"pokemon_id": 25, "level": 50, "held_item": "light-ball"},
              {"pokemon_id": 4, "level": 50}]
-    assert _items(party) == ["charizardite-x", None, "light-ball", None]
+    assert _items(party) == ["leftovers", None, "light-ball", None]
+
+
+def test_a_species_duplicate_sits_out_so_its_item_does_not_take_the_slot():
+    party = [{"pokemon_id": 890, "level": 50},
+             {"pokemon_id": 890, "level": 50, "held_item": "leftovers"},
+             {"pokemon_id": 143, "level": 50, "held_item": "leftovers"}]
+    assert _items(party) == [None, "leftovers", "leftovers"]
 
 
 @pytest.mark.parametrize("item, wrong_id, right_id", [

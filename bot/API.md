@@ -61,6 +61,23 @@ Replaces the caller's stored party.
 Malformed `remote_ops` fields and lines are dropped, never a `400`. Each upload replaces them, so a later upload
 from an older app turns remote ops off again.
 
+### Lineup rules
+
+The upload is accepted whatever it holds; every battle (`/대결` by slash or mention, 다시 붙기, practice, a pending
+challenge, and `POST /v1/gym/battle`) applies two rules to the party in its order, before taking the first N:
+
+- **Species clause.** One Pokémon per national species. Forms, regional forms and Megas of a species are that
+  species (Rotom-Wash `10009` is Rotom `479`; `ypoke/form_species.json` maps every PokéAPI form id, and an id it
+  does not list counts as its own species). The first one fights and later ones sit out; nobody takes their place,
+  so a side can fight with fewer than N. The card's size (`6:5`) counts who fought.
+- **Item clause.** One holder per held item among the members that fight. A later member holding an item an earlier
+  one holds fights without it. A species-bound item (a mask, the Stellar Crystal, an Origin or rusted item) counts
+  only on its own species. Uploads already drop the duplicate item from the stored party.
+
+When a rule changed who fights or what they hold within the first N, the result card says so in a context line per
+side ("같은 포켓몬이 여럿이라 한 마리씩만 나왔어요", "같은 도구는 한 마리만 들고 나왔어요"). The app applies the same
+rules before it uploads, so this only shows for an older app or a pending Slack op.
+
 ### `dex` (optional)
 
 A summary of the user's Pokédex for `/도감`. The bot keeps the latest one beside the party. An upload without
@@ -494,6 +511,10 @@ sends the next battle with `carried`: one entry per `team` member, in the same o
 |---|---|
 | `carried` | Optional. A list with exactly one entry per `team` member. An entry is `null` (full HP, no status) or `{"hp": 0..100, "status": null | "burn" | "poison" | "toxic" | "paralysis" | "sleep" | "freeze"}`. `hp` is the share of max HP; `0` keeps the member down for this battle. At least one member must have `hp > 0`. Only battles with a non-null `run` take it |
 | `carry` | In a response: the same list shape, ready to send back as the next `carried`. A member that never got sent out keeps the state it came in with |
+
+A member the species clause benches (see [Lineup rules](#lineup-rules)) keeps its place in `team`, `player_team` and
+`carry`: its `hp` in `player_team` is `null` and it carries what it came in with. A run step where only benched
+members still have HP is a `400` (no member able to fight).
 
 PP, stat stages, confusion and the progress of a toxic or sleep status (a carried toxic starts at its first tick, a carried sleep lasts one more turn) do not carry. A loss ends the run: the app starts again at `run.first` with nothing
 carried. The app decides what is locked (a gym stands alone; the Elite Four run needs the gym badges
