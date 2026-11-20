@@ -2829,7 +2829,7 @@ final class CompanionStore {
     /// 미판매·잔액 부족이면 0.
     func maxBuyCount(_ kind: ItemKind) -> Int {
         guard canBuy(kind), let price = price(of: kind), price > 0 else { return 0 }
-        return kind.isBoughtOnce || kind.isSingleCopy || kind == .expShare ? 1 : availableTokens / price
+        return kind.isBoughtOneAtATime ? 1 : availableTokens / price
     }
 
     /// 아이템 count 개 구매 — 지갑에서 price × count 차감, 인벤토리 +count. usedSinceInstall(성장·통계)·

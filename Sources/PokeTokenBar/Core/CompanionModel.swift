@@ -453,6 +453,8 @@ enum ItemKind: String, Codable, Sendable, CaseIterable {
     /// Bought once and never used up, like `isPassive`, but used by hand on one Pokémon.
     var isKeyItem: Bool { FormTool.species(of: self) != nil }
     var isBoughtOnce: Bool { isPassive || isKeyItem }
+    /// The shop sells one per purchase: the price of the next copy can change (Exp. Share) or there is no next one.
+    var isBoughtOneAtATime: Bool { isBoughtOnce || isSingleCopy || self == .expShare }
 }
 
 /// 진화의 돌 밸런스 상수 — 소모품. 쓰면 그 돌로 진화하는 갈래로 바로 진화한다(현재 단계 XP는 그대로 이어진다).
