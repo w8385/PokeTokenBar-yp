@@ -54,12 +54,13 @@ Replaces the caller's stored party.
 | `id` | string | optional, the individual's id (max 64 chars, no `\|` or whitespace; dropped otherwise). Members with one can be changed from Slack ([`lineup`](#the-lineup-op)); a rental has none |
 | `item_key`, `item_name` | string | optional, sent together: the app's inventory key of the held item (max 80 chars) and its Korean name (max 60). `held_item` is still what battles use; these say which bag copy goes back when it comes off |
 | `machine` | array | optional, the entries of `moves` that are TM moves, so a Slack edit keeps them only while the TM is owned |
+| `ability_slot`, `ability_hidden`, `egg_moves`, `form`, `form_tool`, `own_ability`, `forms` | | optional [training hints](#the-train-op) for `/트레이닝`, on party and `trade_pool` members alike. Malformed hints are dropped, never a `400` |
 | `trade_pool` | array | optional, a top-level key beside `party`. The Pokémon the player may trade, see [Trades](#trades). Left out by older apps; a pool that fails validation is ignored and never fails the upload |
 | `remote_ops` | int | optional, top-level. `1` says this app applies [remote ops](#remote-ops). Without it the fields below are ignored, and Slack commands that queue ops ask the player to update the app |
 | `applied_op_id` | int | optional, top-level, with `remote_ops`. The highest op id this app has applied or cancelled; `0` or missing for none |
 | `wallet` | int | optional, top-level, with `remote_ops`. The tokens the player can spend now |
 | `bag` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "count"}]`: the bag. `key` is the app's inventory key (`rareCandy`, `mega-stone:charizardite-x`, `tm:85`); held items are not in it. Up to 2,000 lines. A line a Pokémon can hold adds `"equip": true` and, when it acts in battle, `"held_item": "<slug>"` |
-| `remote_ops_kinds` | array | optional, top-level, with `remote_ops`. The op kinds this app applies (`["buy", "lineup"]`). Slack refuses to queue a kind the last upload did not list |
+| `remote_ops_kinds` | array | optional, top-level, with `remote_ops`. The op kinds this app applies (`["buy", "lineup", "train"]`). Slack refuses to queue a kind the last upload did not list |
 | `ops_epoch` | string | optional, top-level, with `remote_ops`. The `epoch` of the `GET /v1/ops` reply `applied_op_id` counts against. Another epoch means a different bot database, so the bot reads `applied_op_id` as `0` |
 | `shop` | array | optional, top-level, with `remote_ops`. `[{"key", "name", "price", "category", "category_name", "single"}]`: what the shop sells now, at the app's prices. `category_name` is the Korean tab name (max 20). `single: true` is bought one at a time (once, or the next copy costs more). A line a Pokémon can hold adds `"equip": true` and `"held_item"` as on the bag line |
 
@@ -395,12 +396,57 @@ replay checks the same rules against its copy and leaves a breaking op out.
 bot's view adds `count` to the bag line (a new line copies `equip` and `held_item` from the shop line), takes
 `price × count` off `wallet` and drops a `single` line from `shop`, so `/가방`, `/상점` and the `/파티` item menu see
 it at once and a later `lineup` op can equip it. Slack refuses a buy past the replayed `wallet` (the last upload's
-less the pending buys); there is no credit.
+less the pending buys and training); there is no credit.
 
 The app buys through its own shop on its current state, all or nothing, and cancels with one of: `not_sold` (the
 shop no longer sells it, or it is owned now), `price_changed` (any change from `price`), `no_tokens`, `invalid`. Ops
 apply in id order, so a buy followed by a `lineup` op that equips the item applies both; when the buy cancels, that
 lineup cancels with `no_item` unless the bag has another copy.
+
+### The `train` op
+
+`/트레이닝` queues one op per training-tab action on one party or Box individual:
+
+```json
+{"action": "nature", "id": "<individual id>", "pokemon_id": 25, "name": "피카츄", "nature": "adamant", "price": 300}
+```
+
+| `action` | Extra fields | Pays with | Changes |
+|---|---|---|---|
+| `nature` | `nature`, `price` | a `mint` from the bag, else `price` tokens | `nature` |
+| `herb` | `price` | a `mirrorHerb` from the bag, else `price` tokens | `mirror_herb: true` |
+| `capsule`, `patch` | `ability: {"name", "slot", "hidden"}` | one `abilityCapsule` / `abilityPatch` | `ability`, `ability_slot`, `ability_hidden` |
+| `cap` | `stat` (`hp`, `attack`, `defense`, `special-attack`, `special-defense`, `speed`) | one `bottleCap` | that IV to 31 |
+| `gold_cap` | | one `goldBottleCap` | every IV to 31 |
+| `form` | `form`, `to_pokemon_id` | nothing (`form_tool` must be in the bag; it is not used up) | `pokemon_id`, `form`, `ability`; chosen moves reset |
+| `moves` | `moves`, `machine`, `egg` | nothing | the chosen moves; empty means the level's defaults |
+
+`price` is the shop line price the player saw, or null when the bag had the item. Mint and Mirror Herb come from the
+bag first, as in the app; only when the bag has none are they bought at the `shop` line price. Everything else needs
+the bag item; `/상점` sells it. `egg` lists the egg moves of `moves`, allowed only after a Mirror Herb.
+
+The replay changes the member in `party` and in `trade_pool`, takes the item off the bag or the price off `wallet`,
+so battles, `/파티`, `GET /v1/party`, the coworker list and the spendable balance of `/상점` and `/트레이닝` see it
+at once. Slack checks the same rules before queueing and refuses on the spot; there is no credit.
+
+To check an action the way the app will, members carry these hints:
+
+| Field | Meaning |
+|---|---|
+| `ability_slot` | int `1..3`, the individual's ability slot |
+| `ability_hidden` | `true` when it has its hidden ability |
+| `egg_moves` | `true` when the species has attacking egg moves, so a Mirror Herb does something |
+| `form_tool` | inventory key of the item that switches this species' forms (`revealGlass`, `dnaSplicers`, `reinsOfUnity`); the fields below come with it |
+| `form` | its current form (`incarnate`) |
+| `own_ability` | its own ability, which a form without a fixed one uses |
+| `forms` | up to 8 `{"form", "pokemon_id", "ability"}`; `ability` is the form's fixed ability, null for its own. A form with a fixed ability takes no Capsule or Patch |
+
+The Capsule's target is the other regular ability of the current `pokemon_id`; the Patch's is the hidden one, or the
+lowest regular slot from the hidden one. The app applies all of it or nothing, through its own training on its
+current state, and cancels with one of: `gone`, `evolved`, `trade_locked`, `no_item`, `no_tokens`, `price_changed`,
+`unchanged` (it already has that), `not_applicable` (the action no longer fits, such as another ability target),
+`no_machine`, `no_herb`, `no_data` (the app could not load the ability list), `invalid`. Ops apply in id order, so a
+Mint bought with `/상점` and then used by `/트레이닝` applies both.
 
 ## Gyms (PvE)
 

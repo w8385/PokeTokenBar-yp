@@ -28,7 +28,6 @@ from ypoke.remote_views import (
     PARTY_COMMAND,
     REMOTE_COMMANDS,
     TRADE_COMMAND,
-    TRAINING_COMMAND,
 )
 from ypoke.store import Store
 from ypoke.trades import MAX_POOL, TradeService
@@ -130,7 +129,7 @@ def test_a_downgrade_closes_the_gate_again_because_each_upload_overwrites_the_fl
     assert RemoteOps(store).edit_refusal("UA") == OLD_APP_REFUSAL
 
 
-@pytest.mark.parametrize("command", [TRAINING_COMMAND, TRADE_COMMAND, MIRACLE_COMMAND])
+@pytest.mark.parametrize("command", [TRADE_COMMAND, MIRACLE_COMMAND])
 def test_the_edit_stubs_tell_an_old_app_to_update_and_a_new_one_that_they_open_soon(store, command):
     upload(store, "UA", remote=False)
     assert handler(store).handle("UA", "", command).text.split("\n")[0] == OLD_APP_REFUSAL

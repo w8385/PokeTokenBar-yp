@@ -34,6 +34,8 @@ COWORKER_WINDOW = timedelta(days=30)
 GYM_BATTLE_INTERVAL = 3.0
 ABILITY_NAME = re.compile(r"[a-z][a-z-]{0,39}")
 INDIVIDUAL_ID = re.compile(r"[^|\s]{1,64}")
+FORM_KEY = re.compile(r"[a-zA-Z][a-zA-Z0-9-]{0,39}")
+MAX_FORMS = 8
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
 MovesFor = Callable[..., list[dict]]
@@ -532,7 +534,41 @@ def _validate_member(field: str, index: int, member: object) -> dict:
             if isinstance(machine, list) and all(_is_int(move_id) for move_id in machine):
                 if picked := [move_id for move_id in moves if move_id in machine]:
                     normalized["machine"] = picked
-    return normalized
+    return normalized | _training_hints(member)
+
+
+def _training_hints(member: dict) -> dict:
+    """What `/트레이닝` reads besides the battle fields; malformed hints are dropped, never a 400."""
+    hints = {}
+    if _is_int(slot := member.get("ability_slot")) and 1 <= slot <= 3:
+        hints["ability_slot"] = slot
+    if member.get("ability_hidden") is True:
+        hints["ability_hidden"] = True
+    if member.get("egg_moves") is True:
+        hints["egg_moves"] = True
+    for key in ("form", "form_tool"):
+        if isinstance(value := member.get(key), str) and FORM_KEY.fullmatch(value):
+            hints[key] = value
+    own = member.get("own_ability")
+    if isinstance(own, str) and ABILITY_NAME.fullmatch(own):
+        hints["own_ability"] = own
+    forms = member.get("forms")
+    if isinstance(forms, list) and "form_tool" in hints:
+        options = [_form_option(form) for form in forms[:MAX_FORMS]]
+        if options and None not in options:
+            hints["forms"] = options
+    return hints
+
+
+def _form_option(form: object) -> dict | None:
+    if not isinstance(form, dict) or not isinstance(form.get("form"), str) or not FORM_KEY.fullmatch(form["form"]):
+        return None
+    if not _is_int(form.get("pokemon_id")) or not _valid_pokemon_id(form["pokemon_id"]):
+        return None
+    ability = form.get("ability")
+    if ability is not None and not (isinstance(ability, str) and ABILITY_NAME.fullmatch(ability)):
+        return None
+    return {"form": form["form"], "pokemon_id": form["pokemon_id"], "ability": ability}
 
 
 def _valid_pokemon_id(pokemon_id: int) -> bool:
