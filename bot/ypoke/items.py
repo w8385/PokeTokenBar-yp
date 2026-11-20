@@ -45,6 +45,7 @@ EFFECT_KEYS = frozenset({
     "hazard-boots", PROTECTIVE_PADS, *BERRY_KEYS, "gem", "air-balloon", "hit-stat-item", "blunder-policy",
     "throat-spray", "adrenaline-orb", "room-service", "mirror-herb", "mental-herb", "power-herb", "terrain-seed",
     "booster-energy", "utility-umbrella", "safety-goggles", "covert-cloak", "clear-amulet", "ability-shield",
+    "speed-halver", "iron-ball", "moves-last", "species-stat", "species-crit", "incense",
 })
 
 TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",
@@ -61,6 +62,17 @@ RESIST_BERRIES = _in_type_order(battle_data.args("items", "resist-berry", "type"
 PLATES = _in_type_order(battle_data.args("items", "plate", "type"))
 # The types an origin item boosts; it works only on its own species (`tera_forms.usable_item`).
 ORIGIN_BOOSTS = battle_data.args("items", "origin-boost", "types")
+INCENSES = battle_data.args("items", "incense", "type")
+# item slug -> the stats it multiplies on its own species (Light Ball: Pikachu's Attack and Special Attack)
+SPECIES_STATS = battle_data.args("items", "species-stat", "stats")
+SPECIES_CRIT_STAGES = battle_data.args("items", "species-crit", "stages")
+# item slug -> the species it works on; on any other it does nothing (`tera_forms.usable_item`)
+SPECIES_ITEMS = {slug: frozenset((species,) if isinstance(species, int) else species)
+                 for key in ("origin-boost", "species-stat", "species-crit")
+                 for slug, species in battle_data.args("items", key, "species").items()}
+# item slug -> (the move its form's holder knows, the move it becomes: Iron Head, Behemoth Blade)
+CROWNED_MOVES = {slug: tuple(entry["args"]["move"]) for slug, entry in battle_data.with_key("items", "form-item").items()
+                 if "move" in entry["args"]}
 WEATHER_ROCKS = battle_data.args("items", "weather-rock", "weathers")
 OGERPON_MASKS = tuple(battle_data.with_key("items", "ogerpon-mask"))
 ORB_AILMENTS = battle_data.args("items", "status-orb", "ailment")
@@ -109,6 +121,8 @@ STARF_STAGES = 2
 MICLE_ACCURACY = 1.2
 GEM_MULTIPLIER = 1.3
 BLUNDER_POLICY_STAGES = 2
+SPEED_HALVED = 0.5
+SPECIES_STAT_MULTIPLIER = 2.0
 
 
 def known(item: str | None) -> str | None:
@@ -116,7 +130,7 @@ def known(item: str | None) -> str | None:
 
 
 def stat_multiplier(item: str | None, key: str, can_evolve: bool = False) -> float:
-    return hooks.call("items", item, "modify_stat", key, None, False, can_evolve, default=1.0)
+    return hooks.call("items", item, "modify_stat", key, None, False, can_evolve, None, default=1.0)
 
 
 def damage_multiplier(item: str | None, move_type: str | None, effectiveness: float, physical: bool = True,
