@@ -1320,6 +1320,10 @@ struct CompanionState: Codable, Sendable {
     var rewardedDexRegions: Set<String> = []
     /// Ids of trades already applied here, newest last (capped); a trade the bot sends again is skipped.
     var appliedTradeIDs: [String] = []
+    /// The highest Slack remote op id applied or cancelled here; ops at or below it are never applied again.
+    var remoteOpsLastID = 0
+    /// Remote op results the bot has not acknowledged yet, oldest first (capped).
+    var remoteOpResults: [RemoteOpResult] = []
     /// Which token tables the stored egg/stage credits and profile growth are in. A save without the field is v1.
     var economyVersion = PokemonBalance.economyVersion
     var growthMode = GrowthMode.token
@@ -1395,6 +1399,8 @@ struct CompanionState: Codable, Sendable {
         dexCompletionsSeeded = c.lenient(Bool.self, forKey: .dexCompletionsSeeded, default: false)
         rewardedDexRegions = c.lenient(Set<String>.self, forKey: .rewardedDexRegions, default: [])
         appliedTradeIDs    = c.lenient([String].self, forKey: .appliedTradeIDs, default: [])
+        remoteOpsLastID    = c.lenient(Int.self, forKey: .remoteOpsLastID, default: 0)
+        remoteOpResults    = c.lenient([RemoteOpResult].self, forKey: .remoteOpResults, default: [])
         economyVersion     = c.lenient(Int.self, forKey: .economyVersion, default: 1)
         growthMode         = c.lenient(GrowthMode.self, forKey: .growthMode, default: .token)
         timeCredit         = c.lenient(Int.self, forKey: .timeCredit, default: 0)

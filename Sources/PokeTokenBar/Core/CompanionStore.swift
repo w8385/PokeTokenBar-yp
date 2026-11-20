@@ -4063,6 +4063,31 @@ final class CompanionStore {
         return settled
     }
 
+    static let remoteOpResultLimit = 500
+
+    /// Applies each op above `remoteOpsLastID` once, in id order, and saves once. An op whose kind this build does
+    /// not know is cancelled as unsupported; a failing op is cancelled and the rest still apply.
+    func applyRemoteOps(_ ops: [RemoteOp], appliers: [String: RemoteOpApplier] = RemoteOpAppliers.all) {
+        let fresh = ops.filter { $0.id > state.remoteOpsLastID }.sorted { $0.id < $1.id }
+        guard !fresh.isEmpty else { return }
+        for op in fresh {
+            let reason = appliers[op.kind].map { $0(self, op.payload) } ?? RemoteOpReason.unsupported
+            state.remoteOpResults.append(RemoteOpResult(id: op.id, reason: reason))
+            state.remoteOpsLastID = op.id
+        }
+        if state.remoteOpResults.count > Self.remoteOpResultLimit {
+            state.remoteOpResults.removeFirst(state.remoteOpResults.count - Self.remoteOpResultLimit)
+        }
+        save()
+    }
+
+    func acknowledgeRemoteOps(_ ids: [Int]) {
+        let acknowledged = Set(ids)
+        guard state.remoteOpResults.contains(where: { acknowledged.contains($0.id) }) else { return }
+        state.remoteOpResults.removeAll { acknowledged.contains($0.id) }
+        save()
+    }
+
     /// The trade item the bot says left with the Pokémon is taken out of the game: off the Pokémon if it still
     /// holds it, else out of the bag where an earlier unequip put it. Anything else it holds goes back to the bag
     /// with the orphan sweep in `save()`. An older bot does not say, so only a held trade item is removed.

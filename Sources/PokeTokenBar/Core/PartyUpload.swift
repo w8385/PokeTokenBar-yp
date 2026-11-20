@@ -25,16 +25,39 @@ struct PartyPayload: Encodable, Equatable, Sendable {
     let appVersion: String?
     let party: [PartyMember]
     var dex: DexSummary? = nil
+    /// `1` from an app that applies remote ops; the fields below go with it (`bot/API.md` "Remote ops").
+    var remoteOps: Int? = nil
+    var appliedOpID: Int? = nil
+    var bag: [RemoteBagLine]? = nil
+    var shop: [RemoteShopLine]? = nil
 
-    /// `tradePool` is added after the snake-case pass, which would rename the keys inside its entries.
-    func encoded(tradePool: [TradePoolEntry]? = nil) throws -> Data {
+    init(appVersion: String?, party: [PartyMember], dex: DexSummary? = nil) {
+        self.appVersion = appVersion
+        self.party = party
+        self.dex = dex
+    }
+
+    init(appVersion: String?, party: [PartyMember], dex: DexSummary?, appliedOpID: Int, snapshot: RemoteSnapshot) {
+        self.init(appVersion: appVersion, party: party, dex: dex)
+        remoteOps = 1
+        self.appliedOpID = appliedOpID
+        bag = snapshot.bag
+        shop = snapshot.shop
+    }
+
+    /// `tradePool` is added after the snake-case pass, which would rename the keys inside its entries. `wallet` is
+    /// added here too, so a body without it can serve as the resend key while the wallet ticks up.
+    func encoded(tradePool: [TradePoolEntry]? = nil, wallet: Int? = nil) throws -> Data {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.outputFormatting = .sortedKeys
         let base = try encoder.encode(self)
-        guard let tradePool else { return base }
+        guard tradePool != nil || wallet != nil else { return base }
         var object = try JSONSerialization.jsonObject(with: base) as? [String: Any] ?? [:]
-        object["trade_pool"] = try JSONSerialization.jsonObject(with: TradePool.encode(tradePool))
+        if let tradePool {
+            object["trade_pool"] = try JSONSerialization.jsonObject(with: TradePool.encode(tradePool))
+        }
+        if let wallet { object["wallet"] = wallet }
         return try JSONSerialization.data(withJSONObject: object, options: .sortedKeys)
     }
 }
@@ -176,6 +199,10 @@ final class PartyUploader {
     @ObservationIgnored private let dexSource: @MainActor () -> DexSummary?
     @ObservationIgnored private let trades: TradeSync?
     @ObservationIgnored private var tradesUnsupported = false
+    @ObservationIgnored private let remoteOps: RemoteOpsSync?
+    @ObservationIgnored private var opsUnsupported = false
+    /// The `applied_op_id` of the last upload the bot took; results up to it are safe to acknowledge.
+    @ObservationIgnored private var uploadedAppliedOpID: Int?
     @ObservationIgnored private var learnableCache: [String: LearnableMoves] = [:]
     @ObservationIgnored var onBattleInfo: (@MainActor (BattleInfo) -> Void)?
     @ObservationIgnored private var lastAttemptAt: Date?
@@ -190,8 +217,10 @@ final class PartyUploader {
          fetch: @escaping Fetch = PartyUploader.urlSessionFetch,
          partySource: @escaping @MainActor () -> [PartyMember],
          dexSource: @escaping @MainActor () -> DexSummary? = { nil },
-         trades: TradeSync? = nil) {
+         trades: TradeSync? = nil,
+         remoteOps: RemoteOpsSync? = nil) {
         self.trades = trades
+        self.remoteOps = remoteOps
         self.tokenStore = tokenStore
         self.defaults = defaults
         self.appVersion = appVersion
@@ -262,22 +291,46 @@ final class PartyUploader {
         resetThrottle()
     }
 
+    /// Remote ops are applied before the upload and acknowledged after it, so the bot never sees an op settled
+    /// before it has a party that includes it.
     func tick(now: Date = Date()) async {
         guard let token = tokenStore.load() else { return }
+        await applyRemoteOps(token: token)
         await uploadParty(token: token, now: now)
+        await acknowledgeRemoteOps(token: token)
         await syncTrades(token: token)
+    }
+
+    /// A bot without remote ops answers 404 and is left alone until the token or server changes.
+    private func applyRemoteOps(token: String) async {
+        guard let remoteOps, !tokenRejected, !opsUnsupported,
+              let request = Self.get(serverURL: serverURL, token: token, path: "v1/ops"),
+              let (data, status) = try? await fetch(request)
+        else { return }
+        if status == 404 { opsUnsupported = true }
+        guard status == 200, let ops = RemoteOp.decodeList(data), !ops.isEmpty else { return }
+        remoteOps.apply(ops)
     }
 
     private func uploadParty(token: String, now: Date) async {
         let party = partySource()
-        guard !party.isEmpty,
-              let body = try? PartyPayload(appVersion: appVersion, party: party, dex: dexSource())
-                  .encoded(tradePool: trades?.pool()),
-              Self.shouldSend(body: body, lastBody: lastAttemptBody, lastAttemptAt: lastAttemptAt, now: now),
+        guard !party.isEmpty else { return }
+        let appliedOpID = remoteOps?.lastID()
+        let snapshot = remoteOps?.snapshot()
+        let payload = if let appliedOpID, let snapshot {
+            PartyPayload(appVersion: appVersion, party: party, dex: dexSource(), appliedOpID: appliedOpID,
+                         snapshot: snapshot)
+        } else {
+            PartyPayload(appVersion: appVersion, party: party, dex: dexSource())
+        }
+        let pool = trades?.pool()
+        guard let key = try? payload.encoded(tradePool: pool),
+              Self.shouldSend(body: key, lastBody: lastAttemptBody, lastAttemptAt: lastAttemptAt, now: now),
+              let body = snapshot == nil ? key : try? payload.encoded(tradePool: pool, wallet: snapshot?.wallet),
               let request = Self.request(serverURL: serverURL, token: token, body: body)
         else { return }
         lastAttemptAt = now
-        lastAttemptBody = body
+        lastAttemptBody = key
         isSending = true
         defer { isSending = false }
         guard let (reply, status) = try? await exchange(request) else {
@@ -289,6 +342,7 @@ final class PartyUploader {
             lastSuccessAt = now
             tokenRejected = false
             lastAttemptFailed = false
+            uploadedAppliedOpID = appliedOpID
             if let info = BattleInfo.decode(reply) {
                 battleInfo = info
                 onBattleInfo?(info)
@@ -311,6 +365,23 @@ final class PartyUploader {
         else { return nil }
         learnableCache[key] = moves
         return moves
+    }
+
+    /// A lost acknowledgement keeps the results, and the next sync sends them again; the bot ignores repeats.
+    private func acknowledgeRemoteOps(token: String) async {
+        guard let remoteOps, let uploadedAppliedOpID else { return }
+        let ready = remoteOps.results().filter { $0.id <= uploadedAppliedOpID }
+        guard !ready.isEmpty,
+              let request = Self.post(serverURL: serverURL, token: token, path: "v1/ops/ack",
+                                      body: Self.opsAckBody(ready)),
+              let (_, status) = try? await fetch(request), status == 200
+        else { return }
+        remoteOps.acknowledged(ready.map(\.id))
+    }
+
+    nonisolated static func opsAckBody(_ results: [RemoteOpResult]) -> [String: Any] {
+        ["applied": results.filter { $0.reason == nil }.map(\.id),
+         "cancelled": results.compactMap { result in result.reason.map { ["id": result.id, "reason": $0] as [String: Any] } }]
     }
 
     /// Applies the trades the bot completed and acknowledges them. A bot without trades answers 404 and
@@ -418,6 +489,8 @@ final class PartyUploader {
         lastAttemptAt = nil
         lastAttemptBody = nil
         tradesUnsupported = false
+        opsUnsupported = false
+        uploadedAppliedOpID = nil
     }
 
     nonisolated static func shouldSend(body: Data, lastBody: Data?, lastAttemptAt: Date?, now: Date) -> Bool {
