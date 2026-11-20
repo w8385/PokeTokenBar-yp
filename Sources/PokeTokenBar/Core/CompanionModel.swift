@@ -1324,6 +1324,8 @@ struct CompanionState: Codable, Sendable {
     var remoteOpsLastID = 0
     /// Remote op results the bot has not acknowledged yet, oldest first (capped).
     var remoteOpResults: [RemoteOpResult] = []
+    /// The bot database `remoteOpsLastID` counts in; nil until a bot names one.
+    var remoteOpsEpoch: String? = nil
     /// Which token tables the stored egg/stage credits and profile growth are in. A save without the field is v1.
     var economyVersion = PokemonBalance.economyVersion
     var growthMode = GrowthMode.token
@@ -1401,6 +1403,7 @@ struct CompanionState: Codable, Sendable {
         appliedTradeIDs    = c.lenient([String].self, forKey: .appliedTradeIDs, default: [])
         remoteOpsLastID    = c.lenient(Int.self, forKey: .remoteOpsLastID, default: 0)
         remoteOpResults    = c.lenient([RemoteOpResult].self, forKey: .remoteOpResults, default: [])
+        remoteOpsEpoch     = c.lenientOptional(String.self, forKey: .remoteOpsEpoch)
         economyVersion     = c.lenient(Int.self, forKey: .economyVersion, default: 1)
         growthMode         = c.lenient(GrowthMode.self, forKey: .growthMode, default: .token)
         timeCredit         = c.lenient(Int.self, forKey: .timeCredit, default: 0)

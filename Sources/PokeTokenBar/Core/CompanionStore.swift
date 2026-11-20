@@ -4000,8 +4000,8 @@ final class CompanionStore {
         tradeLocks = Dictionary(uniqueKeysWithValues: ids.map { ($0, expiry) })
     }
 
-    func tradePool(fightingIDs: Set<String>) -> [TradePoolEntry] {
-        TradePool.build(state: state, fightingIDs: fightingIDs, name: dexEntryName)
+    func tradePool(fightingIDs: Set<String>, moveChoices: [String: MoveChoice] = [:]) -> [TradePoolEntry] {
+        TradePool.build(state: state, fightingIDs: fightingIDs, moveChoices: moveChoices, name: dexEntryName)
     }
 
     /// Nil only for an individual in the pool the app sends, so the post and offer buttons match what the bot holds.
@@ -4067,7 +4067,7 @@ final class CompanionStore {
 
     /// Applies each op above `remoteOpsLastID` once, in id order, and saves once. An op whose kind this build does
     /// not know is cancelled as unsupported; a failing op is cancelled and the rest still apply.
-    func applyRemoteOps(_ ops: [RemoteOp], appliers: [String: RemoteOpApplier] = RemoteOpAppliers.all) {
+    func applyRemoteOps(_ ops: [RemoteOp], appliers: [String: RemoteOpApplier]) {
         let fresh = ops.filter { $0.id > state.remoteOpsLastID }.sorted { $0.id < $1.id }
         guard !fresh.isEmpty else { return }
         for op in fresh {
@@ -4086,6 +4086,37 @@ final class CompanionStore {
         guard state.remoteOpResults.contains(where: { acknowledged.contains($0.id) }) else { return }
         state.remoteOpResults.removeAll { acknowledged.contains($0.id) }
         save()
+    }
+
+    /// The first epoch is only recorded. Another one is a new bot database whose op ids start over, so the ids and
+    /// results of the old one are dropped.
+    func adoptRemoteOpsEpoch(_ epoch: String) {
+        guard state.remoteOpsEpoch != epoch else { return }
+        if state.remoteOpsEpoch != nil {
+            state.remoteOpsLastID = 0
+            state.remoteOpResults = []
+        }
+        state.remoteOpsEpoch = epoch
+        save()
+    }
+
+    /// Gives each listed Pokémon its new item (nil takes it off) for a lineup `RemoteLineup` has checked: every
+    /// changing holder's item goes back to the bag first, then each takes its new one from the bag.
+    func moveHeldItems(_ changes: [(id: String, key: String?)]) {
+        let changing = changes.filter { state.heldItems[$0.id] != $0.key }
+        guard !changing.isEmpty else { return }
+        let megaBefore = Dictionary(changing.map { ($0.id, megaSpriteID(ofInstance: $0.id)) }, uniquingKeysWith: { first, _ in first })
+        for change in changing {
+            if let previous = state.heldItems[change.id] { state.inventory[previous, default: 0] += 1 }
+            state.heldItems[change.id] = nil
+        }
+        for change in changing {
+            guard let key = change.key else { continue }
+            state.inventory[key, default: 0] -= 1
+            state.heldItems[change.id] = key
+        }
+        for change in changing { announceMegaChange(of: change.id, from: megaBefore[change.id] ?? nil) }
+        reevaluateEvolution()
     }
 
     /// The trade item the bot says left with the Pokémon is taken out of the game: off the Pokémon if it still

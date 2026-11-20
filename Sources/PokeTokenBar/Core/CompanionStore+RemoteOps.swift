@@ -8,9 +8,13 @@ extension CompanionStore {
     /// The bag as the bot shows it, with Korean names (the bot speaks Korean). Held items are on their holders.
     var remoteBag: [RemoteBagLine] {
         let ko = L(.ko)
-        var lines = ownedItems.map { RemoteBagLine(key: $0.kind.rawValue, name: ko.itemName($0.kind), count: $0.count) }
+        var lines = ownedItems.map {
+            RemoteBagLine(key: $0.kind.rawValue, name: ko.itemName($0.kind), count: $0.count,
+                          equip: $0.kind.isEquippable ? true : nil, heldItem: $0.kind.heldItemSlug)
+        }
         lines += ownedMegaStones().map {
-            RemoteBagLine(key: $0.stone.inventoryKey, name: ko.megaStoneName($0.stone), count: $0.count)
+            RemoteBagLine(key: $0.stone.inventoryKey, name: ko.megaStoneName($0.stone), count: $0.count,
+                          equip: true, heldItem: $0.stone.slug)
         }
         lines += ownedScoutTickets.map {
             RemoteBagLine(key: $0.pool.inventoryKey, name: ko.scoutTicketName($0.pool), count: $0.count)

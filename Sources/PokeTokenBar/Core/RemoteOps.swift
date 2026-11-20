@@ -18,6 +18,13 @@ struct RemoteOp: Equatable, Sendable {
             return RemoteOp(id: id, kind: kind, payload: payload ?? Data("{}".utf8))
         }
     }
+
+    /// The bot database the reply's op ids belong to; nil from a bot that does not say.
+    static func epoch(of data: Data) -> String? {
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let epoch = object["epoch"] as? String, !epoch.isEmpty, epoch.count <= 64 else { return nil }
+        return epoch
+    }
 }
 
 /// What this app did with an op: applied when `reason` is nil, otherwise cancelled with a short code that the bot
@@ -36,14 +43,22 @@ typealias RemoteOpApplier = @MainActor @Sendable (CompanionStore, Data) -> Strin
 
 @MainActor
 enum RemoteOpAppliers {
-    static let all: [String: RemoteOpApplier] = [:]
+    static func all(battleEntry: BattleEntryStore) -> [String: RemoteOpApplier] {
+        [RemoteLineup.kind: { [weak battleEntry] store, payload in
+            guard let battleEntry else { return RemoteOpReason.unsupported }
+            return RemoteLineup.apply(payload, store: store, battleEntry: battleEntry)
+        }]
+    }
 }
 
-/// One bag line in the upload; `key` is the inventory key.
+/// One bag line in the upload; `key` is the inventory key. `equip` marks what a Pokémon can hold, and `heldItem`
+/// is its battle slug.
 struct RemoteBagLine: Encodable, Equatable, Sendable {
     let key: String
     let name: String
     let count: Int
+    var equip: Bool? = nil
+    var heldItem: String? = nil
 }
 
 /// One thing the shop sells now. `single` is bought once.
@@ -72,14 +87,24 @@ struct RemoteOpsSync: Sendable {
     let results: @MainActor @Sendable () -> [RemoteOpResult]
     let acknowledged: @MainActor @Sendable ([Int]) -> Void
     let snapshot: @MainActor @Sendable () -> RemoteSnapshot
+    /// The op kinds `apply` knows, sent so Slack queues only those.
+    var kinds: [String] = []
+    /// Records the bot database the op ids belong to; a new one forgets the old ids and results.
+    var adoptEpoch: @MainActor @Sendable (String) -> Void = { _ in }
+    var epoch: @MainActor @Sendable () -> String? = { nil }
 }
 
 extension RemoteOpsSync {
-    init(store: CompanionStore) {
-        self.init(apply: { [weak store] ops in store?.applyRemoteOps(ops) },
+    @MainActor
+    init(store: CompanionStore, battleEntry: BattleEntryStore) {
+        let appliers = RemoteOpAppliers.all(battleEntry: battleEntry)
+        self.init(apply: { [weak store] ops in store?.applyRemoteOps(ops, appliers: appliers) },
                   lastID: { [weak store] in store?.state.remoteOpsLastID ?? 0 },
                   results: { [weak store] in store?.state.remoteOpResults ?? [] },
                   acknowledged: { [weak store] ids in store?.acknowledgeRemoteOps(ids) },
-                  snapshot: { [weak store] in store?.remoteSnapshot ?? RemoteSnapshot(wallet: 0, bag: [], shop: []) })
+                  snapshot: { [weak store] in store?.remoteSnapshot ?? RemoteSnapshot(wallet: 0, bag: [], shop: []) },
+                  kinds: appliers.keys.sorted(),
+                  adoptEpoch: { [weak store] epoch in store?.adoptRemoteOpsEpoch(epoch) },
+                  epoch: { [weak store] in store?.state.remoteOpsEpoch })
     }
 }
