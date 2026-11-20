@@ -20,7 +20,7 @@ from ypoke.remote_ops import OLD_APP_REFUSAL, RemoteOps
 from ypoke.remote_views import BOX_COMMAND, PARTY_COMMAND
 from ypoke.store import Store
 from ypoke.trades import TradeService
-from ypoke.transport import lineup_listener, lineup_options_listener
+from ypoke.transport import editor_listener, editor_options_listener
 from ypoke.upload_server import battle_overview, serve
 
 LEFTOVERS = {"item_key": "leftovers", "item_name": "먹다남은음식", "held_item": "leftovers"}
@@ -329,7 +329,7 @@ def test_a_pool_member_is_kept_only_when_valid_and_never_delivered(server):
 def test_the_action_listener_replaces_the_screen_and_answers_a_refusal_under_it(server):
     store, _ = server
     post(server)
-    listener = lineup_listener(bot(store).editor)
+    listener = editor_listener(bot(store).editor)
     sent = []
 
     def press(action):
@@ -349,7 +349,7 @@ def test_the_options_listener_filters_the_swap_menu_by_the_typed_name(server):
     store, _ = server
     post(server)
     answered = []
-    lineup_options_listener(bot(store).editor)(ack=lambda **reply: answered.append(reply), body={"user": {"id": "UA"}},
+    editor_options_listener(bot(store).editor)(ack=lambda **reply: answered.append(reply), body={"user": {"id": "UA"}},
                                                payload={"block_id": "p2", "value": "콘치"})
     assert [option["value"] for option in answered[0]["options"]] == ["p2|b4"]
 

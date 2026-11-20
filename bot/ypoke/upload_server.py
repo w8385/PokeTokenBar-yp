@@ -12,7 +12,8 @@ from collections.abc import Collection
 from typing import Callable, Protocol
 from urllib.parse import parse_qs, urlsplit
 
-import ypoke.remote_lineup  # noqa: F401  registers the lineup op kind the replayed reads need
+import ypoke.remote_buy  # noqa: F401  registers the op kinds the replayed reads need
+import ypoke.remote_lineup  # noqa: F401
 from ypoke import entry_rules
 from ypoke.battle import CARRIED_STATUSES
 from ypoke.dex import normalize_dex

@@ -27,7 +27,6 @@ from ypoke.remote_views import (
     NOT_LINKED,
     PARTY_COMMAND,
     REMOTE_COMMANDS,
-    SHOP_COMMAND,
     TRADE_COMMAND,
     TRAINING_COMMAND,
 )
@@ -131,7 +130,7 @@ def test_a_downgrade_closes_the_gate_again_because_each_upload_overwrites_the_fl
     assert RemoteOps(store).edit_refusal("UA") == OLD_APP_REFUSAL
 
 
-@pytest.mark.parametrize("command", [SHOP_COMMAND, TRAINING_COMMAND, TRADE_COMMAND, MIRACLE_COMMAND])
+@pytest.mark.parametrize("command", [TRAINING_COMMAND, TRADE_COMMAND, MIRACLE_COMMAND])
 def test_the_edit_stubs_tell_an_old_app_to_update_and_a_new_one_that_they_open_soon(store, command):
     upload(store, "UA", remote=False)
     assert handler(store).handle("UA", "", command).text.split("\n")[0] == OLD_APP_REFUSAL
@@ -313,6 +312,8 @@ def test_an_upload_keeps_the_remote_fields_and_drops_malformed_lines(server):
     bag = [*REMOTE["bag"], {"key": "mega-stone:charizardite-x", "name": "리자몽나이트X", "count": 1},
            {"key": "", "name": "x", "count": 1}, {"key": "tm:85", "name": "기술머신", "count": -1}, "junk"]
     shop = [*REMOTE["shop"], {"key": "tm:85", "name": "10만볼트", "price": 4000, "category": "machine", "single": True},
+            {"key": "leftovers", "name": "먹다남은음식", "price": 900, "category": "heldItem", "category_name": "지닌 도구",
+             "single": False, "equip": True, "held_item": "leftovers"},
             {"key": "x", "name": "y", "price": "free"}]
     payload = {"party": [PIKACHU], "remote_ops": 1, "wallet": 77, "bag": bag, "shop": shop, "applied_op_id": 4,
                "remote_ops_kinds": ["lineup", "Bad Kind", 3, "lineup"]}
@@ -322,7 +323,9 @@ def test_an_upload_keeps_the_remote_fields_and_drops_malformed_lines(server):
         "bag": [{"key": "rareCandy", "name": "이상한사탕", "count": 3},
                 {"key": "mega-stone:charizardite-x", "name": "리자몽나이트X", "count": 1}],
         "shop": [{"key": "mint", "name": "민트", "price": 300, "single": False},
-                 {"key": "tm:85", "name": "10만볼트", "price": 4000, "single": True, "category": "machine"}],
+                 {"key": "tm:85", "name": "10만볼트", "price": 4000, "single": True, "category": "machine"},
+                 {"key": "leftovers", "name": "먹다남은음식", "price": 900, "single": False, "category": "heldItem",
+                  "category_name": "지닌 도구", "equip": True, "held_item": "leftovers"}],
         "kinds": ["lineup"],
     }
 

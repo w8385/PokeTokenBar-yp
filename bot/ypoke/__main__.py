@@ -22,13 +22,15 @@ from ypoke.miracle import MiracleService
 from ypoke.names import DisplayNames
 from ypoke.pokeapi import PokeAPIService
 from ypoke.remote_ops import RemoteOps
+from ypoke.shop_editor import ACTION_PREFIX as SHOP_ACTION_PREFIX
+from ypoke.shop_editor import PICK_ACTION as SHOP_PICK_ACTION
 from ypoke.store import Store
 from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, TradeService
 from ypoke.transport import (
     SlackBoard,
     deliver,
-    lineup_listener,
-    lineup_options_listener,
+    editor_listener,
+    editor_options_listener,
     mention_listener,
     miracle_listener,
     options_listener,
@@ -93,8 +95,10 @@ def main() -> None:
     app.action(MIRACLE_PICK_ACTION_ID)(miracle_listener(miracle, "pick"))
     app.options(PICK_ACTION_ID)(options_listener(trades))
     app.options(MIRACLE_PICK_ACTION_ID)(options_listener(trades))
-    app.action(re.compile(f"^{ACTION_PREFIX}"))(lineup_listener(handler.editor))
-    app.options(SWAP_ACTION)(lineup_options_listener(handler.editor))
+    app.action(re.compile(f"^{ACTION_PREFIX}"))(editor_listener(handler.editor))
+    app.options(SWAP_ACTION)(editor_options_listener(handler.editor))
+    app.action(re.compile(f"^{SHOP_ACTION_PREFIX}"))(editor_listener(handler.shop))
+    app.options(SHOP_PICK_ACTION)(editor_options_listener(handler.shop))
     app.event("app_mention")(mention_listener(handler, pictures))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 

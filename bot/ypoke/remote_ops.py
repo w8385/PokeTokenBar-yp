@@ -283,13 +283,7 @@ def _bag_line(raw: object) -> dict | None:
     key, name = _text(raw.get("key"), 80), _text(raw.get("name"), 60)
     if not (key and name):
         return None
-    line = {"key": key, "name": name, "count": raw["count"]}
-    if raw.get("equip") is True:
-        line["equip"] = True
-        slug = raw.get("held_item")
-        if isinstance(slug, str) and _SLUG.fullmatch(slug):
-            line["held_item"] = slug
-    return line
+    return {"key": key, "name": name, "count": raw["count"]} | _equip(raw)
 
 
 def _shop_line(raw: object) -> dict | None:
@@ -299,10 +293,17 @@ def _shop_line(raw: object) -> dict | None:
     if not (key and name):
         return None
     line = {"key": key, "name": name, "price": raw["price"], "single": raw.get("single") is True}
-    category = _text(raw.get("category"), 20)
-    if category:
-        line["category"] = category
-    return line
+    for field_name in ("category", "category_name"):
+        if value := _text(raw.get(field_name), 20):
+            line[field_name] = value
+    return line | _equip(raw)
+
+
+def _equip(raw: dict) -> dict:
+    if raw.get("equip") is not True:
+        return {}
+    slug = raw.get("held_item")
+    return {"equip": True, "held_item": slug} if isinstance(slug, str) and _SLUG.fullmatch(slug) else {"equip": True}
 
 
 def _text(value: object, limit: int) -> str | None:

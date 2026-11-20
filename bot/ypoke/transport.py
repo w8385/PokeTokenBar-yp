@@ -23,6 +23,7 @@ from ypoke.commands import (
 )
 from ypoke.lineup_editor import LineupEditor
 from ypoke.miracle import MiracleService
+from ypoke.shop_editor import ShopEditor
 from ypoke.trades import TradeService
 
 DM_FALLBACK_NOTE = "(대결을 신청한 곳에 올릴 수 없어서 DM으로 보내요)"
@@ -149,8 +150,8 @@ def options_listener(trades: TradeService):
     return listener
 
 
-def lineup_listener(editor: LineupEditor):
-    """A `/파티` editor control. The new screen replaces the private message the press came from; a refusal is a
+def editor_listener(editor: LineupEditor | ShopEditor):
+    """A `/파티` or `/상점` control. The new screen replaces the private message the press came from; a refusal is a
     private note under it."""
 
     def listener(ack, body, action, respond) -> None:
@@ -162,7 +163,7 @@ def lineup_listener(editor: LineupEditor):
         try:
             reply = editor.act(user_id, action["action_id"], value, selected)
         except Exception:
-            log.exception("lineup edit failed")
+            log.exception("edit failed")
             respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
             return
         respond(text=reply.screen.text, blocks=reply.screen.blocks, response_type="ephemeral",
@@ -171,14 +172,14 @@ def lineup_listener(editor: LineupEditor):
     return listener
 
 
-def lineup_options_listener(editor: LineupEditor):
-    """Loads the swap menu past Slack's 100 options: the block id is the slot's individual id."""
+def editor_options_listener(editor: LineupEditor | ShopEditor):
+    """Loads a menu past Slack's 100 options: the block id is the lineup slot's individual id or the shop category."""
 
     def listener(ack, body, payload) -> None:
         try:
             options = editor.options(body["user"]["id"], payload.get("block_id") or "", payload.get("value") or "")
         except Exception:
-            log.exception("lineup options failed")
+            log.exception("editor options failed")
             options = []
         ack(options=options)
 

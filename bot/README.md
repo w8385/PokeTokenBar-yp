@@ -75,8 +75,12 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   아래로/빼기, 기술 (up to four: level-up, Mirror Herb egg moves, owned TMs) and 도구 (from the bag, with counts).
   `/박스 <이름>` adds a 엔트리에 넣기 button. Choices that would break the species or item clause are not offered.
   Each change queues one `lineup` op with the whole lineup ([API.md](API.md#the-lineup-op)), so `/대결` and the
-  app's coworker list use it at once; the app applies it at its next office sync or cancels it with a DM reason. `/상점`, `/트레이닝`, `/교환` and
-  `/미라클` answer "곧 열려요" for now.
+  app's coworker list use it at once; the app applies it at its next office sync or cancels it with a DM reason.
+- `/상점 [이름]` buys from the app's shop when the app lists `buy` in `remote_ops_kinds`: a menu per category (typed
+  past 100 items), then the item with a button per quantity the balance covers. The balance is the last synced
+  wallet less the pending buys; a buy past it is refused on the spot. Each buy queues one `buy` op
+  ([API.md](API.md#the-buy-op)); the items are in `/가방` and the `/파티` item menu at once. An older app gets the
+  list without buttons. `/트레이닝`, `/교환` and `/미라클` answer "곧 열려요" for now.
 - The upload response carries the app's "최근 대결" and "동료" lists ([API.md](API.md)). Display names come from Slack
   `users.info` (scope `users:read`, cached an hour); without the scope the names are `null` and the app shows a generic label.
 - Slack runs no slash commands in threads, so mentions cover them all and answer in the thread:
