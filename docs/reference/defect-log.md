@@ -1916,6 +1916,18 @@ read_when:
   **Class sweep (a rule enforced at one end only):** the item clause now runs at battle time too; the upload already
   stripped duplicate items. `/파티` still shows the stored party as uploaded. `TradePool.fightingIDs` keeps the full
   lineup, so a benched duplicate stays trade-locked like any picked member.
+- **A Slack edit the app has not applied yet must show everywhere the party is read.** A `lineup` op changes the
+  party in the bot before the app picks it up at its next sync. Every reader of the stored upload (`/대결`, `/파티`,
+  `battle_overview`, `leads_except`, `GET /v1/party`, the warm-up of stored parties, the coworkers list in the upload
+  reply) has to read `RemoteOps.view` (upload plus pending ops replayed), or a coworker battles the old party and the
+  player sees an edit that did nothing. An old-style upload that arrives before the app applied the op must not undo
+  it either: replay runs on every read, and an op leaves the queue only on the app's ack.
+  **Class sweep:** `rg '_store\.(party|leads_except)\(' bot/ypoke` lists every raw reader; outside `RemoteOps` itself
+  only `_wait` is left, and it asks whether an upload exists, which replay cannot change. The app side cancels the whole op with a reason when an
+  individual, item or TM is gone, so nothing is half-applied (`RemoteLineup.refusal` runs before any change).
+  **Guards:** `bot/tests/test_remote_lineup.py` (replay readers, old upload, ack, epoch); pointing `battle_overview`,
+  `leads_except` or `GET /v1/party` back at the raw upload fails 2, 2 and 1 tests. `RemoteLineupTests` (all or
+  nothing, restart, clauses); skipping the app's item check fails the missing-item test.
 
 ## Tests and the user's desktop
 
