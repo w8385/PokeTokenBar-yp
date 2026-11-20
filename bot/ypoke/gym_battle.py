@@ -9,7 +9,7 @@ from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
-from ypoke import gyms
+from ypoke import entry_rules, gyms
 from ypoke.battle import (
     CARRIED_STATUSES, AbilityAct, AbilityTransform, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage,
     HazardHit, ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal, VolatileTick, WeatherDamage,
@@ -43,9 +43,12 @@ class GymBattles:
             return None
         if carried is not None and opponent.run is None:
             raise PartyError("carried is only for Elite Four and hideout battles")
-        mine = [{**member, "level": opponent.level} if member.get("rental") else member for member in team]
+        entry = entry_rules.lineup(team)
+        mine = [{**member, "level": opponent.level} if member.get("rental") else member for member in entry.members]
         starts = [None if state is None else Carry(state["hp"], state["status"]) for state in carried or [None] * len(mine)]
-        awake = [index for index, start in enumerate(starts) if start is None or start.hp > 0]
+        awake = [index for index in entry.kept if starts[index] is None or starts[index].hp > 0]
+        if not awake:
+            raise PartyError("carried: no member can still fight")
         with ThreadPoolExecutor(max_workers=WORKERS) as pool:
             fighters = list(pool.map(partial(combatant, self._pokeapi), [*mine, *gyms.foe_members(opponent)]))
         player, foes = fighters[:len(mine)], tuple(fighters[len(mine):])
@@ -53,9 +56,9 @@ class GymBattles:
         finale = len(foes) - opponent.finale if opponent.finale else None
         result = simulate((tuple(player[index] for index in awake), foes), seed, [starts[index] for index in awake],
                           finale=finale, unlimited_megas=opponent.kind == "hidden")
-        shown, carry = _outcomes(starts, awake, result)
+        shown, carry = _outcomes(starts, awake, result, entry.kept)
         won = result.winner == 0
-        standing = any(state["hp"] > 0 for state in carry)
+        standing = any(carry[index]["hp"] > 0 for index in entry.kept)
         following = gyms.next_in_run(opponent) if won and standing else None
         return {
             "gym_id": opponent.id,
@@ -73,12 +76,18 @@ class GymBattles:
         }
 
 
-def _outcomes(starts: Sequence[Carry | None], awake: list[int], result: BattleResult) -> tuple[list[int | None], list[dict]]:
+def _outcomes(starts: Sequence[Carry | None], awake: list[int], result: BattleResult,
+              kept: Sequence[int]) -> tuple[list[int | None], list[dict]]:
     """Per team member: the HP share the battle reported (0 for one that was already down, None when it never got
-    sent out) and the state to carry on. A member that never got sent out keeps what it came in with."""
+    sent out) and the state to carry on. A member that never got sent out, or sat out under the species clause,
+    keeps what it came in with."""
     shown: list[int | None] = []
     carry: list[dict] = []
     for index, start in enumerate(starts):
+        if index not in kept:
+            shown.append(None)
+            carry.append({"hp": 100, "status": None} if start is None else {"hp": start.hp, "status": start.status})
+            continue
         if index not in awake:
             shown.append(0)
             carry.append({"hp": 0, "status": None})

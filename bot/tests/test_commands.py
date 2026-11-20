@@ -55,6 +55,15 @@ MOVES = {
     7: [move(33, "몸통박치기", "normal", 40, 1, "physical"), move(55, "물대포", "water", 40, 3)],
 }
 WILD_MOVES = [move(1, "막치기", "normal", 40, 1, "physical")]
+# Six species that fight like Pikachu and six like Squirtle: a lineup takes one Pokémon per species.
+PIKACHU_LIKE = {25: "피카츄", 26: "라이츄", 172: "피츄", 417: "파치리스", 587: "에몽가", 702: "데덴네"}
+SQUIRTLE_LIKE = {7: "꼬부기", 8: "어니부기", 9: "거북왕", 54: "고라파덕", 60: "발챙이", 118: "콘치"}
+for _model, _names in ((25, PIKACHU_LIKE), (7, SQUIRTLE_LIKE)):
+    for _species, _name in _names.items():
+        SPECIES[_species] = {**SPECIES[_model], "name_ko": _name}
+        MOVES[_species] = MOVES[_model]
+SIX_A = tuple(PIKACHU_LIKE)
+SIX_B = tuple(SQUIRTLE_LIKE)
 
 
 class FakePokeAPI:
@@ -163,9 +172,9 @@ def test_battle_size_takes_one_to_six(text, size):
 @pytest.mark.parametrize("word,size", [("4", 4), ("6", 6), ("풀", 6)])
 def test_a_size_word_fields_the_first_n_members_from_a_six_member_entry(store, word, size):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 50 + level) for level in range(6)])
+    store.save_party("UA", [member(species, 50 + level) for level, species in enumerate(SIX_A)])
     store.issue_token("UB")
-    store.save_party("UB", [member(7, 50 + level) for level in range(6)])
+    store.save_party("UB", [member(species, 50 + level) for level, species in enumerate(SIX_B)])
     reply = handler(store).handle("UA", f"<@UB> {word}")
     assert [len(side) for side in lineups(reply)] == [size, size]
     assert f" · {size}:{size} · " in reply.summary
@@ -174,9 +183,9 @@ def test_a_size_word_fields_the_first_n_members_from_a_six_member_entry(store, w
 
 def test_an_older_three_member_upload_fields_what_it_has_against_six(store):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 50)] * 3)
+    store.save_party("UA", [member(species, 50) for species in SIX_A[:3]])
     store.issue_token("UB")
-    store.save_party("UB", [member(7, 50)] * 6)
+    store.save_party("UB", [member(species, 50) for species in SIX_B])
     reply = handler(store).handle("UA", "<@UB> 6")
     assert [len(side) for side in lineups(reply)] == [3, 6]
     assert " · 3:6 · " in reply.summary
@@ -184,16 +193,16 @@ def test_an_older_three_member_upload_fields_what_it_has_against_six(store):
 
 def test_a_six_member_rematch_replays_six_against_six(store):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 50)] * 6)
+    store.save_party("UA", [member(species, 50) for species in SIX_A])
     store.issue_token("UB")
-    store.save_party("UB", [member(7, 50)] * 6)
+    store.save_party("UB", [member(species, 50) for species in SIX_B])
     reply = handler(store).rematch("UA", "UA:UB:6:UA", Where("CCHAN", "1.1"), "1.1")
     assert [len(side) for side in lineups(reply)] == [6, 6]
 
 
 def test_bot_practice_takes_up_to_six(store):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 50)] * 6)
+    store.save_party("UA", [member(species, 50) for species in SIX_A])
     reply = handler(store).handle("UA", "<@UBOT> 6", BATTLE_COMMAND)
     assert [len(side) for side in lineups(reply)] == [6, 6]
     assert reply.rematch == "UA:UBOT:6"
@@ -202,7 +211,7 @@ def test_bot_practice_takes_up_to_six(store):
 @pytest.mark.parametrize("word", ["3", "3:3"])
 def test_a_trailing_three_word_asks_for_the_three_member_lineup(store, word):
     store.issue_token("UA")
-    store.save_party("UA", [member(7, 5), member(25, 30), member(7, 10), member(25, 100)])
+    store.save_party("UA", [member(7, 5), member(25, 30), member(8, 10), member(26, 100)])
     upload(store, "UB", 25, 60)
     reply = handler(store).handle("UA", f"<@UB> {word}")
     assert [len(side) for side in lineups(reply)] == [3, 1]
@@ -214,9 +223,9 @@ def test_a_trailing_three_word_asks_for_the_three_member_lineup(store, word):
 
 def test_the_three_word_works_before_the_mention_and_in_a_mention_battle(store):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 50)] * 3)
+    store.save_party("UA", [member(species, 50) for species in SIX_A[:3]])
     store.issue_token("UB")
-    store.save_party("UB", [member(7, 20)] * 3)
+    store.save_party("UB", [member(species, 20) for species in SIX_B[:3]])
     bot = handler(store)
     assert [len(side) for side in lineups(bot.handle("UA", "3 <@UB>"))] == [3, 3]
     assert [len(side) for side in lineups(bot.handle_mention("UA", "<@UBOT> 대결 <@UB> 3"))] == [3, 3]
@@ -240,12 +249,12 @@ def test_a_one_member_upload_battles_without_send_outs(store):
 
 def test_three_against_one_ends_when_the_lone_pokemon_is_beaten(store):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 50), member(25, 50), member(25, 50)])
+    store.save_party("UA", [member(25, 50), member(26, 50), member(172, 50)])
     store.issue_token("UB")
     store.save_party("UB", [member(7, 5)])
     reply = handler(store).handle("UA", "<@UB> 3")
     assert " · 3:1 · " in reply.summary
-    assert lineups(reply) == [["피카츄 100%", "피카츄 대기", "피카츄 대기"], ["꼬부기 Lv5 💥"]]
+    assert lineups(reply) == [["피카츄 100%", "라이츄 대기", "피츄 대기"], ["꼬부기 Lv5 💥"]]
     assert store.record("UA") == Record(1, 0)
 
 
@@ -253,10 +262,10 @@ def test_one_against_three_lists_the_three_and_the_stronger_side_wins(store):
     store.issue_token("UA")
     store.save_party("UA", [member(7, 1)])
     store.issue_token("UB")
-    store.save_party("UB", [member(25, 50), member(7, 50), member(25, 50)])
+    store.save_party("UB", [member(25, 50), member(7, 50), member(26, 50)])
     reply = handler(store).handle("UA", "<@UB> 3")
     assert " · 1:3 · " in reply.summary
-    assert lineups(reply) == [["꼬부기 Lv1 💥"], ["피카츄 100%", "꼬부기 대기", "피카츄 대기"]]
+    assert lineups(reply) == [["꼬부기 Lv1 💥"], ["피카츄 100%", "꼬부기 대기", "라이츄 대기"]]
     assert store.record("UB") == Record(1, 0)
 
 
@@ -506,14 +515,14 @@ def test_a_challenger_without_an_upload_is_told_privately_and_the_challenge_wait
 
 def test_a_waiting_three_member_challenge_keeps_its_size_and_a_default_one_stays_one_on_one(store):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 50)] * 3)
+    store.save_party("UA", [member(species, 50) for species in SIX_A[:3]])
     bot = handler(store)
     bot.handle("UA", "<@UB> 3", BATTLE_COMMAND, CHANNEL)
     bot.handle("UA", "<@UC>", BATTLE_COMMAND, CHANNEL)
     assert {(c.opponent_id, c.size) for c in pending(store)} == {("UB", 3), ("UC", 1)}
     for user in ("UB", "UC"):
         store.issue_token(user)
-        store.save_party(user, [member(7, 20)] * 3)
+        store.save_party(user, [member(species, 20) for species in SIX_B[:3]])
     [full] = bot.run_pending("UB")
     [single] = bot.run_pending("UC")
     assert [len(side) for side in lineups(full.reply)] == [3, 3]
@@ -790,7 +799,7 @@ def test_bot_entry_is_seeded_distinct_and_spans_the_national_dex():
 
 def test_bot_practice_brings_as_many_random_pokemon_as_the_challenger_at_each_level(store, monkeypatch):
     store.issue_token("UA")
-    store.save_party("UA", [member(25, 42), member(7, 10), member(25, 70), member(7, 99)])
+    store.save_party("UA", [member(25, 42), member(7, 10), member(26, 70), member(8, 99)])
     monkeypatch.setattr("ypoke.commands.secrets.randbits", lambda bits: 99)
     pokeapi = FakePokeAPI()
     reply = handler(store, pokeapi=pokeapi).handle("UA", "<@UBOT> 3", BATTLE_COMMAND)

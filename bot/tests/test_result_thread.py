@@ -146,7 +146,7 @@ def test_result_blocks_are_context_header_lineups_button_divider_and_one_context
 def test_a_one_on_one_has_no_highlight_section_and_a_full_lineup_has_the_deciding_knockout_in_the_header(store):
     for user in ("UA", "UB"):
         store.issue_token(user)
-        store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
+        store.save_party(user, [member(25, 50), member(7, 20), member(26, 40)])
     bot = handler(store)
     one = bot.handle("UA", "<@UB>")
     assert result_blocks(one)[0]["text"]["text"] == f"*{one.card.title}*\n{one.card.detail}"
@@ -250,7 +250,7 @@ def test_rematch_reruns_the_matchup_with_the_current_upload(store):
 def test_rematch_keeps_the_three_member_format(store):
     for user in ("UA", "UB"):
         store.issue_token(user)
-        store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
+        store.save_party(user, [member(25, 50), member(7, 20), member(26, 40)])
     reply = handler(store).rematch("UA", "UA:UB:3:UA", Where("CCHAN", "1.1"), "1.1")
     assert [len(side) for side in lineups(reply)] == [3, 3]
     assert " · 3:3 · " in reply.summary
@@ -260,7 +260,7 @@ def test_rematch_keeps_the_three_member_format(store):
 def test_an_old_value_without_a_size_or_loser_is_one_on_one_for_the_stored_loser(store):
     for user in ("UA", "UB"):
         store.issue_token(user)
-        store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
+        store.save_party(user, [member(25, 50), member(7, 20), member(26, 40)])
     store.record_battle("UA", "UB", "UB", 1)
     reply = handler(store).rematch("UA", "UA:UB", Where("CCHAN", "1.1"), "1.1")
     assert [len(side) for side in lineups(reply)] == [1, 1]
@@ -391,7 +391,7 @@ def test_slash_battle_answers_with_the_one_message_where_the_bot_cannot_post(sto
 def test_the_slash_three_member_battle_posts_both_lineups_with_bars_and_a_three_member_rematch_value(store):
     for user in ("UA", "UB"):
         store.issue_token(user)
-        store.save_party(user, [member(25, 50), member(7, 20), member(25, 40)])
+        store.save_party(user, [member(25, 50), member(7, 20), member(26, 40)])
     client, respond = FakeClient(), FakeRespond()
     slash(handler(store), client, respond, text="<@UB|bob> 3")
     [message] = client.posts
@@ -399,7 +399,7 @@ def test_the_slash_three_member_battle_posts_both_lineups_with_bars_and_a_three_
     assert all(len(field["text"].splitlines()) == 4 for field in fields)
     members = [line for field in fields for line in field["text"].splitlines()[1:]]
     assert all(re.search(r"[▰▱]{10} \d+%$|💥$|대기$", line) for line in members)
-    assert [line.split(" ")[0] for line in fields[0]["text"].splitlines()[1:]] == ["피카츄", "꼬부기", "피카츄"]
+    assert [line.split(" ")[0] for line in fields[0]["text"].splitlines()[1:]] == ["피카츄", "꼬부기", "라이츄"]
     assert button_of(message)["value"] in ("UA:UB:3:UA", "UA:UB:3:UB")
 
 

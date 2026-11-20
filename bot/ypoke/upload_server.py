@@ -12,6 +12,7 @@ from collections.abc import Collection
 from typing import Callable, Protocol
 from urllib.parse import parse_qs, urlsplit
 
+from ypoke import entry_rules
 from ypoke.battle import CARRIED_STATUSES
 from ypoke.dex import normalize_dex
 from ypoke.move_effects import wants_status_moves
@@ -21,7 +22,6 @@ from ypoke.miracle import POST_ERRORS as MIRACLE_POST_ERRORS
 from ypoke.miracle import MiracleService
 from ypoke.remote_ops import MAX_ACK_IDS, RemoteOps, is_reason, normalize_remote
 from ypoke.store import Store
-from ypoke.tera_forms import usable_item
 from ypoke.trades import PROPOSE_ERRORS, TradeService
 
 MAX_BODY_BYTES = 5 * 1024 * 1024
@@ -116,20 +116,8 @@ def validate_members(members: object, field: str) -> list[dict]:
     """The normalized members of the list at `field` (its name in error messages), or PartyError."""
     if not isinstance(members, list) or not 1 <= len(members) <= MAX_PARTY_SIZE:
         raise PartyError(f"{field} must be a list of 1 to {MAX_PARTY_SIZE} entries")
-    return _drop_duplicate_items([_validate_member(field, index, member) for index, member in enumerate(members)])
-
-
-def _drop_duplicate_items(party: list[dict]) -> list[dict]:
-    seen: set[str] = set()
-    for member in party:
-        item = member.get("held_item")
-        if item is None or usable_item(item, member["pokemon_id"]) is None:
-            continue
-        if item in seen:
-            del member["held_item"]
-        else:
-            seen.add(item)
-    return party
+    validated = [_validate_member(field, index, member) for index, member in enumerate(members)]
+    return list(entry_rules.lineup(validated).members)
 
 
 def check_moves(party: list[dict], moves_for: MovesFor, field: str = "party") -> None:
