@@ -15,6 +15,7 @@ from typing import Protocol
 from ypoke.dex import sprite_url
 from ypoke.messages import DirectMessage
 from ypoke.trades import (
+    HOLD_ERRORS,
     TRADE_LIFETIME,
     UNKNOWN_INDIVIDUAL,
     Trade,
@@ -36,6 +37,7 @@ POST_ERRORS = {
     "locked": "그 포켓몬은 이미 다른 교환에 걸려 있어요.",
     "already_open": "미라클 교환에는 한 번에 한 마리만 올릴 수 있어요. 먼저 올린 포켓몬을 내려 주세요.",
     "post_failed": "대결 채널에 올리지 못했어요. 잠시 뒤 다시 해 주세요.",
+    **HOLD_ERRORS,
 }
 ENDED_TEXT = {
     "completed": "이미 교환됐어요.",
@@ -122,6 +124,8 @@ class MiracleService:
             return PostResult(error="already_open")
         if self._trades.is_locked(user_id, give_id):
             return PostResult(error="locked")
+        if held := self._trades.hold(user_id, give_id):
+            return PostResult(error=held)
         offer = Offer(uuid.uuid4().hex, user_id, give_id, give, "open", self._now())
         if not self._insert(offer):
             return PostResult(error="already_open")
@@ -181,6 +185,8 @@ class MiracleService:
         back = self._trades.pool_entry(user_id, individual_id)
         if back is None or self._trades.is_locked(user_id, individual_id):
             return MiracleReply(NOT_TRADABLE, ok=False)
+        if held := self._trades.hold(user_id, individual_id):
+            return MiracleReply(HOLD_ERRORS[held], ok=False)
         give = with_current_item(offer.give, give_now)
         if not self._claim(offer, user_id, give, back):
             return MiracleReply(ENDED_TEXT["completed"], ok=False, final=True)

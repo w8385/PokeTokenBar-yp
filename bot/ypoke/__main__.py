@@ -25,6 +25,8 @@ from ypoke.remote_ops import RemoteOps
 from ypoke.shop_editor import ACTION_PREFIX as SHOP_ACTION_PREFIX
 from ypoke.shop_editor import PICK_ACTION as SHOP_PICK_ACTION
 from ypoke.store import Store
+from ypoke.trade_editor import ACTION_PREFIX as OFFER_ACTION_PREFIX
+from ypoke.trade_editor import PICKER_ACTIONS as OFFER_PICKER_ACTIONS
 from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, TradeService
 from ypoke.training_editor import ACTION_PREFIX as TRAINING_ACTION_PREFIX
 from ypoke.training_editor import PICK_ACTION as TRAINING_PICK_ACTION
@@ -57,18 +59,21 @@ def main() -> None:
     if home_channel:
         _join(app, home_channel)
     remote = RemoteOps(store)
+    bot_user_id = app.client.auth_test()["user_id"]
+    names = DisplayNames(app.client)
+    names.warm(store.linked_user_ids())
+    trades = TradeService(store, name_for=names, bot_user_id=bot_user_id, holds=remote.holds)
+    miracle = MiracleService(trades, SlackBoard(app.client, home_channel) if home_channel else None)
     handler = CommandHandler(
         store,
         pokeapi,
         os.environ.get("YPOKE_PUBLIC_URL"),
-        bot_user_id=app.client.auth_test()["user_id"],
+        bot_user_id=bot_user_id,
         home_channel=home_channel,
         remote=remote,
+        trades=trades,
+        miracle=miracle,
     )
-    names = DisplayNames(app.client)
-    names.warm(store.linked_user_ids())
-    trades = TradeService(store, name_for=names, bot_user_id=handler.bot_user_id)
-    miracle = MiracleService(trades, SlackBoard(app.client, home_channel) if home_channel else None)
     serve(
         store,
         os.environ.get("YPOKE_HTTP_HOST", "0.0.0.0"),
@@ -103,6 +108,9 @@ def main() -> None:
     app.options(SHOP_PICK_ACTION)(editor_options_listener(handler.shop))
     app.action(re.compile(f"^{TRAINING_ACTION_PREFIX}"))(editor_listener(handler.training))
     app.options(TRAINING_PICK_ACTION)(editor_options_listener(handler.training))
+    app.action(re.compile(f"^{OFFER_ACTION_PREFIX}"))(editor_listener(handler.trading))
+    for action_id in OFFER_PICKER_ACTIONS:
+        app.options(action_id)(editor_options_listener(handler.trading))
     app.event("app_mention")(mention_listener(handler, pictures))
     SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
 

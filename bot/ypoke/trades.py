@@ -9,7 +9,7 @@ import json
 import sqlite3
 import uuid
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -85,6 +85,14 @@ _NOT_TRADABLE = "그 포켓몬은 지금 교환할 수 없어요. 앱에서 키�
 UNKNOWN_INDIVIDUAL = "그 포켓몬 정보가 아직 봇에 없어요. 앱을 열어 동기화한 뒤 다시 해 주세요."
 
 NameFor = Callable[[str], str | None]
+Holds = Callable[[str], Mapping[str, str]]
+
+IN_LINEUP = "in_lineup"
+PENDING_CHANGE = "pending_change"
+HOLD_ERRORS = {
+    IN_LINEUP: "대결 라인업에 넣은 포켓몬은 교환할 수 없어요. `/파티`에서 빼고 다시 해 주세요.",
+    PENDING_CHANGE: "슬랙에서 바꾼 내용이 아직 앱에 들어가지 않은 포켓몬이에요. 회사에서 앱이 한 번 동기화한 뒤 다시 해 주세요.",
+}
 
 PROPOSE_ERRORS = {
     "self": "자기 자신과는 교환할 수 없어요.",
@@ -92,6 +100,7 @@ PROPOSE_ERRORS = {
     "unknown_individual": UNKNOWN_INDIVIDUAL,
     "locked": "그 포켓몬은 이미 다른 교환에 걸려 있어요.",
     "too_many": "진행 중인 교환 제안이 너무 많아요. 끝난 뒤에 다시 해 주세요.",
+    **HOLD_ERRORS,
 }
 
 
@@ -134,11 +143,15 @@ class TradeService:
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
         name_for: NameFor = lambda user_id: None,
         bot_user_id: str | None = None,
+        holds: Holds = lambda user_id: {},
     ):
+        """`holds` names the individuals a user may not trade yet and why (`HOLD_ERRORS`): what their Slack edits,
+        not yet applied by the app, put in the battle lineup or changed (`RemoteOps.holds`)."""
         self._store = store
         self._now = now
         self._name_for = name_for
         self._bot_user_id = bot_user_id
+        self._holds = holds
         with closing(self._connect()) as connection, connection:
             connection.executescript(_SCHEMA)
 
@@ -190,6 +203,8 @@ class TradeService:
             return TradeReply(_NOT_TRADABLE, ok=False)
         if individual_id in self._locked_ids(user_id, except_trade=trade_id):
             return TradeReply(PROPOSE_ERRORS["locked"], ok=False)
+        if held := self.hold(user_id, individual_id):
+            return TradeReply(HOLD_ERRORS[held], ok=False)
         self._update(trade_id, "UPDATE trades SET back_id = ?, back_json = ? WHERE id = ? AND status = 'offered'",
                      (individual_id, json.dumps(back, ensure_ascii=False), trade_id))
         return TradeReply(f"{_label(back)}을(를) 골랐어요. 수락을 누르면 상대 확인을 기다려요.")
@@ -290,6 +305,8 @@ class TradeService:
             return "unknown_individual"
         if give_id in self._locked_ids(user_id):
             return "locked"
+        if held := self.hold(user_id, give_id):
+            return held
         if self._open_offers(user_id) >= MAX_OPEN_OFFERS:
             return "too_many"
         return None
@@ -339,9 +356,13 @@ class TradeService:
         return sorted(self._locked_ids(user_id))
 
     def free_entries(self, user_id: str) -> list[dict]:
-        """The user's pool without the individuals already in an open trade or miracle offer."""
-        locked = self._locked_ids(user_id)
-        return [entry for entry in self._pool(user_id) if entry["id"] not in locked]
+        """The user's pool without the individuals already in an open trade or miracle offer, or held (`holds`)."""
+        unavailable = self._locked_ids(user_id) | set(self._holds(user_id))
+        return [entry for entry in self._pool(user_id) if entry["id"] not in unavailable]
+
+    def hold(self, user_id: str, individual_id: str) -> str | None:
+        """Why the user may not trade `individual_id` yet (a `HOLD_ERRORS` code), or None."""
+        return self._holds(user_id).get(individual_id)
 
     def is_locked(self, user_id: str, individual_id: str) -> bool:
         return individual_id in self._locked_ids(user_id)
@@ -355,6 +376,12 @@ class TradeService:
 
     def name(self, user_id: str) -> str:
         return self._name(user_id)
+
+    def handle(self, user_id: str) -> str:
+        return self._handle(user_id)
+
+    def user_for(self, handle: str) -> str:
+        return self._user_for(handle)
 
     def connect(self) -> sqlite3.Connection:
         return self._connect()

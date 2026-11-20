@@ -18,7 +18,7 @@ from datetime import UTC, datetime
 
 from ypoke.messages import DirectMessage
 from ypoke.store import Lead, Store, StoredParty
-from ypoke.trades import TradeService
+from ypoke.trades import IN_LINEUP, PENDING_CHANGE, TradeService
 
 OLD_APP_REFUSAL = "앱을 업데이트하고 회사에서 한 번 켜 주세요."
 UNSUPPORTED = "unsupported"
@@ -85,13 +85,15 @@ class OpKind:
     """One kind of remote op. `replay` returns the view with the op's effect (the view it gets is a copy it may
     change); it leaves the view as it is when the op's target is not there. `describe` is a short Korean line.
     `reasons` words the cancel codes the app sends for it. With `supersedes`, a new op of the kind replaces the
-    user's pending ones (each carries the whole target), so the result DM lists only the last."""
+    user's pending ones (each carries the whole target), so the result DM lists only the last. `changes` names the
+    individuals the op edits; they cannot be traded until the app has applied it."""
 
     name: str
     describe: Callable[[dict], str]
     replay: Callable[[View, dict], View]
     reasons: Mapping[str, str] = field(default_factory=dict)
     supersedes: bool = False
+    changes: Callable[[dict], list[str]] = lambda payload: []
 
 
 OP_KINDS: dict[str, OpKind] = {}
@@ -153,6 +155,16 @@ class RemoteOps:
         for op in pending:
             view = _replay(view, op)
         return view
+
+    def holds(self, user_id: str) -> dict[str, str]:
+        """The user's individuals that may not be traded until the app syncs, with the `trades.HOLD_ERRORS` code:
+        those in the replayed battle lineup, and those a pending op changes."""
+        view = self.view(user_id)
+        if view is None:
+            return {}
+        held = {individual_id: PENDING_CHANGE for op in view.pending if op.kind in OP_KINDS
+                for individual_id in OP_KINDS[op.kind].changes(op.payload)}
+        return held | {member["id"]: IN_LINEUP for member in view.party if "id" in member}
 
     def submit(self, user_id: str, kind: str, payload: dict) -> Submitted:
         """Queue an op of a registered `kind`; its effect shows in the next view and battle."""

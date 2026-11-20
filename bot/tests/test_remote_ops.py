@@ -21,7 +21,6 @@ from ypoke.remote_views import (
     BAG_COMMAND,
     BOX_COMMAND,
     BOX_PAGE_SIZE,
-    COMING_SOON,
     MIRACLE_COMMAND,
     NO_UPLOAD,
     NOT_LINKED,
@@ -130,13 +129,12 @@ def test_a_downgrade_closes_the_gate_again_because_each_upload_overwrites_the_fl
 
 
 @pytest.mark.parametrize("command", [TRADE_COMMAND, MIRACLE_COMMAND])
-def test_the_edit_stubs_tell_an_old_app_to_update_and_a_new_one_that_they_open_soon(store, command):
+def test_trades_are_bot_records_so_an_old_app_is_not_told_to_update(store, command):
     upload(store, "UA", remote=False)
-    assert handler(store).handle("UA", "", command).text.split("\n")[0] == OLD_APP_REFUSAL
-    upload(store, "UA")
     reply = handler(store).handle("UA", "", command)
-    assert (reply.text.split("\n")[0], reply.in_channel, reply.public) == (COMING_SOON, False, None)
-    assert reply.blocks[-1]["elements"][0]["text"].startswith("회사에서 마지막으로 동기화: ")
+    assert OLD_APP_REFUSAL not in text_of(reply)
+    assert (reply.in_channel, reply.public) == (False, None)
+    assert reply.blocks[-1]["elements"][-1]["text"].startswith("회사에서 마지막으로 동기화: ")
 
 
 def test_views_still_work_for_an_old_app(store):

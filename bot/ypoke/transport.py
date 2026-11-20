@@ -24,6 +24,7 @@ from ypoke.commands import (
 from ypoke.lineup_editor import LineupEditor
 from ypoke.miracle import MiracleService
 from ypoke.shop_editor import ShopEditor
+from ypoke.trade_editor import TradeEditor
 from ypoke.trades import TradeService
 from ypoke.training_editor import TrainingEditor
 
@@ -151,11 +152,11 @@ def options_listener(trades: TradeService):
     return listener
 
 
-def editor_listener(editor: LineupEditor | ShopEditor | TrainingEditor):
-    """A `/파티`, `/상점` or `/트레이닝` control. The new screen replaces the private message the press came from; a
-    refusal is a private note under it."""
+def editor_listener(editor: LineupEditor | ShopEditor | TrainingEditor | TradeEditor):
+    """A `/파티`, `/상점`, `/트레이닝`, `/교환` or `/미라클` control. The new screen replaces the private message the
+    press came from; a refusal is a private note under it."""
 
-    def listener(ack, body, action, respond) -> None:
+    def listener(ack, body, action, respond, client=None) -> None:
         ack()
         user_id = body["user"]["id"]
         value = action.get("value") or (action.get("selected_option") or {}).get("value") or action.get("block_id") or ""
@@ -167,14 +168,17 @@ def editor_listener(editor: LineupEditor | ShopEditor | TrainingEditor):
             log.exception("edit failed")
             respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
             return
+        if client is not None:
+            post_direct_messages(client, reply.direct_messages)
         respond(text=reply.screen.text, blocks=reply.screen.blocks, response_type="ephemeral",
                 replace_original=reply.replace)
 
     return listener
 
 
-def editor_options_listener(editor: LineupEditor | ShopEditor | TrainingEditor):
-    """Loads a menu past Slack's 100 options: the block id is the lineup slot's individual id or the shop category."""
+def editor_options_listener(editor: LineupEditor | ShopEditor | TrainingEditor | TradeEditor):
+    """Loads a menu past Slack's 100 options: the block id is the lineup slot's individual id, the shop category or
+    the picker's owner."""
 
     def listener(ack, body, payload) -> None:
         try:

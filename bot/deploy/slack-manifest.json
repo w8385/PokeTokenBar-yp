@@ -79,12 +79,14 @@
       },
       {
         "command": "/교환",
-        "description": "교환 (곧 열려요)",
+        "description": "박스 포켓몬으로 동료에게 교환 제안하고 진행 중인 교환 보기 (나만 봐요)",
+        "usage_hint": "[@상대] [이름]",
         "should_escape": true
       },
       {
         "command": "/미라클",
-        "description": "미라클 교환 (곧 열려요)",
+        "description": "박스 포켓몬을 미라클 교환에 올리거나 내리기 (나만 봐요)",
+        "usage_hint": "[이름]",
         "should_escape": true
       }
     ]

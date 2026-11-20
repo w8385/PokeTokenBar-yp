@@ -308,4 +308,5 @@ def _is_int(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
-register(OpKind(TRAIN, describe, _replay, reasons=REASONS))
+register(OpKind(TRAIN, describe, _replay, reasons=REASONS,
+                changes=lambda payload: [payload["id"]] if isinstance(payload.get("id"), str) else []))

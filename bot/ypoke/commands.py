@@ -16,6 +16,7 @@ from ypoke.combatants import combatant
 from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_url
 from ypoke.lineup_editor import LineupEditor
 from ypoke.messages import DirectMessage
+from ypoke.miracle import MiracleService
 from ypoke.narration import PRACTICE_NOTE, Card, Matchup, battle_card, battle_header
 from ypoke.pokeapi import PokeAPIService
 from ypoke.remote_ops import RemoteOps
@@ -32,6 +33,8 @@ from ypoke.remote_views import (
     RemoteViews,
 )
 from ypoke.shop_editor import ShopEditor
+from ypoke.trade_editor import TradeEditor
+from ypoke.trades import TradeService
 from ypoke.training_editor import TrainingEditor
 from ypoke.store import PendingChallenge, Record, Store
 from ypoke.upload_server import MAX_PARTY_SIZE
@@ -108,16 +111,21 @@ HELP_TEXT = (
     f"`{TRAINING_COMMAND} [이름]` 파티·박스 포켓몬에 민트·특성캡슐·특성패치·은색병뚜껑·금색병뚜껑·흉내허브를 쓰고, 폼과 기술을 바꿔요. "
     f"민트·흉내허브는 가방에 없으면 토큰으로 사서 쓰고, 나머지 도구는 가방에 있어야 해요. "
     f"바꾼 포켓몬은 `{BATTLE_COMMAND}`에 바로 쓰이고 앱은 다음에 회사에서 동기화할 때 받아요.\n"
-    f"`{TRADE_COMMAND}`·`{MIRACLE_COMMAND}` 곧 열려요.\n"
+    f"`{TRADE_COMMAND} [@상대] [이름]` 박스 포켓몬을 골라 동료에게 교환을 제안하고, 진행 중인 교환을 보고 취소해요. "
+    "상대가 고르고 수락하는 건 지금처럼 DM에서 해요.\n"
+    f"`{MIRACLE_COMMAND} [이름]` 박스 포켓몬을 미라클 교환에 올리고, 올린 포켓몬을 내려요. "
+    f"`{PARTY_COMMAND}`에서 라인업에 넣었거나 `{TRAINING_COMMAND}`를 한 포켓몬은 앱이 회사에서 동기화한 뒤에 교환할 수 있어요. "
+    "받은 포켓몬은 앱이 회사에서 동기화할 때 들어와요.\n"
     f"`{UMBRELLA_COMMAND}` 이 도움말이에요. `{UMBRELLA_COMMAND} 도감`·`{UMBRELLA_COMMAND} 파티`처럼 뒤에 명령을 붙여도 돼요.\n"
     "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`·`@YPoke 파티`도 돼요.\n"
     "*앱 대결 탭*\n"
     "체육관·아지트·사천왕 도전은 앱 대결 탭에서 해요. 슬랙 명령은 없어요.\n"
     "*교환*\n"
-    "대결로는 포켓몬이 오가지 않아요. 졸업한 포켓몬은 앱 친구 탭이나 박스 상세의 교환 제안으로 연결한 동료와 맞바꿔요. "
+    "대결로는 포켓몬이 오가지 않아요. 졸업한 포켓몬은 앱 친구 탭이나 박스 상세의 교환 제안, "
+    f"또는 `{TRADE_COMMAND}`로 연결한 동료와 맞바꿔요. "
     "상대가 DM에서 돌려줄 포켓몬을 고르고 수락하면, 제안한 사람이 DM에서 확인해요. "
     "두 앱 모두 다음 동기화 때 받아요. 제안은 24시간 뒤 사라져요.\n"
-    "박스 상세의 미라클 교환에 올리면 대결 채널에 카드가 올라가요. 먼저 교환하기를 누르고 자기 포켓몬을 고른 사람과 바로 바뀌어요. "
+    f"박스 상세의 미라클 교환이나 `{MIRACLE_COMMAND}`로 올리면 대결 채널에 카드가 올라가요.먼저 교환하기를 누르고 자기 포켓몬을 고른 사람과 바로 바뀌어요. "
     "한 번에 한 마리, 24시간 동안 열려 있어요.\n"
     f"앱 받기: <{DOWNLOAD_URL}|PokeTokenBar>"
 )
@@ -193,14 +201,20 @@ class CommandHandler:
         bot_user_id: str | None = None,
         home_channel: str | None = None,
         remote: RemoteOps | None = None,
+        trades: TradeService | None = None,
+        miracle: MiracleService | None = None,
     ):
+        """`trades` and `miracle` are the services the HTTP server uses; without them `/교환` gets its own and
+        `/미라클` has no board to post on."""
         self._store = store
         self._remote = remote or RemoteOps(store, now)
+        trades = trades or TradeService(store, now, bot_user_id=bot_user_id, holds=self._remote.holds)
         self._views = RemoteViews(store, self._remote, self._species_name)
         self.editor = LineupEditor(self._remote, self._views, pokeapi.attacking_moves, self._species_name)
         self.shop = ShopEditor(self._remote, self._views)
         self.training = TrainingEditor(self._remote, self._views, pokeapi.attacking_moves,
                                        lambda pokemon_id: self._pokeapi.abilities(pokemon_id), self._species_name)
+        self.trading = TradeEditor(self._remote, self._views, trades, miracle or MiracleService(trades, None, now))
         self._pokeapi = pokeapi
         self._public_url = public_url
         self._now = now
@@ -285,7 +299,7 @@ class CommandHandler:
             return self._ranking()
         if command in REMOTE_COMMANDS:
             screens = {PARTY_COMMAND: self.editor, BOX_COMMAND: self.editor, SHOP_COMMAND: self.shop,
-                       TRAINING_COMMAND: self.training}
+                       TRAINING_COMMAND: self.training, TRADE_COMMAND: self.trading, MIRACLE_COMMAND: self.trading}
             screen = screens.get(command, self._views).handle(user_id, command, text)
             return Reply(screen.text, blocks=tuple(screen.blocks))
         if command == BATTLE_COMMAND and mention:
