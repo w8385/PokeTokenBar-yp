@@ -5,6 +5,7 @@ individual ids, so a press on an older message still changes the Pokémon it nam
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from ypoke.messages import DirectMessage
 from ypoke.move_effects import STATUS_MOVES
 from ypoke.remote_lineup import LINEUP, MACHINE_PREFIX, MAX_MEMBERS, REASONS, rule_break, set_lineup
 from ypoke.remote_ops import RemoteOps, View
@@ -43,6 +44,7 @@ class EditorReply:
 
     screen: Screen
     replace: bool = True
+    direct_messages: tuple[DirectMessage, ...] = ()
 
 
 class LineupEditor:

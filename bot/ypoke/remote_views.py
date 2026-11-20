@@ -20,7 +20,6 @@ REMOTE_COMMANDS = (
     PARTY_COMMAND, BOX_COMMAND, BAG_COMMAND, SHOP_COMMAND, TRAINING_COMMAND, TRADE_COMMAND, MIRACLE_COMMAND,
 )
 REMOTE_WORDS = {command.removeprefix("/"): command for command in REMOTE_COMMANDS}
-COMING_SOON = "곧 열려요."
 NOT_LINKED = "아직 YPoke에 연결하지 않았어요. `/포켓몬연결`로 연결해 주세요."
 NO_UPLOAD = "아직 YPoke에 올라온 포켓몬이 없어요. 회사 네트워크에서 앱을 한 번 켜 주세요."
 OLD_APP_BAG = "앱을 업데이트하고 회사에서 한 번 켜 주면 잔액과 가방이 보여요."
@@ -49,8 +48,6 @@ class RemoteViews:
         view = self._remote.view(user_id)
         if view is None:
             return _plain(NO_UPLOAD if self._store.is_linked(user_id) else NOT_LINKED)
-        if command not in (PARTY_COMMAND, BOX_COMMAND, BAG_COMMAND):
-            return text_screen([self._remote.edit_refusal(user_id) or COMING_SOON], view)
         if command == PARTY_COMMAND:
             return self._party(view)
         if command == BOX_COMMAND:

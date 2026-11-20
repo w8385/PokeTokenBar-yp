@@ -296,7 +296,7 @@ Entries that fail the rules above are dropped.
 | Endpoint | Purpose |
 |---|---|
 | `GET /v1/coworkers` | `{"ok": true, "coworkers": [{"id", "name"}]}`: linked players with a pool, not the caller. `id` is an opaque handle for `POST /v1/trades`, never a Slack id |
-| `POST /v1/trades` | `{"to": "<coworker id>", "give": "<individual id>"}` → `{"ok": true, "trade_id"}`. `400 {"ok": false, "error", "message"}` for `self`, `unknown_user`, `unknown_individual`, `locked` (already in an open trade), `too_many` (3 open offers). `message` is a short Korean reason to show as is |
+| `POST /v1/trades` | `{"to": "<coworker id>", "give": "<individual id>"}` → `{"ok": true, "trade_id"}`. `400 {"ok": false, "error", "message"}` for `self`, `unknown_user`, `unknown_individual`, `locked` (already in an open trade), `too_many` (3 open offers), `in_lineup` and `pending_change` ([holds](#holds-from-pending-slack-edits)). `message` is a short Korean reason to show as is |
 | `GET /v1/trades` | `{"ok": true, "trades": {"deliveries": [...], "history": [...], "locked_ids": ["..."]}}`. `locked_ids` are the caller's individuals in open trades (offered, picked back, or up for a miracle trade); the app keeps their held item in place until the trade ends. The same `deliveries` and `locked_ids` ride in the `POST /v1/party` reply |
 | `POST /v1/trades/ack` | `{"trade_ids": ["..."]}` → `{"ok": true}` |
 
@@ -324,7 +324,7 @@ ordinary completed trade, so both apps receive it through `deliveries` as above.
 | Endpoint | Purpose |
 |---|---|
 | `GET /v1/miracle` | `{"ok": true, "offer": null \| {"offer_id", "give_id", "name", "expires_at"}}`: the caller's open offer |
-| `POST /v1/miracle` | `{"give": "<individual id>"}` → `{"ok": true, "offer": {...}}`. `400 {"ok": false, "error", "message"}` for `unknown_individual`, `locked`, `already_open` (one open offer per player), `post_failed` (the card could not be posted) |
+| `POST /v1/miracle` | `{"give": "<individual id>"}` → `{"ok": true, "offer": {...}}`. `400 {"ok": false, "error", "message"}` for `unknown_individual`, `locked`, `in_lineup`, `pending_change`, `already_open` (one open offer per player), `post_failed` (the card could not be posted) |
 | `POST /v1/miracle/cancel` | `{}` → `{"ok": true}`; `400` `none_open` |
 
 All three answer `404 {"ok": false, "error": "unavailable"}` when the bot has no battle channel; the app hides the
@@ -332,6 +332,20 @@ feature on any 404, which also covers older bots. The offered Pokémon is in `lo
 An offer ends when the poster takes it down (app or the card's poster-only 내리기), when the offered Pokémon leaves
 the poster's pool (raised, sent to battle), after 24 hours, or when it is traded; the card is edited to say which and
 loses its buttons. A pick that is no longer in the acceptor's pool is refused privately and the offer stays open.
+
+### Holds from pending Slack edits
+
+The trade pool is the last upload, but [remote ops](#remote-ops) the app has not applied yet can change it. Until the
+app syncs, a player's individual is not offered, picked back or posted when:
+
+- a pending `lineup` op puts it in the replayed battle lineup (`in_lineup`): the app would cancel that lineup with
+  `trade_locked` once the Pokémon is in a trade;
+- a pending op changes it, today a `train` op (`pending_change`): the trade would carry the untrained snapshot, and
+  the app cancels training on a traded Pokémon.
+
+The same check runs for `POST /v1/trades`, `POST /v1/miracle`, the DM picker, the Miracle picker and `/교환`·`/미라클`.
+Held Pokémon are left out of the pickers; a stale button gets the `message` above. Old apps never queue ops, so
+nothing is held for them.
 
 The app polls about every minute and re-sends the pool when it changes or every 5 minutes, so a finished
 trade shows up in the app within about a minute. One app per token: a second Mac may pick up the delivery
