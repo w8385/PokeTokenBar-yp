@@ -35,6 +35,8 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   who is not ready is told privately. The first upload that makes both sides ready plays the battle once and
   posts it where it was asked for (the slash command's response URL for 30 minutes, then the channel or
   thread, then a DM to the challenger).
+- Every battle takes one Pokémon per species from an uploaded party, then lets only the first holder of each item keep it
+  ([API.md](API.md#lineup-rules)). When that changes who fights or what they hold, the result card says so.
 - A `rental` Pokémon (the app's starter before the first hatch) fights at the opponent's level (capped at 50) and is
   announced as "대여 포켓몬 …". It counts in records like any other.
 - `/대결 @YPoke [N]` or a channel message `@YPoke 대결 [N]` is a practice battle against a random team: as many
