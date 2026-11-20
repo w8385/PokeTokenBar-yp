@@ -328,7 +328,7 @@ def test_a_shiny_mega_is_the_shiny_mega_art_in_the_header_and_the_log():
     events = [MegaEvolution(1, 0, "리자몽", "drought", MEGA_CHARIZARD_Y), act(1, 0, knockout=True, defender_hp=0)]
     card = battle_card(TRAINERS, sides, result_for(events, ((60,), (0,))))
     assert card.sprite[0].endswith(f"/shiny/{MEGA_CHARIZARD_Y}.png")
-    assert [url for url, _ in card.log_images[0]] == [card.sprite[0]]
+    assert card.log_matchups[0].left.url == card.sprite[0]
 
 
 def test_a_form_with_no_shiny_artwork_falls_back_to_its_plain_art():

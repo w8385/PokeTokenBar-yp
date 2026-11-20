@@ -25,6 +25,7 @@ from ypoke.commands import (
     Where,
     command_echo,
     fallback_text,
+    log_messages,
     result_blocks,
 )
 from ypoke.narration import Card, battle_card
@@ -126,10 +127,10 @@ def test_a_practice_summary_says_so(store):
     assert reply.rematch == "UA:UBOT:1"
 
 
-def test_result_blocks_are_context_header_lineups_button_divider_and_one_context_block_per_turn(store):
+def test_result_blocks_are_context_header_lineups_and_button_with_the_log_left_for_the_thread(store):
     ready_pair(store)
     reply = handler(store).handle("UA", "<@UB>", echo=True)
-    context, header, lineups, actions, divider, *turns = result_blocks(reply)
+    context, header, lineups, actions = result_blocks(reply)
     assert context["elements"][0]["text"] == reply.echo
     assert header["text"]["text"] == f"*{reply.card.title}*\n{reply.card.detail}"
     assert header["accessory"]["type"] == "image" and header["accessory"]["image_url"].endswith("/25.png")
@@ -138,9 +139,6 @@ def test_result_blocks_are_context_header_lineups_button_divider_and_one_context
     assert (button["action_id"], button["value"], button["text"]["text"]) == (
         REMATCH_ACTION_ID, reply.rematch, "다시 붙기")
     assert reply.rematch in ("UA:UB:1:UA", "UA:UB:1:UB")
-    assert divider == {"type": "divider"}
-    assert [turn["type"] for turn in turns] == ["context"] * len(reply.card.log)
-    assert [turn["elements"][0]["text"] for turn in turns] == list(reply.card.log)
 
 
 def test_a_one_on_one_has_no_highlight_section_and_a_full_lineup_has_the_deciding_knockout_in_the_header(store):
@@ -156,7 +154,7 @@ def test_a_one_on_one_has_no_highlight_section_and_a_full_lineup_has_the_decidin
     assert len(header) == 3 and header[2].startswith("💥 결정타 ")
 
 
-def test_result_blocks_without_echo_or_note_start_with_the_header_and_have_no_divider_without_a_log():
+def test_result_blocks_without_echo_or_note_start_with_the_header():
     card = Card(("🔵 *<@UA>*\n피카츄 100%", "🔴 *<@UB>*\n꼬부기 💥"), title="🏆 <@UA> 승", detail="1:1 · 1턴")
     reply = Reply("🏆 <@UA> 승 · 1:1 · 1턴", summary="🏆 <@UA> 승 · 1:1 · 1턴", card=card, rematch="UA:UB:1")
     assert [block["type"] for block in result_blocks(reply)] == ["section", "section", "actions"]
@@ -167,7 +165,7 @@ def test_result_blocks_without_echo_or_note_start_with_the_header_and_have_no_di
         "기다리던 포켓몬이 올라와서 대결을 시작해요!", "연습 대결"]
 
 
-def test_a_long_battle_stays_within_slacks_fifty_blocks_and_keeps_every_faint():
+def test_a_long_battle_log_stays_within_slacks_fifty_blocks_and_keeps_every_faint():
     sides = ((mon_of("피카츄"),) * 3, (mon_of("꼬부기"),) * 3)
     events = [Action(turn, turn % 2, "피카츄", "꼬부기", "몸통박치기", defender_hp=99) for turn in range(1, 301)]
     for turn in (40, 120, 200, 260):
@@ -175,12 +173,13 @@ def test_a_long_battle_stays_within_slacks_fifty_blocks_and_keeps_every_faint():
         events.insert(turn, Action(turn, 0, "피카츄", "꼬부기", "몸통박치기", knockout=True, defender_hp=0))
     result = BattleResult(0, 300, events, remaining=((50, None, None), (0, 0, 70)))
     reply = Reply("h", summary="h", card=battle_card(("<@UA>", "<@UB>"), sides, result), rematch="UA:UB:3")
-    blocks = result_blocks(replace(reply, echo="echo"))
-    assert len(blocks) <= 50
-    text = "\n".join(entry["elements"][0]["text"] for entry in blocks if entry["type"] == "context")
+    [message] = log_messages(reply)
+    assert len(message.blocks) <= 50
+    texts = [block["text"]["text"] for block in message.blocks if block["type"] == "section"]
+    text = "\n".join(texts)
     assert text.count("→ 꼬부기 💥") == 4
     assert "생략" in text and "*1턴*" in text and "*300턴*" in text
-    assert all(len(entry["elements"][0]["text"]) <= 3000 for entry in blocks if entry["type"] == "context")
+    assert all(len(entry) <= 3000 for entry in texts)
 
 
 def mon_of(name):
@@ -356,36 +355,38 @@ def button_of(message):
     return actions["elements"][0]
 
 
-def assert_one_blocks_only_message(message):
-    """The whole battle is in `blocks`; `text` is only the echo line and the one-line header."""
-    assert any(block["type"] == "context" and block["elements"][0]["text"].startswith("*1턴*")
-               for block in message["blocks"])
-    assert len(message["text"].splitlines()) <= 2 and message["text"].splitlines()[-1].startswith("🏆 ")
-    assert "›" not in message["text"]
+def assert_card_then_log(card, log):
+    """The card's `text` is only the echo line and the one-line header; the turns are in the next message."""
+    assert not any(block["type"] == "section" and block.get("text", {}).get("text", "").startswith("*1턴*")
+                   for block in card["blocks"])
+    assert len(card["text"].splitlines()) <= 2 and card["text"].splitlines()[-1].startswith("🏆 ")
+    assert "›" not in card["text"]
+    assert log["blocks"][-1]["text"]["text"].startswith("*1턴*") and "actions" not in str(log["blocks"])
 
 
-def test_slash_battle_posts_one_blocks_message_with_the_log_in_it_and_no_thread_reply(store):
+def test_slash_battle_posts_the_card_in_the_channel_and_the_log_in_its_thread(store):
     ready_pair(store)
     client, respond = FakeClient(), FakeRespond()
     slash(handler(store), client, respond)
-    [message] = client.posts
+    message, log = client.posts
     assert message["channel"] == "CCHAN" and message["thread_ts"] is None
     assert message["blocks"][0]["elements"][0]["text"] == "<@UA> 님이 `/대결` <@UB> 을(를) 썼어요"
     assert message["blocks"][1]["text"]["text"].startswith("*🏆")
     assert [field["text"][0] for field in message["blocks"][2]["fields"]] == ["🔵", "🔴"]
     assert button_of(message)["action_id"] == REMATCH_ACTION_ID
-    assert_one_blocks_only_message(message)
+    assert_card_then_log(message, log)
+    assert log["channel"] == "CCHAN" and log["thread_ts"] == "9.1"
     assert respond.calls == []
 
 
-def test_slash_battle_answers_with_the_one_message_where_the_bot_cannot_post(store):
+def test_slash_battle_answers_with_the_card_and_then_the_log_where_the_bot_cannot_post(store):
     ready_pair(store)
     client, respond = FakeClient(fail_post=True), FakeRespond()
     slash(handler(store), client, respond)
-    [message] = respond.calls
-    assert message["response_type"] == "in_channel"
+    message, log = respond.calls
+    assert message["response_type"] == log["response_type"] == "in_channel"
     assert button_of(message)["action_id"] == REMATCH_ACTION_ID
-    assert_one_blocks_only_message(message)
+    assert_card_then_log(message, log)
 
 
 def test_the_slash_three_member_battle_posts_both_lineups_with_bars_and_a_three_member_rematch_value(store):
@@ -394,7 +395,7 @@ def test_the_slash_three_member_battle_posts_both_lineups_with_bars_and_a_three_
         store.save_party(user, [member(25, 50), member(7, 20), member(26, 40)])
     client, respond = FakeClient(), FakeRespond()
     slash(handler(store), client, respond, text="<@UB|bob> 3")
-    [message] = client.posts
+    message = client.posts[0]
     fields = message["blocks"][2]["fields"]
     assert all(len(field["text"].splitlines()) == 4 for field in fields)
     members = [line for field in fields for line in field["text"].splitlines()[1:]]
@@ -420,19 +421,19 @@ def delivery_of(store, response_url="https://hooks.example/respond/SECRET"):
     return Delivery("UA", Where("CCHAN", "1.1", response_url), reply)
 
 
-def test_a_pending_battle_goes_by_response_url_as_the_one_message(store, monkeypatch):
+def test_a_pending_battle_goes_by_response_url_as_the_card_then_the_log(store, monkeypatch):
     FakeWebhook.sent = []
     monkeypatch.setattr("ypoke.transport.WebhookClient", FakeWebhook)
     delivery = delivery_of(store)
     deliver(FakeClient(fail_post=True), delivery)
-    [message] = FakeWebhook.sent
+    message, log = FakeWebhook.sent
     assert button_of(message)["action_id"] == REMATCH_ACTION_ID
     assert message["text"] == fallback_text(delivery.reply)
-    assert message["response_type"] == "in_channel"
-    assert_one_blocks_only_message(message)
+    assert message["response_type"] == log["response_type"] == "in_channel"
+    assert_card_then_log(message, log)
 
 
-def test_a_pending_battle_with_no_other_way_arrives_in_the_challengers_dm_as_the_one_message(store):
+def test_a_pending_battle_with_no_other_way_arrives_in_the_challengers_dm_with_its_log_in_a_thread(store):
     delivery = delivery_of(store, response_url=None)
     client = FakeClient()
     original = client.chat_postMessage
@@ -444,10 +445,11 @@ def test_a_pending_battle_with_no_other_way_arrives_in_the_challengers_dm_as_the
 
     client.chat_postMessage = only_dm
     deliver(client, delivery)
-    note, message = client.posts
+    note, message, log = client.posts
     assert {post["channel"] for post in client.posts} == {"UA"}
     assert "blocks" not in note and message["thread_ts"] is None
-    assert_one_blocks_only_message(message)
+    assert_card_then_log(message, log)
+    assert log["thread_ts"] == "9.2"
 
 
 def test_slash_ranking_and_record_are_both_echoed_in_the_channel(store):
@@ -478,14 +480,14 @@ def mention_event(text="<@UBOT> 대결 <@UB>", thread_ts=None):
     return {"user": "UA", "text": text, "channel": "CCHAN", "ts": "5.5", **({"thread_ts": thread_ts} if thread_ts else {})}
 
 
-def test_a_mention_result_is_one_message_in_the_mentions_thread(store):
+def test_a_mention_result_is_the_card_and_the_log_in_the_mentions_thread(store):
     ready_pair(store)
     client = FakeClient()
     mention_listener(handler(store))(mention_event(), client)
-    [message] = client.posts
-    assert message["thread_ts"] == "5.5"
+    message, log = client.posts
+    assert message["thread_ts"] == log["thread_ts"] == "5.5"
     assert message["blocks"][0]["type"] == "section"
-    assert_one_blocks_only_message(message)
+    assert_card_then_log(message, log)
     assert client.ephemerals == []
 
 
@@ -504,33 +506,36 @@ def rematch_body(user="UA", message=None):
     return {"user": {"id": user}, "channel": {"id": "CCHAN"}, "message": message or {"ts": "9.1"}}
 
 
-def test_rematch_posts_the_new_result_as_one_message_in_the_same_thread(store):
+def test_rematch_of_a_channel_card_posts_the_new_card_in_the_channel_with_its_log_in_its_own_thread(store):
     ready_pair(store)
     client, respond = FakeClient(), FakeRespond()
-    rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1:UA"}, respond, client)
-    [message] = client.posts
-    assert message["thread_ts"] == "9.1"
+    body = rematch_body(message={"ts": "8.1", "thread_ts": "8.1"})
+    rematch_listener(handler(store))(lambda: None, body, {"value": "UA:UB:1:UA"}, respond, client)
+    message, log = client.posts
+    assert message["thread_ts"] is None and log["thread_ts"] == "9.1"
     assert message["blocks"][0]["elements"][0]["text"] == "<@UA> 님이 다시 붙기를 눌렀어요"
     assert button_of(message)["value"] in ("UA:UB:1:UA", "UA:UB:1:UB")
     assert respond.calls == []
 
 
-def test_a_rematch_where_the_bot_cannot_post_answers_the_one_message_without_replacing_the_original(store):
+def test_a_rematch_where_the_bot_cannot_post_answers_the_card_and_log_without_replacing_the_original(store):
     ready_pair(store)
     client, respond = FakeClient(fail_post=True), FakeRespond()
     rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1:UA"}, respond, client)
-    [message] = respond.calls
+    message, log = respond.calls
     assert button_of(message)["value"] in ("UA:UB:1:UA", "UA:UB:1:UB")
-    assert_one_blocks_only_message(message)
-    assert message["replace_original"] is False and message["thread_ts"] == "9.1"
+    assert_card_then_log(message, log)
+    assert message["replace_original"] is log["replace_original"] is False
 
 
-def test_a_rematch_waiting_on_the_opponent_keeps_its_echo_line_in_the_thread(store):
+def test_a_rematch_waiting_on_the_opponent_keeps_its_echo_line_where_the_card_was(store):
     upload(store, "UA", 25, 60)
     client = FakeClient()
     rematch_listener(handler(store))(lambda: None, rematch_body(), {"value": "UA:UB:1:UA"}, FakeRespond(), client)
     [notice] = [post for post in client.posts if post["channel"] == "CCHAN"]
-    assert notice["thread_ts"] == "9.1"
+    assert notice["thread_ts"] is None
+    [challenge] = pending(store)
+    assert challenge.thread_ts is None
     assert notice["text"].startswith("<@UA> 님이 다시 붙기를 눌렀어요\n<@UB>님은 아직 YPoke에 포켓몬이 없어서")
 
 
@@ -583,9 +588,13 @@ def test_the_same_card_pressed_twice_plays_one_battle_and_answers_the_second_pre
     bot, client, respond = handler(store), FakeClient(), FakeRespond()
     press(bot, client, respond)
     press(bot, client, respond)
-    assert len(client.posts) == 1 and battles_played(store) == 1
+    assert len(cards(client)) == 1 and battles_played(store) == 1
     [call] = respond.calls
     assert call["text"] == REMATCH_USED and call["response_type"] == "ephemeral"
+
+
+def cards(client):
+    return [post for post in client.posts if any(block["type"] == "actions" for block in post.get("blocks") or ())]
 
 
 def test_two_presses_racing_on_one_card_through_two_stores_play_one_battle(tmp_path):
@@ -613,21 +622,22 @@ def test_a_wrong_press_does_not_use_up_the_card_for_the_loser(store):
     assert [call["text"] for call in respond.calls] == [REMATCH_DENIED, REMATCH_LOSER_ONLY]
     assert client.posts == [] and client.updates == []
     press(bot, client, respond, user="UA")
-    assert len(client.posts) == 1 and battles_played(store) == 1
+    assert len(cards(client)) == 1 and battles_played(store) == 1
 
 
-def test_the_new_cards_button_works_once_even_inside_the_old_cards_thread(store):
+def test_the_new_cards_button_works_once(store):
     ready_pair(store)
     bot, client, respond = handler(store), FakeClient(), FakeRespond()
-    press(bot, client, respond)
-    [posted] = client.posts
-    new_card = {"ts": "9.2", "thread_ts": posted["thread_ts"], "text": posted["text"], "blocks": posted["blocks"]}
+    press(bot, client, respond, message=card_message(ts="8.1"))
+    [posted] = cards(client)
+    new_card = {"ts": "9.1", "thread_ts": "9.1", "text": posted["text"], "blocks": posted["blocks"]}
     new_loser = button_of(new_card)["value"].split(":")[3]
     press(bot, client, respond, user=new_loser, message=new_card)
     press(bot, client, respond, user=new_loser, message=new_card)
-    assert len(client.posts) == 2 and battles_played(store) == 2
+    assert len(cards(client)) == 2 and battles_played(store) == 2
     assert [call["text"] for call in respond.calls] == [REMATCH_USED]
-    assert [update["ts"] for update in client.updates] == ["9.1", "9.2"]
+    assert [update["ts"] for update in client.updates] == ["8.1", "9.1"]
+    assert all(card["thread_ts"] is None for card in cards(client))
 
 
 def test_a_won_press_removes_only_the_button_from_the_original_card(store):
@@ -645,10 +655,10 @@ def test_a_card_that_cannot_be_edited_still_gets_its_one_rematch(store, caplog):
     bot, client, respond = handler(store), FakeClient(fail_update=True), FakeRespond()
     with caplog.at_level(logging.WARNING):
         press(bot, client, respond)
-    assert len(client.posts) == 1 and battles_played(store) == 1
+    assert len(cards(client)) == 1 and battles_played(store) == 1
     assert "could not remove the rematch button" in caplog.text
     press(bot, client, respond)
-    assert len(client.posts) == 1 and [call["text"] for call in respond.calls] == [REMATCH_USED]
+    assert len(cards(client)) == 1 and [call["text"] for call in respond.calls] == [REMATCH_USED]
 
 
 def test_a_practice_card_works_once(store):

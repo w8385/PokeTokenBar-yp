@@ -3,16 +3,19 @@
 import json
 import logging
 from collections.abc import Callable
+from functools import partial
 
 from slack_sdk import WebClient
 from slack_sdk.webhook import WebhookClient
 
+from ypoke.battle_render import MatchupPictures
 from ypoke.commands import (
     CommandHandler,
     Delivery,
     Reply,
     Where,
     fallback_text,
+    log_messages,
     message_blocks,
     parse_mention,
     reply_thread_ts,
@@ -34,7 +37,7 @@ def log_command(source: str, user_id: str, command: str, args: str) -> None:
              json.dumps(args[:LOG_ARGS_LIMIT], ensure_ascii=False))
 
 
-def slash_listener(handler: CommandHandler):
+def slash_listener(handler: CommandHandler, pictures: MatchupPictures | None = None):
     def listener(ack, body, respond, client) -> None:
         ack()
         user_id, command, text = body["user_id"], body["command"], body.get("text", "")
@@ -47,12 +50,12 @@ def slash_listener(handler: CommandHandler):
             respond(text=ERROR_TEXT, response_type="ephemeral")
             return
         send_direct_messages(client, reply)
-        _publish_slash(client, respond, where.channel_id, reply)
+        _publish_slash(client, respond, where.channel_id, reply, pictures)
 
     return listener
 
 
-def mention_listener(handler: CommandHandler):
+def mention_listener(handler: CommandHandler, pictures: MatchupPictures | None = None):
     def listener(event, client) -> None:
         text = event.get("text", "")
         command, args = parse_mention(text, handler.bot_user_id)
@@ -64,17 +67,17 @@ def mention_listener(handler: CommandHandler):
             log.exception("mention failed")
             reply = Reply(ERROR_TEXT)
         send_direct_messages(client, reply)
-        publish_in_thread(client, event["channel"], event["user"], thread_ts, reply)
+        publish_in_thread(client, event["channel"], event["user"], thread_ts, reply, pictures=pictures)
 
     return listener
 
 
-def rematch_listener(handler: CommandHandler):
+def rematch_listener(handler: CommandHandler, pictures: MatchupPictures | None = None):
     def listener(ack, body, action, respond, client) -> None:
         ack()
         user_id, channel_id = body["user"]["id"], body["channel"]["id"]
         message = body["message"]
-        thread_ts = message.get("thread_ts") or message["ts"]
+        thread_ts = card_thread(message)
         log_command("button", user_id, "rematch", action["value"])
         try:
             reply = handler.rematch(user_id, action["value"], Where(channel_id, thread_ts), message["ts"])
@@ -84,9 +87,16 @@ def rematch_listener(handler: CommandHandler):
         if reply.spent_card:
             _drop_buttons(client, channel_id, message)
         send_direct_messages(client, reply)
-        publish_in_thread(client, channel_id, user_id, thread_ts, reply, respond)
+        publish_in_thread(client, channel_id, user_id, thread_ts, reply, respond, pictures)
 
     return listener
+
+
+def card_thread(message: dict) -> str | None:
+    """The thread a card sits in, so a rematch posts its card in the same place: None for a card in the channel
+    itself, which Slack marks with its own ts once its log has started a thread."""
+    thread_ts = message.get("thread_ts")
+    return None if thread_ts == message["ts"] else thread_ts
 
 
 def _drop_buttons(client: WebClient, channel_id: str, message: dict) -> None:
@@ -201,54 +211,88 @@ def post_direct_messages(client: WebClient, messages) -> None:
             log.warning("could not send a direct message")
 
 
-def post_result(client: WebClient, channel: str, thread_ts: str | None, reply: Reply) -> None:
-    """The battle as one message of blocks: the card with its button and the turn log below it."""
-    client.chat_postMessage(channel=channel, thread_ts=thread_ts, **_result_message(reply))
+def post_result(
+    client: WebClient, channel: str, thread_ts: str | None, reply: Reply, pictures: MatchupPictures | None = None
+) -> None:
+    """The card in `thread_ts` (None: the channel itself), then the turn log in the card's thread, or in the same
+    thread when the card is already a reply. Raises only when the card cannot be posted."""
+    card = client.chat_postMessage(channel=channel, thread_ts=thread_ts, **_card_message(reply))
+    log_thread = thread_ts or card["ts"]
+    post_log(partial(client.chat_postMessage, channel=channel, thread_ts=log_thread), client, reply, pictures)
 
 
-def deliver(client: WebClient, delivery: Delivery) -> None:
+def post_log(send: Callable, client: WebClient, reply: Reply, pictures: MatchupPictures | None) -> None:
+    """Each log message through `send`, in order. Slack refuses a whole message over one image it cannot show, and
+    a fresh upload can still be processing, so a refused message with pictures is sent again after a pause, then
+    with small-sprite lines instead. Never raises."""
+    matchups = [matchup for matchup in reply.card.log_matchups if matchup is not None]
+    drawn = {}
+    if pictures is not None and matchups:
+        try:
+            drawn = pictures.image_blocks(client, matchups)
+        except Exception:
+            log.warning("could not draw the matchup pictures", exc_info=True)
+    for message in log_messages(reply, drawn):
+        if _sent(send, message.text, message.blocks):
+            continue
+        if message.drawn:
+            pictures.settle()
+            if _sent(send, message.text, message.blocks):
+                continue
+            pictures.forget(message.drawn)
+            if _sent(send, message.text, message.plain):
+                continue
+        log.warning("could not post the turn log")
+
+
+def _sent(send: Callable, text: str, blocks: list[dict]) -> bool:
+    try:
+        response = send(text=text, blocks=blocks)
+    except Exception:
+        return False
+    return getattr(response, "status_code", 200) in (None, 200)
+
+
+def deliver(client: WebClient, delivery: Delivery, pictures: MatchupPictures | None = None) -> None:
     """Post a pending battle where it was asked for: the channel (thread), the slash command's still-fresh
     response URL, then a DM to the challenger when the bot cannot post there."""
     where, reply = delivery.where, delivery.reply
     try:
-        post_result(client, where.channel_id, where.thread_ts, reply)
+        post_result(client, where.channel_id, where.thread_ts, reply, pictures)
         return
     except Exception:
         log.warning("could not post a pending battle in its channel")
     if where.response_url:
         try:
-            sent = respond_result(WebhookClient(where.response_url).send, reply, response_type="in_channel")
-            if sent.status_code == 200:
+            send = partial(WebhookClient(where.response_url).send, response_type="in_channel")
+            if send(**_card_message(reply)).status_code == 200:
+                post_log(send, client, reply, pictures)
                 return
         except Exception:
             log.warning("could not post a pending battle by response url")
     try:
         client.chat_postMessage(channel=delivery.challenger_id, text=DM_FALLBACK_NOTE)
-        post_result(client, delivery.challenger_id, None, reply)
+        post_result(client, delivery.challenger_id, None, reply, pictures)
     except Exception:
         log.warning("could not deliver a pending battle")
 
 
-def respond_result(send: Callable, reply: Reply, **message) -> object:
-    """Where no thread is possible (a response URL): the same one message."""
-    return send(**_result_message(reply), **message)
-
-
-def _result_message(reply: Reply) -> dict:
+def _card_message(reply: Reply) -> dict:
     return {"text": fallback_text(reply), "blocks": result_blocks(reply)}
 
 
 def publish_in_thread(
-    client: WebClient, channel: str, user_id: str, thread_ts: str, reply: Reply, respond: Callable | None = None
+    client: WebClient, channel: str, user_id: str, thread_ts: str | None, reply: Reply,
+    respond: Callable | None = None, pictures: MatchupPictures | None = None,
 ) -> None:
-    """Visible replies go in the thread; private ones are ephemeral. `respond` (a button's response URL) is the
-    fallback where the bot cannot post, such as a conversation it is not in."""
+    """Visible replies go in the thread (None: the channel); private ones are ephemeral. `respond` (a button's
+    response URL) is the fallback where the bot cannot post, such as a conversation it is not in."""
     visible = {"thread_ts": thread_ts, "response_type": "in_channel", "replace_original": False}
     if reply.summary is not None:
         try:
-            post_result(client, channel, thread_ts, reply)
+            post_result(client, channel, thread_ts, reply, pictures)
         except Exception:
-            _fallback(respond, **visible, **_result_message(reply))
+            _respond_result(respond, client, reply, pictures, **visible)
     elif reply.in_channel:
         text = "\n".join(filter(None, (reply.echo, reply.text)))
         _post_line(client, channel, thread_ts, text, respond, message_blocks(reply, True))
@@ -258,8 +302,24 @@ def publish_in_thread(
         _post_line(client, channel, thread_ts, "\n".join(filter(None, (reply.echo, reply.public))), respond)
 
 
+def _respond_result(
+    respond: Callable | None, client: WebClient, reply: Reply, pictures: MatchupPictures | None, **message
+) -> None:
+    """Where the bot cannot post (a response URL, which cannot start a thread): the card, then the log as the next
+    messages."""
+    if respond is None:
+        log.warning("could not post a battle result")
+        return
+    try:
+        respond(**_card_message(reply), **message)
+    except Exception:
+        log.warning("could not post a battle result by response url")
+        return
+    post_log(partial(respond, **message), client, reply, pictures)
+
+
 def _post_line(
-    client: WebClient, channel: str, thread_ts: str, text: str, respond: Callable | None, blocks: list[dict] | None = None
+    client: WebClient, channel: str, thread_ts: str | None, text: str, respond: Callable | None, blocks: list[dict] | None = None
 ) -> None:
     try:
         client.chat_postMessage(channel=channel, thread_ts=thread_ts, text=text, blocks=blocks)
@@ -291,13 +351,15 @@ def _fallback(respond: Callable | None, **message) -> None:
         log.warning("could not post a reply by response url")
 
 
-def _publish_slash(client: WebClient, respond: Callable, channel: str, reply: Reply) -> None:
+def _publish_slash(
+    client: WebClient, respond: Callable, channel: str, reply: Reply, pictures: MatchupPictures | None
+) -> None:
     if reply.summary is not None:
         try:
-            post_result(client, channel, None, reply)
+            post_result(client, channel, None, reply, pictures)
         except Exception:
             log.info("bot cannot post in the channel; answering through the response url")
-            respond_result(respond, reply, response_type="in_channel")
+            _respond_result(respond, client, reply, pictures, response_type="in_channel")
         return
     if reply.public:
         respond(text="\n".join(filter(None, (reply.echo, reply.public))), response_type="in_channel")

@@ -70,8 +70,9 @@ def test_a_result_is_posted_in_the_channel_under_the_echo_and_nothing_is_private
 def test_a_slash_battle_is_posted_in_the_channel_under_the_echo(store):
     upload(store, "UB", 7, 20)
     public, private = run(store, BATTLE_COMMAND, "<@UB|bob>")
-    [message] = public
+    message, log = public
     assert message["blocks"][0]["elements"][0]["text"] == command_echo("UA", BATTLE_COMMAND, "<@UB|bob>")
+    assert log["thread_ts"] == "9.1"
     assert private == []
 
 

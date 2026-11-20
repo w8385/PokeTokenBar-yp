@@ -3,7 +3,7 @@
 import random
 import re
 import secrets
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
@@ -15,7 +15,7 @@ from ypoke.battle import Combatant, simulate
 from ypoke.combatants import combatant
 from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_url
 from ypoke.messages import DirectMessage
-from ypoke.narration import PRACTICE_NOTE, Card, battle_card, battle_header
+from ypoke.narration import PRACTICE_NOTE, Card, Matchup, battle_card, battle_header
 from ypoke.pokeapi import PokeAPIService
 from ypoke.remote_ops import RemoteOps
 from ypoke.remote_views import (
@@ -42,6 +42,8 @@ REMATCH_DENIED = "대결한 두 사람만 누를 수 있어요."
 REMATCH_LOSER_ONLY = "다시 붙기는 진 쪽만 누를 수 있어요."
 REMATCH_USED = "이미 다시 붙었어요."
 SECTION_TEXT_LIMIT = 3000
+LOG_BLOCK_LIMIT = 50
+LOG_TEXT = "대결 로그"
 FIELD_TEXT_LIMIT = 2000
 ECHO_ARG_LIMIT = 200
 _REMATCH_VALUE = re.compile(r"([UW][A-Z0-9]+):([UW][A-Z0-9]+)(?::([1-6]))?(?::([UW][A-Z0-9]+))?")
@@ -124,8 +126,8 @@ class Where:
 class Reply:
     """`echo` names who ran which slash command; it heads the visible messages (`in_channel` or `public`).
 
-    A battle result is one message: `summary` (the header line, also its `text`), `card` (header, lineups and
-    turn log) and `rematch` (the button value). `spent_card` is set when this press used up the pressed card's button.
+    A battle result is a card message, `summary` (the header line, also its `text`), `card` (header, lineups and
+    the turn log for its thread) and `rematch` (the button value). `spent_card` is set when this press used up the pressed card's button.
     `public` is a line the channel sees beside a private `text`. `image_url` is shown beside `text`.
     `fields` (Slack's 2-column grid) follow `lead`, the part of `text` above them, in the blocks; `text` stays the fallback.
     `blocks`, when set, are the whole private message.
@@ -549,8 +551,8 @@ def fallback_text(reply: Reply) -> str:
 
 
 def result_blocks(reply: Reply) -> list[dict]:
-    """The whole battle message: echo and tags, the header with the winner's sprite, both lineups side by side,
-    the rematch button, then the turn log as grey context blocks."""
+    """The result card: echo and tags, the header with the winner's sprite, both lineups side by side and the
+    rematch button. The turn log goes in the card's thread (`log_messages`)."""
     card = reply.card
     blocks: list[dict] = []
     context = [line for line in (reply.echo, card.note, PRACTICE_NOTE if card.practice else None, *card.rules) if line]
@@ -567,15 +569,54 @@ def result_blocks(reply: Reply) -> list[dict]:
         "type": "button", "action_id": REMATCH_ACTION_ID, "value": reply.rematch,
         "text": {"type": "plain_text", "text": REMATCH_LABEL},
     }]})
-    if card.log:
-        blocks.append({"type": "divider"})
-    for index, entry in enumerate(card.log):
-        images = card.log_images[index] if index < len(card.log_images) else ()
-        blocks.append({"type": "context", "elements": [
-            *({"type": "image", "image_url": url, "alt_text": alt} for url, alt in images),
-            {"type": "mrkdwn", "text": fit(entry, SECTION_TEXT_LIMIT)},
-        ]})
     return blocks
+
+
+@dataclass(frozen=True)
+class LogMessage:
+    """One thread reply of the turn log. `plain` is the same message with every picture as a small-sprite line, for
+    when Slack refuses `blocks`; `drawn` are the matchups shown as pictures."""
+
+    text: str
+    blocks: list[dict]
+    plain: list[dict]
+    drawn: tuple[Matchup, ...]
+
+
+def log_messages(reply: Reply, pictures: Mapping[Matchup, dict] | None = None) -> list[LogMessage]:
+    """The turn log in order, split into messages of at most `LOG_BLOCK_LIMIT` blocks: each turn is a full-width
+    section, and a changed matchup is drawn above it with its picture from `pictures` (else a small-sprite line).
+    A picture always opens the same message as the turn below it."""
+    card = reply.card
+    pictures = pictures or {}
+    units: list[tuple[list[dict], list[dict], tuple[Matchup, ...]]] = []
+    for index, entry in enumerate(card.log):
+        turn = {"type": "section", "text": {"type": "mrkdwn", "text": fit(entry, SECTION_TEXT_LIMIT)}}
+        matchup = card.log_matchups[index] if index < len(card.log_matchups) else None
+        if matchup is None:
+            units.append(([turn], [turn], ()))
+            continue
+        line = matchup_line(matchup)
+        picture = pictures.get(matchup)
+        units.append(([picture or line, turn], [line, turn], (matchup,) if picture else ()))
+    chunks: list[tuple[list[dict], list[dict], tuple[Matchup, ...]]] = []
+    for blocks, plain, drawn in units:
+        if not chunks or len(chunks[-1][0]) + len(blocks) > LOG_BLOCK_LIMIT:
+            chunks.append(([], [], ()))
+        chunks[-1] = (chunks[-1][0] + blocks, chunks[-1][1] + plain, chunks[-1][2] + drawn)
+    return [
+        LogMessage(f"{LOG_TEXT} {number}/{len(chunks)}" if len(chunks) > 1 else LOG_TEXT, blocks, plain, drawn)
+        for number, (blocks, plain, drawn) in enumerate(chunks, start=1)
+    ]
+
+
+def matchup_line(matchup: Matchup) -> dict:
+    """A matchup without its picture: both small sprites around the names."""
+    return {"type": "context", "elements": [
+        {"type": "image", "image_url": matchup.left.url, "alt_text": matchup.left.name},
+        {"type": "mrkdwn", "text": matchup.caption},
+        {"type": "image", "image_url": matchup.right.url, "alt_text": matchup.right.name},
+    ]}
 
 
 def message_blocks(reply: Reply, visible: bool) -> list[dict] | None:
