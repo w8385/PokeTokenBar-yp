@@ -68,7 +68,7 @@ def loaded() -> dict[str, dict[str, Handler]]:
     from ypoke.effects import (  # noqa: F401
         abilities, ability_absorb, ability_accuracy, ability_breakers, ability_contact, ability_damage, ability_forms, ability_items, ability_priority, ability_stats, ability_status, ability_weather, after_hit, callers, changers, conditional, conditions, damage_stats, delayed_hit, field,
         fixed_damage, healing,
-        berries, item_moves, items, locking, move_types, moves, multi_hit, protection, reactive_items, recoil, secondary, stat_items, stats, switching,
+        berries, item_moves, items, locking, misc_items, move_types, moves, multi_hit, protection, reactive_items, recoil, secondary, stat_items, stats, switching,
         two_turn, variable_power, volatiles,
     )
 

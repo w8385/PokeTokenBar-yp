@@ -6,7 +6,7 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
 - `/대결 @상대` runs one automatic 1:1 battle with each side's first uploaded Pokémon; `/대결 @상대 N` (N 1–6,
   also `N:N`; `풀` is 6) sends out up to N in the order the app uploaded instead; a side with fewer sends what it has. When one faints the next comes in, and a
   side that runs out loses (PokéAPI base stats, level (a flat Lv50 cap), IVs, natures, type chart,
-  level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather and 27 common abilities).
+  level-up moves with PP, move priority, critical-hit stages, multi-hit, drain and recoil moves, burn, paralysis, poison, toxic, sleep, freeze, confusion, stat stages, five-turn weather, and every ability and held item in `data/battle/` that has a battle effect).
   The channel gets a result card: a context line ("who ran which command", since Slack shows nobody a typed slash
   command), the winner with the format (`1:1`, `3:3`, `6:6`, …) and turn count, both lineups side by side with each
   Pokémon's fate, up to three highlight lines and a "다시 붙기" button. The compact log, one line per turn, is the

@@ -459,7 +459,8 @@ class MegaEvolution:
 @dataclass(frozen=True)
 class FormShift:
     """A form taking hold: `kind` is "mask" (Ogerpon's mask glowed, `change` is its +1), "terastal" or "stellar"
-    (Terapagos), an `ITEM_FORMS` kind ("origin", "crowned-sword", "crowned-shield") or an ability's form kind
+    (Terapagos), an `ITEM_FORMS` kind ("origin", "crowned-sword", "crowned-shield"), a drive or memory slug (Genesect,
+    Silvally; no `form_id`) or an ability's form kind
     (`abilities.FORMS`; "base" is the form the Pokémon entered in).
     `form_id` is the `/pokemon` id of the form shown, if it has one."""
 
@@ -1365,8 +1366,8 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
         if paid is not None:
             action = replace(action, changes=(*action.changes, paid), attacker_hp=fighters[side].hp_percent,
                              attacker_fainted=fighters[side].hp == 0)
-        if not (action.failed or action.missed or action.multiplier == 0):
-            _announce(fighters[side], hooks.item(fighters[side], "after_use", fighters[side], used))
+        worked = not (action.failed or action.missed or action.multiplier == 0)
+        _announce(fighters[side], hooks.item(fighters[side], "after_use", fighters[side], used, worked))
         if _self_ko(fighters[side], index) and not damped:
             fighters[side].hp = 0
             return replace(action, attacker_hp=0, attacker_fainted=True)
@@ -1537,7 +1538,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         _announce(attacker, ItemEffect(turn, side, attacker.combatant.name, spent, "spent"))
     hit_count = _hit_count(move, attacker, rng)
     rolls_each_hit = (checks_accuracy and hooks.move(move, "rolls_each_hit", default=False)
-                      and not hooks.ability(attacker, "skips_hit_rolls", default=False))
+                      and not hooks.ability(attacker, "skips_hit_rolls", default=False)
+                      and not hooks.item(attacker, "skips_hit_rolls", default=False))
     for hit in range(hit_count):
         if hit > 0 and rolls_each_hit and rng.random() * 100 >= accuracy:
             break
@@ -1630,6 +1632,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         hit = Hit(side, turn, attacker, defender, move, dealt, hits, critical, multiplier, shielded, rng)
         _announce(defender, hooks.ability(defender, "after_hit", hit))
         _announce(attacker, hooks.ability(attacker, "after_hit_as_user", hit))
+        _announce(attacker, hooks.item(attacker, "after_hit_as_user", hit))
     return action
 
 
@@ -1701,7 +1704,8 @@ def _sheltered(fighter: "_Fighter", weather: str | None) -> str | None:
 
 
 def _weight(fighter: "_Fighter") -> float:
-    return fighter.combatant.weight * hooks.ability(fighter, "modify_weight", default=1.0)
+    return (fighter.combatant.weight * hooks.ability(fighter, "modify_weight", default=1.0)
+            * hooks.item(fighter, "modify_weight", default=1.0))
 
 
 def _retyped(attacker: _Fighter, move: Move) -> Move:
@@ -1769,6 +1773,8 @@ def _hit_count(move: Move, attacker: _Fighter, rng: random.Random) -> int:
     counted = hooks.move(move, "hit_count", attacker)
     if counted is None:
         counted = hooks.ability(attacker, "hit_count", move)
+    if counted is None:
+        counted = hooks.item(attacker, "hit_count", move, rng)
     if counted is not None:
         return counted
     if move.max_hits <= 1:
@@ -2156,9 +2162,11 @@ def _acts_asleep(move: Move) -> bool:
 
 def _expected_hits(move: Move, attacker: _Fighter, accuracy: float) -> float:
     """Hits that each draw for accuracy count only while every earlier one landed."""
-    if accuracy < 100 and hooks.move(move, "rolls_each_hit", default=False):
+    if (accuracy < 100 and hooks.move(move, "rolls_each_hit", default=False)
+            and not hooks.item(attacker, "skips_hit_rolls", default=False)):
         return sum((accuracy / 100) ** hit for hit in range(move.max_hits))
     expected = hooks.ability(attacker, "expected_hits", move, default=move.expected_hits)
+    expected = hooks.item(attacker, "expected_hits", move, expected, default=expected)
     return hooks.move(move, "hit_count", attacker, default=expected)
 
 
@@ -2174,7 +2182,8 @@ def _item_boost(attacker: _Fighter, move: Move, multiplier: float) -> float:
     if move is STRUGGLE:
         return 1.0
     punch = move.id in PUNCH_MOVES
-    return hooks.item(attacker, "modify_damage", move.type, multiplier, move.physical, punch, default=1.0)
+    return (hooks.item(attacker, "modify_damage", move.type, multiplier, move.physical, punch, default=1.0)
+            * hooks.item(attacker, "streak_boost", attacker, move, default=1.0))
 
 
 def _weather_boost(move: Move, weather: str | None, defender: _Fighter) -> float:
@@ -2220,7 +2229,8 @@ def _stab(attacker: _Fighter, move: Move) -> float:
 
 def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> float:
     """Strong winds take away the Flying type's weaknesses. A state that grounds the defender (Gravity) lets a Ground
-    move hit it through its Flying type and its airborne ability."""
+    move hit it through its Flying type and its airborne ability. Ring Target drops its holder's type immunities, not
+    its ability's."""
     if move.type is None:
         return 1.0
     forced_down = move.type == "ground" and (any(_field(defender, "grounds"))
@@ -2235,6 +2245,8 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
     if forced_down or weather == STRONG_WINDS and effectiveness(move.type, ("flying",)) > 1:
         types = tuple(kind for kind in types if kind != "flying")
     exposed = set(_field(defender, "exposes", move.type))
+    if hooks.item(defender, "drops_immunities", default=False):
+        exposed |= set(types)
     foe = defender.arena.foe_of(defender) if defender.arena is not None else None
     if foe is not None and foe is not defender:
         exposed |= {hooks.ability(foe, "exposes", move.type)} - {None}
@@ -2280,7 +2292,7 @@ def _foe_field(fighter: _Fighter, hook: str, *args) -> list:
 
 def _accuracy(attacker: _Fighter, defender: _Fighter, move: Move) -> float:
     return ((move.accuracy or 0) * _accuracy_stages(attacker, defender, move)
-            * (hooks.item(attacker, "accuracy_as_user", default=1.0)
+            * (hooks.item(attacker, "accuracy_as_user", defender, default=1.0)
                * hooks.item(defender, "accuracy_as_target", default=1.0)
                * hooks.call("items", attacker.primed, "primed_accuracy", default=1.0))
             * math.prod(_field(attacker, "modify_accuracy"))

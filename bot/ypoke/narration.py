@@ -11,7 +11,7 @@ from ypoke.battle import (
     WeatherDamage, WeatherEnd, YawnSleep,
 )
 from ypoke.dex import bar, sprite_url
-from ypoke.items import ITEM_NAMES, known
+from ypoke.items import FORM_BOUND, ITEM_NAMES, known
 from ypoke.type_chart import TYPE_NAMES_KO
 
 MAX_LOG_BLOCKS = 44
@@ -56,7 +56,7 @@ FORM_CAPTION = {
     "blade": "블레이드폼", "core": "코어의모습", "complete": "퍼펙트폼", "busted": "탈이 벗겨진 모습",
     "noice": "나이스페이스", "ice-face": "아이스페이스", "gulping": "찌로꼬를 문 모습", "gorging": "피카츄를 문 모습",
     "hangry": "배고픈모양", "sunny": "태양의모습", "rainy": "빗방울의모습", "snowy": "설운의모습", "sunshine": "포지폼",
-    "hero": "마이티폼",
+    "hero": "마이티폼", **{slug: f"{ITEM_NAMES[slug]} 모습" for slug in FORM_BOUND},
 }
 ITEM_EFFECT_TEXT = {
     "cure": "상태 회복", "restore": "능력 회복", "first": "선제공격", "burn": "🔥화상", "toxic": "☠️맹독",

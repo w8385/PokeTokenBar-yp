@@ -46,6 +46,8 @@ EFFECT_KEYS = frozenset({
     "throat-spray", "adrenaline-orb", "room-service", "mirror-herb", "mental-herb", "power-herb", "terrain-seed",
     "booster-energy", "utility-umbrella", "safety-goggles", "covert-cloak", "clear-amulet", "ability-shield",
     "speed-halver", "iron-ball", "moves-last", "species-stat", "species-crit", "incense",
+    "zoom-lens", "metronome", "loaded-dice", "flinch-item", "grip-claw", "binding-band", "sticky-barb", "float-stone",
+    "ring-target", "drive", "memory",
 })
 
 TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",
@@ -73,6 +75,9 @@ SPECIES_ITEMS = {slug: frozenset((species,) if isinstance(species, int) else spe
 # item slug -> (the move its form's holder knows, the move it becomes: Iron Head, Behemoth Blade)
 CROWNED_MOVES = {slug: tuple(entry["args"]["move"]) for slug, entry in battle_data.with_key("items", "form-item").items()
                  if "move" in entry["args"]}
+# item slug -> the species whose form it sets and that cannot lose it (Genesect's drives, Silvally's memories)
+FORM_BOUND = {slug: species for key in ("drive", "memory")
+              for slug, species in battle_data.args("items", key, "species").items()}
 WEATHER_ROCKS = battle_data.args("items", "weather-rock", "weathers")
 OGERPON_MASKS = tuple(battle_data.with_key("items", "ogerpon-mask"))
 ORB_AILMENTS = battle_data.args("items", "status-orb", "ailment")
@@ -123,6 +128,15 @@ GEM_MULTIPLIER = 1.3
 BLUNDER_POLICY_STAGES = 2
 SPEED_HALVED = 0.5
 SPECIES_STAT_MULTIPLIER = 2.0
+ZOOM_LENS_ACCURACY = 1.2
+METRONOME_STEP = 0.2
+METRONOME_MAX_STEPS = 5
+LOADED_DICE_HITS = (4, 5)
+FLINCH_ITEM_CHANCE = 0.1
+GRIP_CLAW_TURNS = 7
+BINDING_BAND_SHARE = 6
+STICKY_BARB_FRACTION = 8
+FLOAT_STONE_WEIGHT = 0.5
 
 
 def known(item: str | None) -> str | None:
