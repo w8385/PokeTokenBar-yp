@@ -19,6 +19,7 @@ from ypoke.moves import MAX_MOVES, default_move_ids
 from ypoke.messages import DirectMessage
 from ypoke.miracle import POST_ERRORS as MIRACLE_POST_ERRORS
 from ypoke.miracle import MiracleService
+from ypoke.remote_ops import MAX_ACK_IDS, RemoteOps, is_reason, normalize_remote
 from ypoke.store import Store
 from ypoke.tera_forms import usable_item
 from ypoke.trades import PROPOSE_ERRORS, TradeService
@@ -78,7 +79,7 @@ def serve(
     name_for: NameFor = lambda user_id: None,
     trades: TradeService | None = None, notify: Notify = lambda messages: None,
     gyms: GymApi | None = None, clock: Callable[[], float] = time.monotonic,
-    miracle: MiracleService | None = None,
+    miracle: MiracleService | None = None, remote: RemoteOps | None = None,
 ) -> ThreadingHTTPServer:
     """Start the upload server on a daemon thread and return it.
 
@@ -88,11 +89,13 @@ def serve(
     With `trades`, the trade endpoints are served and `notify` sends the DMs a new offer produces.
     With `gyms`, the gym endpoints are served; `clock` times their rate limit.
     With an available `miracle`, the miracle trade endpoints are served; otherwise they answer `unavailable`.
+    The remote-ops endpoints are always served; `notify` sends the DM an ack produces.
     """
     handler = type("BoundUploadHandler", (_UploadHandler,), {
         "store": store, "on_upload": staticmethod(on_upload), "moves_for": staticmethod(moves_for),
         "name_for": staticmethod(name_for), "trades": trades, "notify": staticmethod(notify),
         "gyms": gyms, "gym_limit": RateLimit(GYM_BATTLE_INTERVAL, clock), "miracle": miracle,
+        "remote": remote or RemoteOps(store),
     })
     server = ThreadingHTTPServer((host, port), handler)
     threading.Thread(target=server.serve_forever, name="upload-server", daemon=True).start()
@@ -203,11 +206,17 @@ class _UploadHandler(BaseHTTPRequestHandler):
         if url.path == "/v1/health":
             self._reply(200, {"ok": True})
             return
-        if url.path not in ("/v1/party", "/v1/moves", "/v1/coworkers", "/v1/trades", "/v1/gyms", "/v1/miracle"):
+        if url.path not in ("/v1/party", "/v1/moves", "/v1/coworkers", "/v1/trades", "/v1/gyms", "/v1/miracle",
+                            "/v1/ops"):
             self._reply(404, {"ok": False, "error": "not_found"})
             return
         user_id = self._authenticated_user()
         if user_id is None:
+            return
+        if url.path == "/v1/ops":
+            ops = [{"id": op.id, "kind": op.kind, "payload": op.payload, "created_at": op.created_at}
+                   for op in self.remote.pending(user_id)]
+            self._reply(200, {"ok": True, "ops": ops})
             return
         if url.path == "/v1/miracle":
             if self._miracle_available():
@@ -233,7 +242,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         if self.path not in ("/v1/party", "/v1/trades", "/v1/trades/ack", "/v1/gym/battle", "/v1/miracle",
-                             "/v1/miracle/cancel"):
+                             "/v1/miracle/cancel", "/v1/ops/ack"):
             self._reply(404, {"ok": False, "error": "not_found"})
             return
         user_id = self._authenticated_user()
@@ -252,6 +261,8 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._propose(user_id, payload)
         elif self.path == "/v1/trades/ack":
             self._acknowledge(user_id, payload)
+        elif self.path == "/v1/ops/ack":
+            self._acknowledge_ops(user_id, payload)
         else:
             self._store_party(user_id, payload)
 
@@ -279,7 +290,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
         except OSError:
             self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
             return
-        self.store.save_party(user_id, party, normalize_dex(payload))
+        self.store.save_party(user_id, party, normalize_dex(payload), normalize_remote(payload))
         body = {"ok": True, "party_size": len(party)}
         if self.trades is not None:
             if "trade_pool" in payload:
@@ -377,6 +388,25 @@ class _UploadHandler(BaseHTTPRequestHandler):
             return
         self.trades.ack(user_id, trade_ids[:100])
         self._reply(200, {"ok": True})
+
+    def _acknowledge_ops(self, user_id: str, payload: object) -> None:
+        applied = payload.get("applied", []) if isinstance(payload, dict) else None
+        cancelled = payload.get("cancelled", []) if isinstance(payload, dict) else None
+        if not (isinstance(applied, list) and all(_is_op_id(item) for item in applied)):
+            self._reply(400, {"ok": False, "error": "applied must be a list of op ids"})
+            return
+        if not (isinstance(cancelled, list) and all(
+            isinstance(item, dict) and _is_op_id(item.get("id")) and is_reason(item.get("reason")) for item in cancelled
+        )):
+            self._reply(400, {"ok": False, "error": "cancelled must be a list of {id, reason}"})
+            return
+        if len(applied) + len(cancelled) > MAX_ACK_IDS:
+            self._reply(400, {"ok": False, "error": f"at most {MAX_ACK_IDS} ops per ack"})
+            return
+        message = self.remote.ack(user_id, applied, [(item["id"], item["reason"]) for item in cancelled])
+        self._reply(200, {"ok": True})
+        if message is not None:
+            self.notify((message,))
 
     def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
         if urlsplit(self.path).path != "/v1/health":
@@ -487,6 +517,10 @@ def _validate_member(field: str, index: int, member: object) -> dict:
 
 def _valid_pokemon_id(pokemon_id: int) -> bool:
     return 1 <= pokemon_id <= 1025 or 10001 <= pokemon_id <= 10999
+
+
+def _is_op_id(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
 
 
 def _is_int(value: object) -> bool:

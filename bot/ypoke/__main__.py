@@ -17,6 +17,7 @@ from ypoke.miracle import PICK_ACTION_ID as MIRACLE_PICK_ACTION_ID
 from ypoke.miracle import MiracleService
 from ypoke.names import DisplayNames
 from ypoke.pokeapi import PokeAPIService
+from ypoke.remote_ops import RemoteOps
 from ypoke.store import Store
 from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, TradeService
 from ypoke.transport import (
@@ -43,12 +44,14 @@ def main() -> None:
     home_channel = os.environ.get("YPOKE_HOME_CHANNEL") or None
     if home_channel:
         _join(app, home_channel)
+    remote = RemoteOps(store)
     handler = CommandHandler(
         store,
         pokeapi,
         os.environ.get("YPOKE_PUBLIC_URL"),
         bot_user_id=app.client.auth_test()["user_id"],
         home_channel=home_channel,
+        remote=remote,
     )
     names = DisplayNames(app.client)
     names.warm(store.linked_user_ids())
@@ -65,6 +68,7 @@ def main() -> None:
         lambda messages: post_direct_messages(app.client, messages),
         GymBattles(pokeapi),
         miracle=miracle,
+        remote=remote,
     )
     threading.Thread(target=_warm_stored_parties, args=(pokeapi, store), daemon=True).start()
     threading.Thread(target=_sweep_miracle_offers, args=(miracle,), daemon=True).start()

@@ -348,6 +348,10 @@ class TradeService:
     def pool_entry(self, user_id: str, individual_id: str | None) -> dict | None:
         return self._pool_entry(user_id, individual_id)
 
+    def pool(self, user_id: str) -> list[dict]:
+        """The user's last uploaded pool, newest first; empty when none was sent."""
+        return self._pool(user_id)
+
     def name(self, user_id: str) -> str:
         return self._name(user_id)
 
