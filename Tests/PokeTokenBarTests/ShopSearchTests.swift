@@ -73,6 +73,17 @@ final class ShopSearchTests: XCTestCase {
         }
     }
 
+    func testEveryBattleItemIsFoundByItsKoreanEnglishAndJapaneseName() throws {
+        let shop = try store(language: .ko)
+        for kind in ItemKind.moreBattleItems + [.kingsRock, .razorFang, .deepSeaTooth, .deepSeaScale] {
+            for language in [AppLanguage.ko, .en, .ja] {
+                XCTAssertTrue(kinds(shop.shopSearch(L(language).itemName(kind))).contains(kind), "\(kind) \(language)")
+            }
+        }
+        XCTAssertTrue(kinds(shop.shopSearch("ほのおのジュエル")).contains(.fireGem))
+        XCTAssertTrue(kinds(shop.shopSearch("불꽃주얼")).contains(.fireGem))
+    }
+
     func testAnEffectWordFindsTheItemInTheCurrentLanguageOnly() throws {
         let korean = try store(language: .ko)
         XCTAssertTrue(kinds(korean.shopSearch("공격할 때마다")).contains(.lifeOrb))

@@ -40,6 +40,7 @@ final class ItemLoreTests: XCTestCase {
             .masterpieceTeacup, .metalAlloy, .peatBlock, .blackAugurite, .scrollOfDarkness, .scrollOfWaters,
             .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
             .adamantCrystal, .lustrousGlobe, .griseousCore, .punchingGlove, .mirrorHerb,
+            .abilityShield, .boosterEnergy, .clearAmulet, .covertCloak, .loadedDice,
         ]
         for kind in ItemKind.allCases {
             XCTAssertEqual(ItemLore.isAppOriginal(kind.loreSlug), flaggedKinds.contains(kind), "\(kind)")

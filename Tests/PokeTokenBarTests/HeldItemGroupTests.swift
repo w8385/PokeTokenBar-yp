@@ -51,19 +51,28 @@ final class HeldItemGroupTests: XCTestCase {
         let sections = try store().shopBattleSections
         XCTAssertEqual(sections.map(\.group), BattleItemGroup.allCases)
         let expected: [BattleItemGroup: [ItemKind]] = [
-            .attack: [.choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses, .punchingGlove],
+            .attack: [.choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses, .punchingGlove,
+                      .kingsRock, .razorFang, .loadedDice, .metronome, .zoomLens, .gripClaw, .bindingBand, .powerHerb,
+                      .throatSpray, .boosterEnergy, .liechiBerry, .petayaBerry, .lansatBerry, .starfBerry, .micleBerry],
             .typeBoost: [.silkScarf, .charcoal, .mysticWater, .magnet, .miracleSeed, .neverMeltIce, .blackBelt,
                          .poisonBarb, .softSand, .sharpBeak, .twistedSpoon, .silverPowder, .hardStone, .spellTag,
-                         .dragonFang, .blackGlasses, .metalCoat, .fairyFeather] + ItemKind.plates,
+                         .dragonFang, .blackGlasses, .metalCoat, .fairyFeather] + ItemKind.plates + ItemKind.gems
+                + ItemKind.typeIncenses,
             .bulk: [.assaultVest, .eviolite, .leftovers, .blackSludge, .sitrusBerry, .shellBell, .bigRoot, .focusSash,
-                    .focusBand] + ItemKind.resistBerries,
-            .speed: [.choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder],
-            .status: [.lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb],
-            .weather: [.heatRock, .dampRock, .smoothRock, .icyRock],
+                    .focusBand] + ItemKind.resistBerries + [.oranBerry, .enigmaBerry] + ItemKind.flavorBerries
+                + [.ganlonBerry, .apicotBerry, .keeBerry, .marangaBerry, .jabocaBerry, .rowapBerry, .airBalloon],
+            .speed: [.choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder, .salacBerry, .custapBerry,
+                     .blunderPolicy, .adrenalineOrb, .laxIncense, .fullIncense, .laggingTail, .ironBall, .roomService]
+                + ItemKind.powerItems,
+            .status: [.lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb] + ItemKind.cureBerries
+                + [.leppaBerry, .mentalHerb, .clearAmulet, .covertCloak, .abilityShield, .protectivePads, .safetyGoggles,
+                   .heavyDutyBoots] + ItemKind.hitStatItems,
+            .weather: [.heatRock, .dampRock, .smoothRock, .icyRock, .utilityUmbrella],
             .signature: [.tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
                          .redOrb, .blueOrb, .ultranecroziumZ, .adamantCrystal, .lustrousGlobe, .griseousCore,
-                         .rustedSword, .rustedShield],
-            .other: [.everstone],
+                         .rustedSword, .rustedShield, .deepSeaTooth, .deepSeaScale] + ItemKind.drives + ItemKind.memories
+                + ItemKind.speciesItems,
+            .other: [.everstone] + ItemKind.terrainSeeds + [.lightClay, .terrainExtender, .floatStone, .stickyBarb, .ringTarget],
         ]
         for section in sections {
             XCTAssertEqual(section.kinds, expected[section.group], "\(section.group)")
@@ -76,7 +85,11 @@ final class HeldItemGroupTests: XCTestCase {
     func testMetalCoatAndRazorClawSitInTheEvolutionListAndTheirBattleGroup() throws {
         let shop = try store()
         let battle = shop.shopBattleSections
-        for (kind, group) in [(ItemKind.metalCoat, BattleItemGroup.typeBoost), (.razorClaw, .speed)] {
+        let evolutionBattleItems: [(ItemKind, BattleItemGroup)] = [
+            (.metalCoat, .typeBoost), (.razorClaw, .speed), (.kingsRock, .attack), (.razorFang, .attack),
+            (.deepSeaTooth, .signature), (.deepSeaScale, .signature),
+        ]
+        for (kind, group) in evolutionBattleItems {
             XCTAssertTrue(shop.shopEvolutionItems.contains(kind), "\(kind)")
             XCTAssertTrue(battle.first { $0.group == group }?.kinds.contains(kind) ?? false, "\(kind)")
             XCTAssertEqual(kind.category, .evolution, "\(kind)")
@@ -105,7 +118,8 @@ final class HeldItemGroupTests: XCTestCase {
         XCTAssertEqual(allView.count, Set(allView).count, "no item is listed twice")
         XCTAssertFalse(shop.shopAllViewEvolutionItems.contains(.metalCoat))
         XCTAssertFalse(shop.shopAllViewEvolutionItems.contains(.razorClaw))
-        XCTAssertEqual(Set(shop.shopEvolutionItems).subtracting(shop.shopAllViewEvolutionItems), [.metalCoat, .razorClaw])
+        XCTAssertEqual(Set(shop.shopEvolutionItems).subtracting(shop.shopAllViewEvolutionItems),
+                       [.metalCoat, .razorClaw, .kingsRock, .razorFang, .deepSeaTooth, .deepSeaScale])
     }
 
     func testTheBagAllViewListsEveryOwnedItemOnceWithBattleItemsGrouped() throws {

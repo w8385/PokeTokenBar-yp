@@ -1,4 +1,5 @@
 import XCTest
+@testable import PokeTokenBar
 
 /// The battle rule data in `data/battle/` that the bot runs and the app's tests read.
 enum BattleData {
@@ -58,6 +59,16 @@ enum BattleData {
     /// Every item slug the bot runs an effect key for.
     static func knownItems() throws -> Set<String> {
         Set(try entries("items").filter { !$0.value.effect.keys.isEmpty }.keys)
+    }
+
+    /// Items with a battle effect no shop item uploads. Mega Stones have their own shelf, and the Mirror Herb is sold
+    /// as a training item that is used up.
+    static func unsoldItems(_ entries: [String: Entry]) -> [String] {
+        let sold = Set(ItemKind.allCases.filter { $0.shopPrice != nil }.compactMap(\.heldItemSlug))
+        return entries.filter { slug, entry in
+            !entry.effect.keys.isEmpty && !entry.effect.keys.contains("mega-stone") && slug != "mirror-herb"
+                && !sold.contains(slug)
+        }.keys.sorted()
     }
 
     /// The item slugs that run `key`.
@@ -145,6 +156,17 @@ final class BattleDataCoverageTests: XCTestCase {
         for malformed in [#"[]"#, #"["todo"]"#, #"{"inert": ""}"#, #"{"other": "x"}"#, #"5"#, #""""#] {
             XCTAssertThrowsError(try decoded(#"{"effect": \#(malformed)}"#), malformed)
         }
+    }
+
+    func testTheShopSellsEveryHeldItemWithABattleEffect() throws {
+        XCTAssertEqual(BattleData.unsoldItems(try BattleData.entries("items")), [])
+    }
+
+    func testAnItemTheShopLacksFailsTheShopCheck() throws {
+        var entries = try BattleData.entries("items")
+        entries["test-orb"] = try decoded(#"{"effect": "leftovers"}"#)
+        entries["test-stone"] = try decoded(#"{"effect": "mega-stone"}"#)
+        XCTAssertEqual(BattleData.unsoldItems(entries), ["test-orb"])
     }
 
     private func decoded(_ json: String) throws -> BattleData.Entry {

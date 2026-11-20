@@ -44,6 +44,8 @@ enum PokemonBalance {
         static let scoutTicket = 60_000_000
         static let evolutionStone = 20_000_000
         static let heldItem = 60_000_000
+        static let gem = 20_000_000
+        static let burden = 5_000_000
         static let megaStone = 120_000_000
         static let formTool = 15_000_000
         static let abilityCapsule = 5_000_000

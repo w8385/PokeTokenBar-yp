@@ -15,6 +15,11 @@ final class ShopTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
     private let heldItemEntries: [ShopEntry] = ItemKind.allCases.filter { $0.category == .heldItem }.map { .item($0) }
 
+    /// The held-item tab groups its items, so their place in the price-sorted list is only checked by the price order.
+    private func withoutHeldItems(_ entries: [ShopEntry]) -> [ShopEntry] {
+        entries.filter { if case .item(let kind) = $0 { kind.category != .heldItem } else { true } }
+    }
+
     /// usedSinceInstall/spentTokens 를 직접 지정한 상태 파일을 만들어 로드 — 지갑 잔액을 결정적으로
     /// 세팅(update() 의 delta 적립 경로를 우회). testCannotUseWhileLineUnloaded 와 동일한 JSON 시드 패턴.
     private func store(used: Int, spent: Int = 0, rareCandy: Int = 0,
@@ -194,10 +199,11 @@ final class ShopTests: XCTestCase {
 
     func testEveryHeldItemIsBuyableAtExactPriceAndNotOneBelow() {
         for kind in ItemKind.allCases.filter({ $0.category == .heldItem }) {
-            let exact = store(used: HeldItem.price)
+            let price = HeldItem.price(of: kind)
+            let exact = store(used: price)
             XCTAssertTrue(exact.buy(kind), "\(kind)")
             XCTAssertEqual(exact.availableTokens, 0, "\(kind)")
-            let short = store(used: HeldItem.price - 1)
+            let short = store(used: price - 1)
             XCTAssertFalse(short.buy(kind), "\(kind)")
             XCTAssertEqual(short.state.spentTokens, 0, "\(kind)")
         }
@@ -213,9 +219,11 @@ final class ShopTests: XCTestCase {
 
     func testItemsSortedByPriceAscending() {
         let items = store(used: 0).purchasableItems
-        XCTAssertEqual(Array(items.prefix(Self.cheapItems.count)), Self.cheapItems)
-        XCTAssertEqual(Set(items.dropFirst(Self.cheapItems.count)), Set(ItemKind.allCases.filter { $0.category == .heldItem } + [.shinyCharm, .expShare]),
-                       "held items, the charm and the first Exp. Share tie on price")
+        let others = items.filter { $0.category != .heldItem }
+        XCTAssertEqual(Array(others.prefix(Self.cheapItems.count)), Self.cheapItems)
+        XCTAssertEqual(Array(others.dropFirst(Self.cheapItems.count)), [.shinyCharm, .expShare],
+                       "the charm and the first Exp. Share tie on price")
+        XCTAssertEqual(Set(items.filter { $0.category == .heldItem }), Set(ItemKind.allCases.filter { $0.category == .heldItem }))
         let prices = items.compactMap(\.shopPrice)
         XCTAssertEqual(prices, prices.sorted(), "shopPrice 오름차순 — 가격 상수가 바뀌어도 정렬 불변식 유지")
     }
@@ -245,11 +253,11 @@ final class ShopTests: XCTestCase {
         try? json.data(using: .utf8)!.write(to: url)
         let s = CompanionStore(provider: ShopNoProvider(), clock: { self.now }, fileURL: url, rng: SeededRNG(seed: 1))
         XCTAssertTrue(s.hasActive)
-        XCTAssertEqual(s.shopEntries,
+        XCTAssertEqual(withoutHeldItems(s.shopEntries),
                        Self.cheapEntries
                        + [.item(.shinyCharm), .item(.expShare)]   // ties keep ItemKind declaration order
-                       + heldItemEntries
                        + [.egg(.rare)])
+        XCTAssertEqual(Set(s.shopEntries).subtracting(withoutHeldItems(s.shopEntries)), Set(heldItemEntries))
         let prices = s.shopEntries.map(\.price)
         XCTAssertEqual(prices, prices.sorted(), "가격 상수가 바뀌어도 오름차순 불변식 유지")
     }
@@ -260,11 +268,11 @@ final class ShopTests: XCTestCase {
     func testShopEntriesKeepsEggsVisibleButUnbuyableWhenNoActive() {
         let s = store(used: 1_000_000_000)   // active 없음, 잔액은 전 티어 가격 이상
         XCTAssertFalse(s.hasActive)
-        XCTAssertEqual(s.shopEntries,
+        XCTAssertEqual(withoutHeldItems(s.shopEntries),
                        Self.cheapEntries
                        + [.item(.shinyCharm), .item(.expShare)]   // ties keep ItemKind declaration order
-                       + heldItemEntries
                        + [.egg(.rare)])
+        XCTAssertEqual(Set(s.shopEntries).subtracting(withoutHeldItems(s.shopEntries)), Set(heldItemEntries))
         for tier in FreshEgg.shopTiers {
             XCTAssertTrue(s.shopEntries.contains(.egg(tier)), "알 상태에서도 \(tier?.rawValue ?? "기본") 알은 노출 유지")
             XCTAssertFalse(s.canBuyEgg(tier), "노출은 되지만 \(tier?.rawValue ?? "기본") 알 구매는 hasActive 게이트로 차단")
