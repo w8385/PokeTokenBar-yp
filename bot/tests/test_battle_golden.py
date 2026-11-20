@@ -391,6 +391,9 @@ FOCUS_CASES = {
     "species-items": (((888, "rusted-sword", None, [442]), (25, "light-ball", None, [85]), (83, "stick", None, [33]),
                        (132, "quick-powder", None, [33])),
                       ((6, "iron-ball", None, [53]), (50, None, None, [89]), (143, "lagging-tail", None, [98, 33]))),
+    "misc-items": (((68, None, None, [67]), (649, "douse-drive", None, [546]), (6, "grip-claw", None, [35]),
+                    (94, "binding-band", None, [35])),
+                   ((143, "sticky-barb", None, [33]), (68, "float-stone", None, [67]), (25, "kings-rock", None, [85]))),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

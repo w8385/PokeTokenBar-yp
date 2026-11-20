@@ -1,44 +1,11 @@
 {
  "items": {
   "counts": {
-   "implemented": 289,
-   "inert": 176,
-   "todo": 32
+   "implemented": 320,
+   "inert": 177,
+   "todo": 0
   },
-  "todo": [
-   "binding-band",
-   "bug-memory",
-   "burn-drive",
-   "chill-drive",
-   "dark-memory",
-   "destiny-knot",
-   "douse-drive",
-   "dragon-memory",
-   "electric-memory",
-   "fairy-memory",
-   "fighting-memory",
-   "fire-memory",
-   "float-stone",
-   "flying-memory",
-   "ghost-memory",
-   "grass-memory",
-   "grip-claw",
-   "ground-memory",
-   "ice-memory",
-   "kings-rock",
-   "loaded-dice",
-   "metronome",
-   "poison-memory",
-   "psychic-memory",
-   "razor-fang",
-   "ring-target",
-   "rock-memory",
-   "shock-drive",
-   "steel-memory",
-   "sticky-barb",
-   "water-memory",
-   "zoom-lens"
-  ]
+  "todo": []
  },
  "abilities": {
   "counts": {

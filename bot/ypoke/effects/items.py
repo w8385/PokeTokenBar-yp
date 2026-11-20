@@ -137,7 +137,7 @@ class WeatherRock(Handler):
 
 @register("items", "wide-lens")
 class WideLens(Handler):
-    def accuracy_as_user(self, name):
+    def accuracy_as_user(self, name, target):
         return items.WIDE_LENS_ACCURACY
 
 

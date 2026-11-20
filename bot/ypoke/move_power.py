@@ -76,12 +76,14 @@ def power(move, user, target, weather: str | None, multiplier: float, hit: int |
 
 
 def holds_removable_item(fighter) -> bool:
-    """Knock Off takes any item but one that sets the holder's form (Mega Stone, plate on Arceus, mask, origin item)."""
+    """Knock Off takes any item but one that sets the holder's form (Mega Stone, plate on Arceus, mask, origin item,
+    drive on Genesect, memory on Silvally)."""
     if not holds_item(fighter):
         return False
     item, pokemon_id = fighter.item or fighter.combatant.item, fighter.combatant.pokemon_id
     bound = (item in tera_forms.MASKS or item in tera_forms.ITEM_FORMS or item == items.STELLAR_CRYSTAL
-             or pokemon_id == tera_forms.ARCEUS and item in items.PLATES)
+             or pokemon_id == tera_forms.ARCEUS and item in items.PLATES
+             or pokemon_id is not None and items.FORM_BOUND.get(item) == pokemon_id)
     return not bound and (pokemon_id is None or mega_form_id(item, pokemon_id) is None)
 
 

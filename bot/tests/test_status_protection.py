@@ -221,7 +221,7 @@ def test_endure_outlasts_a_foe_that_its_status_or_state_finishes_at_the_end_of_t
     foe.status = ticking.get("status")
     if ticking.get("volatile") == "binding":
         user.memory["binding"] = token = (1, user.combatant.name)
-        foe.volatiles["binding"] = [3, token]
+        foe.volatiles["binding"] = [3, token, share]
     elif "volatile" in ticking:
         foe.volatiles[ticking["volatile"]] = True
     foe.hp = foe.max_hp // share

@@ -41,8 +41,10 @@ class BlunderPolicy(Handler):
 
 @register("items", "throat-spray")
 class ThroatSpray(Handler):
-    def after_use(self, name, fighter, move):
-        return _spend(fighter, name, ("special_attack", 1)) if move.flagged("sound") and fighter.hp > 0 else None
+    def after_use(self, name, fighter, move, worked):
+        if not worked or not move.flagged("sound") or fighter.hp == 0:
+            return None
+        return _spend(fighter, name, ("special_attack", 1))
 
 
 @register("items", "adrenaline-orb")

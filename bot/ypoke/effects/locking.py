@@ -4,7 +4,7 @@ landed, how many times in a row and what the last use did. A bind hurts its targ
 `user`, `target` and `fighter` are `battle._Fighter`s."""
 
 from ypoke import battle
-from ypoke.effects import Handler, register
+from ypoke.effects import Handler, hooks, register
 from ypoke.effects.stats import shift
 from ypoke.effects.volatiles import due, hurt, ticked
 
@@ -154,7 +154,7 @@ class Rage(Handler):
 @register("moves", "binding")
 class Binding(Handler):
     """Wrap and its kind: the target loses 1/8 of its max HP at each end of turn for four or five turns, while the
-    user stays in."""
+    user stays in. The user's item can make it last longer (Grip Claw) or hurt more (Binding Band)."""
 
     by_id = True
 
@@ -162,11 +162,13 @@ class Binding(Handler):
         if self.key in target.volatiles:
             return ()
         user.memory[self.key] = token = (_turn(user), user.combatant.name)
-        target.volatiles[self.key] = [rng.randint(*BIND_TURNS), token]
+        turns = hooks.item(user, "bind_turns", default=None) or rng.randint(*BIND_TURNS)
+        target.volatiles[self.key] = [turns, token, hooks.item(user, "bind_share", default=BIND_SHARE)]
         return (battle.Change(1 - side, target.combatant.name, self.key),)
 
     def tick_due(self, name, fighter):
-        return due(fighter, BIND_SHARE) if fighter.volatiles[name][0] else 0
+        turns, _, share = fighter.volatiles[name]
+        return due(fighter, share) if turns else 0
 
     def volatile_end(self, name, fighter, side, turn, rng):
         bind = fighter.volatiles[name]
@@ -174,7 +176,7 @@ class Binding(Handler):
             del fighter.volatiles[name]
             return battle.VolatileEnd(turn, side, fighter.combatant.name, name)
         bind[0] -= 1
-        hurt(fighter, BIND_SHARE)
+        hurt(fighter, bind[2])
         return ticked(fighter, side, turn, name)
 
 

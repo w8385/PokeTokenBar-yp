@@ -40,7 +40,7 @@ HOOKS = {
     "suppresses_items": "state: the held items of the Pokémon it covers do nothing (Magic Room, Embargo)",
     "modify_stat": "item, then ability: multiplies a stat after its stage (paralysis halves Speed in between)",
     "modify_foe_stat": "ability: multiplies a stat of the foe facing its holder, last (Sword of Ruin)",
-    "modify_weight": "ability: multiplies its holder's weight (Heavy Metal)",
+    "modify_weight": "ability, then item: multiplies its holder's weight (Heavy Metal, Float Stone)",
     "field_stat": "ability: multiplies a stat in a weather or terrain, after `modify_stat`",
     "side_stat": "state: multiplies a stat of the Pokémon on its side, last",
     "stage_factor": "ability: multiplies every stat stage change on its holder before the guards (Contrary's -1, Simple's 2)",
@@ -94,11 +94,12 @@ HOOKS = {
                     "(OHKO moves)",
     "skips_accuracy":"move: hits without an accuracy draw",
     "ignores_stages": "move: the target's Defense, Special Defense and evasion stages do nothing to it (Sacred Sword)",
-    "hit_count": "move, then ability: how many times it hits this time, in place of the data's hit range (Beat Up, "
-                 "Skill Link)",
-    "expected_hits": "ability: the hits the move chooser counts on for its holder's move (Parental Bond)",
+    "hit_count": "move, then ability, then item: how many times it hits this time, in place of the data's hit range "
+                 "(Beat Up, Skill Link, Loaded Dice)",
+    "expected_hits": "ability, then item: the hits the move chooser counts on for its holder's move (Parental Bond, "
+                     "Loaded Dice)",
     "extra_hit_power": "ability: multiplies the power of the extra hits it gives a single-hit move (Parental Bond)",
-    "skips_hit_rolls": "ability: its holder's later hits draw no accuracy (Skill Link on Triple Kick)",
+    "skips_hit_rolls": "ability, item: its holder's later hits draw no accuracy (Skill Link, Loaded Dice)",
     "rolls_each_hit": "move: each hit after the first draws for accuracy and a miss ends the move (Triple Kick)",
     "accuracy_as_user": "item, ability: multiplies the user's accuracy, before the target's",
     "accuracy_as_target": "item, ability: multiplies the accuracy of a move used on its holder",
@@ -107,7 +108,13 @@ HOOKS = {
     "primed_power": "item: multiplies the power of the move it was spent on (a gem)",
     "floats": "item: its holder floats over Ground moves and is not grounded (Air Balloon)",
     "on_miss": "item: acts once its holder's move missed on the accuracy draw (Blunder Policy); returns an event",
-    "after_use": "item: acts once its holder's move worked, hit or status (Throat Spray); returns an event",
+    "after_use": "item: acts once its holder used a move, told whether it worked, hit or status (Throat Spray, "
+                 "Metronome); returns an event",
+    "streak_boost": "item: multiplies the damage of its holder's move by how often it worked in a row (Metronome)",
+    "bind_turns": "item: how many turns its holder's binding move holds the target (Grip Claw)",
+    "bind_share": "item: the 1/n of the bound target's max HP its holder's binding move takes each turn (Binding "
+                  "Band)",
+    "drops_immunities": "item: the moves that hit its holder ignore the type immunities of its types (Ring Target)",
     "skips_charge": "item: its holder's two-turn move hits at once, which uses the item up (Power Herb)",
     "energizes": "item: sets off its holder's Protosynthesis or Quark Drive without the field, used up (Booster "
                  "Energy)",
@@ -201,7 +208,8 @@ HOOKS = {
                        "(Magic Guard)",
     "after_hit": "ability: answers a damaging move that hit its holder once the move is over (Stamina); returns an "
                  "event",
-    "after_hit_as_user": "ability: acts after its holder's damaging move hit (Magician); returns an event",
+    "after_hit_as_user": "ability, then item: acts after its holder's damaging move hit (Magician, King's Rock); "
+                         "returns an event",
     "after_move_as_user": "item: acts after its holder's move dealt damage, after recoil and drain",
     "after_move_as_target": "item: acts after a move dealt damage to its holder",
     "after_move": "move: acts once the damage is dealt; may return more changes",
