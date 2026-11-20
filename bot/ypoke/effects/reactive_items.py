@@ -94,6 +94,66 @@ class PowerHerb(Handler):
         return True
 
 
+@register("items", "terrain-seed")
+class TerrainSeed(Handler):
+    """Raises a stat of its holder once its terrain is up (Electric Seed: Electric Terrain, Defense)."""
+
+    def on_update(self, name, fighter, side, turn):
+        terrain, stat = items.TERRAIN_SEEDS[name]
+        if fighter.arena is None or fighter.arena.terrain != terrain:
+            return None
+        return _spend(fighter, name, (stat, 1))
+
+
+@register("items", "booster-energy")
+class BoosterEnergy(Handler):
+    """Sets off Protosynthesis or Quark Drive without its field; the ability uses it up (`ability_weather`)."""
+
+    def energizes(self, name):
+        return True
+
+
+@register("items", "utility-umbrella")
+class UtilityUmbrella(Handler):
+    """Keeps sun and rain off its holder: off its ability and stats, its charge moves, and the moves that hit it."""
+
+    def shelters(self, name):
+        return True
+
+
+@register("items", "safety-goggles")
+class SafetyGoggles(Handler):
+    """Keeps powder moves, Effect Spore and the sandstorm's and hail's chip off its holder."""
+
+    def powder_proof(self, name):
+        return True
+
+    def blocks_weather_chip(self, name):
+        return True
+
+
+@register("items", "covert-cloak")
+class CovertCloak(Handler):
+    """Keeps the added effects of the foe's moves off its holder (a flinch, a burn, a stat drop)."""
+
+    def blocks_secondary(self, name):
+        return True
+
+
+@register("items", "clear-amulet")
+class ClearAmulet(Handler):
+    def keeps_stats(self, name):
+        return True
+
+
+@register("items", "ability-shield")
+class AbilityShield(Handler):
+    """Its holder's ability cannot be changed, lost, suppressed or ignored (`battle._Fighter.ability`, `changers`)."""
+
+    def shields_ability(self, name):
+        return True
+
+
 def _spend(fighter, name, *shifts, copied=False):
     """Uses the item up for the stage changes it makes and returns its event; None, leaving the item, when none can
     land."""

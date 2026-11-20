@@ -1,8 +1,10 @@
 """Abilities about the weather and the field, beyond starting them. `fighter` is a `battle._Fighter`."""
 
 from ypoke import abilities, battle
-from ypoke.effects import Handler, register
+from ypoke.effects import Handler, hooks, register
 from ypoke.effects.ability_stats import staged
+
+ENERGIZED = "booster-energy"
 
 
 @register("abilities", "clears-weather")
@@ -55,7 +57,7 @@ class ParadoxBoost(Handler):
     its stages, picked as the field arrives, rises 1.3× (Speed 1.5×)."""
 
     def on_update(self, name, fighter, side, turn):
-        if not _in_field(fighter, name):
+        if not _in_field(fighter, name) and not _energized(fighter):
             fighter.memory.pop(name, None)
             return None
         if name in fighter.memory:
@@ -64,12 +66,26 @@ class ParadoxBoost(Handler):
         return battle.AbilityAct(turn, side, fighter.combatant.name, name, effect="paradox", detail=best)
 
     def modify_stat(self, name, stat, weather, fighter):
-        if fighter.memory.get(name) != stat or not _in_field(fighter, name):
+        if fighter.memory.get(name) != stat or not (_in_field(fighter, name) or ENERGIZED in fighter.memory):
             return 1.0
         return abilities.PARADOX_SPEED_BOOST if stat == "speed" else abilities.PARADOX_BOOST
 
 
 def _in_field(fighter, name) -> bool:
-    field = abilities.PARADOX_FIELD[name]
-    terrain = fighter.arena.terrain if fighter.arena is not None else None
-    return field in (battle._weather_of(fighter), terrain)
+    if fighter.arena is None:
+        return False
+    return abilities.PARADOX_FIELD[name] in (fighter.arena.weather.kind, fighter.arena.terrain)
+
+
+def _energized(fighter) -> bool:
+    """Whether a held item has boosted the holder until it switches out (Booster Energy), using it up now if not
+    yet."""
+    if ENERGIZED in fighter.memory:
+        return True
+    item = fighter.item
+    if not hooks.item(fighter, "energizes", default=False):
+        return False
+    fighter.memory[ENERGIZED], fighter.item = True, None
+    battle._announce(fighter, battle.ItemEffect(fighter.arena.turn if fighter.arena else 0, fighter.side,
+                                                fighter.combatant.name, item, "energized"))
+    return True

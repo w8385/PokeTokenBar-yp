@@ -5,7 +5,7 @@ from dataclasses import replace
 
 from ypoke import battle_data
 from ypoke import field_states as fs
-from ypoke.effects import loaded, register
+from ypoke.effects import hooks, loaded, register
 from ypoke.effects.conditions import reaches
 from ypoke.effects.moves import StatusMove
 from ypoke.effects.protection import last_move
@@ -154,12 +154,14 @@ class Ability(StatusMove):
 
     def _after(self, user, foe) -> tuple[str | None, str | None] | None:
         """The user's and the foe's abilities after the move, None when it fails."""
-        if foe.ability in FIXED_ABILITIES:
+        if foe.ability in FIXED_ABILITIES or shielded(foe) and self.targets_foe(None):
             return None
         if self.key in self.GIVES:
             given = self.GIVES[self.key]
             return None if foe.ability == given else (user.ability, given)
         if user.ability in FIXED_ABILITIES or user.ability == foe.ability:
+            return None
+        if shielded(user) and self.key != "entrainment":
             return None
         if self.key == "skill-swap":
             return foe.ability, user.ability
@@ -172,3 +174,8 @@ def works(ability: str | None) -> bool:
     """Whether the battle runs the ability: an ability it leaves `todo` or inert does nothing."""
     entry = battle_data.table("abilities").get(ability) if ability else None
     return entry is not None and any(key in loaded()["abilities"] for key in battle_data.keys(entry))
+
+
+def shielded(fighter) -> bool:
+    """Whether the fighter's item keeps its ability from being changed or lost (Ability Shield)."""
+    return bool(hooks.item(fighter, "shields_ability", default=False))

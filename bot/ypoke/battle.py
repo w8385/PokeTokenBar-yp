@@ -1115,8 +1115,11 @@ class _Fighter:
 
     @property
     def ability(self) -> str | None:
-        """None while a move ignores its breakable ability (Mold Breaker) or the foe's Neutralizing Gas is out."""
+        """None while a move ignores its breakable ability (Mold Breaker) or the foe's Neutralizing Gas is out, unless
+        its item shields the ability (Ability Shield)."""
         ability = self.combatant.ability
+        if hooks.call("items", self.item, "shields_ability", default=False):
+            return ability
         if self.ability_ignored and ability in abilities.BREAKABLE:
             return None
         foe = self.arena.foe_of(self) if self.arena is not None else None
@@ -1138,6 +1141,7 @@ class _Fighter:
         return max(1, self.max_hp // RESIDUAL_FRACTIONS[self.status]) if self.status in RESIDUAL_FRACTIONS else 0
 
     def stat(self, key: str, weather: str | None = None, staged: bool = True) -> float:
+        weather = _sheltered(self, weather)
         stage = self.stages[key] if staged else 0
         context = (key, weather, self.status is not None, self.combatant.can_evolve)
         multiplier = hooks.item(self, "modify_stat", *context, default=1.0)
@@ -1339,7 +1343,8 @@ def _weather_chip(fighter: _Fighter, weather: str | None) -> int:
 def _chipped_by(fighter: _Fighter, weather: str | None) -> bool:
     immune = WEATHER_CHIP_IMMUNE_TYPES.get(weather)
     return (immune is not None and not immune.intersection(fighter.combatant.types) and not _chip_free(fighter)
-            and not hooks.ability(fighter, "blocks_weather_chip", weather, default=False))
+            and not hooks.ability(fighter, "blocks_weather_chip", weather, default=False)
+            and not hooks.item(fighter, "blocks_weather_chip", default=False))
 
 
 def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int | None, weather: _Weather,
@@ -1432,8 +1437,8 @@ def _resolve(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: i
     if called is None:
         return Action(turn, side, *names, move.name, failed=True, recovered=recovered, defender_hp=defender.hp_percent,
                       attacker_hp=attacker.hp_percent)
-    effect, charged = (None if readied else hooks.move(called, "charges", attacker, side,
-                                                       _move_weather(attacker, weather.kind))) or ("", ())
+    effect, charged = (None if readied else hooks.move(called, "charges", attacker, side, _sheltered(
+        attacker, _move_weather(attacker, weather.kind)))) or ("", ())
     if effect:
         return Action(turn, side, *names, called.name, effect=effect, changes=charged, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent)
@@ -1679,17 +1684,19 @@ def _recoil_free(fighter: "_Fighter") -> bool:
     return _chip_free(fighter) or hooks.ability(fighter, "blocks_recoil", default=False)
 
 
-def _weather_of(fighter: "_Fighter") -> str | None:
-    return fighter.arena.weather.kind if fighter.arena is not None else None
-
-
 def _crash(attacker: _Fighter, move: Move) -> tuple[Change, ...]:
     crash = hooks.move(move, "crashes", attacker)
     return () if crash is None else (crash,)
 
 
 def _weather_of(fighter: "_Fighter") -> str | None:
-    return fighter.arena.weather.kind if fighter.arena is not None else None
+    """The weather as it acts on the fighter's ability."""
+    return _sheltered(fighter, fighter.arena.weather.kind if fighter.arena is not None else None)
+
+
+def _sheltered(fighter: "_Fighter", weather: str | None) -> str | None:
+    """The weather as it acts on `fighter`: its item may keep sun and rain off it (Utility Umbrella)."""
+    return None if weather in WEATHER_MOVE_BOOST and hooks.item(fighter, "shelters", default=False) else weather
 
 
 def _weight(fighter: "_Fighter") -> float:
@@ -1785,7 +1792,7 @@ def _unrolled_damage(attacker: _Fighter, defender: _Fighter, move: Move, multipl
     power = _power(attacker, defender, move, weather, multiplier, hit)
     damage = ((2 * level // 5 + 2) * power * attack / max(1, defense)) // DAMAGE_DIVISOR + 2
     return (
-        damage * _stab(attacker, move) * multiplier * _weather_boost(move, _move_weather(attacker, weather))
+        damage * _stab(attacker, move) * multiplier * _weather_boost(move, _move_weather(attacker, weather), defender)
         * _damage_taken(attacker, defender, move, multiplier, critical) * _item_boost(attacker, move, multiplier)
         * _screen(attacker, defender, move, critical) * _exposed(attacker, defender)
     )
@@ -1850,6 +1857,10 @@ def shift_stage(fighter: _Fighter, side: int, key: str, stages: int, *, guarded:
     if by_foe and hooks.ability(fighter, "guards_stat", key, fighter, default=False):
         _ability_act(fighter, effect="guard")
         return None
+    if by_foe and hooks.item(fighter, "keeps_stats", default=False):
+        _announce(fighter, ItemEffect(fighter.arena.turn if fighter.arena else 0, side, fighter.combatant.name,
+                                      fighter.item, "guard"))
+        return None
     if by_foe and hooks.ability(fighter, "reflects_drop", default=False):
         _ability_act(fighter, changes=tuple(filter(None, (shift_stage(by, 1 - side, key, stages),))))
         return None
@@ -1889,8 +1900,9 @@ def _ailment_lands(move: Move, attacker: _Fighter, defender: _Fighter, rng: rand
 
 def _chance_scale(move: Move, attacker: _Fighter, defender: _Fighter | None) -> float:
     """Scales the chance of a move's added effect: the user's ability (Serene Grace, Sheer Force), and the target's
-    when the effect lands on it (Shield Dust)."""
-    if defender is not None and hooks.ability(defender, "blocks_secondary", default=False):
+    when the effect lands on it (Shield Dust), or its item (Covert Cloak)."""
+    if defender is not None and (hooks.ability(defender, "blocks_secondary", default=False)
+                                 or hooks.item(defender, "blocks_secondary", default=False)):
         return 0.0
     return hooks.ability(attacker, "secondary_chance", move, default=1.0)
 
@@ -2095,7 +2107,8 @@ def _move_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: str
                 or hooks.move(move, "wasted", attacker, defender, default=False) or _sleeps_through(attacker, move)
                 or attacker.arena is not None and _doused(move, attacker.arena.weather)):
             return 0.0
-        share = hooks.move(move, "score_share", _move_weather(attacker, weather), attacker, default=1.0)
+        share = hooks.move(move, "score_share", _sheltered(attacker, _move_weather(attacker, weather)), attacker,
+                           default=1.0)
         return (_damage_score(attacker, defender, move, weather) * share
                 * _hp_kept(attacker, defender, move, weather))
 
@@ -2111,7 +2124,7 @@ def _damage_score(attacker: _Fighter, defender: _Fighter, move: Move, weather: s
     return (
         _power(attacker, defender, move, weather, multiplier) * _expected_hits(move, attacker, accuracy)
         * _expected_stab(attacker, move) * multiplier
-        * _weather_boost(move, _move_weather(attacker, weather))
+        * _weather_boost(move, _move_weather(attacker, weather), defender)
         * _damage_taken(attacker, defender, move, multiplier, False)
         * _item_boost(attacker, move, multiplier)
         * accuracy * attack / max(1, defense) * _screen(attacker, defender, move, False) * _exposed(attacker, defender)
@@ -2163,8 +2176,9 @@ def _item_boost(attacker: _Fighter, move: Move, multiplier: float) -> float:
     return hooks.item(attacker, "modify_damage", move.type, multiplier, move.physical, punch, default=1.0)
 
 
-def _weather_boost(move: Move, weather: str | None) -> float:
-    boost = WEATHER_MOVE_BOOST.get(weather, {}).get(move.type, 1.0)
+def _weather_boost(move: Move, weather: str | None, defender: _Fighter) -> float:
+    """Sun and rain scale Fire and Water moves, unless the target's item keeps them off it (Utility Umbrella)."""
+    boost = WEATHER_MOVE_BOOST.get(_sheltered(defender, weather), {}).get(move.type, 1.0)
     return hooks.move(move, "modify_weather_boost", weather, boost, default=boost)
 
 
@@ -2314,6 +2328,8 @@ def _stopped(attacker: _Fighter, defender: _Fighter, move: Move) -> str:
         return stopped
     if hooks.ability(defender, "stops_move", move, priority, defender, attacker, default=False):
         return defender.ability
+    if move.flagged(abilities.POWDER_FLAG) and hooks.item(defender, "powder_proof", default=False):
+        return defender.item
     if hooks.ability(attacker, "fails_against", move, defender, default=False):
         return attacker.ability
     return ""

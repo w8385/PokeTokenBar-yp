@@ -176,10 +176,10 @@ def test_solar_beam_is_halved_in_rain_sand_hail_and_snow(move_id, base):
 def test_hydro_steam_is_boosted_in_sun_while_other_water_moves_are_weakened():
     hydro_steam = attack(move_power.HYDRO_STEAM, "water", 80, physical=False)
     surf = attack(57, "water", 90, physical=False)
-    assert _weather_boost(hydro_steam, "sun") == 1.5
-    assert _weather_boost(surf, "sun") == 0.5
-    assert _weather_boost(hydro_steam, "rain") == 1.5
-    assert _weather_boost(hydro_steam, None) == 1.0
+    assert _weather_boost(hydro_steam, "sun", fighter()) == 1.5
+    assert _weather_boost(surf, "sun", fighter()) == 0.5
+    assert _weather_boost(hydro_steam, "rain", fighter()) == 1.5
+    assert _weather_boost(hydro_steam, None, fighter()) == 1.0
 
 
 def test_facade_ignores_the_burn_attack_cut():
