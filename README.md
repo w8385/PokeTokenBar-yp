@@ -144,7 +144,7 @@ The <b>Held items</b> tab in the Shop and the Bag sorts battle items under short
 <td width="45%" align="center"><img src="assets/screenshot-held-items.png" width="300" alt="Held items in the Shop and the Bag, under Attack boost and Type boost headers"></td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-shop-search.png" width="300" alt="The Shop searched for orb — Life Orb, Flame Orb and Toxic Orb under their usual headers"></td>
+<td width="45%" align="center"><img src="assets/screenshot-shop-search.png" width="300" alt="The Shop searched for orb — Life Orb and Adrenaline Orb under their usual headers"></td>
 <td width="55%" valign="middle">
 <h3>🔎 Search the whole shop</h3>
 One search field above the chips covers every item, Mega Stone, egg, scouting ticket and TM. Names match in any of the app's eight languages, so "orb" finds Life Orb in the Japanese UI too, and effect text matches in your language. Results keep the Shop's headers and order whatever chip is picked; clear the field to go back.
