@@ -139,7 +139,7 @@ The tokens you've already used are your currency. Buy several consumables at onc
 <tr>
 <td width="55%" valign="middle">
 <h3>⚔️ Battle items, grouped by what they do</h3>
-The <b>Held items</b> tab in the Shop and the Bag sorts battle items under short headers: attack boost, type boost, bulk &amp; healing, speed, aim &amp; crits, status &amp; counters, weather and signature items. In the Shop, a second chip row shows one group at a time.
+The <b>Held items</b> tab in the Shop and the Bag sorts battle items under short headers: attack boost, type boost, bulk &amp; healing, speed, aim &amp; crits, status &amp; counters, weather and signature items. In the Shop, a second chip row shows one group at a time. The Shop sells every held item that does something in battle, from type gems and pinch berries to memories, drives and the power items. Gems cost 20M because they are used up; items that hold their holder back, like the power items and the Iron Ball, cost 5M.
 </td>
 <td width="45%" align="center"><img src="assets/screenshot-held-items.png" width="300" alt="Held items in the Shop and the Bag, under Attack boost and Type boost headers"></td>
 </tr>
