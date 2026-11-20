@@ -91,6 +91,21 @@ final class RemoteOpsTests: XCTestCase {
         XCTAssertEqual(store.state.remoteOpResults, [])
     }
 
+    func testTheUploaderPreparesTheFetchedOpsBeforeApplyingThem() async throws {
+        let store = try makeStore(at: saveURL())
+        let applied = Applied()
+        let bot = RemoteOpsBot()
+        bot.ops = "[\(op(1, "test_count"))]"
+        var sync = sync(store, applied)
+        let countAtPrepare = Applied()
+        sync.prepare = { ops in countAtPrepare.count = applied.count + ops.count * 10 }
+
+        try await uploader(bot, sync: sync).tick()
+
+        XCTAssertEqual(countAtPrepare.count, 10)
+        XCTAssertEqual(applied.count, 1)
+    }
+
     func testAnUnknownKindIsCancelledAsUnsupportedAndTheRestStillApply() throws {
         let store = try makeStore(at: saveURL())
         let applied = Applied()
@@ -109,14 +124,15 @@ final class RemoteOpsTests: XCTestCase {
         let suite = "remote-ops-\(UUID().uuidString)"
         suites.append(suite)
         let sync = RemoteOpsSync(store: store, battleEntry: BattleEntryStore(defaults: try XCTUnwrap(UserDefaults(suiteName: suite))))
-        XCTAssertEqual(sync.kinds, [RemoteBuy.kind, RemoteLineup.kind])
+        XCTAssertEqual(sync.kinds, [RemoteBuy.kind, RemoteLineup.kind, RemoteTrain.kind])
 
         sync.apply([RemoteOp(id: 1, kind: "test_count", payload: Data())])
         XCTAssertEqual(store.state.remoteOpResults, [RemoteOpResult(id: 1, reason: RemoteOpReason.unsupported)])
 
         let bot = RemoteOpsBot()
         try await uploader(bot, sync: sync).tick()
-        XCTAssertEqual(bot.uploads.first?["remote_ops_kinds"] as? [String], [RemoteBuy.kind, RemoteLineup.kind])
+        XCTAssertEqual(bot.uploads.first?["remote_ops_kinds"] as? [String],
+                       [RemoteBuy.kind, RemoteLineup.kind, RemoteTrain.kind])
     }
 
     // MARK: Epoch

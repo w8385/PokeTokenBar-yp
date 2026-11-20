@@ -48,7 +48,11 @@ enum RemoteOpAppliers {
             guard let battleEntry else { return RemoteOpReason.unsupported }
             return RemoteLineup.apply(payload, store: store, battleEntry: battleEntry)
         },
-         RemoteBuy.kind: { store, payload in RemoteBuy.apply(payload, store: store) }]
+         RemoteBuy.kind: { store, payload in RemoteBuy.apply(payload, store: store) },
+         RemoteTrain.kind: { [weak battleEntry] store, payload in
+             guard let battleEntry else { return RemoteOpReason.unsupported }
+             return RemoteTrain.apply(payload, store: store, battleEntry: battleEntry)
+         }]
     }
 }
 
@@ -97,6 +101,8 @@ struct RemoteOpsSync: Sendable {
     /// Records the bot database the op ids belong to; a new one forgets the old ids and results.
     var adoptEpoch: @MainActor @Sendable (String) -> Void = { _ in }
     var epoch: @MainActor @Sendable () -> String? = { nil }
+    /// Loads what `apply` reads but the app fetches lazily, such as the ability options a Capsule op checks.
+    var prepare: @MainActor @Sendable ([RemoteOp]) async -> Void = { _ in }
 }
 
 extension RemoteOpsSync {
@@ -110,6 +116,7 @@ extension RemoteOpsSync {
                   snapshot: { [weak store] in store?.remoteSnapshot ?? RemoteSnapshot(wallet: 0, bag: [], shop: []) },
                   kinds: appliers.keys.sorted(),
                   adoptEpoch: { [weak store] epoch in store?.adoptRemoteOpsEpoch(epoch) },
-                  epoch: { [weak store] in store?.state.remoteOpsEpoch })
+                  epoch: { [weak store] in store?.state.remoteOpsEpoch },
+                  prepare: { [weak store] ops in await store?.prepareRemoteOps(ops) })
     }
 }

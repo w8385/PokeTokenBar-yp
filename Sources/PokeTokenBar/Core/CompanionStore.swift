@@ -4081,6 +4081,12 @@ final class CompanionStore {
         save()
     }
 
+    func prepareRemoteOps(_ ops: [RemoteOp]) async {
+        for speciesID in RemoteTrain.detailsNeeded(for: ops, store: self).sorted() {
+            await loadPokemonDetails(speciesID: speciesID)
+        }
+    }
+
     func acknowledgeRemoteOps(_ ids: [Int]) {
         let acknowledged = Set(ids)
         guard state.remoteOpResults.contains(where: { acknowledged.contains($0.id) }) else { return }

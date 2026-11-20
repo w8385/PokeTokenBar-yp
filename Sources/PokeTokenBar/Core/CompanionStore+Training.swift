@@ -23,10 +23,8 @@ struct TrainableIndividual: Equatable {
     var nature: PokemonNature?
     var profile: PokemonProfile
     var form: PokemonForm?
-}
 
-extension CompanionStore {
-    func trainable(id: String) -> TrainableIndividual? {
+    static func find(id: String, in state: CompanionState) -> TrainableIndividual? {
         if let active = state.active, active.profile?.instanceID == id, let profile = active.profile {
             if active.dittoDisguise != nil, !active.dittoRevealed { return nil }
             return TrainableIndividual(speciesID: active.currentID, nature: active.nature, profile: profile, form: active.form)
@@ -38,6 +36,12 @@ extension CompanionStore {
             return TrainableIndividual(speciesID: entry.finalID, nature: entry.nature, profile: profile, form: entry.form)
         }
         return nil
+    }
+}
+
+extension CompanionStore {
+    func trainable(id: String) -> TrainableIndividual? {
+        TrainableIndividual.find(id: id, in: state)
     }
 
     /// Box id of the Pokémon on Home: the raised graduate, else the line Pokémon.
