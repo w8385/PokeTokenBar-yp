@@ -1143,7 +1143,7 @@ class _Fighter:
     def stat(self, key: str, weather: str | None = None, staged: bool = True) -> float:
         weather = _sheltered(self, weather)
         stage = self.stages[key] if staged else 0
-        context = (key, weather, self.status is not None, self.combatant.can_evolve)
+        context = (key, weather, self.status is not None, self.combatant.can_evolve, self)
         multiplier = hooks.item(self, "modify_stat", *context, default=1.0)
         raw = self.stats[next(iter(_field(self, "swaps_stat", key)), key)]
         value = raw * ((2 + stage) / 2 if stage >= 0 else 2 / (2 - stage)) * multiplier
@@ -1245,7 +1245,8 @@ def _priority(fighter: _Fighter, choice: int | None) -> int:
 
 
 def _moves_last(fighter: _Fighter, choice: int | None) -> bool:
-    return hooks.ability(fighter, "moves_last", _chosen(fighter, choice), default=False)
+    return (hooks.ability(fighter, "moves_last", _chosen(fighter, choice), default=False)
+            or hooks.item(fighter, "moves_last", default=False))
 
 
 def _move_priority(fighter: _Fighter, move: Move) -> int:
@@ -2223,6 +2224,7 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
     if move.type is None:
         return 1.0
     forced_down = move.type == "ground" and (any(_field(defender, "grounds"))
+                                             or hooks.item(defender, "grounds", default=False)
                                              or hooks.move(move, "hits_airborne", default=False))
     if not forced_down and hooks.ability(defender, "immune_to", move, defender, default=False):
         return 0.0
@@ -2254,9 +2256,9 @@ def _field(fighter: _Fighter, hook: str, *args) -> list:
 
 
 def _grounded(fighter: _Fighter) -> bool:
-    """A Flying type, an airborne ability (Levitate) or a lifting state (Magnet Rise) floats unless a state grounds it
-    (Gravity, Ingrain)."""
-    if any(_field(fighter, "grounds")):
+    """A Flying type, an airborne ability (Levitate) or a lifting state (Magnet Rise) floats unless a state or its item
+    grounds it (Gravity, Ingrain, Iron Ball)."""
+    if any(_field(fighter, "grounds")) or hooks.item(fighter, "grounds", default=False):
         return True
     return ("flying" not in fighter.combatant.types and not hooks.ability(fighter, "airborne", default=False)
             and not any(_field(fighter, "lifts")) and not hooks.item(fighter, "floats", default=False))

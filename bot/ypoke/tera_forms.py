@@ -32,4 +32,6 @@ def usable_item(item: str | None, pokemon_id: int) -> str | None:
         return None
     if item in ITEM_FORMS and ITEM_FORMS[item][0] != pokemon_id:
         return None
+    if item in items.SPECIES_ITEMS and pokemon_id not in items.SPECIES_ITEMS[item]:
+        return None
     return item

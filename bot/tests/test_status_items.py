@@ -36,7 +36,7 @@ def test_trick_and_switcheroo_fail_without_an_item_or_on_one_the_battle_cannot_m
     user, foe, arena = fighters(LEFTOVERS, next(iter(tera_forms.MASKS)))
     assert resolve(user, foe, SWITCHEROO, arena).failed and user.item == LEFTOVERS
     user, foe, arena = fighters(LEFTOVERS)
-    foe.combatant = replace(foe.combatant, item="iron-ball")
+    foe.combatant = replace(foe.combatant, item="everstone")
     assert resolve(user, foe, TRICK, arena).failed
 
 

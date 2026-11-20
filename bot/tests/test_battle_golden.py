@@ -387,6 +387,10 @@ FOCUS_CASES = {
     "safety-goggles": (((248, None, "sand-stream", [33]), (1, None, None, [79, 33])),
                        ((143, "safety-goggles", None, [33]),)),
     "utility-umbrella": (((38, None, "drought", [53]),), ((143, "utility-umbrella", None, [33]),)),
+    "covert-cloak": (((143, None, None, [34]),), ((143, "covert-cloak", None, [33]),)),
+    "species-items": (((888, "rusted-sword", None, [442]), (25, "light-ball", None, [85]), (83, "stick", None, [33]),
+                       (132, "quick-powder", None, [33])),
+                      ((6, "iron-ball", None, [53]), (50, None, None, [89]), (143, "lagging-tail", None, [98, 33]))),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

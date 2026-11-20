@@ -1,8 +1,9 @@
 """Held-item handlers by effect key (`data/battle/items.json`). Their numbers and per-item arguments live in
 `ypoke.items`; `fighter` is the holder, a `battle._Fighter`."""
 
-from ypoke import battle, items, tera_forms
+from ypoke import battle, items, moves, tera_forms
 from ypoke.effects import Handler, elsewhere, hooks, register
+from ypoke.effects.changers import reshape
 from ypoke.move_effects import PUNCH_MOVES
 
 CHOICE_STATS = {"choice-scarf": "speed", "choice-band": "attack", "choice-specs": "special_attack"}
@@ -12,7 +13,19 @@ CHOICE_STATS = {"choice-scarf": "speed", "choice-band": "attack", "choice-specs"
 class FormItem(Handler):
     def on_entry_form(self, name, fighter, side, turn):
         form_id, kind = tera_forms.ITEM_FORMS[name][1:3]
+        if name in items.CROWNED_MOVES:
+            _crown(fighter, *items.CROWNED_MOVES[name])
         return battle.FormShift(turn, side, fighter.combatant.name, kind, form_id)
+
+
+def _crown(fighter, known: int, crowned: int) -> None:
+    """The Crowned form's `known` move (Iron Head) becomes `crowned` (Behemoth Blade) until it switches out."""
+    if all(move.id != known for move in fighter.combatant.moves):
+        return
+    reshape(fighter, moves=tuple(moves.from_data(crowned) if move.id == known else move
+                                 for move in fighter.combatant.moves))
+    fighter.pp = [min(left, move.pp) if move.id == crowned else left
+                  for left, move in zip(fighter.pp, fighter.combatant.moves)]
 
 
 @register("items", "ogerpon-mask")
@@ -88,7 +101,7 @@ class ChoiceItem(Handler):
     def burdens(self, name, holder):
         return any(not move.damaging for move in holder.combatant.moves)
 
-    def modify_stat(self, name, stat, weather, statused, can_evolve):
+    def modify_stat(self, name, stat, weather, statused, can_evolve, holder):
         return items.CHOICE_MULTIPLIER if CHOICE_STATS[name] == stat else 1.0
 
     def locks_move(self, name):
@@ -100,13 +113,13 @@ class AssaultVest(Handler):
     def bars_status_moves(self, name):
         return True
 
-    def modify_stat(self, name, stat, weather, statused, can_evolve):
+    def modify_stat(self, name, stat, weather, statused, can_evolve, holder):
         return items.VEST_MULTIPLIER if stat == "special_defense" else 1.0
 
 
 @register("items", "eviolite")
 class Eviolite(Handler):
-    def modify_stat(self, name, stat, weather, statused, can_evolve):
+    def modify_stat(self, name, stat, weather, statused, can_evolve, holder):
         return items.CHOICE_MULTIPLIER if can_evolve and stat in ("defense", "special_defense") else 1.0
 
 

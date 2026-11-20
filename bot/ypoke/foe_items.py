@@ -90,7 +90,8 @@ def fires(item: str, holder: Holder) -> bool:
         return any(not move.physical for move in holder.moves)
     if item == items.WIDE_LENS:
         return any(move.accuracy is not None and move.accuracy < 100 for move in holder.moves)
-    if item in items.OGERPON_MASKS or item == items.STELLAR_CRYSTAL or item in tera_forms.ITEM_FORMS:
+    if (item in items.OGERPON_MASKS or item == items.STELLAR_CRYSTAL or item in tera_forms.ITEM_FORMS
+            or item in items.SPECIES_ITEMS):
         return tera_forms.usable_item(item, holder.species_id) is not None
     if item in items.PLATES:
         return holder.species_id == tera_forms.ARCEUS or any(move.type == items.PLATES[item] for move in holder.moves)

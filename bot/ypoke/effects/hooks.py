@@ -33,7 +33,7 @@ HOOKS = {
                    "sun)",
     "retypes": "ability: the type its holder's move takes after `modify_type` (Pixilate), None to keep it",
     "modify_priority": "ability, move: added to the move's priority",
-    "moves_last": "ability: its holder moves last in its priority bracket with this move (Stall)",
+    "moves_last": "ability, then item: its holder moves last in its priority bracket with this move (Stall, Lagging Tail)",
     "moves_first": "item, then ability: a draw or a berry that puts its holder first in its priority bracket (holders "
                    "only draw)",
     "swaps_stat": "state: the stat whose raw value stands in for another (Wonder Room)",
@@ -127,7 +127,7 @@ HOOKS = {
     "caps_effectiveness": "ability: how well a move that can hit its holder does, in place of the type chart's "
                           "(Tera Shell)",
     "sure_hit": "state: the moves of the given user hit its holder without an accuracy draw (Lock-On)",
-    "grounds": "state: grounds every Pokémon, so Ground moves hit Flying types and Levitate",
+    "grounds": "state, or item for its holder only: grounds every Pokémon, so Ground moves hit Flying types and Levitate",
     "hits_airborne": "move: a Ground move that hits a Flying type or a floating Pokémon (Thousand Arrows)",
     "lifts":"state: its holder floats over Ground moves and is not grounded (Magnet Rise)",
     "airborne": "ability: its holder is not grounded",
