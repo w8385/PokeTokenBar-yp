@@ -37,7 +37,7 @@ from ypoke.upload_server import serve
 
 LEVEL_UP = "test_level_up"
 REMOTE = {"remote_ops": 1, "wallet": 1200, "bag": [{"key": "rareCandy", "name": "이상한사탕", "count": 3}],
-          "shop": [{"key": "mint", "name": "민트", "price": 300}]}
+          "shop": [{"key": "mint", "name": "민트", "price": 300}], "remote_ops_kinds": [LEVEL_UP]}
 
 
 def _level_up(view, payload):
@@ -314,7 +314,8 @@ def test_an_upload_keeps_the_remote_fields_and_drops_malformed_lines(server):
            {"key": "", "name": "x", "count": 1}, {"key": "tm:85", "name": "기술머신", "count": -1}, "junk"]
     shop = [*REMOTE["shop"], {"key": "tm:85", "name": "10만볼트", "price": 4000, "category": "machine", "single": True},
             {"key": "x", "name": "y", "price": "free"}]
-    payload = {"party": [PIKACHU], "remote_ops": 1, "wallet": 77, "bag": bag, "shop": shop, "applied_op_id": 4}
+    payload = {"party": [PIKACHU], "remote_ops": 1, "wallet": 77, "bag": bag, "shop": shop, "applied_op_id": 4,
+               "remote_ops_kinds": ["lineup", "Bad Kind", 3, "lineup"]}
     assert call(f"{base}/v1/party", "POST", token, payload)[0] == 200
     assert store.party("UA").remote == {
         "remote_ops": True, "applied_op_id": 4, "wallet": 77,
@@ -322,6 +323,7 @@ def test_an_upload_keeps_the_remote_fields_and_drops_malformed_lines(server):
                 {"key": "mega-stone:charizardite-x", "name": "리자몽나이트X", "count": 1}],
         "shop": [{"key": "mint", "name": "민트", "price": 300, "single": False},
                  {"key": "tm:85", "name": "10만볼트", "price": 4000, "single": True, "category": "machine"}],
+        "kinds": ["lineup"],
     }
 
 

@@ -9,14 +9,15 @@ import copy
 import json
 import logging
 import re
+import secrets
 import sqlite3
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from contextlib import closing
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 
 from ypoke.messages import DirectMessage
-from ypoke.store import Store, StoredParty
+from ypoke.store import Lead, Store, StoredParty
 from ypoke.trades import TradeService
 
 OLD_APP_REFUSAL = "앱을 업데이트하고 회사에서 한 번 켜 주세요."
@@ -26,7 +27,10 @@ DEFAULT_CANCEL_REASON = "앱에서 적용하지 못했어요"
 RESULT_HEADER = "회사에서 앱이 동기화하며 슬랙에서 한 작업을 처리했어요."
 MAX_ACK_IDS = 500
 MAX_LISTED_ITEMS = 2000
+MAX_KINDS = 20
 _REASON = re.compile(r"[a-z][a-z0-9_]{0,39}")
+_KIND = re.compile(r"[a-z][a-z0-9_]{0,39}")
+_SLUG = re.compile(r"[a-z0-9][a-z0-9-]{0,39}")
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +46,10 @@ CREATE TABLE IF NOT EXISTS remote_ops (
     resolved_at TEXT,
     PRIMARY KEY (slack_user_id, id)
 );
+CREATE TABLE IF NOT EXISTS remote_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
 
 
@@ -56,7 +64,9 @@ class Op:
 @dataclass(frozen=True)
 class View:
     """The user as the bot sees them now. `pending` are the ops replayed on top of the upload, in order.
-    `bag` and `shop` are the app's lists (`{"key", "name", "count"}` and `{"key", "name", "price", …}`)."""
+    `bag` and `shop` are the app's lists (`{"key", "name", "count"}` and `{"key", "name", "price", …}`).
+    `bench` are the party members (with `id`) the user owns outside the party and may put in it: the Box Pokémon
+    not tied up in a trade. `kinds` are the op kinds the user's app applies."""
 
     party: list[dict]
     pool: list[dict]
@@ -66,16 +76,22 @@ class View:
     uploaded_at: str
     remote_ops: bool
     pending: tuple[Op, ...]
+    bench: list[dict] = field(default_factory=list)
+    kinds: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
 class OpKind:
     """One kind of remote op. `replay` returns the view with the op's effect (the view it gets is a copy it may
-    change); it leaves the view as it is when the op's target is not there. `describe` is a short Korean line."""
+    change); it leaves the view as it is when the op's target is not there. `describe` is a short Korean line.
+    `reasons` words the cancel codes the app sends for it. With `supersedes`, a new op of the kind replaces the
+    user's pending ones (each carries the whole target), so the result DM lists only the last."""
 
     name: str
     describe: Callable[[dict], str]
     replay: Callable[[View, dict], View]
+    reasons: Mapping[str, str] = field(default_factory=dict)
+    supersedes: bool = False
 
 
 OP_KINDS: dict[str, OpKind] = {}
@@ -100,6 +116,19 @@ class RemoteOps:
         self._now = now
         with closing(store._connect()) as connection, connection:
             connection.executescript(_SCHEMA)
+            connection.execute("INSERT OR IGNORE INTO remote_meta (key, value) VALUES ('epoch', ?)",
+                               (secrets.token_hex(8),))
+            (self.epoch,) = connection.execute("SELECT value FROM remote_meta WHERE key = 'epoch'").fetchone()
+
+    def leads_except(self, user_id: str, since: datetime, limit: int) -> list[Lead]:
+        """`Store.leads_except` with each user's pending ops replayed, so a lineup changed in Slack shows at once."""
+        leads = []
+        for lead in self._store.leads_except(user_id, since, limit):
+            stored = self.party(lead.user_id)
+            first = stored.party[0] if stored and stored.party else None
+            leads.append(lead if first is None else Lead(lead.user_id, first["pokemon_id"], first["level"],
+                                                         first.get("shiny", False)))
+        return leads
 
     def party(self, user_id: str) -> StoredParty | None:
         """The stored party with the pending ops replayed; what battles use."""
@@ -115,10 +144,11 @@ class RemoteOps:
             return None
         remote = stored.remote or {}
         pending = _unapplied(self.pending(user_id), stored)
+        bench = [entry["member"] for entry in self._pools.free_entries(user_id) if "member" in entry]
         view = View(
             party=stored.party, pool=self._pools.pool(user_id), bag=remote.get("bag", []), wallet=remote.get("wallet"),
             shop=remote.get("shop", []), uploaded_at=stored.uploaded_at, remote_ops=bool(remote.get("remote_ops")),
-            pending=tuple(pending),
+            pending=tuple(pending), bench=bench, kinds=frozenset(remote.get("kinds", ())),
         )
         for op in pending:
             view = _replay(view, op)
@@ -128,10 +158,16 @@ class RemoteOps:
         """Queue an op of a registered `kind`; its effect shows in the next view and battle."""
         if kind not in OP_KINDS:
             raise ValueError(f"unknown op kind {kind}")
-        refusal = self.edit_refusal(user_id)
+        refusal = self.edit_refusal(user_id, kind)
         if refusal:
             return Submitted(refusal=refusal)
         with closing(self._store._connect()) as connection, connection:
+            if OP_KINDS[kind].supersedes:
+                connection.execute(
+                    "UPDATE remote_ops SET state = 'superseded', resolved_at = ? "
+                    "WHERE slack_user_id = ? AND kind = ? AND state = 'pending'",
+                    (_stamp(self._now()), user_id, kind),
+                )
             (op_id,) = connection.execute(
                 "INSERT INTO remote_ops (slack_user_id, id, kind, payload_json, created_at) "
                 "SELECT ?1, COALESCE(MAX(id), 0) + 1, ?2, ?3, ?4 FROM remote_ops WHERE slack_user_id = ?1 RETURNING id",
@@ -139,10 +175,13 @@ class RemoteOps:
             ).fetchone()
         return Submitted(op_id=op_id)
 
-    def edit_refusal(self, user_id: str) -> str | None:
-        """Why the user cannot queue an op: their last upload came from an app that cannot apply them (or none came)."""
-        stored = self._store.party(user_id)
-        return None if stored is not None and (stored.remote or {}).get("remote_ops") else OLD_APP_REFUSAL
+    def edit_refusal(self, user_id: str, kind: str | None = None) -> str | None:
+        """Why the user cannot queue an op (of `kind`): their last upload came from an app that cannot apply it, or
+        none came."""
+        remote = (stored.remote or {}) if (stored := self._store.party(user_id)) is not None else {}
+        if not remote.get("remote_ops") or (kind is not None and kind not in remote.get("kinds", ())):
+            return OLD_APP_REFUSAL
+        return None
 
     def pending(self, user_id: str) -> list[Op]:
         """Every op the user's app has not acknowledged, oldest first."""
@@ -168,7 +207,7 @@ class RemoteOps:
         lines = [RESULT_HEADER]
         for _, kind, payload, reason in sorted(settled):
             text = describe(kind, payload)
-            lines.append(f"✅ {text}" if reason is None else f"❌ {text}: {cancel_text(reason)}")
+            lines.append(f"✅ {text}" if reason is None else f"❌ {text}: {cancel_text(reason, kind)}")
         return DirectMessage(user_id, "\n".join(lines))
 
     def _settle(
@@ -192,27 +231,32 @@ def describe(kind: str, payload: dict) -> str:
     return op_kind.describe(payload) if op_kind else f"알 수 없는 작업({kind})"
 
 
-def cancel_text(reason: str) -> str:
-    return CANCEL_REASONS.get(reason, DEFAULT_CANCEL_REASON)
+def cancel_text(reason: str, kind: str | None = None) -> str:
+    op_kind = OP_KINDS.get(kind) if kind else None
+    return (op_kind.reasons.get(reason) if op_kind else None) or CANCEL_REASONS.get(reason, DEFAULT_CANCEL_REASON)
 
 
 def is_reason(value: object) -> bool:
     return isinstance(value, str) and _REASON.fullmatch(value) is not None
 
 
-def normalize_remote(payload: dict) -> dict | None:
+def normalize_remote(payload: dict, epoch: str | None = None) -> dict | None:
     """The remote-ops part of an upload, or None from an app that cannot apply ops. Malformed parts are dropped,
-    never a 400."""
+    never a 400. An `applied_op_id` counted against another bot database (`ops_epoch` other than `epoch`) is 0."""
     if payload.get("remote_ops") != 1:
         return None
     applied = payload.get("applied_op_id")
     wallet = payload.get("wallet")
+    kinds = payload.get("remote_ops_kinds")
+    same_epoch = epoch is None or payload.get("ops_epoch") in (None, epoch)
     return {
         "remote_ops": True,
-        "applied_op_id": applied if _is_count(applied) else 0,
+        "applied_op_id": applied if _is_count(applied) and same_epoch else 0,
         "wallet": wallet if _is_count(wallet) else None,
         "bag": _lines(payload.get("bag"), _bag_line),
         "shop": _lines(payload.get("shop"), _shop_line),
+        "kinds": sorted({kind for kind in kinds[:MAX_KINDS] if isinstance(kind, str) and _KIND.fullmatch(kind)})
+        if isinstance(kinds, list) else [],
     }
 
 
@@ -237,7 +281,15 @@ def _bag_line(raw: object) -> dict | None:
     if not isinstance(raw, dict) or not _is_count(raw.get("count")) or raw["count"] == 0:
         return None
     key, name = _text(raw.get("key"), 80), _text(raw.get("name"), 60)
-    return {"key": key, "name": name, "count": raw["count"]} if key and name else None
+    if not (key and name):
+        return None
+    line = {"key": key, "name": name, "count": raw["count"]}
+    if raw.get("equip") is True:
+        line["equip"] = True
+        slug = raw.get("held_item")
+        if isinstance(slug, str) and _SLUG.fullmatch(slug):
+            line["held_item"] = slug
+    return line
 
 
 def _shop_line(raw: object) -> dict | None:

@@ -14,6 +14,7 @@ from ypoke import entry_rules
 from ypoke.battle import Combatant, simulate
 from ypoke.combatants import combatant
 from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_url
+from ypoke.lineup_editor import LineupEditor
 from ypoke.messages import DirectMessage
 from ypoke.narration import PRACTICE_NOTE, Card, Matchup, battle_card, battle_header
 from ypoke.pokeapi import PokeAPIService
@@ -95,8 +96,10 @@ HELP_TEXT = (
     "위 명령 결과는 누가 어떤 명령을 썼는지와 함께 채널에 올라가요. 연결 링크·토큰과 잘못 쓴 명령의 안내는 나만 봐요.\n"
     "*내 포켓몬 (나만 봐요)*\n"
     "앱이 회사에서 마지막으로 동기화한 내용에 슬랙에서 한 작업을 더해서 보여 줘요.\n"
-    f"`{PARTY_COMMAND}` 대결 파티의 순서·레벨·성격·특성·도구·기술을 보여 줘요.\n"
-    f"`{BOX_COMMAND} [이름] [쪽]` 박스 포켓몬을 쪽마다 보여 줘요. 이름으로 찾을 수 있어요.\n"
+    f"`{PARTY_COMMAND}` 대결 파티의 순서·레벨·성격·특성·도구·기술을 보여 줘요. "
+    "새 앱이면 여기서 포켓몬을 바꾸고, 순서를 옮기고, 기술과 지닌 도구를 고를 수 있어요. "
+    f"바꾼 라인업은 `{BATTLE_COMMAND}`에 바로 쓰이고 앱은 다음에 회사에서 동기화할 때 받아요.\n"
+    f"`{BOX_COMMAND} [이름] [쪽]` 박스 포켓몬을 쪽마다 보여 줘요. 이름으로 찾으면 `엔트리에 넣기` 버튼이 붙어요.\n"
     f"`{BAG_COMMAND}` 쓸 수 있는 토큰·가방 도구·대기 중인 슬랙 작업을 보여 줘요.\n"
     f"`{SHOP_COMMAND}`·`{TRAINING_COMMAND}`·`{TRADE_COMMAND}`·`{MIRACLE_COMMAND}` 곧 열려요.\n"
     f"`{UMBRELLA_COMMAND}` 이 도움말이에요. `{UMBRELLA_COMMAND} 도감`·`{UMBRELLA_COMMAND} 파티`처럼 뒤에 명령을 붙여도 돼요.\n"
@@ -187,6 +190,7 @@ class CommandHandler:
         self._store = store
         self._remote = remote or RemoteOps(store, now)
         self._views = RemoteViews(store, self._remote, self._species_name)
+        self.editor = LineupEditor(self._remote, self._views, pokeapi.attacking_moves, self._species_name)
         self._pokeapi = pokeapi
         self._public_url = public_url
         self._now = now
@@ -270,7 +274,8 @@ class CommandHandler:
         if command == RANKING_COMMAND:
             return self._ranking()
         if command in REMOTE_COMMANDS:
-            screen = self._views.handle(user_id, command, text)
+            edits = command in (PARTY_COMMAND, BOX_COMMAND)
+            screen = (self.editor if edits else self._views).handle(user_id, command, text)
             return Reply(screen.text, blocks=tuple(screen.blocks))
         if command == BATTLE_COMMAND and mention:
             if mention.group(1) == user_id:
