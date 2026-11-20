@@ -4,7 +4,7 @@ and `user` are `battle._Fighter`s; a `hit` is a `battle.Hit`."""
 
 from ypoke import abilities, battle
 from ypoke.effects import Handler, hooks, register
-from ypoke.effects.changers import FIXED_ABILITIES, reshape
+from ypoke.effects.changers import FIXED_ABILITIES, reshape, shielded
 from ypoke.effects.item_moves import hold, yields
 from ypoke.effects.secondary import meta
 from ypoke.effects.volatiles import PERISH_COUNT, Disable
@@ -19,6 +19,8 @@ class EffectSpore(Handler):
 
     def on_contact(self, name, side, move, user, holder, rng):
         if not battle.makes_contact(user, move) or "grass" in user.combatant.types or _blocks(user, abilities.POWDER_FLAG):
+            return None
+        if hooks.item(user, "powder_proof", default=False):
             return None
         draw = rng.random()
         ailment = next((ailment for ailment, bound in abilities.EFFECT_SPORE if draw < bound), None)
@@ -86,7 +88,7 @@ class AbilitySpread(Handler):
     def after_hit(self, name, hit):
         user = hit.user
         if (hit.shielded or not hit.contact or user.hp == 0 or user.combatant.ability == name
-                or user.combatant.ability in FIXED_ABILITIES):
+                or user.combatant.ability in FIXED_ABILITIES or shielded(user)):
             return None
         reshape(user, ability=name)
         return _act(name, hit.target, effect="spread", foe=user.combatant.name)
@@ -100,6 +102,8 @@ class WanderingSpirit(Handler):
         user, holder = hit.user, hit.target
         theirs = user.combatant.ability
         if hit.shielded or not hit.contact or 0 in (user.hp, holder.hp) or theirs == name or theirs in FIXED_ABILITIES:
+            return None
+        if shielded(user) or shielded(holder):
             return None
         reshape(user, ability=name)
         reshape(holder, ability=theirs)

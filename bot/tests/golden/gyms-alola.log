@@ -636,7 +636,7 @@ Action turn=41 side=0 attacker='P871' defender='P748' move='초승달춤' defend
 SendOut turn=41 side=0 pokemon='P957' member=2
 VolatileTick turn=41 side=0 pokemon='P957' kind='healing-wish'
 Action turn=42 side=1 attacker='P748' defender='P957' move='덤벼들기' changes=(Change(side=0, pokemon='P957', kind='attack', stages=-1),) defender_hp=75 attacker_hp=57 move_id=679
-Action turn=42 side=0 attacker='P957' defender='P748' move='문라이트블래스터' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=75 move_id=725
+Action turn=42 side=0 attacker='P957' defender='P748' move='문라이트블래스터' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=75 move_id=725
 AbilityAct turn=42 side=0 pokemon='P957' ability='as-one-spectrier' changes=(Change(side=0, pokemon='P957', kind='special_attack', stages=1),)
 SendOut turn=42 side=1 pokemon='P763' member=5
 Action turn=43 side=1 attacker='P763' defender='P957' move='무릎차기' defender_hp=51 move_id=136
@@ -650,7 +650,7 @@ Action turn=46 side=1 attacker='P763' defender='P957' move='무릎차기' missed
 Action turn=46 side=0 attacker='P957' defender='P763' move='퀵턴' defender_hp=0 knockout=True attacker_hp=3 move_id=812
 AbilityAct turn=46 side=0 pokemon='P957' ability='as-one-spectrier' changes=(Change(side=0, pokemon='P957', kind='special_attack', stages=1),)
 result winner=0 turns=46 remaining=((0, 0, 3, 0, 0, 0), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 3, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=16df6d954c123c901f1c3e584e906c92ef3af998947f13594f583f27146a94b0
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 3, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}] body=2b10dd8dbb5a41edd6d423003ffcd2db5116af1949b2f5c164bacef3a87f439f
 ## alola-elite-4 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 3, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}]
 Action turn=1 side=1 attacker='P777' defender='P957' move='와일드볼트' multiplier=0.5 recoil=True defender_hp=0 knockout=True attacker_hp=99 move_id=528
 result winner=1 turns=1 remaining=((0,), (99, None, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
@@ -934,9 +934,9 @@ Action turn=7 side=0 attacker='P957' defender='P758' move='문라이트블래스
 AbilityAct turn=7 side=0 pokemon='P957' ability='as-one-spectrier' changes=(Change(side=0, pokemon='P957', kind='special_attack', stages=1),)
 SendOut turn=7 side=1 pokemon='P748' member=1
 Action turn=8 side=1 attacker='P748' defender='P957' move='더스트슈트' changes=(Change(side=0, pokemon='P957', kind='poison', stages=0),) defender_hp=25 move_id=441
+ItemEffect turn=8 side=0 pokemon='P957' item='lum-berry' effect='cure'
 Action turn=8 side=0 attacker='P957' defender='P748' move='부식가스' attacker_hp=25 effect='corrosive-gas' move_id=810
 ItemEffect turn=8 side=1 pokemon='P748' item='assault-vest' effect='lost'
-StatusDamage turn=8 side=0 pokemon='P957' hp=13 fainted=False kind='poison'
 Action turn=9 side=1 attacker='P748' defender='P957' move='더스트슈트' critical=True defender_hp=0 knockout=True move_id=441
 SendOut turn=9 side=0 pokemon='P6' member=3
 MegaEvolution turn=10 side=0 pokemon='P6' ability='페어리오라' form_id=10034
@@ -971,8 +971,8 @@ Action turn=21 side=1 attacker='P727' defender='P871' move='플레어드라이�
 StatusDamage turn=21 side=0 pokemon='P871' hp=6 fainted=False
 Action turn=22 side=0 attacker='P871' defender='P727' move='미래예지' defender_hp=38 attacker_hp=6 effect='delayed-hit' move_id=248
 Action turn=22 side=1 attacker='P727' defender='P871' move='플레어드라이브' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=26 attacker_item='life-orb' move_id=394
-result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 26, None, None)) statuses=((None, None, 'poison', None, None, 'burn'), (None, None, None, None, None, None))
-won=False carry=null body=1912b57c9b908cc48bb17078952e99b6896885f970806367c64b4621ddc357fa
+result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 26, None, None)) statuses=((None, None, None, None, None, 'burn'), (None, None, None, None, None, None))
+won=False carry=null body=e39566a9cd8764dd02a1f4a258d4be2fac23bd7fa49ea0aacaf5d99425440b56
 ## alola-hidden party 0 carried null
 Action turn=1 side=1 attacker='P730' defender='P670' move='냉동빔' multiplier=2.0 defender_hp=4 move_id=58
 Action turn=1 side=0 attacker='P670' defender='P730' move='씨폭탄' multiplier=0.5 defender_hp=88 attacker_hp=4 move_id=402

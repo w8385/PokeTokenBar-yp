@@ -380,6 +380,13 @@ FOCUS_CASES = {
     "power-herb": (((3, "power-herb", None, [76]),), ((143, None, None, [33]),)),
     "throat-spray": (((143, "throat-spray", None, [304]),), ((143, None, None, [33]),)),
     "mental-herb": (((143, "mental-herb", None, [33]),), ((143, None, "cursed-body", [33]),)),
+    "topsy-turvy": (((143, None, None, [576, 33]),), ((143, None, None, [14, 33]),)),
+    "crafty-shield": (((143, None, None, [578, 33]),), ((143, None, None, [86, 281, 33]),)),
+    "booster-energy": (((984, "booster-energy", "protosynthesis", [33]),), ((143, None, None, [33]),)),
+    "clear-amulet": (((130, None, "intimidate", [33]),), ((143, "clear-amulet", None, [33]),)),
+    "safety-goggles": (((248, None, "sand-stream", [33]), (1, None, None, [79, 33])),
+                       ((143, "safety-goggles", None, [33]),)),
+    "utility-umbrella": (((38, None, "drought", [53]),), ((143, "utility-umbrella", None, [33]),)),
 }
 REPLAY_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"] + [
     f"gyms-{region.id}" for region in gyms.regions()]

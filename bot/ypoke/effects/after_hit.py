@@ -4,7 +4,7 @@ moves' (`fighter.volatiles[key]` holds the turns left). `user`, `target` and `fi
 
 from ypoke import battle, move_power
 from ypoke.effects import Handler, hooks, register
-from ypoke.effects.changers import FIXED_ABILITIES, reshape
+from ypoke.effects.changers import FIXED_ABILITIES, reshape, shielded
 from ypoke.effects.item_moves import hold, received, yields
 from ypoke.effects.secondary import afflict
 from ypoke.effects.stats import arg, shift
@@ -251,7 +251,7 @@ class CoreEnforcer(Handler):
     by_id = True
 
     def secondary(self, move, user, target, side, rng):
-        if not target.acted or target.ability is None or target.ability in FIXED_ABILITIES:
+        if not target.acted or target.ability is None or target.ability in FIXED_ABILITIES or shielded(target):
             return ()
         reshape(target, ability=None)
         return (battle.Change(1 - side, target.combatant.name, "ability-lost"),)

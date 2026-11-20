@@ -109,6 +109,12 @@ HOOKS = {
     "on_miss": "item: acts once its holder's move missed on the accuracy draw (Blunder Policy); returns an event",
     "after_use": "item: acts once its holder's move worked, hit or status (Throat Spray); returns an event",
     "skips_charge": "item: its holder's two-turn move hits at once, which uses the item up (Power Herb)",
+    "energizes": "item: sets off its holder's Protosynthesis or Quark Drive without the field, used up (Booster "
+                 "Energy)",
+    "shelters": "item: sun and rain do not act on its holder (Utility Umbrella)",
+    "powder_proof": "item: powder moves and Effect Spore do not act on its holder (Safety Goggles)",
+    "keeps_stats": "item: a foe cannot lower its holder's stats (Clear Amulet)",
+    "shields_ability": "item: its holder's ability cannot be changed, lost, suppressed or ignored (Ability Shield)",
     "modify_accuracy": "state: multiplies the accuracy of every move, after the items",
     "ignores_evasion": "ability: the target's evasion stage does nothing to its holder's moves (Keen Eye)",
     "ignores_foe_stages": "ability: the foe's stat stages do nothing against its holder (Unaware)",
@@ -182,7 +188,8 @@ HOOKS = {
     "answers_intimidate": "ability: acts in place of Intimidate's drop (Guard Dog); returns an event",
     "after_intimidate": "ability, then item: acts once Intimidate lowered its holder's Attack (Rattled, Adrenaline "
                         "Orb); returns an event",
-    "blocks_secondary": "ability: a foe's move's added effects do not land on its holder (Shield Dust)",
+    "blocks_secondary": "ability, then item: a foe's move's added effects do not land on its holder (Shield Dust, "
+                        "Covert Cloak)",
     "secondary_chance": "ability: multiplies the chance of its holder's move's added effects (Serene Grace)",
     "secondary": "move: acts on a target the hits left standing, after the ailment and stat changes, unless a "
                  "Substitute took them (flinch); returns the changes",
@@ -204,7 +211,7 @@ HOOKS = {
     "copies_dance": "ability: its holder repeats a dance the foe facing it just used (Dancer)",
     "switches_user_out": "move: its user switches out after a hit",
     "remember": "move: the team notes an effect move that worked, so it is not picked again",
-    "blocks_weather_chip": "ability: weather does not chip its holder",
+    "blocks_weather_chip": "ability, then item: weather does not chip its holder (Overcoat, Safety Goggles)",
     "cures_status": "ability: may cure its holder's status at the end of a turn, before the status hurts (Shed Skin); "
                     "returns the event",
     "end_of_turn": "state, then item, then ability: heals, hurts or inflicts at the end of a turn, after weather",

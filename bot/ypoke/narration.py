@@ -63,6 +63,7 @@ ITEM_EFFECT_TEXT = {
     "got": "손에 넣음", "eaten": "먹음", "lost": "녹아 없어짐", "burnt": "불타 없어짐",
     "confusion": "💫혼란", "focus": "🎯급소율↑", "accuracy": "🎯다음 기술 명중↑", "pp": "PP 회복",
     "spent": "써서 위력↑", "popped": "터짐", "used": "발동", "charged": "써서 바로 공격",
+    "guard": "능력 하락을 막음", "energized": "부스트",
 }
 TRICK_ROOM_ICON = "🔀"
 ROCK_ICON = "🪨"
@@ -607,6 +608,8 @@ def _action_line(event: Action, marker: str) -> str:
 def _blocked_tag(blocked: str) -> str:
     if blocked in BLOCKED_TAG:
         return BLOCKED_TAG[blocked]
+    if blocked in ITEM_NAMES:
+        return f"@{ITEM_NAMES[blocked]}에 막힘"
     return f"[{ABILITY_NAMES[blocked]}]{ABILITY_BLOCKED_TEXT.get(blocked, '에 막힘')}"
 
 

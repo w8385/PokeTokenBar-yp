@@ -1,20 +1,16 @@
 {
  "items": {
   "counts": {
-   "implemented": 249,
+   "implemented": 259,
    "inert": 176,
-   "todo": 72
+   "todo": 62
   },
   "todo": [
-   "ability-shield",
    "adamant-orb",
    "binding-band",
-   "booster-energy",
    "bug-memory",
    "burn-drive",
    "chill-drive",
-   "clear-amulet",
-   "covert-cloak",
    "dark-memory",
    "deep-sea-scale",
    "deep-sea-tooth",
@@ -22,7 +18,6 @@
    "douse-drive",
    "dragon-memory",
    "electric-memory",
-   "electric-seed",
    "fairy-memory",
    "fighting-memory",
    "fire-memory",
@@ -31,7 +26,6 @@
    "full-incense",
    "ghost-memory",
    "grass-memory",
-   "grassy-seed",
    "grip-claw",
    "griseous-orb",
    "ground-memory",
@@ -47,7 +41,6 @@
    "macho-brace",
    "metal-powder",
    "metronome",
-   "misty-seed",
    "odd-incense",
    "poison-memory",
    "power-anklet",
@@ -57,7 +50,6 @@
    "power-lens",
    "power-weight",
    "psychic-memory",
-   "psychic-seed",
    "quick-powder",
    "razor-fang",
    "ring-target",
@@ -66,7 +58,6 @@
    "rose-incense",
    "rusted-shield",
    "rusted-sword",
-   "safety-goggles",
    "sea-incense",
    "shock-drive",
    "soul-dew",
@@ -74,7 +65,6 @@
    "stick",
    "sticky-barb",
    "thick-club",
-   "utility-umbrella",
    "water-memory",
    "wave-incense",
    "zoom-lens"

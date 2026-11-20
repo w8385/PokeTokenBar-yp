@@ -43,7 +43,8 @@ EFFECT_KEYS = frozenset({
     WISE_GLASSES, SCOPE_LENS, RAZOR_CLAW, QUICK_CLAW, BRIGHT_POWDER, WIDE_LENS, WEAKNESS_POLICY, PUNCHING_GLOVE,
     "type-boost", "resist-berry", "plate", "origin-boost", "weather-rock", "status-orb", "state-extender",
     "hazard-boots", PROTECTIVE_PADS, *BERRY_KEYS, "gem", "air-balloon", "hit-stat-item", "blunder-policy",
-    "throat-spray", "adrenaline-orb", "room-service", "mirror-herb", "mental-herb", "power-herb",
+    "throat-spray", "adrenaline-orb", "room-service", "mirror-herb", "mental-herb", "power-herb", "terrain-seed",
+    "booster-energy", "utility-umbrella", "safety-goggles", "covert-cloak", "clear-amulet", "ability-shield",
 })
 
 TYPE_ORDER = ("fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug",
@@ -75,6 +76,9 @@ GEMS = _in_type_order(battle_data.args("items", "gem", "type"))
 # item slug -> (the move type whose hit sets it off, the stat it raises a stage)
 HIT_STAT_ITEMS = {slug: (entry["args"]["type"], entry["args"]["stat"])
                   for slug, entry in battle_data.with_key("items", "hit-stat-item").items()}
+# item slug -> (the terrain that sets it off, the stat it raises a stage)
+TERRAIN_SEEDS = {slug: (entry["args"]["terrain"], entry["args"]["stat"])
+                 for slug, entry in battle_data.with_key("items", "terrain-seed").items()}
 ITEM_NAMES = battle_data.bot_names("items", unless="mega-stone")
 LEFTOVERS_FRACTION = 16
 BLACK_SLUDGE_HURT_FRACTION = 8
