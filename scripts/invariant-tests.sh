@@ -41,6 +41,7 @@ CLASSES=(
   SpeciesFactsGuardTests           # no test hand-builds species facts; the table matches the games
   GymTermGuardTests                # no Korean UI string says 도장
   RarityNameTests                  # tier names in every language and the READMEs
+  RemoteOpsContractTests           # remote op kinds, actions, reasons match bot/contract/remote_ops.json
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).

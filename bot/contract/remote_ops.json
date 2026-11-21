@@ -1,0 +1,27 @@
+{
+  "unsupported_reason": "unsupported",
+  "ops": {
+    "buy": {
+      "bot_reasons": ["invalid", "no_tokens", "not_sold", "price_changed"],
+      "app_reasons": ["invalid", "no_tokens", "not_sold", "price_changed"],
+      "actions": []
+    },
+    "lineup": {
+      "bot_reasons": ["evolved", "gone", "invalid", "item_clause", "no_item", "no_machine", "not_learnable",
+                      "species_clause", "trade_locked"],
+      "app_reasons": ["evolved", "gone", "invalid", "item_clause", "no_item", "no_machine", "species_clause",
+                      "trade_locked"],
+      "actions": []
+    },
+    "train": {
+      "bot_reasons": ["everstone", "evolved", "gone", "invalid", "no_data", "no_herb", "no_item", "no_machine",
+                      "no_tokens", "not_applicable", "not_ready", "not_sold", "price_changed", "trade_locked",
+                      "unchanged", "wrong_target"],
+      "app_reasons": ["everstone", "evolved", "gone", "invalid", "no_data", "no_herb", "no_item", "no_machine",
+                      "no_tokens", "not_applicable", "not_ready", "price_changed", "trade_locked", "unchanged",
+                      "wrong_target"],
+      "actions": ["cap", "capsule", "evolve", "form", "gold_cap", "herb", "moves", "nature", "patch"]
+    }
+  },
+  "train_stats": ["attack", "defense", "hp", "special-attack", "special-defense", "speed"]
+}
