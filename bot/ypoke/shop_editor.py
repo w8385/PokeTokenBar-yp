@@ -1,11 +1,12 @@
 """The `/상점` screens: a menu per shop category, then one item with a button per quantity. Each buy queues one `buy`
 op (`remote_buy`) and is checked against the spendable balance: the last synced wallet less the pending buys."""
 
+from ypoke import blocks as kit
 from ypoke.lineup_editor import EditorReply
 from ypoke.remote_buy import BUY, NO_TOKENS, REASONS, buy
 from ypoke.remote_ops import OLD_APP_REFUSAL, RemoteOps, View
 from ypoke.remote_views import RemoteViews, Screen, sync_line, text_screen
-from ypoke.trades import OPTION_TEXT_LIMIT, PICKER_LIMIT
+from ypoke.trades import PICKER_LIMIT
 
 ACTION_PREFIX = "shop_"
 PICK_ACTION = "shop_pick"
@@ -89,15 +90,14 @@ def _shop_screen(view: View, lines: list[dict], query: str, done: str | None = N
         head.append(f"'{query}'에 맞는 물건이 없어요.")
     else:
         head.append("분류에서 물건을 고르세요.")
-    blocks = [_section("\n".join(head))]
+    blocks = [kit.section("\n".join(head))]
     for category, group in _groups(lines).items():
-        select = {"action_id": PICK_ACTION, "placeholder": {"type": "plain_text", "text": "물건 고르기"}}
         if len(group) <= PICKER_LIMIT:
-            select |= {"type": "static_select", "options": [_item_option(line) for line in group]}
+            select = kit.static_select(PICK_ACTION, "물건 고르기", [_item_option(line) for line in group])
         else:
-            select |= {"type": "external_select", "min_query_length": 0}
-        blocks.append(_section(f"*{_category_name(group[0])}* {len(group)}개") | {"block_id": category, "accessory": select})
-    blocks.append(_context(SHOP_NOTE, sync_line(view)))
+            select = kit.external_select(PICK_ACTION, "물건 고르기")
+        blocks.append(kit.section(f"*{_category_name(group[0])}* {len(group)}개", block_id=category, accessory=select))
+    blocks.append(kit.context(SHOP_NOTE, sync_line(view)))
     return Screen("\n".join([*head[:2], sync_line(view)]), blocks)
 
 
@@ -112,12 +112,11 @@ def _item_screen(view: View, line: dict, done: str | None = None) -> Screen:
     counts = [count for count in ((1,) if line["single"] else QUANTITIES) if count <= affordable]
     if not counts:
         text.append(SHORT)
-    buttons = [_button(f"{count}개 사기 ({count * price:,})" if not line["single"] else f"사기 ({price:,})",
-                       f"{count}|{price}|{line['key']}", f"{BUY_ACTION}_{count}") for count in counts]
-    if buttons:
-        buttons[0]["style"] = "primary"
-    buttons.append(_button("상점으로", "back", BACK_ACTION))
-    blocks = [_section("\n".join(text)), {"type": "actions", "elements": buttons}, _context(SHOP_NOTE, sync_line(view))]
+    buttons = [kit.button(f"{count}개 사기 ({count * price:,})" if not line["single"] else f"사기 ({price:,})",
+                          f"{BUY_ACTION}_{count}", f"{count}|{price}|{line['key']}",
+                          style="primary" if index == 0 else None) for index, count in enumerate(counts)]
+    buttons.append(kit.button("상점으로", BACK_ACTION, "back"))
+    blocks = [kit.section("\n".join(text)), kit.actions(buttons), kit.context(SHOP_NOTE, sync_line(view))]
     return Screen("\n".join([text[0], sync_line(view)]), blocks)
 
 
@@ -163,21 +162,8 @@ def _buy_value(value: str) -> tuple[int | None, int, str]:
 
 
 def _item_option(line: dict) -> dict:
-    return {"text": {"type": "plain_text", "text": f"{line['name']} · {line['price']:,}"[:OPTION_TEXT_LIMIT]},
-            "value": line["key"]}
-
-
-def _button(text: str, value: str, action_id: str) -> dict:
-    return {"type": "button", "action_id": action_id, "text": {"type": "plain_text", "text": text}, "value": value}
-
-
-def _section(text: str) -> dict:
-    return {"type": "section", "text": {"type": "mrkdwn", "text": text}}
-
-
-def _context(*texts: str) -> dict:
-    return {"type": "context", "elements": [{"type": "mrkdwn", "text": text} for text in texts]}
+    return kit.option(f"{line['name']} · {line['price']:,}", line["key"])
 
 
 def _note(text: str) -> EditorReply:
-    return EditorReply(Screen(text, [_section(text)]), replace=False)
+    return EditorReply(Screen(text, [kit.section(text)]), replace=False)

@@ -6,6 +6,7 @@ so a press on an older message still names its Pokémon."""
 
 import re
 
+from ypoke import blocks as kit
 from ypoke.lineup_editor import EditorReply
 from ypoke.miracle import POST_ERRORS, MiracleService
 from ypoke.remote_ops import RemoteOps, View
@@ -13,7 +14,6 @@ from ypoke.remote_views import MIRACLE_COMMAND, RemoteViews, Screen, sync_line, 
 from ypoke.trades import (
     HOLD_ERRORS,
     OPEN_STATUSES,
-    OPTION_TEXT_LIMIT,
     PICKER_LIMIT,
     PROPOSE_ERRORS,
     TradeService,
@@ -121,20 +121,20 @@ class TradeEditor:
         if not self._miracle.available:
             return text_screen([MIRACLE_TITLE, MIRACLE_UNAVAILABLE], view)
         status = self._miracle.status(user_id)
-        blocks = [_section(done)] if done else []
+        blocks = [kit.section(done)] if done else []
         if status:
             posted = self._trades.pool_entry(user_id, status["give_id"])
             label = option_labels([posted])[0] if posted else status["name"]
             blocks += [
-                _section(f"{MIRACLE_TITLE}\n지금 올린 포켓몬: {label}\n"
+                kit.section(f"{MIRACLE_TITLE}\n지금 올린 포켓몬: {label}\n"
                          "한 번에 한 마리만 올릴 수 있어요. 다른 포켓몬을 올리려면 먼저 내려 주세요."),
-                {"type": "actions", "elements": [_button("내리기", status["offer_id"], MIRACLE_DOWN_ACTION)]},
+                kit.actions([kit.button("내리기", MIRACLE_DOWN_ACTION, status["offer_id"])]),
             ]
             return _screen(MIRACLE_TITLE, blocks, view, MIRACLE_NOTE)
         entries = self._matching(user_id, query)
         if query and len(entries) == 1 and not done:
             return self._miracle_confirm(view, entries[0])
-        blocks.append(_section(f"{MIRACLE_TITLE}\n{MIRACLE_PROMPT}"))
+        blocks.append(kit.section(f"{MIRACLE_TITLE}\n{MIRACLE_PROMPT}"))
         blocks.append(self._picker(MIRACLE_PICK_ACTION, MIRACLE_OWNER, entries, user_id, query))
         return _screen(MIRACLE_TITLE, blocks, view, MIRACLE_NOTE)
 
@@ -147,8 +147,8 @@ class TradeEditor:
     def _trade_screen(self, user_id: str, view: View, query: str, to: str = "", done: str | None = None,
                       note: str | None = None) -> Screen:
         head = f"{TRADE_TITLE} · {self._coworker_name(to)}님에게" if to else TRADE_TITLE
-        blocks = [_section(text) for text in (done, note) if text]
-        blocks.append(_section(f"{head}\n{TRADE_PROMPT}"))
+        blocks = [kit.section(text) for text in (done, note) if text]
+        blocks.append(kit.section(f"{head}\n{TRADE_PROMPT}"))
         blocks.append(self._picker(GIVE_ACTION, f"{TO_PREFIX}{to}", self._matching(user_id, query), user_id, query))
         blocks += self._open_trades(user_id)
         return _screen(head, blocks, view, TRADE_NOTE)
@@ -162,12 +162,10 @@ class TradeEditor:
         label = option_labels([entry])[0]
         value = f"{TO_PREFIX}{to}|{entry['id']}"
         blocks = [
-            _section(f"*교환 제안*\n내 {label}을(를) {name}님에게 내놓고 교환을 제안할까요?\n"
+            kit.section(f"*교환 제안*\n내 {label}을(를) {name}님에게 내놓고 교환을 제안할까요?\n"
                      f"{name}님이 DM에서 돌려줄 포켓몬을 고르고 수락하면, 나에게 확인 DM이 와요."),
-            {"type": "actions", "elements": [
-                _button("제안하기", value, SEND_ACTION, primary=True),
-                _button("다른 포켓몬", f"{TO_PREFIX}{to}|", BACK_ACTION),
-            ]},
+            kit.actions([kit.button("제안하기", SEND_ACTION, value, style="primary"),
+                         kit.button("다른 포켓몬", BACK_ACTION, f"{TO_PREFIX}{to}|")]),
         ]
         return _screen(f"{label} 교환 제안", blocks, view, TRADE_NOTE)
 
@@ -175,16 +173,16 @@ class TradeEditor:
         if entries:
             return picker_block(action_id, owner, pick_options(owner, entries))
         empty = NO_MATCH.format(query=query) if query and self._trades.free_entries(user_id) else NONE_TRADABLE
-        return _context(empty)
+        return kit.context(empty)
 
     def _open_trades(self, user_id: str) -> list[dict]:
         open_trades = [trade for trade in self._trades.history(user_id) if trade["status"] in OPEN_STATUSES]
         if not open_trades:
             return []
-        blocks = [_section(OPEN_TITLE)]
+        blocks = [kit.section(OPEN_TITLE)]
         for trade in open_trades:
             word = "취소" if trade["direction"] == "outgoing" else "거절"
-            blocks.append(_section(_trade_line(trade)) | {"accessory": _button(word, trade["trade_id"], CANCEL_ACTION)})
+            blocks.append(kit.section(_trade_line(trade), accessory=kit.button(word, CANCEL_ACTION, trade["trade_id"])))
         return blocks
 
     def _coworker_name(self, handle: str) -> str:
@@ -238,27 +236,23 @@ class TradeEditor:
     def _coworkers(self, user_id: str, view: View, entry: dict) -> Screen:
         label = option_labels([entry])[0]
         coworkers = self._trades.coworkers(user_id)[:PICKER_LIMIT]
-        back = _button("다른 포켓몬", f"{TO_PREFIX}|", BACK_ACTION)
+        back = kit.button("다른 포켓몬", BACK_ACTION, f"{TO_PREFIX}|")
         if not coworkers:
-            return _screen(TRADE_TITLE, [_section(f"{TRADE_TITLE} · {label}\n{NO_COWORKERS}"),
-                                         {"type": "actions", "elements": [back]}], view, TRADE_NOTE)
-        select = {"type": "static_select", "action_id": TO_ACTION,
-                  "placeholder": {"type": "plain_text", "text": "제안할 동료 고르기"},
-                  "options": [_option(coworker["name"], f"{TO_PREFIX}{coworker['id']}|{entry['id']}")
-                              for coworker in coworkers]}
-        blocks = [_section(f"{TRADE_TITLE} · {label}\n누구에게 제안할까요? 박스 포켓몬을 올린 동료만 나와요."),
-                  {"type": "actions", "elements": [select, back]}]
+            return _screen(TRADE_TITLE, [kit.section(f"{TRADE_TITLE} · {label}\n{NO_COWORKERS}"), kit.actions([back])],
+                           view, TRADE_NOTE)
+        select = kit.static_select(TO_ACTION, "제안할 동료 고르기", [
+            kit.option(coworker["name"], f"{TO_PREFIX}{coworker['id']}|{entry['id']}") for coworker in coworkers])
+        blocks = [kit.section(f"{TRADE_TITLE} · {label}\n누구에게 제안할까요? 박스 포켓몬을 올린 동료만 나와요."),
+                  kit.actions([select, back])]
         return _screen(f"{label} 교환", blocks, view, TRADE_NOTE)
 
     def _miracle_confirm(self, view: View, entry: dict) -> Screen:
         label = option_labels([entry])[0]
         blocks = [
-            _section(f"{MIRACLE_TITLE}\n{label}을(를) 미라클 교환에 올릴까요?\n"
+            kit.section(f"{MIRACLE_TITLE}\n{label}을(를) 미라클 교환에 올릴까요?\n"
                      "대결 채널에 카드가 올라가고, 먼저 고른 동료의 포켓몬과 바로 바뀌어요. 되돌릴 수 없어요."),
-            {"type": "actions", "elements": [
-                _button("올리기", entry["id"], MIRACLE_POST_ACTION, primary=True),
-                _button("다른 포켓몬", MIRACLE_OWNER, MIRACLE_BACK_ACTION),
-            ]},
+            kit.actions([kit.button("올리기", MIRACLE_POST_ACTION, entry["id"], style="primary"),
+                         kit.button("다른 포켓몬", MIRACLE_BACK_ACTION, MIRACLE_OWNER)]),
         ]
         return _screen(f"{label} 미라클 교환", blocks, view, MIRACLE_NOTE)
 
@@ -275,26 +269,8 @@ def _trade_line(trade: dict) -> str:
 
 
 def _note(text: str) -> EditorReply:
-    return EditorReply(Screen(text, [_section(text)]), replace=False)
-
-
-def _section(text: str) -> dict:
-    return {"type": "section", "text": {"type": "mrkdwn", "text": text}}
+    return EditorReply(Screen(text, [kit.section(text)]), replace=False)
 
 
 def _screen(head: str, blocks: list[dict], view: View, note: str) -> Screen:
-    return Screen(head, [*blocks, _context(note, sync_line(view))])
-
-
-def _context(*texts: str) -> dict:
-    return {"type": "context", "elements": [{"type": "mrkdwn", "text": text} for text in texts]}
-
-
-def _button(text: str, value: str, action_id: str, primary: bool = False) -> dict:
-    button = {"type": "button", "action_id": action_id, "text": {"type": "plain_text", "text": text[:75]},
-              "value": value}
-    return button | {"style": "primary"} if primary else button
-
-
-def _option(text: str, value: str) -> dict:
-    return {"text": {"type": "plain_text", "text": text[:OPTION_TEXT_LIMIT]}, "value": value}
+    return Screen(head, [*blocks, kit.context(note, sync_line(view))])

@@ -10,6 +10,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient
 from slack_sdk.webhook import WebhookClient
 
+from ypoke import blocks as kit
 from ypoke.battle_render import MatchupPictures
 from ypoke.commands import (
     CommandHandler,
@@ -55,7 +56,7 @@ def slash_listener(handler: CommandHandler, pictures: MatchupPictures | None = N
             reply = handler.handle(user_id, text, command, where, echo=True)
         except Exception:
             log.exception("command failed")
-            respond(text=ERROR_TEXT, response_type="ephemeral")
+            kit.send(respond, "slash error", text=ERROR_TEXT, response_type="ephemeral")
             return
         send_direct_messages(client, reply)
         _publish_slash(client, respond, where.channel_id, reply, pictures)
@@ -110,7 +111,8 @@ def card_thread(message: dict) -> str | None:
 def _drop_buttons(client: WebClient, channel_id: str, message: dict) -> None:
     blocks = [block for block in message.get("blocks", []) if block["type"] != "actions"]
     try:
-        client.chat_update(channel=channel_id, ts=message["ts"], text=message.get("text", ""), blocks=blocks)
+        kit.send(client.chat_update, "rematch card", channel=channel_id, ts=message["ts"], text=message.get("text", ""),
+                 blocks=blocks)
     except Exception:
         log.warning("could not remove the rematch button from the result card")
 
@@ -131,13 +133,13 @@ def trade_listener(trades: TradeService, kind: str):
                 reply = (trades.accept if kind == "accept" else trades.decline)(user_id, trade_id)
         except Exception:
             log.exception("trade button failed")
-            answer(respond, f"trade_{kind}", text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            kit.send(respond, f"trade_{kind}", text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
             return
         post_direct_messages(client, reply.direct_messages)
         if reply.final:
-            answer(respond, f"trade_{kind}", text=reply.text, replace_original=True)
+            kit.send(respond, f"trade_{kind}", text=reply.text, replace_original=True)
         else:
-            answer(respond, f"trade_{kind}", text=reply.text, response_type="ephemeral", replace_original=False)
+            kit.send(respond, f"trade_{kind}", text=reply.text, response_type="ephemeral", replace_original=False)
 
     return listener
 
@@ -173,12 +175,12 @@ def editor_listener(editor: LineupEditor | ShopEditor | TrainingEditor | TradeEd
             reply = editor.act(user_id, action["action_id"], value, selected)
         except Exception:
             log.exception("edit failed")
-            answer(respond, action["action_id"], text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            kit.send(respond, action["action_id"], text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
             return
         if client is not None:
             post_direct_messages(client, reply.direct_messages)
-        answer(respond, action["action_id"], text=reply.screen.text, blocks=reply.screen.blocks,
-               response_type="ephemeral", replace_original=reply.replace)
+        kit.send(respond, action["action_id"], text=reply.screen.text, blocks=reply.screen.blocks,
+                 response_type="ephemeral", replace_original=reply.replace)
 
     return listener
 
@@ -225,14 +227,14 @@ def miracle_listener(miracle: MiracleService, kind: str):
                 reply = miracle.take_down(user_id, offer_id)
         except Exception:
             log.exception("miracle button failed")
-            answer(respond, f"miracle_{kind}", text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            kit.send(respond, f"miracle_{kind}", text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
             return
         post_direct_messages(client, reply.direct_messages)
         if kind == "pick" and reply.final:
-            answer(respond, f"miracle_{kind}", text=reply.text, replace_original=True)
+            kit.send(respond, f"miracle_{kind}", text=reply.text, replace_original=True)
         else:
-            answer(respond, f"miracle_{kind}", text=reply.text, blocks=reply.blocks, response_type="ephemeral",
-                   replace_original=False)
+            kit.send(respond, f"miracle_{kind}", text=reply.text, blocks=reply.blocks, response_type="ephemeral",
+                     replace_original=False)
 
     return listener
 
@@ -246,14 +248,15 @@ class SlackBoard:
 
     def post(self, text: str, blocks: list[dict]) -> str | None:
         try:
-            return self._client.chat_postMessage(channel=self._channel, text=text, blocks=blocks)["ts"]
+            return kit.send(self._client.chat_postMessage, "miracle card", channel=self._channel, text=text,
+                            blocks=blocks)["ts"]
         except Exception:
             log.warning("could not post a miracle card")
             return None
 
     def update(self, ts: str, text: str, blocks: list[dict]) -> None:
         try:
-            self._client.chat_update(channel=self._channel, ts=ts, text=text, blocks=blocks)
+            kit.send(self._client.chat_update, "miracle card", channel=self._channel, ts=ts, text=text, blocks=blocks)
         except Exception:
             log.warning("could not edit a miracle card")
 
@@ -265,7 +268,8 @@ def send_direct_messages(client: WebClient, reply: Reply) -> None:
 def post_direct_messages(client: WebClient, messages) -> None:
     for message in messages:
         try:
-            client.chat_postMessage(channel=message.user_id, text=message.text, blocks=message.blocks)
+            kit.send(client.chat_postMessage, "direct message", channel=message.user_id, text=message.text,
+                     blocks=message.blocks)
         except Exception:
             log.warning("could not send a direct message")
 
@@ -275,7 +279,7 @@ def post_result(
 ) -> None:
     """The card in `thread_ts` (None: the channel itself), then the turn log in the card's thread, or in the same
     thread when the card is already a reply. Raises only when the card cannot be posted."""
-    card = client.chat_postMessage(channel=channel, thread_ts=thread_ts, **_card_message(reply))
+    card = kit.send(client.chat_postMessage, "result card", channel=channel, thread_ts=thread_ts, **_card_message(reply))
     log_thread = thread_ts or card["ts"]
     post_log(partial(client.chat_postMessage, channel=channel, thread_ts=log_thread), client, reply, pictures)
 
@@ -306,7 +310,7 @@ def post_log(send: Callable, client: WebClient, reply: Reply, pictures: MatchupP
 
 def _sent(send: Callable, text: str, blocks: list[dict]) -> bool:
     try:
-        response = send(text=text, blocks=blocks)
+        response = kit.send(send, "turn log", text=text, blocks=blocks)
     except Exception:
         return False
     return getattr(response, "status_code", 200) in (None, 200)
@@ -324,13 +328,13 @@ def deliver(client: WebClient, delivery: Delivery, pictures: MatchupPictures | N
     if where.response_url:
         try:
             send = partial(WebhookClient(where.response_url).send, response_type="in_channel")
-            if send(**_card_message(reply)).status_code == 200:
+            if kit.send(send, "pending battle", **_card_message(reply)).status_code == 200:
                 post_log(send, client, reply, pictures)
                 return
         except Exception:
             log.warning("could not post a pending battle by response url")
     try:
-        client.chat_postMessage(channel=delivery.challenger_id, text=DM_FALLBACK_NOTE)
+        kit.send(client.chat_postMessage, "pending battle", channel=delivery.challenger_id, text=DM_FALLBACK_NOTE)
         post_result(client, delivery.challenger_id, None, reply, pictures)
     except Exception:
         log.warning("could not deliver a pending battle")
@@ -370,7 +374,7 @@ def _respond_result(
         log.warning("could not post a battle result")
         return
     try:
-        respond(**_card_message(reply), **message)
+        kit.send(respond, "result card", **_card_message(reply), **message)
     except Exception:
         log.warning("could not post a battle result by response url")
         return
@@ -381,7 +385,7 @@ def _post_line(
     client: WebClient, channel: str, thread_ts: str | None, text: str, respond: Callable | None, blocks: list[dict] | None = None
 ) -> None:
     try:
-        client.chat_postMessage(channel=channel, thread_ts=thread_ts, text=text, blocks=blocks)
+        kit.send(client.chat_postMessage, "reply", channel=channel, thread_ts=thread_ts, text=text, blocks=blocks)
     except Exception:
         _fallback(respond, text=text, blocks=blocks, thread_ts=thread_ts, response_type="in_channel", replace_original=False)
 
@@ -391,22 +395,13 @@ def _private(
     blocks: list[dict] | None = None,
 ) -> None:
     if respond is not None:
-        answer(respond, "private reply", text=text, blocks=blocks, response_type="ephemeral", replace_original=False)
+        kit.send(respond, "private reply", text=text, blocks=blocks, response_type="ephemeral", replace_original=False)
         return
     try:
-        client.chat_postEphemeral(channel=channel, user=user_id, text=text, thread_ts=thread_ts, blocks=blocks)
+        kit.send(client.chat_postEphemeral, "private reply", channel=channel, user=user_id, text=text,
+                 thread_ts=thread_ts, blocks=blocks)
     except Exception:
         log.warning("could not post an ephemeral reply")
-
-
-def answer(respond: Callable, source: str, **message) -> None:
-    """Send `message` to a response URL and log a reply that is not 200: the SDK returns Slack's refusal (such as
-    `invalid_blocks`) instead of raising, so a rejected screen would otherwise vanish without a trace."""
-    response = respond(**message)
-    status = getattr(response, "status_code", 200)
-    if status != 200:
-        log.warning("response url rejected %s: status=%s body=%s", source, status,
-                    json.dumps(str(getattr(response, "body", ""))[:LOG_ARGS_LIMIT], ensure_ascii=False))
 
 
 def _fallback(respond: Callable | None, **message) -> None:
@@ -414,8 +409,7 @@ def _fallback(respond: Callable | None, **message) -> None:
         log.warning("could not post a reply")
         return
     try:
-        response = respond(**message)
-        log.info("response url answered %s %s", getattr(response, "status_code", None), str(getattr(response, "body", ""))[:80])
+        kit.send(respond, "reply", **message)
     except Exception:
         log.warning("could not post a reply by response url")
 
@@ -431,12 +425,12 @@ def _publish_slash(
             _respond_result(respond, client, reply, pictures, response_type="in_channel")
         return
     if reply.public:
-        answer(respond, "slash public", text="\n".join(filter(None, (reply.echo, reply.public))),
-               response_type="in_channel")
+        kit.send(respond, "slash public", text="\n".join(filter(None, (reply.echo, reply.public))),
+                 response_type="in_channel")
     visible = reply.in_channel
     text = "\n".join(filter(None, (reply.echo, reply.text))) if visible else reply.text
-    answer(respond, "slash", text=text, blocks=message_blocks(reply, visible),
-           response_type="in_channel" if visible else "ephemeral")
+    kit.send(respond, "slash", text=text, blocks=message_blocks(reply, visible),
+             response_type="in_channel" if visible else "ephemeral")
 
 
 def socket_handler(app, app_token: str, web_client: WebClient | None = None) -> SocketModeHandler:

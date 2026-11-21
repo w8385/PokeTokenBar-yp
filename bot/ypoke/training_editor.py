@@ -4,6 +4,7 @@ app's training tab does. Values carry individual ids, so a press on an older mes
 
 from collections.abc import Callable
 
+from ypoke import blocks as kit
 from ypoke.lineup_editor import (
     MAX_MOVES,
     TRAINING_OPEN_ACTION,
@@ -19,7 +20,7 @@ from ypoke.remote_train import (
     STAT_NAMES, STATS, TRAIN, describe, form_ability, item_count, owned, shop_price, train,
 )
 from ypoke.remote_views import RemoteViews, Screen, ability_name, sync_line, text_screen
-from ypoke.trades import NATURE_NAMES_KO, OPTION_TEXT_LIMIT, PICKER_LIMIT, option_labels
+from ypoke.trades import NATURE_NAMES_KO, PICKER_LIMIT, option_labels
 
 ACTION_PREFIX = "train_"
 OPEN_ACTION = TRAINING_OPEN_ACTION
@@ -118,7 +119,7 @@ class TrainingEditor:
         if view is None or not editable(view):
             return []
         words = query.casefold().split()
-        options = [_option(label, member["id"]) for member, label in self._labelled(view, self._matching(view, ""))]
+        options = [kit.option(label, member["id"]) for member, label in self._labelled(view, self._matching(view, ""))]
         return [option for option in options if all(word in option["text"]["text"].casefold() for word in words)][:PICKER_LIMIT]
 
     def move_options(self, user_id: str, block_id: str, query: str) -> list[dict]:
@@ -150,15 +151,13 @@ class TrainingEditor:
         head = f"{TITLE} '{query}' 검색" if query else TITLE
         if not members:
             return text_screen([head, NO_MATCH.format(query=query) if query else NONE_OWNED], view)
-        options = [_option(label, member["id"]) for member, label in self._labelled(view, members)]
-        select = {"action_id": PICK_ACTION, "placeholder": {"type": "plain_text", "text": "포켓몬 고르기"}}
+        options = [kit.option(label, member["id"]) for member, label in self._labelled(view, members)]
         if len(options) <= PICKER_LIMIT:
-            select |= {"type": "static_select", "options": options}
+            select = kit.static_select(PICK_ACTION, "포켓몬 고르기", options)
         else:
-            select |= {"type": "external_select", "min_query_length": 0}
-        blocks = [_section(f"{head}\n{PICK_PROMPT}"), {"type": "actions", "elements": [select]},
-                  _context(_wallet_line(view), sync_line(view))]
-        return Screen(head, blocks)
+            select = kit.external_select(PICK_ACTION, "포켓몬 고르기")
+        return Screen(head, [kit.section(f"{head}\n{PICK_PROMPT}"), kit.actions([select]),
+                             kit.context(_wallet_line(view), sync_line(view))])
 
     def _read_only(self, view: View, members: list[dict], refusal: str) -> Screen:
         lines = [TITLE, refusal]
@@ -175,11 +174,11 @@ class TrainingEditor:
                                          _gold_cap_button(view, member)) if control]
         second = [control for control in (*self._ability_buttons(view, member), _herb_button(view, member),
                                           _form_select(view, member), self._evolve_button(view, member)) if control]
-        third = [_button("기술 바꾸기", member["id"], MOVES_ACTION), _button("다른 포켓몬", member["id"], BACK_ACTION)]
-        blocks = [_section("\n".join(lines))]
-        blocks += [{"type": "actions", "block_id": f"{member['id']}#{index}", "elements": elements}
+        third = [kit.button("기술 바꾸기", MOVES_ACTION, member["id"]), kit.button("다른 포켓몬", BACK_ACTION, member["id"])]
+        blocks = [kit.section("\n".join(lines))]
+        blocks += [kit.actions(elements, block_id=f"{member['id']}#{index}")
                    for index, elements in enumerate((first, second, third)) if elements]
-        blocks.append(_context(_wallet_line(view), _stock_line(view), SHOP_NOTE, SYNC_NOTE, sync_line(view)))
+        blocks.append(kit.context(_wallet_line(view), _stock_line(view), SHOP_NOTE, SYNC_NOTE, sync_line(view)))
         return Screen(head, blocks)
 
     def _ability_buttons(self, view: View, member: dict) -> list[dict | None]:
@@ -187,8 +186,8 @@ class TrainingEditor:
         for action, action_id, word in ((CAPSULE, CAPSULE_ACTION, "특성캡슐"), (PATCH, PATCH_ACTION, "특성패치")):
             count = item_count(view, ITEM_KEYS[action])
             target = self._ability_target(member, action) if count else None
-            buttons.append(_button(f"{word} → {ability_name(target['name'])} (가방 ×{count})", member["id"], action_id)
-                           if target else None)
+            buttons.append(kit.button(f"{word} → {ability_name(target['name'])} (가방 ×{count})", action_id,
+                                      member["id"]) if target else None)
         return buttons
 
     def _evolve_button(self, view: View, member: dict) -> dict | None:
@@ -198,7 +197,7 @@ class TrainingEditor:
             return None
         item = payload["item"]
         text = f"{EVOLVE_ITEMS[item]}으로 진화 → {payload['to_name']} (가방 ×{item_count(view, item)})"
-        return _button(text, member["id"], EVOLVE_ACTION)
+        return kit.button(text, EVOLVE_ACTION, member["id"])
 
     def _evolve_payload(self, member: dict) -> dict | None:
         evolution = member.get("evolution")
@@ -278,11 +277,11 @@ class TrainingEditor:
         title = f"*{self._name(member)} Lv.{member['level']}의 기술* (최대 {MAX_MOVES}개)"
         now = " / ".join(names[move_id] for move_id in chosen) or "레벨에 맞는 기본 기술"
         select = moves_select(SET_MOVES_ACTION, learnable, chosen)
-        buttons = [_button("트레이닝으로 돌아가기", member["id"], OPEN_ACTION)]
+        buttons = [kit.button("트레이닝으로 돌아가기", OPEN_ACTION, member["id"])]
         if member.get("moves"):
-            buttons.insert(0, _button("기본 기술로", member["id"], DEFAULT_MOVES_ACTION))
-        blocks = [_section(f"{title}\n지금: {now}") | {"block_id": member["id"], "accessory": select},
-                  {"type": "actions", "elements": buttons}, _context(MOVES_NOTE, SYNC_NOTE, sync_line(view))]
+            buttons.insert(0, kit.button("기본 기술로", DEFAULT_MOVES_ACTION, member["id"]))
+        blocks = [kit.section(f"{title}\n지금: {now}", block_id=member["id"], accessory=select),
+                  kit.actions(buttons), kit.context(MOVES_NOTE, SYNC_NOTE, sync_line(view))]
         return EditorReply(Screen(title, blocks))
 
     def _learnable(self, view: View, member: dict) -> list[dict] | None:
@@ -306,10 +305,9 @@ def _nature_select(view: View, member: dict) -> dict | None:
     cost = _cost(view, NATURE)
     if cost is None:
         return None
-    options = [_option(name, f"{member['id']}|{key}") for key, name in NATURE_NAMES_KO.items()
+    options = [kit.option(name, f"{member['id']}|{key}") for key, name in NATURE_NAMES_KO.items()
                if key != member.get("nature")]
-    return {"type": "static_select", "action_id": NATURE_ACTION, "options": options,
-            "placeholder": {"type": "plain_text", "text": f"민트로 성격 바꾸기 ({cost})"}}
+    return kit.static_select(NATURE_ACTION, f"민트로 성격 바꾸기 ({cost})", options)
 
 
 def _cost(view: View, action: str) -> str | None:
@@ -328,32 +326,29 @@ def _cap_select(view: View, member: dict) -> dict | None:
     stats = [stat for stat, (key, _) in STATS.items() if member.get("ivs", {}).get(key) != MAX_IV]
     if not count or not stats:
         return None
-    return {"type": "static_select", "action_id": CAP_ACTION,
-            "options": [_option(STAT_NAMES[stat], f"{member['id']}|{stat}") for stat in stats],
-            "placeholder": {"type": "plain_text", "text": f"은색병뚜껑 (가방 ×{count})"}}
+    return kit.static_select(CAP_ACTION, f"은색병뚜껑 (가방 ×{count})",
+                             [kit.option(STAT_NAMES[stat], f"{member['id']}|{stat}") for stat in stats])
 
 
 def _gold_cap_button(view: View, member: dict) -> dict | None:
     count = item_count(view, ITEM_KEYS[GOLD_CAP])
     if not count or all(member.get("ivs", {}).get(key) == MAX_IV for key, _ in STATS.values()):
         return None
-    return _button(f"금색병뚜껑 (가방 ×{count})", member["id"], GOLD_CAP_ACTION)
+    return kit.button(f"금색병뚜껑 (가방 ×{count})", GOLD_CAP_ACTION, member["id"])
 
 
 def _herb_button(view: View, member: dict) -> dict | None:
     if member.get("mirror_herb") or not member.get("egg_moves") or (cost := _cost(view, HERB)) is None:
         return None
-    return _button(f"흉내허브 ({cost})", member["id"], HERB_ACTION)
+    return kit.button(f"흉내허브 ({cost})", HERB_ACTION, member["id"])
 
 
 def _form_select(view: View, member: dict) -> dict | None:
     forms = [form for form in member.get("forms", []) if form["pokemon_id"] != member["pokemon_id"]]
     if not forms or not item_count(view, member.get("form_tool", "")):
         return None
-    return {"type": "static_select", "action_id": FORM_ACTION,
-            "options": [_option(FORM_NAMES.get(form["form"], form["form"]), f"{member['id']}|{form['form']}")
-                        for form in forms],
-            "placeholder": {"type": "plain_text", "text": "폼 바꾸기"}}
+    return kit.static_select(FORM_ACTION, "폼 바꾸기", [
+        kit.option(FORM_NAMES.get(form["form"], form["form"]), f"{member['id']}|{form['form']}") for form in forms])
 
 
 def _traits(member: dict) -> str:
@@ -389,21 +384,5 @@ def _done(payload: dict) -> str:
     return f"✅ {describe(payload)} — 걸어 뒀어요."
 
 
-def _option(text: str, value: str) -> dict:
-    return {"text": {"type": "plain_text", "text": text[:OPTION_TEXT_LIMIT]}, "value": value}
-
-
-def _button(text: str, value: str, action_id: str) -> dict:
-    return {"type": "button", "action_id": action_id, "text": {"type": "plain_text", "text": text[:75]}, "value": value}
-
-
-def _context(*texts: str) -> dict:
-    return {"type": "context", "elements": [{"type": "mrkdwn", "text": text} for text in texts]}
-
-
 def _note(text: str) -> EditorReply:
-    return EditorReply(Screen(text, [_section(text)]), replace=False)
-
-
-def _section(text: str) -> dict:
-    return {"type": "section", "text": {"type": "mrkdwn", "text": text}}
+    return EditorReply(Screen(text, [kit.section(text)]), replace=False)

@@ -10,6 +10,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from functools import partial
 from urllib.parse import urlencode
 
+from ypoke import blocks as kit
 from ypoke import entry_rules
 from ypoke.battle import Combatant, simulate
 from ypoke.clock import Clock
@@ -324,19 +325,10 @@ class CommandHandler:
             query["server"] = self._public_url
         link = f"{REGISTER_LINK}?{urlencode(query)}"
         return [
-            {"type": "section", "text": {"type": "mrkdwn", "text": "버튼을 누르면 PokeTokenBar가 YPoke에 연결돼요."}},
-            {"type": "actions", "elements": [{
-                "type": "button", "style": "primary", "url": link, "action_id": REGISTER_ACTION_ID,
-                "text": {"type": "plain_text", "text": "PokeTokenBar 연결"},
-            }]},
-            {"type": "context", "elements": [{
-                "type": "mrkdwn",
-                "text": f"버튼이 안 되면 앱 설정에 이 토큰을 붙여 넣어 주세요: `{token}`",
-            }]},
-            {"type": "context", "elements": [{
-                "type": "mrkdwn",
-                "text": f"앱이 없으면 <{DOWNLOAD_URL}|여기서 받아요>.",
-            }]},
+            kit.section("버튼을 누르면 PokeTokenBar가 YPoke에 연결돼요."),
+            kit.actions([kit.button("PokeTokenBar 연결", REGISTER_ACTION_ID, style="primary", url=link)]),
+            kit.context(f"버튼이 안 되면 앱 설정에 이 토큰을 붙여 넣어 주세요: `{token}`"),
+            kit.context(f"앱이 없으면 <{DOWNLOAD_URL}|여기서 받아요>."),
         ]
 
     def _record(self, user_id: str) -> Reply:
@@ -450,12 +442,7 @@ class CommandHandler:
             intro = f"{self._label(opponent_id)}과(와)의 대결이 기다리고 있어요."
         else:
             intro = f"<@{challenger_id}>님이 YPoke 대결을 신청했어요."
-        blocks = [
-            {"type": "section", "text": {"type": "mrkdwn", "text": intro}},
-            *self._link_blocks(token),
-            {"type": "context", "elements": [{"type": "mrkdwn", "text": NETWORK_NOTE}]},
-        ]
-        return DirectMessage(user_id, intro, blocks)
+        return DirectMessage(user_id, intro, [kit.section(intro), *self._link_blocks(token), kit.context(NETWORK_NOTE)])
 
     def _prepare(self, challenger_id: str, opponent_id: str, size: int) -> _Match | None:
         """Both sides' first `size` combatants, or None while a side has no upload. Raises OSError when PokéAPI is down."""
@@ -589,18 +576,11 @@ def result_blocks(reply: Reply) -> list[dict]:
     blocks: list[dict] = []
     context = [line for line in (reply.echo, card.note, PRACTICE_NOTE if card.practice else None, *card.rules) if line]
     if context:
-        blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": line} for line in context]})
-    header = {"type": "section", "text": {"type": "mrkdwn", "text": fit(
-        "\n".join([f"*{card.title}*", card.detail, *card.highlights]), SECTION_TEXT_LIMIT)}}
-    if card.sprite:
-        header["accessory"] = {"type": "image", "image_url": card.sprite[0], "alt_text": card.sprite[1]}
-    blocks.append(header)
-    blocks.append({"type": "section", "fields": [
-        {"type": "mrkdwn", "text": fit(column, FIELD_TEXT_LIMIT)} for column in card.columns]})
-    blocks.append({"type": "actions", "elements": [{
-        "type": "button", "action_id": REMATCH_ACTION_ID, "value": reply.rematch,
-        "text": {"type": "plain_text", "text": REMATCH_LABEL},
-    }]})
+        blocks.append(kit.context(*context))
+    blocks.append(kit.section(fit("\n".join([f"*{card.title}*", card.detail, *card.highlights]), SECTION_TEXT_LIMIT),
+                              accessory=kit.image(*card.sprite) if card.sprite else None))
+    blocks.append(kit.section(fields=[fit(column, FIELD_TEXT_LIMIT) for column in card.columns]))
+    blocks.append(kit.actions([kit.button(REMATCH_LABEL, REMATCH_ACTION_ID, reply.rematch)]))
     return blocks
 
 
@@ -623,7 +603,7 @@ def log_messages(reply: Reply, pictures: Mapping[Matchup, dict] | None = None) -
     pictures = pictures or {}
     units: list[tuple[list[dict], list[dict], tuple[Matchup, ...]]] = []
     for index, entry in enumerate(card.log):
-        turn = {"type": "section", "text": {"type": "mrkdwn", "text": fit(entry, SECTION_TEXT_LIMIT)}}
+        turn = kit.section(fit(entry, SECTION_TEXT_LIMIT))
         matchup = card.log_matchups[index] if index < len(card.log_matchups) else None
         if matchup is None:
             units.append(([turn], [turn], ()))
@@ -644,11 +624,8 @@ def log_messages(reply: Reply, pictures: Mapping[Matchup, dict] | None = None) -
 
 def matchup_line(matchup: Matchup) -> dict:
     """A matchup without its picture: both small sprites around the names."""
-    return {"type": "context", "elements": [
-        {"type": "image", "image_url": matchup.left.url, "alt_text": matchup.left.name},
-        {"type": "mrkdwn", "text": matchup.caption},
-        {"type": "image", "image_url": matchup.right.url, "alt_text": matchup.right.name},
-    ]}
+    return kit.context(kit.image(matchup.left.url, matchup.left.name), matchup.caption,
+                       kit.image(matchup.right.url, matchup.right.name))
 
 
 def message_blocks(reply: Reply, visible: bool) -> list[dict] | None:
@@ -659,8 +636,8 @@ def message_blocks(reply: Reply, visible: bool) -> list[dict] | None:
         text = "\n".join(filter(None, (reply.echo, reply.text))) if visible else reply.text
         return image_blocks(text, reply.image_url)
     lead = "\n".join(filter(None, (reply.echo if visible else None, reply.lead)))
-    blocks = image_blocks(lead, reply.image_url) or [{"type": "section", "text": {"type": "mrkdwn", "text": fit(lead, SECTION_TEXT_LIMIT)}}]
-    blocks.append({"type": "section", "fields": [{"type": "mrkdwn", "text": field} for field in reply.fields]})
+    blocks = image_blocks(lead, reply.image_url) or [kit.section(fit(lead, SECTION_TEXT_LIMIT))]
+    blocks.append(kit.section(fields=reply.fields))
     return blocks
 
 
@@ -668,10 +645,7 @@ def image_blocks(text: str, image_url: str | None) -> list[dict] | None:
     """`text` with a thumbnail beside it, or None when there is no image and the plain text is enough."""
     if image_url is None:
         return None
-    return [{
-        "type": "section", "text": {"type": "mrkdwn", "text": fit(text, SECTION_TEXT_LIMIT)},
-        "accessory": {"type": "image", "image_url": image_url, "alt_text": "대표 포켓몬"},
-    }]
+    return [kit.section(fit(text, SECTION_TEXT_LIMIT), accessory=kit.image(image_url, "대표 포켓몬"))]
 
 
 def fit(text: str, limit: int) -> str:

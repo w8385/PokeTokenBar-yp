@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Protocol
 
+from ypoke import blocks as kit
 from ypoke.clock import Clock
 from ypoke.dex import sprite_url
 from ypoke.messages import DirectMessage
@@ -165,11 +166,8 @@ class MiracleService:
         if not entries:
             return MiracleReply(NOTHING_TO_GIVE, ok=False)
         text = f"<@{offer.poster_id}>님의 {entry_label(offer.give)}과(와) 바꿀 내 포켓몬을 골라 주세요. 고르면 바로 교환돼요."
-        blocks = [
-            {"type": "section", "text": {"type": "mrkdwn", "text": text}},
-            picker_block(PICK_ACTION_ID, offer.id, pick_options(offer.id, entries)),
-        ]
-        return MiracleReply(text, blocks=blocks)
+        return MiracleReply(text, blocks=[kit.section(text),
+                                          picker_block(PICK_ACTION_ID, offer.id, pick_options(offer.id, entries))])
 
     def pick(self, user_id: str, offer_id: str, individual_id: str) -> MiracleReply:
         """The acceptor's pick finishes the trade at once; the first completed pick wins."""
@@ -286,13 +284,9 @@ def open_card(offer: Offer) -> tuple[str, list[dict]]:
     text = f"<@{offer.poster_id}>님이 미라클 교환에 {entry_label(offer.give)}을(를) 올렸어요"
     return text, [
         _sprite_section(text, offer.give),
-        {"type": "context", "elements": [{"type": "mrkdwn", "text": OPEN_NOTE}]},
-        {"type": "actions", "elements": [
-            {"type": "button", "style": "primary", "action_id": ACCEPT_ACTION_ID, "value": offer.id,
-             "text": {"type": "plain_text", "text": ACCEPT_LABEL}},
-            {"type": "button", "action_id": CANCEL_ACTION_ID, "value": offer.id,
-             "text": {"type": "plain_text", "text": CANCEL_LABEL}},
-        ]},
+        kit.context(OPEN_NOTE),
+        kit.actions([kit.button(ACCEPT_LABEL, ACCEPT_ACTION_ID, offer.id, style="primary"),
+                     kit.button(CANCEL_LABEL, CANCEL_ACTION_ID, offer.id)]),
     ]
 
 
@@ -302,10 +296,8 @@ def done_card(offer: Offer, acceptor_id: str, back: dict) -> tuple[str, list[dic
     return text, [
         _sprite_section(f"*미라클 교환 완료*\n<@{offer.poster_id}>님의 {entry_label(offer.give)} ↔ "
                         f"<@{acceptor_id}>님의 {entry_label(back)}", offer.give),
-        {"type": "context", "elements": [
-            {"type": "image", "image_url": sprite_url(back["pokemon_id"], back["shiny"]), "alt_text": back["name"]},
-            {"type": "mrkdwn", "text": f"<@{acceptor_id}>님이 {entry_label(back)}을(를) 보냈어요"},
-        ]},
+        kit.context(kit.image(sprite_url(back["pokemon_id"], back["shiny"]), back["name"]),
+                    f"<@{acceptor_id}>님이 {entry_label(back)}을(를) 보냈어요"),
     ]
 
 
@@ -320,11 +312,7 @@ def ended_card(offer: Offer, status: str) -> tuple[str, list[dict]]:
 
 
 def _sprite_section(text: str, entry: dict) -> dict:
-    return {
-        "type": "section", "text": {"type": "mrkdwn", "text": text},
-        "accessory": {"type": "image", "image_url": sprite_url(entry["pokemon_id"], entry["shiny"]),
-                      "alt_text": entry["name"]},
-    }
+    return kit.section(text, accessory=kit.image(sprite_url(entry["pokemon_id"], entry["shiny"]), entry["name"]))
 
 
 def _refusal(offer: Offer | None, user_id: str) -> MiracleReply | None:
