@@ -2010,6 +2010,8 @@ read_when:
   other interaction did, but a 13 KB and a 61 KB answer pass the same client intact on a local TLS endpoint and 14 of the
   older 16 drops had no interaction at all. Options answers are now capped at 30 (about 4 KB) as the cheap experiment; read
   the `slack asked to disconnect` / `socket closed` lines after the next drop before blaming the payload or the adapter.
+- **An answer to a hit reads the HP the hit took, counting a Substitute's share, and does nothing when that is 0.** Drain and recoil used `max(1, …)` on a total that skipped the doll, so Disguise, Ice Face and Endure at 1 HP gave exactly 1 HP and a Substitute gave 1 whatever it took. Substitute's `takes_hit` now returns what it took (`volley.absorbed`), and `test_ability_forms.py` covers each path.
+- Latent: `volley.lost` (Innards Out) is the raw damage when a `takes_hit` branch handled the last hit. It is unreachable while no ability has both `takes_hit` and `on_fainted_by` and no state's `takes_hit` can knock its holder out.
 
 ## Tests and the user's desktop
 
