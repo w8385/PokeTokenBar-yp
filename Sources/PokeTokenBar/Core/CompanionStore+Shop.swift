@@ -3,11 +3,6 @@ import Foundation
 extension CompanionStore {
     // MARK: 상점 (재화 = 사용한 토큰)
 
-    /// 상점에서 쓸 수 있는 토큰(재화) = 실사용 누적 − 상점 지출 누적. 성장 미터(usedSinceInstall)는
-    /// 여기선 읽기만 — 구매는 spentTokens 만 올려 잔액을 깎는다(진화 진행·오늘/주/월 통계 무영향).
-    /// Time-mode credit is wallet income too; it never enters `usedSinceInstall`.
-    var availableTokens: Int { max(0, state.usedSinceInstall + state.timeCredit - state.spentTokens) }
-
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
         ItemKind.allCases
@@ -99,19 +94,18 @@ extension CompanionStore {
     @discardableResult
     func buy(_ kind: ItemKind, count: Int = 1) -> Bool {
         guard count >= 1, count <= maxBuyCount(kind), let price = price(of: kind) else { return false }
-        completePurchase(key: kind.rawValue, count: count, cost: price * count)
-        return true
+        return completePurchase(key: kind.rawValue, count: count, cost: price * count)
     }
 
     // MARK: 구매 되돌리기 (확인창 대신 5초 안에 취소)
 
-
-    func completePurchase(key: String, count: Int, cost: Int) {
-        state.spentTokens += cost
+    func completePurchase(key: String, count: Int, cost: Int) -> Bool {
+        guard spend(cost) else { return false }
         state.inventory[key, default: 0] += count
         purchaseReceipts[key] = PurchaseReceipt(inventoryKey: key, count: count, cost: cost,
                                                 expiresAt: clock().addingTimeInterval(PurchaseReceipt.window))
         save()
+        return true
     }
 
     /// Undo is open while the window lasts and the bought copies are still in the bag — an item that was
@@ -125,7 +119,7 @@ extension CompanionStore {
     @discardableResult
     func undoPurchase(_ receipt: PurchaseReceipt) -> Bool {
         guard canUndo(receipt) else { return false }
-        state.spentTokens = max(0, state.spentTokens - receipt.cost)
+        refund(receipt.cost)
         let left = state.inventory[receipt.inventoryKey, default: 0] - receipt.count
         state.inventory[receipt.inventoryKey] = left > 0 ? left : nil
         purchaseReceipts[receipt.inventoryKey] = nil

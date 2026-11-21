@@ -42,6 +42,7 @@ CLASSES=(
   GymTermGuardTests                # no Korean UI string says 도장
   RarityNameTests                  # tier names in every language and the READMEs
   RemoteOpsContractTests           # remote op kinds, actions, reasons match bot/contract/remote_ops.json
+  WalletLedgerScanTests            # spentTokens is written only by CompanionStore.spend and refund
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).
