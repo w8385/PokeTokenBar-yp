@@ -12,6 +12,7 @@ from ypoke.effects import hooks
 
 TACKLE, SURF, EMBER, GROWL = attack(33), attack(57), attack(52), attack(45)
 KINGS_SHIELD, AURA_WHEEL, CLOSE_COMBAT, LICK = attack(588), attack(783), attack(370), attack(122)
+GIGA_DRAIN, DOUBLE_EDGE = attack(202), attack(38)
 FORM_BASE = BaseStats(80, 150, 50, 150, 50, 100)
 NO_CRIT = 0.5
 WEATHER_FORMS = ("sunny", "rainy", "snowy")
@@ -112,6 +113,36 @@ def test_disguise_takes_the_first_hit_for_an_eighth_of_its_hp(kinds, disguised):
     strike(foe, fighter, arena)
     assert before - fighter.hp > fighter.max_hp // abilities.DISGUISE_SHARE
     assert sum(isinstance(event, FormShift) for event in arena.log) == disguised
+
+
+@pytest.mark.parametrize(("ability", "kinds", "move"), [
+    ("disguise", ("busted",), GIGA_DRAIN), ("disguise", ("busted",), DOUBLE_EDGE), ("ice-face", BOTH_FACES, DOUBLE_EDGE),
+])
+def test_a_hit_the_holders_form_takes_neither_drains_nor_recoils(ability, kinds, move):
+    fighter, foe, arena = holder(ability, *kinds)
+    foe.hp = foe.max_hp // 2
+    strike(foe, fighter, arena, move)
+    assert fighter.combatant.types == ("dragon",) and foe.hp == foe.max_hp // 2
+
+
+@pytest.mark.parametrize("move", [GIGA_DRAIN, DOUBLE_EDGE])
+def test_a_hit_endured_at_one_hp_neither_drains_nor_recoils(move):
+    fighter, foe, arena = holder(None)
+    fighter.hp, fighter.volatiles["endure"] = 1, True
+    foe.hp = foe.max_hp // 2
+    strike(foe, fighter, arena, move)
+    assert fighter.hp == 1 and foe.hp == foe.max_hp // 2
+
+
+@pytest.mark.parametrize(("move", "share"), [(GIGA_DRAIN, lambda doll: doll // 2),
+                                             (DOUBLE_EDGE, lambda doll: -(doll * 33 // 100))])
+def test_drain_and_recoil_count_what_a_substitute_took_up_to_its_hp(move, share):
+    fighter, foe, arena = holder(None)
+    foe.hp = before = foe.max_hp // 2
+    doll = fighter.volatiles["substitute"] = fighter.max_hp // 4
+    strike(foe, fighter, arena, move)
+    assert "substitute" not in fighter.volatiles and fighter.hp == fighter.max_hp
+    assert foe.hp - before == share(doll)
 
 
 @pytest.mark.parametrize(("move", "kinds", "blocked"), [

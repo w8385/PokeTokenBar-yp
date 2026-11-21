@@ -168,7 +168,8 @@ HOOKS = {
     "takes_more": "state: multiplies the damage a foe's move deals its holder, last (Glaive Rush)",
     "infiltrates": "ability: its holder's moves pass screens, Safeguard and Mist",
     "resists": "item: halves the first hit and is used up",
-    "takes_hit": "state, then ability: takes a hit's damage in its holder's place (Substitute, Disguise)",
+    "takes_hit": "state, then ability: takes a hit's damage in its holder's place (Substitute, Disguise); a state "
+                 "returns the damage it took, None when the hit passes it",
     "spares": "move: a hit that would knock its target out leaves it 1 HP (False Swipe)",
     "blocks_ohko": "ability: an OHKO move fails on its holder (Sturdy)",
     "endures":"state, then ability, then item: a hit that would knock its holder out leaves it 1 HP",
