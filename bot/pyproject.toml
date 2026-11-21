@@ -14,3 +14,6 @@ dev = ["pytest>=8"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+faulthandler_timeout = 60
+faulthandler_exit_on_timeout = true
+filterwarnings = ["error::pytest.PytestUnhandledThreadExceptionWarning"]
