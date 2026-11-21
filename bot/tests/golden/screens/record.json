@@ -1,0 +1,10 @@
+[
+ [
+  "respond",
+  {
+   "blocks": null,
+   "response_type": "in_channel",
+   "text": "<@U0000000A> 님이 `/전적` <@U0000000B> 을(를) 썼어요\n<@U0000000B> 전적: 0승 0패"
+  }
+ ]
+]

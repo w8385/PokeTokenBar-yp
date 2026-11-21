@@ -1,0 +1,11 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": null,
+   "channel": "CBATTLE",
+   "text": "<@U0000000A> 전적: 0승 0패",
+   "thread_ts": "1.6"
+  }
+ ]
+]

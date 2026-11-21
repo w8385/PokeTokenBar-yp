@@ -1,0 +1,11 @@
+[
+ [
+  "respond",
+  {
+   "blocks": null,
+   "replace_original": false,
+   "response_type": "ephemeral",
+   "text": "내가 올린 미라클 교환에는 내 포켓몬을 낼 수 없어요."
+  }
+ ]
+]

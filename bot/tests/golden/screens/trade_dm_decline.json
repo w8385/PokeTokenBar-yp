@@ -1,0 +1,17 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": null,
+   "channel": "U0000000A",
+   "text": "<@U0000000B>님이 교환 피카츄 Lv.30 건을 거절했어요."
+  }
+ ],
+ [
+  "respond",
+  {
+   "replace_original": true,
+   "text": "교환을 거절했어요."
+  }
+ ]
+]

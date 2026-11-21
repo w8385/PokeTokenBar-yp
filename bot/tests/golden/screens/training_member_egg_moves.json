@@ -1,0 +1,330 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*트레이닝* · 피카츄 Lv.42\n노력 · 정전기\n개체값 H10 A20 B31 C5 D6 S7",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p2#0",
+     "elements": [
+      {
+       "action_id": "train_nature",
+       "options": [
+        {
+         "text": {
+          "text": "외로움",
+          "type": "plain_text"
+         },
+         "value": "p2|lonely"
+        },
+        {
+         "text": {
+          "text": "용감",
+          "type": "plain_text"
+         },
+         "value": "p2|brave"
+        },
+        {
+         "text": {
+          "text": "고집",
+          "type": "plain_text"
+         },
+         "value": "p2|adamant"
+        },
+        {
+         "text": {
+          "text": "개구쟁이",
+          "type": "plain_text"
+         },
+         "value": "p2|naughty"
+        },
+        {
+         "text": {
+          "text": "대담",
+          "type": "plain_text"
+         },
+         "value": "p2|bold"
+        },
+        {
+         "text": {
+          "text": "온순",
+          "type": "plain_text"
+         },
+         "value": "p2|docile"
+        },
+        {
+         "text": {
+          "text": "무사태평",
+          "type": "plain_text"
+         },
+         "value": "p2|relaxed"
+        },
+        {
+         "text": {
+          "text": "장난꾸러기",
+          "type": "plain_text"
+         },
+         "value": "p2|impish"
+        },
+        {
+         "text": {
+          "text": "촐랑",
+          "type": "plain_text"
+         },
+         "value": "p2|lax"
+        },
+        {
+         "text": {
+          "text": "겁쟁이",
+          "type": "plain_text"
+         },
+         "value": "p2|timid"
+        },
+        {
+         "text": {
+          "text": "성급",
+          "type": "plain_text"
+         },
+         "value": "p2|hasty"
+        },
+        {
+         "text": {
+          "text": "성실",
+          "type": "plain_text"
+         },
+         "value": "p2|serious"
+        },
+        {
+         "text": {
+          "text": "명랑",
+          "type": "plain_text"
+         },
+         "value": "p2|jolly"
+        },
+        {
+         "text": {
+          "text": "천진난만",
+          "type": "plain_text"
+         },
+         "value": "p2|naive"
+        },
+        {
+         "text": {
+          "text": "조심",
+          "type": "plain_text"
+         },
+         "value": "p2|modest"
+        },
+        {
+         "text": {
+          "text": "의젓",
+          "type": "plain_text"
+         },
+         "value": "p2|mild"
+        },
+        {
+         "text": {
+          "text": "냉정",
+          "type": "plain_text"
+         },
+         "value": "p2|quiet"
+        },
+        {
+         "text": {
+          "text": "수줍음",
+          "type": "plain_text"
+         },
+         "value": "p2|bashful"
+        },
+        {
+         "text": {
+          "text": "덜렁",
+          "type": "plain_text"
+         },
+         "value": "p2|rash"
+        },
+        {
+         "text": {
+          "text": "차분",
+          "type": "plain_text"
+         },
+         "value": "p2|calm"
+        },
+        {
+         "text": {
+          "text": "얌전",
+          "type": "plain_text"
+         },
+         "value": "p2|gentle"
+        },
+        {
+         "text": {
+          "text": "건방",
+          "type": "plain_text"
+         },
+         "value": "p2|sassy"
+        },
+        {
+         "text": {
+          "text": "신중",
+          "type": "plain_text"
+         },
+         "value": "p2|careful"
+        },
+        {
+         "text": {
+          "text": "변덕",
+          "type": "plain_text"
+         },
+         "value": "p2|quirky"
+        }
+       ],
+       "placeholder": {
+        "text": "민트로 성격 바꾸기 (가방 ×1)",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      },
+      {
+       "action_id": "train_cap",
+       "options": [
+        {
+         "text": {
+          "text": "HP",
+          "type": "plain_text"
+         },
+         "value": "p2|hp"
+        },
+        {
+         "text": {
+          "text": "공격",
+          "type": "plain_text"
+         },
+         "value": "p2|attack"
+        },
+        {
+         "text": {
+          "text": "특수공격",
+          "type": "plain_text"
+         },
+         "value": "p2|special-attack"
+        },
+        {
+         "text": {
+          "text": "특수방어",
+          "type": "plain_text"
+         },
+         "value": "p2|special-defense"
+        },
+        {
+         "text": {
+          "text": "스피드",
+          "type": "plain_text"
+         },
+         "value": "p2|speed"
+        }
+       ],
+       "placeholder": {
+        "text": "은색병뚜껑 (가방 ×2)",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      },
+      {
+       "action_id": "train_gold_cap",
+       "text": {
+        "text": "금색병뚜껑 (가방 ×1)",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "block_id": "p2#1",
+     "elements": [
+      {
+       "action_id": "train_patch",
+       "text": {
+        "text": "특성패치 → 피뢰침 (가방 ×1)",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      },
+      {
+       "action_id": "train_herb",
+       "text": {
+        "text": "흉내허브 (400토큰)",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "block_id": "p2#2",
+     "elements": [
+      {
+       "action_id": "train_moves",
+       "text": {
+        "text": "기술 바꾸기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      },
+      {
+       "action_id": "train_back",
+       "text": {
+        "text": "다른 포켓몬",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "쓸 수 있는 토큰 500",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "가방: 민트 ×1 · 특성캡슐 ×1 · 특성패치 ×1 · 은색병뚜껑 ×2 · 금색병뚜껑 ×1",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "특성캡슐·특성패치·병뚜껑·폼 도구·연결의끈은 가방에 있어야 써요. 없으면 `/상점`에서 사 주세요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "트레이닝은 동료의 `/대결`에 바로 쓰이고, 앱은 다음에 회사에서 동기화할 때 같은 값으로 적용해요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "replace_original": true,
+   "response_type": "ephemeral",
+   "text": "*트레이닝* · 피카츄 Lv.42"
+  }
+ ]
+]

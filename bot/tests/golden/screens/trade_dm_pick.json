@@ -1,0 +1,10 @@
+[
+ [
+  "respond",
+  {
+   "replace_original": false,
+   "response_type": "ephemeral",
+   "text": "꼬부기 Lv.30을(를) 골랐어요. 수락을 누르면 상대 확인을 기다려요."
+  }
+ ]
+]

@@ -1,0 +1,519 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*내 대결 파티* (6마리)",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "1. 피카츄 Lv.20\n    성격 없음 · 특성 없음 · 도구 없음\n    기술: 레벨에 맞는 기본 기술",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p1",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "바꾸기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_moves",
+       "text": {
+        "text": "기술",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p1"
+      },
+      {
+       "action_id": "lineup_item",
+       "initial_option": {
+        "text": {
+         "text": "도구 없음",
+         "type": "plain_text"
+        },
+        "value": "p1|"
+       },
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "도구 검색·고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_order",
+       "options": [
+        {
+         "text": {
+          "text": "아래로",
+          "type": "plain_text"
+         },
+         "value": "down|p1"
+        },
+        {
+         "text": {
+          "text": "빼기",
+          "type": "plain_text"
+         },
+         "value": "drop|p1"
+        }
+       ],
+       "type": "overflow"
+      },
+      {
+       "action_id": "train_open",
+       "text": {
+        "text": "트레이닝",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p1"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "text": {
+      "text": "2. 꼬부기 Lv.20\n    성격 없음 · 특성 없음 · 도구 없음\n    기술: 레벨에 맞는 기본 기술",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p2",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "바꾸기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_moves",
+       "text": {
+        "text": "기술",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      },
+      {
+       "action_id": "lineup_item",
+       "initial_option": {
+        "text": {
+         "text": "도구 없음",
+         "type": "plain_text"
+        },
+        "value": "p2|"
+       },
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "도구 검색·고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_order",
+       "options": [
+        {
+         "text": {
+          "text": "위로",
+          "type": "plain_text"
+         },
+         "value": "up|p2"
+        },
+        {
+         "text": {
+          "text": "아래로",
+          "type": "plain_text"
+         },
+         "value": "down|p2"
+        },
+        {
+         "text": {
+          "text": "빼기",
+          "type": "plain_text"
+         },
+         "value": "drop|p2"
+        }
+       ],
+       "type": "overflow"
+      },
+      {
+       "action_id": "train_open",
+       "text": {
+        "text": "트레이닝",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "text": {
+      "text": "3. 어니부기 Lv.20\n    성격 없음 · 특성 없음 · 도구 없음\n    기술: 레벨에 맞는 기본 기술",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p3",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "바꾸기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_moves",
+       "text": {
+        "text": "기술",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p3"
+      },
+      {
+       "action_id": "lineup_item",
+       "initial_option": {
+        "text": {
+         "text": "도구 없음",
+         "type": "plain_text"
+        },
+        "value": "p3|"
+       },
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "도구 검색·고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_order",
+       "options": [
+        {
+         "text": {
+          "text": "위로",
+          "type": "plain_text"
+         },
+         "value": "up|p3"
+        },
+        {
+         "text": {
+          "text": "아래로",
+          "type": "plain_text"
+         },
+         "value": "down|p3"
+        },
+        {
+         "text": {
+          "text": "빼기",
+          "type": "plain_text"
+         },
+         "value": "drop|p3"
+        }
+       ],
+       "type": "overflow"
+      },
+      {
+       "action_id": "train_open",
+       "text": {
+        "text": "트레이닝",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p3"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "text": {
+      "text": "4. 거북왕 Lv.20\n    성격 없음 · 특성 없음 · 도구 없음\n    기술: 레벨에 맞는 기본 기술",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p4",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "바꾸기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_moves",
+       "text": {
+        "text": "기술",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p4"
+      },
+      {
+       "action_id": "lineup_item",
+       "initial_option": {
+        "text": {
+         "text": "도구 없음",
+         "type": "plain_text"
+        },
+        "value": "p4|"
+       },
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "도구 검색·고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_order",
+       "options": [
+        {
+         "text": {
+          "text": "위로",
+          "type": "plain_text"
+         },
+         "value": "up|p4"
+        },
+        {
+         "text": {
+          "text": "아래로",
+          "type": "plain_text"
+         },
+         "value": "down|p4"
+        },
+        {
+         "text": {
+          "text": "빼기",
+          "type": "plain_text"
+         },
+         "value": "drop|p4"
+        }
+       ],
+       "type": "overflow"
+      },
+      {
+       "action_id": "train_open",
+       "text": {
+        "text": "트레이닝",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p4"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "text": {
+      "text": "5. 라이츄 Lv.20\n    성격 없음 · 특성 없음 · 도구 없음\n    기술: 레벨에 맞는 기본 기술",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p5",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "바꾸기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_moves",
+       "text": {
+        "text": "기술",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p5"
+      },
+      {
+       "action_id": "lineup_item",
+       "initial_option": {
+        "text": {
+         "text": "도구 없음",
+         "type": "plain_text"
+        },
+        "value": "p5|"
+       },
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "도구 검색·고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_order",
+       "options": [
+        {
+         "text": {
+          "text": "위로",
+          "type": "plain_text"
+         },
+         "value": "up|p5"
+        },
+        {
+         "text": {
+          "text": "아래로",
+          "type": "plain_text"
+         },
+         "value": "down|p5"
+        },
+        {
+         "text": {
+          "text": "빼기",
+          "type": "plain_text"
+         },
+         "value": "drop|p5"
+        }
+       ],
+       "type": "overflow"
+      },
+      {
+       "action_id": "train_open",
+       "text": {
+        "text": "트레이닝",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p5"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "text": {
+      "text": "6. 피츄 Lv.20\n    성격 없음 · 특성 없음 · 도구 없음\n    기술: 레벨에 맞는 기본 기술",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p6",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "바꾸기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_moves",
+       "text": {
+        "text": "기술",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p6"
+      },
+      {
+       "action_id": "lineup_item",
+       "initial_option": {
+        "text": {
+         "text": "도구 없음",
+         "type": "plain_text"
+        },
+        "value": "p6|"
+       },
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "도구 검색·고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_order",
+       "options": [
+        {
+         "text": {
+          "text": "위로",
+          "type": "plain_text"
+         },
+         "value": "up|p6"
+        },
+        {
+         "text": {
+          "text": "빼기",
+          "type": "plain_text"
+         },
+         "value": "drop|p6"
+        }
+       ],
+       "type": "overflow"
+      },
+      {
+       "action_id": "train_open",
+       "text": {
+        "text": "트레이닝",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p6"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "한 종에 한 마리, 같은 도구는 한 마리만 들 수 있어요. 규칙에 걸리는 포켓몬·도구는 목록에 없어요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "바꾼 라인업은 동료의 `/대결`에 바로 쓰이고, 앱은 다음에 회사에서 동기화할 때 받아요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "response_type": "ephemeral",
+   "text": "*내 대결 파티* (6마리)\n회사에서 마지막으로 동기화: 11월 12일 18:30"
+  }
+ ]
+]

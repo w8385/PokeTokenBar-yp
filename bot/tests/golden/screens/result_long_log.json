@@ -1,0 +1,561 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "elements": [
+      {
+       "text": "<@U0000000A>님이 `/대결 <@U0000000B>`을 썼어요",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "<@U0000000B>: 같은 종은 한 마리만 나가요",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "accessory": {
+      "alt_text": "라이츄",
+      "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/26.png",
+      "type": "image"
+     },
+     "text": {
+      "text": "*<@U0000000A> 승리*\n3턴 만에 끝났어요\n결정타: 라이츄의 10만볼트",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "fields": [
+      {
+       "text": "*<@U0000000A>*\n피카츄 Lv.50\n라이츄 Lv.50",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "*<@U0000000B>*\n꼬부기 Lv.50",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "rematch",
+       "text": {
+        "text": "다시 붙기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "U0000000A:U0000000B:1:U0000000B"
+      }
+     ],
+     "type": "actions"
+    }
+   ],
+   "channel": "CBATTLE",
+   "text": "<@U0000000A>님이 `/대결 <@U0000000B>`을 썼어요\n<@U0000000A> 승리 · 3턴",
+   "thread_ts": null
+  }
+ ],
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "elements": [
+      {
+       "alt_text": "피카츄",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+       "type": "image"
+      },
+      {
+       "text": "🔵 피카츄 vs 🔴 꼬부기",
+       "type": "mrkdwn"
+      },
+      {
+       "alt_text": "꼬부기",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
+       "type": "image"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "text": {
+      "text": "*1턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*2턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*3턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*4턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*5턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*6턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*7턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*8턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*9턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*10턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*11턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*12턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*13턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*14턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*15턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*16턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*17턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*18턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*19턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*20턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "alt_text": "피카츄",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+       "type": "image"
+      },
+      {
+       "text": "🔵 피카츄 vs 🔴 꼬부기",
+       "type": "mrkdwn"
+      },
+      {
+       "alt_text": "꼬부기",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
+       "type": "image"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "text": {
+      "text": "*21턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*22턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*23턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*24턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*25턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*26턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*27턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*28턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*29턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*30턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*31턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*32턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*33턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*34턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*35턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*36턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*37턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*38턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*39턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*40턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "alt_text": "피카츄",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+       "type": "image"
+      },
+      {
+       "text": "🔵 피카츄 vs 🔴 꼬부기",
+       "type": "mrkdwn"
+      },
+      {
+       "alt_text": "꼬부기",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
+       "type": "image"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "text": {
+      "text": "*41턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*42턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*43턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*44턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*45턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*46턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*47턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "channel": "CBATTLE",
+   "text": "대결 로그 1/2",
+   "thread_ts": "9.1"
+  }
+ ],
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*48턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*49턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*50턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*51턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*52턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*53턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*54턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*55턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*56턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*57턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*58턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*59턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*60턴*\n피카츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "channel": "CBATTLE",
+   "text": "대결 로그 2/2",
+   "thread_ts": "9.1"
+  }
+ ]
+]

@@ -1,0 +1,44 @@
+[
+ [
+  "ack",
+  {
+   "options": [
+    {
+     "text": {
+      "text": "전기쇼크 (Lv.1) · 레벨업",
+      "type": "plain_text"
+     },
+     "value": "84"
+    },
+    {
+     "text": {
+      "text": "전광석화 (Lv.1) · 레벨업",
+      "type": "plain_text"
+     },
+     "value": "98"
+    },
+    {
+     "text": {
+      "text": "스파크 (Lv.20) · 레벨업",
+      "type": "plain_text"
+     },
+     "value": "209"
+    },
+    {
+     "text": {
+      "text": "아이언테일 (Lv.28) · 레벨업",
+      "type": "plain_text"
+     },
+     "value": "231"
+    },
+    {
+     "text": {
+      "text": "10만볼트 (Lv.36) · 레벨업",
+      "type": "plain_text"
+     },
+     "value": "85"
+    }
+   ]
+  }
+ ]
+]

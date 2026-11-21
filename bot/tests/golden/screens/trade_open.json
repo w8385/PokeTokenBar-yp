@@ -1,0 +1,91 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*교환*\n내놓을 박스 포켓몬을 고르세요. 졸업했고, 키우는 자리·대결 라인업에 없고, 다른 교환에 걸리지 않은 포켓몬만 나와요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "to:",
+     "elements": [
+      {
+       "action_id": "offer_give",
+       "options": [
+        {
+         "text": {
+          "text": "피카츄 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "to:|b2"
+        },
+        {
+         "text": {
+          "text": "발챙이 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "to:|b3"
+        },
+        {
+         "text": {
+          "text": "콘치 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "to:|b4"
+        }
+       ],
+       "placeholder": {
+        "text": "내가 내놓을 포켓몬 고르기",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "text": {
+      "text": "*진행 중인 교환*",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "accessory": {
+      "action_id": "offer_cancel",
+      "text": {
+       "text": "취소",
+       "type": "plain_text"
+      },
+      "type": "button",
+      "value": "00000000000000080000000000000008"
+     },
+     "text": {
+      "text": "내 고라파덕 Lv.30 → 밥님 · 상대가 고르는 중이에요",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "text": "상대가 DM에서 돌려줄 포켓몬을 고르고 수락하면 나에게 확인 DM이 와요. 제안은 24시간 뒤 사라지고, 받은 포켓몬은 앱이 회사에서 동기화할 때 들어와요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "response_type": "ephemeral",
+   "text": "*교환*"
+  }
+ ]
+]

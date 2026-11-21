@@ -1,0 +1,19 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "지금은 미라클 교환을 쓸 수 없어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "replace_original": false,
+   "response_type": "ephemeral",
+   "text": "지금은 미라클 교환을 쓸 수 없어요."
+  }
+ ]
+]

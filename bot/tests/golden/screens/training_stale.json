@@ -1,0 +1,19 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "그새 포켓몬이 바뀌었어요. `/트레이닝`을 다시 열어 주세요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "replace_original": false,
+   "response_type": "ephemeral",
+   "text": "그새 포켓몬이 바뀌었어요. `/트레이닝`을 다시 열어 주세요."
+  }
+ ]
+]

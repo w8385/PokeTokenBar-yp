@@ -1,0 +1,30 @@
+[
+ [
+  "ack",
+  {
+   "options": [
+    {
+     "text": {
+      "text": "[파티] 야생몬 Lv.50",
+      "type": "plain_text"
+     },
+     "value": "p1"
+    },
+    {
+     "text": {
+      "text": "[파티] 피카츄 Lv.42",
+      "type": "plain_text"
+     },
+     "value": "p2"
+    },
+    {
+     "text": {
+      "text": "고라파덕 Lv.30 대담",
+      "type": "plain_text"
+     },
+     "value": "b1"
+    }
+   ]
+  }
+ ]
+]

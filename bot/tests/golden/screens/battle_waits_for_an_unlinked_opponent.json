@@ -1,0 +1,75 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "<@U0000000A>님이 YPoke 대결을 신청했어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "버튼을 누르면 PokeTokenBar가 YPoke에 연결돼요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "open_poketokenbar",
+       "style": "primary",
+       "text": {
+        "text": "PokeTokenBar 연결",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "url": "poketokenbar://ypoke-register?token=token-4"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "버튼이 안 되면 앱 설정에 이 토큰을 붙여 넣어 주세요: `token-4`",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "elements": [
+      {
+       "text": "앱이 없으면 <https://github.com/w8385/PokeTokenBar-yp/releases/latest|여기서 받아요>.",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "elements": [
+      {
+       "text": "포켓몬은 앱이 회사 네트워크에서 한 번 켜져 있어야 올라가요. 올라오면 대결이 바로 열려요(24시간 안).",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "channel": "U0000000C",
+   "text": "<@U0000000A>님이 YPoke 대결을 신청했어요."
+  }
+ ],
+ [
+  "respond",
+  {
+   "blocks": null,
+   "response_type": "in_channel",
+   "text": "<@U0000000A> 님이 `/대결` <@U0000000C> 을(를) 썼어요\n<@U0000000C>님은 아직 YPoke에 포켓몬이 없어서 연결 안내를 DM으로 보냈어요. 준비되면 이 대결 결과를 여기에 올릴게요. 24시간이 지나면 취소돼요."
+  }
+ ]
+]

@@ -1,0 +1,62 @@
+[
+ [
+  "card",
+  {
+   "blocks": [
+    {
+     "accessory": {
+      "alt_text": "발챙이",
+      "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/60.png",
+      "type": "image"
+     },
+     "text": {
+      "text": "<@U0000000A>님이 미라클 교환에서 발챙이 Lv.30을(를) 내렸어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "text": "<@U0000000A>님이 미라클 교환에서 발챙이 Lv.30을(를) 내렸어요."
+  }
+ ],
+ [
+  "card",
+  {
+   "blocks": [
+    {
+     "accessory": {
+      "alt_text": "발챙이",
+      "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/60.png",
+      "type": "image"
+     },
+     "text": {
+      "text": "<@U0000000A>님이 올린 발챙이 Lv.30을(를) 지금 교환할 수 없어서 미라클 교환이 닫혔어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "text": "<@U0000000A>님이 올린 발챙이 Lv.30을(를) 지금 교환할 수 없어서 미라클 교환이 닫혔어요."
+  }
+ ],
+ [
+  "card",
+  {
+   "blocks": [
+    {
+     "accessory": {
+      "alt_text": "발챙이",
+      "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/60.png",
+      "type": "image"
+     },
+     "text": {
+      "text": "<@U0000000A>님의 미라클 교환 발챙이 Lv.30은(는) 24시간이 지나 끝났어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "text": "<@U0000000A>님의 미라클 교환 발챙이 Lv.30은(는) 24시간이 지나 끝났어요."
+  }
+ ]
+]

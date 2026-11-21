@@ -1,0 +1,9 @@
+[
+ [
+  "respond",
+  {
+   "response_type": "ephemeral",
+   "text": "대결 봇에서 오류가 났어요. 잠시 뒤 다시 해 주세요."
+  }
+ ]
+]

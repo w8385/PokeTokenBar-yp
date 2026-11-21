@@ -1,0 +1,19 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "올린 사람이 내린 미라클 교환이에요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "replace_original": false,
+   "response_type": "ephemeral",
+   "text": "올린 사람이 내린 미라클 교환이에요."
+  }
+ ]
+]
