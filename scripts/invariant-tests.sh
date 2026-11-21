@@ -63,6 +63,7 @@ METHODS=(
   AntigravityUsageTests/testEntriesWithoutRootsGoesThroughResolvedRoots
   CredentialSwitchCacheTests/testAntigravityUserRefreshAlsoBypassesStillValidCache
   SaveTransferTests/testEveryCompanionStateFieldIsClassifiedForTransfer
+  SaveFormatPinTests/testTheFixtureSetsEveryField
   GymModelTests/testGymViewsNeverShowTheBotsRegionName
   GymModelTests/testRegionNamesFollowTheAppLanguageNotTheBotsKoreanName
   # Read the bot's caps from bot/ypoke, so a bot-only change can break them.
