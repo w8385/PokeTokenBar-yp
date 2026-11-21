@@ -58,6 +58,24 @@ def _element(element: dict) -> list[str]:
         problems.append(f"overflow has {len(element['options'])} options")
     if kind in ("static_select", "multi_static_select"):
         problems += _choices(element)
+    if kind in ("external_select", "multi_external_select"):
+        problems += _typed_choices(element)
+    return problems
+
+
+def _typed_choices(select: dict) -> list[str]:
+    """A select whose options come from an options request: no inline options, and its picked options are well formed."""
+    problems = []
+    if "options" in select or "option_groups" in select:
+        problems.append("inline options on a typed-search select")
+    if not isinstance(select.get("min_query_length"), int):
+        problems.append("min_query_length missing")
+    initial = [*select.get("initial_options", []), *([select["initial_option"]] if "initial_option" in select else [])]
+    if len(initial) > select.get("max_selected_items", 1):
+        problems.append(f"{len(initial)} initial options over max_selected_items")
+    for option in initial:
+        if len(option["text"]["text"]) > MAX_OPTION_TEXT or len(option["value"]) > MAX_OPTION_VALUE:
+            problems.append(f"initial option {option['value']!r} too long")
     return problems
 
 

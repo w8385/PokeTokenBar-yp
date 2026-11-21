@@ -114,6 +114,25 @@ class LineupEditor:
         options = self._swap_options(view, block_id)
         return [option for option in options if all(word in option["text"]["text"].casefold() for word in words)][:PICKER_LIMIT]
 
+    def move_options(self, user_id: str, block_id: str, query: str) -> list[dict]:
+        """The moves menu's options for the party member `block_id`."""
+        view = self._remote.view(user_id)
+        member = _party_member(view, block_id) if view is not None and editable(view) else None
+        learnable = self._learnable(view, member) if member else None
+        if not learnable:
+            return []
+        return move_options(learnable, member.get("moves", []), query)
+
+    def item_options(self, user_id: str, block_id: str, query: str) -> list[dict]:
+        """The held-item menu's options for the party member `block_id`: `도구 없음` first whatever is typed."""
+        view = self._remote.view(user_id)
+        member = _party_member(view, block_id) if view is not None and editable(view) else None
+        if member is None:
+            return []
+        words = query.casefold().split()
+        none, *rest = _item_choices(view, member)
+        return [none, *(option for option in rest if all(word in option["text"]["text"].casefold() for word in words))]
+
     def _party(self, view: View) -> Screen:
         blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": party_title(view)}}]
         for index, member in enumerate(view.party):
@@ -288,21 +307,28 @@ def _button(action_id: str, text: str, value: str) -> dict:
 
 
 def _item_select(view: View, member: dict) -> dict | None:
+    """The typed-search held-item menu, its options from `_item_choices`; None when the member has nothing to hold."""
+    options = _item_choices(view, member)
+    if len(options) == 1:
+        return None
+    return {"type": "external_select", "action_id": ITEM_ACTION, "min_query_length": 0,
+            "placeholder": {"type": "plain_text", "text": "도구 검색·고르기"},
+            "initial_option": options[1 if member.get("item_key") else 0]}
+
+
+def _item_choices(view: View, member: dict) -> list[dict]:
     """`도구 없음`, the held item and the bag's holdable items that clash with no other member."""
     current = member.get("item_key")
     options = [_option("도구 없음", f"{member['id']}|")]
     if current:
         options.append(_option(f"@{member['item_name']}", f"{member['id']}|{current}"))
     for line in view.bag:
-        if not line.get("equip") or line["key"] == current or len(options) >= PICKER_LIMIT:
+        if not line.get("equip") or line["key"] == current:
             continue
         holding = {**member, "item_key": line["key"], "held_item": line.get("held_item")}
         if rule_break([holding if other is member else other for other in view.party]) is None:
             options.append(_option(f"{line['name']} ×{line['count']}", f"{member['id']}|{line['key']}"))
-    if len(options) == 1:
-        return None
-    return {"type": "static_select", "action_id": ITEM_ACTION, "placeholder": {"type": "plain_text", "text": "도구"},
-            "options": options, "initial_option": options[1 if current else 0]}
+    return options
 
 
 def _option(text: str, value: str) -> dict:
@@ -314,12 +340,7 @@ def _moves_screen(view: View, member: dict, name: str, learnable: list[dict]) ->
     names = {move["id"]: move["name"] for move in learnable}
     title = f"*{name} Lv.{member['level']}의 기술* (최대 {MAX_MOVES}개)"
     now = " / ".join(names[move_id] for move_id in chosen) or "레벨에 맞는 기본 기술"
-    groups = move_groups(learnable, set(chosen))
-    picked = [option for group in groups for option in group["options"] if int(option["value"]) in chosen]
-    select = {"type": "multi_static_select", "action_id": SET_MOVES_ACTION, "max_selected_items": MAX_MOVES,
-              "placeholder": {"type": "plain_text", "text": "기술 고르기"}, "option_groups": groups}
-    if picked:
-        select["initial_options"] = picked
+    select = moves_select(SET_MOVES_ACTION, learnable, chosen)
     buttons = [_button(BACK_ACTION, "파티로 돌아가기", member["id"])]
     if member.get("moves"):
         buttons.insert(0, _button(DEFAULT_MOVES_ACTION, "기본 기술로", member["id"]))
@@ -332,18 +353,26 @@ def _moves_screen(view: View, member: dict, name: str, learnable: list[dict]) ->
     return Screen(title, blocks)
 
 
-def move_groups(learnable: list[dict], chosen: set[int]) -> list[dict]:
-    """The learnable moves by how they are learned, at most Slack's 100 in all; the chosen ones always stay."""
-    room = PICKER_LIMIT - len(chosen)
-    grouped: dict[str, list[dict]] = {key: [] for key, _ in MOVE_GROUPS}
+def moves_select(action_id: str, learnable: list[dict], chosen: list[int]) -> dict:
+    """The typed-search moves menu: its options come from `move_options`, the current moves are pre-picked."""
+    select = {"type": "multi_external_select", "action_id": action_id, "min_query_length": 0,
+              "max_selected_items": MAX_MOVES, "placeholder": {"type": "plain_text", "text": "기술 검색·고르기"}}
+    if chosen:
+        select["initial_options"] = move_options(learnable, chosen, "")[:len(chosen)]
+    return select
+
+
+def move_options(learnable: list[dict], chosen: list[int], query: str) -> list[dict]:
+    """The learnable moves whose name or group matches every typed word, the chosen ones first, then the groups in
+    `MOVE_GROUPS` order."""
+    labels = dict(MOVE_GROUPS)
+    rank = {key: index for index, (key, _) in enumerate(MOVE_GROUPS)}
+    rows = []
     for move in learnable:
-        if move["id"] not in chosen:
-            if room <= 0:
-                continue
-            room -= 1
         group = "status" if move["id"] in STATUS_MOVES else move["source"]
         level = f" (Lv.{move['level']})" if move["source"] == "level" and move["level"] else ""
-        grouped.setdefault(group, []).append(_option(f"{move['name']}{level}", str(move["id"])))
-    labels = dict(MOVE_GROUPS)
-    return [{"label": {"type": "plain_text", "text": labels.get(key, key)}, "options": options}
-            for key, options in grouped.items() if options]
+        text = f"{move['name']}{level} · {labels.get(group, group)}"
+        rows.append((move["id"] not in chosen, rank.get(group, len(rank)), move["id"], text))
+    ordered = sorted(rows, key=lambda row: (row[0], chosen.index(row[2]) if row[2] in chosen else 0, row[1]))
+    words = query.casefold().split()
+    return [_option(text, str(move_id)) for _, _, move_id, text in ordered if all(word in text.casefold() for word in words)]

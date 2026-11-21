@@ -4,7 +4,15 @@ app's training tab does. Values carry individual ids, so a press on an older mes
 
 from collections.abc import Callable
 
-from ypoke.lineup_editor import MAX_MOVES, TRAINING_OPEN_ACTION, EditorReply, MovesFor, move_groups, owned_machines
+from ypoke.lineup_editor import (
+    MAX_MOVES,
+    TRAINING_OPEN_ACTION,
+    EditorReply,
+    MovesFor,
+    move_options,
+    moves_select,
+    owned_machines,
+)
 from ypoke.remote_ops import OLD_APP_REFUSAL, RemoteOps, View
 from ypoke.remote_train import (
     CAP, CAPSULE, FORM, GOLD_CAP, HERB, ITEM_KEYS, MAX_IV, MOVES, NATURE, NO_TOKENS, PATCH, REASONS, STAT_NAMES, STATS,
@@ -111,6 +119,15 @@ class TrainingEditor:
         words = query.casefold().split()
         options = [_option(label, member["id"]) for member, label in self._labelled(view, self._matching(view, ""))]
         return [option for option in options if all(word in option["text"]["text"].casefold() for word in words)][:PICKER_LIMIT]
+
+    def move_options(self, user_id: str, block_id: str, query: str) -> list[dict]:
+        """The moves menu's options for the Pokémon `block_id`."""
+        view = self._remote.view(user_id)
+        member = owned(view, block_id) if view is not None and editable(view) else None
+        learnable = self._learnable(view, member) if member else None
+        if not learnable:
+            return []
+        return move_options(learnable, member.get("moves", []), query)
 
     def _matching(self, view: View, query: str) -> list[dict]:
         members = [*view.party, *view.bench]
@@ -240,12 +257,7 @@ class TrainingEditor:
         names = {move["id"]: move["name"] for move in learnable}
         title = f"*{self._name(member)} Lv.{member['level']}의 기술* (최대 {MAX_MOVES}개)"
         now = " / ".join(names[move_id] for move_id in chosen) or "레벨에 맞는 기본 기술"
-        groups = move_groups(learnable, set(chosen))
-        picked = [option for group in groups for option in group["options"] if int(option["value"]) in chosen]
-        select = {"type": "multi_static_select", "action_id": SET_MOVES_ACTION, "max_selected_items": MAX_MOVES,
-                  "placeholder": {"type": "plain_text", "text": "기술 고르기"}, "option_groups": groups}
-        if picked:
-            select["initial_options"] = picked
+        select = moves_select(SET_MOVES_ACTION, learnable, chosen)
         buttons = [_button("트레이닝으로 돌아가기", member["id"], OPEN_ACTION)]
         if member.get("moves"):
             buttons.insert(0, _button("기본 기술로", member["id"], DEFAULT_MOVES_ACTION))
