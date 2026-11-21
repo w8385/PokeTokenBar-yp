@@ -187,7 +187,7 @@ Pi는 모델 여러 개를 세션 로그 하나로 흘려보낼 수 있습니다
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ko.png" width="300" alt="지닌 도구·학습장치 칸·기술이 보이는 박스 포켓몬 프로필"><br><br><img src="assets/screenshot-status-moves-ko.png" width="300" alt="레벨업 기술과 변화 기술 묶음이 보이는 기술 선택"><br><br><img src="assets/screenshot-move-order-ko.png" width="300" alt="카드로 나뉜 기술칸 네 개와 채워진 칸의 위·아래 화살표와 잊기 버튼"><br><br><img src="assets/screenshot-forget-moves-ko.png" width="300" alt="기술 하나를 잊어 세 개만 남고 네 번째 칸이 빈 리자몽"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ko.png" width="300" alt="빠른 동작·지닌 도구·기술이 보이는 박스 포켓몬 프로필"><br><br><img src="assets/screenshot-status-moves-ko.png" width="300" alt="레벨업 기술과 변화 기술 묶음이 보이는 기술 선택"><br><br><img src="assets/screenshot-move-order-ko.png" width="300" alt="카드로 나뉜 기술칸 네 개와 채워진 칸의 위·아래 화살표와 잊기 버튼"><br><br><img src="assets/screenshot-forget-moves-ko.png" width="300" alt="기술 하나를 잊어 세 개만 남고 네 번째 칸이 빈 리자몽"></td>
 <td width="55%" valign="middle">
 <h3>포켓몬마다 고유한 프로필</h3>
 <b>박스</b>에서 포켓몬을 열면 레벨·성별·성격·특성·개체값·계산된 능력치·지닌 도구·기술을 확인할 수 있습니다. 종 설명과 특성·기술은 선택 언어로 표시하고, PokéAPI에 번역이 없으면 영어를 사용합니다.

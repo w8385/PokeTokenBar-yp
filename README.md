@@ -186,7 +186,7 @@ Pi can route more than one model through a single session log. Usage is now attr
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile.png" width="300" alt="A Box Pokémon's profile with its held item, Exp. Share slot and moves"><br><br><img src="assets/screenshot-status-moves.png" width="300" alt="The move picker with level-up moves and a Status moves group"><br><br><img src="assets/screenshot-move-order.png" width="300" alt="Four move slots as separate cards, each filled one with up and down arrows and a Forget button"><br><br><img src="assets/screenshot-forget-moves.png" width="300" alt="Charizard with three moves after forgetting one; the fourth slot is empty"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile.png" width="300" alt="A Box Pokémon's profile with its quick actions, held item and moves"><br><br><img src="assets/screenshot-status-moves.png" width="300" alt="The move picker with level-up moves and a Status moves group"><br><br><img src="assets/screenshot-move-order.png" width="300" alt="Four move slots as separate cards, each filled one with up and down arrows and a Forget button"><br><br><img src="assets/screenshot-forget-moves.png" width="300" alt="Charizard with three moves after forgetting one; the fourth slot is empty"></td>
 <td width="55%" valign="middle">
 <h3>Every Pokémon has its own profile</h3>
 Open a Pokémon in the <b>Box</b> to inspect it: level, gender, nature, ability, IVs, calculated stats, held item, and moves. Species descriptions, abilities, and moves use your selected language, with English as the fallback when PokéAPI has no translation.
