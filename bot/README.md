@@ -72,7 +72,9 @@ Slack Socket Mode, plus a small LAN HTTP server the app uploads its battle Poké
   Each reply is the app's last upload with those ops replayed and says when the app last synced at the office. A bag
   needs an app that sends `remote_ops`; an older one gets a line asking to update.
 - `/파티` also edits the lineup when the app lists `lineup` in `remote_ops_kinds`: per slot 바꾸기 (party or Box),
-  아래로/빼기, 기술 (up to four: level-up, Mirror Herb egg moves, owned TMs) and 도구 (from the bag, with counts).
+  아래로/빼기, 기술 (up to four: level-up, Mirror Herb egg moves, owned TMs) and 도구 (from the bag, with counts). The 기술 and 도구 menus are typed searches: every learnable move
+  is reachable (typed words match the move name or how it is learned) and `도구 없음` is always the first item.
+  `/트레이닝` moves use the same picker.
   `/박스 <이름>` adds a 엔트리에 넣기 button. Choices that would break the species or item clause are not offered.
   Each change queues one `lineup` op with the whole lineup ([API.md](API.md#the-lineup-op)), so `/대결` and the
   app's coworker list use it at once; the app applies it at its next office sync or cancels it with a DM reason.
