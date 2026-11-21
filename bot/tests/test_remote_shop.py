@@ -1,6 +1,6 @@
 import pytest
 from slack_rules import violations
-from test_remote_lineup import BAG, PARTY, POOL, bot, select_values
+from test_remote_lineup import BAG, PARTY, POOL, bot
 from test_remote_ops import text_of
 from test_upload_server import FakeMoves, call
 
@@ -162,8 +162,7 @@ def test_a_bought_item_shows_at_once_in_the_bag_the_shop_and_the_held_item_picke
     assert "쓸 수 있는 토큰: 300" in bag and "• 구애머리띠 ×1" in bag
     assert "*대기 중인 슬랙 작업*\n1. 상점에서 사기: 구애머리띠 ×1 (200토큰)" in bag
     assert "쓸 수 있는 토큰 300" in bot(store).handle("UA", "", SHOP_COMMAND).blocks[0]["text"]["text"]
-    party = bot(store).editor.handle("UA", PARTY_COMMAND, "").blocks
-    assert "p2|choiceBand" in select_values(party, "p2", ITEM_ACTION)
+    assert "p2|choiceBand" in [option["value"] for option in bot(store).editor.item_options("UA", "p2", "")]
 
 
 def test_a_lineup_equipping_a_pending_buy_applies_after_it(server):

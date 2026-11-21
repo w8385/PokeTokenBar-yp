@@ -183,15 +183,18 @@ def editor_listener(editor: LineupEditor | ShopEditor | TrainingEditor | TradeEd
     return listener
 
 
-def editor_options_listener(editor: LineupEditor | ShopEditor | TrainingEditor | TradeEditor):
-    """Loads a menu past Slack's 100 options: the block id is the lineup slot's individual id, the shop category or
-    the picker's owner."""
+def editor_options_listener(
+    editor: LineupEditor | ShopEditor | TrainingEditor | TradeEditor, options_for: Callable | None = None
+):
+    """Loads a typed-search menu: the block id is the lineup slot's individual id, the shop category or the picker's
+    owner. `options_for` is the editor's method for a menu other than its main one."""
+    fetch = options_for or editor.options
 
     def listener(ack, body, payload) -> None:
         started = time.monotonic()
         block_id, query = payload.get("block_id") or "", payload.get("value") or ""
         try:
-            options = editor.options(body["user"]["id"], block_id, query)
+            options = fetch(body["user"]["id"], block_id, query)
         except Exception:
             log.exception("editor options failed block=%s", block_id)
             options = []

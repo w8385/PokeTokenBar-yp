@@ -13,7 +13,7 @@ from slack_sdk import WebClient
 from ypoke.battle_render import MatchupPictures
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
 from ypoke.gym_battle import GymBattles
-from ypoke.lineup_editor import ACTION_PREFIX, SWAP_ACTION
+from ypoke.lineup_editor import ACTION_PREFIX, ITEM_ACTION, SET_MOVES_ACTION, SWAP_ACTION
 from ypoke.miracle import ACCEPT_ACTION_ID as MIRACLE_ACCEPT_ACTION_ID
 from ypoke.miracle import CANCEL_ACTION_ID as MIRACLE_CANCEL_ACTION_ID
 from ypoke.miracle import PICK_ACTION_ID as MIRACLE_PICK_ACTION_ID
@@ -29,6 +29,7 @@ from ypoke.trade_editor import PICKER_ACTIONS as OFFER_PICKER_ACTIONS
 from ypoke.trades import ACCEPT_ACTION_ID, DECLINE_ACTION_ID, PICK_ACTION_ID, TradeService
 from ypoke.training_editor import ACTION_PREFIX as TRAINING_ACTION_PREFIX
 from ypoke.training_editor import PICK_ACTION as TRAINING_PICK_ACTION
+from ypoke.training_editor import SET_MOVES_ACTION as TRAINING_SET_MOVES_ACTION
 from ypoke.transport import (
     SlackBoard,
     deliver,
@@ -104,6 +105,9 @@ def main() -> None:
     app.options(MIRACLE_PICK_ACTION_ID)(options_listener(trades))
     app.action(re.compile(f"^{ACTION_PREFIX}"))(editor_listener(handler.editor))
     app.options(SWAP_ACTION)(editor_options_listener(handler.editor))
+    app.options(ITEM_ACTION)(editor_options_listener(handler.editor, handler.editor.item_options))
+    app.options(SET_MOVES_ACTION)(editor_options_listener(handler.editor, handler.editor.move_options))
+    app.options(TRAINING_SET_MOVES_ACTION)(editor_options_listener(handler.training, handler.training.move_options))
     app.action(re.compile(f"^{SHOP_ACTION_PREFIX}"))(editor_listener(handler.shop))
     app.options(SHOP_PICK_ACTION)(editor_options_listener(handler.shop))
     app.action(re.compile(f"^{TRAINING_ACTION_PREFIX}"))(editor_listener(handler.training))

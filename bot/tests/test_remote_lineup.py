@@ -17,6 +17,7 @@ from ypoke.lineup_editor import (
     SET_MOVES_ACTION,
     SWAP_ACTION,
     STALE,
+    move_options,
 )
 from ypoke.remote_lineup import LINEUP, REASONS
 from ypoke.remote_ops import OLD_APP_REFUSAL, RemoteOps
@@ -93,12 +94,6 @@ def party_ids(store, user_id="UA"):
     return [member["id"] for member in RemoteOps(store).party(user_id).party]
 
 
-def select_values(blocks, block_id, action_id):
-    block = next(block for block in blocks if block.get("block_id") == block_id)
-    element = next(element for element in block["elements"] if element["action_id"] == action_id)
-    return [option["value"] for option in element["options"]]
-
-
 # The /파티 screen
 
 
@@ -109,8 +104,8 @@ def test_party_screen_offers_only_box_pokemon_that_keep_the_clauses(server):
     assert select_values(blocks, "p1", SWAP_ACTION) == ["p1|b1", "p1|b2", "p1|b3", "p1|b4"]
     assert select_values(blocks, "p2", SWAP_ACTION) == ["p2|b1", "p2|b4"]
     assert select_values(blocks, ADD_SLOT, SWAP_ACTION) == ["+|b1", "+|b4"]
-    assert select_values(blocks, "p2", ITEM_ACTION) == ["p2|", "p2|choiceScarf"]
-    assert select_values(blocks, "p1", ITEM_ACTION) == ["p1|", "p1|leftovers", "p1|choiceScarf"]
+    assert item_values(store, "p2") == ["p2|", "p2|choiceScarf"]
+    assert item_values(store, "p1") == ["p1|", "p1|leftovers", "p1|choiceScarf"]
     assert select_values(blocks, "p1", ORDER_ACTION) == ["down|p1", "drop|p1"]
     assert "한 종에 한 마리" in str(blocks)
 
@@ -181,6 +176,31 @@ def test_a_swap_that_breaks_a_clause_is_refused_and_queues_nothing(server, value
     assert RemoteOps(store).pending("UA") == []
 
 
+def test_the_held_item_menu_is_a_typed_search_with_no_item_first_and_the_current_one_picked(server):
+    store, _ = server
+    post(server)
+    blocks = bot(store).editor.handle("UA", PARTY_COMMAND, "").blocks
+    menu = next(e for b in blocks if b.get("block_id") == "p1" for e in b["elements"] if e["action_id"] == ITEM_ACTION)
+    assert (menu["type"], menu["action_id"], menu["min_query_length"]) == ("external_select", ITEM_ACTION, 0)
+    assert menu["initial_option"]["value"] == "p1|leftovers"
+    assert item_values(store, "p1", "스카프") == ["p1|", "p1|choiceScarf"]
+    assert item_values(store, "p1", "없는도구") == ["p1|"]
+    assert item_values(store, "gone") == []
+
+
+def test_a_typed_moves_or_item_search_is_answered_through_the_options_listener_capped(server):
+    store, _ = server
+    post(server)
+    answered = []
+    ack = lambda **reply: answered.append(reply)  # noqa: E731
+    editor_options_listener(bot(store).editor, bot(store).editor.move_options)(
+        ack=ack, body={"user": {"id": "UA"}}, payload={"block_id": "p1", "value": ""})
+    editor_options_listener(bot(store).editor, bot(store).editor.item_options)(
+        ack=ack, body={"user": {"id": "UA"}}, payload={"block_id": "p1", "value": "스카프"})
+    assert [option["value"] for option in answered[0]["options"]] == move_values(store, "p1")
+    assert [option["value"] for option in answered[1]["options"]] == item_values(store, "p1", "스카프")
+
+
 def test_giving_an_item_another_member_holds_is_refused(server):
     store, _ = server
     post(server, bag=[{**SCARF, "key": "leftovers", "name": "먹다남은음식", "held_item": "leftovers"}])
@@ -208,7 +228,7 @@ def test_equipping_takes_a_bag_copy_and_taking_off_puts_one_back(server):
     assert view.party[1]["held_item"] == "choice-scarf"
     assert "held_item" not in view.party[0]
     assert {line["key"]: line["count"] for line in view.bag} == {"tm:89": 1, "rareCandy": 3, "leftovers": 1}
-    assert select_values(editor.handle("UA", PARTY_COMMAND, "").blocks, "p1", ITEM_ACTION) == ["p1|", "p1|leftovers"]
+    assert item_values(store, "p1") == ["p1|", "p1|leftovers"]
 
 
 def test_an_item_without_a_bag_copy_cannot_be_equipped(server):
@@ -229,16 +249,38 @@ def test_the_moves_screen_lists_learnable_moves_and_a_pick_queues_them_with_the_
     editor = bot(store).editor
     screen = editor.act("UA", MOVES_ACTION, "p1", []).screen
     select = screen.blocks[0]["accessory"]
-    assert (select["action_id"], select["max_selected_items"]) == (SET_MOVES_ACTION, 4)
-    groups = {group["label"]["text"]: [option["value"] for option in group["options"]] for group in select["option_groups"]}
-    assert groups == {"레벨업": [str(move["id"]) for move in MOVES[25] if move["level"] <= 42], "기술머신": ["89"]}
+    assert (select["type"], select["action_id"], select["max_selected_items"]) == ("multi_external_select", SET_MOVES_ACTION, 4)
+    assert select["min_query_length"] == 0 and "initial_options" not in select
+    learnable = [str(move["id"]) for move in MOVES[25] if move["level"] <= 42]
+    assert move_values(store, "p1") == [*learnable, "89"]
     editor.act("UA", SET_MOVES_ACTION, "p1", ["85", "89", "999"])
     first = RemoteOps(store).party("UA").party[0]
     assert (first["moves"], first["machine"]) == ([85, 89], [89])
     again = editor.act("UA", MOVES_ACTION, "p1", []).screen.blocks[0]["accessory"]
     assert [option["value"] for option in again["initial_options"]] == ["85", "89"]
+    assert move_values(store, "p1")[:2] == ["85", "89"]
     editor.act("UA", DEFAULT_MOVES_ACTION, "p1", [])
     assert "moves" not in RemoteOps(store).party("UA").party[0]
+
+
+def test_typed_words_find_a_move_by_its_name_or_its_group(server):
+    store, _ = server
+    post(server)
+    labels = {option["value"]: option["text"]["text"] for option in bot(store).editor.move_options("UA", "p1", "")}
+    assert labels["89"].endswith("· 기술머신") and all(text.endswith("· 레벨업") for key, text in labels.items() if key != "89")
+    assert move_values(store, "p1", "기술머신") == ["89"]
+    name = labels["85"].split(" ")[0]
+    assert "85" in move_values(store, "p1", name[:2]) and move_values(store, "p1", f"{name} 기술머신") == []
+    assert move_values(store, "p1", "없는기술") == []
+    assert move_values(store, "p2", "") != move_values(store, "p1", "")
+    assert move_values(store, "gone", "") == []
+
+
+def test_every_learnable_move_is_offered_not_only_the_first_hundred():
+    learnable = [{"id": index, "name": f"기술{index:03d}", "source": "level", "level": 1 + index % 50} for index in range(1, 151)]
+    assert len(move_options(learnable, [], "")) == 150
+    assert [option["value"] for option in move_options(learnable, [145], "기술14")][:2] == ["145", "140"]
+    assert [option["value"] for option in move_options(learnable, [], "기술149")] == ["149"]
 
 
 def test_a_machine_move_without_its_tm_is_refused_on_replay(server):
@@ -405,4 +447,18 @@ def test_every_lineup_screen_follows_slacks_block_rules(server):
                editor.act("UA", BOX_ADD_ACTION, "b1", []).screen, editor.act("UA", MOVES_ACTION, "p1", []).screen,
                editor.act("UA", SET_MOVES_ACTION, "p1", ["85", "89"]).screen]
     assert [violations(screen.blocks) for screen in screens] == [[]] * len(screens)
-    assert editor.act("UA", MOVES_ACTION, "p1", []).screen.blocks[0]["accessory"]["type"] == "multi_static_select"
+    assert editor.act("UA", MOVES_ACTION, "p1", []).screen.blocks[0]["accessory"]["type"] == "multi_external_select"
+
+
+def select_values(blocks, block_id, action_id):
+    block = next(block for block in blocks if block.get("block_id") == block_id)
+    element = next(element for element in block["elements"] if element["action_id"] == action_id)
+    return [option["value"] for option in element["options"]]
+
+
+def item_values(store, member_id, query=""):
+    return [option["value"] for option in bot(store).editor.item_options("UA", member_id, query)]
+
+
+def move_values(store, member_id, query=""):
+    return [option["value"] for option in bot(store).editor.move_options("UA", member_id, query)]

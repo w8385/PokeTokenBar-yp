@@ -256,6 +256,18 @@ def test_moves_are_set_from_the_learnable_list_and_reset_to_the_defaults(server)
     assert "moves" not in member_of(store, "p2")
 
 
+def test_the_training_moves_menu_is_a_typed_search_with_the_current_moves_picked(server):
+    store, _ = server
+    post(server)
+    trained(store, SET_MOVES_ACTION, "p2", ["85", "98"])
+    select = press(store, MOVES_ACTION, "p2").screen.blocks[0]["accessory"]
+    assert (select["type"], select["action_id"]) == ("multi_external_select", SET_MOVES_ACTION)
+    assert [option["value"] for option in select["initial_options"]] == ["85", "98"]
+    everything = [option["value"] for option in bot(store).training.move_options("UA", "p2", "")]
+    assert everything[:2] == ["85", "98"] and len(everything) == len(set(everything)) > 2
+    assert bot(store).training.move_options("UA", "gone", "") == []
+
+
 # Refusals on the spot
 
 
@@ -438,7 +450,7 @@ def test_every_training_screen_follows_slacks_block_rules(server):
                press(store, PICK_ACTION, "p2").screen, press(store, MOVES_ACTION, "p2").screen,
                press(store, SET_MOVES_ACTION, "p2", ["85", "98"]).screen, press(store, PICK_ACTION, "b1").screen]
     assert [violations(screen.blocks) for screen in screens] == [[]] * len(screens)
-    assert press(store, MOVES_ACTION, "p2").screen.blocks[0]["accessory"]["type"] == "multi_static_select"
+    assert press(store, MOVES_ACTION, "p2").screen.blocks[0]["accessory"]["type"] == "multi_external_select"
 
 
 def test_the_help_explains_training():
