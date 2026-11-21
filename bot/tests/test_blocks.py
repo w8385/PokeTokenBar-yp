@@ -1,5 +1,7 @@
 import ast
 import logging
+import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -14,6 +16,8 @@ SLACK_TYPES = {"section", "actions", "context", "divider", "header", "image", "i
                "static_select", "external_select", "multi_static_select", "multi_external_select", "overflow",
                "checkboxes", "radio_buttons", "datepicker", "timepicker", "mrkdwn", "plain_text", "modal", "home"}
 SENDERS = {"respond", "send", "say"}
+SLACK_ENTRY_POINTS = {"transport", "__main__"}
+LOG_TAIL = 2000
 
 
 def test_no_module_writes_a_slack_block_by_hand():
@@ -22,6 +26,16 @@ def test_no_module_writes_a_slack_block_by_hand():
 
 def test_no_module_sends_to_slack_except_through_blocks_send():
     assert [finding for path in modules() for finding in direct_sends(path.read_text(), path.name)] == []
+
+
+def test_only_the_slack_entry_points_need_the_slack_libraries_to_import():
+    names = [f"ypoke.{path.stem}" for path in sorted(PACKAGE.glob("*.py"))
+             if path.stem not in SLACK_ENTRY_POINTS and not path.stem.startswith("_")]
+    assert "ypoke.gyms" in names and "ypoke.blocks" in names
+    blocked = "import importlib, sys\nsys.modules.update(slack_sdk=None, slack_bolt=None)\n" + "".join(
+        f"importlib.import_module({name!r})\n" for name in names)
+    result = subprocess.run([sys.executable, "-c", blocked], cwd=PACKAGE.parent, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr[-LOG_TAIL:]
 
 
 def test_the_scans_catch_a_hand_written_block_and_a_direct_send():

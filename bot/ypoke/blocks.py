@@ -6,8 +6,6 @@ import json
 import logging
 from collections.abc import Callable, Iterable
 
-from slack_sdk.errors import SlackApiError
-
 ACTIONS_ELEMENTS = {"button", "static_select", "external_select", "overflow", "checkboxes", "radio_buttons",
                     "datepicker", "timepicker"}
 ACCESSORY_ELEMENTS = ACTIONS_ELEMENTS | {"image", "multi_static_select", "multi_external_select"}
@@ -140,6 +138,8 @@ def send(call: Callable, source: str, **message):
     """Send `message` with `call`: a WebClient method (`chat_postMessage`, `chat_postEphemeral`, `chat_update`,
     `views_*`), a response URL's `respond` or a webhook's `send`. Logs a broken rule and Slack's refusal in one line
     each, never the message; returns Slack's reply, and a WebClient refusal still raises."""
+    from slack_sdk.errors import SlackApiError  # the repo scripts import ypoke without slack_sdk installed
+
     view = message.get("view") or {}
     try:
         problems = violations(message.get("blocks") or view.get("blocks") or [])
