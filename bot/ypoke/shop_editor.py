@@ -51,7 +51,7 @@ class ShopEditor:
             return EditorReply(_item_screen(view, line)) if line else _note(STALE)
         count, price, key = _buy_value(value)
         line = _line(view, key)
-        if action_id != BUY_ACTION or line is None or count is None:
+        if not action_id.startswith(BUY_ACTION) or line is None or count is None:
             return _note(STALE)
         payload = {"key": key, "name": line["name"], "count": count, "price": price}
         reason = buy(view, payload)[1]
@@ -113,7 +113,7 @@ def _item_screen(view: View, line: dict, done: str | None = None) -> Screen:
     if not counts:
         text.append(SHORT)
     buttons = [_button(f"{count}개 사기 ({count * price:,})" if not line["single"] else f"사기 ({price:,})",
-                       f"{count}|{price}|{line['key']}", BUY_ACTION) for count in counts]
+                       f"{count}|{price}|{line['key']}", f"{BUY_ACTION}_{count}") for count in counts]
     if buttons:
         buttons[0]["style"] = "primary"
     buttons.append(_button("상점으로", "back", BACK_ACTION))

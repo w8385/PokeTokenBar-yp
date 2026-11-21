@@ -249,7 +249,7 @@ class TrainingEditor:
         buttons = [_button("트레이닝으로 돌아가기", member["id"], OPEN_ACTION)]
         if member.get("moves"):
             buttons.insert(0, _button("기본 기술로", member["id"], DEFAULT_MOVES_ACTION))
-        blocks = [_section(f"{title}\n지금: {now}"), {"type": "actions", "block_id": member["id"], "elements": [select]},
+        blocks = [_section(f"{title}\n지금: {now}") | {"block_id": member["id"], "accessory": select},
                   {"type": "actions", "elements": buttons}, _context(MOVES_NOTE, SYNC_NOTE, sync_line(view))]
         return EditorReply(Screen(title, blocks))
 

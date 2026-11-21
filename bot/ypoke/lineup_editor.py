@@ -324,8 +324,8 @@ def _moves_screen(view: View, member: dict, name: str, learnable: list[dict]) ->
     if member.get("moves"):
         buttons.insert(0, _button(DEFAULT_MOVES_ACTION, "기본 기술로", member["id"]))
     blocks = [
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"{title}\n지금: {now}"}},
-        {"type": "actions", "block_id": member["id"], "elements": [select]},
+        {"type": "section", "block_id": member["id"], "text": {"type": "mrkdwn", "text": f"{title}\n지금: {now}"},
+         "accessory": select},
         {"type": "actions", "elements": buttons},
         {"type": "context", "elements": [{"type": "mrkdwn", "text": text} for text in (MOVES_NOTE, SYNC_NOTE, sync_line(view))]},
     ]

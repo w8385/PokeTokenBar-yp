@@ -1,4 +1,5 @@
 import pytest
+from slack_rules import violations
 from test_remote_lineup import BAG, PARTY, POOL, bot, select_values
 from test_remote_ops import text_of
 from test_upload_server import FakeMoves, call
@@ -221,6 +222,14 @@ def test_an_app_that_does_not_apply_buy_ops_gets_a_read_only_shop_and_a_refusal(
     assert press(store, BUY_ACTION, "1|100|rareCandy").screen.text == OLD_APP_REFUSAL
     assert press(store, BACK_ACTION, "back").screen.text == OLD_APP_REFUSAL
     assert RemoteOps(store).pending("UA") == []
+
+
+def test_every_shop_screen_follows_slacks_block_rules(server):
+    store, _ = server
+    post(server)
+    screens = [bot(store).shop.handle("UA", SHOP_COMMAND, ""), press(store, PICK_ACTION, "rareCandy").screen,
+               press(store, PICK_ACTION, "tm:87").screen]
+    assert [violations(screen.blocks) for screen in screens] == [[]] * len(screens)
 
 
 def test_the_help_explains_the_shop_and_the_spendable_balance():

@@ -2,6 +2,7 @@
 
 import json
 import logging
+import time
 from collections.abc import Callable
 from functools import partial
 
@@ -127,13 +128,13 @@ def trade_listener(trades: TradeService, kind: str):
                 reply = (trades.accept if kind == "accept" else trades.decline)(user_id, trade_id)
         except Exception:
             log.exception("trade button failed")
-            respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            answer(respond, f"trade_{kind}", text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
             return
         post_direct_messages(client, reply.direct_messages)
         if reply.final:
-            respond(text=reply.text, replace_original=True)
+            answer(respond, f"trade_{kind}", text=reply.text, replace_original=True)
         else:
-            respond(text=reply.text, response_type="ephemeral", replace_original=False)
+            answer(respond, f"trade_{kind}", text=reply.text, response_type="ephemeral", replace_original=False)
 
     return listener
 
@@ -142,12 +143,14 @@ def options_listener(trades: TradeService):
     """Loads a typed-ahead picker (trade or miracle): the block id is the trade or offer the options are for."""
 
     def listener(ack, body, payload) -> None:
+        block_id = payload.get("block_id") or ""
         try:
-            options = trades.suggest(body["user"]["id"], payload.get("block_id") or "", payload.get("value") or "")
+            options = trades.suggest(body["user"]["id"], block_id, payload.get("value") or "")
         except Exception:
-            log.exception("picker options failed")
+            log.exception("picker options failed block=%s", block_id)
             options = []
         ack(options=options)
+        log.info("options action=%s block=%s -> %d options", payload.get("action_id"), block_id, len(options))
 
     return listener
 
@@ -166,12 +169,12 @@ def editor_listener(editor: LineupEditor | ShopEditor | TrainingEditor | TradeEd
             reply = editor.act(user_id, action["action_id"], value, selected)
         except Exception:
             log.exception("edit failed")
-            respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            answer(respond, action["action_id"], text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
             return
         if client is not None:
             post_direct_messages(client, reply.direct_messages)
-        respond(text=reply.screen.text, blocks=reply.screen.blocks, response_type="ephemeral",
-                replace_original=reply.replace)
+        answer(respond, action["action_id"], text=reply.screen.text, blocks=reply.screen.blocks,
+               response_type="ephemeral", replace_original=reply.replace)
 
     return listener
 
@@ -181,12 +184,16 @@ def editor_options_listener(editor: LineupEditor | ShopEditor | TrainingEditor |
     the picker's owner."""
 
     def listener(ack, body, payload) -> None:
+        started = time.monotonic()
+        block_id, query = payload.get("block_id") or "", payload.get("value") or ""
         try:
-            options = editor.options(body["user"]["id"], payload.get("block_id") or "", payload.get("value") or "")
+            options = editor.options(body["user"]["id"], block_id, query)
         except Exception:
-            log.exception("editor options failed")
+            log.exception("editor options failed block=%s", block_id)
             options = []
         ack(options=options)
+        log.info("options action=%s block=%s query_length=%d -> %d options in %d ms", payload.get("action_id"),
+                 block_id, len(query), len(options), (time.monotonic() - started) * 1000)
 
     return listener
 
@@ -210,13 +217,14 @@ def miracle_listener(miracle: MiracleService, kind: str):
                 reply = miracle.take_down(user_id, offer_id)
         except Exception:
             log.exception("miracle button failed")
-            respond(text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
+            answer(respond, f"miracle_{kind}", text=ERROR_TEXT, response_type="ephemeral", replace_original=False)
             return
         post_direct_messages(client, reply.direct_messages)
         if kind == "pick" and reply.final:
-            respond(text=reply.text, replace_original=True)
+            answer(respond, f"miracle_{kind}", text=reply.text, replace_original=True)
         else:
-            respond(text=reply.text, blocks=reply.blocks, response_type="ephemeral", replace_original=False)
+            answer(respond, f"miracle_{kind}", text=reply.text, blocks=reply.blocks, response_type="ephemeral",
+                   replace_original=False)
 
     return listener
 
@@ -375,12 +383,22 @@ def _private(
     blocks: list[dict] | None = None,
 ) -> None:
     if respond is not None:
-        respond(text=text, blocks=blocks, response_type="ephemeral", replace_original=False)
+        answer(respond, "private reply", text=text, blocks=blocks, response_type="ephemeral", replace_original=False)
         return
     try:
         client.chat_postEphemeral(channel=channel, user=user_id, text=text, thread_ts=thread_ts, blocks=blocks)
     except Exception:
         log.warning("could not post an ephemeral reply")
+
+
+def answer(respond: Callable, source: str, **message) -> None:
+    """Send `message` to a response URL and log a reply that is not 200: the SDK returns Slack's refusal (such as
+    `invalid_blocks`) instead of raising, so a rejected screen would otherwise vanish without a trace."""
+    response = respond(**message)
+    status = getattr(response, "status_code", 200)
+    if status != 200:
+        log.warning("response url rejected %s: status=%s body=%s", source, status,
+                    json.dumps(str(getattr(response, "body", ""))[:LOG_ARGS_LIMIT], ensure_ascii=False))
 
 
 def _fallback(respond: Callable | None, **message) -> None:
@@ -405,7 +423,9 @@ def _publish_slash(
             _respond_result(respond, client, reply, pictures, response_type="in_channel")
         return
     if reply.public:
-        respond(text="\n".join(filter(None, (reply.echo, reply.public))), response_type="in_channel")
+        answer(respond, "slash public", text="\n".join(filter(None, (reply.echo, reply.public))),
+               response_type="in_channel")
     visible = reply.in_channel
     text = "\n".join(filter(None, (reply.echo, reply.text))) if visible else reply.text
-    respond(text=text, blocks=message_blocks(reply, visible), response_type="in_channel" if visible else "ephemeral")
+    answer(respond, "slash", text=text, blocks=message_blocks(reply, visible),
+           response_type="in_channel" if visible else "ephemeral")

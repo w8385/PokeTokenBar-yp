@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 import pytest
+from slack_rules import violations
 from test_commands import NOW, move
 from test_remote_lineup import LineupAPI, party_member
 from test_remote_ops import text_of
@@ -427,6 +428,17 @@ def test_an_app_that_does_not_apply_train_ops_gets_a_read_only_screen_and_a_refu
     assert press(store, NATURE_ACTION, "p2|adamant").screen.text == OLD_APP_REFUSAL
     assert TRAINING_OPEN_ACTION not in controls(bot(store).editor.handle("UA", PARTY_COMMAND, "").blocks)
     assert RemoteOps(store).pending("UA") == []
+
+
+def test_every_training_screen_follows_slacks_block_rules(server):
+    store, _ = server
+    post(server)
+    editor = bot(store).training
+    screens = [editor.handle("UA", TRAINING_COMMAND, ""), editor.handle("UA", TRAINING_COMMAND, "썬더로스"),
+               press(store, PICK_ACTION, "p2").screen, press(store, MOVES_ACTION, "p2").screen,
+               press(store, SET_MOVES_ACTION, "p2", ["85", "98"]).screen, press(store, PICK_ACTION, "b1").screen]
+    assert [violations(screen.blocks) for screen in screens] == [[]] * len(screens)
+    assert press(store, MOVES_ACTION, "p2").screen.blocks[0]["accessory"]["type"] == "multi_static_select"
 
 
 def test_the_help_explains_training():
