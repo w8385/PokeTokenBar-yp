@@ -1,8 +1,7 @@
 import SwiftUI
 
 /// One owned Pokémon's page. The held item slot is the only place an item is equipped and the move section the
-/// only place its battle moves are chosen; everything else the Pokémon can do on its own (battle, trade,
-/// Linking Cord, friend) sits under them.
+/// only place its battle moves are chosen.
 @MainActor
 struct BoxDetailView: View {
     let store: CompanionStore
@@ -32,29 +31,37 @@ struct BoxDetailView: View {
                 Button(action: onBack) { Label(l.back, systemImage: "chevron.left") }
                     .buttonStyle(.borderless)
                 Spacer()
+                dexLink
                 Text("#\(individual.speciesID)").font(.callout).foregroundStyle(.secondary)
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    identityHeader
+                    identityHeader.boxDetailMark(.header)
+                    quickActions.boxDetailMark(.quickActions)
                     HeldItemSlot(store: store, individualID: individual.id, speciesID: individual.speciesID,
                                  speciesName: name, lineupSlots: battleEntry?.slots ?? []) {
                         Task { await uploader?.tick() }
                     }
-                    if store.showsExpShareSlot(for: individual) {
-                        ExpShareSlot(store: store, individual: individual)
-                    }
+                    .boxDetailMark(.heldItem)
                     moveTraining
-                    actions
-                    ForEach(store.evolutionCards(for: individual.speciesID, individual: entry)) {
-                        EvolutionCardView(store: store, card: $0)
+                    if store.pokemonDetails(speciesID: individual.speciesID, form: entry.form) != nil,
+                       let profile = entry.profile {
+                        activeMoves(profile).boxDetailMark(.activeMoves)
+                    }
+                    if store.showsExpShareSlot(for: individual) {
+                        ExpShareSlot(store: store, individual: individual).boxDetailMark(.expShare)
                     }
                     if let details = store.pokemonDetails(speciesID: individual.speciesID, form: entry.form),
                        let profile = entry.profile {
-                        individualSection(profile: profile, details: details)
+                        individualSection(profile: profile, details: details).boxDetailMark(.individual)
                     } else if entry.profile != nil {
                         PokemonDetailsPlaceholder(store: store, speciesID: individual.speciesID)
+                            .boxDetailMark(.individual)
                     }
+                    ForEach(store.evolutionCards(for: individual.speciesID, individual: entry)) {
+                        EvolutionCardView(store: store, card: $0).boxDetailMark(.evolution)
+                    }
+                    exchange.boxDetailMark(.exchange)
                 }
                 .padding(.bottom, 8)
                 .reservesScrollerLane()
@@ -135,33 +142,45 @@ struct BoxDetailView: View {
             MoveTrainingSection(store: store, battleEntry: battleEntry, uploader: uploader, candidate: candidate) {
                 Task { await uploader.tick() }
             }
+            .boxDetailMark(.moveTraining)
         }
     }
 
     // MARK: Actions
 
-    private var actions: some View {
+    @ViewBuilder
+    private var dexLink: some View {
+        if let target = store.dexLinkTargets[individual.speciesID] {
+            Button {
+                navigation.openDexEntry(collectionID: target)
+            } label: {
+                Label(l.boxViewInDex, systemImage: "book")
+            }
+            .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .boxDetailMark(.dexLink)
+        }
+    }
+
+    private var quickActions: some View {
         VStack(alignment: .leading, spacing: 6) {
             WrappingHStack(spacing: 6, lineSpacing: 6) {
-                if let battleEntry, store.battleCandidate(for: entry) != nil {
-                    BattleSlotControl(store: store, entry: entry, battleEntry: battleEntry) {
-                        Task { await uploader?.tick() }
-                    }
-                    .boxDetailMark(.battleSlots)
-                }
                 raiseButton
                 representativeButton
                 friendButton
-                tradeButtons
-                if let target = store.dexLinkTargets[individual.speciesID] {
-                    Button {
-                        navigation.openDexEntry(collectionID: target)
-                    } label: {
-                        Label(l.boxViewInDex, systemImage: "book")
-                    }
-                    .buttonStyle(.bordered).controlSize(.mini).fixedSize()
-                    .boxDetailMark(.dexLink)
+            }
+            if let battleEntry, store.battleCandidate(for: entry) != nil {
+                BattleSlotControl(store: store, entry: entry, battleEntry: battleEntry) {
+                    Task { await uploader?.tick() }
                 }
+                .boxDetailMark(.battleSlots)
+            }
+        }
+    }
+
+    private var exchange: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            WrappingHStack(spacing: 6, lineSpacing: 6) {
+                tradeButtons
             }
             tradeNotes
             miracleStatus
@@ -368,6 +387,12 @@ struct BoxDetailView: View {
                                     message: $trainingMessage, onChange: syncParty)
             }
             statsSection(PokemonStatCalculator.stats(details: details, profile: profile, nature: entry.nature))
+        }
+        .detailCard()
+    }
+
+    private func activeMoves(_ profile: PokemonProfile) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
             DetailTitle(l.activeMoves)
             if profile.moves.isEmpty {
                 Text(l.noLevelMoves).font(.callout).foregroundStyle(.secondary)

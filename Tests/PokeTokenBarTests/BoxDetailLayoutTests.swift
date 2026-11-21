@@ -37,16 +37,29 @@ private struct BoxDetailMarkReader<Content: View>: View {
 @MainActor
 final class BoxDetailFixture {
     static let storedID = "stored-bulbasaur"
+    static let steelixID = "steelix"
 
     let store: CompanionStore
     let uploader: PartyUploader
     let battle: BattleEntryStore
     private let cleanups: [() -> Void]
 
-    init(language: AppLanguage = .en, raisingGraduate: String? = nil) throws {
+    /// `steelix` adds a graduate that evolved by trade, so its page carries an evolution card; `expShare` puts an
+    /// Exp. Share in the bag.
+    init(language: AppLanguage = .en, raisingGraduate: String? = nil, steelix: Bool = false,
+         expShare: Bool = false) throws {
         let (store, cleanup) = try BoxDexFixture.makeStore(language: language, mutate: { state in
             state.inventory[ItemKind.linkingCord.rawValue] = 1
+            if expShare { state.inventory[ItemKind.expShare.rawValue] = 1 }
             if let raisingGraduate { state.raisedEntryID = raisingGraduate }
+            if steelix {
+                var profile = PokemonProfile.generate(seed: 208, instanceID: Self.steelixID)
+                profile.level = 45
+                state.dex.append(DexEntry(id: Self.steelixID, baseID: 95, finalID: 208, chainOrder: [95, 208],
+                                          rarity: .rare, caughtAt: Date(timeIntervalSince1970: 1_700_000_600),
+                                          profile: profile, names: [95: ["ko": "롱스톤", "en": "Onix"],
+                                                                    208: ["ko": "강철톤", "en": "Steelix"]]))
+            }
             var profile = PokemonProfile.generate(seed: 1, instanceID: Self.storedID)
             profile.level = 18
             let mon = MonState(baseID: 1, pathIDs: [1], plannedPathIDs: [1, 2, 3], stageIndex: 0, usedAtStage: 0,
@@ -97,7 +110,8 @@ final class BoxDetailFixture {
     }
 
     /// Renders `view` at the popover's content width and waits for the details and marks to load.
-    func marks<V: View>(_ view: V, of id: String, height: CGFloat = 2_400) async throws -> BoxDetailMarkRecorder {
+    func marks<V: View>(_ view: V, of id: String, height: CGFloat = 2_400,
+                        until ready: (BoxDetailMarkRecorder) -> Bool = { _ in true }) async throws -> BoxDetailMarkRecorder {
         let recorder = BoxDetailMarkRecorder()
         let individual = try individual(id)
         let size = CGSize(width: PopoverMetrics.contentWidth, height: height)
@@ -107,9 +121,49 @@ final class BoxDetailFixture {
             size: size, appearance: .aqua)
         try await OffscreenRender.settle(host) {
             store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form) != nil
-                && !recorder.marks.isEmpty
+                && recorder.marks[.header] != nil && ready(recorder)
         }
         return recorder
+    }
+}
+
+@MainActor
+final class BoxDetailLayoutTests: XCTestCase {
+    private static let order: [BoxDetailMark] = [.header, .quickActions, .heldItem, .moveTraining, .activeMoves,
+                                                 .expShare, .individual, .evolution, .exchange]
+
+    func testTheQuickActionsAreOneRowInKoreanAndStayInsideTheColumn() async throws {
+        for language in [AppLanguage.ko, .ja, .en, .de] {
+            let fixture = try BoxDetailFixture(language: language)
+            defer { fixture.finish() }
+            let recorder = try await fixture.marks(try fixture.page(BoxDexFixture.eeveeID), of: BoxDexFixture.eeveeID)
+            let row = try [BoxDetailMark.raise, .representative, .friendAdd].map {
+                try XCTUnwrap(recorder.marks[$0]?.frame, "\(language) \($0)")
+            }
+            for frame in row {
+                XCTAssertLessThanOrEqual(frame.maxX, PopoverMetrics.scrollContentWidth + 0.5, "\(language) \(row)")
+            }
+            if language == .ko || language == .ja {
+                XCTAssertEqual(Set(row.map { $0.minY.rounded() }).count, 1, "\(language) wraps: \(row)")
+            }
+            let heldItem = try XCTUnwrap(recorder.marks[.heldItem]?.frame)
+            XCTAssertLessThan(try XCTUnwrap(recorder.marks[.quickActions]?.frame).maxY, heldItem.minY + 0.5)
+        }
+    }
+
+    func testTheSectionsRunFromQuickActionsToTheExchangeRow() async throws {
+        let fixture = try BoxDetailFixture(steelix: true, expShare: true)
+        defer { fixture.finish() }
+        let id = BoxDetailFixture.steelixID
+        let recorder = try await fixture.marks(try fixture.page(id), of: id) { recorder in
+            Self.order.allSatisfy { recorder.marks[$0] != nil }
+        }
+        let frames = Self.order.map { recorder.marks[$0]?.frame ?? .null }
+        let top = Self.order.sorted { (recorder.marks[$0]?.frame.minY ?? 0) < (recorder.marks[$1]?.frame.minY ?? 0) }
+        XCTAssertEqual(top, Self.order, "sections top to bottom: \(zip(Self.order, frames).map { "\($0) \($1)" })")
+        for (above, below) in zip(frames, frames.dropFirst()) {
+            XCTAssertLessThanOrEqual(above.maxY, below.minY + 0.5, "\(above) overlaps \(below)")
+        }
     }
 }
 
