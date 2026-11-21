@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from enum import Enum
 
 from ypoke.abilities import FORMS as ABILITY_FORMS
 from ypoke.abilities import NAMES as ABILITY_NAMES
@@ -177,6 +178,57 @@ VOLATILE_END_TEXT = {"substitute": "부서졌다", "destiny-bond": "발동", "gr
                      "binding": "풀려났다"}
 
 
+class Label(Enum):
+    WEATHER = "weather"
+    STATUS = "status"
+    RESIDUAL = "residual"
+    STATE = "state"
+    BLOCKED = "blocked"
+    RECOVERED = "recovered"
+    FORM_CAPTION = "form-caption"
+    ITEM_EFFECT = "item-effect"
+    EFFECT = "effect"
+    HP = "hp"
+    FORM_CHANGE = "form-change"
+    STAT = "stat"
+    ON_FOE = "on-foe"
+    VOLATILE = "volatile"
+    CHANGE = "change"
+    ABILITY_EFFECT = "ability-effect"
+    ABILITY_BLOCKED = "ability-blocked"
+    VOLATILE_END = "volatile-end"
+
+
+LABELS: dict[Label, dict[str, str] | dict[str, tuple[str, str]]] = {
+    Label.WEATHER: WEATHER_ICON, Label.STATUS: STATUS_ICON, Label.RESIDUAL: RESIDUAL_ICON, Label.STATE: STATE_LABEL,
+    Label.BLOCKED: BLOCKED_TAG, Label.RECOVERED: RECOVERED_TAG, Label.FORM_CAPTION: FORM_CAPTION,
+    Label.ITEM_EFFECT: ITEM_EFFECT_TEXT, Label.EFFECT: EFFECT_TEXT, Label.HP: HP_TEXT, Label.FORM_CHANGE: FORM_CHANGE,
+    Label.STAT: STAT_SHORT, Label.ON_FOE: ON_FOE_TEXT, Label.VOLATILE: VOLATILE_LABEL, Label.CHANGE: CHANGE_TEXT,
+    Label.ABILITY_EFFECT: ABILITY_EFFECT_TEXT, Label.ABILITY_BLOCKED: ABILITY_BLOCKED_TEXT,
+    Label.VOLATILE_END: VOLATILE_END_TEXT,
+}
+
+
+class ActionState(Enum):
+    """What an `Action` line says, in the order `action_state` tells them apart."""
+
+    SELF_HIT = "self-hit"
+    STOPPED = "stopped"
+    COULD_NOT_ACT = "could-not-act"
+    DOUSED = "doused"
+    WEATHER = "weather"
+    YAWN = "yawn"
+    THUNDER_WAVE = "thunder-wave"
+    ON_FOE = "on-foe"
+    HP = "hp"
+    EFFECT_SAYS_ALL = "effect-says-all"
+    EFFECT = "effect"
+    FAILED = "failed"
+    MISSED = "missed"
+    IMMUNE = "immune"
+    HIT = "hit"
+
+
 ABILITY_FORM_KINDS = frozenset(kind for forms in ABILITY_FORMS.values() for kinds in forms.values() for kind in kinds) | {"base"}
 
 
@@ -318,7 +370,8 @@ def _decisive_line(result: BattleResult) -> str | None:
 
 def _decisive_text(event: Event) -> str:
     if isinstance(event, Action):
-        return f"{event.attacker} 💫혼란 자해" if event.blocked == "confusion" else f"{event.attacker} {event.move}"
+        self_hit = action_state(event) is ActionState.SELF_HIT
+        return f"{event.attacker} 💫혼란 자해" if self_hit else f"{event.attacker} {event.move}"
     if isinstance(event, ItemHeal):
         return f"{event.pokemon} @{ITEM_NAMES[event.item]}"
     if isinstance(event, HazardDamage):
@@ -618,46 +671,76 @@ def _faint_line(name: str) -> str:
 
 def _action_line(event: Action, marker: str) -> str:
     head = " ".join([marker, event.attacker, *(RECOVERED_TAG[kind] for kind in event.recovered)])
-    if event.blocked == "confusion":
-        return f"{head} 💫혼란 자해 {event.attacker_hp}%"
-    if event.blocked and event.move:
-        tags = [ON_FOE_TEXT.get(event.effect, ""), *(_change_tag(change, event.side) for change in event.changes)]
-        tags = list(filter(None, tags))
-        return " ".join([f"{head} › {event.move} → {_blocked_tag(event.blocked)}", *tags])
-    if event.blocked:
-        return f"{head} {_blocked_tag(event.blocked)}"
-    head = f"{head} › {event.via}: {event.move}" if event.via else f"{head} › {event.move}"
-    if event.failed and event.weather:
-        return f"{head} → 실패 ({WEATHER_ICON[event.weather]})"
-    if event.weather:
-        return f"{head} {WEATHER_ICON[event.weather]}"
-    if event.effect == "yawn":
-        return f"{head} → {event.defender} 졸음"
-    if event.effect == "thunder-wave":
-        return f"{head} → {event.defender} {STATUS_ICON['paralysis']}"
-    if event.effect in ON_FOE_TEXT:
-        tags = [("자신 " if change.kind in STATUS_ICON and change.side == event.side else "")
-                + _change_tag(change, event.side) for change in event.changes]
-        return " ".join(filter(None, [f"{head} → {event.defender}", ON_FOE_TEXT[event.effect], *tags]))
-    if event.effect in HP_TEXT:
-        text = HP_TEXT[event.effect].format(attacker=event.attacker_hp, defender=event.defender_hp, foe=event.defender)
-        return " ".join([head, text, *(_change_tag(change, event.side) for change in event.changes)])
-    if event.effect in CHANGES_IN_TEXT or event.effect and not event.changes:
-        return f"{head} {EFFECT_TEXT[event.effect]}"
-    if event.effect:
-        tags = [_change_tag(change, event.side) for change in event.changes]
-        return " ".join(filter(None, [head, EFFECT_TEXT.get(event.effect, "→"), *tags]))
-    if event.failed:
-        return f"{head} → 실패"
+    state = action_state(event)
     tags = [_change_tag(change, event.side) for change in event.changes]
-    if event.missed:
-        return " ".join([f"{head} → 빗나감", *tags])
-    if event.multiplier == 0:
-        return " ".join(filter(None, [head, "→", event.defender, "무효", _ability_tag(event), *tags]))
+    match state:
+        case ActionState.SELF_HIT:
+            return f"{head} 💫혼란 자해 {event.attacker_hp}%"
+        case ActionState.STOPPED:
+            tags = list(filter(None, [ON_FOE_TEXT.get(event.effect, ""), *tags]))
+            return " ".join([f"{head} › {event.move} → {_blocked_tag(event.blocked)}", *tags])
+        case ActionState.COULD_NOT_ACT:
+            return f"{head} {_blocked_tag(event.blocked)}"
+    head = f"{head} › {event.via}: {event.move}" if event.via else f"{head} › {event.move}"
+    match state:
+        case ActionState.DOUSED:
+            return f"{head} → 실패 ({WEATHER_ICON[event.weather]})"
+        case ActionState.WEATHER:
+            return f"{head} {WEATHER_ICON[event.weather]}"
+        case ActionState.YAWN:
+            return f"{head} → {event.defender} 졸음"
+        case ActionState.THUNDER_WAVE:
+            return f"{head} → {event.defender} {STATUS_ICON['paralysis']}"
+        case ActionState.ON_FOE:
+            tags = [("자신 " if change.kind in STATUS_ICON and change.side == event.side else "") + tag
+                    for change, tag in zip(event.changes, tags)]
+            return " ".join(filter(None, [f"{head} → {event.defender}", ON_FOE_TEXT[event.effect], *tags]))
+        case ActionState.HP:
+            text = HP_TEXT[event.effect].format(attacker=event.attacker_hp, defender=event.defender_hp,
+                                                foe=event.defender)
+            return " ".join([head, text, *tags])
+        case ActionState.EFFECT_SAYS_ALL:
+            return f"{head} {EFFECT_TEXT[event.effect]}"
+        case ActionState.EFFECT:
+            return " ".join(filter(None, [head, EFFECT_TEXT.get(event.effect, "→"), *tags]))
+        case ActionState.FAILED:
+            return f"{head} → 실패"
+        case ActionState.MISSED:
+            return " ".join([f"{head} → 빗나감", *tags])
+        case ActionState.IMMUNE:
+            return " ".join(filter(None, [head, "→", event.defender, "무효", _ability_tag(event), *tags]))
     hp = FAINTED if event.knockout else f"{event.defender_hp}%"
     item_tags = [f"@{ITEM_NAMES[item]}" for item in (event.attacker_item, event.defender_item) if item]
     pivot = ["↩교체"] if event.pivoted else []
     return " ".join([f"{head} → {event.defender} {hp}", *_hit_tags(event)[:MAX_TAGS], *item_tags, *pivot])
+
+
+def action_state(event: Action) -> ActionState:
+    if event.blocked == "confusion":
+        return ActionState.SELF_HIT
+    if event.blocked:
+        return ActionState.STOPPED if event.move else ActionState.COULD_NOT_ACT
+    if event.weather:
+        return ActionState.DOUSED if event.failed else ActionState.WEATHER
+    if event.effect == "yawn":
+        return ActionState.YAWN
+    if event.effect == "thunder-wave":
+        return ActionState.THUNDER_WAVE
+    if event.effect in ON_FOE_TEXT:
+        return ActionState.ON_FOE
+    if event.effect in HP_TEXT:
+        return ActionState.HP
+    if event.effect in CHANGES_IN_TEXT or event.effect and not event.changes:
+        return ActionState.EFFECT_SAYS_ALL
+    if event.effect:
+        return ActionState.EFFECT
+    if event.failed:
+        return ActionState.FAILED
+    if event.missed:
+        return ActionState.MISSED
+    if event.multiplier == 0:
+        return ActionState.IMMUNE
+    return ActionState.HIT
 
 
 def _blocked_tag(blocked: str) -> str:
