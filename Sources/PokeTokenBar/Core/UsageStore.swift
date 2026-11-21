@@ -656,6 +656,22 @@ final class UsageStore {
     private(set) var lastUsageKnown = false
     /// Providers whose latest enrichment scan failed. Their `lastUsage` is a carried-over value.
     private var failedEnrichmentIDs: Set<String> = []
+    /// The day key a finished enrichment scan started on.
+    private var enrichedDay: String?
+
+    /// Day totals per provider (`[providerID: [day: tokens]]`) from the rolling series of an enrichment
+    /// scan that started today, or nil while there is none yet. Phase 1 carries the previous scan's
+    /// series, so after midnight a non-nil series can still be yesterday's.
+    var dayTotalsByProvider: [String: [String: Int]]? {
+        guard enrichedDay == LocalUsageReader.todayKey(now()) else { return nil }
+        var result: [String: [String: Int]] = [:]
+        for snapshot in snapshots where !failedEnrichmentIDs.contains(snapshot.providerID) {
+            for day in snapshot.recentDaily ?? [] {
+                result[snapshot.providerID, default: [:]][day.date] = day.totalTokens
+            }
+        }
+        return result
+    }
 
     /// How long ago the newest token usage happened (`ProviderSnapshot.lastUsage`, the same value that
     /// keeps a recently used provider's tab visible). nil only before the first complete refresh, which
@@ -1279,6 +1295,7 @@ final class UsageStore {
             }
         }
         failedEnrichmentIDs = failedEnrichment
+        enrichedDay = todayKey
         lastUsageKnown = true
         // Successful empty enrichment removes obsolete carriers; failed reads retain history.
         snapshots.removeAll { !$0.hasDisplayableUsage }
