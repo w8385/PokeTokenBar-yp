@@ -1,4 +1,7 @@
+from types import SimpleNamespace
+
 import pytest
+from slack_rules import violations
 from test_commands import MOVES, NOW, FakePokeAPI, lineups, member
 from test_upload_server import FakeMoves, call
 
@@ -225,14 +228,14 @@ def test_the_moves_screen_lists_learnable_moves_and_a_pick_queues_them_with_the_
     post(server)
     editor = bot(store).editor
     screen = editor.act("UA", MOVES_ACTION, "p1", []).screen
-    select = screen.blocks[1]["elements"][0]
+    select = screen.blocks[0]["accessory"]
     assert (select["action_id"], select["max_selected_items"]) == (SET_MOVES_ACTION, 4)
     groups = {group["label"]["text"]: [option["value"] for option in group["options"]] for group in select["option_groups"]}
     assert groups == {"레벨업": [str(move["id"]) for move in MOVES[25] if move["level"] <= 42], "기술머신": ["89"]}
     editor.act("UA", SET_MOVES_ACTION, "p1", ["85", "89", "999"])
     first = RemoteOps(store).party("UA").party[0]
     assert (first["moves"], first["machine"]) == ([85, 89], [89])
-    again = editor.act("UA", MOVES_ACTION, "p1", []).screen.blocks[1]["elements"][0]
+    again = editor.act("UA", MOVES_ACTION, "p1", []).screen.blocks[0]["accessory"]
     assert [option["value"] for option in again["initial_options"]] == ["85", "89"]
     editor.act("UA", DEFAULT_MOVES_ACTION, "p1", [])
     assert "moves" not in RemoteOps(store).party("UA").party[0]
@@ -354,6 +357,29 @@ def test_the_options_listener_filters_the_swap_menu_by_the_typed_name(server):
     assert [option["value"] for option in answered[0]["options"]] == ["p2|b4"]
 
 
+def test_a_screen_slack_refuses_through_the_response_url_is_logged_with_its_error(server, caplog):
+    store, _ = server
+    post(server)
+    refusal = SimpleNamespace(status_code=400, body="invalid_blocks")
+    with caplog.at_level("INFO", logger="ypoke.transport"):
+        editor_listener(bot(store).editor)(ack=lambda: None, body={"user": {"id": "UA"}},
+                                           action={"action_id": MOVES_ACTION, "value": "p1"},
+                                           respond=lambda **message: refusal)
+    assert [(record.levelname, record.getMessage()) for record in caplog.records
+            if "rejected" in record.getMessage()] == [
+        ("WARNING", 'response url rejected lineup_moves: status=400 body="invalid_blocks"')]
+
+
+def test_every_options_request_is_logged_with_its_block_and_count(server, caplog):
+    store, _ = server
+    post(server)
+    with caplog.at_level("INFO", logger="ypoke.transport"):
+        editor_options_listener(bot(store).editor)(ack=lambda **reply: None, body={"user": {"id": "UA"}},
+                                                   payload={"action_id": SWAP_ACTION, "block_id": "p2", "value": ""})
+    (line,) = [record.getMessage() for record in caplog.records if record.getMessage().startswith("options")]
+    assert line.startswith("options action=lineup_swap block=p2 query_length=0 -> 2 options in ")
+
+
 def test_the_party_slash_command_answers_with_the_editor(server):
     store, _ = server
     post(server)
@@ -368,3 +394,15 @@ def test_the_result_dm_words_a_cancelled_lineup_op_with_its_reason(server):
     (op,) = RemoteOps(store).pending("UA")
     message = RemoteOps(store).ack("UA", [], [(op.id, "gone")])
     assert "대결 라인업 바꾸기: 고라파덕 · 꼬부기" in message.text and REASONS["gone"] in message.text
+
+
+def test_every_lineup_screen_follows_slacks_block_rules(server):
+    store, _ = server
+    six = [party_member(f"p{index}", species, 20) for index, species in enumerate((25, 7, 8, 9, 26, 172), 1)]
+    post(server, party=six)
+    editor = bot(store).editor
+    screens = [editor.handle("UA", PARTY_COMMAND, ""), editor.handle("UA", BOX_COMMAND, ""),
+               editor.act("UA", BOX_ADD_ACTION, "b1", []).screen, editor.act("UA", MOVES_ACTION, "p1", []).screen,
+               editor.act("UA", SET_MOVES_ACTION, "p1", ["85", "89"]).screen]
+    assert [violations(screen.blocks) for screen in screens] == [[]] * len(screens)
+    assert editor.act("UA", MOVES_ACTION, "p1", []).screen.blocks[0]["accessory"]["type"] == "multi_static_select"

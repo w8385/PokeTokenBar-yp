@@ -2,6 +2,7 @@ import json
 from types import SimpleNamespace
 
 import pytest
+from slack_rules import violations
 from test_miracle import FakeBoard, FakeClient
 from test_remote_lineup import BAG, POOL, LineupAPI, box_entry, party_member
 from test_remote_lineup import PARTY as ALICE_PARTY
@@ -347,3 +348,15 @@ def test_an_app_without_remote_ops_can_still_offer_from_slack(api):
     assert OLD_APP_REFUSAL not in screen.text
     assert offer(api, "b1")["replace_original"] is True
     assert [trade["give"]["id"] for trade in open_trades(api)] == ["b1"]
+
+
+def test_every_trade_and_miracle_screen_follows_slacks_block_rules(api):
+    both(api)
+    editor = bot(api).trading
+    to = f"to:{api.trades.handle(BOB)}"
+    screens = [editor.handle(ALICE, TRADE_COMMAND, ""), editor.handle(ALICE, TRADE_COMMAND, f"<@{BOB}>"),
+               editor.handle(ALICE, TRADE_COMMAND, f"<@{BOB}> 고라파덕"), editor.handle(ALICE, MIRACLE_COMMAND, ""),
+               editor.handle(BOB, TRADE_COMMAND, "")]
+    blocks = [screen.blocks for screen in screens]
+    blocks.append(press(api, GIVE_ACTION, f"{to}|b1", selected=True)["blocks"])
+    assert [violations(block_list) for block_list in blocks] == [[]] * len(blocks)
