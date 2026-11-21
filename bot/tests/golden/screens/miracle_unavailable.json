@@ -1,0 +1,27 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*미라클 교환*\n지금은 미라클 교환을 쓸 수 없어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "response_type": "ephemeral",
+   "text": "*미라클 교환*\n회사에서 마지막으로 동기화: 11월 12일 18:30"
+  }
+ ]
+]

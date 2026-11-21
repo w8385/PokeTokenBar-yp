@@ -1,0 +1,263 @@
+[
+ [
+  "chat.postEphemeral",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*내 대결 파티* (2마리)",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "1. 피카츄 Lv.42\n    성격 없음 · 특성 없음 · @먹다남은음식\n    기술: 레벨에 맞는 기본 기술",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p1",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "options": [
+        {
+         "text": {
+          "text": "고라파덕 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "p1|b1"
+        },
+        {
+         "text": {
+          "text": "피카츄 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "p1|b2"
+        },
+        {
+         "text": {
+          "text": "발챙이 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "p1|b3"
+        },
+        {
+         "text": {
+          "text": "콘치 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "p1|b4"
+        }
+       ],
+       "placeholder": {
+        "text": "바꾸기",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      },
+      {
+       "action_id": "lineup_moves",
+       "text": {
+        "text": "기술",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p1"
+      },
+      {
+       "action_id": "lineup_item",
+       "initial_option": {
+        "text": {
+         "text": "@먹다남은음식",
+         "type": "plain_text"
+        },
+        "value": "p1|leftovers"
+       },
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "도구 검색·고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_order",
+       "options": [
+        {
+         "text": {
+          "text": "아래로",
+          "type": "plain_text"
+         },
+         "value": "down|p1"
+        },
+        {
+         "text": {
+          "text": "빼기",
+          "type": "plain_text"
+         },
+         "value": "drop|p1"
+        }
+       ],
+       "type": "overflow"
+      },
+      {
+       "action_id": "train_open",
+       "text": {
+        "text": "트레이닝",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p1"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "text": {
+      "text": "2. 꼬부기 Lv.20\n    성격 없음 · 특성 없음 · 도구 없음\n    기술: 레벨에 맞는 기본 기술",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "p2",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "options": [
+        {
+         "text": {
+          "text": "고라파덕 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "p2|b1"
+        },
+        {
+         "text": {
+          "text": "콘치 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "p2|b4"
+        }
+       ],
+       "placeholder": {
+        "text": "바꾸기",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      },
+      {
+       "action_id": "lineup_moves",
+       "text": {
+        "text": "기술",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      },
+      {
+       "action_id": "lineup_item",
+       "initial_option": {
+        "text": {
+         "text": "도구 없음",
+         "type": "plain_text"
+        },
+        "value": "p2|"
+       },
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "도구 검색·고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      },
+      {
+       "action_id": "lineup_order",
+       "options": [
+        {
+         "text": {
+          "text": "위로",
+          "type": "plain_text"
+         },
+         "value": "up|p2"
+        },
+        {
+         "text": {
+          "text": "빼기",
+          "type": "plain_text"
+         },
+         "value": "drop|p2"
+        }
+       ],
+       "type": "overflow"
+      },
+      {
+       "action_id": "train_open",
+       "text": {
+        "text": "트레이닝",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "p2"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "block_id": "+",
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "options": [
+        {
+         "text": {
+          "text": "고라파덕 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "+|b1"
+        },
+        {
+         "text": {
+          "text": "콘치 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "+|b4"
+        }
+       ],
+       "placeholder": {
+        "text": "포켓몬 넣기",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "한 종에 한 마리, 같은 도구는 한 마리만 들 수 있어요. 규칙에 걸리는 포켓몬·도구는 목록에 없어요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "바꾼 라인업은 동료의 `/대결`에 바로 쓰이고, 앱은 다음에 회사에서 동기화할 때 받아요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "channel": "CBATTLE",
+   "text": "*내 대결 파티* (2마리)\n회사에서 마지막으로 동기화: 11월 12일 18:30",
+   "thread_ts": "1.5",
+   "user": "U0000000A"
+  }
+ ]
+]

@@ -1,0 +1,47 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*내 박스* '고라' 검색 1마리 · 1/1쪽",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "accessory": {
+      "action_id": "lineup_box_add",
+      "text": {
+       "text": "엔트리에 넣기",
+       "type": "plain_text"
+      },
+      "type": "button",
+      "value": "b1"
+     },
+     "text": {
+      "text": "1. 고라파덕 Lv.30 대담",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "text": "버튼이 없는 포켓몬은 교환에 올렸거나, 파티에 같은 종·같은 도구가 있어요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "response_type": "ephemeral",
+   "text": "*내 박스* '고라' 검색 1마리 · 1/1쪽\n회사에서 마지막으로 동기화: 11월 12일 18:30"
+  }
+ ]
+]

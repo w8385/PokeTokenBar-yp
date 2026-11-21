@@ -1,0 +1,18 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "아직 YPoke에 연결하지 않았어요. `/포켓몬연결`로 연결해 주세요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "response_type": "ephemeral",
+   "text": "아직 YPoke에 연결하지 않았어요. `/포켓몬연결`로 연결해 주세요."
+  }
+ ]
+]

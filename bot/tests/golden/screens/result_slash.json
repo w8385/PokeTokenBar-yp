@@ -1,0 +1,133 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "elements": [
+      {
+       "text": "<@U0000000A>님이 `/대결 <@U0000000B>`을 썼어요",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "<@U0000000B>: 같은 종은 한 마리만 나가요",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "accessory": {
+      "alt_text": "라이츄",
+      "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/26.png",
+      "type": "image"
+     },
+     "text": {
+      "text": "*<@U0000000A> 승리*\n3턴 만에 끝났어요\n결정타: 라이츄의 10만볼트",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "fields": [
+      {
+       "text": "*<@U0000000A>*\n피카츄 Lv.50\n라이츄 Lv.50",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "*<@U0000000B>*\n꼬부기 Lv.50",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "rematch",
+       "text": {
+        "text": "다시 붙기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "U0000000A:U0000000B:1:U0000000B"
+      }
+     ],
+     "type": "actions"
+    }
+   ],
+   "channel": "CBATTLE",
+   "text": "<@U0000000A>님이 `/대결 <@U0000000B>`을 썼어요\n<@U0000000A> 승리 · 3턴",
+   "thread_ts": null
+  }
+ ],
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "elements": [
+      {
+       "alt_text": "피카츄",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+       "type": "image"
+      },
+      {
+       "text": "🔵 피카츄 vs 🔴 꼬부기",
+       "type": "mrkdwn"
+      },
+      {
+       "alt_text": "꼬부기",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
+       "type": "image"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "text": {
+      "text": "*1턴*\n피카츄의 10만볼트!\n꼬부기의 물대포!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*2턴*\n피카츄는 쓰러졌다!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "alt_text": "라이츄",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/26.png",
+       "type": "image"
+      },
+      {
+       "text": "🔵 라이츄 vs 🔴 꼬부기",
+       "type": "mrkdwn"
+      },
+      {
+       "alt_text": "꼬부기",
+       "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
+       "type": "image"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "text": {
+      "text": "*3턴*\n라이츄의 10만볼트!",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "channel": "CBATTLE",
+   "text": "대결 로그",
+   "thread_ts": "9.1"
+  }
+ ]
+]

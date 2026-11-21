@@ -1,0 +1,10 @@
+[
+ [
+  "respond",
+  {
+   "blocks": null,
+   "response_type": "ephemeral",
+   "text": "자기 자신과는 대결할 수 없어요."
+  }
+ ]
+]

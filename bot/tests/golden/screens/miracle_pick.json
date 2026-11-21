@@ -1,0 +1,56 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*미라클 교환*\n고라파덕 Lv.30 대담을(를) 미라클 교환에 올릴까요?\n대결 채널에 카드가 올라가고, 먼저 고른 동료의 포켓몬과 바로 바뀌어요. 되돌릴 수 없어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "offer_miracle_post",
+       "style": "primary",
+       "text": {
+        "text": "올리기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "b1"
+      },
+      {
+       "action_id": "offer_miracle_back",
+       "text": {
+        "text": "다른 포켓몬",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "miracle"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "먼저 카드의 교환하기를 누르고 자기 포켓몬을 고른 동료와 바로 바뀌어요. 한 번에 한 마리, 24시간 동안 열려 있어요. 받은 포켓몬은 앱이 회사에서 동기화할 때 들어와요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "replace_original": true,
+   "response_type": "ephemeral",
+   "text": "고라파덕 Lv.30 대담 미라클 교환"
+  }
+ ]
+]

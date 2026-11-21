@@ -1,0 +1,27 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*내 가방*\n쓸 수 있는 토큰: 500\n• 구애스카프 ×1\n• 기술머신 지진 ×1\n• 이상한사탕 ×3\n*대기 중인 슬랙 작업*\n없어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "response_type": "ephemeral",
+   "text": "*내 가방*\n회사에서 마지막으로 동기화: 11월 12일 18:30"
+  }
+ ]
+]

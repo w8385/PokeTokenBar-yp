@@ -1,0 +1,30 @@
+[
+ [
+  "ack",
+  {
+   "options": [
+    {
+     "text": {
+      "text": "몸통박치기 (Lv.1) · 레벨업",
+      "type": "plain_text"
+     },
+     "value": "33"
+    },
+    {
+     "text": {
+      "text": "지진 · 기술머신",
+      "type": "plain_text"
+     },
+     "value": "89"
+    },
+    {
+     "text": {
+      "text": "물대포 (Lv.3) · 레벨업",
+      "type": "plain_text"
+     },
+     "value": "55"
+    }
+   ]
+  }
+ ]
+]

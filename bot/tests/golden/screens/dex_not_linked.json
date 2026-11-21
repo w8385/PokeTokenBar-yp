@@ -1,0 +1,10 @@
+[
+ [
+  "respond",
+  {
+   "blocks": null,
+   "response_type": "ephemeral",
+   "text": "<@U0000000C>님은 아직 YPoke에 연결하지 않았어요."
+  }
+ ]
+]

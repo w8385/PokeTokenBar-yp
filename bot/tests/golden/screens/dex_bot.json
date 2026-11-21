@@ -1,0 +1,10 @@
+[
+ [
+  "respond",
+  {
+   "blocks": null,
+   "response_type": "ephemeral",
+   "text": "YPoke는 도감이 없어요."
+  }
+ ]
+]

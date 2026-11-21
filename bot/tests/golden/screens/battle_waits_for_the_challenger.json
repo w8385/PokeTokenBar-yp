@@ -1,0 +1,17 @@
+[
+ [
+  "respond",
+  {
+   "response_type": "in_channel",
+   "text": "<@U0000000C> 님이 `/대결` <@U0000000B> 을(를) 썼어요\n<@U0000000C>님은 아직 YPoke에 포켓몬이 없어요. DM의 연결 버튼을 누르고 회사 네트워크에서 앱을 켜 두면 이 대결이 열려요."
+  }
+ ],
+ [
+  "respond",
+  {
+   "blocks": null,
+   "response_type": "ephemeral",
+   "text": "아직 내 포켓몬이 YPoke에 없어요. DM의 연결 버튼을 누르고 회사 네트워크에서 앱을 한 번 켜 두면 <@U0000000B>과(와)의 대결이 바로 열려요. 24시간이 지나면 취소돼요. DM이 안 보이면 `/포켓몬연결`를 써 주세요. 앱은 <https://github.com/w8385/PokeTokenBar-yp/releases/latest|여기서> 받아요."
+  }
+ ]
+]

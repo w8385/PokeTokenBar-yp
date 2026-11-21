@@ -1,0 +1,70 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "버튼을 누르면 PokeTokenBar가 YPoke에 연결돼요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "open_poketokenbar",
+       "style": "primary",
+       "text": {
+        "text": "PokeTokenBar 연결",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "url": "poketokenbar://ypoke-register?token=token-2"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "버튼이 안 되면 앱 설정에 이 토큰을 붙여 넣어 주세요: `token-2`",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "elements": [
+      {
+       "text": "앱이 없으면 <https://github.com/w8385/PokeTokenBar-yp/releases/latest|여기서 받아요>.",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "channel": "U0000000A",
+   "text": "PokeTokenBar를 YPoke에 연결하세요."
+  }
+ ],
+ [
+  "chat.postEphemeral",
+  {
+   "blocks": null,
+   "channel": "CBATTLE",
+   "text": "DM으로 연결 링크를 보냈어요.",
+   "thread_ts": "1.5",
+   "user": "U0000000A"
+  }
+ ],
+ [
+  "chat.postMessage",
+  {
+   "blocks": null,
+   "channel": "CBATTLE",
+   "text": "<@U0000000A>님이 YPoke 연결 링크를 받았어요.",
+   "thread_ts": "1.5"
+  }
+ ]
+]

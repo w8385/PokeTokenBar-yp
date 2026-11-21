@@ -1,0 +1,63 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*교환* · 고라파덕 Lv.30 대담\n누구에게 제안할까요? 박스 포켓몬을 올린 동료만 나와요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "offer_to",
+       "options": [
+        {
+         "text": {
+          "text": "밥",
+          "type": "plain_text"
+         },
+         "value": "to:0000000000000001|b1"
+        }
+       ],
+       "placeholder": {
+        "text": "제안할 동료 고르기",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      },
+      {
+       "action_id": "offer_back",
+       "text": {
+        "text": "다른 포켓몬",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "to:|"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "상대가 DM에서 돌려줄 포켓몬을 고르고 수락하면 나에게 확인 DM이 와요. 제안은 24시간 뒤 사라지고, 받은 포켓몬은 앱이 회사에서 동기화할 때 들어와요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "replace_original": true,
+   "response_type": "ephemeral",
+   "text": "고라파덕 Lv.30 대담 교환"
+  }
+ ]
+]

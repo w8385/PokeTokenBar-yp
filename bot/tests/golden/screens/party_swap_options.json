@@ -1,0 +1,37 @@
+[
+ [
+  "ack",
+  {
+   "options": [
+    {
+     "text": {
+      "text": "피카츄 Lv.42",
+      "type": "plain_text"
+     },
+     "value": "p2|p1"
+    },
+    {
+     "text": {
+      "text": "피카츄 Lv.30 대담",
+      "type": "plain_text"
+     },
+     "value": "p2|b2"
+    },
+    {
+     "text": {
+      "text": "발챙이 Lv.30 대담",
+      "type": "plain_text"
+     },
+     "value": "p2|b3"
+    },
+    {
+     "text": {
+      "text": "콘치 Lv.30 대담",
+      "type": "plain_text"
+     },
+     "value": "p2|b4"
+    }
+   ]
+  }
+ ]
+]

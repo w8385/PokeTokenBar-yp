@@ -1,0 +1,10 @@
+[
+ [
+  "respond",
+  {
+   "blocks": null,
+   "response_type": "in_channel",
+   "text": "<@U0000000A> 님이 `/랭킹` 을(를) 썼어요\n이번 주에는 아직 대결이 없어요."
+  }
+ ]
+]

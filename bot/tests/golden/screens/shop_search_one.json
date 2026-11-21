@@ -1,0 +1,55 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*구애머리띠* · 지닌 도구\n값 200토큰 · 쓸 수 있는 토큰 500",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "shop_buy_1",
+       "style": "primary",
+       "text": {
+        "text": "1개 사기 (200)",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "1|200|choiceBand"
+      },
+      {
+       "action_id": "shop_back",
+       "text": {
+        "text": "상점으로",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "back"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "산 물건은 `/가방`과 `/파티` 도구에 바로 들어와요. 앱은 다음에 회사에서 동기화할 때 같은 값으로 사요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "response_type": "ephemeral",
+   "text": "*구애머리띠* · 지닌 도구\n회사에서 마지막으로 동기화: 11월 12일 18:30"
+  }
+ ]
+]

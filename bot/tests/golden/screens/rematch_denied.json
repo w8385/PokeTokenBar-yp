@@ -1,0 +1,11 @@
+[
+ [
+  "respond",
+  {
+   "blocks": null,
+   "replace_original": false,
+   "response_type": "ephemeral",
+   "text": "대결한 두 사람만 누를 수 있어요."
+  }
+ ]
+]

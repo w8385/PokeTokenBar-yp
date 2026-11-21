@@ -1,0 +1,94 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*파티가 가득 찼어요.* 고라파덕 Lv.30 대담을(를) 누구 대신 넣을까요?",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "lineup_swap",
+       "options": [
+        {
+         "text": {
+          "text": "1. 피카츄 Lv.20",
+          "type": "plain_text"
+         },
+         "value": "p1|b1"
+        },
+        {
+         "text": {
+          "text": "2. 꼬부기 Lv.20",
+          "type": "plain_text"
+         },
+         "value": "p2|b1"
+        },
+        {
+         "text": {
+          "text": "3. 어니부기 Lv.20",
+          "type": "plain_text"
+         },
+         "value": "p3|b1"
+        },
+        {
+         "text": {
+          "text": "4. 거북왕 Lv.20",
+          "type": "plain_text"
+         },
+         "value": "p4|b1"
+        },
+        {
+         "text": {
+          "text": "5. 라이츄 Lv.20",
+          "type": "plain_text"
+         },
+         "value": "p5|b1"
+        },
+        {
+         "text": {
+          "text": "6. 피츄 Lv.20",
+          "type": "plain_text"
+         },
+         "value": "p6|b1"
+        }
+       ],
+       "placeholder": {
+        "text": "뺄 포켓몬 고르기",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      },
+      {
+       "action_id": "lineup_back",
+       "text": {
+        "text": "파티 보기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "b1"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "한 종에 한 마리, 같은 도구는 한 마리만 들 수 있어요. 규칙에 걸리는 포켓몬·도구는 목록에 없어요.",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "replace_original": true,
+   "response_type": "ephemeral",
+   "text": "*파티가 가득 찼어요.* 고라파덕 Lv.30 대담을(를) 누구 대신 넣을까요?"
+  }
+ ]
+]

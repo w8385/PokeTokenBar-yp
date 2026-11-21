@@ -1,0 +1,19 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "그 포켓몬은 지금 교환할 수 없어요. 명령을 다시 열어 주세요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    }
+   ],
+   "replace_original": false,
+   "response_type": "ephemeral",
+   "text": "그 포켓몬은 지금 교환할 수 없어요. 명령을 다시 열어 주세요."
+  }
+ ]
+]

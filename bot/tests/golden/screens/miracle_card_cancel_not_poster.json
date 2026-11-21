@@ -1,0 +1,11 @@
+[
+ [
+  "respond",
+  {
+   "blocks": null,
+   "replace_original": false,
+   "response_type": "ephemeral",
+   "text": "올린 사람만 내릴 수 있어요."
+  }
+ ]
+]

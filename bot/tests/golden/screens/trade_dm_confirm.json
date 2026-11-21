@@ -1,0 +1,17 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": null,
+   "channel": "U0000000B",
+   "text": "교환이 끝났어요! 고라파덕 Lv.30 ↔ 꼬부기 Lv.30. 앱을 켜 두면 곧 도착해요."
+  }
+ ],
+ [
+  "respond",
+  {
+   "replace_original": true,
+   "text": "교환이 끝났어요! 고라파덕 Lv.30 ↔ 꼬부기 Lv.30. 앱을 켜 두면 곧 도착해요."
+  }
+ ]
+]

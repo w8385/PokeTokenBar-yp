@@ -1,0 +1,107 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "accessory": {
+      "alt_text": "고라파덕",
+      "image_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/54.png",
+      "type": "image"
+     },
+     "text": {
+      "text": "<@U0000000A>님이 미라클 교환에 고라파덕 Lv.30을(를) 올렸어요",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "text": "먼저 고른 사람과 바로 교환돼요. 24시간 동안 열려 있어요.",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "miracle_accept",
+       "style": "primary",
+       "text": {
+        "text": "교환하기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "00000000000000010000000000000001"
+      },
+      {
+       "action_id": "miracle_cancel",
+       "text": {
+        "text": "내리기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "00000000000000010000000000000001"
+      }
+     ],
+     "type": "actions"
+    }
+   ],
+   "channel": "CHOME",
+   "text": "<@U0000000A>님이 미라클 교환에 고라파덕 Lv.30을(를) 올렸어요"
+  }
+ ],
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "✅ 고라파덕 Lv.30 대담을(를) 미라클 교환에 올렸어요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*미라클 교환*\n지금 올린 포켓몬: 고라파덕 Lv.30 대담\n한 번에 한 마리만 올릴 수 있어요. 다른 포켓몬을 올리려면 먼저 내려 주세요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "offer_miracle_down",
+       "text": {
+        "text": "내리기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "00000000000000010000000000000001"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "먼저 카드의 교환하기를 누르고 자기 포켓몬을 고른 동료와 바로 바뀌어요. 한 번에 한 마리, 24시간 동안 열려 있어요. 받은 포켓몬은 앱이 회사에서 동기화할 때 들어와요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "replace_original": true,
+   "response_type": "ephemeral",
+   "text": "*미라클 교환*"
+  }
+ ]
+]

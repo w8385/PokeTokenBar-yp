@@ -1,0 +1,49 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*교환 확인*\n<@U0000000B>님이 꼬부기 Lv.30을(를) 내놓고 수락했어요. 내 고라파덕 Lv.30과(와) 바꿀까요?",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "trade_accept",
+       "style": "primary",
+       "text": {
+        "text": "교환하기",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "00000000000000080000000000000008"
+      },
+      {
+       "action_id": "trade_decline",
+       "text": {
+        "text": "거절",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "00000000000000080000000000000008"
+      }
+     ],
+     "type": "actions"
+    }
+   ],
+   "channel": "U0000000A",
+   "text": "<@U0000000B>님이 꼬부기 Lv.30을(를) 내놓고 수락했어요. 내 고라파덕 Lv.30과(와) 바꿀까요?"
+  }
+ ],
+ [
+  "respond",
+  {
+   "replace_original": true,
+   "text": "수락했어요. 상대가 확인하면 교환이 끝나요."
+  }
+ ]
+]

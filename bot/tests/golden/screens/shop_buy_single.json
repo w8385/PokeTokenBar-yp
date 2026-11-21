@@ -1,0 +1,46 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "✅ 기술머신 번개 ×1을(를) 샀어요. 남은 토큰 100\n*기술머신 87* · 기술머신\n값 300토큰 · 쓸 수 있는 토큰 100\n가방에 1개 있어요.\n토큰이 모자라요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "shop_back",
+       "text": {
+        "text": "상점으로",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "back"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "산 물건은 `/가방`과 `/파티` 도구에 바로 들어와요. 앱은 다음에 회사에서 동기화할 때 같은 값으로 사요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "replace_original": true,
+   "response_type": "ephemeral",
+   "text": "✅ 기술머신 번개 ×1을(를) 샀어요. 남은 토큰 100\n회사에서 마지막으로 동기화: 11월 12일 18:30"
+  }
+ ]
+]

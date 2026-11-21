@@ -1,0 +1,178 @@
+[
+ [
+  "chat.postMessage",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*교환 제안*\n<@U0000000A>님이 고라파덕 Lv.30을(를) 내놓고 교환을 제안했어요. 24시간 안에 답해 주세요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "00000000000000080000000000000008",
+     "elements": [
+      {
+       "action_id": "trade_pick",
+       "options": [
+        {
+         "text": {
+          "text": "꼬부기 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "00000000000000080000000000000008|bob-1"
+        },
+        {
+         "text": {
+          "text": "이상해씨 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "00000000000000080000000000000008|bob-2"
+        }
+       ],
+       "placeholder": {
+        "text": "내가 내놓을 포켓몬 고르기",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "trade_accept",
+       "style": "primary",
+       "text": {
+        "text": "수락",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "00000000000000080000000000000008"
+      },
+      {
+       "action_id": "trade_decline",
+       "text": {
+        "text": "거절",
+        "type": "plain_text"
+       },
+       "type": "button",
+       "value": "00000000000000080000000000000008"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "앨리스님의 앱과 내 앱이 켜져 있어야 포켓몬이 오가요.",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "channel": "U0000000B",
+   "text": "<@U0000000A>님이 고라파덕 Lv.30을(를) 내놓고 교환을 제안했어요. 24시간 안에 답해 주세요."
+  }
+ ],
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "✅ 밥님에게 고라파덕 Lv.30을(를) 내놓고 교환을 제안했어요. 상대가 고르고 수락하면 DM이 와요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "text": {
+      "text": "*교환*\n내놓을 박스 포켓몬을 고르세요. 졸업했고, 키우는 자리·대결 라인업에 없고, 다른 교환에 걸리지 않은 포켓몬만 나와요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "block_id": "to:",
+     "elements": [
+      {
+       "action_id": "offer_give",
+       "options": [
+        {
+         "text": {
+          "text": "피카츄 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "to:|b2"
+        },
+        {
+         "text": {
+          "text": "발챙이 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "to:|b3"
+        },
+        {
+         "text": {
+          "text": "콘치 Lv.30 대담",
+          "type": "plain_text"
+         },
+         "value": "to:|b4"
+        }
+       ],
+       "placeholder": {
+        "text": "내가 내놓을 포켓몬 고르기",
+        "type": "plain_text"
+       },
+       "type": "static_select"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "text": {
+      "text": "*진행 중인 교환*",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "accessory": {
+      "action_id": "offer_cancel",
+      "text": {
+       "text": "취소",
+       "type": "plain_text"
+      },
+      "type": "button",
+      "value": "00000000000000080000000000000008"
+     },
+     "text": {
+      "text": "내 고라파덕 Lv.30 → 밥님 · 상대가 고르는 중이에요",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "text": "상대가 DM에서 돌려줄 포켓몬을 고르고 수락하면 나에게 확인 DM이 와요. 제안은 24시간 뒤 사라지고, 받은 포켓몬은 앱이 회사에서 동기화할 때 들어와요.",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "replace_original": true,
+   "response_type": "ephemeral",
+   "text": "*교환*"
+  }
+ ]
+]

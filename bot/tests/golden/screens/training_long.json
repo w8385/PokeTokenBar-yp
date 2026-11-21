@@ -1,0 +1,45 @@
+[
+ [
+  "respond",
+  {
+   "blocks": [
+    {
+     "text": {
+      "text": "*트레이닝*\n트레이닝할 포켓몬을 고르세요. 파티와 박스(교환에 올린 포켓몬 빼고)에서 골라요.",
+      "type": "mrkdwn"
+     },
+     "type": "section"
+    },
+    {
+     "elements": [
+      {
+       "action_id": "train_pick",
+       "min_query_length": 0,
+       "placeholder": {
+        "text": "포켓몬 고르기",
+        "type": "plain_text"
+       },
+       "type": "external_select"
+      }
+     ],
+     "type": "actions"
+    },
+    {
+     "elements": [
+      {
+       "text": "쓸 수 있는 토큰 500",
+       "type": "mrkdwn"
+      },
+      {
+       "text": "회사에서 마지막으로 동기화: 11월 12일 18:30",
+       "type": "mrkdwn"
+      }
+     ],
+     "type": "context"
+    }
+   ],
+   "response_type": "ephemeral",
+   "text": "*트레이닝*"
+  }
+ ]
+]
