@@ -35,6 +35,8 @@ GYM_BATTLE_INTERVAL = 3.0
 ABILITY_NAME = re.compile(r"[a-z][a-z-]{0,39}")
 INDIVIDUAL_ID = re.compile(r"[^|\s]{1,64}")
 FORM_KEY = re.compile(r"[a-zA-Z][a-zA-Z0-9-]{0,39}")
+ITEM_KEY = re.compile(r"[a-zA-Z][a-zA-Z0-9_:-]{0,79}")
+HELD_SLUG = re.compile(r"[a-z][a-z0-9-]{0,39}")
 MAX_FORMS = 8
 IV_KEYS = ("hp", "attack", "defense", "special_attack", "special_defense", "speed")
 
@@ -557,7 +559,22 @@ def _training_hints(member: dict) -> dict:
         options = [_form_option(form) for form in forms[:MAX_FORMS]]
         if options and None not in options:
             hints["forms"] = options
+    if (evolution := _evolution(member.get("evolution"))) is not None:
+        hints["evolution"] = evolution
     return hints
+
+
+def _evolution(evolution: object) -> dict | None:
+    if not isinstance(evolution, dict) or not isinstance(item := evolution.get("item"), str):
+        return None
+    if not ITEM_KEY.fullmatch(item) or not _is_int(to := evolution.get("pokemon_id")) or not _valid_pokemon_id(to):
+        return None
+    held = evolution.get("held_item")
+    if held is None:
+        return {"item": item, "pokemon_id": to}
+    if not (isinstance(held, str) and HELD_SLUG.fullmatch(held)):
+        return None
+    return {"item": item, "pokemon_id": to, "held_item": held}
 
 
 def _form_option(form: object) -> dict | None:
