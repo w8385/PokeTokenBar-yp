@@ -5,6 +5,7 @@ app's training tab does. Values carry individual ids, so a press on an older mes
 from collections.abc import Callable
 
 from ypoke import blocks as kit
+from ypoke.editor import join_value, split_value
 from ypoke.lineup_editor import (
     MAX_MOVES,
     TRAINING_OPEN_ACTION,
@@ -84,7 +85,7 @@ class TrainingEditor:
         refusal = self._remote.edit_refusal(user_id, TRAIN)
         if view is None or refusal:
             return _note(refusal or STALE)
-        individual_id, _, choice = value.partition("|")
+        individual_id, choice = split_value(value)
         if action_id == BACK_ACTION:
             return EditorReply(self._picker(view, self._matching(view, ""), ""))
         member = owned(view, individual_id)
@@ -305,7 +306,7 @@ def _nature_select(view: View, member: dict) -> dict | None:
     cost = _cost(view, NATURE)
     if cost is None:
         return None
-    options = [kit.option(name, f"{member['id']}|{key}") for key, name in NATURE_NAMES_KO.items()
+    options = [kit.option(name, join_value(member["id"], key)) for key, name in NATURE_NAMES_KO.items()
                if key != member.get("nature")]
     return kit.static_select(NATURE_ACTION, f"민트로 성격 바꾸기 ({cost})", options)
 
@@ -327,7 +328,7 @@ def _cap_select(view: View, member: dict) -> dict | None:
     if not count or not stats:
         return None
     return kit.static_select(CAP_ACTION, f"은색병뚜껑 (가방 ×{count})",
-                             [kit.option(STAT_NAMES[stat], f"{member['id']}|{stat}") for stat in stats])
+                             [kit.option(STAT_NAMES[stat], join_value(member["id"], stat)) for stat in stats])
 
 
 def _gold_cap_button(view: View, member: dict) -> dict | None:
@@ -348,7 +349,7 @@ def _form_select(view: View, member: dict) -> dict | None:
     if not forms or not item_count(view, member.get("form_tool", "")):
         return None
     return kit.static_select(FORM_ACTION, "폼 바꾸기", [
-        kit.option(FORM_NAMES.get(form["form"], form["form"]), f"{member['id']}|{form['form']}") for form in forms])
+        kit.option(FORM_NAMES.get(form["form"], form["form"]), join_value(member["id"], form["form"])) for form in forms])
 
 
 def _traits(member: dict) -> str:

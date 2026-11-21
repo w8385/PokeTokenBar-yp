@@ -7,6 +7,7 @@ so a press on an older message still names its Pokémon."""
 import re
 
 from ypoke import blocks as kit
+from ypoke.editor import join_value, split_value
 from ypoke.lineup_editor import EditorReply
 from ypoke.miracle import POST_ERRORS, MiracleService
 from ypoke.remote_ops import RemoteOps, View
@@ -96,7 +97,7 @@ class TradeEditor:
             return self._miracle_act(user_id, view, action_id, value)
         if action_id == CANCEL_ACTION:
             return self._cancel(user_id, view, value)
-        owner, _, give_id = value.partition("|")
+        owner, give_id = split_value(value)
         to = owner.removeprefix(TO_PREFIX)
         if action_id == BACK_ACTION:
             return EditorReply(self._trade_screen(user_id, view, "", to))
@@ -160,12 +161,12 @@ class TradeEditor:
     def _confirm(self, view: View, to: str, entry: dict) -> Screen:
         name = self._coworker_name(to)
         label = option_labels([entry])[0]
-        value = f"{TO_PREFIX}{to}|{entry['id']}"
+        value = join_value(f"{TO_PREFIX}{to}", entry["id"])
         blocks = [
             kit.section(f"*교환 제안*\n내 {label}을(를) {name}님에게 내놓고 교환을 제안할까요?\n"
                      f"{name}님이 DM에서 돌려줄 포켓몬을 고르고 수락하면, 나에게 확인 DM이 와요."),
             kit.actions([kit.button("제안하기", SEND_ACTION, value, style="primary"),
-                         kit.button("다른 포켓몬", BACK_ACTION, f"{TO_PREFIX}{to}|")]),
+                         kit.button("다른 포켓몬", BACK_ACTION, join_value(f"{TO_PREFIX}{to}", ""))]),
         ]
         return _screen(f"{label} 교환 제안", blocks, view, TRADE_NOTE)
 
@@ -198,7 +199,7 @@ class TradeEditor:
             if not reply.ok:
                 return _note(reply.text)
             return EditorReply(self._miracle_screen(user_id, view, "", done=f"✅ {reply.text}"))
-        give_id = value.partition("|")[2] if action_id == MIRACLE_PICK_ACTION else value
+        give_id = split_value(value)[1] if action_id == MIRACLE_PICK_ACTION else value
         entry = self._tradable(user_id, give_id)
         if entry is None:
             return _note(self._refusal(user_id, give_id))
@@ -236,12 +237,12 @@ class TradeEditor:
     def _coworkers(self, user_id: str, view: View, entry: dict) -> Screen:
         label = option_labels([entry])[0]
         coworkers = self._trades.coworkers(user_id)[:PICKER_LIMIT]
-        back = kit.button("다른 포켓몬", BACK_ACTION, f"{TO_PREFIX}|")
+        back = kit.button("다른 포켓몬", BACK_ACTION, join_value(TO_PREFIX, ""))
         if not coworkers:
             return _screen(TRADE_TITLE, [kit.section(f"{TRADE_TITLE} · {label}\n{NO_COWORKERS}"), kit.actions([back])],
                            view, TRADE_NOTE)
         select = kit.static_select(TO_ACTION, "제안할 동료 고르기", [
-            kit.option(coworker["name"], f"{TO_PREFIX}{coworker['id']}|{entry['id']}") for coworker in coworkers])
+            kit.option(coworker["name"], join_value(f"{TO_PREFIX}{coworker['id']}", entry["id"])) for coworker in coworkers])
         blocks = [kit.section(f"{TRADE_TITLE} · {label}\n누구에게 제안할까요? 박스 포켓몬을 올린 동료만 나와요."),
                   kit.actions([select, back])]
         return _screen(f"{label} 교환", blocks, view, TRADE_NOTE)

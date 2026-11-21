@@ -2,6 +2,7 @@
 op (`remote_buy`) and is checked against the spendable balance: the last synced wallet less the pending buys."""
 
 from ypoke import blocks as kit
+from ypoke.editor import is_numbered, join_value, numbered, split_value
 from ypoke.lineup_editor import EditorReply
 from ypoke.remote_buy import BUY, NO_TOKENS, REASONS, buy
 from ypoke.remote_ops import OLD_APP_REFUSAL, RemoteOps, View
@@ -52,7 +53,7 @@ class ShopEditor:
             return EditorReply(_item_screen(view, line)) if line else _note(STALE)
         count, price, key = _buy_value(value)
         line = _line(view, key)
-        if not action_id.startswith(BUY_ACTION) or line is None or count is None:
+        if not is_numbered(action_id, BUY_ACTION) or line is None or count is None:
             return _note(STALE)
         payload = {"key": key, "name": line["name"], "count": count, "price": price}
         reason = buy(view, payload)[1]
@@ -113,7 +114,7 @@ def _item_screen(view: View, line: dict, done: str | None = None) -> Screen:
     if not counts:
         text.append(SHORT)
     buttons = [kit.button(f"{count}개 사기 ({count * price:,})" if not line["single"] else f"사기 ({price:,})",
-                          f"{BUY_ACTION}_{count}", f"{count}|{price}|{line['key']}",
+                          numbered(BUY_ACTION, count), join_value(str(count), str(price), line["key"]),
                           style="primary" if index == 0 else None) for index, count in enumerate(counts)]
     buttons.append(kit.button("상점으로", BACK_ACTION, "back"))
     blocks = [kit.section("\n".join(text)), kit.actions(buttons), kit.context(SHOP_NOTE, sync_line(view))]
@@ -154,8 +155,7 @@ def _line(view: View, key: str) -> dict | None:
 
 
 def _buy_value(value: str) -> tuple[int | None, int, str]:
-    count, _, rest = value.partition("|")
-    price, _, key = rest.partition("|")
+    count, price, key = split_value(value, 3)
     if not (count.isdigit() and price.isdigit()):
         return None, 0, ""
     return int(count), int(price), key

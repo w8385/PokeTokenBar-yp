@@ -12,6 +12,7 @@ from slack_sdk.webhook import WebhookClient
 
 from ypoke import blocks as kit
 from ypoke.battle_render import MatchupPictures
+from ypoke.editor import pressed_value, split_value
 from ypoke.commands import (
     CommandHandler,
     Delivery,
@@ -123,8 +124,7 @@ def trade_listener(trades: TradeService, kind: str):
     def listener(ack, body, action, respond, client) -> None:
         ack()
         user_id = body["user"]["id"]
-        value = action.get("value") or (action.get("selected_option") or {}).get("value") or ""
-        trade_id, _, individual_id = value.partition("|")
+        trade_id, individual_id = split_value(pressed_value(action))
         log_command("button", user_id, f"trade_{kind}", trade_id)
         try:
             if kind == "pick":
@@ -168,7 +168,7 @@ def editor_listener(editor: LineupEditor | ShopEditor | TrainingEditor | TradeEd
     def listener(ack, body, action, respond, client=None) -> None:
         ack()
         user_id = body["user"]["id"]
-        value = action.get("value") or (action.get("selected_option") or {}).get("value") or action.get("block_id") or ""
+        value = pressed_value(action) or action.get("block_id") or ""
         selected = [option["value"] for option in action.get("selected_options") or []]
         log_command("button", user_id, action["action_id"], value)
         try:
@@ -215,8 +215,7 @@ def miracle_listener(miracle: MiracleService, kind: str):
     def listener(ack, body, action, respond, client) -> None:
         ack()
         user_id = body["user"]["id"]
-        value = action.get("value") or (action.get("selected_option") or {}).get("value") or ""
-        offer_id, _, individual_id = value.partition("|")
+        offer_id, individual_id = split_value(pressed_value(action))
         log_command("button", user_id, f"miracle_{kind}", offer_id)
         try:
             if kind == "pick":
