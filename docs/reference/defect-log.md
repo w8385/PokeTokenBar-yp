@@ -1971,6 +1971,26 @@ read_when:
   the DM picker, the Miracle picker, `free_entries` and `/교환`·`/미라클` all refuse the same way. A held item needs
   no new rule: `locked_ids` already keep it in place. **Guards:** `bot/tests/test_remote_trade.py`; pointing the
   lineup hold at the raw upload fails 2 tests, dropping the pending-change hold fails 1.
+- **A screen the bot builds must pass Slack's block rules, not only the bot's own tests, and a response URL that
+  refuses it must leave a log line.** The `/파티` and `/트레이닝` "기술" button did nothing: the moves menu was a
+  `multi_static_select` inside an `actions` block, which Slack does not allow in a message (Block Kit Builder:
+  `Unsupported element: multiselect`), so the response URL refused the whole screen and the old one stayed. The
+  shop's buy buttons had the same fault from another rule: several `shop_buy` buttons with one `action_id` in one
+  `actions` block (`action_id "shop_buy" already exists`).
+  **Why no test caught it:** the tests read the screens as Python dicts (`screen.blocks[1]["elements"][0]`) and asserted
+  the contents, never Slack's rules for them, and `respond(...)` returns Slack's refusal (the SDK does not raise on a
+  400), which no listener read, so the live bot log showed a clean button press and nothing else.
+  **Class:** a screen shape only Slack can reject. Swept every editor screen (`/파티`, `/박스`, `/상점`, `/트레이닝`,
+  `/교환`, `/미라클`) in Block Kit Builder from a real save and with `tests/slack_rules.py` (element kinds per block,
+  unique block and action ids per block, 100 options, 75-character texts, `initial_options` among the options); only
+  the two above broke a rule. The moves menu is now the accessory of its section, the buy buttons are
+  `shop_buy_<count>` (the handler matches the prefix, so an older card still works). `transport.answer` logs a response
+  URL reply that is not 200 with its status and Slack's error, and every options request logs its block and option
+  count.
+  **Guards:** `test_every_lineup_screen_follows_slacks_block_rules`, `..._training_...`, `..._shop_...`,
+  `..._trade_and_miracle_...`; putting a moves menu back into an `actions` block or giving two buttons one `action_id`
+  fails them. Not understood yet: the swap menu showing options on the first slot only; the bot answered every slot's
+  options request offline, so the new `options` log line says whether the requests arrive.
 
 ## Tests and the user's desktop
 
