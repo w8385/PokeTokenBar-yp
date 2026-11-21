@@ -89,7 +89,7 @@ struct RemoteSnapshot: Equatable, Sendable {
 /// What the uploader needs from the store for remote ops; nil keeps the uploader from fetching them.
 struct RemoteOpsSync: Sendable {
     /// Applies the ops above `lastID` in id order, records each result and saves.
-    let apply: @MainActor @Sendable ([RemoteOp]) -> Void
+    let apply: @MainActor @Sendable ([RemoteOp]) async -> Void
     /// The highest op id this app has applied or cancelled.
     let lastID: @MainActor @Sendable () -> Int
     /// Results the bot has not acknowledged, oldest first.
@@ -103,13 +103,49 @@ struct RemoteOpsSync: Sendable {
     var epoch: @MainActor @Sendable () -> String? = { nil }
     /// Loads what `apply` reads but the app fetches lazily, such as the ability options a Capsule op checks.
     var prepare: @MainActor @Sendable ([RemoteOp]) async -> Void = { _ in }
+    /// The hand-triggered evolutions `/트레이닝` may offer, by individual id.
+    var evolutions: @MainActor @Sendable () -> [String: RemoteEvolution] = { [:] }
+}
+
+/// Applies ops in id order, each once. An `evolve` op waits for the evolution line, so it runs alone and its result
+/// is recorded before the next op starts; while one run waits, another sync's run does nothing.
+@MainActor
+final class RemoteOpsRunner {
+    private let appliers: [String: RemoteOpApplier]
+    private var isRunning = false
+
+    init(appliers: [String: RemoteOpApplier]) {
+        self.appliers = appliers
+    }
+
+    func run(_ ops: [RemoteOp], store: CompanionStore) async {
+        guard !isRunning else { return }
+        isRunning = true
+        defer { isRunning = false }
+        var batch: [RemoteOp] = []
+        for op in ops.sorted(by: { $0.id < $1.id }) where op.id > store.state.remoteOpsLastID {
+            guard RemoteTrain.isEvolution(op) else {
+                batch.append(op)
+                continue
+            }
+            store.applyRemoteOps(batch, appliers: appliers)
+            batch = []
+            let reason = await RemoteTrain.evolve(op.payload, store: store)
+            store.applyRemoteOps([op], appliers: [op.kind: { _, _ in reason }])
+        }
+        store.applyRemoteOps(batch, appliers: appliers)
+    }
 }
 
 extension RemoteOpsSync {
     @MainActor
     init(store: CompanionStore, battleEntry: BattleEntryStore) {
         let appliers = RemoteOpAppliers.all(battleEntry: battleEntry)
-        self.init(apply: { [weak store] ops in store?.applyRemoteOps(ops, appliers: appliers) },
+        let runner = RemoteOpsRunner(appliers: appliers)
+        self.init(apply: { [weak store] ops in
+                      guard let store else { return }
+                      await runner.run(ops, store: store)
+                  },
                   lastID: { [weak store] in store?.state.remoteOpsLastID ?? 0 },
                   results: { [weak store] in store?.state.remoteOpResults ?? [] },
                   acknowledged: { [weak store] ids in store?.acknowledgeRemoteOps(ids) },
@@ -117,6 +153,7 @@ extension RemoteOpsSync {
                   kinds: appliers.keys.sorted(),
                   adoptEpoch: { [weak store] epoch in store?.adoptRemoteOpsEpoch(epoch) },
                   epoch: { [weak store] in store?.state.remoteOpsEpoch },
-                  prepare: { [weak store] ops in await store?.prepareRemoteOps(ops) })
+                  prepare: { [weak store] ops in await store?.prepareRemoteOps(ops) },
+                  evolutions: { [weak store] in store.map { RemoteTrain.evolutions(store: $0) } ?? [:] })
     }
 }
