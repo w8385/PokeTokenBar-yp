@@ -147,6 +147,7 @@ struct BoxDetailView: View {
                     BattleSlotControl(store: store, entry: entry, battleEntry: battleEntry) {
                         Task { await uploader?.tick() }
                     }
+                    .boxDetailMark(.battleSlots)
                 }
                 raiseButton
                 representativeButton
@@ -159,6 +160,7 @@ struct BoxDetailView: View {
                         Label(l.boxViewInDex, systemImage: "book")
                     }
                     .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                    .boxDetailMark(.dexLink)
                 }
             }
             tradeNotes
@@ -187,6 +189,7 @@ struct BoxDetailView: View {
     private var miraclePostButton: some View {
         if let miracle, uploader?.hasToken == true {
             MiraclePostButton(model: miracle, individualID: individual.id, refusal: tradeRefusal, l: l)
+                .boxDetailMark(.miracle)
         }
     }
 
@@ -203,18 +206,21 @@ struct BoxDetailView: View {
                 Label(l.raiseThis, systemImage: "figure.walk")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .boxDetailMark(.raise)
             .disabled(!store.canRaise(entryID: individual.id))
         case .parked:
             Button { store.resumeLine() } label: {
                 Label(l.resumeLine, systemImage: "arrow.uturn.backward")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .boxDetailMark(.resumeLine)
         case .stored:
             let canRaise = store.canRaise(entryID: individual.id)
             Button { store.raise(entryID: individual.id) } label: {
                 Label(l.resumeLine, systemImage: "arrow.uturn.backward")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .boxDetailMark(.resumeStored)
             .disabled(!canRaise)
             .help(canRaise ? "" : l.storedRaiseLocked)
         case .raising:
@@ -229,6 +235,7 @@ struct BoxDetailView: View {
                   systemImage: isRepresentative ? "star.slash" : "star")
         }
         .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+        .boxDetailMark(.representative)
     }
 
     @ViewBuilder
@@ -238,11 +245,13 @@ struct BoxDetailView: View {
                 Label(l.friendRemove, systemImage: "heart.slash")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .boxDetailMark(.friendRemove)
         } else if individual.role == .graduated || individual.role == .stored {
             Button { store.addFriend(entryID: individual.id) } label: {
                 Label(l.friendAdd, systemImage: "heart")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .boxDetailMark(.friendAdd)
             .disabled(store.state.friendEntryIDs.count >= CompanionState.maxFriends)
         }
     }
@@ -267,6 +276,7 @@ struct BoxDetailView: View {
                 Label(l.tradeOfferButton, systemImage: "arrow.left.arrow.right")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .boxDetailMark(.trade)
             .disabled(tradeRefusal != nil)
         }
         miraclePostButton
@@ -277,6 +287,7 @@ struct BoxDetailView: View {
                 Label(l.linkingCordUse, systemImage: "link")
             }
             .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+            .boxDetailMark(.linkingCord)
         }
     }
 
@@ -319,6 +330,7 @@ struct BoxDetailView: View {
                         Label { Text(l.mintChange) } icon: { ItemIconView(kind: .mint, size: 14) }
                     }
                     .buttonStyle(.bordered).controlSize(.mini).fixedSize()
+                    .boxDetailMark(.mint)
                     .help(l.mintChangeHelp)
                 }
             }
