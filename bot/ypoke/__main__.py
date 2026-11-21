@@ -13,6 +13,7 @@ from slack_sdk import WebClient
 from ypoke.battle_render import MatchupPictures
 from ypoke.clock import system_clock
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
+from ypoke.editor import Route, checked
 from ypoke.gym_battle import GymBattles
 from ypoke.lineup_editor import ACTION_PREFIX, ITEM_ACTION, SET_MOVES_ACTION, SWAP_ACTION
 from ypoke.miracle import ACCEPT_ACTION_ID as MIRACLE_ACCEPT_ACTION_ID
@@ -94,6 +95,12 @@ def main() -> None:
     )
     threading.Thread(target=_warm_stored_parties, args=(pokeapi, store, remote), daemon=True).start()
     threading.Thread(target=_sweep_miracle_offers, args=(miracle,), daemon=True).start()
+    register(app, handler, trades, miracle, pictures)
+    socket_handler(app, os.environ["SLACK_APP_TOKEN"]).start()
+
+
+def register(app: App, handler: CommandHandler, trades: TradeService, miracle: MiracleService,
+             pictures: MatchupPictures) -> None:
     for name in COMMAND_NAMES:
         app.command(name)(slash_listener(handler, pictures))
     # Slack still sends an interaction for a URL button and shows a warning unless it is acked.
@@ -107,20 +114,23 @@ def main() -> None:
     app.action(MIRACLE_PICK_ACTION_ID)(miracle_listener(miracle, "pick"))
     app.options(PICK_ACTION_ID)(options_listener(trades))
     app.options(MIRACLE_PICK_ACTION_ID)(options_listener(trades))
-    app.action(re.compile(f"^{ACTION_PREFIX}"))(editor_listener(handler.editor))
-    app.options(SWAP_ACTION)(editor_options_listener(handler.editor))
-    app.options(ITEM_ACTION)(editor_options_listener(handler.editor, handler.editor.item_options))
-    app.options(SET_MOVES_ACTION)(editor_options_listener(handler.editor, handler.editor.move_options))
-    app.options(TRAINING_SET_MOVES_ACTION)(editor_options_listener(handler.training, handler.training.move_options))
-    app.action(re.compile(f"^{SHOP_ACTION_PREFIX}"))(editor_listener(handler.shop))
-    app.options(SHOP_PICK_ACTION)(editor_options_listener(handler.shop))
-    app.action(re.compile(f"^{TRAINING_ACTION_PREFIX}"))(editor_listener(handler.training))
-    app.options(TRAINING_PICK_ACTION)(editor_options_listener(handler.training))
-    app.action(re.compile(f"^{OFFER_ACTION_PREFIX}"))(editor_listener(handler.trading))
-    for action_id in OFFER_PICKER_ACTIONS:
-        app.options(action_id)(editor_options_listener(handler.trading))
+    for route in editor_routes(handler):
+        app.action(re.compile(f"^{route.prefix}"))(editor_listener(route.editor))
+        for action_id, method in route.menus:
+            app.options(action_id)(editor_options_listener(route.editor, getattr(route.editor, method)))
     app.event("app_mention")(mention_listener(handler, pictures))
-    socket_handler(app, os.environ["SLACK_APP_TOKEN"]).start()
+
+
+def editor_routes(handler: CommandHandler) -> list[Route]:
+    """`train_open` on the `/파티` screen sits under the training prefix, so the training editor answers it."""
+    return checked([
+        Route(ACTION_PREFIX, handler.editor,
+              ((SWAP_ACTION, "options"), (ITEM_ACTION, "item_options"), (SET_MOVES_ACTION, "move_options"))),
+        Route(SHOP_ACTION_PREFIX, handler.shop, ((SHOP_PICK_ACTION, "options"),)),
+        Route(TRAINING_ACTION_PREFIX, handler.training,
+              ((TRAINING_PICK_ACTION, "options"), (TRAINING_SET_MOVES_ACTION, "move_options"))),
+        Route(OFFER_ACTION_PREFIX, handler.trading, tuple((action_id, "options") for action_id in OFFER_PICKER_ACTIONS)),
+    ])
 
 
 def _join(app: App, channel: str) -> None:

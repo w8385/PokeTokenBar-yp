@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from ypoke import blocks as kit
+from ypoke.editor import join_value, split_value
 from ypoke.messages import DirectMessage
 from ypoke.move_effects import STATUS_MOVES
 from ypoke.remote_lineup import LINEUP, MACHINE_PREFIX, MAX_MEMBERS, REASONS, rule_break, set_lineup
@@ -152,7 +153,7 @@ class LineupEditor:
                   if (verb, index) != ("up", 0) and (verb != "down" or index < len(view.party) - 1)
                   and (verb != "drop" or len(view.party) > 1)]
         if orders:
-            controls.append(kit.overflow(ORDER_ACTION, [kit.option(word, f"{verb}|{member['id']}")
+            controls.append(kit.overflow(ORDER_ACTION, [kit.option(word, join_value(verb, member["id"]))
                                                         for verb, word in orders]))
         if TRAIN in view.kinds:
             controls.append(kit.button("트레이닝", TRAINING_OPEN_ACTION, member["id"]))
@@ -169,7 +170,7 @@ class LineupEditor:
     def _swap_options(self, view: View, slot: str) -> list[dict]:
         replacing = None if slot == ADD_SLOT else slot
         labels = self._labels(view)
-        return [kit.option(labels[member["id"]], f"{slot}|{member['id']}") for member in candidates(view, replacing)]
+        return [kit.option(labels[member["id"]], join_value(slot, member["id"])) for member in candidates(view, replacing)]
 
     def _labels(self, view: View) -> dict[str, str]:
         """Individual id -> its Box label (name, sex, level, nature), so same-species individuals differ."""
@@ -207,7 +208,7 @@ class LineupEditor:
             return _note(FULL_NO_SWAP)
         names = {slot["id"]: f"{index}. {self._name(slot)} Lv.{slot['level']}" for index, slot in enumerate(view.party, 1)}
         select = kit.static_select(SWAP_ACTION, "뺄 포켓몬 고르기",
-                                   [kit.option(names[slot["id"]], f"{slot['id']}|{new_id}") for slot in slots])
+                                   [kit.option(names[slot["id"]], join_value(slot["id"], new_id)) for slot in slots])
         title = f"*파티가 가득 찼어요.* {self._labels(view)[new_id]}을(를) 누구 대신 넣을까요?"
         blocks = [kit.section(title), kit.actions([select, kit.button("파티 보기", BACK_ACTION, new_id)]),
                   kit.context(RULE_NOTE)]
@@ -218,7 +219,7 @@ class LineupEditor:
         targets = self._targets(view)
         ids = [target["id"] for target in targets]
         if action_id in (SWAP_ACTION, BOX_ADD_ACTION):
-            slot, _, new_id = value.partition("|") if action_id == SWAP_ACTION else (ADD_SLOT, "", value)
+            slot, new_id = split_value(value) if action_id == SWAP_ACTION else (ADD_SLOT, value)
             incoming = next((member for member in view.bench if member["id"] == new_id), None)
             if incoming is None:
                 return None
@@ -228,7 +229,7 @@ class LineupEditor:
                 return None
             targets[ids.index(slot)] = self._target(incoming)
             return targets
-        first, _, second = value.partition("|")
+        first, second = split_value(value)
         if action_id == ITEM_ACTION and first in ids:
             targets[ids.index(first)]["item"] = second or None
             return targets
@@ -309,15 +310,15 @@ def _item_select(view: View, member: dict) -> dict | None:
 def _item_choices(view: View, member: dict) -> list[dict]:
     """`도구 없음`, the held item and the bag's holdable items that clash with no other member."""
     current = member.get("item_key")
-    options = [kit.option("도구 없음", f"{member['id']}|")]
+    options = [kit.option("도구 없음", join_value(member["id"], ""))]
     if current:
-        options.append(kit.option(f"@{member['item_name']}", f"{member['id']}|{current}"))
+        options.append(kit.option(f"@{member['item_name']}", join_value(member["id"], current)))
     for line in view.bag:
         if not line.get("equip") or line["key"] == current:
             continue
         holding = {**member, "item_key": line["key"], "held_item": line.get("held_item")}
         if rule_break([holding if other is member else other for other in view.party]) is None:
-            options.append(kit.option(f"{line['name']} ×{line['count']}", f"{member['id']}|{line['key']}"))
+            options.append(kit.option(f"{line['name']} ×{line['count']}", join_value(member["id"], line["key"])))
     return options
 
 

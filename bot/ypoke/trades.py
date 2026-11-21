@@ -16,6 +16,7 @@ from datetime import UTC, datetime, timedelta
 
 from ypoke import blocks as kit
 from ypoke.clock import Clock
+from ypoke.editor import SEPARATOR, join_value
 from ypoke.messages import DirectMessage
 from ypoke.store import Store
 
@@ -486,7 +487,7 @@ def _normalize_entry(item: object) -> dict | None:
         return None
     individual_id, pokemon_id, level = item.get("id"), item.get("pokemon_id"), item.get("level")
     detail = item.get("entry")
-    if not (isinstance(individual_id, str) and 0 < len(individual_id) <= 64 and "|" not in individual_id):
+    if not (isinstance(individual_id, str) and 0 < len(individual_id) <= 64 and SEPARATOR not in individual_id):
         return None
     if not (_is_int(pokemon_id) and (1 <= pokemon_id <= 1025 or 10001 <= pokemon_id <= 10999)):
         return None
@@ -529,7 +530,7 @@ def matching_options(owner_id: str, entries: list[dict], query: str) -> list[dic
 
 def pick_options(owner_id: str, entries: list[dict]) -> list[dict]:
     """Slack select options for `entries`, valued `owner_id|individual id`, each with a distinct label."""
-    return [kit.option(text, f"{owner_id}|{entry['id']}") for entry, text in zip(entries, option_labels(entries))]
+    return [kit.option(text, join_value(owner_id, entry["id"])) for entry, text in zip(entries, option_labels(entries))]
 
 
 def option_labels(entries: list[dict]) -> list[str]:
