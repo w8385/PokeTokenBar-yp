@@ -255,9 +255,9 @@ final class ReadmeScreenshotTests: XCTestCase {
             try await shot(statusMoves(store: store, uploader: eggUploader, entry: entry),
                            "screenshot-egg-moves\(suffix)", in: dir, height: nil)
             try await shot(popover { $0.openBoxDetail(id: StoredFriendScreenshotTests.bulbasaurID) },
-                           "screenshot-exp-share\(suffix)", in: dir, height: 380)
+                           "screenshot-exp-share\(suffix)", in: dir, height: 450)
             try await shot(try miracleTrade(store: store, uploader: uploader, entry: battleEntry),
-                           "screenshot-miracle-trade\(suffix)", in: dir, height: 672)
+                           "screenshot-miracle-trade\(suffix)", in: dir, height: nil)
             let (battleStore, battleCleanup) = try BoxDexFixture.makeStore(
                 language: language, mutate: { Self.sample(&$0); Self.addKyogre(&$0) }, defaults: defaults,
                 clock: { Self.pinnedNow })
