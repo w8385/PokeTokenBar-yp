@@ -435,6 +435,105 @@ def test_write_golden_event_logs():
         (GOLDEN_DIR / f"{name}.log").write_text(_replay_text(name))
 
 
+NARRATED_DIR = GOLDEN_DIR / "battle"
+NARRATED_NAMES = [f"pvp-{start:03d}" for start in range(0, PVP_SCENARIOS, PVP_PER_FILE)] + ["focus"]
+NARRATED_FOCUS_SEEDS = 2
+NARRATION_TABLES = NARRATED_DIR / "narration-tables.json"
+MODULE_NAMES = NARRATED_DIR / "module-names.json"
+
+
+@pytest.mark.parametrize("name", NARRATED_NAMES)
+def test_fixed_seed_battles_match_the_golden_event_log_and_narration(name):
+    expected = (NARRATED_DIR / f"{name}.log").read_text().splitlines()
+    actual = _narrated_text(name).splitlines()
+    first = next((index for index, (want, got) in enumerate(zip(expected, actual)) if want != got),
+                 min(len(expected), len(actual)))
+    assert actual == expected, f"battle/{name}.log line {first + 1}: {actual[first:first + 1]} != {expected[first:first + 1]}"
+
+
+def test_the_narrated_battles_cover_weather_abilities_status_switching_items_multi_hit_and_faints():
+    events = [event for name in NARRATED_NAMES for _, result in _narrated_battles(name) for event in result.events]
+    kinds = {type(event).__name__ for event in events}
+    actions = [event for event in events if type(event).__name__ == "Action"]
+    assert {"WeatherDamage", "WeatherEnd", "AbilityAct", "AbilityEntry", "StatusDamage", "SendOut", "ItemHeal",
+            "ItemEffect", "MegaEvolution", "FormShift", "HazardHit", "VolatileTick", "FieldStart"} <= kinds
+    assert any(action.hits > 1 for action in actions)
+    assert any(action.pivoted for action in actions)
+    assert any(action.knockout and action.attacker_fainted for action in actions)
+    assert any(action.blocked == "confusion" for action in actions)
+    assert any(action.missed for action in actions) and any(action.multiplier == 0 for action in actions)
+
+
+def test_the_narration_label_tables_match_the_golden_record():
+    recorded, tables = json.loads(NARRATION_TABLES.read_text()), _narration_tables()
+    assert {name: tables.get(name) for name in recorded} == recorded
+
+
+def test_battle_and_narration_still_offer_every_name_they_offered():
+    recorded = json.loads(MODULE_NAMES.read_text())
+    assert {module: sorted(set(names) - set(_module_names()[module])) for module, names in recorded.items()} == {
+        module: [] for module in recorded}
+
+
+@pytest.mark.skipif(not os.environ.get("WRITE_GOLDEN"), reason="WRITE_GOLDEN=1 rewrites the golden narration")
+def test_write_golden_narration():
+    NARRATED_DIR.mkdir(exist_ok=True)
+    for name in NARRATED_NAMES:
+        (NARRATED_DIR / f"{name}.log").write_text(_narrated_text(name))
+    NARRATION_TABLES.write_text(json.dumps(_narration_tables(), indent=1, ensure_ascii=False) + "\n")
+    MODULE_NAMES.write_text(json.dumps(_module_names(), indent=1) + "\n")
+
+
+def _narrated_battles(name):
+    if name == "focus":
+        return [_focus_battle(case, seed) for case in FOCUS_CASES for seed in range(NARRATED_FOCUS_SEEDS)]
+    start = int(name.partition("-")[2])
+    return [_pvp_battle(scenario) for scenario in range(start, start + PVP_PER_FILE)]
+
+
+def _narrated_text(name):
+    lines = []
+    for index, (sides, result) in enumerate(_narrated_battles(name)):
+        card = narration.battle_card(("A", "B"), sides, result)
+        lines += [f"## {name} {index}", *_lines([], result).splitlines(),
+                  f"header {narration.battle_header(('A', 'B'), sides, result)}",
+                  *(f"column {column!r}" for column in card.columns),
+                  f"card title={card.title!r} detail={card.detail!r} highlights={card.highlights!r} "
+                  f"sprite={card.sprite!r}",
+                  *(f"card log {matchup!r} {_card_entry(text, result)}"
+                    for text, matchup in zip(card.log, card.log_matchups)),
+                  *(f"turn {number} {line}" for number, turn_lines in narration.battle_turns(result)
+                    for line in turn_lines)]
+    return "".join(f"{line}\n" for line in lines)
+
+
+def _card_entry(text, result):
+    """A card text that is a whole turn as `battle_turns` gives it reads as that turn's number."""
+    turns = {"\n".join([f"*{number}턴*", *turn_lines]): number for number, turn_lines in narration.battle_turns(result)}
+    return f"= turn {turns[text]}" if text in turns else repr(text)
+
+
+def _narration_tables():
+    return {name: _plain(value) for name, value in sorted(vars(narration).items())
+            if name.isupper() and isinstance(value, (dict, frozenset, set, tuple, str, int))
+            and all(isinstance(key, str) for key in (value if isinstance(value, dict) else ()))}
+
+
+def _plain(value):
+    if isinstance(value, dict):
+        return [[_plain(key), _plain(item)] for key, item in value.items()]
+    if isinstance(value, (frozenset, set)):
+        return sorted(value)
+    if isinstance(value, tuple):
+        return [_plain(item) for item in value]
+    return value
+
+
+def _module_names():
+    from ypoke import battle
+    return {module.__name__: sorted(dir(module)) for module in (battle, narration)}
+
+
 def _replay_text(name):
     kind, _, rest = name.partition("-")
     if kind == "pvp":
@@ -446,6 +545,12 @@ def _replay_text(name):
 
 
 def _focus_text(case, seed):
+    sides, result = _focus_battle(case, seed)
+    lines = [f"## focus {case} {seed}", *(_combatant_line(side, member) for side in (0, 1) for member in sides[side])]
+    return _lines(lines, result)
+
+
+def _focus_battle(case, seed):
     rng = random.Random(f"{case}-{seed}")
     api = ReplayAPI()
     sides = tuple(
@@ -455,9 +560,7 @@ def _focus_text(case, seed):
               for pokemon_id, item, ability, moves in members)
         for members in FOCUS_CASES[case]
     )
-    result = simulate(sides, seed=seed)
-    lines = [f"## focus {case} {seed}", *(_combatant_line(side, member) for side in (0, 1) for member in sides[side])]
-    return _lines(lines, result)
+    return sides, simulate(sides, seed=seed)
 
 
 def _pvp_text(scenario):
