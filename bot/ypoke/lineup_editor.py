@@ -5,6 +5,7 @@ individual ids, so a press on an older message still changes the Pokémon it nam
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from ypoke import blocks as kit
 from ypoke.messages import DirectMessage
 from ypoke.move_effects import STATUS_MOVES
 from ypoke.remote_lineup import LINEUP, MACHINE_PREFIX, MAX_MEMBERS, REASONS, rule_break, set_lineup
@@ -134,44 +135,41 @@ class LineupEditor:
         return [none, *(option for option in rest if all(word in option["text"]["text"].casefold() for word in words))]
 
     def _party(self, view: View) -> Screen:
-        blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": party_title(view)}}]
+        blocks = [kit.section(party_title(view))]
         for index, member in enumerate(view.party):
-            lines = member_lines(index + 1, member, self._name(member))
-            blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "\n".join(lines)}})
-            blocks.append({"type": "actions", "block_id": member["id"], "elements": self._controls(view, index, member)})
+            blocks.append(kit.section("\n".join(member_lines(index + 1, member, self._name(member)))))
+            blocks.append(kit.actions(self._controls(view, index, member), block_id=member["id"]))
         if len(view.party) < MAX_MEMBERS and (add := self._swap_select(view, ADD_SLOT, "포켓몬 넣기")):
-            blocks.append({"type": "actions", "block_id": ADD_SLOT, "elements": [add]})
-        notes = [RULE_NOTE, SYNC_NOTE, sync_line(view)]
-        blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": note} for note in notes]})
+            blocks.append(kit.actions([add], block_id=ADD_SLOT))
+        blocks.append(kit.context(RULE_NOTE, SYNC_NOTE, sync_line(view)))
         return Screen("\n".join([party_title(view), sync_line(view)]), blocks)
 
     def _controls(self, view: View, index: int, member: dict) -> list[dict]:
         controls = [self._swap_select(view, member["id"], "바꾸기"),
-                    _button(MOVES_ACTION, "기술", member["id"]),
+                    kit.button("기술", MOVES_ACTION, member["id"]),
                     _item_select(view, member)]
         orders = [(verb, word) for verb, word in ORDER_WORDS
                   if (verb, index) != ("up", 0) and (verb != "down" or index < len(view.party) - 1)
                   and (verb != "drop" or len(view.party) > 1)]
         if orders:
-            controls.append({"type": "overflow", "action_id": ORDER_ACTION,
-                             "options": [_option(word, f"{verb}|{member['id']}") for verb, word in orders]})
+            controls.append(kit.overflow(ORDER_ACTION, [kit.option(word, f"{verb}|{member['id']}")
+                                                        for verb, word in orders]))
         if TRAIN in view.kinds:
-            controls.append(_button(TRAINING_OPEN_ACTION, "트레이닝", member["id"]))
+            controls.append(kit.button("트레이닝", TRAINING_OPEN_ACTION, member["id"]))
         return [control for control in controls if control is not None]
 
     def _swap_select(self, view: View, slot: str, placeholder: str) -> dict | None:
         options = self._swap_options(view, slot)
         if not options:
             return None
-        select = {"action_id": SWAP_ACTION, "placeholder": {"type": "plain_text", "text": placeholder}}
         if len(options) <= PICKER_LIMIT:
-            return select | {"type": "static_select", "options": options}
-        return select | {"type": "external_select", "min_query_length": 0}
+            return kit.static_select(SWAP_ACTION, placeholder, options)
+        return kit.external_select(SWAP_ACTION, placeholder)
 
     def _swap_options(self, view: View, slot: str) -> list[dict]:
         replacing = None if slot == ADD_SLOT else slot
         labels = self._labels(view)
-        return [_option(labels[member["id"]], f"{slot}|{member['id']}") for member in candidates(view, replacing)]
+        return [kit.option(labels[member["id"]], f"{slot}|{member['id']}") for member in candidates(view, replacing)]
 
     def _labels(self, view: View) -> dict[str, str]:
         """Individual id -> its Box label (name, sex, level, nature), so same-species individuals differ."""
@@ -208,13 +206,11 @@ class LineupEditor:
         if not slots:
             return _note(FULL_NO_SWAP)
         names = {slot["id"]: f"{index}. {self._name(slot)} Lv.{slot['level']}" for index, slot in enumerate(view.party, 1)}
-        select = {"type": "static_select", "action_id": SWAP_ACTION,
-                  "placeholder": {"type": "plain_text", "text": "뺄 포켓몬 고르기"},
-                  "options": [_option(names[slot["id"]], f"{slot['id']}|{new_id}") for slot in slots]}
+        select = kit.static_select(SWAP_ACTION, "뺄 포켓몬 고르기",
+                                   [kit.option(names[slot["id"]], f"{slot['id']}|{new_id}") for slot in slots])
         title = f"*파티가 가득 찼어요.* {self._labels(view)[new_id]}을(를) 누구 대신 넣을까요?"
-        blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": title}},
-                  {"type": "actions", "elements": [select, _button(BACK_ACTION, "파티 보기", new_id)]},
-                  {"type": "context", "elements": [{"type": "mrkdwn", "text": RULE_NOTE}]}]
+        blocks = [kit.section(title), kit.actions([select, kit.button("파티 보기", BACK_ACTION, new_id)]),
+                  kit.context(RULE_NOTE)]
         return EditorReply(Screen(title, blocks))
 
     def _edited(self, view: View, action_id: str, value: str) -> list[dict] | None:
@@ -289,7 +285,7 @@ def _with_moves(targets: list[dict], member_id: str, picked: list[str], learnabl
 
 
 def _note(text: str) -> EditorReply:
-    return EditorReply(Screen(text, [{"type": "section", "text": {"type": "mrkdwn", "text": text}}]), replace=False)
+    return EditorReply(Screen(text, [kit.section(text)]), replace=False)
 
 
 def _box_button(view: View, member: dict | None) -> dict | None:
@@ -299,11 +295,7 @@ def _box_button(view: View, member: dict | None) -> dict | None:
         return None
     if len(view.party) < MAX_MEMBERS and rule_break([*view.party, member]) is not None:
         return None
-    return _button(BOX_ADD_ACTION, "엔트리에 넣기", member["id"])
-
-
-def _button(action_id: str, text: str, value: str) -> dict:
-    return {"type": "button", "action_id": action_id, "text": {"type": "plain_text", "text": text}, "value": value}
+    return kit.button("엔트리에 넣기", BOX_ADD_ACTION, member["id"])
 
 
 def _item_select(view: View, member: dict) -> dict | None:
@@ -311,28 +303,22 @@ def _item_select(view: View, member: dict) -> dict | None:
     options = _item_choices(view, member)
     if len(options) == 1:
         return None
-    return {"type": "external_select", "action_id": ITEM_ACTION, "min_query_length": 0,
-            "placeholder": {"type": "plain_text", "text": "도구 검색·고르기"},
-            "initial_option": options[1 if member.get("item_key") else 0]}
+    return kit.external_select(ITEM_ACTION, "도구 검색·고르기", initial_option=options[1 if member.get("item_key") else 0])
 
 
 def _item_choices(view: View, member: dict) -> list[dict]:
     """`도구 없음`, the held item and the bag's holdable items that clash with no other member."""
     current = member.get("item_key")
-    options = [_option("도구 없음", f"{member['id']}|")]
+    options = [kit.option("도구 없음", f"{member['id']}|")]
     if current:
-        options.append(_option(f"@{member['item_name']}", f"{member['id']}|{current}"))
+        options.append(kit.option(f"@{member['item_name']}", f"{member['id']}|{current}"))
     for line in view.bag:
         if not line.get("equip") or line["key"] == current:
             continue
         holding = {**member, "item_key": line["key"], "held_item": line.get("held_item")}
         if rule_break([holding if other is member else other for other in view.party]) is None:
-            options.append(_option(f"{line['name']} ×{line['count']}", f"{member['id']}|{line['key']}"))
+            options.append(kit.option(f"{line['name']} ×{line['count']}", f"{member['id']}|{line['key']}"))
     return options
-
-
-def _option(text: str, value: str) -> dict:
-    return {"text": {"type": "plain_text", "text": text[:OPTION_TEXT_LIMIT]}, "value": value}
 
 
 def _moves_screen(view: View, member: dict, name: str, learnable: list[dict]) -> Screen:
@@ -341,25 +327,17 @@ def _moves_screen(view: View, member: dict, name: str, learnable: list[dict]) ->
     title = f"*{name} Lv.{member['level']}의 기술* (최대 {MAX_MOVES}개)"
     now = " / ".join(names[move_id] for move_id in chosen) or "레벨에 맞는 기본 기술"
     select = moves_select(SET_MOVES_ACTION, learnable, chosen)
-    buttons = [_button(BACK_ACTION, "파티로 돌아가기", member["id"])]
+    buttons = [kit.button("파티로 돌아가기", BACK_ACTION, member["id"])]
     if member.get("moves"):
-        buttons.insert(0, _button(DEFAULT_MOVES_ACTION, "기본 기술로", member["id"]))
-    blocks = [
-        {"type": "section", "block_id": member["id"], "text": {"type": "mrkdwn", "text": f"{title}\n지금: {now}"},
-         "accessory": select},
-        {"type": "actions", "elements": buttons},
-        {"type": "context", "elements": [{"type": "mrkdwn", "text": text} for text in (MOVES_NOTE, SYNC_NOTE, sync_line(view))]},
-    ]
-    return Screen(title, blocks)
+        buttons.insert(0, kit.button("기본 기술로", DEFAULT_MOVES_ACTION, member["id"]))
+    return Screen(title, [kit.section(f"{title}\n지금: {now}", block_id=member["id"], accessory=select),
+                          kit.actions(buttons), kit.context(MOVES_NOTE, SYNC_NOTE, sync_line(view))])
 
 
 def moves_select(action_id: str, learnable: list[dict], chosen: list[int]) -> dict:
     """The typed-search moves menu: its options come from `move_options`, the current moves are pre-picked."""
-    select = {"type": "multi_external_select", "action_id": action_id, "min_query_length": 0,
-              "max_selected_items": MAX_MOVES, "placeholder": {"type": "plain_text", "text": "기술 검색·고르기"}}
-    if chosen:
-        select["initial_options"] = move_options(learnable, chosen, "")[:len(chosen)]
-    return select
+    return kit.multi_external_select(action_id, "기술 검색·고르기", max_selected_items=MAX_MOVES,
+                                     initial_options=move_options(learnable, chosen, "")[:len(chosen)])
 
 
 def move_options(learnable: list[dict], chosen: list[int], query: str) -> list[dict]:
@@ -375,4 +353,4 @@ def move_options(learnable: list[dict], chosen: list[int], query: str) -> list[d
         rows.append((move["id"] not in chosen, rank.get(group, len(rank)), move["id"], text))
     ordered = sorted(rows, key=lambda row: (row[0], chosen.index(row[2]) if row[2] in chosen else 0, row[1]))
     words = query.casefold().split()
-    return [_option(text, str(move_id)) for _, _, move_id, text in ordered if all(word in text.casefold() for word in words)]
+    return [kit.option(text, str(move_id)) for _, _, move_id, text in ordered if all(word in text.casefold() for word in words)]

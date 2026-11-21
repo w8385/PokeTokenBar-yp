@@ -15,6 +15,7 @@ from uuid import uuid4
 
 from PIL import Image, ImageOps
 
+from ypoke import blocks as kit
 from ypoke.narration import Matchup, Portrait
 from ypoke.store import Store
 
@@ -117,10 +118,7 @@ def composite(left: bytes, right: bytes) -> bytes:
 
 
 def image_block(file_id: str, matchup: Matchup) -> dict:
-    return {
-        "type": "image", "slack_file": {"id": file_id}, "alt_text": matchup.caption,
-        "title": {"type": "plain_text", "text": matchup.caption},
-    }
+    return kit.file_image(file_id, matchup.caption, matchup.caption)
 
 
 def _fitted(png: bytes) -> Image.Image:

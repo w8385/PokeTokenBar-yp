@@ -14,6 +14,7 @@ from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
+from ypoke import blocks as kit
 from ypoke.clock import Clock
 from ypoke.messages import DirectMessage
 from ypoke.store import Store
@@ -316,17 +317,15 @@ class TradeService:
         options = pick_options(trade.id, self.free_entries(trade.target_id))
         proposer = self._name(trade.proposer_id)
         text = f"<@{trade.proposer_id}>님이 {_label(trade.give)}을(를) 내놓고 교환을 제안했어요. 24시간 안에 답해 주세요."
-        blocks: list[dict] = [{"type": "section", "text": {"type": "mrkdwn", "text": f"*교환 제안*\n{text}"}}]
-        buttons = [{"type": "button", "action_id": DECLINE_ACTION_ID, "value": trade.id,
-                    "text": {"type": "plain_text", "text": "거절"}}]
+        blocks = [kit.section(f"*교환 제안*\n{text}")]
+        buttons = [kit.button("거절", DECLINE_ACTION_ID, trade.id)]
         if options:
             blocks.append(picker_block(PICK_ACTION_ID, trade.id, options))
-            buttons.insert(0, {"type": "button", "style": "primary", "action_id": ACCEPT_ACTION_ID, "value": trade.id,
-                               "text": {"type": "plain_text", "text": "수락"}})
+            buttons.insert(0, kit.button("수락", ACCEPT_ACTION_ID, trade.id, style="primary"))
         else:
-            blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": "지금 내놓을 수 있는 포켓몬이 없어서 거절만 할 수 있어요."}]})
-        blocks.append({"type": "actions", "elements": buttons})
-        blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": f"{proposer}님의 앱과 내 앱이 켜져 있어야 포켓몬이 오가요."}]})
+            blocks.append(kit.context("지금 내놓을 수 있는 포켓몬이 없어서 거절만 할 수 있어요."))
+        blocks.append(kit.actions(buttons))
+        blocks.append(kit.context(f"{proposer}님의 앱과 내 앱이 켜져 있어야 포켓몬이 오가요."))
         return DirectMessage(trade.target_id, text, blocks)
 
     def _delivery(self, trade: Trade, user_id: str) -> dict:
@@ -513,12 +512,11 @@ def _normalize_entry(item: object) -> dict | None:
 def picker_block(action_id: str, owner_id: str, options: list[dict]) -> dict:
     """A select of `options`. Past Slack's 100 it loads them as the player types (`matching_options`); the block id
     carries `owner_id` for that lookup."""
-    select = {"action_id": action_id, "placeholder": {"type": "plain_text", "text": "내가 내놓을 포켓몬 고르기"}}
     if len(options) <= PICKER_LIMIT:
-        select |= {"type": "static_select", "options": options}
+        select = kit.static_select(action_id, "내가 내놓을 포켓몬 고르기", options)
     else:
-        select |= {"type": "external_select", "min_query_length": 0}
-    return {"type": "actions", "block_id": owner_id, "elements": [select]}
+        select = kit.external_select(action_id, "내가 내놓을 포켓몬 고르기")
+    return kit.actions([select], block_id=owner_id)
 
 
 def matching_options(owner_id: str, entries: list[dict], query: str) -> list[dict]:
@@ -531,8 +529,7 @@ def matching_options(owner_id: str, entries: list[dict], query: str) -> list[dic
 
 def pick_options(owner_id: str, entries: list[dict]) -> list[dict]:
     """Slack select options for `entries`, valued `owner_id|individual id`, each with a distinct label."""
-    return [{"text": {"type": "plain_text", "text": text}, "value": f"{owner_id}|{entry['id']}"}
-            for entry, text in zip(entries, option_labels(entries))]
+    return [kit.option(text, f"{owner_id}|{entry['id']}") for entry, text in zip(entries, option_labels(entries))]
 
 
 def option_labels(entries: list[dict]) -> list[str]:
@@ -578,15 +575,9 @@ def _status_text(status: str) -> str:
 
 
 def _confirm_blocks(trade: Trade, target_name: str) -> list[dict]:
-    return [
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"*교환 확인*\n{_confirm_text(trade, target_name)}"}},
-        {"type": "actions", "elements": [
-            {"type": "button", "style": "primary", "action_id": ACCEPT_ACTION_ID, "value": trade.id,
-             "text": {"type": "plain_text", "text": "교환하기"}},
-            {"type": "button", "action_id": DECLINE_ACTION_ID, "value": trade.id,
-             "text": {"type": "plain_text", "text": "거절"}},
-        ]},
-    ]
+    return [kit.section(f"*교환 확인*\n{_confirm_text(trade, target_name)}"),
+            kit.actions([kit.button("교환하기", ACCEPT_ACTION_ID, trade.id, style="primary"),
+                         kit.button("거절", DECLINE_ACTION_ID, trade.id)])]
 
 
 def _confirm_text(trade: Trade, target_name: str) -> str:

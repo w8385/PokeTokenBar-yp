@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from ypoke import battle_data
+from ypoke import blocks as kit
 from ypoke.remote_ops import RemoteOps, View, describe
 from ypoke.store import Store
 from ypoke.trades import NATURE_NAMES_KO, option_labels
@@ -114,13 +115,9 @@ def box_screen(view: View, text: str, accessory: Callable[[dict], dict | None] |
 
 
 def _box_with_buttons(title: str, rows: list[tuple[str, dict | None]], next_page: str | None, view: View) -> Screen:
-    blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": title}}]
-    for line, accessory in rows:
-        section = {"type": "section", "text": {"type": "mrkdwn", "text": line}}
-        blocks.append(section | {"accessory": accessory} if accessory else section)
-    footer = [text for text in (BOX_BUTTON_NOTE, next_page, sync_line(view)) if text]
-    blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": text} for text in footer]})
-    return Screen("\n".join([title, sync_line(view)]), blocks)
+    built = [kit.section(title), *(kit.section(line, accessory=accessory) for line, accessory in rows)]
+    built.append(kit.context(*(text for text in (BOX_BUTTON_NOTE, next_page, sync_line(view)) if text)))
+    return Screen("\n".join([title, sync_line(view)]), built)
 
 
 def sync_line(view: View) -> str:
@@ -141,15 +138,13 @@ def _bag(view: View) -> Screen:
 
 
 def _plain(text: str) -> Screen:
-    return Screen(text, [{"type": "section", "text": {"type": "mrkdwn", "text": text}}])
+    return Screen(text, [kit.section(text)])
 
 
 def text_screen(lines: list[str], view: View) -> Screen:
     """Lines in as many sections as they need, then when the snapshot was taken."""
-    blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": chunk}} for chunk in _chunks(lines)]
     stamp = sync_line(view)
-    blocks.append({"type": "context", "elements": [{"type": "mrkdwn", "text": stamp}]})
-    return Screen("\n".join([lines[0], stamp]), blocks)
+    return Screen("\n".join([lines[0], stamp]), [*map(kit.section, _chunks(lines)), kit.context(stamp)])
 
 
 def _chunks(lines: list[str]) -> list[str]:

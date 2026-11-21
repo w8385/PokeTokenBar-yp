@@ -1,0 +1,103 @@
+import logging
+from types import SimpleNamespace
+
+import pytest
+from slack_sdk.errors import SlackApiError
+
+from ypoke import blocks as kit
+from ypoke.blocks import BlockError
+
+
+def test_a_label_past_slacks_limit_is_cut_but_a_long_value_raises():
+    assert kit.option("가" * 80, "v")["text"]["text"] == "가" * 75
+    assert kit.button("가" * 80, "go", "v")["text"]["text"] == "가" * 75
+    with pytest.raises(BlockError):
+        kit.option("label", "v" * 151)
+    with pytest.raises(BlockError):
+        kit.button("label", "go", "v" * 2001)
+
+
+def test_a_select_needs_between_one_and_a_hundred_distinct_options():
+    with pytest.raises(BlockError):
+        kit.static_select("pick", "고르기", [])
+    with pytest.raises(BlockError):
+        kit.static_select("pick", "고르기", [kit.option(str(n), str(n)) for n in range(101)])
+    with pytest.raises(BlockError):
+        kit.static_select("pick", "고르기", [kit.option("a", "same"), kit.option("b", "same")])
+    with pytest.raises(BlockError):
+        kit.static_select("pick", "고르기", [kit.option("a", "a")], initial_option=kit.option("b", "b"))
+
+
+def test_an_overflow_holds_two_to_five_options():
+    with pytest.raises(BlockError):
+        kit.overflow("order", [kit.option("a", "a")])
+    with pytest.raises(BlockError):
+        kit.overflow("order", [kit.option(str(n), str(n)) for n in range(6)])
+
+
+def test_a_typed_search_select_takes_its_picks_within_max_selected_items():
+    picks = [kit.option(str(n), str(n)) for n in range(5)]
+    with pytest.raises(BlockError):
+        kit.multi_external_select("moves", "기술", max_selected_items=4, initial_options=picks)
+
+
+def test_an_actions_block_takes_no_duplicate_action_id_and_no_multi_select():
+    with pytest.raises(BlockError):
+        kit.actions([kit.button("a", "go", "1"), kit.button("b", "go", "2")])
+    with pytest.raises(BlockError):
+        kit.actions([kit.multi_external_select("moves", "기술", max_selected_items=4)])
+    with pytest.raises(BlockError):
+        kit.actions([kit.button(str(n), f"go{n}", "v") for n in range(26)])
+
+
+def test_a_section_and_a_context_keep_within_slacks_sizes():
+    with pytest.raises(BlockError):
+        kit.section("가" * 3001)
+    with pytest.raises(BlockError):
+        kit.section(fields=["가" * 2001])
+    with pytest.raises(BlockError):
+        kit.section("text", accessory=kit.divider())
+    with pytest.raises(BlockError):
+        kit.context(*(["note"] * 11))
+    with pytest.raises(BlockError):
+        kit.context(kit.button("a", "go", "v"))
+    with pytest.raises(BlockError):
+        kit.section("text", block_id="b" * 256)
+
+
+def test_a_message_takes_no_block_id_twice_and_at_most_fifty_blocks():
+    assert kit.violations([kit.section("a", block_id="x"), kit.section("b", block_id="x")]) == ["block_id 'x' twice"]
+    assert kit.violations([kit.divider()] * 51) == ["51 blocks"]
+
+
+def test_send_returns_slacks_reply_and_logs_a_refusal_without_the_message(caplog):
+    refusal = SimpleNamespace(status_code=400, body="invalid_blocks")
+    with caplog.at_level(logging.WARNING):
+        assert kit.send(lambda **message: refusal, "lineup_moves", text="secret-token", blocks=[]) is refusal
+    assert [record.getMessage() for record in caplog.records] == [
+        'response url rejected lineup_moves: status=400 body="invalid_blocks"']
+
+
+def test_send_logs_a_broken_rule_and_still_sends(caplog):
+    sent = []
+    with caplog.at_level(logging.WARNING):
+        kit.send(lambda **message: sent.append(message), "screen", blocks=[kit.divider()] * 51)
+    assert len(sent) == 1
+    assert [record.getMessage() for record in caplog.records] == ['blocks break slack rules screen: "51 blocks"']
+
+
+def test_send_logs_the_error_slack_names_and_still_raises(caplog):
+    def refuse(**message):
+        raise SlackApiError("refused", {"ok": False, "error": "not_in_channel"})
+
+    with caplog.at_level(logging.WARNING), pytest.raises(SlackApiError):
+        kit.send(refuse, "result card", channel="C1", text="card")
+    assert [record.getMessage() for record in caplog.records] == ['slack rejected result card: error="not_in_channel"']
+
+
+def test_send_checks_blocks_slack_sent_back_without_failing(caplog):
+    echoed = [{"type": "section", "fields": [{"type": "mrkdwn"}]}]
+    with caplog.at_level(logging.WARNING):
+        kit.send(lambda **message: {"ok": True}, "rematch card", blocks=echoed)
+    assert [record.getMessage() for record in caplog.records] == [
+        'blocks break slack rules rematch card: "blocks could not be checked"']
