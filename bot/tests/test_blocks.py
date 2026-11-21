@@ -1,4 +1,6 @@
+import ast
 import logging
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -6,6 +8,28 @@ from slack_sdk.errors import SlackApiError
 
 from ypoke import blocks as kit
 from ypoke.blocks import BlockError
+
+PACKAGE = Path(kit.__file__).parent
+SLACK_TYPES = {"section", "actions", "context", "divider", "header", "image", "input", "rich_text", "button",
+               "static_select", "external_select", "multi_static_select", "multi_external_select", "overflow",
+               "checkboxes", "radio_buttons", "datepicker", "timepicker", "mrkdwn", "plain_text", "modal", "home"}
+SENDERS = {"respond", "send", "say"}
+
+
+def test_no_module_writes_a_slack_block_by_hand():
+    assert [finding for path in modules() for finding in block_literals(path.read_text(), path.name)] == []
+
+
+def test_no_module_sends_to_slack_except_through_blocks_send():
+    assert [finding for path in modules() for finding in direct_sends(path.read_text(), path.name)] == []
+
+
+def test_the_scans_catch_a_hand_written_block_and_a_direct_send():
+    assert block_literals('blocks = [{"type": "section", "text": text}]', "screen.py") == ["screen.py:1 section"]
+    assert direct_sends("client.chat_postMessage(channel=c, text=t)", "card.py") == ["card.py:1 chat_postMessage"]
+    assert direct_sends("respond(text=t)", "card.py") == ["card.py:1 respond"]
+    assert direct_sends("WebhookClient(url).send(text=t)", "card.py") == ["card.py:1 send"]
+    assert direct_sends("kit.send(client.chat_update, 'card', text=t)", "card.py") == []
 
 
 def test_a_label_past_slacks_limit_is_cut_but_a_long_value_raises():
@@ -101,3 +125,29 @@ def test_send_checks_blocks_slack_sent_back_without_failing(caplog):
         kit.send(lambda **message: {"ok": True}, "rematch card", blocks=echoed)
     assert [record.getMessage() for record in caplog.records] == [
         'blocks break slack rules rematch card: "blocks could not be checked"']
+
+
+def modules() -> list[Path]:
+    return [path for path in sorted(PACKAGE.rglob("*.py")) if path.name != "blocks.py"]
+
+
+def block_literals(source: str, name: str) -> list[str]:
+    return [f"{name}:{node.lineno} {value.value}" for node in ast.walk(ast.parse(source)) if isinstance(node, ast.Dict)
+            for key, value in zip(node.keys, node.values)
+            if isinstance(key, ast.Constant) and key.value == "type"
+            and isinstance(value, ast.Constant) and value.value in SLACK_TYPES]
+
+
+def direct_sends(source: str, name: str) -> list[str]:
+    findings = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        if isinstance(func, ast.Name) and func.id in SENDERS:
+            findings.append(f"{name}:{node.lineno} {func.id}")
+        elif isinstance(func, ast.Attribute) and (
+                func.attr.startswith(("chat_", "views_"))
+                or (func.attr == "send" and not (isinstance(func.value, ast.Name) and func.value.id == "kit"))):
+            findings.append(f"{name}:{node.lineno} {func.attr}")
+    return findings
