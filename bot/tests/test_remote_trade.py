@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 from slack_rules import violations
+from test_commands import NOW
 from test_miracle import FakeBoard, FakeClient
 from test_remote_lineup import BAG, POOL, LineupAPI, box_entry, party_member
 from test_remote_lineup import PARTY as ALICE_PARTY
@@ -40,9 +41,9 @@ BOB_POOL = [box_entry("bob-1", 7, "꼬부기"), box_entry("bob-2", 1, "이상해
 def make_api(path):
     store = Store(str(path / "bot.sqlite3"))
     remote = RemoteOps(store)
-    trades = TradeService(store, name_for=NAMES.get, bot_user_id=BOT, holds=remote.holds)
+    trades = TradeService(store, lambda: NOW, name_for=NAMES.get, bot_user_id=BOT, holds=remote.holds)
     board = FakeBoard()
-    miracle = MiracleService(trades, board)
+    miracle = MiracleService(trades, board, lambda: NOW)
     sent = []
     server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), NAMES.get, trades, sent.extend,
                    miracle=miracle, remote=remote)

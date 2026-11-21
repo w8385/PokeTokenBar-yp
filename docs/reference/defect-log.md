@@ -1991,6 +1991,14 @@ read_when:
   `..._trade_and_miracle_...`; putting a moves menu back into an `actions` block or giving two buttons one `action_id`
   fails them. Not understood yet: the swap menu showing options on the first slot only; the bot answered every slot's
   options request offline, so the new `options` log line says whether the requests arrive.
+- **Two services compared in one test must share a fixed clock.** `test_a_slack_miracle_post_makes_the_app_card_and_one_offer_at_a_time_holds`
+  compared the Slack and the app Miracle offer status, and both carry `expires_at` stamped to the second from the real
+  clock; the two posts fell in different seconds now and then and the train's pytest failed once.
+  **Why no test caught it:** it passes whenever both posts land in one second, and `make_api` built `TradeService` and
+  `MiracleService` without their injectable `now`. A run with a one-second pause between the posts fails it every time,
+  with only `expires_at` differing. Now `make_api` passes `NOW`. Class sweep: `make_api` is the only helper that builds two
+  service sets for one comparison; the other `datetime.now` uses in `bot/tests` are offsets for one service
+  (`test_upload_server`), not stamps compared across two. No scan guard: a service built without `now` is fine alone.
 
 ## Tests and the user's desktop
 
