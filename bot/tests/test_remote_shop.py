@@ -4,6 +4,7 @@ from test_remote_lineup import BAG, PARTY, POOL, bot
 from test_remote_ops import text_of
 from test_upload_server import FakeMoves, call
 
+from fixed_clock import fixed_now
 from ypoke.commands import HELP_TEXT
 from ypoke.lineup_editor import ITEM_ACTION
 from ypoke.remote_buy import BUY, REASONS
@@ -27,8 +28,8 @@ SHOP = [CANDY, BAND, TM]
 
 @pytest.fixture
 def server(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), trades=TradeService(store))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), trades=TradeService(store, fixed_now), now=fixed_now)
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}"
     http_server.shutdown()
 
@@ -122,7 +123,7 @@ def test_a_buy_through_the_action_listener_queues_one_op_and_replaces_the_screen
                                      respond=lambda **message: sent.append(message))
     assert [(message["replace_original"], message["response_type"]) for message in sent] == [(True, "ephemeral")]
     assert "✅ 이상한사탕 ×5" in sent[0]["text"] and "남은 토큰 0" in sent[0]["text"]
-    [op] = RemoteOps(store).pending("UA")
+    [op] = RemoteOps(store, fixed_now).pending("UA")
     assert (op.kind, op.payload) == (BUY, {"key": "rareCandy", "name": "이상한사탕", "count": 5, "price": 100})
 
 
@@ -133,7 +134,7 @@ def test_a_buy_past_the_balance_less_pending_buys_is_refused_with_the_balance(se
     reply = press(store, BUY_ACTION, "3|100|rareCandy")
     assert not reply.replace
     assert reply.screen.text == f"{SHORT} 쓸 수 있는 토큰 200, 필요한 토큰 300"
-    assert len(RemoteOps(store).pending("UA")) == 1
+    assert len(RemoteOps(store, fixed_now).pending("UA")) == 1
 
 
 def test_a_price_changed_since_the_screen_is_refused(server):
@@ -141,7 +142,7 @@ def test_a_price_changed_since_the_screen_is_refused(server):
     post(server)
     reply = press(store, BUY_ACTION, "1|90|rareCandy")
     assert not reply.replace and REASONS["price_changed"] in reply.screen.text
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
 
 
 def test_an_item_bought_once_leaves_the_shop_and_lands_in_the_bag(server):
@@ -151,7 +152,7 @@ def test_an_item_bought_once_leaves_the_shop_and_lands_in_the_bag(server):
     assert "✅ 기술머신 번개 ×1" in reply.screen.text
     assert "machine" not in {block.get("block_id") for block in reply.screen.blocks}
     assert press(store, BUY_ACTION, "1|300|tm:87").screen.text.startswith("그새 상점이 바뀌었어요")
-    assert {line["key"]: line["count"] for line in RemoteOps(store).view("UA").bag}["tm:87"] == 1
+    assert {line["key"]: line["count"] for line in RemoteOps(store, fixed_now).view("UA").bag}["tm:87"] == 1
 
 
 def test_a_bought_item_shows_at_once_in_the_bag_the_shop_and_the_held_item_picker(server):
@@ -171,7 +172,7 @@ def test_a_lineup_equipping_a_pending_buy_applies_after_it(server):
     buy(store, BAND)
     reply = bot(store).editor.act("UA", ITEM_ACTION, "p2|choiceBand", [])
     assert reply.replace, reply.screen.text
-    view = RemoteOps(store).view("UA")
+    view = RemoteOps(store, fixed_now).view("UA")
     assert [op.kind for op in view.pending] == [BUY, LINEUP]
     assert view.party[1]["item_key"] == "choiceBand" and view.party[1]["held_item"] == "choice-band"
     assert "choiceBand" not in {line["key"] for line in view.bag}
@@ -186,25 +187,25 @@ def test_an_upload_that_has_not_applied_the_buy_keeps_it_and_the_ack_clears_it(s
     buy(store, CANDY, 2)
     post(server)
     assert wallet(store) == 300
-    [op] = RemoteOps(store).pending("UA")
+    [op] = RemoteOps(store, fixed_now).pending("UA")
     post(server, wallet=320, applied=op.id, bag=[{**BAG[2], "count": 5}])
     assert wallet(store) == 320
     status, _ = call(f"{base}/v1/ops/ack", "POST", store.issue_token("UA", keep_existing=True),
                      {"applied": [op.id], "cancelled": []})
-    assert status == 200 and RemoteOps(store).pending("UA") == []
+    assert status == 200 and RemoteOps(store, fixed_now).pending("UA") == []
     assert wallet(store) == 320
 
 
 def wallet(store):
-    return RemoteOps(store).view("UA").wallet
+    return RemoteOps(store, fixed_now).view("UA").wallet
 
 
 def test_the_result_dm_words_a_cancelled_buy_with_its_reason(server):
     store, _ = server
     post(server)
     buy(store, CANDY)
-    [op] = RemoteOps(store).pending("UA")
-    message = RemoteOps(store).ack("UA", [], [(op.id, "no_tokens")])
+    [op] = RemoteOps(store, fixed_now).pending("UA")
+    message = RemoteOps(store, fixed_now).ack("UA", [], [(op.id, "no_tokens")])
     assert f"❌ 상점에서 사기: 이상한사탕 ×1 (100토큰): {REASONS['no_tokens']}" in message.text
 
 
@@ -220,7 +221,7 @@ def test_an_app_that_does_not_apply_buy_ops_gets_a_read_only_shop_and_a_refusal(
     assert "• 구애머리띠 · 200토큰" in text_of(reply)
     assert press(store, BUY_ACTION, "1|100|rareCandy").screen.text == OLD_APP_REFUSAL
     assert press(store, BACK_ACTION, "back").screen.text == OLD_APP_REFUSAL
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
 
 
 def test_every_shop_screen_follows_slacks_block_rules(server):

@@ -8,6 +8,8 @@ from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
+from ypoke.clock import Clock
+
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
     slack_user_id TEXT PRIMARY KEY,
@@ -111,8 +113,10 @@ class Lead:
 
 
 class Store:
-    def __init__(self, path: str):
+    def __init__(self, path: str, now: Clock | None = None):
+        """`now` stamps what the store writes; the offline tools read only and pass none."""
         self._path = path
+        self._clock = now
         with closing(self._connect()) as connection, connection:
             connection.execute("PRAGMA journal_mode=WAL")
             connection.executescript(_SCHEMA)
@@ -168,7 +172,7 @@ class Store:
             connection.execute(
                 "UPDATE users SET party_json = ?, uploaded_at = ?, dex_json = COALESCE(?, dex_json), remote_json = ? "
                 "WHERE slack_user_id = ?",
-                (json.dumps(party, ensure_ascii=False), _now(),
+                (json.dumps(party, ensure_ascii=False), _timestamp(self._now()),
                  json.dumps(dex, ensure_ascii=False) if dex is not None else None,
                  json.dumps(remote, ensure_ascii=False) if remote is not None else None, slack_user_id),
             )
@@ -214,7 +218,7 @@ class Store:
             connection.execute(
                 "INSERT INTO battles (challenger_id, opponent_id, winner_id, seed, created_at, "
                 "challenger_pokemon, opponent_pokemon, turns) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (challenger_id, opponent_id, winner_id, seed, _timestamp(at or datetime.now(UTC)),
+                (challenger_id, opponent_id, winner_id, seed, _timestamp(at or self._now()),
                  challenger_pokemon, opponent_pokemon, turns),
             )
 
@@ -325,7 +329,7 @@ class Store:
         with closing(self._connect()) as connection, connection:
             cursor = connection.execute(
                 "INSERT OR IGNORE INTO rematch_claims (channel_id, card_ts, claimed_at) VALUES (?, ?, ?)",
-                (channel_id, card_ts, _now()),
+                (channel_id, card_ts, _timestamp(self._now())),
             )
         return cursor.rowcount == 1
 
@@ -365,16 +369,17 @@ class Store:
                 (cache_key, json.dumps(data, ensure_ascii=False)),
             )
 
+    def _now(self) -> datetime:
+        if self._clock is None:
+            raise RuntimeError("this Store was built without a clock and cannot stamp a write")
+        return self._clock()
+
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self._path, timeout=10)
 
 
 def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
-
-
-def _now() -> str:
-    return _timestamp(datetime.now(UTC))
 
 
 def _timestamp(moment: datetime) -> str:

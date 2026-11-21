@@ -5,6 +5,7 @@ import urllib.error
 
 import pytest
 
+from fixed_clock import fixed_now
 from ypoke import pokeapi
 from ypoke.commands import CommandHandler
 from ypoke.move_effects import STATUS_MOVES
@@ -97,7 +98,7 @@ def service(tmp_path, monkeypatch):
         return POKEMON_BODY if kind == "pokemon" else MOVES[int(item)]
 
     monkeypatch.setattr(pokeapi, "_get_json", get_json)
-    return PokeAPIService(Store(str(tmp_path / "bot.sqlite3"))), fetched
+    return PokeAPIService(Store(str(tmp_path / "bot.sqlite3"), fixed_now)), fetched
 
 
 def test_attacking_moves_keep_weather_moves_skip_other_status_and_powerless_moves_and_respect_the_level(service):
@@ -290,7 +291,7 @@ def test_warm_tries_every_member_and_raises_the_first_network_error(service, mon
 
 
 def test_warming_never_has_more_requests_in_flight_than_the_slot_limit(tmp_path, monkeypatch):
-    api = PokeAPIService(Store(str(tmp_path / "bot.sqlite3")))
+    api = PokeAPIService(Store(str(tmp_path / "bot.sqlite3"), fixed_now))
     active = peak = 0
     lock = threading.Lock()
 
@@ -339,11 +340,11 @@ def battle_over(tmp_path, monkeypatch, outcomes):
         return POKEMON_BODY if kind == "pokemon" else MOVES[int(item)]
 
     monkeypatch.setattr(pokeapi, "_read", read)
-    store = Store(str(tmp_path / "bot.sqlite3"))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     for user_id, species in (("UA", 25), ("UB", 7)):
         store.issue_token(user_id)
         store.save_party(user_id, [{"pokemon_id": species, "level": 36, "shiny": False, "ivs": {}}])
-    handler = CommandHandler(store, PokeAPIService(store), None, bot_user_id="UBOT")
+    handler = CommandHandler(store, PokeAPIService(store), None, now=fixed_now, bot_user_id="UBOT")
     return handler.handle("UA", "<@UB>"), store, reads
 
 
@@ -364,6 +365,6 @@ def test_a_battle_with_every_species_cached_makes_no_network_call(tmp_path, monk
     _, store, reads = battle_over(tmp_path, monkeypatch, [])
     assert reads
     reads.clear()
-    handler = CommandHandler(store, PokeAPIService(store), None, bot_user_id="UBOT")
+    handler = CommandHandler(store, PokeAPIService(store), None, now=fixed_now, bot_user_id="UBOT")
     assert "불러오지 못했어요" not in handler.handle("UA", "<@UB>").text
     assert reads == []

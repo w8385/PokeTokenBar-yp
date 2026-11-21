@@ -8,6 +8,7 @@ from test_remote_ops import text_of
 from test_upload_server import FakeMoves, call
 
 import ypoke.commands
+from fixed_clock import fixed_now
 from ypoke.commands import HELP_TEXT, CommandHandler
 from ypoke.lineup_editor import SET_MOVES_ACTION as LINEUP_SET_MOVES_ACTION
 from ypoke.lineup_editor import SWAP_ACTION, TRAINING_OPEN_ACTION
@@ -94,8 +95,8 @@ class TrainingAPI(LineupAPI):
 
 @pytest.fixture
 def server(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), trades=TradeService(store))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), trades=TradeService(store, fixed_now), now=fixed_now)
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}"
     http_server.shutdown()
 
@@ -124,7 +125,7 @@ def trained(store, action_id, value, selected=()):
 
 
 def view(store):
-    return RemoteOps(store).view("UA")
+    return RemoteOps(store, fixed_now).view("UA")
 
 
 def member_of(store, individual_id):
@@ -182,7 +183,7 @@ def test_a_mint_from_the_bag_sets_the_nature_and_uses_the_mint(server):
     trained(store, NATURE_ACTION, "p2|adamant")
     assert member_of(store, "p2")["nature"] == "adamant"
     assert count(store, "mint") == 0 and view(store).wallet == 500
-    [op] = RemoteOps(store).pending("UA")
+    [op] = RemoteOps(store, fixed_now).pending("UA")
     assert (op.kind, op.payload["action"], op.payload["price"]) == (TRAIN, "nature", None)
 
 
@@ -193,7 +194,7 @@ def test_a_mint_with_none_in_the_bag_is_bought_at_the_shop_price(server):
     assert member_of(store, "b1")["nature"] == "modest"
     assert view(store).pool[0]["entry"]["nature"] == "modest"
     assert view(store).wallet == 200
-    assert RemoteOps(store).pending("UA")[0].payload["price"] == 300
+    assert RemoteOps(store, fixed_now).pending("UA")[0].payload["price"] == 300
 
 
 def test_the_capsule_swaps_to_the_other_regular_ability(server):
@@ -288,7 +289,7 @@ def test_a_herb_past_the_spendable_balance_is_refused_with_the_balance(server):
     reply = press(store, HERB_ACTION, "b1")
     assert not reply.replace
     assert REASONS["no_tokens"] in reply.screen.text and "쓸 수 있는 토큰 300, 필요한 토큰 400" in reply.screen.text
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
 
 
 def test_pending_training_costs_come_off_the_balance_the_shop_spends(server):
@@ -358,7 +359,7 @@ def test_coworkers_battles_the_party_screen_the_overview_and_get_party_read_the_
     assert 642 not in sides
     party_screen = bot(store).handle("UA", "", PARTY_COMMAND).blocks
     assert "고집" in " ".join(block["text"]["text"] for block in party_screen if block["type"] == "section")
-    overview = battle_overview(store, "UB", lambda _: None, RemoteOps(store))
+    overview = battle_overview(store, "UB", lambda _: None, RemoteOps(store, fixed_now), fixed_now)
     assert [lead["pokemon_id"] for lead in overview["coworkers"]] == [10020]
     status, body = call(f"{base}/v1/party", "GET", store.issue_token("UA", keep_existing=True))
     assert status == 200 and [member["pokemon_id"] for member in body["party"]] == [10020, 25]
@@ -403,7 +404,7 @@ def test_a_press_through_the_action_listener_queues_one_op(server):
         action={"action_id": NATURE_ACTION, "selected_option": {"value": "p2|jolly"}},
         respond=lambda **reply: responses.append(reply))
     assert responses[0]["replace_original"] is True
-    assert [op.payload["nature"] for op in RemoteOps(store).pending("UA")] == ["jolly"]
+    assert [op.payload["nature"] for op in RemoteOps(store, fixed_now).pending("UA")] == ["jolly"]
 
 
 # The app settles
@@ -414,11 +415,11 @@ def test_the_ack_clears_the_op_and_a_cancel_is_worded(server):
     post(server)
     trained(store, NATURE_ACTION, "p2|adamant")
     trained(store, CAPSULE_ACTION, "b1")
-    first, second = RemoteOps(store).pending("UA")
-    message = RemoteOps(store).ack("UA", [first.id], [(second.id, "no_item")])
+    first, second = RemoteOps(store, fixed_now).pending("UA")
+    message = RemoteOps(store, fixed_now).ack("UA", [first.id], [(second.id, "no_item")])
     assert f"❌ 트레이닝 특성캡슐: 고라파덕 → {ability_name('cloud-nine')}: {REASONS['no_item']}" in message.text
     post(server, applied=second.id, party=[THUNDURUS, {**PIKACHU, "nature": "adamant"}])
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
     assert member_of(store, "p2")["nature"] == "adamant" and member_of(store, "b1")["ability"] == "damp"
 
 
@@ -450,7 +451,7 @@ def test_an_app_that_does_not_apply_train_ops_gets_a_read_only_screen_and_a_refu
     assert "고라파덕" in text_of(reply)
     assert press(store, NATURE_ACTION, "p2|adamant").screen.text == OLD_APP_REFUSAL
     assert TRAINING_OPEN_ACTION not in controls(bot(store).editor.handle("UA", PARTY_COMMAND, "").blocks)
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
 
 
 def test_every_training_screen_follows_slacks_block_rules(server):
@@ -495,11 +496,11 @@ def test_the_cord_evolves_once_keeps_the_ability_and_spends_one_cord(server):
     assert (evolved["pokemon_id"], evolved["ability"]) == (526, "sturdy")
     assert not {"evolution", "moves"} & set(evolved)
     assert count(store, "linkingCord") == 1
-    [op] = RemoteOps(store).pending("UA")
+    [op] = RemoteOps(store, fixed_now).pending("UA")
     assert (op.kind, op.payload["action"], op.payload["item"], op.payload["to_pokemon_id"]) == (
         TRAIN, "evolve", "linkingCord", 526)
     assert not press(store, EVOLVE_ACTION, "p3").replace
-    assert len(RemoteOps(store).pending("UA")) == 1 and count(store, "linkingCord") == 1
+    assert len(RemoteOps(store, fixed_now).pending("UA")) == 1 and count(store, "linkingCord") == 1
 
 
 def test_a_box_pokemon_evolves_in_the_box_entry_too(server):
@@ -558,7 +559,7 @@ def test_an_everstone_equipped_in_slack_hides_the_button_and_refuses_the_cord(se
     store, _ = server
     stone = {"key": "everstone", "name": "변함없는돌", "count": 1, "equip": True, "held_item": "everstone"}
     post(server, party=[BOLDORE], bag=[CORD, stone])
-    RemoteOps(store).submit("UA", LINEUP, {"members": [
+    RemoteOps(store, fixed_now).submit("UA", LINEUP, {"members": [
         {"id": "p3", "pokemon_id": 525, "name": "암트르", "moves": [84], "machine": [], "item": "everstone"}]})
     assert member_of(store, "p3")["held_item"] == "everstone"
     assert EVOLVE_ACTION not in controls(press(store, PICK_ACTION, "p3").screen.blocks)
@@ -570,8 +571,8 @@ def test_every_reason_the_app_gives_for_the_cord_is_worded(server):
     store, _ = server
     post(server, party=[*PARTY, BOLDORE], bag=[CORD])
     trained(store, EVOLVE_ACTION, "p3")
-    [op] = RemoteOps(store).pending("UA")
-    message = RemoteOps(store).ack("UA", [], [(op.id, "wrong_target")])
+    [op] = RemoteOps(store, fixed_now).pending("UA")
+    message = RemoteOps(store, fixed_now).ack("UA", [], [(op.id, "wrong_target")])
     assert f"❌ 트레이닝 연결의끈 진화: 암트르 → 기가이어스: {REASONS['wrong_target']}" in message.text
     assert {"wrong_target", "not_ready", "everstone", "trade_locked", "no_data"} <= set(REASONS)
 

@@ -5,6 +5,7 @@ import pytest
 from test_trades import ALICE, BOB, EEVEE, HAUNTER, NAMES, PIKACHU
 from test_upload_server import PIKACHU as BATTLER
 from test_upload_server import FakeMoves, call
+from fixed_clock import fixed_now
 from ypoke.store import Store
 from ypoke.trades import ACCEPT_ACTION_ID, TradeService
 from ypoke.transport import trade_listener
@@ -13,10 +14,10 @@ from ypoke.upload_server import serve
 
 @pytest.fixture
 def api(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    service = TradeService(store, name_for=NAMES.get)
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    service = TradeService(store, fixed_now, name_for=NAMES.get)
     sent = []
-    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), NAMES.get, service, sent.append)
+    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), NAMES.get, service, sent.append, now=fixed_now)
     base = f"http://127.0.0.1:{server.server_address[1]}"
     yield SimpleNamespace(base=base, service=service, sent=sent, alice=store.issue_token(ALICE), bob=store.issue_token(BOB))
     server.shutdown()
@@ -107,8 +108,8 @@ def test_trade_endpoints_need_a_token(api):
 
 
 def test_without_a_trade_service_the_upload_reply_is_unchanged(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves())
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), now=fixed_now)
     try:
         base = f"http://127.0.0.1:{server.server_address[1]}"
         token = store.issue_token(ALICE)

@@ -2,6 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from fixed_clock import fixed_now
 from ypoke.store import Store
 from ypoke.trades import (
     ACCEPT_ACTION_ID,
@@ -48,7 +49,7 @@ def clock():
 
 @pytest.fixture
 def trades(tmp_path, clock):
-    store = Store(str(tmp_path / "bot.sqlite3"))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     service = TradeService(store, now=clock, name_for=NAMES.get, bot_user_id=BOT)
     service.save_pool(ALICE, [HAUNTER, EEVEE])
     service.save_pool(BOB, [PIKACHU, SQUIRTLE])
@@ -258,7 +259,7 @@ def test_history_lists_open_and_recent_trades_for_both_sides(trades):
 
 
 def test_a_name_lookup_failure_falls_back_to_a_generic_name(tmp_path, clock):
-    service = TradeService(Store(str(tmp_path / "bot.sqlite3")), now=clock)
+    service = TradeService(Store(str(tmp_path / "bot.sqlite3"), fixed_now), now=clock)
     service.save_pool(ALICE, [HAUNTER])
     service.save_pool(BOB, [PIKACHU])
 

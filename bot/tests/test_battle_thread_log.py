@@ -7,6 +7,7 @@ from PIL import Image
 from test_commands import handler, member, upload
 from test_result_thread import FakeClient, FakeRespond, mention_event, slash
 
+from fixed_clock import fixed_now
 from ypoke import battle_render
 from ypoke.battle import (
     Action,
@@ -36,7 +37,7 @@ RED, BLUE = (220, 30, 30, 255), (30, 30, 220, 255)
 
 @pytest.fixture
 def store(tmp_path):
-    return Store(str(tmp_path / "bot.sqlite3"))
+    return Store(str(tmp_path / "bot.sqlite3"), fixed_now)
 
 
 def ready_pair(store):

@@ -4,6 +4,7 @@ import urllib.request
 import pytest
 
 from test_machine_moves import MOVES, POKEMON, SV, call, detail, entry, tagged
+from fixed_clock import fixed_now
 from ypoke import pokeapi
 from ypoke.combatants import combatant
 from ypoke.moves import default_move_ids
@@ -40,13 +41,13 @@ def fetched(monkeypatch):
 
 @pytest.fixture
 def api(tmp_path, fetched):
-    return PokeAPIService(Store(str(tmp_path / "bot.sqlite3")))
+    return PokeAPIService(Store(str(tmp_path / "bot.sqlite3"), fixed_now))
 
 
 @pytest.fixture
 def server(tmp_path, api):
-    store = Store(str(tmp_path / "upload.sqlite3"))
-    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, api.attacking_moves)
+    store = Store(str(tmp_path / "upload.sqlite3"), fixed_now)
+    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, api.attacking_moves, now=fixed_now)
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}"
     http_server.shutdown()
 

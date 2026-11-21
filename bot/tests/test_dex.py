@@ -6,6 +6,7 @@ import pytest
 from test_commands import handler, upload
 from test_result_thread import FakeClient, FakeRespond, slash
 
+from fixed_clock import fixed_now
 from ypoke.commands import DEX_COMMAND, UMBRELLA_COMMAND, Where, message_blocks
 from ypoke.dex import bar, normalize_dex, percent, progress_fields, progress_lines, sprite_url
 from ypoke.store import Store
@@ -20,7 +21,7 @@ DEX = {
 
 @pytest.fixture
 def store(tmp_path):
-    return Store(str(tmp_path / "bot.sqlite3"))
+    return Store(str(tmp_path / "bot.sqlite3"), fixed_now)
 
 
 def with_dex(store, user_id, dex=DEX):
@@ -55,7 +56,7 @@ def test_a_database_from_before_the_dex_column_still_opens(tmp_path):
     with sqlite3.connect(path) as connection:
         connection.execute("CREATE TABLE users (slack_user_id TEXT PRIMARY KEY, token_hash TEXT UNIQUE NOT NULL, "
                            "party_json TEXT, uploaded_at TEXT)")
-    store = Store(path)
+    store = Store(path, fixed_now)
     assert store.dex("U1") is None
 
 

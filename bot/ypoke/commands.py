@@ -3,7 +3,7 @@
 import random
 import re
 import secrets
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
@@ -12,6 +12,7 @@ from urllib.parse import urlencode
 
 from ypoke import entry_rules
 from ypoke.battle import Combatant, simulate
+from ypoke.clock import Clock
 from ypoke.combatants import combatant
 from ypoke.dex import NATIONAL_TOTAL, progress_fields, progress_lines, sprite_url
 from ypoke.lineup_editor import LineupEditor
@@ -197,7 +198,8 @@ class CommandHandler:
         store: Store,
         pokeapi: PokeAPIService,
         public_url: str | None = None,
-        now: Callable[[], datetime] = lambda: datetime.now(UTC),
+        *,
+        now: Clock,
         bot_user_id: str | None = None,
         home_channel: str | None = None,
         remote: RemoteOps | None = None,

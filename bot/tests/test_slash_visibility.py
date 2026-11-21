@@ -7,6 +7,7 @@ from test_commands import NOW, handler, upload
 from test_dex import with_dex
 from test_result_thread import FakeClient, FakeRespond, slash
 
+from fixed_clock import fixed_now
 from ypoke.commands import (
     BATTLE_COMMAND,
     DEX_COMMAND,
@@ -28,7 +29,7 @@ CHANNEL_ID = "CCHAN"
 
 @pytest.fixture
 def store(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     upload(store, "UA", 25, 60)
     with_dex(store, "UB")
     store.record_battle("UA", "UB", "UA", 1, at=NOW)

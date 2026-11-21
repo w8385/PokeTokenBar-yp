@@ -1,4 +1,5 @@
 import pytest
+from fixed_clock import fixed_now
 from test_commands import CHANNEL, handler, lineups, member
 from test_gym_api import FULL
 from test_gym_api import FakePokeAPI as GymPokeAPI
@@ -14,7 +15,7 @@ ETERNATUS, ROTOM, ROTOM_WASH, SNORLAX, PIKACHU, SQUIRTLE = 890, 479, 10009, 143,
 
 @pytest.fixture
 def store(tmp_path):
-    return Store(tmp_path / "ypoke.sqlite3")
+    return Store(tmp_path / "ypoke.sqlite3", fixed_now)
 
 
 @pytest.fixture

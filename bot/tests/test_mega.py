@@ -3,6 +3,7 @@ from dataclasses import replace
 import pytest
 from attacks import attack
 
+from fixed_clock import fixed_now
 from ypoke import pokeapi
 from ypoke.battle import (
     AbilityTrigger, Action, BaseStats, BattleResult, Change, Combatant, MegaEvolution, MegaForm, Move, SendOut, simulate,
@@ -216,7 +217,7 @@ def service(tmp_path, monkeypatch):
         return body
 
     monkeypatch.setattr(pokeapi, "_get_json", get_json)
-    return PokeAPIService(Store(str(tmp_path / "ypoke.db"))), fetched
+    return PokeAPIService(Store(str(tmp_path / "ypoke.db"), fixed_now)), fetched
 
 
 def test_mega_form_reads_stats_types_and_the_visible_ability_once(service):
@@ -238,7 +239,7 @@ def test_a_battle_with_a_stone_holder_carries_the_mega_form_image(tmp_path):
         def mega_form(self, pokemon_id):
             return {**self.pokemon(pokemon_id), "ability": None, "ability_id": None}
 
-    store = Store(str(tmp_path / "bot.sqlite3"))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     for user, party in (("UA", [{**member(6, 60), "held_item": "charizardite-x"}]), ("UB", [member(7, 20)])):
         store.issue_token(user)
         store.save_party(user, party)

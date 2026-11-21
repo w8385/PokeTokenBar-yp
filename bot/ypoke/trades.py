@@ -14,6 +14,7 @@ from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
+from ypoke.clock import Clock
 from ypoke.messages import DirectMessage
 from ypoke.store import Store
 
@@ -140,7 +141,7 @@ class TradeService:
     def __init__(
         self,
         store: Store,
-        now: Callable[[], datetime] = lambda: datetime.now(UTC),
+        now: Clock,
         name_for: NameFor = lambda user_id: None,
         bot_user_id: str | None = None,
         holds: Holds = lambda user_id: {},

@@ -6,12 +6,12 @@ apps receive it through the trade deliveries. Contract: bot/API.md.
 import json
 import sqlite3
 import uuid
-from collections.abc import Callable
 from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Protocol
 
+from ypoke.clock import Clock
 from ypoke.dex import sprite_url
 from ypoke.messages import DirectMessage
 from ypoke.trades import (
@@ -98,7 +98,7 @@ class MiracleService:
         self,
         trades: TradeService,
         board: Board | None,
-        now: Callable[[], datetime] = lambda: datetime.now(UTC),
+        now: Clock,
     ):
         self._trades = trades
         self._board = board
