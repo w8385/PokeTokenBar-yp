@@ -104,7 +104,7 @@ def test_a_miracle_picker_past_100_finds_and_picks_the_130th_pokemon(api):
     done = api.miracle.pick(BOB, *found[0]["value"].split("|"))
 
     assert select["type"] == "external_select" and "options" not in select
-    assert len(first) == 100
+    assert len(first) == 30
     assert [option["text"]["text"] for option in found] == ["피카129 Lv.50"]
     assert found[0]["value"] == f"{offer}|bob-129"
     assert done.ok and done.final

@@ -8,7 +8,6 @@ import time
 from pathlib import Path
 
 from slack_bolt import App
-from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient
 
 from ypoke.battle_render import MatchupPictures
@@ -41,6 +40,7 @@ from ypoke.transport import (
     post_direct_messages,
     rematch_listener,
     slash_listener,
+    socket_handler,
     trade_listener,
 )
 from ypoke.upload_server import serve
@@ -112,7 +112,7 @@ def main() -> None:
     for action_id in OFFER_PICKER_ACTIONS:
         app.options(action_id)(editor_options_listener(handler.trading))
     app.event("app_mention")(mention_listener(handler, pictures))
-    SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
+    socket_handler(app, os.environ["SLACK_APP_TOKEN"]).start()
 
 
 def _join(app: App, channel: str) -> None:
