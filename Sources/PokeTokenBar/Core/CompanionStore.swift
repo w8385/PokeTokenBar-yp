@@ -1008,9 +1008,12 @@ final class CompanionStore {
 
     /// `timeSinceLastUsage`: nil when unknown (see `UsageStore.timeSinceLastUsage`); unknown never sulks.
     /// It comes from the slower enrichment scan, so a rise in today's total seen here counts as usage at once.
+    /// `dayTotalsByProvider`: `UsageStore.dayTotalsByProvider`. nil holds a token-mode date change until
+    /// today's scan has finished; `[:]` credits no tail.
     func update(todayTokensByProvider: [String: Int], todayDate: String, monthTotal: Int,
                 burnTier: BurnTier, limitWarning: Bool, hasUsageData: Bool,
-                timeSinceLastUsage: TimeInterval? = nil) {
+                timeSinceLastUsage: TimeInterval? = nil,
+                dayTotalsByProvider: [String: [String: Int]]? = [:]) {
         let todayTokens = todayTokensByProvider.values.reduce(0, +)
         // `hasUsageData`는 표시용 snapshot 존재 여부이고, 이 map은 오늘 날짜가 확인된
         // provider 데이터만 담는다. stale snapshot이나 today == nil carrier만 있는 refresh는
@@ -1050,9 +1053,18 @@ final class CompanionStore {
                     state.claimedTodayTokensByProvider = todayTokensByProvider
                     state.lastDate = todayDate
                     AppLog.write("companion provider ledger seeded date=\(todayDate) providers=\(todayTokensByProvider.keys.sorted().joined(separator: ","))")
+                } else if dateChanged, state.growthMode == .token, dayTotalsByProvider == nil {
+                    AppLog.writeIfChanged("companion-date-hold", "companion date change held from=\(state.lastDate) to=\(todayDate) until day totals arrive")
                 } else if dateChanged {
-                    // 일자별 snapshot은 서로 비교할 수 없다. 새 날짜에는 이전 날짜의 ledger를
-                    // 기준으로 삼지 않고, 현재 날짜의 누적값 전체를 새 날짜 사용량으로 적립한다.
+                    let tail = state.growthMode == .token
+                        ? unseenDayTail(claimed: state.claimedTodayTokensByProvider!, before: todayDate,
+                                        dayTotalsByProvider: dayTotalsByProvider ?? [:]) : 0
+                    if tail > 0 {
+                        AppLog.write("companion day tail credited from=\(state.lastDate) to=\(todayDate) tokens=\(tail)")
+                    }
+                    // 일자별 snapshot은 서로 비교할 수 없다. 새 날짜의 누적값은 이전 날짜의 ledger와
+                    // 비교하지 않고 전체를 새 날짜 사용량으로 적립한다. 이전 날짜의 ledger는 그 날의
+                    // 최종 합계와 비교해 못 본 꼬리(unseenDayTail)를 구하는 데만 쓴다.
                     // 단, 위의 nil migration 경로는 구버전 aggregate를 분해할 수 없으므로 seed만 한다.
                     //
                     // 이전 날짜에 이미 알려진 provider가 첫 새로고침에서 빠질 수 있다(오늘 데이터
@@ -1068,7 +1080,7 @@ final class CompanionStore {
                         newLedger[providerID] = current
                     }
                     state.claimedTodayTokensByProvider = newLedger
-                    creditRealUsage(todayTokensByProvider.values.reduce(0, +))
+                    creditRealUsage(tail + todayTokensByProvider.values.reduce(0, +))
                 } else {
                     var ledger = state.claimedTodayTokensByProvider ?? [:]
                     var delta = 0
@@ -1128,6 +1140,20 @@ final class CompanionStore {
         rebaseUsageOnNextUpdate = false
         save()
         autoSnapshotIfNeeded()
+    }
+
+    /// Usage no refresh saw between `state.lastDate`'s last claim and the end of yesterday, for providers
+    /// already in the ledger. A provider new to the ledger gets no back credit, as on the same day.
+    private func unseenDayTail(claimed: [String: Int], before todayDate: String,
+                               dayTotalsByProvider: [String: [String: Int]]) -> Int {
+        let lastDate = state.lastDate
+        var tail = 0
+        for (providerID, alreadyClaimed) in claimed {
+            for (day, total) in dayTotalsByProvider[providerID] ?? [:] where day >= lastDate && day < todayDate {
+                tail += day == lastDate ? max(0, total - alreadyClaimed) : total
+            }
+        }
+        return tail
     }
 
     /// Real usage: only token mode turns it into growth and wallet.

@@ -2363,3 +2363,34 @@ read_when:
   still build stores that keep one or more default limits providers or session keys (`UsageStoreTests`,
   `AdditionalClaudeAccountsTests`, `UsageRecapTests`, `GrokUsageTests`, `AntigravityRateLimitsProviderTests`
   and a few others); nothing guards those.
+
+## Wallet credit lost when the display sleeps across midnight
+
+- **About 1.8B tokens (about 8%) of real usage since install never reached `usedSinceInstall`.** All
+  of it came from five nights when the display was off across midnight (11-09 −0.31B, 11-10 −0.69B,
+  11-11 −0.58B, 11-14 −0.14B, 11-15 −0.08B). `UsageStore` stops polling on `screensDidSleep`, but the
+  agents keep writing. The first refresh after midnight took the `dateChanged` branch of
+  `CompanionStore.update` and credited only the new day's total, so the old day's usage after its last
+  refresh was dropped. The `NSCalendarDayChanged` refresh did not help: it already reads the new date,
+  or it has no data for today and changes no ledger.
+  Why no test caught it: the rollover tests (`testDateRolloverCreditsCurrentDayUsage` and its siblings)
+  fed the last refresh of the old day straight into the first refresh of the new one. Nothing happened
+  in between, so "credit only today" looked complete. The money depended on an unwritten assumption
+  that a refresh always runs just before midnight.
+  Fix: a token-mode date change also credits the unseen tail. That is `max(0, final − claimed)` for
+  `lastDate` and the full total for any skipped day, read from `UsageStore.dayTotalsByProvider` (the
+  rolling 21-day series, so the 1st of a month still sees the last day of the previous month). Only
+  providers already in the ledger get a tail, matching the same-day rule that never back-credits a new
+  provider. The series only lands in refresh phase 2, and phase 1 carries the previous scan's series,
+  so after midnight a non-nil series can still be yesterday's. `dayTotalsByProvider` is nil until a
+  phase 2 scan that started today has finished, and the companion holds the date change (no credit, no
+  `lastDate` move) until then. Time mode is unchanged. There is no back-fill of the past loss.
+  Guards: `MidnightDayTailTests` (tail, ledger-equal control, missing series, new provider, skipped
+  day, 1st of the month, hold, time mode) and `UsageStoreDayTotalsTests`, which pauses phase 2 after
+  midnight and expects nil while phase 1's carried series is visible. `DayTailReaderTests` checks that a
+  scan on a Monday the 1st still reads the previous day and counts today as `fetchDaily` does (all 16
+  providers build both from the same entry cache). Dropping the tail, the hold, or
+  the scan-day gate turns them red (11 failures).
+  Class: a two-phase refresh value read between the phases (see "2단계 갱신에서 파생 상태는…" above),
+  here with the carried value looking valid instead of empty. Not covered: if the series is shorter
+  than the gap (more than 21 days without a refresh), the days before it are not credited.
