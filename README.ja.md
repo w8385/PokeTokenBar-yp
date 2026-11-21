@@ -187,7 +187,7 @@ Pi は複数のモデルを一つのセッションログに流すことがあ�
 </td>
 </tr>
 <tr>
-<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ja.png" width="300" alt="もちもの・がくしゅうそうちの枠・技が見えるボックスのポケモンのプロフィール"><br><br><img src="assets/screenshot-status-moves-ja.png" width="300" alt="レベルアップ技と変化技のグループが見える技の選択"><br><br><img src="assets/screenshot-move-order-ja.png" width="300" alt="カードに分かれた4つの技の枠と、埋まった枠の上下の矢印と忘れるボタン"><br><br><img src="assets/screenshot-forget-moves-ja.png" width="300" alt="技を1つ忘れて3つだけになり、4つ目の枠が空いたリザードン"></td>
+<td width="45%" align="center"><img src="assets/screenshot-pokemon-profile-ja.png" width="300" alt="すばやい操作・もちもの・技が見えるボックスのポケモンのプロフィール"><br><br><img src="assets/screenshot-status-moves-ja.png" width="300" alt="レベルアップ技と変化技のグループが見える技の選択"><br><br><img src="assets/screenshot-move-order-ja.png" width="300" alt="カードに分かれた4つの技の枠と、埋まった枠の上下の矢印と忘れるボタン"><br><br><img src="assets/screenshot-forget-moves-ja.png" width="300" alt="技を1つ忘れて3つだけになり、4つ目の枠が空いたリザードン"></td>
 <td width="55%" valign="middle">
 <h3>一匹ごとに固有のプロフィール</h3>
 <b>ボックス</b>でポケモンを開くと、レベル・性別・せいかく・とくせい・個体値・計算された能力値・もちもの・技を確認できます。種の説明ととくせい・技は選択言語を優先し、PokéAPIに翻訳がない場合は英語を使用します。
