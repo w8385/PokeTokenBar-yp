@@ -234,7 +234,8 @@ class Substitute(StatusMove):
 
     def takes_hit(self, name, damage, attacker, defender, move):
         if bypasses(move, attacker):
-            return False
+            return None
+        taken = min(damage, defender.volatiles[name])
         doll = defender.volatiles[name] - damage
         log = defender.arena.log if defender.arena is not None else []
         turn = defender.arena.turn if defender.arena is not None else 0
@@ -245,7 +246,7 @@ class Substitute(StatusMove):
             defender.volatiles[name] = doll
             share = max(1, doll * 100 // max(1, defender.max_hp // SUBSTITUTE_SHARE))
             log.append(battle.VolatileTick(turn, defender.side, defender.combatant.name, name, share))
-        return True
+        return taken
 
 
 def bypasses(move, user) -> bool:

@@ -711,6 +711,7 @@ class _Volley:
     hits: int = 0
     critical: bool = False
     dealt: int = 0
+    absorbed: int = 0
     lost: int = 0
     sturdy: bool = False
     shielded: bool = False
@@ -741,7 +742,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         return whiffed
     volley = _land_hits(turn, side, attacker, defender, move, aim, weather, rng)
     changes, ability = _after_hits(turn, side, attacker, defender, move, volley, rng)
-    recoil, drained = _recoil_or_drain(turn, side, attacker, defender, move, volley.dealt)
+    recoil, drained = _recoil_or_drain(turn, side, attacker, defender, move, volley.dealt + volley.absorbed)
     attacker_item = _attacker_item_effect(attacker, move, volley.dealt, drained)
     defender_item = (volley.endured or _defender_item_effect(defender, attacker, move, aim.multiplier, volley.dealt)
                      or volley.berry or volley.resisted)
@@ -860,8 +861,10 @@ def _land_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, mov
             ripened = hooks.ability(defender, "berry_factor", default=1)
             damage = max(1, int(damage * items.RESIST_BERRY_MULTIPLIER / ripened))
             use_berry(defender)
-        if any(_field(defender, "takes_hit", damage, attacker, defender, move)):
+        shielded = _field(defender, "takes_hit", damage, attacker, defender, move)
+        if shielded:
             volley.hits, volley.critical, volley.shielded = volley.hits + 1, volley.critical or hit_critical, True
+            volley.absorbed += sum(shielded)
             continue
         if hooks.ability(defender, "takes_hit", damage, attacker, defender, move, default=False):
             volley.hits, volley.critical = volley.hits + 1, volley.critical or hit_critical
@@ -934,11 +937,12 @@ def _after_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, mo
 def _recoil_or_drain(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: Move,
                      dealt: int) -> tuple[bool, bool]:
     """Struggle's or the move's recoil, or the HP it drains, which the defender's ability may turn into damage
-    (Liquid Ooze). Returns whether the user took recoil and whether it drained."""
-    recoil, drained = move is STRUGGLE, move.drain > 0
+    (Liquid Ooze). `dealt` counts what a Substitute took. Returns whether the user took recoil and whether it
+    drained."""
+    recoil, drained = move is STRUGGLE, move.drain > 0 and dealt > 0
     if recoil:
         attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // STRUGGLE_RECOIL_FRACTION))
-    elif move.drain < 0 and not _recoil_free(attacker):
+    elif move.drain < 0 and dealt > 0 and not _recoil_free(attacker):
         attacker.hp = max(0, attacker.hp - max(1, dealt * -move.drain // 100))
         recoil = True
     elif drained:
