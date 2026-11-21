@@ -28,8 +28,8 @@ private struct BoxDetailMarker: ViewModifier {
     @Environment(\.isEnabled) private var isEnabled
 
     func body(content: Content) -> some View {
-        content.anchorPreference(key: BoxDetailMarks.self, value: .bounds) {
-            [mark: BoxDetailMarkValue(bounds: $0, enabled: isEnabled)]
+        content.transformAnchorPreference(key: BoxDetailMarks.self, value: .bounds) { marks, bounds in
+            marks[mark] = BoxDetailMarkValue(bounds: bounds, enabled: isEnabled)
         }
     }
 }
