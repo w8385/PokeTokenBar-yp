@@ -35,6 +35,15 @@ struct PartyMember: Encodable, Equatable, Sendable {
     var formTool: String? = nil
     var ownAbility: String? = nil
     var forms: [RemoteFormOption]? = nil
+    var evolution: RemoteEvolution? = nil
+}
+
+/// An evolution the player can start by hand now: `item` is the inventory key it spends, `heldItem` the slug of the
+/// held item the step uses up.
+struct RemoteEvolution: Encodable, Equatable, Sendable {
+    let item: String
+    let pokemonID: Int
+    var heldItem: String? = nil
 }
 
 /// A form a form-tool species can switch to. `ability` is the form's fixed ability; nil keeps the individual's own.
@@ -340,11 +349,12 @@ final class PartyUploader {
         if let epoch = RemoteOp.epoch(of: data) { remoteOps.adoptEpoch(epoch) }
         guard let ops = RemoteOp.decodeList(data), !ops.isEmpty else { return }
         await remoteOps.prepare(ops)
-        remoteOps.apply(ops)
+        await remoteOps.apply(ops)
     }
 
     private func uploadParty(token: String, now: Date) async {
-        let party = partySource()
+        let evolutions = remoteOps?.evolutions() ?? [:]
+        let party = partySource().map { Self.adding(evolutions, to: $0) }
         guard !party.isEmpty else { return }
         let appliedOpID = remoteOps?.lastID()
         let snapshot = remoteOps?.snapshot()
@@ -354,7 +364,11 @@ final class PartyUploader {
         } else {
             PartyPayload(appVersion: appVersion, party: party, dex: dexSource())
         }
-        let pool = trades?.pool()
+        let pool = trades?.pool().map { entry in
+            var entry = entry
+            entry.member = entry.member.map { Self.adding(evolutions, to: $0) }
+            return entry
+        }
         guard let key = try? payload.encoded(tradePool: pool),
               Self.shouldSend(body: key, lastBody: lastAttemptBody, lastAttemptAt: lastAttemptAt, now: now),
               let body = snapshot == nil ? key : try? payload.encoded(tradePool: pool, wallet: snapshot?.wallet),
@@ -408,6 +422,13 @@ final class PartyUploader {
               let (_, status) = try? await fetch(request), status == 200
         else { return }
         remoteOps.acknowledged(ready.map(\.id))
+    }
+
+    nonisolated static func adding(_ evolutions: [String: RemoteEvolution], to member: PartyMember) -> PartyMember {
+        guard let id = member.id, let evolution = evolutions[id] else { return member }
+        var member = member
+        member.evolution = evolution
+        return member
     }
 
     nonisolated static func opsAckBody(_ results: [RemoteOpResult]) -> [String: Any] {

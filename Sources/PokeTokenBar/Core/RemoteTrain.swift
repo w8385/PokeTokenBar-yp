@@ -18,7 +18,12 @@ enum RemoteTrain {
         static let noHerb = "no_herb"
         static let noData = "no_data"
         static let invalid = "invalid"
+        static let wrongTarget = "wrong_target"
+        static let notReady = "not_ready"
+        static let everstone = "everstone"
     }
+
+    static let evolveAction = "evolve"
 
     struct Ability: Decodable, Equatable {
         let name: String
@@ -40,9 +45,10 @@ enum RemoteTrain {
         var moves: [Int]? = nil
         var machine: [Int]? = nil
         var egg: [Int]? = nil
+        var item: String? = nil
 
         enum CodingKeys: String, CodingKey {
-            case action, id, nature, price, stat, ability, form, moves, machine, egg
+            case action, id, nature, price, stat, ability, form, moves, machine, egg, item
             case pokemonID = "pokemon_id"
             case toPokemonID = "to_pokemon_id"
         }
@@ -52,10 +58,7 @@ enum RemoteTrain {
     @MainActor
     static func apply(_ data: Data, store: CompanionStore, battleEntry: BattleEntryStore) -> String? {
         guard let payload = try? JSONDecoder().decode(Payload.self, from: data) else { return Reason.invalid }
-        guard let candidate = BattleEntry.candidates(in: store.state).first(where: { $0.id == payload.id })
-        else { return Reason.gone }
-        guard !store.isTradeLocked(payload.id) else { return Reason.tradeLocked }
-        guard candidate.member.pokemonID == payload.pokemonID else { return Reason.evolved }
+        if let refusal = ownerRefusal(payload, store) { return refusal }
         guard let individual = store.trainable(id: payload.id) else { return Reason.notApplicable }
         switch payload.action {
         case "nature": return nature(payload, individual, store)
@@ -67,8 +70,80 @@ enum RemoteTrain {
             return reason(store.useGoldBottleCap(on: payload.id))
         case "form": return form(payload, individual, store)
         case "moves": return moves(payload, individual, store, battleEntry)
+        case evolveAction: return RemoteOpReason.unsupported
         default: return Reason.invalid
         }
+    }
+
+    @MainActor
+    private static func ownerRefusal(_ payload: Payload, _ store: CompanionStore) -> String? {
+        guard let candidate = BattleEntry.candidates(in: store.state).first(where: { $0.id == payload.id })
+        else { return Reason.gone }
+        guard !store.isTradeLocked(payload.id) else { return Reason.tradeLocked }
+        guard candidate.member.pokemonID == payload.pokemonID else { return Reason.evolved }
+        return nil
+    }
+
+    static func isEvolution(_ op: RemoteOp) -> Bool {
+        op.kind == kind && (try? JSONDecoder().decode(Payload.self, from: op.payload))?.action == evolveAction
+    }
+
+    /// The `evolve` action: the box detail's Linking Cord, on the target the player saw in Slack.
+    @MainActor
+    static func evolve(_ data: Data, store: CompanionStore) async -> String? {
+        guard let payload = try? JSONDecoder().decode(Payload.self, from: data), payload.action == evolveAction
+        else { return Reason.invalid }
+        if let refusal = ownerRefusal(payload, store) { return refusal }
+        guard payload.item == ItemKind.linkingCord.rawValue, payload.toPokemonID != nil else { return Reason.invalid }
+        guard store.itemCount(.linkingCord) > 0 else { return Reason.noItem }
+        guard cordEvolution(of: payload.id, store: store)?.pokemonID == payload.toPokemonID
+        else { return Reason.notApplicable }
+        return reason(await store.useLinkingCord(on: payload.id))
+    }
+
+    static func reason(_ result: CompanionStore.CordUseResult) -> String? {
+        switch result {
+        case .evolved: nil
+        case .wrongTarget: Reason.wrongTarget
+        case .notReady: Reason.notReady
+        case .everstone: Reason.everstone
+        case .listed: Reason.tradeLocked
+        case .unavailable: Reason.noData
+        }
+    }
+
+    /// The step a Linking Cord would take on a Box graduate (not the raised one), read from the rule table so the
+    /// upload needs no evolution line. Whether a cord is in the bag is left to Slack's replayed bag.
+    @MainActor
+    static func cordEvolution(of id: String, store: CompanionStore) -> RemoteEvolution? {
+        let state = store.state
+        guard id != state.raisedEntryID,
+              let entry = state.dex.first(where: { $0.id == id && $0.releasedAt == nil && $0.profile != nil })
+        else { return nil }
+        let held = store.heldItem(of: id)
+        let partners = Set(state.friendEntryIDs.compactMap { store.friendEntry(forKey: $0)?.finalID })
+        guard let rule = EvolutionRules.table.first(where: { rule in
+            guard rule.from == entry.finalID, let trade = rule.trade else { return false }
+            switch trade {
+            case .plain: return true
+            case .holding(let kind): return held == kind
+            case .partner(let species): return partners.contains(species)
+            }
+        }) else { return nil }
+        let pokemonID = PartyBuilder.member(speciesID: rule.species, form: entry.form, shiny: false, profile: nil).pokemonID
+        var evolution = RemoteEvolution(item: ItemKind.linkingCord.rawValue, pokemonID: pokemonID)
+        if case .holding? = rule.trade { evolution.heldItem = state.heldItemSlug(of: id) }
+        return evolution
+    }
+
+    /// Every Box graduate a cord could evolve now, by individual id: not in a trade and not holding an Everstone.
+    @MainActor
+    static func evolutions(store: CompanionStore) -> [String: RemoteEvolution] {
+        var hints: [String: RemoteEvolution] = [:]
+        for entry in store.state.dex where !store.isTradeLocked(entry.id) && !store.holdsEverstone(entry.id) {
+            hints[entry.id] = cordEvolution(of: entry.id, store: store)
+        }
+        return hints
     }
 
     /// The species whose ability options a Capsule or Patch op needs loaded before it is applied.

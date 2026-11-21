@@ -119,6 +119,35 @@ final class RemoteOpsTests: XCTestCase {
         XCTAssertEqual(store.state.remoteOpsLastID, 2)
     }
 
+    func testTheUploadNamesTheEvolutionEachPartyAndBoxPokemonCanStartInSlack() async throws {
+        let store = try makeStore(at: saveURL())
+        var sync = sync(store, Applied())
+        sync.evolutions = {
+            ["onix": RemoteEvolution(item: "linkingCord", pokemonID: 208, heldItem: "metal-coat"),
+             "bold": RemoteEvolution(item: "linkingCord", pokemonID: 526)]
+        }
+        let party = [PartyMember(pokemonID: 95, level: 30, shiny: false, ivs: nil, id: "onix"),
+                     PartyMember(pokemonID: 25, level: 5, shiny: false, ivs: nil, id: "pika")]
+        let boldore = DexEntry(id: "bold", baseID: 524, finalID: 525, chainOrder: [524, 525], rarity: .common,
+                               caughtAt: nil, isShiny: false, nature: .adamant,
+                               profile: PokemonProfile.generate(seed: 11, instanceID: "bold"), names: nil,
+                               originalTrainer: nil)
+        let box = TradePoolEntry(id: "bold", pokemonID: 525, level: 40, shiny: false, name: "암트르", entry: boldore,
+                                 member: PartyMember(pokemonID: 525, level: 40, shiny: false, ivs: nil, id: "bold"))
+        let bot = RemoteOpsBot()
+
+        try await uploader(bot, sync: sync, party: party, trades: TradeSync(pool: { [box] }, apply: { _ in [] })).tick()
+
+        let upload = try XCTUnwrap(bot.uploads.first)
+        let members = try XCTUnwrap(upload["party"] as? [[String: Any]])
+        XCTAssertEqual(members[0]["evolution"] as? NSDictionary,
+                       ["item": "linkingCord", "pokemon_id": 208, "held_item": "metal-coat"])
+        XCTAssertNil(members[1]["evolution"])
+        let pool = try XCTUnwrap(upload["trade_pool"] as? [[String: Any]])
+        XCTAssertEqual((pool.first?["member"] as? [String: Any])?["evolution"] as? NSDictionary,
+                       ["item": "linkingCord", "pokemon_id": 526])
+    }
+
     func testTheShippedRegistryAppliesLineupAndSendsOnlyTheKindsItKnows() async throws {
         let store = try makeStore(at: saveURL())
         let suite = "remote-ops-\(UUID().uuidString)"
@@ -126,7 +155,7 @@ final class RemoteOpsTests: XCTestCase {
         let sync = RemoteOpsSync(store: store, battleEntry: BattleEntryStore(defaults: try XCTUnwrap(UserDefaults(suiteName: suite))))
         XCTAssertEqual(sync.kinds, [RemoteBuy.kind, RemoteLineup.kind, RemoteTrain.kind])
 
-        sync.apply([RemoteOp(id: 1, kind: "test_count", payload: Data())])
+        await sync.apply([RemoteOp(id: 1, kind: "test_count", payload: Data())])
         XCTAssertEqual(store.state.remoteOpResults, [RemoteOpResult(id: 1, reason: RemoteOpReason.unsupported)])
 
         let bot = RemoteOpsBot()
@@ -395,7 +424,8 @@ final class RemoteOpsTests: XCTestCase {
     }
 
     private func uploader(_ bot: RemoteOpsBot, sync: RemoteOpsSync?,
-                          party: [PartyMember] = [PartyMember(pokemonID: 25, level: 5, shiny: false, ivs: nil)])
+                          party: [PartyMember] = [PartyMember(pokemonID: 25, level: 5, shiny: false, ivs: nil)],
+                          trades: TradeSync? = nil)
         throws -> PartyUploader {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("remote-ops-\(UUID().uuidString)")
         paths.append(directory)
@@ -405,7 +435,7 @@ final class RemoteOpsTests: XCTestCase {
         try tokenStore.save("tok")
         let uploader = PartyUploader(tokenStore: tokenStore, defaults: try XCTUnwrap(UserDefaults(suiteName: suite)),
                                      appVersion: "test", exchange: { bot.reply($0) }, fetch: { bot.reply($0) },
-                                     partySource: { party }, remoteOps: sync)
+                                     partySource: { party }, trades: trades, remoteOps: sync)
         uploader.serverURL = "http://example.local:8790"
         return uploader
     }
