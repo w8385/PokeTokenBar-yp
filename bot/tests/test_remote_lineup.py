@@ -5,6 +5,7 @@ from slack_rules import violations
 from test_commands import MOVES, NOW, FakePokeAPI, lineups, member
 from test_upload_server import FakeMoves, call
 
+from fixed_clock import fixed_now
 from ypoke.commands import CommandHandler
 from ypoke.lineup_editor import (
     ADD_SLOT,
@@ -67,8 +68,8 @@ POOL = [
 
 @pytest.fixture
 def server(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), trades=TradeService(store))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), trades=TradeService(store, fixed_now), now=fixed_now)
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}"
     http_server.shutdown()
 
@@ -91,7 +92,7 @@ def bot(store):
 
 
 def party_ids(store, user_id="UA"):
-    return [member["id"] for member in RemoteOps(store).party(user_id).party]
+    return [member["id"] for member in RemoteOps(store, fixed_now).party(user_id).party]
 
 
 # The /파티 screen
@@ -117,7 +118,7 @@ def test_an_app_that_does_not_apply_lineup_ops_gets_the_read_only_screen_and_a_r
     assert not [block for block in editor.handle("UA", PARTY_COMMAND, "").blocks if block["type"] == "actions"]
     reply = editor.act("UA", SWAP_ACTION, "p1|b1", [])
     assert (reply.replace, reply.screen.text) == (False, OLD_APP_REFUSAL)
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
 
 
 # Building a lineup from the party and the Box
@@ -129,12 +130,12 @@ def test_a_swap_queues_one_lineup_op_and_every_party_reader_uses_it_at_once(serv
     post(server, "UB", party=[party_member("q1", 7, 20)], pool=[])
     reply = bot(store).editor.act("UA", SWAP_ACTION, "p1|b1", [])
     assert reply.replace
-    assert [op.kind for op in RemoteOps(store).pending("UA")] == [LINEUP]
+    assert [op.kind for op in RemoteOps(store, fixed_now).pending("UA")] == [LINEUP]
     assert party_ids(store) == ["b1", "p2"]
     assert "고라파덕" in reply.screen.blocks[1]["text"]["text"]
     assert lineups(bot(store).handle("UB", "<@UA|a> 2"))[1][0].startswith("고라파덕")
     assert "고라파덕" in bot(store).editor.handle("UA", PARTY_COMMAND, "").blocks[1]["text"]["text"]
-    assert [lead["pokemon_id"] for lead in battle_overview(store, "UB", lambda _: None, RemoteOps(store))["coworkers"]] == [54]
+    assert [lead["pokemon_id"] for lead in battle_overview(store, "UB", lambda _: None, RemoteOps(store, fixed_now), fixed_now)["coworkers"]] == [54]
     status, body = call(f"{base}/v1/party", "GET", store.issue_token("UA", keep_existing=True))
     assert status == 200 and [member["pokemon_id"] for member in body["party"]] == [54, 7]
 
@@ -155,7 +156,7 @@ def test_add_reorder_and_drop_build_the_whole_target_lineup(server):
     assert party_ids(store) == ["p1", "b1", "p2"]
     editor.act("UA", ORDER_ACTION, "drop|p1", [])
     assert party_ids(store) == ["b1", "p2"]
-    assert [op.payload["members"][0]["id"] for op in RemoteOps(store).pending("UA")] == ["b1"]
+    assert [op.payload["members"][0]["id"] for op in RemoteOps(store, fixed_now).pending("UA")] == ["b1"]
 
 
 def test_a_dropped_member_can_come_back_from_the_bench(server):
@@ -173,7 +174,7 @@ def test_a_swap_that_breaks_a_clause_is_refused_and_queues_nothing(server, value
     post(server)
     reply = bot(store).editor.act("UA", SWAP_ACTION, value, [])
     assert not reply.replace and REASONS[reason] in reply.screen.text
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
 
 
 def test_the_held_item_menu_is_a_typed_search_with_no_item_first_and_the_current_one_picked(server):
@@ -223,7 +224,7 @@ def test_equipping_takes_a_bag_copy_and_taking_off_puts_one_back(server):
     editor = bot(store).editor
     editor.act("UA", ITEM_ACTION, "p2|choiceScarf", [])
     editor.act("UA", ITEM_ACTION, "p1|", [])
-    view = RemoteOps(store).view("UA")
+    view = RemoteOps(store, fixed_now).view("UA")
     assert [member.get("item_key") for member in view.party] == [None, "choiceScarf"]
     assert view.party[1]["held_item"] == "choice-scarf"
     assert "held_item" not in view.party[0]
@@ -254,13 +255,13 @@ def test_the_moves_screen_lists_learnable_moves_and_a_pick_queues_them_with_the_
     learnable = [str(move["id"]) for move in MOVES[25] if move["level"] <= 42]
     assert move_values(store, "p1") == [*learnable, "89"]
     editor.act("UA", SET_MOVES_ACTION, "p1", ["85", "89", "999"])
-    first = RemoteOps(store).party("UA").party[0]
+    first = RemoteOps(store, fixed_now).party("UA").party[0]
     assert (first["moves"], first["machine"]) == ([85, 89], [89])
     again = editor.act("UA", MOVES_ACTION, "p1", []).screen.blocks[0]["accessory"]
     assert [option["value"] for option in again["initial_options"]] == ["85", "89"]
     assert move_values(store, "p1")[:2] == ["85", "89"]
     editor.act("UA", DEFAULT_MOVES_ACTION, "p1", [])
-    assert "moves" not in RemoteOps(store).party("UA").party[0]
+    assert "moves" not in RemoteOps(store, fixed_now).party("UA").party[0]
 
 
 def test_typed_words_find_a_move_by_its_name_or_its_group(server):
@@ -286,7 +287,7 @@ def test_every_learnable_move_is_offered_not_only_the_first_hundred():
 def test_a_machine_move_without_its_tm_is_refused_on_replay(server):
     store, _ = server
     post(server, bag=[SCARF])
-    RemoteOps(store).submit("UA", LINEUP, {"members": [
+    RemoteOps(store, fixed_now).submit("UA", LINEUP, {"members": [
         {"id": "p1", "pokemon_id": 25, "name": "피카츄", "moves": [89], "machine": [89], "item": "leftovers"}]})
     assert party_ids(store) == ["p1", "p2"]
 
@@ -324,7 +325,7 @@ def test_an_upload_from_before_the_op_does_not_undo_it_and_the_applied_one_settl
     store, base = server
     post(server)
     bot(store).editor.act("UA", SWAP_ACTION, "p1|b1", [])
-    (op,) = RemoteOps(store).pending("UA")
+    (op,) = RemoteOps(store, fixed_now).pending("UA")
     post(server)
     assert party_ids(store) == ["b1", "p2"]
     applied_party = [party_member("b1", 54, 30), party_member("p2", 7, 20)]
@@ -332,7 +333,7 @@ def test_an_upload_from_before_the_op_does_not_undo_it_and_the_applied_one_settl
     assert party_ids(store) == ["b1", "p2"]
     status, _ = call(f"{base}/v1/ops/ack", "POST", store.issue_token("UA", keep_existing=True),
                      {"applied": [op.id], "cancelled": []})
-    assert status == 200 and RemoteOps(store).pending("UA") == []
+    assert status == 200 and RemoteOps(store, fixed_now).pending("UA") == []
 
 
 def test_a_new_lineup_op_supersedes_the_pending_one(server):
@@ -341,21 +342,21 @@ def test_a_new_lineup_op_supersedes_the_pending_one(server):
     editor = bot(store).editor
     editor.act("UA", SWAP_ACTION, "p1|b1", [])
     editor.act("UA", SWAP_ACTION, "p2|b4", [])
-    (op,) = RemoteOps(store).pending("UA")
+    (op,) = RemoteOps(store, fixed_now).pending("UA")
     assert [member["id"] for member in op.payload["members"]] == ["b1", "b4"]
-    assert RemoteOps(store).ack("UA", [op.id - 1], []) is None
+    assert RemoteOps(store, fixed_now).ack("UA", [op.id - 1], []) is None
 
 
 def test_an_applied_op_id_from_another_bot_database_counts_as_none(server):
     store, base = server
     post(server)
     bot(store).editor.act("UA", SWAP_ACTION, "p1|b1", [])
-    (op,) = RemoteOps(store).pending("UA")
+    (op,) = RemoteOps(store, fixed_now).pending("UA")
     post(server, applied=op.id, ops_epoch="another-database")
     assert party_ids(store) == ["b1", "p2"]
     _, body = call(f"{base}/v1/ops", "GET", store.issue_token("UA", keep_existing=True))
-    assert body["epoch"] == RemoteOps(store).epoch
-    post(server, applied=op.id, ops_epoch=RemoteOps(store).epoch)
+    assert body["epoch"] == RemoteOps(store, fixed_now).epoch
+    post(server, applied=op.id, ops_epoch=RemoteOps(store, fixed_now).epoch)
     assert party_ids(store) == ["p1", "p2"]
 
 
@@ -363,9 +364,9 @@ def test_a_pool_member_is_kept_only_when_valid_and_never_delivered(server):
     store, _ = server
     broken = {**POOL[0], "id": "b9", "member": {"pokemon_id": "x"}}
     post(server, pool=[*POOL, broken])
-    pool = {entry["id"]: entry for entry in TradeService(store).pool("UA")}
+    pool = {entry["id"]: entry for entry in TradeService(store, fixed_now).pool("UA")}
     assert pool["b1"]["member"]["id"] == "b1" and "member" not in pool["b9"]
-    assert [member["id"] for member in RemoteOps(store).view("UA").bench] == ["b1", "b2", "b3", "b4"]
+    assert [member["id"] for member in RemoteOps(store, fixed_now).view("UA").bench] == ["b1", "b2", "b3", "b4"]
 
 
 # Slack plumbing
@@ -387,7 +388,7 @@ def test_the_action_listener_replaces_the_screen_and_answers_a_refusal_under_it(
         (True, "ephemeral"), (False, "ephemeral")]
     assert party_ids(store) == ["b1", "p2"]
     press({"action_id": SET_MOVES_ACTION, "block_id": "b1", "selected_options": [{"value": "33"}]})
-    assert RemoteOps(store).party("UA").party[0]["moves"] == [33]
+    assert RemoteOps(store, fixed_now).party("UA").party[0]["moves"] == [33]
 
 
 def test_the_options_listener_filters_the_swap_menu_by_the_typed_name(server):
@@ -433,8 +434,8 @@ def test_the_result_dm_words_a_cancelled_lineup_op_with_its_reason(server):
     store, _ = server
     post(server)
     bot(store).editor.act("UA", SWAP_ACTION, "p1|b1", [])
-    (op,) = RemoteOps(store).pending("UA")
-    message = RemoteOps(store).ack("UA", [], [(op.id, "gone")])
+    (op,) = RemoteOps(store, fixed_now).pending("UA")
+    message = RemoteOps(store, fixed_now).ack("UA", [], [(op.id, "gone")])
     assert "대결 라인업 바꾸기: 고라파덕 · 꼬부기" in message.text and REASONS["gone"] in message.text
 
 

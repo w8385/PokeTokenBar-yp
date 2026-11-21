@@ -7,8 +7,9 @@ from urllib.parse import urlsplit
 
 import pytest
 
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
+from fixed_clock import fixed_now
 from ypoke.names import FAILURE_TTL, SUCCESS_TTL, DisplayNames
 from ypoke.store import Store
 from ypoke.upload_server import MAX_BODY_BYTES, PartyError, serve, validate_party
@@ -46,10 +47,10 @@ def moves_for():
 
 @pytest.fixture
 def server(tmp_path, moves_for):
-    store = Store(str(tmp_path / "bot.sqlite3"))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     uploads = []
     http_server = serve(
-        store, "127.0.0.1", 0, lambda user_id, party: uploads.append((user_id, party)), moves_for, NAMES.get
+        store, "127.0.0.1", 0, lambda user_id, party: uploads.append((user_id, party)), moves_for, NAMES.get, now=fixed_now
     )
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}", uploads
     http_server.shutdown()
@@ -304,7 +305,7 @@ def upload_overview(base, token, lead):
 def test_response_lists_the_last_five_battles_newest_first_from_the_uploaders_side(server):
     store, base, _ = server
     token = store.issue_token("U1")
-    start = datetime.now(UTC) - timedelta(hours=1)
+    start = fixed_now() - timedelta(hours=1)
     for index in range(7):
         store.record_battle("U1", "U2", "U1", index, at=start + timedelta(minutes=index), pokemon=(25, 6), turns=index + 3)
     store.record_battle("U3", "U1", "U3", 99, at=start + timedelta(minutes=30), pokemon=(7, 94), turns=4)
@@ -349,7 +350,7 @@ def test_stale_uploads_drop_out_of_the_coworker_list(server):
     token = store.issue_token("U1")
     store.issue_token("U2")
     store.save_party("U2", [{"pokemon_id": 6, "level": 55, "shiny": False, "ivs": {}}])
-    old = (datetime.now(UTC) - timedelta(days=31)).isoformat(timespec="seconds")
+    old = (fixed_now() - timedelta(days=31)).isoformat(timespec="seconds")
     import sqlite3
 
     with sqlite3.connect(store._path) as connection:
@@ -433,7 +434,7 @@ def test_a_database_from_before_species_were_kept_is_upgraded_in_place(tmp_path)
             "opponent_id TEXT NOT NULL, winner_id TEXT NOT NULL, seed INTEGER NOT NULL, created_at TEXT NOT NULL)"
         )
         connection.execute("INSERT INTO battles VALUES (1, 'U1', 'U2', 'U2', 5, '2026-11-01T00:00:00+00:00')")
-    store = Store(path)
+    store = Store(path, fixed_now)
     store.record_battle("U1", "U2", "U1", 6, pokemon=(25, 7), turns=4)
     newest, oldest = store.recent_battles("U1", 5)
     assert (newest.my_pokemon_id, newest.turns, newest.won) == (25, 4, True)

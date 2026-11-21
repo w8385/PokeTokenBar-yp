@@ -11,6 +11,7 @@ from slack_bolt import App
 from slack_sdk import WebClient
 
 from ypoke.battle_render import MatchupPictures
+from ypoke.clock import system_clock
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
 from ypoke.gym_battle import GymBattles
 from ypoke.lineup_editor import ACTION_PREFIX, ITEM_ACTION, SET_MOVES_ACTION, SWAP_ACTION
@@ -52,19 +53,20 @@ MIRACLE_SWEEP_INTERVAL = 300
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     database = os.environ.get("YPOKE_DB", "ypoke.sqlite3")
-    store = Store(database)
+    now = system_clock
+    store = Store(database, now)
     pokeapi = PokeAPIService(store)
     pictures = MatchupPictures(store, Path(os.environ.get("YPOKE_PICTURE_DIR") or Path(database).parent / "pictures"))
     app = App(token=os.environ["SLACK_BOT_TOKEN"])
     home_channel = os.environ.get("YPOKE_HOME_CHANNEL") or None
     if home_channel:
         _join(app, home_channel)
-    remote = RemoteOps(store)
+    remote = RemoteOps(store, now)
     bot_user_id = app.client.auth_test()["user_id"]
     names = DisplayNames(app.client)
     names.warm(store.linked_user_ids())
-    trades = TradeService(store, name_for=names, bot_user_id=bot_user_id, holds=remote.holds)
-    miracle = MiracleService(trades, SlackBoard(app.client, home_channel) if home_channel else None)
+    trades = TradeService(store, now, name_for=names, bot_user_id=bot_user_id, holds=remote.holds)
+    miracle = MiracleService(trades, SlackBoard(app.client, home_channel) if home_channel else None, now)
     handler = CommandHandler(
         store,
         pokeapi,
@@ -72,6 +74,7 @@ def main() -> None:
         bot_user_id=bot_user_id,
         home_channel=home_channel,
         remote=remote,
+        now=now,
         trades=trades,
         miracle=miracle,
     )
@@ -87,6 +90,7 @@ def main() -> None:
         GymBattles(pokeapi),
         miracle=miracle,
         remote=remote,
+        now=now,
     )
     threading.Thread(target=_warm_stored_parties, args=(pokeapi, store, remote), daemon=True).start()
     threading.Thread(target=_sweep_miracle_offers, args=(miracle,), daemon=True).start()

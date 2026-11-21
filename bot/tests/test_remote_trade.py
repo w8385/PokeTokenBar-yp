@@ -10,6 +10,7 @@ from test_remote_lineup import PARTY as ALICE_PARTY
 from test_trades import ALICE, BOB, BOT, CAROL, NAMES
 from test_upload_server import FakeMoves, call
 
+from fixed_clock import fixed_now
 from ypoke.commands import CommandHandler
 from ypoke.miracle import POST_ERRORS, MiracleService, ended_card
 from ypoke.remote_lineup import LINEUP
@@ -39,14 +40,14 @@ BOB_POOL = [box_entry("bob-1", 7, "꼬부기"), box_entry("bob-2", 1, "이상해
 
 
 def make_api(path):
-    store = Store(str(path / "bot.sqlite3"))
-    remote = RemoteOps(store)
+    store = Store(str(path / "bot.sqlite3"), fixed_now)
+    remote = RemoteOps(store, fixed_now)
     trades = TradeService(store, lambda: NOW, name_for=NAMES.get, bot_user_id=BOT, holds=remote.holds)
     board = FakeBoard()
     miracle = MiracleService(trades, board, lambda: NOW)
     sent = []
     server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), NAMES.get, trades, sent.extend,
-                   miracle=miracle, remote=remote)
+                   miracle=miracle, remote=remote, now=fixed_now)
     return SimpleNamespace(store=store, remote=remote, trades=trades, board=board, miracle=miracle, sent=sent,
                            server=server, base=f"http://127.0.0.1:{server.server_address[1]}")
 
@@ -85,7 +86,7 @@ def both(api):
 
 
 def bot(api):
-    return CommandHandler(api.store, LineupAPI(), bot_user_id=BOT, remote=api.remote, trades=api.trades,
+    return CommandHandler(api.store, LineupAPI(), bot_user_id=BOT, remote=api.remote, trades=api.trades, now=fixed_now,
                           miracle=api.miracle)
 
 
@@ -253,7 +254,7 @@ def test_taking_a_miracle_offer_down_from_slack_ends_the_card_like_the_app(api, 
 
 def test_miracle_without_a_battle_channel_says_it_is_unavailable(api):
     upload(api)
-    handler = CommandHandler(api.store, LineupAPI(), bot_user_id=BOT, remote=api.remote, trades=api.trades)
+    handler = CommandHandler(api.store, LineupAPI(), bot_user_id=BOT, remote=api.remote, trades=api.trades, now=fixed_now)
     assert MIRACLE_UNAVAILABLE in handler.handle(ALICE, "", MIRACLE_COMMAND).blocks[0]["text"]["text"]
 
 

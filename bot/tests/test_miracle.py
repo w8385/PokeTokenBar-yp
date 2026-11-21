@@ -5,6 +5,7 @@ import pytest
 from test_trades import ALICE, BOB, CAROL, EEVEE, HAUNTER, NAMES, PIKACHU, SQUIRTLE, Clock, individual
 from test_upload_server import PIKACHU as BATTLER
 from test_upload_server import FakeMoves, call
+from fixed_clock import fixed_now
 from ypoke.miracle import (
     ACCEPT_ACTION_ID,
     CANCEL_ACTION_ID,
@@ -55,7 +56,7 @@ def board():
 
 @pytest.fixture
 def trades(tmp_path, clock):
-    service = TradeService(Store(str(tmp_path / "bot.sqlite3")), now=clock, name_for=NAMES.get)
+    service = TradeService(Store(str(tmp_path / "bot.sqlite3"), fixed_now), now=clock, name_for=NAMES.get)
     service.save_pool(ALICE, [HAUNTER, EEVEE])
     service.save_pool(BOB, [PIKACHU, SQUIRTLE])
     service.save_pool(CAROL, [CHARMANDER])
@@ -313,11 +314,11 @@ def test_the_direct_trade_picker_uses_the_same_distinct_labels(trades):
 
 @pytest.fixture
 def api(tmp_path, board):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    trades = TradeService(store, name_for=NAMES.get)
-    miracle = MiracleService(trades, board)
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    trades = TradeService(store, fixed_now, name_for=NAMES.get)
+    miracle = MiracleService(trades, board, fixed_now)
     server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), NAMES.get, trades,
-                   miracle=miracle)
+                   miracle=miracle, now=fixed_now)
     base = f"http://127.0.0.1:{server.server_address[1]}"
     yield SimpleNamespace(base=base, trades=trades, miracle=miracle, board=board,
                           alice=store.issue_token(ALICE), bob=store.issue_token(BOB))
@@ -355,11 +356,11 @@ def test_an_upload_without_the_offered_pokemon_closes_the_card(api):
     assert call(f"{api.base}/v1/miracle", token=api.alice)[1]["offer"] is None
 
 
-@pytest.mark.parametrize("miracle", [None, MiracleService(SimpleNamespace(), None)])
+@pytest.mark.parametrize("miracle", [None, MiracleService(SimpleNamespace(), None, fixed_now)])
 def test_without_a_battle_channel_the_routes_answer_unavailable(tmp_path, miracle):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    trades = TradeService(store)
-    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), trades=trades, miracle=miracle)
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    trades = TradeService(store, fixed_now)
+    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), trades=trades, miracle=miracle, now=fixed_now)
     base = f"http://127.0.0.1:{server.server_address[1]}"
     token = store.issue_token(ALICE)
     try:

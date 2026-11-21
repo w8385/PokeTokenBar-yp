@@ -11,6 +11,7 @@ from datetime import timedelta
 import pytest
 from test_commands import CHANNEL, NOW, Clock, handler, lineups, member, pending, upload
 
+from fixed_clock import fixed_now
 from ypoke.battle import Action, BaseStats, BattleResult, Combatant, SendOut
 from ypoke.commands import (
     BATTLE_COMMAND,
@@ -35,7 +36,7 @@ from ypoke.transport import deliver, mention_listener, rematch_listener, slash_l
 
 @pytest.fixture
 def store(tmp_path):
-    return Store(str(tmp_path / "bot.sqlite3"))
+    return Store(str(tmp_path / "bot.sqlite3"), fixed_now)
 
 
 class FakeClient:
@@ -222,7 +223,7 @@ def test_a_pending_row_from_before_the_echo_column_still_loads(tmp_path):
             " PRIMARY KEY (challenger_id, opponent_id));"
             "INSERT INTO pending_challenges VALUES ('UA', 'UB', 'CCHAN', '1.1', NULL, '2026-11-12T09:00:00+00:00');"
         )
-    [challenge] = Store(path).pending_for("UB", since=NOW - timedelta(days=1))
+    [challenge] = Store(path, fixed_now).pending_for("UB", since=NOW - timedelta(days=1))
     assert (challenge.challenger_id, challenge.echo) == ("UA", None)
 
 
@@ -599,8 +600,8 @@ def cards(client):
 
 def test_two_presses_racing_on_one_card_through_two_stores_play_one_battle(tmp_path):
     path = str(tmp_path / "race.sqlite3")
-    ready_pair(Store(path))
-    bots = [handler(Store(path)), handler(Store(path))]
+    ready_pair(Store(path, fixed_now))
+    bots = [handler(Store(path, fixed_now)), handler(Store(path, fixed_now))]
     barrier = threading.Barrier(2)
 
     def race(bot):
@@ -611,7 +612,7 @@ def test_two_presses_racing_on_one_card_through_two_stores_play_one_battle(tmp_p
         replies = list(pool.map(race, bots))
     assert sorted(reply.text == REMATCH_USED for reply in replies) == [False, True]
     assert [reply.spent_card for reply in replies].count(True) == 1
-    assert battles_played(Store(path)) == 1
+    assert battles_played(Store(path, fixed_now)) == 1
 
 
 def test_a_wrong_press_does_not_use_up_the_card_for_the_loser(store):

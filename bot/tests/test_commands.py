@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from fixed_clock import fixed_now
 from ypoke.commands import (
     BATTLE_COMMAND,
     COMMAND_NAMES,
@@ -85,11 +86,11 @@ class FakePokeAPI:
 
 @pytest.fixture
 def store(tmp_path):
-    return Store(str(tmp_path / "bot.sqlite3"))
+    return Store(str(tmp_path / "bot.sqlite3"), fixed_now)
 
 
 def handler(store, fail=False, public_url=None, now=lambda: NOW, pokeapi=None):
-    return CommandHandler(store, pokeapi or FakePokeAPI(fail), public_url, now, bot_user_id="UBOT")
+    return CommandHandler(store, pokeapi or FakePokeAPI(fail), public_url, now=now, bot_user_id="UBOT")
 
 
 def member(pokemon_id, level):
@@ -533,13 +534,13 @@ def test_a_waiting_three_member_challenge_keeps_its_size_and_a_default_one_stays
 
 def test_a_challenge_saved_before_the_size_column_existed_loads_as_one_on_one(tmp_path):
     path = str(tmp_path / "old.sqlite3")
-    Store(path)
+    Store(path, fixed_now)
     with sqlite3.connect(path) as connection:
         connection.execute("ALTER TABLE pending_challenges DROP COLUMN size")
         connection.execute(
             "INSERT INTO pending_challenges (challenger_id, opponent_id, channel_id, thread_ts, response_url, "
             "created_at) VALUES ('UA', 'UB', 'CCHAN', '1.1', NULL, ?)", (NOW.isoformat(),))
-    reopened = Store(path)
+    reopened = Store(path, fixed_now)
     [challenge] = reopened.pending_for("UB", NOW - timedelta(hours=1))
     assert challenge.size == 1
 
@@ -785,7 +786,7 @@ def test_reply_thread_ts_stays_in_the_thread(event, expected):
 
 
 def test_help_links_the_home_channel_when_configured(store):
-    bot = CommandHandler(store, FakePokeAPI(), home_channel="CHOME")
+    bot = CommandHandler(store, FakePokeAPI(), home_channel="CHOME", now=fixed_now)
     assert bot.handle("UA", "", UMBRELLA_COMMAND).text.endswith("<#CHOME>")
     assert "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요." in HELP_TEXT
 

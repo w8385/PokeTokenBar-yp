@@ -16,6 +16,7 @@ from contextlib import closing
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 
+from ypoke.clock import Clock
 from ypoke.messages import DirectMessage
 from ypoke.store import Lead, Store, StoredParty
 from ypoke.trades import IN_LINEUP, PENDING_CHANGE, TradeService
@@ -112,7 +113,7 @@ class Submitted:
 
 
 class RemoteOps:
-    def __init__(self, store: Store, now: Callable[[], datetime] = lambda: datetime.now(UTC)):
+    def __init__(self, store: Store, now: Clock):
         self._store = store
         self._pools = TradeService(store, now)
         self._now = now

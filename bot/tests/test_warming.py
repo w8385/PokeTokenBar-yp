@@ -1,5 +1,6 @@
 import logging
 
+from fixed_clock import fixed_now
 from ypoke import __main__ as bot
 from ypoke.remote_ops import RemoteOps
 from ypoke.store import Store
@@ -47,12 +48,12 @@ def test_a_failed_warm_is_logged_and_does_not_stop_pending_battles(caplog):
 
 
 def test_startup_warms_each_stored_entry_member_one_at_a_time(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     for user_id, party in (("UA", [member(25), member(7)]), ("UB", [member(1)]), ("UC", None)):
         store.issue_token(user_id)
         if party:
             store.save_party(user_id, party)
     pokeapi = FakePokeAPI()
-    bot._warm_stored_parties(pokeapi, store, RemoteOps(store))
+    bot._warm_stored_parties(pokeapi, store, RemoteOps(store, fixed_now))
     assert sorted(call[0]["pokemon_id"] for call in pokeapi.warmed) == [1, 7, 25]
     assert all(len(call) == 1 for call in pokeapi.warmed)

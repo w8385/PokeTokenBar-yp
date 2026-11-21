@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from fixed_clock import fixed_now
 from ypoke import gym_battle, gym_data, gyms
 from ypoke.battle import (
     Action, BattleResult, Carry, Change, FormShift, ItemEffect, MegaEvolution, SendOut, StatusDamage,
@@ -75,11 +76,11 @@ def clock():
 
 @pytest.fixture
 def server(tmp_path, pokeapi, clock):
-    store = Store(str(tmp_path / "bot.sqlite3"))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     uploads, notices = Spy(), Spy()
     http_server = serve(
         store, "127.0.0.1", 0, uploads, pokeapi.attacking_moves,
-        notify=notices, gyms=GymBattles(pokeapi, new_seed=lambda: 42), clock=clock,
+        notify=notices, gyms=GymBattles(pokeapi, new_seed=lambda: 42), clock=clock, now=fixed_now,
     )
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}", uploads, notices
     http_server.shutdown()
@@ -263,8 +264,8 @@ def test_a_user_gets_one_battle_every_three_seconds_and_others_are_not_held_up(s
 
 
 def test_a_bot_without_gyms_does_not_serve_the_endpoints(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    http_server = serve(store, "127.0.0.1", 0, Spy(), lambda pokemon_id, level: [])
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    http_server = serve(store, "127.0.0.1", 0, Spy(), lambda pokemon_id, level: [], now=fixed_now)
     try:
         base = f"http://127.0.0.1:{http_server.server_address[1]}"
         token = store.issue_token("U1")

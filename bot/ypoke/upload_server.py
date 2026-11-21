@@ -6,7 +6,7 @@ import math
 import re
 import threading
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from collections.abc import Collection
 from typing import Callable, Protocol
@@ -16,6 +16,7 @@ import ypoke.remote_buy  # noqa: F401  registers the op kinds the replayed reads
 import ypoke.remote_lineup  # noqa: F401
 from ypoke import entry_rules
 from ypoke.battle import CARRIED_STATUSES
+from ypoke.clock import Clock
 from ypoke.dex import normalize_dex
 from ypoke.move_effects import wants_status_moves
 from ypoke.moves import MAX_MOVES, default_move_ids
@@ -86,7 +87,7 @@ def serve(
     name_for: NameFor = lambda user_id: None,
     trades: TradeService | None = None, notify: Notify = lambda messages: None,
     gyms: GymApi | None = None, clock: Callable[[], float] = time.monotonic,
-    miracle: MiracleService | None = None, remote: RemoteOps | None = None,
+    miracle: MiracleService | None = None, remote: RemoteOps | None = None, *, now: Clock,
 ) -> ThreadingHTTPServer:
     """Start the upload server on a daemon thread and return it.
 
@@ -102,7 +103,7 @@ def serve(
         "store": store, "on_upload": staticmethod(on_upload), "moves_for": staticmethod(moves_for),
         "name_for": staticmethod(name_for), "trades": trades, "notify": staticmethod(notify),
         "gyms": gyms, "gym_limit": RateLimit(GYM_BATTLE_INTERVAL, clock), "miracle": miracle,
-        "remote": remote or RemoteOps(store),
+        "remote": remote or RemoteOps(store, now), "now": staticmethod(now),
     })
     server = ThreadingHTTPServer((host, port), handler)
     threading.Thread(target=server.serve_forever, name="upload-server", daemon=True).start()
@@ -182,7 +183,7 @@ def with_battle_members(raw_pool: object) -> object:
     return pool
 
 
-def battle_overview(store: Store, user_id: str, name_for: NameFor, remote: RemoteOps) -> dict:
+def battle_overview(store: Store, user_id: str, name_for: NameFor, remote: RemoteOps, now: Clock) -> dict:
     """The uploader's last battles and the other users' current lead Pokémon (with their Slack ops replayed), with
     display names and no Slack ids."""
     recent = [
@@ -198,7 +199,7 @@ def battle_overview(store: Store, user_id: str, name_for: NameFor, remote: Remot
     ]
     coworkers = [
         {"name": name_for(lead.user_id), "pokemon_id": lead.pokemon_id, "level": lead.level, "shiny": lead.shiny}
-        for lead in remote.leads_except(user_id, datetime.now(UTC) - COWORKER_WINDOW, COWORKER_LIMIT)
+        for lead in remote.leads_except(user_id, now() - COWORKER_WINDOW, COWORKER_LIMIT)
     ]
     return {"recent_battles": recent, "coworkers": coworkers}
 
@@ -213,6 +214,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
     gyms: GymApi | None
     gym_limit: RateLimit
     miracle: MiracleService | None
+    now: Clock
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
@@ -312,7 +314,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
                     self.miracle.pool_changed(user_id)
             body["trades"] = {"deliveries": self.trades.deliveries(user_id), "locked_ids": self.trades.locked_ids(user_id)}
         self.on_upload(user_id, party)
-        self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for, self.remote)})
+        self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for, self.remote, self.now)})
 
     def _gym_battle(self, user_id: str, payload: object) -> None:
         """A practice-style fight: nothing is stored, nothing is posted, and the stored party stays as it is."""

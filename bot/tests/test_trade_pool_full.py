@@ -7,6 +7,7 @@ from test_miracle import FakeBoard
 from test_trades import ALICE, BOB, HAUNTER, NAMES, individual
 from test_upload_server import PIKACHU as BATTLER
 from test_upload_server import FakeMoves, call
+from fixed_clock import fixed_now
 from ypoke.miracle import PICK_ACTION_ID as MIRACLE_PICK_ACTION_ID
 from ypoke.miracle import POST_ERRORS, MiracleService
 from ypoke.store import Store
@@ -32,10 +33,10 @@ def app_entry(index):
 
 @pytest.fixture
 def api(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
-    trades = TradeService(store, name_for=NAMES.get)
-    miracle = MiracleService(trades, FakeBoard())
-    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), NAMES.get, trades, miracle=miracle)
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
+    trades = TradeService(store, fixed_now, name_for=NAMES.get)
+    miracle = MiracleService(trades, FakeBoard(), fixed_now)
+    server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), NAMES.get, trades, miracle=miracle, now=fixed_now)
     yield SimpleNamespace(base=f"http://127.0.0.1:{server.server_address[1]}", trades=trades, miracle=miracle,
                           alice=store.issue_token(ALICE), bob=store.issue_token(BOB))
     server.shutdown()

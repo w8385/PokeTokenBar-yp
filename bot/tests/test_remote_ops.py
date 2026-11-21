@@ -6,6 +6,7 @@ import pytest
 from test_commands import NOW, handler, lineups, member
 from test_upload_server import PIKACHU, FakeMoves, call
 
+from fixed_clock import fixed_now
 from ypoke.commands import BATTLE_COMMAND, COMMAND_NAMES, HELP_TEXT, UMBRELLA_COMMAND, message_blocks
 from ypoke.remote_ops import (
     OLD_APP_REFUSAL,
@@ -52,7 +53,7 @@ def level_up_kind():
 
 @pytest.fixture
 def store(tmp_path):
-    return Store(str(tmp_path / "bot.sqlite3"))
+    return Store(str(tmp_path / "bot.sqlite3"), fixed_now)
 
 
 def upload(store, user_id, pokemon_id=7, level=20, applied=None, remote=True, pool=None):
@@ -61,11 +62,11 @@ def upload(store, user_id, pokemon_id=7, level=20, applied=None, remote=True, po
     payload = {**REMOTE, "applied_op_id": applied} if remote else {}
     store.save_party(user_id, [member(pokemon_id, level)], remote=normalize_remote(payload))
     if pool is not None:
-        TradeService(store).save_pool(user_id, pool)
+        TradeService(store, fixed_now).save_pool(user_id, pool)
 
 
 def queue(store, user_id, levels=10, cost=100):
-    submitted = RemoteOps(store).submit(user_id, LEVEL_UP, {"levels": levels, "cost": cost})
+    submitted = RemoteOps(store, fixed_now).submit(user_id, LEVEL_UP, {"levels": levels, "cost": cost})
     assert submitted.refusal is None
     return submitted.op_id
 
@@ -87,7 +88,7 @@ def test_ops_get_increasing_ids_per_user_and_come_back_in_order(store):
     upload(store, "UA")
     upload(store, "UB")
     assert [queue(store, "UA"), queue(store, "UA"), queue(store, "UB")] == [1, 2, 1]
-    ops = RemoteOps(store).pending("UA")
+    ops = RemoteOps(store, fixed_now).pending("UA")
     assert [(op.id, op.kind, op.payload) for op in ops] == [
         (1, LEVEL_UP, {"levels": 10, "cost": 100}), (2, LEVEL_UP, {"levels": 10, "cost": 100}),
     ]
@@ -97,14 +98,14 @@ def test_a_settled_op_id_is_never_reused(store):
     upload(store, "UA")
     queue(store, "UA")
     queue(store, "UA")
-    RemoteOps(store).ack("UA", [1, 2], [])
+    RemoteOps(store, fixed_now).ack("UA", [1, 2], [])
     assert queue(store, "UA") == 3
 
 
 def test_an_unregistered_kind_cannot_be_queued(store):
     upload(store, "UA")
     with pytest.raises(ValueError):
-        RemoteOps(store).submit("UA", "nope", {})
+        RemoteOps(store, fixed_now).submit("UA", "nope", {})
 
 
 # Old-app gate
@@ -112,20 +113,20 @@ def test_an_unregistered_kind_cannot_be_queued(store):
 
 def test_an_upload_from_an_app_without_remote_ops_refuses_edits(store):
     upload(store, "UA", remote=False)
-    submitted = RemoteOps(store).submit("UA", LEVEL_UP, {"levels": 1, "cost": 0})
+    submitted = RemoteOps(store, fixed_now).submit("UA", LEVEL_UP, {"levels": 1, "cost": 0})
     assert (submitted.op_id, submitted.refusal) == (None, OLD_APP_REFUSAL)
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
 
 
 def test_no_upload_at_all_refuses_edits(store):
     store.issue_token("UA")
-    assert RemoteOps(store).submit("UA", LEVEL_UP, {}).refusal == OLD_APP_REFUSAL
+    assert RemoteOps(store, fixed_now).submit("UA", LEVEL_UP, {}).refusal == OLD_APP_REFUSAL
 
 
 def test_a_downgrade_closes_the_gate_again_because_each_upload_overwrites_the_flag(store):
     upload(store, "UA")
     upload(store, "UA", remote=False)
-    assert RemoteOps(store).edit_refusal("UA") == OLD_APP_REFUSAL
+    assert RemoteOps(store, fixed_now).edit_refusal("UA") == OLD_APP_REFUSAL
 
 
 @pytest.mark.parametrize("command", [TRADE_COMMAND, MIRACLE_COMMAND])
@@ -158,7 +159,7 @@ def test_a_queued_op_survives_an_upload_that_has_not_applied_it_until_one_that_h
     assert opponent_level(store) == "30"
     upload(store, "UB", 7, 30, applied=op_id)
     assert opponent_level(store) == "30"
-    RemoteOps(store).ack("UB", [op_id], [])
+    RemoteOps(store, fixed_now).ack("UB", [op_id], [])
     upload(store, "UB", 7, 20, applied=op_id)
     assert opponent_level(store) == "20"
 
@@ -172,7 +173,7 @@ def test_pending_ops_replay_in_order_on_top_of_the_upload(store):
     upload(store, "UA", 7, 20)
     queue(store, "UA", levels=1, cost=100)
     queue(store, "UA", levels=2, cost=200)
-    view = RemoteOps(store).view("UA")
+    view = RemoteOps(store, fixed_now).view("UA")
     assert (view.party[0]["level"], view.wallet, [op.id for op in view.pending]) == (23, 900, [1, 2])
     assert store.party("UA").party[0]["level"] == 20
 
@@ -199,9 +200,9 @@ def test_a_replay_that_raises_leaves_the_view_as_uploaded(store):
     register(OpKind("test_broken", lambda payload: "고장", lambda view, payload: 1 / 0))
     try:
         upload(store, "UA", 7, 20)
-        RemoteOps(store).submit("UA", "test_broken", {})
+        RemoteOps(store, fixed_now).submit("UA", "test_broken", {})
         queue(store, "UA", levels=1)
-        assert RemoteOps(store).view("UA").party[0]["level"] == 21
+        assert RemoteOps(store, fixed_now).view("UA").party[0]["level"] == 21
     finally:
         OP_KINDS.pop("test_broken", None)
 
@@ -213,33 +214,33 @@ def test_ack_settles_ops_and_lists_applied_and_cancelled_with_the_reason(store):
     upload(store, "UA")
     queue(store, "UA", levels=1)
     queue(store, "UA", levels=2)
-    message = RemoteOps(store).ack("UA", [1], [(2, UNSUPPORTED)])
+    message = RemoteOps(store, fixed_now).ack("UA", [1], [(2, UNSUPPORTED)])
     assert message.user_id == "UA"
     assert message.text == f"{RESULT_HEADER}\n✅ 레벨 +1\n❌ 레벨 +2: 이 앱 버전은 아직 이 작업을 못 해요"
-    assert RemoteOps(store).pending("UA") == []
+    assert RemoteOps(store, fixed_now).pending("UA") == []
 
 
 def test_an_unknown_reason_code_gets_the_generic_line(store):
     upload(store, "UA")
     queue(store, "UA")
-    assert RemoteOps(store).ack("UA", [], [(1, "target_gone")]).text.endswith("❌ 레벨 +10: 앱에서 적용하지 못했어요")
+    assert RemoteOps(store, fixed_now).ack("UA", [], [(1, "target_gone")]).text.endswith("❌ 레벨 +10: 앱에서 적용하지 못했어요")
 
 
 def test_a_repeated_ack_changes_nothing_and_sends_no_dm(store):
     upload(store, "UA")
     queue(store, "UA")
-    assert RemoteOps(store).ack("UA", [1], []) is not None
-    assert RemoteOps(store).ack("UA", [1], []) is None
-    assert RemoteOps(store).ack("UA", [], [(1, UNSUPPORTED)]) is None
+    assert RemoteOps(store, fixed_now).ack("UA", [1], []) is not None
+    assert RemoteOps(store, fixed_now).ack("UA", [1], []) is None
+    assert RemoteOps(store, fixed_now).ack("UA", [], [(1, UNSUPPORTED)]) is None
 
 
 def test_an_empty_ack_or_one_for_another_users_op_sends_no_dm(store):
     upload(store, "UA")
     upload(store, "UB")
     queue(store, "UA")
-    assert RemoteOps(store).ack("UA", [], []) is None
-    assert RemoteOps(store).ack("UB", [1], []) is None
-    assert [op.id for op in RemoteOps(store).pending("UA")] == [1]
+    assert RemoteOps(store, fixed_now).ack("UA", [], []) is None
+    assert RemoteOps(store, fixed_now).ack("UB", [1], []) is None
+    assert [op.id for op in RemoteOps(store, fixed_now).pending("UA")] == [1]
 
 
 # Endpoints
@@ -247,9 +248,9 @@ def test_an_empty_ack_or_one_for_another_users_op_sends_no_dm(store):
 
 @pytest.fixture
 def server(tmp_path):
-    store = Store(str(tmp_path / "bot.sqlite3"))
+    store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     sent = []
-    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), notify=sent.extend)
+    http_server = serve(store, "127.0.0.1", 0, lambda user_id, party: None, FakeMoves(), notify=sent.extend, now=fixed_now)
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}", sent
     http_server.shutdown()
 
