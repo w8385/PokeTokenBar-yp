@@ -170,9 +170,7 @@ extension CompanionStore {
     private func useOrBuy(_ kind: ItemKind, _ payment: MintPayment) -> Bool {
         switch payment {
         case .stock: return useOne(kind)
-        case .buy(let price):
-            state.spentTokens += price
-            return true
+        case .buy(let price): return spend(price)
         case .short: return false
         }
     }

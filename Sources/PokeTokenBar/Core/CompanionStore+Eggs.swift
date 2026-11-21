@@ -10,12 +10,16 @@ extension CompanionStore {
     /// 알 상태에서는 살 수 없다 — 알끼리 교체하는 동작은 만들지 않는다.
     /// 항목 자체는 알 상태에서도 상점에 남는다(shopEntries) — 이 게이트는 구매만 막는다.
     func canBuyEgg(_ tier: Rarity?) -> Bool {
+        sellsEgg(tier) && availableTokens >= price(of: .egg(tier))
+    }
+
+    private func sellsEgg(_ tier: Rarity?) -> Bool {
         // 파는 티어인지 먼저 확인한다 — 만족 불가능한 보증(전설: capture_rate 로 표현 불가)을 사면
         // 두 롤 경로 모두 후보가 0개라 알이 영영 안 깨지고, 부화가 없으니 보증도 안 풀리며,
         // 새 알 구매는 `hasActive` 에 막혀 되돌릴 수단이 없다. 가격만 계산되면 값이 빠져나가므로
         // 판매 목록을 여기서 강제한다(호출부 하나가 실수하면 토큰이 통째로 사라진다).
         guard FreshEgg.shopTiers.contains(tier) else { return false }
-        return hasActive && availableTokens >= price(of: .egg(tier))
+        return hasActive
     }
 
     /// 알 구매 — 현재 포켓몬을 박스로 보내고 처음부터 인큐베이션하는 새 알로. 지갑에서 가격 차감.
@@ -25,8 +29,7 @@ extension CompanionStore {
     /// 상태(`eggTier`)에 적고, 실제 롤은 프리패치/부화 경로가 그 보증을 읽어 수행한다.
     @discardableResult
     func buyEgg(_ tier: Rarity?) -> Bool {
-        guard canBuyEgg(tier) else { return false }
-        state.spentTokens += price(of: .egg(tier))
+        guard sellsEgg(tier), spend(price(of: .egg(tier))) else { return false }
         storeActiveForNewEgg(tier: tier, pendingHatchID: nil)
         return true
     }
@@ -73,9 +76,7 @@ extension CompanionStore {
 
     @discardableResult
     func buyScoutTicket(_ pool: ScoutPool) -> Bool {
-        guard canBuyScoutTicket else { return false }
         completePurchase(key: pool.inventoryKey, count: 1, cost: scoutPrice)
-        return true
     }
 
     /// 이 티켓으로 이미 뽑아 둔 후보. 없으면 nil.

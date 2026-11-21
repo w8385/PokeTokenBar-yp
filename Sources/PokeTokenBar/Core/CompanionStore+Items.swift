@@ -112,9 +112,8 @@ extension CompanionStore {
 
     @discardableResult
     func buy(_ stone: MegaStone) -> Bool {
-        guard canBuy(stone) else { return false }
-        completePurchase(key: stone.inventoryKey, count: 1, cost: price(of: .megaStone(stone)))
-        return true
+        guard megaStoneOwnedTotal(stone) == 0 else { return false }
+        return completePurchase(key: stone.inventoryKey, count: 1, cost: price(of: .megaStone(stone)))
     }
 
     // MARK: 기술머신 (기술마다 한 개 — 키 `tm:<moveID>`, 소모되지 않는다)
@@ -129,9 +128,9 @@ extension CompanionStore {
 
     @discardableResult
     func buyTM(moveID: Int, power: Int, isWeather: Bool) -> Bool {
-        guard !ownsTM(moveID), canBuyTM(power: power, isWeather: isWeather) else { return false }
-        completePurchase(key: MachineMove.inventoryKey(moveID), count: 1, cost: tmPrice(power: power, isWeather: isWeather))
-        return true
+        guard !ownsTM(moveID) else { return false }
+        return completePurchase(key: MachineMove.inventoryKey(moveID), count: 1,
+                                cost: tmPrice(power: power, isWeather: isWeather))
     }
 
     /// Gives the TM for free (battle rewards). False when it is already owned.
