@@ -462,6 +462,7 @@ def test_the_narrated_battles_cover_weather_abilities_status_switching_items_mul
     assert any(action.knockout and action.attacker_fainted for action in actions)
     assert any(action.blocked == "confusion" for action in actions)
     assert any(action.missed for action in actions) and any(action.multiplier == 0 for action in actions)
+    assert {narration.action_state(action) for action in actions} == set(narration.ActionState)
 
 
 def test_the_narration_label_tables_match_the_golden_record():

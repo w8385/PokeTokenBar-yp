@@ -1,4 +1,6 @@
+import ast
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -422,3 +424,13 @@ def test_a_three_hundred_turn_battle_fits_the_block_budget_keeps_both_ends_and_e
 def test_every_state_a_move_leaves_has_a_label():
     states = {key for key, handler in effects.loaded()["moves"].items() if isinstance(handler, State)}
     assert states - set(VOLATILE_LABEL) == set()
+
+
+def test_every_narration_label_table_is_in_the_one_label_table():
+    from ypoke import narration
+    tree = ast.parse(Path(narration.__file__).read_text())
+    assigned = {target.id for node in tree.body if isinstance(node, ast.Assign) for target in node.targets}
+    tables = {name for name in assigned if name.isupper() and isinstance(getattr(narration, name), dict)
+              and all(isinstance(key, str) for key in getattr(narration, name))}
+    indexed = {name for name in tables if any(getattr(narration, name) is table for table in narration.LABELS.values())}
+    assert tables - indexed == set()
