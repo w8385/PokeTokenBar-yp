@@ -6,6 +6,7 @@ import time
 from collections.abc import Callable
 from functools import partial
 
+from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient
 from slack_sdk.webhook import WebhookClient
 
@@ -32,6 +33,8 @@ from ypoke.training_editor import TrainingEditor
 DM_FALLBACK_NOTE = "(대결을 신청한 곳에 올릴 수 없어서 DM으로 보내요)"
 ERROR_TEXT = "대결 봇에서 오류가 났어요. 잠시 뒤 다시 해 주세요."
 LOG_ARGS_LIMIT = 200
+ANSWER_LIMIT = 30
+SOCKET_PING_INTERVAL = 2
 
 log = logging.getLogger(__name__)
 
@@ -149,6 +152,7 @@ def options_listener(trades: TradeService):
         except Exception:
             log.exception("picker options failed block=%s", block_id)
             options = []
+        options = options[:ANSWER_LIMIT]
         ack(options=options)
         log.info("options action=%s block=%s -> %d options", payload.get("action_id"), block_id, len(options))
 
@@ -191,6 +195,7 @@ def editor_options_listener(editor: LineupEditor | ShopEditor | TrainingEditor |
         except Exception:
             log.exception("editor options failed block=%s", block_id)
             options = []
+        options = options[:ANSWER_LIMIT]
         ack(options=options)
         log.info("options action=%s block=%s query_length=%d -> %d options in %d ms", payload.get("action_id"),
                  block_id, len(query), len(options), (time.monotonic() - started) * 1000)
@@ -429,3 +434,26 @@ def _publish_slash(
     text = "\n".join(filter(None, (reply.echo, reply.text))) if visible else reply.text
     answer(respond, "slash", text=text, blocks=message_blocks(reply, visible),
            response_type="in_channel" if visible else "ephemeral")
+
+
+def socket_handler(app, app_token: str, web_client: WebClient | None = None) -> SocketModeHandler:
+    """The Socket Mode handler: a dead link is noticed within seconds instead of 40–50, and every drop says why."""
+    handler = SocketModeHandler(app, app_token, web_client=web_client, ping_interval=SOCKET_PING_INTERVAL)
+    handler.client.on_message_listeners.append(_log_disconnect)
+    handler.client.on_close_listeners.append(_log_close)
+    return handler
+
+
+def _log_disconnect(message: str) -> None:
+    if "disconnect" not in message:
+        return
+    try:
+        frame = json.loads(message)
+    except ValueError:
+        return
+    if frame.get("type") == "disconnect":
+        log.warning("slack asked to disconnect reason=%s", frame.get("reason"))
+
+
+def _log_close(code: int, reason: str | None) -> None:
+    log.warning("socket closed code=%s reason=%s", code, reason)

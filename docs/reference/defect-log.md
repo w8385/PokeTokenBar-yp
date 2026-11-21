@@ -1999,6 +1999,17 @@ read_when:
   with only `expires_at` differing. Now `make_api` passes `NOW`. Class sweep: `make_api` is the only helper that builds two
   service sets for one comparison; the other `datetime.now` uses in `bot/tests` are offsets for one service
   (`test_upload_server`), not stamps compared across two. No scan guard: a service built without `now` is fine alone.
+- **The bot's Slack socket stayed deaf for 40–50 s after every drop, and its drops were never explained.** About four
+  BrokenPipe/SSL `BAD_LENGTH` episodes a day; the slash command then fails with Slack's "앱이 반응하지 않아". The builtin
+  client pings every 10 s and only reconnects after 5 failed pings or 4 missed pongs, so the dead window is
+  `ping_interval` × 4–5. **Why no test caught it:** nothing ran the client against a dead peer; the bot's tests never
+  touch the socket. Measured offline against a local endpoint that shuts down without a closing handshake: reconnect after
+  18 s at the default 10 s interval, 2.3 s at 2 s. Now `socket_handler` pings every 2 s and logs Slack's `disconnect`
+  reason and every close, so the next drop names its cause.
+  **Not proven:** why the socket dies. Three recent drops followed a 100-option `lineup_swap` answer by 21–25 s and no
+  other interaction did, but a 13 KB and a 61 KB answer pass the same client intact on a local TLS endpoint and 14 of the
+  older 16 drops had no interaction at all. Options answers are now capped at 30 (about 4 KB) as the cheap experiment; read
+  the `slack asked to disconnect` / `socket closed` lines after the next drop before blaming the payload or the adapter.
 
 ## Tests and the user's desktop
 
