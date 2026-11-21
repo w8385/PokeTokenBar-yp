@@ -3,7 +3,7 @@ from dataclasses import replace
 import pytest
 from slack_rules import violations
 from test_commands import NOW, move
-from test_remote_lineup import LineupAPI, party_member
+from test_remote_lineup import LineupAPI, box_entry, party_member
 from test_remote_ops import text_of
 from test_upload_server import FakeMoves, call
 
@@ -24,6 +24,7 @@ from ypoke.training_editor import (
     CAP_ACTION,
     CAPSULE_ACTION,
     DEFAULT_MOVES_ACTION,
+    EVOLVE_ACTION,
     FORM_ACTION,
     GOLD_CAP_ACTION,
     HERB_ACTION,
@@ -68,10 +69,20 @@ ABILITIES = {
     642: [{"name": "prankster", "slot": 1, "hidden": False}, {"name": "defiant", "slot": 3, "hidden": True}],
 }
 EGG_MOVE = move(56, "하이드로펌프", "water", 110, 0)
+CORD = {"key": "linkingCord", "name": "연결의끈", "count": 1}
+GIGALITH = {"item": "linkingCord", "pokemon_id": 526}
+BOLDORE = party_member("p3", 525, 40, ability="sturdy", moves=[84], evolution=GIGALITH)
+ONIX = party_member("p4", 95, 30, held_item="metal-coat", item_key="metalCoat", item_name="금속코트",
+                    evolution={"item": "linkingCord", "pokemon_id": 208, "held_item": "metal-coat"})
+EVOLVED_NAMES = {525: "암트르", 526: "기가이어스", 95: "롱스톤", 208: "강철톤"}
 
 
 class TrainingAPI(LineupAPI):
     """Abilities by `/pokemon` id, and Hydro Pump as an egg move once a Mirror Herb is used."""
+
+    def pokemon(self, pokemon_id):
+        species = super().pokemon(pokemon_id)
+        return {**species, "name_ko": EVOLVED_NAMES[pokemon_id]} if pokemon_id in EVOLVED_NAMES else species
 
     def abilities(self, pokemon_id):
         return ABILITIES.get(pokemon_id, [])
@@ -451,6 +462,135 @@ def test_every_training_screen_follows_slacks_block_rules(server):
                press(store, SET_MOVES_ACTION, "p2", ["85", "98"]).screen, press(store, PICK_ACTION, "b1").screen]
     assert [violations(screen.blocks) for screen in screens] == [[]] * len(screens)
     assert press(store, MOVES_ACTION, "p2").screen.blocks[0]["accessory"]["type"] == "multi_external_select"
+
+
+# Linking Cord evolution
+
+
+def test_the_cord_button_shows_when_the_app_offers_the_evolution_and_the_bag_has_a_cord(server):
+    store, _ = server
+    post(server, party=[*PARTY, BOLDORE], bag=[*BAG, CORD])
+    found = controls(press(store, PICK_ACTION, "p3").screen.blocks)
+    assert found[EVOLVE_ACTION]["text"]["text"] == "연결의끈으로 진화 → 기가이어스 (가방 ×1)"
+    assert "연결의끈 ×1" in str(press(store, PICK_ACTION, "p3").screen.blocks)
+    assert EVOLVE_ACTION not in controls(press(store, PICK_ACTION, "p2").screen.blocks)
+
+
+@pytest.mark.parametrize("party,bag", [
+    ([*PARTY, {key: value for key, value in BOLDORE.items() if key != "evolution"}], [*BAG, CORD]),
+    ([*PARTY, BOLDORE], BAG),
+])
+def test_no_cord_button_without_the_apps_offer_or_a_cord_in_the_bag(server, party, bag):
+    store, _ = server
+    post(server, party=party, bag=bag)
+    assert EVOLVE_ACTION not in controls(press(store, PICK_ACTION, "p3").screen.blocks)
+
+
+def test_the_cord_evolves_once_keeps_the_ability_and_spends_one_cord(server):
+    store, _ = server
+    post(server, party=[*PARTY, BOLDORE], bag=[*BAG, {**CORD, "count": 2}])
+    reply = trained(store, EVOLVE_ACTION, "p3")
+    assert "트레이닝 연결의끈 진화: 암트르 → 기가이어스" in str(reply.screen.blocks)
+    evolved = member_of(store, "p3")
+    assert (evolved["pokemon_id"], evolved["ability"]) == (526, "sturdy")
+    assert not {"evolution", "moves"} & set(evolved)
+    assert count(store, "linkingCord") == 1
+    [op] = RemoteOps(store).pending("UA")
+    assert (op.kind, op.payload["action"], op.payload["item"], op.payload["to_pokemon_id"]) == (
+        TRAIN, "evolve", "linkingCord", 526)
+    assert not press(store, EVOLVE_ACTION, "p3").replace
+    assert len(RemoteOps(store).pending("UA")) == 1 and count(store, "linkingCord") == 1
+
+
+def test_a_box_pokemon_evolves_in_the_box_entry_too(server):
+    store, _ = server
+    boldore = box_entry("b2", 525, "암트르", level=40, evolution=GIGALITH)
+    post(server, pool=[PSYDUCK, boldore], bag=[CORD])
+    trained(store, EVOLVE_ACTION, "b2")
+    assert member_of(store, "b2")["pokemon_id"] == 526
+    assert next(entry for entry in view(store).pool if entry["id"] == "b2")["pokemon_id"] == 526
+    assert count(store, "linkingCord") == 0
+
+
+def test_a_held_item_step_uses_the_held_item_up(server):
+    store, _ = server
+    post(server, party=[ONIX], bag=[CORD])
+    trained(store, EVOLVE_ACTION, "p4")
+    evolved = member_of(store, "p4")
+    assert evolved["pokemon_id"] == 208
+    assert not {"held_item", "item_key", "item_name"} & set(evolved)
+
+
+def test_a_cord_bought_in_slack_before_the_app_syncs_opens_the_button(server):
+    store, _ = server
+    shop = [*SHOP, {"key": "linkingCord", "name": "연결의끈", "price": 300, "category": "evolution",
+                    "category_name": "진화", "single": False}]
+    status, reply = call(f"{server[1]}/v1/party", "POST", store.issue_token("UA", keep_existing=True),
+                         {"party": [BOLDORE], "trade_pool": [], "remote_ops": 1, "applied_op_id": 0, "wallet": 500,
+                          "bag": [], "shop": shop, "remote_ops_kinds": list(KINDS)})
+    assert status == 200, reply
+    assert EVOLVE_ACTION not in controls(press(store, PICK_ACTION, "p3").screen.blocks)
+    assert bot(store).shop.act("UA", BUY_ACTION, "1|300|linkingCord", []).replace
+    assert EVOLVE_ACTION in controls(press(store, PICK_ACTION, "p3").screen.blocks)
+
+
+@pytest.mark.parametrize("change,reason", [
+    ({}, "no_item"),
+    ({"to_pokemon_id": 527}, "not_applicable"),
+    ({"item": "rareCandy"}, "invalid"),
+    ({"id": "p2", "pokemon_id": 25}, "not_applicable"),
+])
+def test_what_the_app_would_cancel_for_the_cord_is_refused_before_it_is_queued(server, change, reason):
+    store, _ = server
+    post(server, party=[*PARTY, BOLDORE])
+    payload = {"id": "p3", "pokemon_id": 525, "action": "evolve", "item": "linkingCord", "to_pokemon_id": 526}
+    assert train(view(store), payload | change)[1] == reason
+
+
+def test_a_held_item_step_is_refused_once_the_item_is_off(server):
+    store, _ = server
+    post(server, party=[{**ONIX, "held_item": "leftovers", "item_key": "leftovers", "item_name": "먹다남은음식"}], bag=[CORD])
+    payload = {"id": "p4", "pokemon_id": 95, "action": "evolve", "item": "linkingCord", "to_pokemon_id": 208}
+    assert train(view(store), payload)[1] == "not_applicable"
+
+
+def test_an_everstone_equipped_in_slack_hides_the_button_and_refuses_the_cord(server):
+    store, _ = server
+    stone = {"key": "everstone", "name": "변함없는돌", "count": 1, "equip": True, "held_item": "everstone"}
+    post(server, party=[BOLDORE], bag=[CORD, stone])
+    RemoteOps(store).submit("UA", LINEUP, {"members": [
+        {"id": "p3", "pokemon_id": 525, "name": "암트르", "moves": [84], "machine": [], "item": "everstone"}]})
+    assert member_of(store, "p3")["held_item"] == "everstone"
+    assert EVOLVE_ACTION not in controls(press(store, PICK_ACTION, "p3").screen.blocks)
+    payload = {"id": "p3", "pokemon_id": 525, "action": "evolve", "item": "linkingCord", "to_pokemon_id": 526}
+    assert train(view(store), payload)[1] == "everstone"
+
+
+def test_every_reason_the_app_gives_for_the_cord_is_worded(server):
+    store, _ = server
+    post(server, party=[*PARTY, BOLDORE], bag=[CORD])
+    trained(store, EVOLVE_ACTION, "p3")
+    [op] = RemoteOps(store).pending("UA")
+    message = RemoteOps(store).ack("UA", [], [(op.id, "wrong_target")])
+    assert f"❌ 트레이닝 연결의끈 진화: 암트르 → 기가이어스: {REASONS['wrong_target']}" in message.text
+    assert {"wrong_target", "not_ready", "everstone", "trade_locked", "no_data"} <= set(REASONS)
+
+
+def test_the_upload_keeps_a_well_formed_evolution_and_drops_the_rest(server):
+    store, _ = server
+    bad = [{"item": "x y", "pokemon_id": 526}, {"item": "linkingCord", "pokemon_id": 99999},
+           {"item": "linkingCord", "pokemon_id": 526, "held_item": "Metal Coat"}, "linkingCord"]
+    post(server, party=[BOLDORE, ONIX, *[party_member(f"x{index}", 525, 40, evolution=value)
+                                          for index, value in enumerate(bad)]])
+    assert member_of(store, "p3")["evolution"] == GIGALITH
+    assert member_of(store, "p4")["evolution"]["held_item"] == "metal-coat"
+    assert not [index for index in range(len(bad)) if "evolution" in member_of(store, f"x{index}")]
+
+
+def test_the_cord_screen_follows_slacks_block_rules(server):
+    store, _ = server
+    post(server, party=[*PARTY, BOLDORE], bag=[*BAG, CORD])
+    assert violations(press(store, PICK_ACTION, "p3").screen.blocks) == []
 
 
 def test_the_help_explains_training():

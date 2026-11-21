@@ -18,7 +18,9 @@ CAP = "cap"
 GOLD_CAP = "gold_cap"
 FORM = "form"
 MOVES = "moves"
-ACTIONS = (NATURE, CAPSULE, PATCH, CAP, GOLD_CAP, HERB, FORM, MOVES)
+EVOLVE = "evolve"
+ACTIONS = (NATURE, CAPSULE, PATCH, CAP, GOLD_CAP, HERB, FORM, MOVES, EVOLVE)
+EVOLVE_ITEMS = {"linkingCord": "연결의끈"}
 ITEM_KEYS = {NATURE: "mint", HERB: "mirrorHerb", CAPSULE: "abilityCapsule", PATCH: "abilityPatch", CAP: "bottleCap",
              GOLD_CAP: "goldBottleCap"}
 BOUGHT = (NATURE, HERB)
@@ -28,7 +30,7 @@ STATS = {"hp": ("hp", "hp"), "attack": ("attack", "attack"), "defense": ("defens
 STAT_NAMES = {"hp": "HP", "attack": "공격", "defense": "방어", "special-attack": "특수공격", "special-defense": "특수방어",
               "speed": "스피드"}
 ACTION_NAMES = {NATURE: "민트", CAPSULE: "특성캡슐", PATCH: "특성패치", CAP: "은색병뚜껑", GOLD_CAP: "금색병뚜껑",
-                HERB: "흉내허브", FORM: "폼 바꾸기", MOVES: "기술 바꾸기"}
+                HERB: "흉내허브", FORM: "폼 바꾸기", MOVES: "기술 바꾸기", EVOLVE: "연결의끈 진화"}
 MAX_IV = 31
 MAX_MOVES = 4
 MACHINE_PREFIX = "tm:"
@@ -45,6 +47,9 @@ NO_MACHINE = "no_machine"
 NO_HERB = "no_herb"
 NO_DATA = "no_data"
 INVALID = "invalid"
+WRONG_TARGET = "wrong_target"
+NOT_READY = "not_ready"
+EVERSTONE = "everstone"
 REASONS = {
     GONE: "포켓몬이 이제 없어요(놓아주기·교환)",
     EVOLVED: "포켓몬이 진화하거나 모습이 바뀌었어요",
@@ -59,6 +64,9 @@ REASONS = {
     NO_HERB: "알 기술은 흉내허브를 쓴 포켓몬만 배워요",
     NO_DATA: "앱이 포켓몬 정보를 불러오지 못했어요",
     INVALID: "트레이닝을 읽지 못했어요",
+    WRONG_TARGET: "연결의끈으로 진화하지 않는 포켓몬이에요",
+    NOT_READY: "진화에 필요한 지닌 도구나 친구가 없어요",
+    EVERSTONE: "변함없는돌을 지니고 있어요",
 }
 
 
@@ -75,6 +83,8 @@ def describe(payload: dict) -> str:
         detail = f" → {ability.get('label') or ability.get('name')}"
     elif action == FORM:
         detail = f" → {payload.get('form_name') or payload.get('form')}"
+    elif action == EVOLVE:
+        detail = f" → {payload.get('to_name') or '#' + str(payload.get('to_pokemon_id'))}"
     cost = f" ({payload['price']:,}토큰)" if _is_int(payload.get("price")) else ""
     return f"트레이닝 {ACTION_NAMES.get(action, action)}: {name}{detail}{cost}"
 
@@ -143,7 +153,24 @@ def _change(view: View, member: dict, action: str, payload: dict):
         return lambda copy, entry: _max_ivs(copy, entry, stats), None
     if action == FORM:
         return _form_change(view, member, payload)
+    if action == EVOLVE:
+        return _evolve_change(member, payload)
     return _moves_change(view, member, payload)
+
+
+def _evolve_change(member: dict, payload: dict):
+    """The evolution the app offered for the member, with the held item it uses still on."""
+    item, to = payload.get("item"), payload.get("to_pokemon_id")
+    if item not in EVOLVE_ITEMS or not _is_int(to):
+        return None, INVALID
+    if member.get("held_item") == "everstone":
+        return None, EVERSTONE
+    evolution = member.get("evolution") or {}
+    if (evolution.get("item"), evolution.get("pokemon_id")) != (item, to):
+        return None, NOT_APPLICABLE
+    if evolution.get("held_item") and member.get("held_item") != evolution["held_item"]:
+        return None, NOT_APPLICABLE
+    return lambda copy, entry: _evolve(copy, entry, evolution), None
 
 
 def item_count(view: View, key: str) -> int:
@@ -205,7 +232,7 @@ def owned_machines(view: View) -> set[int]:
 def _pay(view: View, action: str, payload: dict) -> tuple[list[dict], int | None, str | None]:
     """The bag and wallet after paying: one item from the bag, else (Mint, Mirror Herb) its shop price, which must be
     the price the player saw."""
-    key = ITEM_KEYS.get(action)
+    key = payload.get("item") if action == EVOLVE else ITEM_KEYS.get(action)
     if key is None:
         return view.bag, view.wallet, None
     if item_count(view, key) > 0:
@@ -292,6 +319,18 @@ def _set_form(copy: dict, entry: dict | None, form: dict) -> None:
         entry["pokemon_id"] = form["pokemon_id"]
         if isinstance(entry.get("entry"), dict):
             entry["entry"]["form"] = form["form"]
+
+
+def _evolve(copy: dict, entry: dict | None, evolution: dict) -> None:
+    """The evolved species keeps its ability until the app syncs; moves chosen for the old species go."""
+    copy["pokemon_id"] = evolution["pokemon_id"]
+    for key in ("moves", "machine", "evolution"):
+        copy.pop(key, None)
+    if evolution.get("held_item"):
+        for key in ("held_item", "item_key", "item_name"):
+            copy.pop(key, None)
+    if entry:
+        entry["pokemon_id"] = evolution["pokemon_id"]
 
 
 def _set_moves(copy: dict, moves: list[int], machine: list[int]) -> None:

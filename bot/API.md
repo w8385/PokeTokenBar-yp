@@ -54,7 +54,7 @@ Replaces the caller's stored party.
 | `id` | string | optional, the individual's id (max 64 chars, no `\|` or whitespace; dropped otherwise). Members with one can be changed from Slack ([`lineup`](#the-lineup-op)); a rental has none |
 | `item_key`, `item_name` | string | optional, sent together: the app's inventory key of the held item (max 80 chars) and its Korean name (max 60). `held_item` is still what battles use; these say which bag copy goes back when it comes off |
 | `machine` | array | optional, the entries of `moves` that are TM moves, so a Slack edit keeps them only while the TM is owned |
-| `ability_slot`, `ability_hidden`, `egg_moves`, `form`, `form_tool`, `own_ability`, `forms` | | optional [training hints](#the-train-op) for `/트레이닝`, on party and `trade_pool` members alike. Malformed hints are dropped, never a `400` |
+| `ability_slot`, `ability_hidden`, `egg_moves`, `form`, `form_tool`, `own_ability`, `forms`, `evolution` | | optional [training hints](#the-train-op) for `/트레이닝`, on party and `trade_pool` members alike. Malformed hints are dropped, never a `400` |
 | `trade_pool` | array | optional, a top-level key beside `party`. The Pokémon the player may trade, see [Trades](#trades). Left out by older apps; a pool that fails validation is ignored and never fails the upload |
 | `remote_ops` | int | optional, top-level. `1` says this app applies [remote ops](#remote-ops). Without it the fields below are ignored, and Slack commands that queue ops ask the player to update the app |
 | `applied_op_id` | int | optional, top-level, with `remote_ops`. The highest op id this app has applied or cancelled; `0` or missing for none |
@@ -434,6 +434,7 @@ lineup cancels with `no_item` unless the bag has another copy.
 | `gold_cap` | | one `goldBottleCap` | every IV to 31 |
 | `form` | `form`, `to_pokemon_id` | nothing (`form_tool` must be in the bag; it is not used up) | `pokemon_id`, `form`, `ability`; chosen moves reset |
 | `moves` | `moves`, `machine`, `egg` | nothing | the chosen moves; empty means the level's defaults |
+| `evolve` | `item` (`linkingCord`), `to_pokemon_id`, `to_name` | one `item` from the bag | `pokemon_id`; chosen moves reset; the held item goes when the step uses it. `ability` stays |
 
 `price` is the shop line price the player saw, or null when the bag had the item. Mint and Mirror Herb come from the
 bag first, as in the app; only when the bag has none are they bought at the `shop` line price. Everything else needs
@@ -454,13 +455,16 @@ To check an action the way the app will, members carry these hints:
 | `form` | its current form (`incarnate`) |
 | `own_ability` | its own ability, which a form without a fixed one uses |
 | `forms` | up to 8 `{"form", "pokemon_id", "ability"}`; `ability` is the form's fixed ability, null for its own. A form with a fixed ability takes no Capsule or Patch |
+| `evolution` | `{"item", "pokemon_id", "held_item"?}`: an evolution the player can start by hand now, as in the Box detail. `item` is the inventory key it spends, `pokemon_id` the evolved form, `held_item` the held-item slug the step uses up. Sent whether or not the bag has the item, so a `/상점` buy counts. Left out for the raised Pokémon, one in a trade or holding an Everstone, and by apps before it |
 
 The Capsule's target is the other regular ability of the current `pokemon_id`; the Patch's is the hidden one, or the
 lowest regular slot from the hidden one. The app applies all of it or nothing, through its own training on its
 current state, and cancels with one of: `gone`, `evolved`, `trade_locked`, `no_item`, `no_tokens`, `price_changed`,
 `unchanged` (it already has that), `not_applicable` (the action no longer fits, such as another ability target),
-`no_machine`, `no_herb`, `no_data` (the app could not load the ability list), `invalid`. Ops apply in id order, so a
-Mint bought with `/상점` and then used by `/트레이닝` applies both.
+`no_machine`, `no_herb`, `no_data` (the app could not load the ability list or the evolution line), `invalid`, and
+for `evolve`: `wrong_target` (its line has no such step), `not_ready` (the held item or partner the step needs is
+gone), `everstone`. Ops apply in id order, so a Mint or Linking Cord bought with `/상점` and then used by `/트레이닝`
+applies both. An `evolve` op applies at most once: the app records its result before the next sync can read it.
 
 ## Gyms (PvE)
 

@@ -15,8 +15,8 @@ from ypoke.lineup_editor import (
 )
 from ypoke.remote_ops import OLD_APP_REFUSAL, RemoteOps, View
 from ypoke.remote_train import (
-    CAP, CAPSULE, FORM, GOLD_CAP, HERB, ITEM_KEYS, MAX_IV, MOVES, NATURE, NO_TOKENS, PATCH, REASONS, STAT_NAMES, STATS,
-    TRAIN, describe, form_ability, item_count, owned, shop_price, train,
+    CAP, CAPSULE, EVOLVE, EVOLVE_ITEMS, FORM, GOLD_CAP, HERB, ITEM_KEYS, MAX_IV, MOVES, NATURE, NO_TOKENS, PATCH, REASONS,
+    STAT_NAMES, STATS, TRAIN, describe, form_ability, item_count, owned, shop_price, train,
 )
 from ypoke.remote_views import RemoteViews, Screen, ability_name, sync_line, text_screen
 from ypoke.trades import NATURE_NAMES_KO, OPTION_TEXT_LIMIT, PICKER_LIMIT, option_labels
@@ -32,6 +32,7 @@ CAPSULE_ACTION = "train_capsule"
 PATCH_ACTION = "train_patch"
 HERB_ACTION = "train_herb"
 FORM_ACTION = "train_form"
+EVOLVE_ACTION = "train_evolve"
 MOVES_ACTION = "train_moves"
 SET_MOVES_ACTION = "train_set_moves"
 DEFAULT_MOVES_ACTION = "train_default_moves"
@@ -40,7 +41,7 @@ PICK_PROMPT = "트레이닝할 포켓몬을 고르세요. 파티와 박스(교�
 NONE_OWNED = "트레이닝할 포켓몬이 없어요. 회사에서 앱을 한 번 켜 주세요."
 NO_MATCH = "'{query}'에 맞는 포켓몬이 없어요."
 SYNC_NOTE = "트레이닝은 동료의 `/대결`에 바로 쓰이고, 앱은 다음에 회사에서 동기화할 때 같은 값으로 적용해요."
-SHOP_NOTE = "특성캡슐·특성패치·병뚜껑·폼 도구는 가방에 있어야 써요. 없으면 `/상점`에서 사 주세요."
+SHOP_NOTE = "특성캡슐·특성패치·병뚜껑·폼 도구·연결의끈은 가방에 있어야 써요. 없으면 `/상점`에서 사 주세요."
 MOVES_NOTE = "기술머신 기술은 가방에 있는 기술머신만, 알 기술은 흉내허브를 쓴 포켓몬만 나와요."
 STALE = "그새 포켓몬이 바뀌었어요. `/트레이닝`을 다시 열어 주세요."
 MOVES_UNAVAILABLE = "기술 목록을 불러오지 못했어요. 잠시 뒤 다시 해 주세요."
@@ -173,7 +174,7 @@ class TrainingEditor:
         first = [control for control in (_nature_select(view, member), _cap_select(view, member),
                                          _gold_cap_button(view, member)) if control]
         second = [control for control in (*self._ability_buttons(view, member), _herb_button(view, member),
-                                          _form_select(view, member)) if control]
+                                          _form_select(view, member), self._evolve_button(view, member)) if control]
         third = [_button("기술 바꾸기", member["id"], MOVES_ACTION), _button("다른 포켓몬", member["id"], BACK_ACTION)]
         blocks = [_section("\n".join(lines))]
         blocks += [{"type": "actions", "block_id": f"{member['id']}#{index}", "elements": elements}
@@ -189,6 +190,23 @@ class TrainingEditor:
             buttons.append(_button(f"{word} → {ability_name(target['name'])} (가방 ×{count})", member["id"], action_id)
                            if target else None)
         return buttons
+
+    def _evolve_button(self, view: View, member: dict) -> dict | None:
+        """Shown when the app offered the evolution and the replayed bag still has the item."""
+        payload = self._evolve_payload(member)
+        if payload is None or train(view, payload)[1]:
+            return None
+        item = payload["item"]
+        text = f"{EVOLVE_ITEMS[item]}으로 진화 → {payload['to_name']} (가방 ×{item_count(view, item)})"
+        return _button(text, member["id"], EVOLVE_ACTION)
+
+    def _evolve_payload(self, member: dict) -> dict | None:
+        evolution = member.get("evolution")
+        if not evolution or evolution.get("item") not in EVOLVE_ITEMS:
+            return None
+        return {"id": member["id"], "pokemon_id": member["pokemon_id"], "name": self._name(member), "action": EVOLVE,
+                "item": evolution["item"], "to_pokemon_id": evolution["pokemon_id"],
+                "to_name": self._species_name(evolution["pokemon_id"])}
 
     def _ability_target(self, member: dict, action: str) -> dict | None:
         """The ability the app's Capsule or Patch would give, from the abilities of the member's current form."""
@@ -232,6 +250,8 @@ class TrainingEditor:
                 return None
             return base | {"action": FORM, "form": choice, "to_pokemon_id": form["pokemon_id"],
                            "form_name": FORM_NAMES.get(choice, choice)}
+        if action_id == EVOLVE_ACTION:
+            return self._evolve_payload(member)
         if action_id in (SET_MOVES_ACTION, DEFAULT_MOVES_ACTION):
             picked = selected if action_id == SET_MOVES_ACTION else []
             learnable = self._learnable(view, member) if picked else []
@@ -357,10 +377,11 @@ def _wallet_line(view: View) -> str:
 
 
 def _stock_line(view: View) -> str:
-    stock = [f"{word} ×{item_count(view, ITEM_KEYS[action])}"
-             for action, word in ((NATURE, "민트"), (CAPSULE, "특성캡슐"), (PATCH, "특성패치"), (CAP, "은색병뚜껑"),
-                                  (GOLD_CAP, "금색병뚜껑"), (HERB, "흉내허브"))
-             if item_count(view, ITEM_KEYS[action])]
+    words = [(ITEM_KEYS[action], word) for action, word in (
+        (NATURE, "민트"), (CAPSULE, "특성캡슐"), (PATCH, "특성패치"), (CAP, "은색병뚜껑"), (GOLD_CAP, "금색병뚜껑"),
+        (HERB, "흉내허브"))]
+    stock = [f"{word} ×{item_count(view, key)}" for key, word in [*words, *EVOLVE_ITEMS.items()]
+             if item_count(view, key)]
     return f"가방: {' · '.join(stock)}" if stock else "가방에 트레이닝 도구가 없어요."
 
 
