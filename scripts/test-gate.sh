@@ -24,7 +24,7 @@ LOGIC_CORE=(
   "Sources/PokeTokenBar/Core/PokemonForm.swift"
   "Sources/PokeTokenBar/Core/CollectionWeight.swift"
   "Sources/PokeTokenBar/Core/KoreanParticle.swift"
-  "Sources/PokeTokenBar/Core/CompanionStore.swift"
+  Sources/PokeTokenBar/Core/CompanionStore*.swift
   "Sources/PokeTokenBar/Core/PokedexRegion.swift"
   "Sources/PokeTokenBar/Core/PokemonProfile.swift"
   "Sources/PokeTokenBar/Core/PokemonNameLocalization.swift"
