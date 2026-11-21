@@ -354,7 +354,12 @@ final class BoxTests: XCTestCase {
     func testNoCatchLogViewOrNavigationRemains() throws {
         let nav = try sourceFile("Sources/PokeTokenBar/UI/PopoverView.swift")
         let view = try sourceFile("Sources/PokeTokenBar/UI/CompanionView.swift")
-        let store = try sourceFile("Sources/PokeTokenBar/Core/CompanionStore.swift")
+        let core = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Sources/PokeTokenBar/Core")
+        let storeFiles = try FileManager.default.contentsOfDirectory(atPath: core.path)
+            .filter { $0.hasPrefix("CompanionStore") && $0.hasSuffix(".swift") }
+        XCTAssertGreaterThan(storeFiles.count, 1)
+        let store = try storeFiles.map { try sourceFile("Sources/PokeTokenBar/Core/\($0)") }.joined(separator: "\n")
         for (name, source) in [("PopoverView", nav), ("CompanionView", view), ("CompanionStore", store)] {
             for forbidden in ["showingCollectionLog", "CatchLog", "DexEntryRow", "filteredDexEntries"] {
                 XCTAssertFalse(source.contains(forbidden), "\(name) still mentions \(forbidden)")
