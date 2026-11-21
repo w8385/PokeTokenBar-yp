@@ -7,7 +7,9 @@ Mist, Lucky Chant and the entry hazards. Abilities, items, move effects and acti
 in `ypoke.effects`, which this turn loop calls at the hook points of `effects.hooks.HOOKS`.
 The next member comes in when one faints; the only other switch is a pivot move's. The first member of a side
 holding its Mega Stone Mega Evolves at the start of its first turn, after its entry ability has acted; a Primal orb
-reverts its holder as it enters."""
+reverts its holder as it enters.
+This module is the turn loop; the events it logs live in `battle_events` and each Pokémon's state in `fighter`, and
+both are importable from here too."""
 
 import math
 import random
@@ -17,7 +19,18 @@ from dataclasses import dataclass, field, replace
 from typing import NamedTuple
 
 from ypoke import abilities, items, move_power, tera_forms
+from ypoke.battle_events import (
+    AbilityAct, AbilityEntry, AbilityField, AbilityRetype, AbilityTransform, AbilityTrigger, Action, BattleResult,
+    Change, Event, FieldEnd, FieldStart, FormShift, HazardDamage, HazardHit, ItemEffect, ItemHeal, MegaEvolution,
+    SendOut, StatusDamage, TerrainHeal, TrickRoomEnd, VolatileEnd, VolatileTick, WeatherDamage, WeatherEnd, YawnSleep,
+)
 from ypoke.effects import hooks
+from ypoke.fighter import (
+    _NATURE_NAMES, _NATURE_ORDER, BATTLE_STATS, BURN_DAMAGE_FRACTION, CARRIED_STATUSES, MULTI_HIT_ODDS,
+    NATURE_MODIFIERS, POISON_DAMAGE_FRACTION, RESIDUAL_FRACTIONS, SLEEP_TURNS, STAGES, STATUS_EFFECTS, STRONG_WINDS,
+    TOXIC_DAMAGE_FRACTION, WEATHER_MOVE_BOOST, BaseStats, Carry, Combatant, Hurt, MegaForm, Move, _announce, _append,
+    _Arena, _carry_of, _field, _Fighter, _other_stat, _sheltered, _stats_of, _take_form, _Team, _Weather,
+)
 from ypoke.move_effects import CHOSEN_DAMAGE_EFFECTS, FLAGS, POWERLESS_ATTACKS, PUNCH_MOVES, STATUS_MOVES
 from ypoke.type_chart import effectiveness
 
@@ -26,25 +39,15 @@ CRITICAL_MULTIPLIER = 1.5
 DAMAGE_DIVISOR = 50
 LOWEST_ROLL = 0.85
 CRITICAL_CHANCES = (1 / 24, 1 / 8, 1 / 2, 1.0)
-BURN_DAMAGE_FRACTION = 16
-POISON_DAMAGE_FRACTION = 8
-TOXIC_DAMAGE_FRACTION = 16
 FULL_PARALYSIS_CHANCE = 0.25
 STRUGGLE_RECOIL_FRACTION = 4
 MAX_STAGE = 6
 TURN_LIMIT = 300
 BATTLE_LEVEL = 50
-BATTLE_STATS = ("attack", "defense", "special_attack", "special_defense", "speed")
-STAGES = (*BATTLE_STATS, "accuracy", "evasion")
 WEATHER_TURNS = 5
-STRONG_WINDS = "strong-winds"
 # Under Desolate Land's sun or Primordial Sea's rain, damaging moves of this type fail; Air Lock lifts it.
 PRIMAL_DOUSED = {"sun": "water", "rain": "fire"}
 WEATHER_CHIP_FRACTION = 16
-WEATHER_MOVE_BOOST = {
-    "sun": {"fire": 1.5, "water": 0.5},
-    "rain": {"water": 1.5, "fire": 0.5},
-}
 WEATHER_CHIP_IMMUNE_TYPES = {"sandstorm": {"rock", "ground", "steel"}, "hail": {"ice"}}
 SPECIAL_DEFENSE_BOOSTED_TYPE = {"sandstorm": "rock"}
 DEFENSE_BOOSTED_TYPE = {"snow": "ice"}
@@ -54,452 +57,18 @@ WEATHER_CHIP_SWING = 1.5
 FREEZE_THAW_CHANCE = 0.2
 CONFUSION_SELF_HIT_CHANCE = 1 / 3
 CONFUSION_SELF_HIT_POWER = 40
-SLEEP_TURNS = (1, 3)
 CONFUSION_TURNS = (2, 5)
-MULTI_HIT_ODDS = {2: 35, 3: 35, 4: 15, 5: 15}
 AILMENT_IMMUNE_TYPES = {
     "burn": ("fire",), "paralysis": ("electric",), "poison": ("poison", "steel"), "toxic": ("poison", "steel"),
     "freeze": ("ice",), "sleep": (), "confusion": (),
 }
-RESIDUAL_FRACTIONS = {"burn": BURN_DAMAGE_FRACTION, "poison": POISON_DAMAGE_FRACTION}
 TRICK_ROOM_TURNS = 5
 STEALTH_ROCK_FRACTION = 8
-STATUS_EFFECTS = tuple(dict.fromkeys(STATUS_MOVES.values()))
 SWORDS_DANCE_STAGES = 2
 END_OF_TURN = ("cures", "status", "weather", "terrain", "items", "abilities", "volatiles", "yawn", "sides", "trick-room",
                "rooms", "field", "winds", "replace")
-_NATURE_ORDER = ("attack", "defense", "speed", "special_attack", "special_defense")
-_NATURE_NAMES = (
-    "hardy lonely brave adamant naughty bold docile relaxed impish lax timid hasty serious jolly naive "
-    "modest mild quiet bashful rash calm gentle sassy careful quirky"
-).split()
-NATURE_MODIFIERS = {
-    name: (_NATURE_ORDER[index // 5], _NATURE_ORDER[index % 5]) for index, name in enumerate(_NATURE_NAMES)
-    if index // 5 != index % 5
-}
-
-
-@dataclass(frozen=True)
-class BaseStats:
-    hp: int
-    attack: int
-    defense: int
-    special_attack: int
-    special_defense: int
-    speed: int
-
-
-@dataclass(frozen=True)
-class Move:
-    name: str
-    type: str | None
-    power: int
-    physical: bool
-    accuracy: int | None = None
-    pp: int = 20
-    crit_stage: int = 0
-    ailment: str | None = None
-    ailment_chance: int = 0
-    stat_changes: tuple[tuple[str, int], ...] = ()
-    stat_on_user: bool = False
-    stat_chance: int = 0
-    priority: int = 0
-    weather: str | None = None
-    always_hits_in: tuple[str, ...] = ()
-    drain: int = 0
-    min_hits: int = 1
-    max_hits: int = 1
-    effect: str | None = None
-    id: int = 0
-
-    @property
-    def expected_hits(self) -> float:
-        if (self.min_hits, self.max_hits) == (2, 5):
-            return sum(hits * odds for hits, odds in MULTI_HIT_ODDS.items()) / 100
-        return (self.min_hits + self.max_hits) / 2
-
-    @property
-    def damaging(self) -> bool:
-        """An attack, counting one whose effect sets its power or damage (Low Kick, Seismic Toss)."""
-        return (bool(self.power or self.id in POWERLESS_ATTACKS) and not self.weather
-                and self.effect not in STATUS_EFFECTS)
-
-    def flagged(self, flag: str) -> bool:
-        """A `data/battle/moves.json` flag of the move ("contact", "sound", "punch")."""
-        return flag in FLAGS.get(self.id, ())
-
-
 STRUGGLE = Move("발버둥", None, 50, physical=True, id=165)
 CONFUSION_HIT = Move("혼란", None, CONFUSION_SELF_HIT_POWER, physical=True)
-
-
-@dataclass(frozen=True)
-class MegaForm:
-    """What a Mega Evolution or an ability's form change (`Combatant.forms`, by `kind`) swaps in. `ability` is the
-    narrated name, `ability_id` the PokéAPI slug that replaces the Pokémon's ability (one the battle does not know does
-    nothing; None keeps the old one)."""
-
-    types: tuple[str, ...]
-    base: BaseStats
-    ability: str | None = None
-    ability_id: str | None = None
-    form_id: int | None = None
-    kind: str = "mega"
-
-
-@dataclass(frozen=True)
-class Combatant:
-    name: str
-    level: int
-    types: tuple[str, ...]
-    base: BaseStats
-    ivs: BaseStats
-    shiny: bool = False
-    moves: tuple[Move, ...] = ()
-    rental: bool = False
-    nature: str | None = None
-    ability: str | None = None
-    item: str | None = None
-    mega: MegaForm | None = None
-    pokemon_id: int | None = None
-    can_evolve: bool = False
-    tera: bool = False
-    weight: int = field(default=0, repr=False)
-    forms: tuple[MegaForm, ...] = field(default=(), repr=False)
-
-    @property
-    def label(self) -> str:
-        return f"{self.name}{'✨' if self.shiny else ''} Lv{self.level}"
-
-
-@dataclass(frozen=True)
-class Change:
-    """An effect that landed: a status (`AILMENT_IMMUNE_TYPES` key), "thaw", or a `BATTLE_STATS` key with `stages`."""
-
-    side: int
-    pokemon: str
-    kind: str
-    stages: int = 0
-
-
-@dataclass(frozen=True)
-class Action:
-    """One Pokémon's turn. `move` is "" when it could not act; `blocked` says why ("paralysis", "sleep", "freeze",
-    "gravity" or "confusion", the last one meaning it hurt itself). A used move a state stopped keeps its `move`,
-    with `failed` and the state in `blocked` ("psychic-terrain"). `attacker_hp` / `defender_hp` are HP shares after it.
-    `recovered` lists what ended before it acted ("sleep", "freeze", "confusion"). `hits` counts a multi-hit
-    move's hits; `drained` means the user healed from the damage. `attacker_item` / `defender_item` name the
-    held item that triggered on that side during this action (Life Orb recoil, Focus Sash). `effect` is what an
-    effect move did (its effect key, or "trick-room-off"); `pivoted` means the user switched out. `via` names the
-    move that called `move` (Metronome), and `move_id` is always the slot the user picked."""
-
-    turn: int
-    side: int
-    attacker: str
-    defender: str
-    move: str
-    missed: bool = False
-    multiplier: float = 1.0
-    critical: bool = False
-    changes: tuple[Change, ...] = ()
-    recoil: bool = False
-    defender_hp: int = 100
-    knockout: bool = False
-    attacker_fainted: bool = False
-    weather: str | None = None
-    failed: bool = False
-    blocked: str = ""
-    recovered: tuple[str, ...] = ()
-    hits: int = 1
-    drained: bool = False
-    attacker_hp: int = 100
-    ability: str | None = None
-    attacker_item: str = ""
-    defender_item: str = ""
-    effect: str = ""
-    pivoted: bool = False
-    move_id: int = 0
-    via: str = ""
-    cleared_by: str = ""
-
-
-@dataclass(frozen=True)
-class AbilityTrigger:
-    """An ability that took effect as the Pokémon entered: it lowered the foe's stat (`change`) or started `weather`,
-    which the ability `cleared_by` (Air Lock) of a Pokémon out keeps from acting."""
-
-    side: int
-    pokemon: str
-    ability: str
-    change: Change | None = None
-    weather: str | None = None
-    cleared_by: str = ""
-
-
-@dataclass(frozen=True)
-class AbilityField(AbilityTrigger):
-    """An entry ability that started a `terrain` or `cleared` field and side states (Screen Cleaner)."""
-
-    terrain: str | None = None
-    cleared: tuple[str, ...] = ()
-
-
-@dataclass(frozen=True)
-class AbilityTransform(AbilityTrigger):
-    """Imposter: the Pokémon became the foe `into`. `form_id` is the `/pokemon` id of the form it now shows,
-    `own_form_id` the one it shows again once it leaves."""
-
-    into: str = ""
-    form_id: int | None = None
-    own_form_id: int | None = None
-
-
-@dataclass(frozen=True)
-class AbilityRetype(AbilityTrigger):
-    """Protean, Libero: the Pokémon became the type `into` as it used a move; logged after the move."""
-
-    into: str = ""
-
-
-@dataclass(frozen=True)
-class AbilityEntry(AbilityTrigger):
-    """Any other entry ability: what it did (`effect`, a `narration.ABILITY_EFFECT_TEXT` key, about `detail`) and the
-    `changes` it made."""
-
-    effect: str = ""
-    detail: str = ""
-    changes: tuple[Change, ...] = ()
-
-
-@dataclass(frozen=True)
-class AbilityAct:
-    """An ability acting during a turn: the `changes` it made, the HP share it left its holder (`hp`) or the foe
-    (`foe_hp`) with, or what else it did (`effect`, a `narration.ABILITY_EFFECT_TEXT` key, about `detail`)."""
-
-    turn: int
-    side: int
-    pokemon: str
-    ability: str
-    changes: tuple[Change, ...] = ()
-    hp: int | None = None
-    fainted: bool = False
-    foe: str = ""
-    foe_hp: int | None = None
-    foe_fainted: bool = False
-    effect: str = ""
-    detail: str = ""
-
-
-@dataclass(frozen=True)
-class FieldStart:
-    """An attack that set a hazard on `side` as it hit (Stone Axe, Ceaseless Edge)."""
-
-    turn: int
-    side: int
-    kind: str
-
-
-@dataclass(frozen=True)
-class FieldEnd:
-    """A field or side state that wore off, or that `move` cleared. `side` is -1 for a state of the whole field."""
-
-    turn: int
-    kind: str
-    side: int = -1
-    move: str = ""
-
-
-@dataclass(frozen=True)
-class HazardHit:
-    """An entry hazard other than Stealth Rock acting on an entering Pokémon: Spikes (`hp` is the share left), Toxic
-    Spikes (`change` is the poison; `cleared` means a Poison type absorbed them) or Sticky Web (`change`)."""
-
-    turn: int
-    side: int
-    pokemon: str
-    hazard: str
-    hp: int = 100
-    fainted: bool = False
-    change: Change | None = None
-    cleared: bool = False
-
-
-@dataclass(frozen=True)
-class TerrainHeal:
-    turn: int
-    side: int
-    pokemon: str
-    hp: int
-
-
-@dataclass(frozen=True)
-class StatusDamage:
-    """End-of-turn damage from `kind` ("burn", "poison" or "toxic")."""
-
-    turn: int
-    side: int
-    pokemon: str
-    hp: int
-    fainted: bool
-    kind: str = "burn"
-
-
-@dataclass(frozen=True)
-class WeatherDamage:
-    turn: int
-    side: int
-    pokemon: str
-    hp: int
-    fainted: bool
-    weather: str
-
-
-@dataclass(frozen=True)
-class WeatherEnd:
-    turn: int
-    weather: str
-
-
-@dataclass(frozen=True)
-class TrickRoomEnd:
-    turn: int
-
-
-@dataclass(frozen=True)
-class HazardDamage:
-    """Stealth Rock hurt a Pokémon as it entered; `hp` is the share left."""
-
-    turn: int
-    side: int
-    pokemon: str
-    hp: int
-    fainted: bool
-
-
-@dataclass(frozen=True)
-class YawnSleep:
-    """The Pokémon Yawn made drowsy last turn fell asleep at the end of `turn`."""
-
-    turn: int
-    side: int
-    pokemon: str
-
-
-@dataclass(frozen=True)
-class VolatileTick:
-    """A state on one Pokémon acted at the end of a turn or as a move landed: `kind` is its key, `hp` the share left
-    (Leech Seed, Wish, a Substitute taking a hit: then the doll's), `count` a countdown it showed (Perish Song)."""
-
-    turn: int
-    side: int
-    pokemon: str
-    kind: str
-    hp: int = 100
-    fainted: bool = False
-    count: int | None = None
-
-
-@dataclass(frozen=True)
-class VolatileEnd:
-    """A state on one Pokémon wore off, or broke (a Substitute)."""
-
-    turn: int
-    side: int
-    pokemon: str
-    kind: str
-
-
-@dataclass(frozen=True)
-class SendOut:
-    """A member of `side` comes in during `turn`: after a faint at the end of the turn, or right after a pivot move.
-    `member` is its index in the side's roster (-1: not given)."""
-
-    turn: int
-    side: int
-    pokemon: str
-    member: int = -1
-
-
-@dataclass(frozen=True)
-class ItemHeal:
-    """An item that changed HP at the end of a turn or right after a hit; `hp` is the share left (Black Sludge hurts)."""
-
-    turn: int
-    side: int
-    pokemon: str
-    item: str
-    hp: int
-    fainted: bool = False
-
-
-@dataclass(frozen=True)
-class ItemEffect:
-    """An item that acted without moving HP: `effect` is "cure" (Lum Berry), "restore" (White Herb), "first"
-    (Quick Claw) or the status a Flame or Toxic Orb inflicted ("burn", "toxic"); `changes` are the stat stages it
-    moved (Liechi Berry)."""
-
-    turn: int
-    side: int
-    pokemon: str
-    item: str
-    effect: str
-    changes: tuple[Change, ...] = ()
-
-
-@dataclass(frozen=True)
-class MegaEvolution:
-    turn: int
-    side: int
-    pokemon: str
-    ability: str | None
-    form_id: int | None = None
-    kind: str = "mega"
-
-
-@dataclass(frozen=True)
-class FormShift:
-    """A form taking hold: `kind` is "mask" (Ogerpon's mask glowed, `change` is its +1), "terastal" or "stellar"
-    (Terapagos), an `ITEM_FORMS` kind ("origin", "crowned-sword", "crowned-shield"), a drive or memory slug (Genesect,
-    Silvally; no `form_id`) or an ability's form kind
-    (`abilities.FORMS`; "base" is the form the Pokémon entered in).
-    `form_id` is the `/pokemon` id of the form shown, if it has one."""
-
-    turn: int
-    side: int
-    pokemon: str
-    kind: str
-    form_id: int | None = None
-    change: Change | None = None
-
-
-Event = (
-    Action | AbilityTrigger | StatusDamage | WeatherDamage | WeatherEnd | SendOut | ItemHeal | ItemEffect | MegaEvolution
-    | FormShift | TrickRoomEnd | HazardDamage | YawnSleep | FieldStart | FieldEnd | HazardHit | TerrainHeal
-    | VolatileTick | VolatileEnd | AbilityAct
-)
-
-
-@dataclass(frozen=True)
-class Carry:
-    """What a Pokémon brings into a battle from the previous one of a run: its HP share (1..100) and its status."""
-
-    hp: int
-    status: str | None = None
-
-
-CARRIED_STATUSES = ("burn", "poison", "toxic", "paralysis", "sleep", "freeze")
-
-
-@dataclass
-class BattleResult:
-    """`remaining` is each side's HP share per roster member at the end (None: never sent out).
-    `statuses` is the status each member ended with (None: none, or never sent out)."""
-
-    winner: int
-    turns: int
-    events: list[Event] = field(default_factory=list)
-    remaining: tuple[tuple[int | None, ...], tuple[int | None, ...]] = ((), ())
-    statuses: tuple[tuple[str | None, ...], tuple[str | None, ...]] = ((), ())
 
 
 def simulate(sides: tuple[Combatant | Sequence[Combatant], Combatant | Sequence[Combatant]], seed: int,
@@ -870,336 +439,6 @@ def _mega_evolutions(teams: tuple["_Team", "_Team"], turn: int, weather: "_Weath
     _item_triggers(turn, (teams[0].active, teams[1].active), events)
 
 
-class _Weather:
-    """`kind` is the weather that acts: None while an ability that clears it is out (Air Lock); `current` is the one
-    set, which keeps counting down. `lasting` weather (Desolate Land's) has no countdown and no other weather replaces
-    it; it ends when no Pokémon holding it up is out."""
-
-    def __init__(self, kind: str | None = None, turns_left: int = 0):
-        self.current, self.turns_left = kind, turns_left
-        self.lasting = False
-        self.teams: tuple | None = None
-
-    @property
-    def kind(self) -> str | None:
-        if self.current is not None and self.cleared_by:
-            return None
-        return self.current
-
-    @property
-    def cleared_by(self) -> str:
-        """The ability of the Pokémon out that keeps any weather from acting (Air Lock), or ""."""
-        for team in self.teams or ():
-            if team.active.hp > 0 and hooks.ability(team.active, "clears_weather", default=False):
-                return team.active.ability
-        return ""
-
-    @kind.setter
-    def kind(self, value: str | None) -> None:
-        self.current = value
-
-    @property
-    def held(self) -> bool:
-        """Strong winds and lasting weather have no countdown, and no weather move or common ability replaces them."""
-        return self.current == STRONG_WINDS or self.lasting
-
-
-@dataclass
-class _Arena:
-    """The field. `trick_room`, `gravity` and `terrain_turns` are the turns left; `sides[side]` maps each timed side
-    state (a screen, Tailwind, Safeguard, Mist, Lucky Chant) to its turns left and `hazards[side]` each hazard to
-    its layers, in the order they were set, and `pending[side]` each delayed attack aimed at it (Future Sight) to its
-    turns left, user and move. `rooms` maps each other whole-field state (Magic Room, Wonder Room, Mud
-    Sport) to its turns left. `log` collects the events a move's handlers make mid-action. `teams` are the two sides
-    of a `simulate` run (None outside one); `last_move` is the last move anyone used, in `last_move_turn`."""
-
-    trick_room: int = 0
-    gravity: int = 0
-    terrain: str | None = None
-    terrain_turns: int = 0
-    sides: list[dict[str, int]] = field(default_factory=lambda: [{}, {}])
-    hazards: list[dict[str, int]] = field(default_factory=lambda: [{}, {}])
-    pending: list[dict[str, tuple]] = field(default_factory=lambda: [{}, {}])
-    turn: int = 0
-    log: list = field(default_factory=list)
-    rooms: dict[str, int] = field(default_factory=dict)
-    teams: tuple | None = None
-    last_move: Move | None = None
-    last_move_turn: int = -1
-    weather: _Weather = field(default_factory=_Weather)
-    rng: random.Random = field(default_factory=lambda: random.Random(0), repr=False, compare=False)
-
-    def states(self, side: int) -> tuple[str, ...]:
-        """The effect keys of the states that act on `side`: the terrain, Gravity, the rooms, then that side's timed
-        states, then the delayed attacks aimed at it."""
-        return (*((self.terrain,) if self.terrain else ()), *(("gravity",) if self.gravity else ()), *self.rooms,
-                *self.sides[side], *self.pending[side])
-
-    def foe_of(self, fighter: "_Fighter") -> "_Fighter | None":
-        return self.teams[1 - fighter.side].active if self.teams else None
-
-
-class _Team:
-    """A roster fought in order: `active` is the member in the field, entered fresh when its turn comes.
-    `queue` holds the members still to come in, in order; a pivoting member goes back to the end of its group
-    (the members before `finale`, or the finale). The member at `finale` gets its own Mega Evolution slot, whether
-    or not one before it used the team's."""
-
-    def __init__(self, roster: tuple[Combatant, ...], carried: Sequence[Carry | None] = (), finale: int | None = None,
-                 unlimited_megas: bool = False, arena: _Arena | None = None, side: int = 0):
-        self.roster = roster
-        self.carried = tuple(carried) + (None,) * (len(roster) - len(carried))
-        self.arena, self.side = arena, side
-        self.fighters: dict[int, _Fighter] = {}
-        self.place(0, _Fighter.enter(roster[0], self.carried[0]))
-        self.current = 0
-        self.queue = list(range(1, len(roster)))
-        self.mega_used = False
-        self.unlimited_megas = unlimited_megas
-        self.finale = finale
-        self.used: set[str] = set()
-        self.fallen_before = 0
-
-    @property
-    def active(self) -> "_Fighter":
-        return self.fighters[self.current]
-
-    def place(self, index: int, fighter: "_Fighter") -> None:
-        """Puts `fighter` in roster slot `index`, under this side's field states."""
-        fighter.arena, fighter.side = self.arena, self.side
-        self.fighters[index] = fighter
-
-    def start_turn(self) -> None:
-        """Clears the active member's this-turn state and tells it how many teammates have fainted so far and
-        whether one fainted during the last turn."""
-        fallen = sum(fighter.hp == 0 for fighter in self.fighters.values())
-        fighter = self.active
-        fighter.acted = fighter.hit_by_foe = fighter.lowered = False
-        fighter.hurt = None
-        fighter.turn_stages = dict(fighter.stages)
-        fighter.flopped_last, fighter.flopped = fighter.flopped, False
-        fighter.fallen_allies = fallen
-        fighter.ally_fell_last_turn = fallen > self.fallen_before
-        self.fallen_before = fallen
-
-    @property
-    def has_next(self) -> bool:
-        return bool(self.queue)
-
-    def send_next(self, member: int | None = None) -> bool:
-        """Brings in `member` (default: the next in the queue). True when it had been out before."""
-        index = self.queue[0] if member is None else member
-        self.queue.remove(index)
-        self.current = index
-        if index in self.fighters:
-            return True
-        if index == self.finale:
-            self.mega_used = False
-        self.place(index, _Fighter.enter(self.roster[index], self.carried[index]))
-        return False
-
-    def pivot_target(self) -> int | None:
-        return next((index for index in self.queue if self._group(index) == self._group(self.current)), None)
-
-    def bench_active(self) -> None:
-        """The active member leaves the field healthy: back of its group's queue, volatile state cleared, after its
-        ability acts on the way out (Regenerator)."""
-        _announce(self.active, hooks.ability(self.active, "on_switch_out", self.active, self.side))
-        self.active.leave()
-        group = self._group(self.current)
-        at = next((position for position, index in enumerate(self.queue) if self._group(index) > group), len(self.queue))
-        self.queue.insert(at, self.current)
-
-    def _group(self, index: int) -> int:
-        return int(self.finale is not None and index >= self.finale)
-
-    def shares(self) -> tuple[int | None, ...]:
-        return tuple(self.fighters[index].hp_percent if index in self.fighters else None
-                     for index in range(len(self.roster)))
-
-    def statuses(self) -> tuple[str | None, ...]:
-        return tuple(self.fighters[index].status if index in self.fighters else None
-                     for index in range(len(self.roster)))
-
-    def standing(self) -> tuple[int, float]:
-        """Members not yet fainted, then the sum of their HP shares; an unentered member counts at its carried HP."""
-        waiting = [carry.hp / 100 if carry else 1.0
-                   for index, carry in enumerate(self.carried) if index not in self.fighters]
-        alive = [fighter for fighter in self.fighters.values() if fighter.hp > 0]
-        return len(waiting) + len(alive), sum(waiting) + sum(fighter.hp / fighter.max_hp for fighter in alive)
-
-
-class Hurt(NamedTuple):
-    """The foe's hits that struck a Pokémon this turn: their category, damage and whether they made contact."""
-
-    physical: bool
-    dealt: int
-    contact: bool
-
-
-@dataclass
-class _Fighter:
-    combatant: Combatant
-    max_hp: int
-    hp: int
-    stats: dict[str, int]
-    pp: list[int]
-    stages: dict[str, int] = field(default_factory=lambda: dict.fromkeys(STAGES, 0))
-    status: str | None = None
-    sleep_left: int = 0
-    toxic_ticks: int = 0
-    confusion_left: int = 0
-    item: str | None = None
-    locked: int | None = None
-    drowsy_at: int = 0
-    fresh: bool = True
-    danced: bool = False
-    acted: bool = False
-    hit_by_foe: bool = False
-    hurt: Hurt | None = None
-    lowered: bool = False
-    turn_stages: dict[str, int] | None = None
-    flopped: bool = False
-    flopped_last: bool = False
-    times_hit: int = 0
-    fallen_allies: int = 0
-    ally_fell_last_turn: bool = False
-    item_lost: bool = False
-    ate_berry: bool = False
-    ability_ignored: bool = False
-    volatiles: dict[str, object] = field(default_factory=dict)
-    memory: dict[str, object] = field(default_factory=dict)
-    entered_as: Combatant | None = None
-    entered_stats: dict[str, int] | None = None
-    entered_pp: list[int] | None = None
-    form_id: int | None = None
-    last_used: int | None = None
-    choice: int | None = None
-    entered_turn: int = 0
-    berry: str | None = None
-    primed: str | None = None
-    once: set[str] = field(default_factory=set)
-    arena: _Arena | None = field(default=None, repr=False, compare=False)
-    side: int = field(default=0, repr=False, compare=False)
-
-    def leave(self) -> None:
-        """Switching out clears stat stages, the Choice lock, confusion, the toxic count, drowsiness, its own states
-        (`volatiles`, `memory`), a changed type, ability, stat or moveset and what this and the last turn did to it;
-        the times it was hit stay."""
-        self.stages = dict.fromkeys(STAGES, 0)
-        self.volatiles, self.memory, self.last_used, self.primed = {}, {}, None, None
-        if self.entered_as is not None:
-            self.combatant, self.entered_as = self.entered_as, None
-        if self.entered_stats is not None:
-            self.stats, self.entered_stats = self.entered_stats, None
-        if self.entered_pp is not None:
-            self.pp, self.entered_pp = self.entered_pp, None
-        self.locked = None
-        self.confusion_left = self.toxic_ticks = self.drowsy_at = 0
-        self.fresh = True
-        self.danced = False
-        self.acted = self.hit_by_foe = self.lowered = self.flopped = self.flopped_last = False
-
-    @classmethod
-    def enter(cls, combatant: Combatant, carry: Carry | None = None) -> "_Fighter":
-        max_hp, stats = _stats_of(combatant)
-        fighter = cls(combatant, max_hp, max_hp, stats, [move.pp for move in combatant.moves], item=items.known(combatant.item))
-        if carry is not None:
-            fighter.hp = max(1, min(max_hp, round(max_hp * carry.hp / 100)))
-            fighter.status = carry.status
-            fighter.sleep_left = SLEEP_TURNS[0] if carry.status == "sleep" else 0
-        return fighter
-
-    @property
-    def hp_percent(self) -> int:
-        return 0 if self.hp <= 0 else max(1, round(self.hp * 100 / self.max_hp))
-
-    @property
-    def ability(self) -> str | None:
-        """None while a move ignores its breakable ability (Mold Breaker) or the foe's Neutralizing Gas is out, unless
-        its item shields the ability (Ability Shield)."""
-        ability = self.combatant.ability
-        if hooks.call("items", self.item, "shields_ability", default=False):
-            return ability
-        if self.ability_ignored and ability in abilities.BREAKABLE:
-            return None
-        foe = self.arena.foe_of(self) if self.arena is not None else None
-        if foe is not None and foe is not self and foe.hp > 0 and ability not in abilities.UNSUPPRESSED and hooks.call(
-                "abilities", foe.combatant.ability, "suppresses_abilities", default=False):
-            return None
-        return ability
-
-    def residual_damage(self) -> int:
-        due = self.residual_due()
-        if self.status == "toxic":
-            self.toxic_ticks += 1
-        return due
-
-    def residual_due(self) -> int:
-        """The HP its burn or poison takes at the next end of turn; 0 without one."""
-        if self.status == "toxic":
-            return max(1, self.max_hp * (self.toxic_ticks + 1) // TOXIC_DAMAGE_FRACTION)
-        return max(1, self.max_hp // RESIDUAL_FRACTIONS[self.status]) if self.status in RESIDUAL_FRACTIONS else 0
-
-    def stat(self, key: str, weather: str | None = None, staged: bool = True) -> float:
-        weather = _sheltered(self, weather)
-        stage = self.stages[key] if staged else 0
-        context = (key, weather, self.status is not None, self.combatant.can_evolve, self)
-        multiplier = hooks.item(self, "modify_stat", *context, default=1.0)
-        raw = self.stats[next(iter(_field(self, "swaps_stat", key)), key)]
-        value = raw * ((2 + stage) / 2 if stage >= 0 else 2 / (2 - stage)) * multiplier
-        if key == "speed" and self.status == "paralysis":
-            value /= 2
-        terrain = self.arena.terrain if self.arena is not None else None
-        foe = self.arena.foe_of(self) if self.arena is not None else None
-        ruined = foe is not None and foe is not self and foe.hp > 0
-        return (value * hooks.ability(self, "modify_stat", key, weather, self, default=1.0)
-                * hooks.ability(self, "field_stat", key, weather, terrain, default=1.0)
-                * math.prod(_field(self, "side_stat", key))
-                * (hooks.ability(foe, "modify_foe_stat", key, self, default=1.0) if ruined else 1.0))
-
-
-def _take_form(fighter: _Fighter, form: MegaForm | None, lasting: bool = False) -> FormShift:
-    """The fighter takes the form's types and base stats, or (None) the ones it entered with. A `lasting` form stays
-    once it leaves (Power Construct); any other ends then. A higher max HP raises its HP by the difference."""
-    entered = fighter.entered_as or fighter.combatant
-    if form is None:
-        form = MegaForm(entered.types, entered.base, form_id=entered.pokemon_id, kind="base")
-    if lasting:
-        fighter.combatant = replace(fighter.combatant, types=form.types, base=form.base)
-        if fighter.entered_as is not None:
-            fighter.entered_as = replace(fighter.entered_as, types=form.types, base=form.base)
-    else:
-        fighter.entered_as = entered
-        fighter.combatant = replace(fighter.combatant, types=form.types, base=form.base)
-        fighter.entered_stats = fighter.entered_stats or dict(fighter.stats)
-    max_hp, fighter.stats = _stats_of(fighter.combatant)
-    if lasting and fighter.entered_stats is not None:
-        fighter.entered_stats = dict(fighter.stats)
-    fighter.hp, fighter.max_hp = fighter.hp + max(0, max_hp - fighter.max_hp), max_hp
-    turn = fighter.arena.turn if fighter.arena is not None else 0
-    return FormShift(turn, fighter.side, fighter.combatant.name, form.kind, form.form_id)
-
-
-def _stats_of(combatant: Combatant) -> tuple[int, dict[str, int]]:
-    """The max HP and the other stats before stages."""
-    base, ivs, level = combatant.base, combatant.ivs, combatant.level
-    max_hp = 1 if base.hp == 1 else (2 * base.hp + ivs.hp) * level // 100 + level + 10
-    stats = {key: _other_stat(getattr(base, key), getattr(ivs, key), level) for key in BATTLE_STATS}
-    if combatant.nature in NATURE_MODIFIERS:
-        up, down = NATURE_MODIFIERS[combatant.nature]
-        stats[up] = stats[up] * 110 // 100
-        stats[down] = stats[down] * 90 // 100
-    return max_hp, stats
-
-
-def _carry_of(fighter: _Fighter) -> Carry | None:
-    """None for a fighter at full health with no status, so an ordinary entry stays exact."""
-    if fighter.hp == fighter.max_hp and fighter.status is None:
-        return None
-    return Carry(fighter.hp_percent, fighter.status)
-
-
 def _enter_battle(fighters: tuple[_Fighter, _Fighter], weather: _Weather, rng: random.Random,
                   entering: tuple[int, ...] = (0, 1)) -> list[AbilityTrigger]:
     """Entry abilities of the `entering` sides fire faster Pokémon first, so the slower weather setter's weather stays."""
@@ -1329,13 +568,6 @@ def _item_triggers(turn: int, fighters: tuple[_Fighter, _Fighter], events: list[
         if fighter.hp > 0:
             _append(events, hooks.ability(fighter, "on_update", fighter, side, turn))
             _append(events, hooks.item(fighter, "on_update", fighter, side, turn))
-
-
-def _append(events: list[Event], event: Event | tuple[Event, ...] | None) -> None:
-    if isinstance(event, tuple):
-        events.extend(event)
-    elif event is not None:
-        events.append(event)
 
 
 def _weather_chip(fighter: _Fighter, weather: str | None) -> int:
@@ -1662,12 +894,6 @@ class Hit:
         return makes_contact(self.user, self.move)
 
 
-def _announce(fighter: "_Fighter", event) -> None:
-    """Logs what an ability did mid-action, shown after the action."""
-    if event is not None and fighter.arena is not None:
-        _append(fighter.arena.log, event)
-
-
 def use_berry(fighter: "_Fighter") -> None:
     """The fighter uses up the berry it holds, and its ability may answer (Cheek Pouch)."""
     berry = fighter.item
@@ -1700,11 +926,6 @@ def _crash(attacker: _Fighter, move: Move) -> tuple[Change, ...]:
 def _weather_of(fighter: "_Fighter") -> str | None:
     """The weather as it acts on the fighter's ability."""
     return _sheltered(fighter, fighter.arena.weather.kind if fighter.arena is not None else None)
-
-
-def _sheltered(fighter: "_Fighter", weather: str | None) -> str | None:
-    """The weather as it acts on `fighter`: its item may keep sun and rain off it (Utility Umbrella)."""
-    return None if weather in WEATHER_MOVE_BOOST and hooks.item(fighter, "shelters", default=False) else weather
 
 
 def _weight(fighter: "_Fighter") -> float:
@@ -2263,14 +1484,6 @@ def _multiplier(move: Move, defender: _Fighter, weather: str | None = None) -> f
     return hooks.ability(defender, "caps_effectiveness", multiplier, defender, default=multiplier)
 
 
-def _field(fighter: _Fighter, hook: str, *args) -> list:
-    """The answers of the field and side states acting on `fighter`'s side, then of its own states (`volatiles`),
-    that run `hook`, None left out."""
-    arena = fighter.arena
-    states = (*(arena.states(fighter.side) if arena is not None else ()), *fighter.volatiles)
-    return [answer for state in states if (answer := hooks.key("moves", state, hook, *args)) is not None]
-
-
 def _grounded(fighter: _Fighter) -> bool:
     """A Flying type, an airborne ability (Levitate) or a lifting state (Magnet Rise) floats unless a state or its item
     grounds it (Gravity, Ingrain, Iron Ball)."""
@@ -2386,5 +1599,3 @@ def _ignores_stages(move: Move) -> bool:
     return hooks.move(move, "ignores_stages", default=False)
 
 
-def _other_stat(base: int, iv: int, level: int) -> int:
-    return (2 * base + iv) * level // 100 + 5
