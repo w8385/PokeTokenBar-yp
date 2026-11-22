@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 from attacks import attack
+from tools import generate_battle_data
 
 from ypoke import battle, battle_data
 from ypoke.battle import BaseStats, Combatant, MegaForm, _Arena, _Team
@@ -57,6 +58,11 @@ def test_one_move_leaves_what_showdown_leaves(record):
 
 def test_every_open_defect_names_a_recorded_scenario():
     assert set(OPEN_DEFECTS) <= {record["scenario"]["name"] for record in RECORDS}
+
+
+def test_every_scenario_is_recorded_at_the_showdown_commit_the_battle_data_comes_from():
+    assert {record["scenario"]["name"]: record["showdown"] for record in RECORDS} == {
+        record["scenario"]["name"]: generate_battle_data.SHOWDOWN_COMMIT for record in RECORDS}
 
 
 def _bot_outcome(record: dict) -> dict:

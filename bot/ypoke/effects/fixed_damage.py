@@ -75,7 +75,7 @@ class FinalGambit(Handler):
     def fixed_damage(self, move, user, target, rng):
         return user.hp
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         user.hp = 0
         return ()
 
@@ -116,7 +116,7 @@ class OHKO(Handler):
     def fixed_damage(self, move, user, target, rng):
         return target.hp
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         return (battle.Change(target.side, target.combatant.name, "ohko"),) if target.hp == 0 else ()
 
 

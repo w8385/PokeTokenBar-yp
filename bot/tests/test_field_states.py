@@ -417,7 +417,7 @@ def test_a_fainted_spinner_does_not_shed_leech_seed(move):
     arena = _Arena()
     spinner, target = seeded_spinner(arena), put(wall("과녁"), arena, 1)
     spinner.hp = 0
-    hooks.move(move, "after_move", spinner, target, 10)
+    hooks.move(move, "after_hit", spinner, target, battle.HitResult(damage=10))
     assert "leech-seed" in spinner.volatiles and not arena.log
 
 

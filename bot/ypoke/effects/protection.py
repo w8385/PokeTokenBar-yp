@@ -267,7 +267,7 @@ class BreaksGuard(Handler):
     def passes_substitute(self, move):
         return arg(move, "substitute", False)
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         guards = [name for name in target.volatiles if isinstance(REGISTRY["moves"].get(name), (Protect, QuickGuard,
                                                                                                 CraftyShield))]
         if not arg(move, "lifts", False) or not guards:

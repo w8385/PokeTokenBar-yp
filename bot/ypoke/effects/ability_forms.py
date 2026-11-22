@@ -147,7 +147,7 @@ class GulpMissile(Handler):
             return None
         return _turned(attacker, "gulping" if attacker.hp * 2 > attacker.max_hp else "gorging")
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         holder, user = hit.target, hit.user
         caught = holder.memory.get(FORM, BASE)
         if caught == BASE or user.hp == 0:
@@ -240,9 +240,9 @@ class Mimicry(Handler):
 class ColorChange(Handler):
     """A damaging move that hit the holder turns it into the move's type."""
 
-    def after_hit(self, name, hit):
+    def after_move_secondary(self, name, hit):
         holder, kind = hit.target, hit.move.type
-        if holder.hp == 0 or hit.shielded or not kind or kind in holder.combatant.types:
+        if holder.hp == 0 or hit.on_substitute or not kind or kind in holder.combatant.types:
             return None
         reshape(holder, types=(kind,))
         return _act(name, holder, effect="retype", detail=kind)

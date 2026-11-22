@@ -9,7 +9,7 @@ from ypoke.effects import Handler, register
 class KoBoost(Handler):
     """Moxie, Chilling Neigh, Grim Neigh: knocking a foe out with a move raises `args.raises`."""
 
-    def after_hit_as_user(self, name, hit):
+    def source_after_faint(self, name, hit):
         if hit.target.hp > 0 or hit.user.hp == 0:
             return None
         return _raised(name, hit.user, abilities.KO_RAISES[name])
@@ -19,7 +19,7 @@ class KoBoost(Handler):
 class BattleBond(Handler):
     """The first foe the holder knocks out with a move raises `args.raises`, once a battle."""
 
-    def after_hit_as_user(self, name, hit):
+    def source_after_faint(self, name, hit):
         user = hit.user
         if hit.target.hp > 0 or user.hp == 0 or name in user.once:
             return None
@@ -31,7 +31,7 @@ class BattleBond(Handler):
 class BeastBoost(Handler):
     """Knocking a foe out with a move raises the holder's highest stat, before stages; the first in a tie."""
 
-    def after_hit_as_user(self, name, hit):
+    def source_after_faint(self, name, hit):
         user = hit.user
         if hit.target.hp > 0 or user.hp == 0:
             return None
@@ -93,7 +93,7 @@ class HitBoost(Handler):
     """Stamina, Weak Armor, Justified: each hit of a damaging move (of `args.types`, any when empty; physical only
     with `args.physical`) moves `args.raises` once the move is over."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         types, physical = abilities.HIT_TYPES[name], abilities.HIT_PHYSICAL[name]
         if (_unanswered(hit) or types and hit.move.type not in types or physical and not hit.move.physical):
             return None
@@ -113,9 +113,9 @@ class HalfHpBoost(Handler):
     """Berserk, Anger Shell: a hit that takes the holder from above half its HP to half or below moves
     `args.raises`."""
 
-    def after_hit(self, name, hit):
+    def after_move_secondary(self, name, hit):
         holder = hit.target
-        if _unanswered(hit) or not holder.hp * 2 <= holder.max_hp < (holder.hp + hit.dealt) * 2:
+        if _unanswered(hit) or not holder.hp * 2 <= holder.max_hp < (holder.hp + hit.result.total_damage) * 2:
             return None
         return _raised(name, holder, abilities.HALF_HP_RAISES[name])
 
@@ -124,7 +124,7 @@ class HalfHpBoost(Handler):
 class AngerPoint(Handler):
     """A critical hit maxes the holder's Attack."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         if _unanswered(hit) or not hit.critical:
             return None
         return _raised(name, hit.target, (("attack", 2 * battle.MAX_STAGE),))
@@ -135,7 +135,7 @@ class ChargeOnHit(Handler):
     """Electromorphosis, Wind Power: a hit by a damaging move (one flagged `args.flag`, any when empty) charges the
     holder like the move Charge."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         flag = abilities.CHARGE_FLAG[name]
         if _unanswered(hit) or flag and not hit.move.flagged(flag):
             return None
@@ -162,9 +162,9 @@ class TailwindBoost(Handler):
 class CottonDown(Handler):
     """Each hit of a damaging move lowers its user's Speed."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         user, holder = hit.user, hit.target
-        if hit.shielded or user.hp == 0:
+        if hit.on_substitute or user.hp == 0:
             return None
         change = battle.shift_stage(user, hit.side, "speed", -hit.hits, guarded=battle._stats_guarded(user),
                                     by=holder)
@@ -175,8 +175,8 @@ class CottonDown(Handler):
 class ContactSlow(CottonDown):
     """Gooey, Tangling Hair: Cotton Down for contact moves only."""
 
-    def after_hit(self, name, hit):
-        return super().after_hit(name, hit) if hit.contact else None
+    def damaging_hit(self, name, hit):
+        return super().damaging_hit(name, hit) if hit.contact else None
 
 
 @register("abilities", "speed-boost")
@@ -242,7 +242,7 @@ class Steadfast(Handler):
 
 def _unanswered(hit) -> bool:
     """A Substitute took the hit or it knocked the holder out."""
-    return hit.shielded or hit.target.hp == 0
+    return hit.on_substitute or hit.target.hp == 0
 
 
 def _raised(name, holder, raises, times=1):

@@ -61,7 +61,7 @@ class ShellTrap(Condition):
 class BeakBlast(Condition):
     """Burns a foe whose contact hit struck the user this turn before the beak went off."""
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         if (user.hurt is None or not user.hurt.contact or target.hp == 0 or not battle._open_to("burn", target, True)
                 or battle._blocks_ailment(target, "burn")):
             return ()
@@ -132,7 +132,7 @@ class NoRepeat(Condition):
 class GlaiveRush(Condition):
     """Once it hits, moves on the user never miss and deal double damage through the end of the next turn."""
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         user.volatiles[self.key] = GLAIVE_RUSH_TURNS
         return ()
 

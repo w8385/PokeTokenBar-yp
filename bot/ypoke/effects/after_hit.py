@@ -29,8 +29,8 @@ class StealItem(Handler):
 
     by_id = True
 
-    def after_move(self, move, user, target, dealt):
-        if dealt <= 0 or user.hp == 0 or move_power.holds_item(user) or target.item is None or not yields(target):
+    def after_hit(self, move, user, target, hit):
+        if not hit.reached or user.hp == 0 or move_power.holds_item(user) or target.item is None or not yields(target):
             return ()
         item = target.item
         hold(target, None)
@@ -45,9 +45,9 @@ class EatBerry(Handler):
 
     by_id = True
 
-    def after_move(self, move, user, target, dealt):
+    def after_hit(self, move, user, target, hit):
         berry = target.item
-        if dealt <= 0 or user.hp == 0 or not hooks.has("items", berry, "eaten") or move_power.kept(target):
+        if not hit.reached or user.hp == 0 or not hooks.has("items", berry, "eaten") or move_power.kept(target):
             return ()
         hold(target, None)
         held = user.item
@@ -76,8 +76,8 @@ class BurnBerry(Handler):
 class FellStinger(Handler):
     by_id = True
 
-    def after_move(self, move, user, target, dealt):
-        if dealt <= 0 or target.hp > 0 or user.hp == 0:
+    def after_move_secondary_self(self, move, user, target, result):
+        if not result.reached or target.hp > 0 or user.hp == 0:
             return ()
         change = shift(user, user.side, "attack", FELL_STINGER_STAGES)
         return () if change is None else (change,)
@@ -100,7 +100,7 @@ class SpectralThief(Handler):
                 stolen.append(shift(user, user.side, key, stage))
         user.memory[self.key] = tuple(change for change in stolen if change is not None)
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         return user.memory.pop(self.key, ())
 
 
@@ -280,7 +280,7 @@ class LosesType(Handler):
     def fails(self, move, user, target):
         return move.type not in user.combatant.types
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         if move.type not in user.combatant.types:
             return ()
         reshape(user, types=tuple(kind for kind in user.combatant.types if kind != move.type))
@@ -318,7 +318,7 @@ class PlasmaFists(Handler):
 
     by_id = True
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         if user.arena is not None:
             user.arena.rooms.setdefault("ion-deluge", 1)
         return ()

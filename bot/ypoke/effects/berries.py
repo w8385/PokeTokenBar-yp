@@ -170,8 +170,9 @@ class CureBerry(Berry):
 class EnigmaBerry(Handler):
     """Heals a quarter of max HP after a super-effective hit."""
 
-    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
-        if not (multiplier > 1 and dealt > 0 and 0 < fighter.hp):
+    def damaging_hit(self, name, hit):
+        fighter = hit.target
+        if not (hit.multiplier > 1 and hit.reached and 0 < fighter.hp):
             return False
         heal = max(1, fighter.max_hp // items.ENIGMA_HEAL_FRACTION) * _factor(fighter)
         fighter.hp = min(fighter.max_hp, fighter.hp + heal)
@@ -188,8 +189,9 @@ class RecoilBerry(Handler):
     """A hit of its move class costs the attacker an eighth of its max HP (Jaboca: physical), even when the hit
     knocks the holder out."""
 
-    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
-        if (dealt <= 0 or move.physical != items.RECOIL_BERRIES[name] or attacker.hp == 0 or attacker is fighter
+    def damaging_hit(self, name, hit):
+        fighter, attacker, move = hit.target, hit.user, hit.move
+        if (not hit.reached or move.physical != items.RECOIL_BERRIES[name] or attacker.hp == 0 or attacker is fighter
                 or battle._chip_free(attacker)):
             return False
         attacker.hp = max(0, attacker.hp - max(1, attacker.max_hp // items.RECOIL_BERRY_FRACTION) * _factor(fighter))
@@ -205,8 +207,9 @@ class RecoilBerry(Handler):
 class GuardBerry(Handler):
     """A hit of its move class raises the holder's matching defense (Kee: physical, Defense)."""
 
-    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
-        if dealt <= 0 or move.physical != items.GUARD_BERRIES[name] or fighter.hp == 0:
+    def after_move_secondary(self, name, hit):
+        fighter = hit.target
+        if not hit.reached or hit.move.physical != items.GUARD_BERRIES[name] or fighter.hp == 0:
             return False
         self.eaten(name, fighter, fighter.side, _turn(fighter))
         return True

@@ -152,7 +152,7 @@ class SpitUp(Handler):
     def base_power(self, move, power, scene):
         return STOCKPILE_POWER * scene.user.memory.get("stockpile", 0)
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         count = user.memory.pop("stockpile", 0)
         return tuple(change for key in ("defense", "special_defense")
                      if (change := shift(user, user.side, key, -count)) is not None)
@@ -201,7 +201,7 @@ class Present(Drawn):
     def fixed_damage(self, move, user, target, rng):
         return 0 if rng is not None and user.memory.get(self.key) == 0 else None
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         if user.memory.get(self.key) != 0 or target.hp in (0, target.max_hp):
             return ()
         restore(target, target.max_hp // PRESENT_HEAL_SHARE)
@@ -231,7 +231,7 @@ class Streak(Handler):
     def base_power(self, move, power, scene):
         return self._grown(power, _streak(self.key, scene.user))
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         user.memory[self.key] = (_turn(user), _streak(self.key, user) + 1)
         return ()
 

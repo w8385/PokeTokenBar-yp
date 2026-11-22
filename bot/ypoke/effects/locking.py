@@ -34,7 +34,7 @@ class Lock(Handler):
             spent = self._spent(user, rng)
         user.memory[self.key] = (move, _turn(user), landed, spent)
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         _, _, landed, spent = user.memory[self.key]
         started = landed == 1 and self.key in user.volatiles
         return (*((battle.Change(user.side, user.combatant.name, self.key),) if started else ()), *spent)
@@ -80,8 +80,8 @@ class Uproar(Lock):
     def guards_ailment(self, name, ailment, fighter, by_foe):
         return ailment == "sleep"
 
-    def after_move(self, move, user, target, dealt):
-        changes = super().after_move(move, user, target, dealt)
+    def after_move(self, move, user, target, result):
+        changes = super().after_move(move, user, target, result)
         if target.status != "sleep" or target.hp == 0:
             return changes
         target.status, target.sleep_left = None, 0
@@ -143,7 +143,7 @@ class Rage(Handler):
         raised = shift(user, user.side, "attack", user.times_hit - since) if user.times_hit > since else None
         user.memory[self.key] = (move.id, () if raised is None else (raised,))
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         return user.memory[self.key][1]
 
     def volatile_end(self, name, fighter, side, turn, rng):

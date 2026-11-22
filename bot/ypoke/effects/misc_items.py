@@ -70,9 +70,9 @@ class FlinchItem(Handler):
     """King's Rock and Razor Fang: each hit of the holder's damaging move that cannot flinch on its own may flinch a
     target that has not moved."""
 
-    def after_hit_as_user(self, name, hit):
+    def adds_secondary(self, name, hit):
         target, move = hit.target, hit.move
-        if hit.shielded or target.hp == 0 or target.acted or meta(move, "flinch_chance") > 0:
+        if hit.on_substitute or target.hp == 0 or target.acted or meta(move, "flinch_chance") > 0:
             return
         chance = items.FLINCH_ITEM_CHANCE * battle._chance_scale(move, hit.user, target)
         if any(hit.rng.random() < chance for _ in range(hit.hits)) and not battle._blocks_ailment(target, "flinch"):
@@ -101,8 +101,9 @@ class StickyBarb(Handler):
         fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // items.STICKY_BARB_FRACTION))
         return battle.ItemHeal(turn, side, fighter.combatant.name, name, fighter.hp_percent, fighter.hp == 0)
 
-    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
-        if (dealt > 0 and attacker.hp > 0 and battle.makes_contact(attacker, move)
+    def damaging_hit(self, name, hit):
+        fighter, attacker, move = hit.target, hit.user, hit.move
+        if (hit.reached and attacker.hp > 0 and battle.makes_contact(attacker, move)
                 and not move_power.holds_item(attacker) and yields(fighter)):
             hold(fighter, None)
             hold(attacker, name)

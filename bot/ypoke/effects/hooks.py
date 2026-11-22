@@ -209,16 +209,25 @@ HOOKS = {
     "blocks_recoil": "ability: its holder takes no recoil (Rock Head)",
     "blocks_indirect": "ability: only moves' hits hurt its holder: no status, weather, hazard, recoil or item chip "
                        "(Magic Guard)",
-    "after_hit": "ability: answers a damaging move that hit its holder once the move is over (Stamina); returns an "
-                 "event",
-    "after_hit_as_user": "ability, then item: acts after its holder's damaging move hit (Magician, King's Rock); "
-                         "returns an event",
-    "after_move_as_user": "item: acts after its holder's damaging move landed, also on a Substitute or Disguise "
-                          "(`dealt` is then 0), after recoil and drain",
-    "after_move_as_target": "item: acts after a move dealt damage to its holder",
-    "after_move": "move: acts once the damage is dealt; may return more changes",
-    "after_substitute_hit": "move: acts after `after_move` when a hit landed on the target's Substitute, which "
-                            "`dealt` leaves out (Showdown's onAfterSubDamage: Rapid Spin)",
+    "damaging_hit": "ability, then item: answers a damaging move's hit on its holder, told by a `battle.Hit` "
+                    "(Showdown's onDamagingHit: Stamina, Weakness Policy); the ability returns an event, the item "
+                    "whether it acted",
+    "after_move_secondary": "ability, then item: answers a damaging move that hit its holder once all its hits and "
+                            "their effects are over (Showdown's onAfterMoveSecondary: Color Change, Kee Berry)",
+    "source_damaging_hit": "ability: acts on the target of its holder's damaging hit (Showdown's "
+                           "onSourceDamagingHit: Poison Touch); returns an event",
+    "adds_secondary": "ability, then item: adds a flinch chance to each hit of its holder's damaging move (Stench, "
+                      "King's Rock)",
+    "source_after_faint": "ability: acts once its holder's move knocked the target out (Moxie); returns an event",
+    "after_move_secondary_self": "move, item, ability: acts on its user once its damaging move landed, also on a "
+                                 "Substitute or Disguise, told by a `battle.MoveResult` (Showdown's "
+                                 "onAfterMoveSecondarySelf: Fell Stinger, Life Orb, Magician)",
+    "after_hit": "move: acts on the target of a hit, told by a `battle.HitResult` (Showdown's onAfterHit: Knock "
+                 "Off); returns the changes",
+    "after_move": "move: acts once the move is over, told by a `battle.MoveResult` (Rollout); may return more "
+                  "changes",
+    "after_sub_damage": "move: acts when a hit landed on the target's Substitute (Showdown's onAfterSubDamage: Rapid "
+                        "Spin)",
     "pays_hp": "move: its user pays HP once the move is used, hit or miss (Steel Beam); returns the change",
     "faints_user":"move: its user faints once it is used",
     "prevents_self_ko": "ability: a foe's self-KO move fails on its holder and does not faint its user (Damp)",

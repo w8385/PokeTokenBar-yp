@@ -84,7 +84,9 @@ def test_a_flinch_item_may_flinch_a_target_that_has_not_moved_with_a_move_that_c
     def flinches(move, user_item=item, foe_item=None, acted=False):
         user, foe, _ = duel()
         user.item, foe.item, foe.acted = user_item, foe_item, acted
-        hooks.item(user, "after_hit_as_user", Hit(0, 1, user, foe, move, 10, 1, False, 1.0, False, draws(0.05)))
+        hit = battle.HitResult(damage=10)
+        hooks.item(user, "adds_secondary",
+                   Hit(0, 1, user, foe, move, battle.MoveResult(move, hits=[hit]), hit, 1.0, draws(0.05)))
         return "flinch" in foe.volatiles
 
     assert flinches(TACKLE)
