@@ -4018,24 +4018,87 @@ Action turn=1 side=1 attacker='P143' defender='P94' move='몸통박치기' multi
 Action turn=1 side=0 attacker='P94' defender='P143' move='바꿔치기' effect='switcheroo' move_id=415
 ItemEffect turn=1 side=0 pokemon='P94' item='leftovers' effect='got'
 Action turn=2 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 move_id=33
+Action turn=2 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=90 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=90 move_id=33
+Action turn=3 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=79 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=79 move_id=33
+Action turn=4 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=69 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=69 move_id=33
+Action turn=5 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=59 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=59 move_id=33
+Action turn=6 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=49 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=49 move_id=33
+Action turn=7 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=39 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=39 move_id=33
+Action turn=8 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=28 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=28 move_id=33
+Action turn=9 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=18 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=18 move_id=33
+Action turn=10 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=7 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=7 move_id=33
+Action turn=11 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=0 turns=11 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 11턴
+column '🔵 *A*\nP94 ▰▰▰▰▰▰▰▰▰▰ 100%'
+column '🔴 *B*\nP143 @먹다남은음식 💥'
+card title='🏆 A 승' detail='1:1 · 11턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png', 'P94')
+card log Matchup(left=Portrait(form_id=94, shiny=False, name='P94'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 1
+card log None = turn 2
+card log None = turn 3
+card log None = turn 4
+card log None = turn 5
+card log None = turn 6
+card log None = turn 7
+card log None = turn 8
+card log None = turn 9
+card log None = turn 10
+card log None = turn 11
+turn 1 🔴 P143 › 몸통박치기 → P94 무효
+turn 1 🔵 P94 › 바꿔치기 → P143 🎁도구를 맞바꿨다
+turn 1 🔵 P94 @먹다남은음식 손에 넣음
+turn 2 🔴 P143 › 몸통박치기 → P94 무효
+turn 2 🔵 P94 › 몸통박치기 → P143 90%
+turn 3 🔴 P143 › 몸통박치기 → P94 무효
+turn 3 🔵 P94 › 몸통박치기 → P143 79%
+turn 4 🔴 P143 › 몸통박치기 → P94 무효
+turn 4 🔵 P94 › 몸통박치기 → P143 69%
+turn 5 🔴 P143 › 몸통박치기 → P94 무효
+turn 5 🔵 P94 › 몸통박치기 → P143 59%
+turn 6 🔴 P143 › 몸통박치기 → P94 무효
+turn 6 🔵 P94 › 몸통박치기 → P143 49%
+turn 7 🔴 P143 › 몸통박치기 → P94 무효
+turn 7 🔵 P94 › 몸통박치기 → P143 39%
+turn 8 🔴 P143 › 몸통박치기 → P94 무효
+turn 8 🔵 P94 › 몸통박치기 → P143 28%
+turn 9 🔴 P143 › 몸통박치기 → P94 무효
+turn 9 🔵 P94 › 몸통박치기 → P143 18%
+turn 10 🔴 P143 › 몸통박치기 → P94 무효
+turn 10 🔵 P94 › 몸통박치기 → P143 7%
+turn 11 🔴 P143 › 몸통박치기 → P94 무효
+turn 11 🔵 P94 › 몸통박치기 → P143 💥
+## focus 57
+Action turn=1 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 move_id=33
+Action turn=1 side=0 attacker='P94' defender='P143' move='바꿔치기' effect='switcheroo' move_id=415
+ItemEffect turn=1 side=0 pokemon='P94' item='leftovers' effect='got'
+Action turn=2 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 move_id=33
 Action turn=2 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=89 move_id=33
 Action turn=3 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=89 move_id=33
 Action turn=3 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=78 move_id=33
 Action turn=4 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=78 move_id=33
 Action turn=4 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=68 move_id=33
 Action turn=5 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=68 move_id=33
-Action turn=5 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=58 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=58 move_id=33
-Action turn=6 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=48 move_id=33
-Action turn=7 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=48 move_id=33
-Action turn=7 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=37 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=37 move_id=33
-Action turn=8 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=27 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=27 move_id=33
-Action turn=9 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=17 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=17 move_id=33
-Action turn=10 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=8 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=8 move_id=33
+Action turn=5 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=57 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=57 move_id=33
+Action turn=6 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=47 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=47 move_id=33
+Action turn=7 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=36 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=36 move_id=33
+Action turn=8 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=26 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=26 move_id=33
+Action turn=9 side=0 attacker='P94' defender='P143' move='몸통박치기' critical=True defender_hp=11 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=11 move_id=33
+Action turn=10 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=1 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=1 move_id=33
 Action turn=11 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=0 turns=11 remaining=((100,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 11턴
@@ -4063,127 +4126,67 @@ turn 3 🔵 P94 › 몸통박치기 → P143 78%
 turn 4 🔴 P143 › 몸통박치기 → P94 무효
 turn 4 🔵 P94 › 몸통박치기 → P143 68%
 turn 5 🔴 P143 › 몸통박치기 → P94 무효
-turn 5 🔵 P94 › 몸통박치기 → P143 58%
+turn 5 🔵 P94 › 몸통박치기 → P143 57%
 turn 6 🔴 P143 › 몸통박치기 → P94 무효
-turn 6 🔵 P94 › 몸통박치기 → P143 48%
+turn 6 🔵 P94 › 몸통박치기 → P143 47%
 turn 7 🔴 P143 › 몸통박치기 → P94 무효
-turn 7 🔵 P94 › 몸통박치기 → P143 37%
+turn 7 🔵 P94 › 몸통박치기 → P143 36%
 turn 8 🔴 P143 › 몸통박치기 → P94 무효
-turn 8 🔵 P94 › 몸통박치기 → P143 27%
+turn 8 🔵 P94 › 몸통박치기 → P143 26%
 turn 9 🔴 P143 › 몸통박치기 → P94 무효
-turn 9 🔵 P94 › 몸통박치기 → P143 17%
+turn 9 🔵 P94 › 몸통박치기 → P143 11% 급소
 turn 10 🔴 P143 › 몸통박치기 → P94 무효
-turn 10 🔵 P94 › 몸통박치기 → P143 8%
+turn 10 🔵 P94 › 몸통박치기 → P143 1%
 turn 11 🔴 P143 › 몸통박치기 → P94 무효
 turn 11 🔵 P94 › 몸통박치기 → P143 💥
-## focus 57
-Action turn=1 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P94' defender='P143' move='바꿔치기' effect='switcheroo' move_id=415
-ItemEffect turn=1 side=0 pokemon='P94' item='leftovers' effect='got'
-Action turn=2 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 move_id=33
-Action turn=2 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=89 move_id=33
-Action turn=3 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=89 move_id=33
-Action turn=3 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=77 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=77 move_id=33
-Action turn=4 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=68 move_id=33
-Action turn=5 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=68 move_id=33
-Action turn=5 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=58 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=58 move_id=33
-Action turn=6 side=0 attacker='P94' defender='P143' move='몸통박치기' critical=True defender_hp=43 move_id=33
-Action turn=7 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=43 move_id=33
-Action turn=7 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=32 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=32 move_id=33
-Action turn=8 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=20 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=20 move_id=33
-Action turn=9 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=9 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P94' move='몸통박치기' multiplier=0 attacker_hp=9 move_id=33
-Action turn=10 side=0 attacker='P94' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
-result winner=0 turns=10 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 10턴
-column '🔵 *A*\nP94 ▰▰▰▰▰▰▰▰▰▰ 100%'
-column '🔴 *B*\nP143 @먹다남은음식 💥'
-card title='🏆 A 승' detail='1:1 · 10턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png', 'P94')
-card log Matchup(left=Portrait(form_id=94, shiny=False, name='P94'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 1
-card log None = turn 2
-card log None = turn 3
-card log None = turn 4
-card log None = turn 5
-card log None = turn 6
-card log None = turn 7
-card log None = turn 8
-card log None = turn 9
-card log None = turn 10
-turn 1 🔴 P143 › 몸통박치기 → P94 무효
-turn 1 🔵 P94 › 바꿔치기 → P143 🎁도구를 맞바꿨다
-turn 1 🔵 P94 @먹다남은음식 손에 넣음
-turn 2 🔴 P143 › 몸통박치기 → P94 무효
-turn 2 🔵 P94 › 몸통박치기 → P143 89%
-turn 3 🔴 P143 › 몸통박치기 → P94 무효
-turn 3 🔵 P94 › 몸통박치기 → P143 77%
-turn 4 🔴 P143 › 몸통박치기 → P94 무효
-turn 4 🔵 P94 › 몸통박치기 → P143 68%
-turn 5 🔴 P143 › 몸통박치기 → P94 무효
-turn 5 🔵 P94 › 몸통박치기 → P143 58%
-turn 6 🔴 P143 › 몸통박치기 → P94 무효
-turn 6 🔵 P94 › 몸통박치기 → P143 43% 급소
-turn 7 🔴 P143 › 몸통박치기 → P94 무효
-turn 7 🔵 P94 › 몸통박치기 → P143 32%
-turn 8 🔴 P143 › 몸통박치기 → P94 무효
-turn 8 🔵 P94 › 몸통박치기 → P143 20%
-turn 9 🔴 P143 › 몸통박치기 → P94 무효
-turn 9 🔵 P94 › 몸통박치기 → P143 9%
-turn 10 🔴 P143 › 몸통박치기 → P94 무효
-turn 10 🔵 P94 › 몸통박치기 → P143 💥
 ## focus 58
 MegaEvolution turn=1 side=1 pokemon='P6' ability='페어리오라' form_id=10034
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 move_id=85
-Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=57 move_id=53
-Action turn=2 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=57 move_id=85
-Action turn=2 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=11 move_id=53
-Action turn=3 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=11 move_id=85
-Action turn=3 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=0 knockout=True move_id=53
-SendOut turn=3 side=0 pokemon='P132' member=1
+Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 changes=(Change(side=0, pokemon='P25', kind='burn', stages=0),) defender_hp=55 move_id=53
+StatusDamage turn=1 side=0 pokemon='P25' hp=49 fainted=False
+Action turn=2 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=49 move_id=85
+Action turn=2 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=5 move_id=53
+StatusDamage turn=2 side=0 pokemon='P25' hp=0 fainted=True
+SendOut turn=2 side=0 pokemon='P132' member=1
 AbilityTransform side=0 pokemon='P132' ability='imposter' into='P6' form_id=10034 own_form_id=132
-Action turn=4 side=1 attacker='P6' defender='P132' move='화염방사' multiplier=2.0 defender_hp=46 move_id=53
-Action turn=4 side=0 attacker='P132' defender='P6' move='화염방사' multiplier=2.0 defender_hp=25 attacker_hp=46 move_id=53
-Action turn=5 side=0 attacker='P132' defender='P6' move='화염방사' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=46 move_id=53
-result winner=0 turns=5 remaining=((0, 46), (0,)) statuses=((None, None), (None,))
-header 🏆 A 승 · 2:1 · 5턴
-column '🔵 *A*\nP25 💥\nP132 ▰▰▰▰▰▱▱▱▱▱ 46%'
-column '🔴 *B*\nP6(메가) 💥'
-card title='🏆 A 승' detail='2:1 · 5턴' highlights=('💥 결정타 P132 화염방사',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png', 'P132')
+Action turn=3 side=1 attacker='P6' defender='P132' move='화염방사' multiplier=2.0 defender_hp=45 move_id=53
+Action turn=3 side=0 attacker='P132' defender='P6' move='화염방사' multiplier=2.0 defender_hp=27 attacker_hp=45 move_id=53
+Action turn=4 side=1 attacker='P6' defender='P132' move='화염방사' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=27 move_id=53
+result winner=1 turns=4 remaining=((0, 0), (27,)) statuses=(('burn', None), (None,))
+header 🏆 B 승 · 2:1 · 4턴
+column '🔵 *A*\nP25 💥\nP132 💥'
+column '🔴 *B*\nP6(메가) ▰▰▰▱▱▱▱▱▱▱ 27%'
+card title='🏆 B 승' detail='2:1 · 4턴' highlights=('💥 결정타 P6 화염방사',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10034.png', 'P6')
 card log Matchup(left=Portrait(form_id=25, shiny=False, name='P25'), right=Portrait(form_id=10034, shiny=False, name='P6')) = turn 1
 card log None = turn 2
-card log None = turn 3
-card log Matchup(left=Portrait(form_id=132, shiny=False, name='P132'), right=Portrait(form_id=10034, shiny=False, name='P6')) = turn 4
-card log None = turn 5
+card log Matchup(left=Portrait(form_id=132, shiny=False, name='P132'), right=Portrait(form_id=10034, shiny=False, name='P6')) = turn 3
+card log None = turn 4
 turn 1 🔴 P6 메가진화 [페어리오라]
 turn 1 🔵 P25 › 10만볼트 → P6 무효
-turn 1 🔴 P6 › 화염방사 → P25 57% 효과 굉장
+turn 1 🔴 P6 › 화염방사 → P25 55% 효과 굉장 🔥화상
+turn 1 🔵 P25 🔥 49%
 turn 2 🔵 P25 › 10만볼트 → P6 무효
-turn 2 🔴 P6 › 화염방사 → P25 11% 효과 굉장
-turn 3 🔵 P25 › 10만볼트 → P6 무효
-turn 3 🔴 P6 › 화염방사 → P25 💥 효과 굉장
-turn 3 ↪ 🔵 P132 등장 [괴짜] P6(으)로 변신
-turn 4 🔴 P6 › 화염방사 → P132 46% 효과 굉장
-turn 4 🔵 P132 › 화염방사 → P6 25% 효과 굉장
-turn 5 🔵 P132 › 화염방사 → P6 💥 효과 굉장
+turn 2 🔴 P6 › 화염방사 → P25 5% 효과 굉장
+turn 2 🔵 P25 🔥 0%
+turn 2 💥 P25 쓰러짐
+turn 2 ↪ 🔵 P132 등장 [괴짜] P6(으)로 변신
+turn 3 🔴 P6 › 화염방사 → P132 45% 효과 굉장
+turn 3 🔵 P132 › 화염방사 → P6 27% 효과 굉장
+turn 4 🔴 P6 › 화염방사 → P132 💥 효과 굉장
 ## focus 59
 MegaEvolution turn=1 side=1 pokemon='P6' ability='페어리오라' form_id=10034
 Action turn=1 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 move_id=85
-Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=56 move_id=53
-Action turn=2 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=56 move_id=85
-Action turn=2 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 changes=(Change(side=0, pokemon='P25', kind='burn', stages=0),) defender_hp=12 move_id=53
-StatusDamage turn=2 side=0 pokemon='P25' hp=7 fainted=False
-Action turn=3 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=7 move_id=85
-Action turn=3 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=0 knockout=True move_id=53
+Action turn=1 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=59 move_id=53
+Action turn=2 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=59 move_id=85
+Action turn=2 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 defender_hp=12 move_id=53
+Action turn=3 side=0 attacker='P25' defender='P6' move='10만볼트' multiplier=0 attacker_hp=12 move_id=85
+Action turn=3 side=1 attacker='P6' defender='P25' move='화염방사' multiplier=2.0 critical=True defender_hp=0 knockout=True move_id=53
 SendOut turn=3 side=0 pokemon='P132' member=1
 AbilityTransform side=0 pokemon='P132' ability='imposter' into='P6' form_id=10034 own_form_id=132
-Action turn=4 side=1 attacker='P6' defender='P132' move='화염방사' multiplier=2.0 defender_hp=41 move_id=53
-Action turn=4 side=0 attacker='P132' defender='P6' move='화염방사' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=41 move_id=53
-result winner=0 turns=4 remaining=((0, 41), (0,)) statuses=(('burn', None), (None,))
+Action turn=4 side=0 attacker='P132' defender='P6' move='화염방사' multiplier=2.0 critical=True defender_hp=0 knockout=True move_id=53
+result winner=0 turns=4 remaining=((0, 100), (0,)) statuses=((None, None), (None,))
 header 🏆 A 승 · 2:1 · 4턴
-column '🔵 *A*\nP25 💥\nP132 ▰▰▰▰▱▱▱▱▱▱ 41%'
+column '🔵 *A*\nP25 💥\nP132 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP6(메가) 💥'
 card title='🏆 A 승' detail='2:1 · 4턴' highlights=('💥 결정타 P132 화염방사',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png', 'P132')
 card log Matchup(left=Portrait(form_id=25, shiny=False, name='P25'), right=Portrait(form_id=10034, shiny=False, name='P6')) = turn 1
@@ -4192,35 +4195,33 @@ card log None = turn 3
 card log Matchup(left=Portrait(form_id=132, shiny=False, name='P132'), right=Portrait(form_id=10034, shiny=False, name='P6')) = turn 4
 turn 1 🔴 P6 메가진화 [페어리오라]
 turn 1 🔵 P25 › 10만볼트 → P6 무효
-turn 1 🔴 P6 › 화염방사 → P25 56% 효과 굉장
+turn 1 🔴 P6 › 화염방사 → P25 59% 효과 굉장
 turn 2 🔵 P25 › 10만볼트 → P6 무효
-turn 2 🔴 P6 › 화염방사 → P25 12% 효과 굉장 🔥화상
-turn 2 🔵 P25 🔥 7%
+turn 2 🔴 P6 › 화염방사 → P25 12% 효과 굉장
 turn 3 🔵 P25 › 10만볼트 → P6 무효
-turn 3 🔴 P6 › 화염방사 → P25 💥 효과 굉장
+turn 3 🔴 P6 › 화염방사 → P25 💥 급소 효과 굉장
 turn 3 ↪ 🔵 P132 등장 [괴짜] P6(으)로 변신
-turn 4 🔴 P6 › 화염방사 → P132 41% 효과 굉장
 turn 4 🔵 P132 › 화염방사 → P6 💥 급소 효과 굉장
 ## focus 60
 Action turn=1 side=1 attacker='P484' defender='P908' move='공간절단' defender_hp=65 move_id=460
 Action turn=1 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=93 attacker_hp=65 move_id=583
 AbilityRetype side=0 pokemon='P908' ability='protean' into='fairy'
 Action turn=2 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=65 attacker_hp=93 move_id=460
-Action turn=2 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=86 attacker_hp=65 move_id=583
-Action turn=3 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=65 attacker_hp=86 move_id=460
+Action turn=2 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=85 attacker_hp=65 move_id=583
+Action turn=3 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=65 attacker_hp=85 move_id=460
 Action turn=3 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=79 attacker_hp=65 move_id=583
 Action turn=4 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=65 attacker_hp=79 move_id=460
-Action turn=4 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=73 attacker_hp=65 move_id=583
-Action turn=5 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=65 attacker_hp=73 move_id=460
+Action turn=4 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=72 attacker_hp=65 move_id=583
+Action turn=5 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=65 attacker_hp=72 move_id=460
 Action turn=5 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=65 attacker_hp=65 move_id=583
 Action turn=6 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=54 attacker_hp=40 move_id=165
-Action turn=6 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=33 attacker_hp=54 move_id=583
-Action turn=7 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=43 attacker_hp=8 move_id=165
-Action turn=7 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 changes=(Change(side=1, pokemon='P484', kind='attack', stages=-1),) defender_hp=2 attacker_hp=43 move_id=583
-Action turn=8 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=36 attacker_fainted=True attacker_hp=0 move_id=165
-result winner=0 turns=8 remaining=((36,), (0,)) statuses=((None,), (None,))
+Action turn=6 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=34 attacker_hp=54 move_id=583
+Action turn=7 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=42 attacker_hp=9 move_id=165
+Action turn=7 side=0 attacker='P908' defender='P484' move='치근거리기' missed=True multiplier=0.25 defender_hp=9 attacker_hp=42 move_id=583
+Action turn=8 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=31 attacker_fainted=True attacker_hp=0 move_id=165
+result winner=0 turns=8 remaining=((31,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 8턴
-column '🔵 *A*\nP908 ▰▰▰▰▱▱▱▱▱▱ 36%'
+column '🔵 *A*\nP908 ▰▰▰▱▱▱▱▱▱▱ 31%'
 column '🔴 *B*\nP484 💥'
 card title='🏆 A 승' detail='1:1 · 8턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/908.png', 'P908')
 card log Matchup(left=Portrait(form_id=908, shiny=False, name='P908'), right=Portrait(form_id=484, shiny=False, name='P484')) = turn 1
@@ -4235,39 +4236,39 @@ turn 1 🔴 P484 › 공간절단 → P908 65%
 turn 1 🔵 P908 › 치근거리기 → P484 93% 효과 별로
 turn 1 🔵 P908 [변환자재] 페어리 타입이 되었다
 turn 2 🔴 P484 › 공간절단 → P908 무효
-turn 2 🔵 P908 › 치근거리기 → P484 86% 효과 별로
+turn 2 🔵 P908 › 치근거리기 → P484 85% 효과 별로
 turn 3 🔴 P484 › 공간절단 → P908 무효
 turn 3 🔵 P908 › 치근거리기 → P484 79% 효과 별로
 turn 4 🔴 P484 › 공간절단 → P908 무효
-turn 4 🔵 P908 › 치근거리기 → P484 73% 효과 별로
+turn 4 🔵 P908 › 치근거리기 → P484 72% 효과 별로
 turn 5 🔴 P484 › 공간절단 → P908 무효
 turn 5 🔵 P908 › 치근거리기 → P484 65% 효과 별로
 turn 6 🔴 P484 › 발버둥 → P908 54% 반동
-turn 6 🔵 P908 › 치근거리기 → P484 33% 효과 별로
-turn 7 🔴 P484 › 발버둥 → P908 43% 반동
-turn 7 🔵 P908 › 치근거리기 → P484 2% 효과 별로 공격↓
-turn 8 🔴 P484 › 발버둥 → P908 36% 반동
+turn 6 🔵 P908 › 치근거리기 → P484 34% 효과 별로
+turn 7 🔴 P484 › 발버둥 → P908 42% 반동
+turn 7 🔵 P908 › 치근거리기 → 빗나감
+turn 8 🔴 P484 › 발버둥 → P908 31% 반동
 turn 8 💥 P484 쓰러짐
 ## focus 61
 Action turn=1 side=1 attacker='P484' defender='P908' move='공간절단' defender_hp=69 move_id=460
 Action turn=1 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=93 attacker_hp=69 move_id=583
 AbilityRetype side=0 pokemon='P908' ability='protean' into='fairy'
 Action turn=2 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=69 attacker_hp=93 move_id=460
-Action turn=2 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=86 attacker_hp=69 move_id=583
+Action turn=2 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 changes=(Change(side=1, pokemon='P484', kind='attack', stages=-1),) defender_hp=86 attacker_hp=69 move_id=583
 Action turn=3 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=69 attacker_hp=86 move_id=460
 Action turn=3 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=80 attacker_hp=69 move_id=583
 Action turn=4 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=69 attacker_hp=80 move_id=460
-Action turn=4 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 critical=True defender_hp=71 attacker_hp=69 move_id=583
-Action turn=5 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=69 attacker_hp=71 move_id=460
-Action turn=5 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=65 attacker_hp=69 move_id=583
-Action turn=6 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=58 attacker_hp=41 move_id=165
-Action turn=6 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=34 attacker_hp=58 move_id=583
-Action turn=7 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=50 attacker_hp=10 move_id=165
-Action turn=7 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=3 attacker_hp=50 move_id=583
-Action turn=8 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=39 attacker_fainted=True attacker_hp=0 move_id=165
-result winner=0 turns=8 remaining=((39,), (0,)) statuses=((None,), (None,))
+Action turn=4 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=74 attacker_hp=69 move_id=583
+Action turn=5 side=1 attacker='P484' defender='P908' move='공간절단' multiplier=0 defender_hp=69 attacker_hp=74 move_id=460
+Action turn=5 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 critical=True defender_hp=65 attacker_hp=69 move_id=583
+Action turn=6 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=62 attacker_hp=41 move_id=165
+Action turn=6 side=0 attacker='P908' defender='P484' move='치근거리기' missed=True multiplier=0.25 defender_hp=41 attacker_hp=62 move_id=583
+Action turn=7 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=55 attacker_hp=16 move_id=165
+Action turn=7 side=0 attacker='P908' defender='P484' move='치근거리기' multiplier=0.25 defender_hp=10 attacker_hp=55 move_id=583
+Action turn=8 side=1 attacker='P484' defender='P908' move='발버둥' recoil=True defender_hp=47 attacker_fainted=True attacker_hp=0 move_id=165
+result winner=0 turns=8 remaining=((47,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 8턴
-column '🔵 *A*\nP908 ▰▰▰▰▱▱▱▱▱▱ 39%'
+column '🔵 *A*\nP908 ▰▰▰▰▰▱▱▱▱▱ 47%'
 column '🔴 *B*\nP484 💥'
 card title='🏆 A 승' detail='1:1 · 8턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/908.png', 'P908')
 card log Matchup(left=Portrait(form_id=908, shiny=False, name='P908'), right=Portrait(form_id=484, shiny=False, name='P484')) = turn 1
@@ -4282,18 +4283,18 @@ turn 1 🔴 P484 › 공간절단 → P908 69%
 turn 1 🔵 P908 › 치근거리기 → P484 93% 효과 별로
 turn 1 🔵 P908 [변환자재] 페어리 타입이 되었다
 turn 2 🔴 P484 › 공간절단 → P908 무효
-turn 2 🔵 P908 › 치근거리기 → P484 86% 효과 별로
+turn 2 🔵 P908 › 치근거리기 → P484 86% 효과 별로 공격↓
 turn 3 🔴 P484 › 공간절단 → P908 무효
 turn 3 🔵 P908 › 치근거리기 → P484 80% 효과 별로
 turn 4 🔴 P484 › 공간절단 → P908 무효
-turn 4 🔵 P908 › 치근거리기 → P484 71% 급소 효과 별로
+turn 4 🔵 P908 › 치근거리기 → P484 74% 효과 별로
 turn 5 🔴 P484 › 공간절단 → P908 무효
-turn 5 🔵 P908 › 치근거리기 → P484 65% 효과 별로
-turn 6 🔴 P484 › 발버둥 → P908 58% 반동
-turn 6 🔵 P908 › 치근거리기 → P484 34% 효과 별로
-turn 7 🔴 P484 › 발버둥 → P908 50% 반동
-turn 7 🔵 P908 › 치근거리기 → P484 3% 효과 별로
-turn 8 🔴 P484 › 발버둥 → P908 39% 반동
+turn 5 🔵 P908 › 치근거리기 → P484 65% 급소 효과 별로
+turn 6 🔴 P484 › 발버둥 → P908 62% 반동
+turn 6 🔵 P908 › 치근거리기 → 빗나감
+turn 7 🔴 P484 › 발버둥 → P908 55% 반동
+turn 7 🔵 P908 › 치근거리기 → P484 10% 효과 별로
+turn 8 🔴 P484 › 발버둥 → P908 47% 반동
 turn 8 💥 P484 쓰러짐
 ## focus 62
 Action turn=1 side=0 attacker='P18' defender='P36' move='아쿠아링' effect='aqua-ring' move_id=392
@@ -4618,42 +4619,42 @@ Action turn=1 side=0 attacker='P724' defender='P760' move='브레이브버드' m
 Action turn=1 side=1 attacker='P760' defender='P724' move='누르기' multiplier=0 defender_hp=70 attacker_hp=19 move_id=34
 Action turn=2 side=0 attacker='P724' defender='P760' move='브레이브버드' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=63 move_id=413
 SendOut turn=2 side=1 pokemon='P437' member=1
-Action turn=3 side=1 attacker='P437' defender='P724' move='지진' multiplier=0.5 defender_hp=49 move_id=89
-Action turn=3 side=0 attacker='P724' defender='P437' move='브레이브버드' recoil=True defender_hp=55 attacker_hp=27 move_id=413
+Action turn=3 side=1 attacker='P437' defender='P724' move='지진' multiplier=0.5 defender_hp=48 move_id=89
+Action turn=3 side=0 attacker='P724' defender='P437' move='브레이브버드' recoil=True defender_hp=53 attacker_hp=26 move_id=413
 ItemEffect turn=3 side=1 pokemon='P437' item='flame-orb' effect='burn'
-Action turn=4 side=1 attacker='P437' defender='P724' move='지진' multiplier=0.5 defender_hp=20 attacker_hp=55 move_id=89
-Action turn=4 side=0 attacker='P724' defender='P437' move='브레이브버드' recoil=True defender_hp=6 attacker_fainted=True attacker_hp=0 move_id=413
-StatusDamage turn=4 side=1 pokemon='P437' hp=4 fainted=False
+Action turn=4 side=1 attacker='P437' defender='P724' move='지진' multiplier=0.5 defender_hp=19 attacker_hp=53 move_id=89
+Action turn=4 side=0 attacker='P724' defender='P437' move='브레이브버드' recoil=True defender_hp=8 attacker_fainted=True attacker_hp=0 move_id=413
+StatusDamage turn=4 side=1 pokemon='P437' hp=5 fainted=False
 SendOut turn=4 side=0 pokemon='P717' member=1
-Action turn=5 side=1 attacker='P437' defender='P717' move='지진' defender_hp=88 attacker_hp=4 move_id=89
+Action turn=5 side=1 attacker='P437' defender='P717' move='지진' defender_hp=88 attacker_hp=5 move_id=89
 Action turn=5 side=0 attacker='P717' defender='P437' move='악의파동' defender_hp=0 knockout=True attacker_hp=88 move_id=399
 SendOut turn=5 side=1 pokemon='P718' member=2
 Action turn=6 side=1 attacker='P718' defender='P717' move='아쿠아링' defender_hp=88 effect='aqua-ring' move_id=392
 Action turn=6 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=88 attacker_hp=88 move_id=399
 VolatileTick turn=6 side=1 pokemon='P718' kind='aqua-ring' hp=94
-Action turn=7 side=1 attacker='P718' defender='P717' move='지진' defender_hp=57 attacker_hp=94 move_id=89
-Action turn=7 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=82 attacker_hp=57 move_id=399
-VolatileTick turn=7 side=1 pokemon='P718' kind='aqua-ring' hp=88
-Action turn=8 side=1 attacker='P718' defender='P717' move='지진' defender_hp=22 attacker_hp=88 move_id=89
-Action turn=8 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=77 attacker_hp=22 move_id=399
-VolatileTick turn=8 side=1 pokemon='P718' kind='aqua-ring' hp=83
-Action turn=9 side=1 attacker='P718' defender='P717' move='지진' defender_hp=0 knockout=True attacker_hp=83 move_id=89
-VolatileTick turn=9 side=1 pokemon='P718' kind='aqua-ring' hp=89
+Action turn=7 side=1 attacker='P718' defender='P717' move='지진' defender_hp=55 attacker_hp=94 move_id=89
+Action turn=7 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=83 attacker_hp=55 move_id=399
+VolatileTick turn=7 side=1 pokemon='P718' kind='aqua-ring' hp=89
+Action turn=8 side=1 attacker='P718' defender='P717' move='지진' defender_hp=24 attacker_hp=89 move_id=89
+Action turn=8 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=76 attacker_hp=24 move_id=399
+VolatileTick turn=8 side=1 pokemon='P718' kind='aqua-ring' hp=82
+Action turn=9 side=1 attacker='P718' defender='P717' move='지진' defender_hp=0 knockout=True attacker_hp=82 move_id=89
+VolatileTick turn=9 side=1 pokemon='P718' kind='aqua-ring' hp=88
 SendOut turn=9 side=0 pokemon='P306' member=2
-Action turn=10 side=1 attacker='P718' defender='P306' move='지진' defender_hp=67 attacker_hp=89 move_id=89
-Action turn=10 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=77 attacker_hp=67 move_id=38
+Action turn=10 side=1 attacker='P718' defender='P306' move='지진' defender_hp=69 attacker_hp=88 move_id=89
+Action turn=10 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=77 attacker_hp=69 move_id=38
 VolatileTick turn=10 side=1 pokemon='P718' kind='aqua-ring' hp=83
-Action turn=11 side=1 attacker='P718' defender='P306' move='지진' defender_hp=38 attacker_hp=83 move_id=89
-Action turn=11 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=72 attacker_hp=38 move_id=38
+Action turn=11 side=1 attacker='P718' defender='P306' move='지진' defender_hp=36 attacker_hp=83 move_id=89
+Action turn=11 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=72 attacker_hp=36 move_id=38
 VolatileTick turn=11 side=1 pokemon='P718' kind='aqua-ring' hp=78
-Action turn=12 side=1 attacker='P718' defender='P306' move='지진' defender_hp=6 attacker_hp=78 move_id=89
-Action turn=12 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=67 attacker_hp=6 move_id=38
-VolatileTick turn=12 side=1 pokemon='P718' kind='aqua-ring' hp=73
-Action turn=13 side=1 attacker='P718' defender='P306' move='지진' defender_hp=0 knockout=True attacker_hp=73 move_id=89
-result winner=1 turns=13 remaining=((0, 0, 0), (0, 0, 73)) statuses=((None, None, None), (None, 'burn', None))
+Action turn=12 side=1 attacker='P718' defender='P306' move='지진' defender_hp=5 attacker_hp=78 move_id=89
+Action turn=12 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=68 attacker_hp=5 move_id=38
+VolatileTick turn=12 side=1 pokemon='P718' kind='aqua-ring' hp=74
+Action turn=13 side=1 attacker='P718' defender='P306' move='지진' defender_hp=0 knockout=True attacker_hp=74 move_id=89
+result winner=1 turns=13 remaining=((0, 0, 0), (0, 0, 74)) statuses=((None, None, None), (None, 'burn', None))
 header 🏆 B 승 · 3:3 · 13턴
 column '🔵 *A*\nP724 💥\nP717 💥\nP306 💥'
-column '🔴 *B*\nP760 💥\nP437 @화염구슬 💥\nP718 ▰▰▰▰▰▰▰▱▱▱ 73%'
+column '🔴 *B*\nP760 💥\nP437 @화염구슬 💥\nP718 ▰▰▰▰▰▰▰▱▱▱ 74%'
 card title='🏆 B 승' detail='3:3 · 13턴' highlights=('💥 결정타 P718 지진',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/718.png', 'P718')
 card log Matchup(left=Portrait(form_id=724, shiny=False, name='P724'), right=Portrait(form_id=760, shiny=False, name='P760')) = turn 1
 card log None = turn 2
@@ -4672,13 +4673,13 @@ turn 1 🔵 P724 › 브레이브버드 → P760 19% 효과 굉장 반동
 turn 1 🔴 P760 › 누르기 → P724 무효
 turn 2 🔵 P724 › 브레이브버드 → P760 💥 효과 굉장 반동
 turn 2 ↪ 🔴 P437 등장
-turn 3 🔴 P437 › 지진 → P724 49% 효과 별로
-turn 3 🔵 P724 › 브레이브버드 → P437 55% 반동
+turn 3 🔴 P437 › 지진 → P724 48% 효과 별로
+turn 3 🔵 P724 › 브레이브버드 → P437 53% 반동
 turn 3 🔴 P437 @화염구슬 🔥화상
-turn 4 🔴 P437 › 지진 → P724 20% 효과 별로
-turn 4 🔵 P724 › 브레이브버드 → P437 6% 반동
+turn 4 🔴 P437 › 지진 → P724 19% 효과 별로
+turn 4 🔵 P724 › 브레이브버드 → P437 8% 반동
 turn 4 💥 P724 쓰러짐
-turn 4 🔴 P437 🔥 4%
+turn 4 🔴 P437 🔥 5%
 turn 4 ↪ 🔵 P717 등장
 turn 5 🔴 P437 › 지진 → P717 88%
 turn 5 🔵 P717 › 악의파동 → P437 💥
@@ -4686,63 +4687,63 @@ turn 5 ↪ 🔴 P718 등장
 turn 6 🔴 P718 › 아쿠아링 💧물의 고리를 둘렀다
 turn 6 🔵 P717 › 악의파동 → P718 88%
 turn 6 🔴 P718 💧물의고리 94%
-turn 7 🔴 P718 › 지진 → P717 57%
-turn 7 🔵 P717 › 악의파동 → P718 82%
-turn 7 🔴 P718 💧물의고리 88%
-turn 8 🔴 P718 › 지진 → P717 22%
-turn 8 🔵 P717 › 악의파동 → P718 77%
-turn 8 🔴 P718 💧물의고리 83%
+turn 7 🔴 P718 › 지진 → P717 55%
+turn 7 🔵 P717 › 악의파동 → P718 83%
+turn 7 🔴 P718 💧물의고리 89%
+turn 8 🔴 P718 › 지진 → P717 24%
+turn 8 🔵 P717 › 악의파동 → P718 76%
+turn 8 🔴 P718 💧물의고리 82%
 turn 9 🔴 P718 › 지진 → P717 💥
-turn 9 🔴 P718 💧물의고리 89%
+turn 9 🔴 P718 💧물의고리 88%
 turn 9 ↪ 🔵 P306 등장
-turn 10 🔴 P718 › 지진 → P306 67%
+turn 10 🔴 P718 › 지진 → P306 69%
 turn 10 🔵 P306 › 이판사판태클 → P718 77% 효과 별로
 turn 10 🔴 P718 💧물의고리 83%
-turn 11 🔴 P718 › 지진 → P306 38%
+turn 11 🔴 P718 › 지진 → P306 36%
 turn 11 🔵 P306 › 이판사판태클 → P718 72% 효과 별로
 turn 11 🔴 P718 💧물의고리 78%
-turn 12 🔴 P718 › 지진 → P306 6%
-turn 12 🔵 P306 › 이판사판태클 → P718 67% 효과 별로
-turn 12 🔴 P718 💧물의고리 73%
+turn 12 🔴 P718 › 지진 → P306 5%
+turn 12 🔵 P306 › 이판사판태클 → P718 68% 효과 별로
+turn 12 🔴 P718 💧물의고리 74%
 turn 13 🔴 P718 › 지진 → P306 💥
 ## focus 71
 Action turn=1 side=0 attacker='P724' defender='P760' move='브레이브버드' multiplier=2.0 recoil=True defender_hp=38 attacker_hp=77 move_id=413
 Action turn=1 side=1 attacker='P760' defender='P724' move='누르기' multiplier=0 defender_hp=77 attacker_hp=38 move_id=34
 Action turn=2 side=0 attacker='P724' defender='P760' move='브레이브버드' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=62 move_id=413
 SendOut turn=2 side=1 pokemon='P437' member=1
-Action turn=3 side=1 attacker='P437' defender='P724' move='지진' multiplier=0.5 defender_hp=50 move_id=89
-Action turn=3 side=0 attacker='P724' defender='P437' move='브레이브버드' recoil=True defender_hp=50 attacker_hp=27 move_id=413
+Action turn=3 side=1 attacker='P437' defender='P724' move='지진' multiplier=0.5 defender_hp=49 move_id=89
+Action turn=3 side=0 attacker='P724' defender='P437' move='브레이브버드' critical=True recoil=True defender_hp=14 attacker_hp=11 move_id=413
 ItemEffect turn=3 side=1 pokemon='P437' item='flame-orb' effect='burn'
-Action turn=4 side=1 attacker='P437' defender='P724' move='지진' multiplier=0.5 defender_hp=20 attacker_hp=50 move_id=89
+Action turn=4 side=1 attacker='P437' defender='P724' move='지진' multiplier=0.5 defender_hp=5 attacker_hp=14 move_id=89
 Action turn=4 side=0 attacker='P724' defender='P437' move='브레이브버드' recoil=True defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 move_id=413
 SendOut turn=4 side=0 pokemon='P717' member=1
 SendOut turn=4 side=1 pokemon='P718' member=2
 Action turn=5 side=1 attacker='P718' defender='P717' move='아쿠아링' effect='aqua-ring' move_id=392
-Action turn=5 side=0 attacker='P717' defender='P718' move='악의파동' critical=True defender_hp=82 move_id=399
-VolatileTick turn=5 side=1 pokemon='P718' kind='aqua-ring' hp=89
-Action turn=6 side=1 attacker='P718' defender='P717' move='지진' defender_hp=67 attacker_hp=89 move_id=89
-Action turn=6 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=76 attacker_hp=67 move_id=399
-VolatileTick turn=6 side=1 pokemon='P718' kind='aqua-ring' hp=82
-Action turn=7 side=1 attacker='P718' defender='P717' move='지진' defender_hp=34 attacker_hp=82 move_id=89
-Action turn=7 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=69 attacker_hp=34 move_id=399
-VolatileTick turn=7 side=1 pokemon='P718' kind='aqua-ring' hp=75
-Action turn=8 side=1 attacker='P718' defender='P717' move='지진' defender_hp=0 knockout=True attacker_hp=75 move_id=89
-VolatileTick turn=8 side=1 pokemon='P718' kind='aqua-ring' hp=81
+Action turn=5 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=87 move_id=399
+VolatileTick turn=5 side=1 pokemon='P718' kind='aqua-ring' hp=93
+Action turn=6 side=1 attacker='P718' defender='P717' move='지진' critical=True defender_hp=54 attacker_hp=93 move_id=89
+Action turn=6 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=81 attacker_hp=54 move_id=399
+VolatileTick turn=6 side=1 pokemon='P718' kind='aqua-ring' hp=87
+Action turn=7 side=1 attacker='P718' defender='P717' move='지진' defender_hp=21 attacker_hp=87 move_id=89
+Action turn=7 side=0 attacker='P717' defender='P718' move='악의파동' defender_hp=75 attacker_hp=21 move_id=399
+VolatileTick turn=7 side=1 pokemon='P718' kind='aqua-ring' hp=81
+Action turn=8 side=1 attacker='P718' defender='P717' move='지진' defender_hp=0 knockout=True attacker_hp=81 move_id=89
+VolatileTick turn=8 side=1 pokemon='P718' kind='aqua-ring' hp=87
 SendOut turn=8 side=0 pokemon='P306' member=2
-Action turn=9 side=1 attacker='P718' defender='P306' move='지진' defender_hp=73 attacker_hp=81 move_id=89
-Action turn=9 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=71 attacker_hp=73 move_id=38
-VolatileTick turn=9 side=1 pokemon='P718' kind='aqua-ring' hp=77
-Action turn=10 side=1 attacker='P718' defender='P306' move='지진' defender_hp=43 attacker_hp=77 move_id=89
-Action turn=10 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=66 attacker_hp=43 move_id=38
-VolatileTick turn=10 side=1 pokemon='P718' kind='aqua-ring' hp=73
-Action turn=11 side=1 attacker='P718' defender='P306' move='지진' defender_hp=12 attacker_hp=73 move_id=89
-Action turn=11 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=63 attacker_hp=12 move_id=38
-VolatileTick turn=11 side=1 pokemon='P718' kind='aqua-ring' hp=69
-Action turn=12 side=1 attacker='P718' defender='P306' move='지진' defender_hp=0 knockout=True attacker_hp=69 move_id=89
-result winner=1 turns=12 remaining=((0, 0, 0), (0, 0, 69)) statuses=((None, None, None), (None, 'burn', None))
+Action turn=9 side=1 attacker='P718' defender='P306' move='지진' defender_hp=70 attacker_hp=87 move_id=89
+Action turn=9 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=77 attacker_hp=70 move_id=38
+VolatileTick turn=9 side=1 pokemon='P718' kind='aqua-ring' hp=84
+Action turn=10 side=1 attacker='P718' defender='P306' move='지진' defender_hp=41 attacker_hp=84 move_id=89
+Action turn=10 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=72 attacker_hp=41 move_id=38
+VolatileTick turn=10 side=1 pokemon='P718' kind='aqua-ring' hp=78
+Action turn=11 side=1 attacker='P718' defender='P306' move='지진' defender_hp=13 attacker_hp=78 move_id=89
+Action turn=11 side=0 attacker='P306' defender='P718' move='이판사판태클' multiplier=0.5 defender_hp=67 attacker_hp=13 move_id=38
+VolatileTick turn=11 side=1 pokemon='P718' kind='aqua-ring' hp=73
+Action turn=12 side=1 attacker='P718' defender='P306' move='지진' defender_hp=0 knockout=True attacker_hp=73 move_id=89
+result winner=1 turns=12 remaining=((0, 0, 0), (0, 0, 73)) statuses=((None, None, None), (None, 'burn', None))
 header 🏆 B 승 · 3:3 · 12턴
 column '🔵 *A*\nP724 💥\nP717 💥\nP306 💥'
-column '🔴 *B*\nP760 💥\nP437 @화염구슬 💥\nP718 ▰▰▰▰▰▰▰▱▱▱ 69%'
+column '🔴 *B*\nP760 💥\nP437 @화염구슬 💥\nP718 ▰▰▰▰▰▰▰▱▱▱ 73%'
 card title='🏆 B 승' detail='3:3 · 12턴' highlights=('💥 결정타 P718 지진',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/718.png', 'P718')
 card log Matchup(left=Portrait(form_id=724, shiny=False, name='P724'), right=Portrait(form_id=760, shiny=False, name='P760')) = turn 1
 card log None = turn 2
@@ -4760,35 +4761,35 @@ turn 1 🔵 P724 › 브레이브버드 → P760 38% 효과 굉장 반동
 turn 1 🔴 P760 › 누르기 → P724 무효
 turn 2 🔵 P724 › 브레이브버드 → P760 💥 효과 굉장 반동
 turn 2 ↪ 🔴 P437 등장
-turn 3 🔴 P437 › 지진 → P724 50% 효과 별로
-turn 3 🔵 P724 › 브레이브버드 → P437 50% 반동
+turn 3 🔴 P437 › 지진 → P724 49% 효과 별로
+turn 3 🔵 P724 › 브레이브버드 → P437 14% 급소 반동
 turn 3 🔴 P437 @화염구슬 🔥화상
-turn 4 🔴 P437 › 지진 → P724 20% 효과 별로
+turn 4 🔴 P437 › 지진 → P724 5% 효과 별로
 turn 4 🔵 P724 › 브레이브버드 → P437 💥 반동
 turn 4 💥 P724 쓰러짐
 turn 4 ↪ 🔵 P717 등장
 turn 4 ↪ 🔴 P718 등장
 turn 5 🔴 P718 › 아쿠아링 💧물의 고리를 둘렀다
-turn 5 🔵 P717 › 악의파동 → P718 82% 급소
-turn 5 🔴 P718 💧물의고리 89%
-turn 6 🔴 P718 › 지진 → P717 67%
-turn 6 🔵 P717 › 악의파동 → P718 76%
-turn 6 🔴 P718 💧물의고리 82%
-turn 7 🔴 P718 › 지진 → P717 34%
-turn 7 🔵 P717 › 악의파동 → P718 69%
-turn 7 🔴 P718 💧물의고리 75%
+turn 5 🔵 P717 › 악의파동 → P718 87%
+turn 5 🔴 P718 💧물의고리 93%
+turn 6 🔴 P718 › 지진 → P717 54% 급소
+turn 6 🔵 P717 › 악의파동 → P718 81%
+turn 6 🔴 P718 💧물의고리 87%
+turn 7 🔴 P718 › 지진 → P717 21%
+turn 7 🔵 P717 › 악의파동 → P718 75%
+turn 7 🔴 P718 💧물의고리 81%
 turn 8 🔴 P718 › 지진 → P717 💥
-turn 8 🔴 P718 💧물의고리 81%
+turn 8 🔴 P718 💧물의고리 87%
 turn 8 ↪ 🔵 P306 등장
-turn 9 🔴 P718 › 지진 → P306 73%
-turn 9 🔵 P306 › 이판사판태클 → P718 71% 효과 별로
-turn 9 🔴 P718 💧물의고리 77%
-turn 10 🔴 P718 › 지진 → P306 43%
-turn 10 🔵 P306 › 이판사판태클 → P718 66% 효과 별로
-turn 10 🔴 P718 💧물의고리 73%
-turn 11 🔴 P718 › 지진 → P306 12%
-turn 11 🔵 P306 › 이판사판태클 → P718 63% 효과 별로
-turn 11 🔴 P718 💧물의고리 69%
+turn 9 🔴 P718 › 지진 → P306 70%
+turn 9 🔵 P306 › 이판사판태클 → P718 77% 효과 별로
+turn 9 🔴 P718 💧물의고리 84%
+turn 10 🔴 P718 › 지진 → P306 41%
+turn 10 🔵 P306 › 이판사판태클 → P718 72% 효과 별로
+turn 10 🔴 P718 💧물의고리 78%
+turn 11 🔴 P718 › 지진 → P306 13%
+turn 11 🔵 P306 › 이판사판태클 → P718 67% 효과 별로
+turn 11 🔴 P718 💧물의고리 73%
 turn 12 🔴 P718 › 지진 → P306 💥
 ## focus 72
 Action turn=1 side=1 attacker='P718' defender='P892' move='방어' effect='protect' move_id=182
@@ -5486,8 +5487,8 @@ Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defe
 Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=94 move_id=33
 Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=88 move_id=33
 Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=88 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=83 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=83 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=82 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=82 move_id=33
 Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=77 move_id=33
 Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=77 move_id=33
 Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=72 move_id=33
@@ -5500,22 +5501,22 @@ Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defe
 Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=55 move_id=33
 Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=50 move_id=33
 Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=50 move_id=33
-Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=45 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=45 move_id=33
+Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=44 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=44 move_id=33
 Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=39 move_id=33
 Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=39 move_id=33
 Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=34 move_id=33
 Action turn=13 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=34 move_id=33
 Action turn=13 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=28 move_id=33
 Action turn=14 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=28 move_id=33
-Action turn=14 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=21 move_id=33
-Action turn=15 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=21 move_id=33
-Action turn=15 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=16 move_id=33
-Action turn=16 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=16 move_id=33
-Action turn=16 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=10 move_id=33
-Action turn=17 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=10 move_id=33
-Action turn=17 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=4 move_id=33
-Action turn=18 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=4 move_id=33
+Action turn=14 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=23 move_id=33
+Action turn=15 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=23 move_id=33
+Action turn=15 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=17 move_id=33
+Action turn=16 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=17 move_id=33
+Action turn=16 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=11 move_id=33
+Action turn=17 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=11 move_id=33
+Action turn=17 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=5 move_id=33
+Action turn=18 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=5 move_id=33
 Action turn=18 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=0 turns=18 remaining=((100,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 18턴
@@ -5547,7 +5548,7 @@ turn 1 🔵 P130 › 몸통박치기 → P143 94%
 turn 2 🔴 P143 › 몸통박치기 → P130 무효
 turn 2 🔵 P130 › 몸통박치기 → P143 88%
 turn 3 🔴 P143 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P143 83%
+turn 3 🔵 P130 › 몸통박치기 → P143 82%
 turn 4 🔴 P143 › 몸통박치기 → P130 무효
 turn 4 🔵 P130 › 몸통박치기 → P143 77%
 turn 5 🔴 P143 › 몸통박치기 → P130 무효
@@ -5561,7 +5562,7 @@ turn 8 🔵 P130 › 몸통박치기 → P143 55%
 turn 9 🔴 P143 › 몸통박치기 → P130 무효
 turn 9 🔵 P130 › 몸통박치기 → P143 50%
 turn 10 🔴 P143 › 몸통박치기 → P130 무효
-turn 10 🔵 P130 › 몸통박치기 → P143 45%
+turn 10 🔵 P130 › 몸통박치기 → P143 44%
 turn 11 🔴 P143 › 몸통박치기 → P130 무효
 turn 11 🔵 P130 › 몸통박치기 → P143 39%
 turn 12 🔴 P143 › 몸통박치기 → P130 무효
@@ -5569,57 +5570,59 @@ turn 12 🔵 P130 › 몸통박치기 → P143 34%
 turn 13 🔴 P143 › 몸통박치기 → P130 무효
 turn 13 🔵 P130 › 몸통박치기 → P143 28%
 turn 14 🔴 P143 › 몸통박치기 → P130 무효
-turn 14 🔵 P130 › 몸통박치기 → P143 21%
+turn 14 🔵 P130 › 몸통박치기 → P143 23%
 turn 15 🔴 P143 › 몸통박치기 → P130 무효
-turn 15 🔵 P130 › 몸통박치기 → P143 16%
+turn 15 🔵 P130 › 몸통박치기 → P143 17%
 turn 16 🔴 P143 › 몸통박치기 → P130 무효
-turn 16 🔵 P130 › 몸통박치기 → P143 10%
+turn 16 🔵 P130 › 몸통박치기 → P143 11%
 turn 17 🔴 P143 › 몸통박치기 → P130 무효
-turn 17 🔵 P130 › 몸통박치기 → P143 4%
+turn 17 🔵 P130 › 몸통박치기 → P143 5%
 turn 18 🔴 P143 › 몸통박치기 → P130 무효
 turn 18 🔵 P130 › 몸통박치기 → P143 💥
 ## focus 85
 AbilityTrigger side=0 pokemon='P130' ability='intimidate'
 AbilityAct turn=0 side=1 pokemon='P143' ability='mirror-armor' changes=(Change(side=0, pokemon='P130', kind='attack', stages=-1),)
 Action turn=1 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=94 move_id=33
-Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=94 move_id=33
+Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=95 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=95 move_id=33
 Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=89 move_id=33
 Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=89 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=80 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=80 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=71 move_id=33
-Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=71 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=66 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=66 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=58 move_id=33
-Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=58 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=52 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=52 move_id=33
-Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=46 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=46 move_id=33
-Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=40 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=40 move_id=33
-Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=35 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=35 move_id=33
-Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=30 move_id=33
-Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=30 move_id=33
-Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=24 move_id=33
-Action turn=13 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=24 move_id=33
-Action turn=13 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=18 move_id=33
-Action turn=14 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=18 move_id=33
-Action turn=14 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=12 move_id=33
-Action turn=15 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=12 move_id=33
-Action turn=15 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=7 move_id=33
-Action turn=16 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=7 move_id=33
-Action turn=16 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=1 move_id=33
-Action turn=17 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=1 move_id=33
-Action turn=17 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
-result winner=0 turns=17 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 17턴
+Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=84 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=84 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=75 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=75 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=70 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=70 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=64 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=64 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=58 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=58 move_id=33
+Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=51 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=51 move_id=33
+Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=45 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=45 move_id=33
+Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=40 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=40 move_id=33
+Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=34 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=34 move_id=33
+Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=28 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=28 move_id=33
+Action turn=13 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=22 move_id=33
+Action turn=14 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=22 move_id=33
+Action turn=14 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=17 move_id=33
+Action turn=15 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=17 move_id=33
+Action turn=15 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=11 move_id=33
+Action turn=16 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=11 move_id=33
+Action turn=16 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=6 move_id=33
+Action turn=17 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=6 move_id=33
+Action turn=17 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=1 move_id=33
+Action turn=18 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=1 move_id=33
+Action turn=18 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=0 turns=18 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 18턴
 column '🔵 *A*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP143 💥'
-card title='🏆 A 승' detail='1:1 · 17턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 A 승' detail='1:1 · 18턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=130, shiny=False, name='P130'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 1
 card log None = turn 2
 card log None = turn 3
@@ -5637,42 +5640,45 @@ card log None = turn 14
 card log None = turn 15
 card log None = turn 16
 card log None = turn 17
+card log None = turn 18
 turn 1 🔵 P130 [위협]
 turn 1 🔴 P143 [미러아머] → P130 공격↓
 turn 1 🔴 P143 › 몸통박치기 → P130 무효
-turn 1 🔵 P130 › 몸통박치기 → P143 94%
+turn 1 🔵 P130 › 몸통박치기 → P143 95%
 turn 2 🔴 P143 › 몸통박치기 → P130 무효
 turn 2 🔵 P130 › 몸통박치기 → P143 89%
 turn 3 🔴 P143 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P143 80% 급소
+turn 3 🔵 P130 › 몸통박치기 → P143 84%
 turn 4 🔴 P143 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P143 71% 급소
+turn 4 🔵 P130 › 몸통박치기 → P143 75% 급소
 turn 5 🔴 P143 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P143 66%
+turn 5 🔵 P130 › 몸통박치기 → P143 70%
 turn 6 🔴 P143 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P143 58% 급소
+turn 6 🔵 P130 › 몸통박치기 → P143 64%
 turn 7 🔴 P143 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P143 52%
+turn 7 🔵 P130 › 몸통박치기 → P143 58%
 turn 8 🔴 P143 › 몸통박치기 → P130 무효
-turn 8 🔵 P130 › 몸통박치기 → P143 46%
+turn 8 🔵 P130 › 몸통박치기 → P143 51% 급소
 turn 9 🔴 P143 › 몸통박치기 → P130 무효
-turn 9 🔵 P130 › 몸통박치기 → P143 40%
+turn 9 🔵 P130 › 몸통박치기 → P143 45%
 turn 10 🔴 P143 › 몸통박치기 → P130 무효
-turn 10 🔵 P130 › 몸통박치기 → P143 35%
+turn 10 🔵 P130 › 몸통박치기 → P143 40%
 turn 11 🔴 P143 › 몸통박치기 → P130 무효
-turn 11 🔵 P130 › 몸통박치기 → P143 30%
+turn 11 🔵 P130 › 몸통박치기 → P143 34%
 turn 12 🔴 P143 › 몸통박치기 → P130 무효
-turn 12 🔵 P130 › 몸통박치기 → P143 24%
+turn 12 🔵 P130 › 몸통박치기 → P143 28%
 turn 13 🔴 P143 › 몸통박치기 → P130 무효
-turn 13 🔵 P130 › 몸통박치기 → P143 18%
+turn 13 🔵 P130 › 몸통박치기 → P143 22%
 turn 14 🔴 P143 › 몸통박치기 → P130 무효
-turn 14 🔵 P130 › 몸통박치기 → P143 12%
+turn 14 🔵 P130 › 몸통박치기 → P143 17%
 turn 15 🔴 P143 › 몸통박치기 → P130 무효
-turn 15 🔵 P130 › 몸통박치기 → P143 7%
+turn 15 🔵 P130 › 몸통박치기 → P143 11%
 turn 16 🔴 P143 › 몸통박치기 → P130 무효
-turn 16 🔵 P130 › 몸통박치기 → P143 1%
+turn 16 🔵 P130 › 몸통박치기 → P143 6%
 turn 17 🔴 P143 › 몸통박치기 → P130 무효
-turn 17 🔵 P130 › 몸통박치기 → P143 💥
+turn 17 🔵 P130 › 몸통박치기 → P143 1%
+turn 18 🔴 P143 › 몸통박치기 → P130 무효
+turn 18 🔵 P130 › 몸통박치기 → P143 💥
 ## focus 86
 Action turn=1 side=0 attacker='P122' defender='P143' move='몸통박치기' defender_hp=89 move_id=33
 Action turn=1 side=1 attacker='P143' defender='P122' move='몸통박치기' defender_hp=88 attacker_hp=89 move_id=33
@@ -6291,26 +6297,26 @@ AbilityAct turn=0 side=1 pokemon='P143' ability='guard-dog' changes=(Change(side
 Action turn=1 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 move_id=33
 Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=91 move_id=33
 Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=91 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=83 move_id=33
-Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=83 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=74 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=74 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=66 move_id=33
-Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=66 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=58 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=58 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=49 move_id=33
-Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=49 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=40 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=40 move_id=33
-Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=32 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=32 move_id=33
-Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=24 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=24 move_id=33
-Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=16 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=16 move_id=33
-Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=7 move_id=33
-Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=7 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=81 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=81 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=73 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=73 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=64 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=64 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=56 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=56 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=48 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=48 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=39 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=39 move_id=33
+Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=30 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=30 move_id=33
+Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=22 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=22 move_id=33
+Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=13 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=13 move_id=33
+Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=5 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=5 move_id=33
 Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=0 turns=12 remaining=((100,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 12턴
@@ -6334,25 +6340,25 @@ turn 1 🔴 P143 [파수견] 공격↑
 turn 1 🔴 P143 › 몸통박치기 → P130 무효
 turn 1 🔵 P130 › 몸통박치기 → P143 91%
 turn 2 🔴 P143 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P143 83%
+turn 2 🔵 P130 › 몸통박치기 → P143 81%
 turn 3 🔴 P143 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P143 74%
+turn 3 🔵 P130 › 몸통박치기 → P143 73%
 turn 4 🔴 P143 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P143 66%
+turn 4 🔵 P130 › 몸통박치기 → P143 64%
 turn 5 🔴 P143 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P143 58%
+turn 5 🔵 P130 › 몸통박치기 → P143 56%
 turn 6 🔴 P143 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P143 49%
+turn 6 🔵 P130 › 몸통박치기 → P143 48%
 turn 7 🔴 P143 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P143 40%
+turn 7 🔵 P130 › 몸통박치기 → P143 39%
 turn 8 🔴 P143 › 몸통박치기 → P130 무효
-turn 8 🔵 P130 › 몸통박치기 → P143 32%
+turn 8 🔵 P130 › 몸통박치기 → P143 30%
 turn 9 🔴 P143 › 몸통박치기 → P130 무효
-turn 9 🔵 P130 › 몸통박치기 → P143 24%
+turn 9 🔵 P130 › 몸통박치기 → P143 22%
 turn 10 🔴 P143 › 몸통박치기 → P130 무효
-turn 10 🔵 P130 › 몸통박치기 → P143 16%
+turn 10 🔵 P130 › 몸통박치기 → P143 13%
 turn 11 🔴 P143 › 몸통박치기 → P130 무효
-turn 11 🔵 P130 › 몸통박치기 → P143 7%
+turn 11 🔵 P130 › 몸통박치기 → P143 5%
 turn 12 🔴 P143 › 몸통박치기 → P130 무효
 turn 12 🔵 P130 › 몸통박치기 → P143 💥
 ## focus 103
@@ -6361,30 +6367,32 @@ AbilityAct turn=0 side=1 pokemon='P143' ability='guard-dog' changes=(Change(side
 Action turn=1 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 move_id=33
 Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=92 move_id=33
 Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=92 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=83 move_id=33
-Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=83 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=70 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=70 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=56 move_id=33
-Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=56 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=49 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=49 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=37 move_id=33
-Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=37 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=29 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=29 move_id=33
-Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=19 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=19 move_id=33
-Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=11 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=11 move_id=33
-Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=3 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=3 move_id=33
-Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
-result winner=0 turns=11 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 11턴
+Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=84 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=84 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=75 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=75 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=62 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=62 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=54 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=54 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=46 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=46 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=37 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=37 move_id=33
+Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=26 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=26 move_id=33
+Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=18 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=18 move_id=33
+Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=10 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=10 move_id=33
+Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=2 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=2 move_id=33
+Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=0 turns=12 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 12턴
 column '🔵 *A*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP143 💥'
-card title='🏆 A 승' detail='1:1 · 11턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 A 승' detail='1:1 · 12턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=130, shiny=False, name='P130'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 1
 card log None = turn 2
 card log None = turn 3
@@ -6396,48 +6404,51 @@ card log None = turn 8
 card log None = turn 9
 card log None = turn 10
 card log None = turn 11
+card log None = turn 12
 turn 1 🔵 P130 [위협]
 turn 1 🔴 P143 [파수견] 공격↑
 turn 1 🔴 P143 › 몸통박치기 → P130 무효
 turn 1 🔵 P130 › 몸통박치기 → P143 92%
 turn 2 🔴 P143 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P143 83%
+turn 2 🔵 P130 › 몸통박치기 → P143 84%
 turn 3 🔴 P143 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P143 70% 급소
+turn 3 🔵 P130 › 몸통박치기 → P143 75%
 turn 4 🔴 P143 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P143 56% 급소
+turn 4 🔵 P130 › 몸통박치기 → P143 62% 급소
 turn 5 🔴 P143 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P143 49%
+turn 5 🔵 P130 › 몸통박치기 → P143 54%
 turn 6 🔴 P143 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P143 37% 급소
+turn 6 🔵 P130 › 몸통박치기 → P143 46%
 turn 7 🔴 P143 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P143 29%
+turn 7 🔵 P130 › 몸통박치기 → P143 37%
 turn 8 🔴 P143 › 몸통박치기 → P130 무효
-turn 8 🔵 P130 › 몸통박치기 → P143 19%
+turn 8 🔵 P130 › 몸통박치기 → P143 26% 급소
 turn 9 🔴 P143 › 몸통박치기 → P130 무효
-turn 9 🔵 P130 › 몸통박치기 → P143 11%
+turn 9 🔵 P130 › 몸통박치기 → P143 18%
 turn 10 🔴 P143 › 몸통박치기 → P130 무효
-turn 10 🔵 P130 › 몸통박치기 → P143 3%
+turn 10 🔵 P130 › 몸통박치기 → P143 10%
 turn 11 🔴 P143 › 몸통박치기 → P130 무효
-turn 11 🔵 P130 › 몸통박치기 → P143 💥
+turn 11 🔵 P130 › 몸통박치기 → P143 2%
+turn 12 🔴 P143 › 몸통박치기 → P130 무효
+turn 12 🔵 P130 › 몸통박치기 → P143 💥
 ## focus 104
 AbilityTrigger side=0 pokemon='P130' ability='intimidate' change=Change(side=1, pokemon='P128', kind='attack', stages=-1)
 AbilityAct turn=0 side=1 pokemon='P128' ability='rattled' changes=(Change(side=1, pokemon='P128', kind='speed', stages=1),)
 Action turn=1 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=87 move_id=33
-Action turn=2 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=87 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=73 move_id=33
-Action turn=3 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=73 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=60 move_id=33
-Action turn=4 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=60 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=47 move_id=33
-Action turn=5 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=47 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=34 move_id=33
-Action turn=6 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=34 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=21 move_id=33
-Action turn=7 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=21 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=7 move_id=33
-Action turn=8 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=7 move_id=33
+Action turn=1 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=86 move_id=33
+Action turn=2 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=86 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=71 move_id=33
+Action turn=3 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=71 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=58 move_id=33
+Action turn=4 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=58 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=45 move_id=33
+Action turn=5 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=45 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=32 move_id=33
+Action turn=6 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=32 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=19 move_id=33
+Action turn=7 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=19 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=6 move_id=33
+Action turn=8 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=6 move_id=33
 Action turn=8 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=0 turns=8 remaining=((100,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 8턴
@@ -6455,43 +6466,45 @@ card log None = turn 8
 turn 1 🔵 P130 [위협] 공격↓
 turn 1 🔴 P128 [주눅] 스피드↑
 turn 1 🔴 P128 › 몸통박치기 → P130 무효
-turn 1 🔵 P130 › 몸통박치기 → P128 87%
+turn 1 🔵 P130 › 몸통박치기 → P128 86%
 turn 2 🔴 P128 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P128 73%
+turn 2 🔵 P130 › 몸통박치기 → P128 71%
 turn 3 🔴 P128 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P128 60%
+turn 3 🔵 P130 › 몸통박치기 → P128 58%
 turn 4 🔴 P128 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P128 47%
+turn 4 🔵 P130 › 몸통박치기 → P128 45%
 turn 5 🔴 P128 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P128 34%
+turn 5 🔵 P130 › 몸통박치기 → P128 32%
 turn 6 🔴 P128 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P128 21%
+turn 6 🔵 P130 › 몸통박치기 → P128 19%
 turn 7 🔴 P128 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P128 7%
+turn 7 🔵 P130 › 몸통박치기 → P128 6%
 turn 8 🔴 P128 › 몸통박치기 → P130 무효
 turn 8 🔵 P130 › 몸통박치기 → P128 💥
 ## focus 105
 AbilityTrigger side=0 pokemon='P130' ability='intimidate' change=Change(side=1, pokemon='P128', kind='attack', stages=-1)
 AbilityAct turn=0 side=1 pokemon='P128' ability='rattled' changes=(Change(side=1, pokemon='P128', kind='speed', stages=1),)
 Action turn=1 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=87 move_id=33
-Action turn=2 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=87 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=74 move_id=33
-Action turn=3 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=74 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P128' move='몸통박치기' critical=True defender_hp=54 move_id=33
-Action turn=4 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=54 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P128' move='몸통박치기' critical=True defender_hp=33 move_id=33
-Action turn=5 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=33 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=21 move_id=33
-Action turn=6 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=21 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P128' move='몸통박치기' critical=True defender_hp=3 move_id=33
-Action turn=7 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=3 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=0 knockout=True move_id=33
-result winner=0 turns=7 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 7턴
+Action turn=1 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=88 move_id=33
+Action turn=2 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=88 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=75 move_id=33
+Action turn=3 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=75 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=62 move_id=33
+Action turn=4 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=62 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P128' move='몸통박치기' critical=True defender_hp=41 move_id=33
+Action turn=5 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=41 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=30 move_id=33
+Action turn=6 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=30 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=17 move_id=33
+Action turn=7 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=17 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P128' move='몸통박치기' defender_hp=4 move_id=33
+Action turn=8 side=1 attacker='P128' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=4 move_id=33
+Action turn=8 side=0 attacker='P130' defender='P128' move='몸통박치기' critical=True defender_hp=0 knockout=True move_id=33
+result winner=0 turns=8 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 8턴
 column '🔵 *A*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP128 💥'
-card title='🏆 A 승' detail='1:1 · 7턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 A 승' detail='1:1 · 8턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=130, shiny=False, name='P130'), right=Portrait(form_id=128, shiny=False, name='P128')) = turn 1
 card log None = turn 2
 card log None = turn 3
@@ -6499,22 +6512,25 @@ card log None = turn 4
 card log None = turn 5
 card log None = turn 6
 card log None = turn 7
+card log None = turn 8
 turn 1 🔵 P130 [위협] 공격↓
 turn 1 🔴 P128 [주눅] 스피드↑
 turn 1 🔴 P128 › 몸통박치기 → P130 무효
-turn 1 🔵 P130 › 몸통박치기 → P128 87%
+turn 1 🔵 P130 › 몸통박치기 → P128 88%
 turn 2 🔴 P128 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P128 74%
+turn 2 🔵 P130 › 몸통박치기 → P128 75%
 turn 3 🔴 P128 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P128 54% 급소
+turn 3 🔵 P130 › 몸통박치기 → P128 62%
 turn 4 🔴 P128 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P128 33% 급소
+turn 4 🔵 P130 › 몸통박치기 → P128 41% 급소
 turn 5 🔴 P128 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P128 21%
+turn 5 🔵 P130 › 몸통박치기 → P128 30%
 turn 6 🔴 P128 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P128 3% 급소
+turn 6 🔵 P130 › 몸통박치기 → P128 17%
 turn 7 🔴 P128 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P128 💥
+turn 7 🔵 P130 › 몸통박치기 → P128 4%
+turn 8 🔴 P128 › 몸통박치기 → P130 무효
+turn 8 🔵 P130 › 몸통박치기 → P128 💥 급소
 ## focus 106
 Action turn=1 side=1 attacker='P79' defender='P101' move='몸통박치기' defender_hp=90 move_id=33
 Action turn=1 side=0 attacker='P101' defender='P79' move='칼춤' changes=(Change(side=0, pokemon='P101', kind='attack', stages=2),) attacker_hp=90 effect='swords-dance' move_id=14
@@ -6896,12 +6912,12 @@ turn 6 🔴 P79 › 몸통박치기 → P101 💥
 ## focus 116
 Action turn=1 side=0 attacker='P400' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P400', kind='attack', stages=4),) effect='swords-dance' move_id=14
 Action turn=1 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 move_id=33
-Action turn=2 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=71 move_id=33
-Action turn=2 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=71 move_id=33
-Action turn=3 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=42 move_id=33
-Action turn=3 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=42 move_id=33
-Action turn=4 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=14 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=14 move_id=33
+Action turn=2 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=70 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=70 move_id=33
+Action turn=3 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=39 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=39 move_id=33
+Action turn=4 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=10 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=10 move_id=33
 Action turn=5 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 5턴
@@ -6915,37 +6931,42 @@ card log None = turn 4
 card log None = turn 5
 turn 1 🔵 P400 › 칼춤 ⚔️공격이 크게 올랐다
 turn 1 🔴 P143 › 몸통박치기 → P400 무효
-turn 2 🔵 P400 › 몸통박치기 → P143 71%
+turn 2 🔵 P400 › 몸통박치기 → P143 70%
 turn 2 🔴 P143 › 몸통박치기 → P400 무효
-turn 3 🔵 P400 › 몸통박치기 → P143 42%
+turn 3 🔵 P400 › 몸통박치기 → P143 39%
 turn 3 🔴 P143 › 몸통박치기 → P400 무효
-turn 4 🔵 P400 › 몸통박치기 → P143 14%
+turn 4 🔵 P400 › 몸통박치기 → P143 10%
 turn 4 🔴 P143 › 몸통박치기 → P400 무효
 turn 5 🔵 P400 › 몸통박치기 → P143 💥
 ## focus 117
 Action turn=1 side=0 attacker='P400' defender='P143' move='칼춤' changes=(Change(side=0, pokemon='P400', kind='attack', stages=4),) effect='swords-dance' move_id=14
 Action turn=1 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 move_id=33
-Action turn=2 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=72 move_id=33
-Action turn=2 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=72 move_id=33
-Action turn=3 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=42 move_id=33
-Action turn=3 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=42 move_id=33
-Action turn=4 side=0 attacker='P400' defender='P143' move='몸통박치기' critical=True defender_hp=0 knockout=True move_id=33
-result winner=0 turns=4 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 4턴
+Action turn=2 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=74 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=74 move_id=33
+Action turn=3 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=44 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=44 move_id=33
+Action turn=4 side=0 attacker='P400' defender='P143' move='몸통박치기' defender_hp=16 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P400' move='몸통박치기' multiplier=0 attacker_hp=16 move_id=33
+Action turn=5 side=0 attacker='P400' defender='P143' move='몸통박치기' critical=True defender_hp=0 knockout=True move_id=33
+result winner=0 turns=5 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 5턴
 column '🔵 *A*\nP400 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP143 💥'
-card title='🏆 A 승' detail='1:1 · 4턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/400.png', 'P400')
+card title='🏆 A 승' detail='1:1 · 5턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/400.png', 'P400')
 card log Matchup(left=Portrait(form_id=400, shiny=False, name='P400'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 1
 card log None = turn 2
 card log None = turn 3
 card log None = turn 4
+card log None = turn 5
 turn 1 🔵 P400 › 칼춤 ⚔️공격이 크게 올랐다
 turn 1 🔴 P143 › 몸통박치기 → P400 무효
-turn 2 🔵 P400 › 몸통박치기 → P143 72%
+turn 2 🔵 P400 › 몸통박치기 → P143 74%
 turn 2 🔴 P143 › 몸통박치기 → P400 무효
-turn 3 🔵 P400 › 몸통박치기 → P143 42%
+turn 3 🔵 P400 › 몸통박치기 → P143 44%
 turn 3 🔴 P143 › 몸통박치기 → P400 무효
-turn 4 🔵 P400 › 몸통박치기 → P143 💥 급소
+turn 4 🔵 P400 › 몸통박치기 → P143 16%
+turn 4 🔴 P143 › 몸통박치기 → P400 무효
+turn 5 🔵 P400 › 몸통박치기 → P143 💥 급소
 ## focus 118
 Action turn=1 side=1 attacker='P79' defender='P101' move='몸통박치기' defender_hp=91 move_id=33
 Action turn=1 side=0 attacker='P101' defender='P79' move='불꽃세례' multiplier=2.0 defender_hp=69 attacker_hp=91 move_id=52
@@ -7744,20 +7765,20 @@ turn 4 🔵 P18 › 몸통박치기 → P36 💥
 AbilityTrigger side=0 pokemon='P130' ability='intimidate' change=Change(side=1, pokemon='P18', kind='attack', stages=-1)
 AbilityAct turn=0 side=1 pokemon='P18' ability='defiant' changes=(Change(side=1, pokemon='P18', kind='attack', stages=2),)
 Action turn=1 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=86 move_id=33
-Action turn=2 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=86 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=72 move_id=33
-Action turn=3 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=72 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=58 move_id=33
-Action turn=4 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=58 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=44 move_id=33
-Action turn=5 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=44 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=31 move_id=33
-Action turn=6 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=31 move_id=33
+Action turn=1 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=85 move_id=33
+Action turn=2 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=85 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=70 move_id=33
+Action turn=3 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=70 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=56 move_id=33
+Action turn=4 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=56 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=42 move_id=33
+Action turn=5 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=42 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=29 move_id=33
+Action turn=6 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=29 move_id=33
 Action turn=6 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=16 move_id=33
 Action turn=7 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=16 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=3 move_id=33
-Action turn=8 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=3 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=2 move_id=33
+Action turn=8 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=2 move_id=33
 Action turn=8 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=0 turns=8 remaining=((100,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 8턴
@@ -7775,61 +7796,66 @@ card log None = turn 8
 turn 1 🔵 P130 [위협] 공격↓
 turn 1 🔴 P18 [오기] 공격↑↑
 turn 1 🔴 P18 › 몸통박치기 → P130 무효
-turn 1 🔵 P130 › 몸통박치기 → P18 86%
+turn 1 🔵 P130 › 몸통박치기 → P18 85%
 turn 2 🔴 P18 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P18 72%
+turn 2 🔵 P130 › 몸통박치기 → P18 70%
 turn 3 🔴 P18 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P18 58%
+turn 3 🔵 P130 › 몸통박치기 → P18 56%
 turn 4 🔴 P18 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P18 44%
+turn 4 🔵 P130 › 몸통박치기 → P18 42%
 turn 5 🔴 P18 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P18 31%
+turn 5 🔵 P130 › 몸통박치기 → P18 29%
 turn 6 🔴 P18 › 몸통박치기 → P130 무효
 turn 6 🔵 P130 › 몸통박치기 → P18 16%
 turn 7 🔴 P18 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P18 3%
+turn 7 🔵 P130 › 몸통박치기 → P18 2%
 turn 8 🔴 P18 › 몸통박치기 → P130 무효
 turn 8 🔵 P130 › 몸통박치기 → P18 💥
 ## focus 137
 AbilityTrigger side=0 pokemon='P130' ability='intimidate' change=Change(side=1, pokemon='P18', kind='attack', stages=-1)
 AbilityAct turn=0 side=1 pokemon='P18' ability='defiant' changes=(Change(side=1, pokemon='P18', kind='attack', stages=2),)
 Action turn=1 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=85 move_id=33
-Action turn=2 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=85 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=70 move_id=33
-Action turn=3 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=70 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=47 move_id=33
-Action turn=4 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=47 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=24 move_id=33
-Action turn=5 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=24 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=10 move_id=33
-Action turn=6 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=10 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=0 knockout=True move_id=33
-result winner=0 turns=6 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 6턴
+Action turn=1 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=86 move_id=33
+Action turn=2 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=86 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=71 move_id=33
+Action turn=3 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=71 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=57 move_id=33
+Action turn=4 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=57 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=34 move_id=33
+Action turn=5 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=34 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=21 move_id=33
+Action turn=6 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=21 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=7 move_id=33
+Action turn=7 side=1 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=7 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P18' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=0 turns=7 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 7턴
 column '🔵 *A*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP18 💥'
-card title='🏆 A 승' detail='1:1 · 6턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 A 승' detail='1:1 · 7턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=130, shiny=False, name='P130'), right=Portrait(form_id=18, shiny=False, name='P18')) = turn 1
 card log None = turn 2
 card log None = turn 3
 card log None = turn 4
 card log None = turn 5
 card log None = turn 6
+card log None = turn 7
 turn 1 🔵 P130 [위협] 공격↓
 turn 1 🔴 P18 [오기] 공격↑↑
 turn 1 🔴 P18 › 몸통박치기 → P130 무효
-turn 1 🔵 P130 › 몸통박치기 → P18 85%
+turn 1 🔵 P130 › 몸통박치기 → P18 86%
 turn 2 🔴 P18 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P18 70%
+turn 2 🔵 P130 › 몸통박치기 → P18 71%
 turn 3 🔴 P18 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P18 47% 급소
+turn 3 🔵 P130 › 몸통박치기 → P18 57%
 turn 4 🔴 P18 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P18 24% 급소
+turn 4 🔵 P130 › 몸통박치기 → P18 34% 급소
 turn 5 🔴 P18 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P18 10%
+turn 5 🔵 P130 › 몸통박치기 → P18 21%
 turn 6 🔴 P18 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P18 💥 급소
+turn 6 🔵 P130 › 몸통박치기 → P18 7%
+turn 7 🔴 P18 › 몸통박치기 → P130 무효
+turn 7 🔵 P130 › 몸통박치기 → P18 💥
 ## focus 138
 Action turn=1 side=0 attacker='P18' defender='P36' move='몸통박치기' defender_hp=68 attacker_hp=88 ability='rough-skin' move_id=33
 Action turn=1 side=1 attacker='P36' defender='P18' move='몸통박치기' defender_hp=59 attacker_hp=68 move_id=33
@@ -8526,16 +8552,16 @@ AbilityEntry side=1 pokemon='P36' ability='neutralizing-gas' effect='gas'
 Action turn=1 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 move_id=33
 Action turn=1 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=83 move_id=33
 Action turn=2 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=83 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=67 move_id=33
-Action turn=3 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=67 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=51 move_id=33
-Action turn=4 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=51 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=34 move_id=33
-Action turn=5 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=34 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=19 move_id=33
-Action turn=6 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=19 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=2 move_id=33
-Action turn=7 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=2 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=65 move_id=33
+Action turn=3 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=65 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=48 move_id=33
+Action turn=4 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=48 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=32 move_id=33
+Action turn=5 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=32 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=17 move_id=33
+Action turn=6 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=17 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=1 move_id=33
+Action turn=7 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=1 move_id=33
 Action turn=7 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=0 turns=7 remaining=((100,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 7턴
@@ -8553,78 +8579,83 @@ turn 1 🔴 P36 [화학변화가스] 상대 특성이 사라졌다
 turn 1 🔴 P36 › 몸통박치기 → P130 무효
 turn 1 🔵 P130 › 몸통박치기 → P36 83%
 turn 2 🔴 P36 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P36 67%
+turn 2 🔵 P130 › 몸통박치기 → P36 65%
 turn 3 🔴 P36 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P36 51%
+turn 3 🔵 P130 › 몸통박치기 → P36 48%
 turn 4 🔴 P36 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P36 34%
+turn 4 🔵 P130 › 몸통박치기 → P36 32%
 turn 5 🔴 P36 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P36 19%
+turn 5 🔵 P130 › 몸통박치기 → P36 17%
 turn 6 🔴 P36 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P36 2%
+turn 6 🔵 P130 › 몸통박치기 → P36 1%
 turn 7 🔴 P36 › 몸통박치기 → P130 무효
 turn 7 🔵 P130 › 몸통박치기 → P36 💥
 ## focus 155
 AbilityEntry side=1 pokemon='P36' ability='neutralizing-gas' effect='gas'
 Action turn=1 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=85 move_id=33
-Action turn=2 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=85 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=69 move_id=33
-Action turn=3 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=69 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P36' move='몸통박치기' critical=True defender_hp=45 move_id=33
-Action turn=4 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=45 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P36' move='몸통박치기' critical=True defender_hp=21 move_id=33
-Action turn=5 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=21 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=6 move_id=33
-Action turn=6 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=6 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P36' move='몸통박치기' critical=True defender_hp=0 knockout=True move_id=33
-result winner=0 turns=6 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 6턴
+Action turn=1 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=86 move_id=33
+Action turn=2 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=86 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=70 move_id=33
+Action turn=3 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=70 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=55 move_id=33
+Action turn=4 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=55 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P36' move='몸통박치기' critical=True defender_hp=32 move_id=33
+Action turn=5 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=32 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=18 move_id=33
+Action turn=6 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=18 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=3 move_id=33
+Action turn=7 side=1 attacker='P36' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=3 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P36' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=0 turns=7 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 7턴
 column '🔵 *A*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP36 💥'
-card title='🏆 A 승' detail='1:1 · 6턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 A 승' detail='1:1 · 7턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=130, shiny=False, name='P130'), right=Portrait(form_id=36, shiny=False, name='P36')) = turn 1
 card log None = turn 2
 card log None = turn 3
 card log None = turn 4
 card log None = turn 5
 card log None = turn 6
+card log None = turn 7
 turn 1 🔴 P36 [화학변화가스] 상대 특성이 사라졌다
 turn 1 🔴 P36 › 몸통박치기 → P130 무효
-turn 1 🔵 P130 › 몸통박치기 → P36 85%
+turn 1 🔵 P130 › 몸통박치기 → P36 86%
 turn 2 🔴 P36 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P36 69%
+turn 2 🔵 P130 › 몸통박치기 → P36 70%
 turn 3 🔴 P36 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P36 45% 급소
+turn 3 🔵 P130 › 몸통박치기 → P36 55%
 turn 4 🔴 P36 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P36 21% 급소
+turn 4 🔵 P130 › 몸통박치기 → P36 32% 급소
 turn 5 🔴 P36 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P36 6%
+turn 5 🔵 P130 › 몸통박치기 → P36 18%
 turn 6 🔴 P36 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P36 💥 급소
+turn 6 🔵 P130 › 몸통박치기 → P36 3%
+turn 7 🔴 P36 › 몸통박치기 → P130 무효
+turn 7 🔵 P130 › 몸통박치기 → P36 💥
 ## focus 156
 AbilityEntry side=0 pokemon='P18' ability='trace' effect='trace' detail='intimidate'
 AbilityTrigger side=0 pokemon='P18' ability='intimidate' change=Change(side=1, pokemon='P130', kind='attack', stages=-1)
 AbilityTrigger side=1 pokemon='P130' ability='intimidate' change=Change(side=0, pokemon='P18', kind='attack', stages=-1)
 Action turn=1 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=90 move_id=33
-Action turn=2 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=90 move_id=33
-Action turn=2 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=80 move_id=33
-Action turn=3 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=80 move_id=33
-Action turn=3 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=69 move_id=33
-Action turn=4 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=69 move_id=33
-Action turn=4 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=59 move_id=33
-Action turn=5 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=59 move_id=33
-Action turn=5 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=49 move_id=33
-Action turn=6 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=49 move_id=33
-Action turn=6 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=39 move_id=33
-Action turn=7 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=39 move_id=33
-Action turn=7 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=28 move_id=33
-Action turn=8 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=28 move_id=33
-Action turn=8 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=18 move_id=33
-Action turn=9 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=18 move_id=33
-Action turn=9 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=9 move_id=33
-Action turn=10 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=9 move_id=33
+Action turn=1 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=89 move_id=33
+Action turn=2 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=89 move_id=33
+Action turn=2 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=78 move_id=33
+Action turn=3 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=78 move_id=33
+Action turn=3 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=68 move_id=33
+Action turn=4 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=68 move_id=33
+Action turn=4 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=57 move_id=33
+Action turn=5 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=57 move_id=33
+Action turn=5 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=48 move_id=33
+Action turn=6 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=48 move_id=33
+Action turn=6 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=38 move_id=33
+Action turn=7 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=38 move_id=33
+Action turn=7 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=27 move_id=33
+Action turn=8 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=27 move_id=33
+Action turn=8 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=16 move_id=33
+Action turn=9 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=16 move_id=33
+Action turn=9 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=6 move_id=33
+Action turn=10 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=6 move_id=33
 Action turn=10 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=1 turns=10 remaining=((0,), (100,)) statuses=((None,), (None,))
 header 🏆 B 승 · 1:1 · 10턴
@@ -8645,23 +8676,23 @@ turn 1 🔵 P18 [트레이스] 위협 복사
 turn 1 🔵 P18 [위협] 공격↓
 turn 1 🔴 P130 [위협] 공격↓
 turn 1 🔵 P18 › 몸통박치기 → P130 무효
-turn 1 🔴 P130 › 몸통박치기 → P18 90%
+turn 1 🔴 P130 › 몸통박치기 → P18 89%
 turn 2 🔵 P18 › 몸통박치기 → P130 무효
-turn 2 🔴 P130 › 몸통박치기 → P18 80%
+turn 2 🔴 P130 › 몸통박치기 → P18 78%
 turn 3 🔵 P18 › 몸통박치기 → P130 무효
-turn 3 🔴 P130 › 몸통박치기 → P18 69%
+turn 3 🔴 P130 › 몸통박치기 → P18 68%
 turn 4 🔵 P18 › 몸통박치기 → P130 무효
-turn 4 🔴 P130 › 몸통박치기 → P18 59%
+turn 4 🔴 P130 › 몸통박치기 → P18 57%
 turn 5 🔵 P18 › 몸통박치기 → P130 무효
-turn 5 🔴 P130 › 몸통박치기 → P18 49%
+turn 5 🔴 P130 › 몸통박치기 → P18 48%
 turn 6 🔵 P18 › 몸통박치기 → P130 무효
-turn 6 🔴 P130 › 몸통박치기 → P18 39%
+turn 6 🔴 P130 › 몸통박치기 → P18 38%
 turn 7 🔵 P18 › 몸통박치기 → P130 무효
-turn 7 🔴 P130 › 몸통박치기 → P18 28%
+turn 7 🔴 P130 › 몸통박치기 → P18 27%
 turn 8 🔵 P18 › 몸통박치기 → P130 무효
-turn 8 🔴 P130 › 몸통박치기 → P18 18%
+turn 8 🔴 P130 › 몸통박치기 → P18 16%
 turn 9 🔵 P18 › 몸통박치기 → P130 무효
-turn 9 🔴 P130 › 몸통박치기 → P18 9%
+turn 9 🔴 P130 › 몸통박치기 → P18 6%
 turn 10 🔵 P18 › 몸통박치기 → P130 무효
 turn 10 🔴 P130 › 몸통박치기 → P18 💥
 ## focus 157
@@ -8669,28 +8700,30 @@ AbilityEntry side=0 pokemon='P18' ability='trace' effect='trace' detail='intimid
 AbilityTrigger side=0 pokemon='P18' ability='intimidate' change=Change(side=1, pokemon='P130', kind='attack', stages=-1)
 AbilityTrigger side=1 pokemon='P130' ability='intimidate' change=Change(side=0, pokemon='P18', kind='attack', stages=-1)
 Action turn=1 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=90 move_id=33
-Action turn=2 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=90 move_id=33
-Action turn=2 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=80 move_id=33
-Action turn=3 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=80 move_id=33
-Action turn=3 side=1 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=64 move_id=33
-Action turn=4 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=64 move_id=33
-Action turn=4 side=1 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=48 move_id=33
-Action turn=5 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=48 move_id=33
-Action turn=5 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=39 move_id=33
-Action turn=6 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=39 move_id=33
-Action turn=6 side=1 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=26 move_id=33
-Action turn=7 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=26 move_id=33
-Action turn=7 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=16 move_id=33
-Action turn=8 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=16 move_id=33
-Action turn=8 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=5 move_id=33
-Action turn=9 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=5 move_id=33
-Action turn=9 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=0 knockout=True move_id=33
-result winner=1 turns=9 remaining=((0,), (100,)) statuses=((None,), (None,))
-header 🏆 B 승 · 1:1 · 9턴
+Action turn=1 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=91 move_id=33
+Action turn=2 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=91 move_id=33
+Action turn=2 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=81 move_id=33
+Action turn=3 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=81 move_id=33
+Action turn=3 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=71 move_id=33
+Action turn=4 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=71 move_id=33
+Action turn=4 side=1 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=55 move_id=33
+Action turn=5 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=55 move_id=33
+Action turn=5 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=46 move_id=33
+Action turn=6 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=46 move_id=33
+Action turn=6 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=36 move_id=33
+Action turn=7 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=36 move_id=33
+Action turn=7 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=26 move_id=33
+Action turn=8 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=26 move_id=33
+Action turn=8 side=1 attacker='P130' defender='P18' move='몸통박치기' critical=True defender_hp=13 move_id=33
+Action turn=9 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=13 move_id=33
+Action turn=9 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=3 move_id=33
+Action turn=10 side=0 attacker='P18' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=3 move_id=33
+Action turn=10 side=1 attacker='P130' defender='P18' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=1 turns=10 remaining=((0,), (100,)) statuses=((None,), (None,))
+header 🏆 B 승 · 1:1 · 10턴
 column '🔵 *A*\nP18 💥'
 column '🔴 *B*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
-card title='🏆 B 승' detail='1:1 · 9턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 B 승' detail='1:1 · 10턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=18, shiny=False, name='P18'), right=Portrait(form_id=130, shiny=False, name='P130')) = turn 1
 card log None = turn 2
 card log None = turn 3
@@ -8700,27 +8733,30 @@ card log None = turn 6
 card log None = turn 7
 card log None = turn 8
 card log None = turn 9
+card log None = turn 10
 turn 1 🔵 P18 [트레이스] 위협 복사
 turn 1 🔵 P18 [위협] 공격↓
 turn 1 🔴 P130 [위협] 공격↓
 turn 1 🔵 P18 › 몸통박치기 → P130 무효
-turn 1 🔴 P130 › 몸통박치기 → P18 90%
+turn 1 🔴 P130 › 몸통박치기 → P18 91%
 turn 2 🔵 P18 › 몸통박치기 → P130 무효
-turn 2 🔴 P130 › 몸통박치기 → P18 80%
+turn 2 🔴 P130 › 몸통박치기 → P18 81%
 turn 3 🔵 P18 › 몸통박치기 → P130 무효
-turn 3 🔴 P130 › 몸통박치기 → P18 64% 급소
+turn 3 🔴 P130 › 몸통박치기 → P18 71%
 turn 4 🔵 P18 › 몸통박치기 → P130 무효
-turn 4 🔴 P130 › 몸통박치기 → P18 48% 급소
+turn 4 🔴 P130 › 몸통박치기 → P18 55% 급소
 turn 5 🔵 P18 › 몸통박치기 → P130 무효
-turn 5 🔴 P130 › 몸통박치기 → P18 39%
+turn 5 🔴 P130 › 몸통박치기 → P18 46%
 turn 6 🔵 P18 › 몸통박치기 → P130 무효
-turn 6 🔴 P130 › 몸통박치기 → P18 26% 급소
+turn 6 🔴 P130 › 몸통박치기 → P18 36%
 turn 7 🔵 P18 › 몸통박치기 → P130 무효
-turn 7 🔴 P130 › 몸통박치기 → P18 16%
+turn 7 🔴 P130 › 몸통박치기 → P18 26%
 turn 8 🔵 P18 › 몸통박치기 → P130 무효
-turn 8 🔴 P130 › 몸통박치기 → P18 5%
+turn 8 🔴 P130 › 몸통박치기 → P18 13% 급소
 turn 9 🔵 P18 › 몸통박치기 → P130 무효
-turn 9 🔴 P130 › 몸통박치기 → P18 💥
+turn 9 🔴 P130 › 몸통박치기 → P18 3%
+turn 10 🔵 P18 › 몸통박치기 → P130 무효
+turn 10 🔴 P130 › 몸통박치기 → P18 💥
 ## focus 158
 AbilityTransform side=0 pokemon='P132' ability='imposter' into='P6' form_id=6 own_form_id=132
 Action turn=1 side=1 attacker='P6' defender='P132' move='인파이트' changes=(Change(side=1, pokemon='P6', kind='defense', stages=-1), Change(side=1, pokemon='P6', kind='special_defense', stages=-1)) defender_hp=53 move_id=370
@@ -9667,13 +9703,13 @@ turn 3 🔵 P877 › 오라휠 → P36 💥 자신 스피드↑
 Action turn=1 side=0 attacker='P877' defender='P36' move='오라휠' changes=(Change(side=0, pokemon='P877', kind='speed', stages=1),) defender_hp=64 move_id=783
 Action turn=1 side=1 attacker='P36' defender='P877' move='몸통박치기' multiplier=0 attacker_hp=64 move_id=33
 FormShift turn=1 side=0 pokemon='P877' kind='hangry' form_id=10187
-Action turn=2 side=0 attacker='P877' defender='P36' move='오라휠' changes=(Change(side=0, pokemon='P877', kind='speed', stages=1),) defender_hp=29 move_id=783
-Action turn=2 side=1 attacker='P36' defender='P877' move='몸통박치기' defender_hp=84 attacker_hp=29 move_id=33
+Action turn=2 side=0 attacker='P877' defender='P36' move='오라휠' changes=(Change(side=0, pokemon='P877', kind='speed', stages=1),) defender_hp=27 move_id=783
+Action turn=2 side=1 attacker='P36' defender='P877' move='몸통박치기' critical=True defender_hp=75 attacker_hp=27 move_id=33
 FormShift turn=2 side=0 pokemon='P877' kind='base' form_id=877
-Action turn=3 side=0 attacker='P877' defender='P36' move='오라휠' changes=(Change(side=0, pokemon='P877', kind='speed', stages=1),) defender_hp=0 knockout=True attacker_hp=89 move_id=783
-result winner=0 turns=3 remaining=((89,), (0,)) statuses=((None,), (None,))
+Action turn=3 side=0 attacker='P877' defender='P36' move='오라휠' changes=(Change(side=0, pokemon='P877', kind='speed', stages=1),) defender_hp=0 knockout=True attacker_hp=80 move_id=783
+result winner=0 turns=3 remaining=((80,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 3턴
-column '🔵 *A*\nP877 ▰▰▰▰▰▰▰▰▰▱ 89%'
+column '🔵 *A*\nP877 ▰▰▰▰▰▰▰▰▱▱ 80%'
 column '🔴 *B*\nP36 💥'
 card title='🏆 A 승' detail='1:1 · 3턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/877.png', 'P877')
 card log Matchup(left=Portrait(form_id=877, shiny=False, name='P877'), right=Portrait(form_id=36, shiny=False, name='P36')) = turn 1
@@ -9682,8 +9718,8 @@ card log None = turn 3
 turn 1 🔵 P877 › 오라휠 → P36 64% 자신 스피드↑
 turn 1 🔴 P36 › 몸통박치기 → P877 무효
 turn 1 🔵 P877은(는) 배고픈모양이 되었다!
-turn 2 🔵 P877 › 오라휠 → P36 29% 자신 스피드↑
-turn 2 🔴 P36 › 몸통박치기 → P877 84%
+turn 2 🔵 P877 › 오라휠 → P36 27% 자신 스피드↑
+turn 2 🔴 P36 › 몸통박치기 → P877 75% 급소
 turn 2 🔵 P877은(는) 원래모습이 되었다!
 turn 3 🔵 P877 › 오라휠 → P36 💥 자신 스피드↑
 ## focus 190
@@ -12369,26 +12405,26 @@ ItemEffect turn=0 side=1 pokemon='P143' item='adrenaline-orb' effect='used' chan
 Action turn=1 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 move_id=33
 Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=91 move_id=33
 Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=91 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=82 move_id=33
-Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=82 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=73 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=73 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=64 move_id=33
-Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=64 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=56 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=56 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=81 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=81 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=72 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=72 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=63 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=63 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=54 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=54 move_id=33
 Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=46 move_id=33
 Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=46 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=37 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=37 move_id=33
-Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=28 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=28 move_id=33
-Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=20 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=20 move_id=33
-Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=12 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=12 move_id=33
-Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=2 move_id=33
-Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=2 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=36 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=36 move_id=33
+Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=27 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=27 move_id=33
+Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=18 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=18 move_id=33
+Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=9 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=9 move_id=33
+Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=1 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=1 move_id=33
 Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
 result winner=0 turns=12 remaining=((100,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 12턴
@@ -12413,25 +12449,25 @@ turn 0 🔴 P143 @주눅구슬 발동 스피드↑
 turn 1 🔴 P143 › 몸통박치기 → P130 무효
 turn 1 🔵 P130 › 몸통박치기 → P143 91%
 turn 2 🔴 P143 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P143 82%
+turn 2 🔵 P130 › 몸통박치기 → P143 81%
 turn 3 🔴 P143 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P143 73%
+turn 3 🔵 P130 › 몸통박치기 → P143 72%
 turn 4 🔴 P143 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P143 64%
+turn 4 🔵 P130 › 몸통박치기 → P143 63%
 turn 5 🔴 P143 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P143 56%
+turn 5 🔵 P130 › 몸통박치기 → P143 54%
 turn 6 🔴 P143 › 몸통박치기 → P130 무효
 turn 6 🔵 P130 › 몸통박치기 → P143 46%
 turn 7 🔴 P143 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P143 37%
+turn 7 🔵 P130 › 몸통박치기 → P143 36%
 turn 8 🔴 P143 › 몸통박치기 → P130 무효
-turn 8 🔵 P130 › 몸통박치기 → P143 28%
+turn 8 🔵 P130 › 몸통박치기 → P143 27%
 turn 9 🔴 P143 › 몸통박치기 → P130 무효
-turn 9 🔵 P130 › 몸통박치기 → P143 20%
+turn 9 🔵 P130 › 몸통박치기 → P143 18%
 turn 10 🔴 P143 › 몸통박치기 → P130 무효
-turn 10 🔵 P130 › 몸통박치기 → P143 12%
+turn 10 🔵 P130 › 몸통박치기 → P143 9%
 turn 11 🔴 P143 › 몸통박치기 → P130 무효
-turn 11 🔵 P130 › 몸통박치기 → P143 2%
+turn 11 🔵 P130 › 몸통박치기 → P143 1%
 turn 12 🔴 P143 › 몸통박치기 → P130 무효
 turn 12 🔵 P130 › 몸통박치기 → P143 💥
 ## focus 237
@@ -12442,30 +12478,32 @@ Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defe
 Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=93 move_id=33
 Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=85 move_id=33
 Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=85 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=73 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=73 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=61 move_id=33
-Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=61 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=53 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=53 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=43 move_id=33
-Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=43 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=35 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=35 move_id=33
-Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=27 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=27 move_id=33
-Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=19 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=19 move_id=33
-Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=12 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=12 move_id=33
-Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=4 move_id=33
-Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=4 move_id=33
-Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
-result winner=0 turns=12 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 12턴
+Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=78 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=78 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=66 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=66 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=59 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=59 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=52 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=52 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=44 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=44 move_id=33
+Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=34 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=34 move_id=33
+Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=26 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=26 move_id=33
+Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=19 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=19 move_id=33
+Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=12 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=12 move_id=33
+Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=4 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=4 move_id=33
+Action turn=13 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=0 turns=13 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 13턴
 column '🔵 *A*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP143 @주눅구슬 💥'
-card title='🏆 A 승' detail='1:1 · 12턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 A 승' detail='1:1 · 13턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=130, shiny=False, name='P130'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 0
 card log None = turn 1
 card log None = turn 2
@@ -12479,6 +12517,7 @@ card log None = turn 9
 card log None = turn 10
 card log None = turn 11
 card log None = turn 12
+card log None = turn 13
 turn 0 🔵 P130 [위협] 공격↓
 turn 0 🔴 P143 @주눅구슬 발동 스피드↑
 turn 1 🔴 P143 › 몸통박치기 → P130 무효
@@ -12486,25 +12525,27 @@ turn 1 🔵 P130 › 몸통박치기 → P143 93%
 turn 2 🔴 P143 › 몸통박치기 → P130 무효
 turn 2 🔵 P130 › 몸통박치기 → P143 85%
 turn 3 🔴 P143 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P143 73% 급소
+turn 3 🔵 P130 › 몸통박치기 → P143 78%
 turn 4 🔴 P143 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P143 61% 급소
+turn 4 🔵 P130 › 몸통박치기 → P143 66% 급소
 turn 5 🔴 P143 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P143 53%
+turn 5 🔵 P130 › 몸통박치기 → P143 59%
 turn 6 🔴 P143 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P143 43% 급소
+turn 6 🔵 P130 › 몸통박치기 → P143 52%
 turn 7 🔴 P143 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P143 35%
+turn 7 🔵 P130 › 몸통박치기 → P143 44%
 turn 8 🔴 P143 › 몸통박치기 → P130 무효
-turn 8 🔵 P130 › 몸통박치기 → P143 27%
+turn 8 🔵 P130 › 몸통박치기 → P143 34% 급소
 turn 9 🔴 P143 › 몸통박치기 → P130 무효
-turn 9 🔵 P130 › 몸통박치기 → P143 19%
+turn 9 🔵 P130 › 몸통박치기 → P143 26%
 turn 10 🔴 P143 › 몸통박치기 → P130 무효
-turn 10 🔵 P130 › 몸통박치기 → P143 12%
+turn 10 🔵 P130 › 몸통박치기 → P143 19%
 turn 11 🔴 P143 › 몸통박치기 → P130 무효
-turn 11 🔵 P130 › 몸통박치기 → P143 4%
+turn 11 🔵 P130 › 몸통박치기 → P143 12%
 turn 12 🔴 P143 › 몸통박치기 → P130 무효
-turn 12 🔵 P130 › 몸통박치기 → P143 💥
+turn 12 🔵 P130 › 몸통박치기 → P143 4%
+turn 13 🔴 P143 › 몸통박치기 → P130 무효
+turn 13 🔵 P130 › 몸통박치기 → P143 💥
 ## focus 238
 Action turn=1 side=1 attacker='P143' defender='P143' move='몸통박치기' defender_hp=93 move_id=33
 Action turn=1 side=0 attacker='P143' defender='P143' move='전자포' multiplier=0.5 changes=(Change(side=1, pokemon='P143', kind='paralysis', stages=0),) defender_hp=77 attacker_hp=93 move_id=192
@@ -13432,34 +13473,32 @@ turn 8 🔵 P984 › 몸통박치기 → P143 💥
 AbilityTrigger side=0 pokemon='P130' ability='intimidate'
 ItemEffect turn=0 side=1 pokemon='P143' item='clear-amulet' effect='guard'
 Action turn=1 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=91 move_id=33
-Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=91 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=82 move_id=33
-Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=82 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=73 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=73 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=64 move_id=33
-Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=64 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=55 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=55 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=46 move_id=33
-Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=46 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=37 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=37 move_id=33
-Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=28 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=28 move_id=33
-Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=19 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=19 move_id=33
-Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=11 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=11 move_id=33
-Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=1 move_id=33
-Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=1 move_id=33
-Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
-result winner=0 turns=12 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 12턴
+Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=90 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=90 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=80 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=80 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=71 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=71 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=62 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=62 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=54 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=54 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=45 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=45 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=36 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=36 move_id=33
+Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=26 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=26 move_id=33
+Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=17 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=17 move_id=33
+Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=8 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=8 move_id=33
+Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=0 turns=11 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 11턴
 column '🔵 *A*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP143 @클리어참 💥'
-card title='🏆 A 승' detail='1:1 · 12턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 A 승' detail='1:1 · 11턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=130, shiny=False, name='P130'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 0
 card log None = turn 1
 card log None = turn 2
@@ -13472,65 +13511,64 @@ card log None = turn 8
 card log None = turn 9
 card log None = turn 10
 card log None = turn 11
-card log None = turn 12
 turn 0 🔵 P130 [위협]
 turn 0 🔴 P143 @클리어참 능력 하락을 막음
 turn 1 🔴 P143 › 몸통박치기 → P130 무효
-turn 1 🔵 P130 › 몸통박치기 → P143 91%
+turn 1 🔵 P130 › 몸통박치기 → P143 90%
 turn 2 🔴 P143 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P143 82%
+turn 2 🔵 P130 › 몸통박치기 → P143 80%
 turn 3 🔴 P143 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P143 73%
+turn 3 🔵 P130 › 몸통박치기 → P143 71%
 turn 4 🔴 P143 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P143 64%
+turn 4 🔵 P130 › 몸통박치기 → P143 62%
 turn 5 🔴 P143 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P143 55%
+turn 5 🔵 P130 › 몸통박치기 → P143 54%
 turn 6 🔴 P143 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P143 46%
+turn 6 🔵 P130 › 몸통박치기 → P143 45%
 turn 7 🔴 P143 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P143 37%
+turn 7 🔵 P130 › 몸통박치기 → P143 36%
 turn 8 🔴 P143 › 몸통박치기 → P130 무효
-turn 8 🔵 P130 › 몸통박치기 → P143 28%
+turn 8 🔵 P130 › 몸통박치기 → P143 26%
 turn 9 🔴 P143 › 몸통박치기 → P130 무효
-turn 9 🔵 P130 › 몸통박치기 → P143 19%
+turn 9 🔵 P130 › 몸통박치기 → P143 17%
 turn 10 🔴 P143 › 몸통박치기 → P130 무효
-turn 10 🔵 P130 › 몸통박치기 → P143 11%
+turn 10 🔵 P130 › 몸통박치기 → P143 8%
 turn 11 🔴 P143 › 몸통박치기 → P130 무효
-turn 11 🔵 P130 › 몸통박치기 → P143 1%
-turn 12 🔴 P143 › 몸통박치기 → P130 무효
-turn 12 🔵 P130 › 몸통박치기 → P143 💥
+turn 11 🔵 P130 › 몸통박치기 → P143 💥
 ## focus 253
 AbilityTrigger side=0 pokemon='P130' ability='intimidate'
 ItemEffect turn=0 side=1 pokemon='P143' item='clear-amulet' effect='guard'
 Action turn=1 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 move_id=33
-Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=92 move_id=33
-Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=92 move_id=33
-Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=84 move_id=33
-Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=84 move_id=33
-Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=72 move_id=33
-Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=72 move_id=33
-Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=60 move_id=33
-Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=60 move_id=33
-Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=53 move_id=33
-Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=53 move_id=33
-Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=42 move_id=33
-Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=42 move_id=33
-Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=34 move_id=33
-Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=34 move_id=33
-Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=26 move_id=33
-Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=26 move_id=33
-Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=18 move_id=33
-Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=18 move_id=33
-Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=11 move_id=33
-Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=11 move_id=33
-Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=4 move_id=33
-Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=4 move_id=33
-Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
-result winner=0 turns=12 remaining=((100,), (0,)) statuses=((None,), (None,))
-header 🏆 A 승 · 1:1 · 12턴
+Action turn=1 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=93 move_id=33
+Action turn=2 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=93 move_id=33
+Action turn=2 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=85 move_id=33
+Action turn=3 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=85 move_id=33
+Action turn=3 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=77 move_id=33
+Action turn=4 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=77 move_id=33
+Action turn=4 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=65 move_id=33
+Action turn=5 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=65 move_id=33
+Action turn=5 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=58 move_id=33
+Action turn=6 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=58 move_id=33
+Action turn=6 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=51 move_id=33
+Action turn=7 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=51 move_id=33
+Action turn=7 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=43 move_id=33
+Action turn=8 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=43 move_id=33
+Action turn=8 side=0 attacker='P130' defender='P143' move='몸통박치기' critical=True defender_hp=32 move_id=33
+Action turn=9 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=32 move_id=33
+Action turn=9 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=25 move_id=33
+Action turn=10 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=25 move_id=33
+Action turn=10 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=17 move_id=33
+Action turn=11 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=17 move_id=33
+Action turn=11 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=10 move_id=33
+Action turn=12 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=10 move_id=33
+Action turn=12 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=2 move_id=33
+Action turn=13 side=1 attacker='P143' defender='P130' move='몸통박치기' multiplier=0 attacker_hp=2 move_id=33
+Action turn=13 side=0 attacker='P130' defender='P143' move='몸통박치기' defender_hp=0 knockout=True move_id=33
+result winner=0 turns=13 remaining=((100,), (0,)) statuses=((None,), (None,))
+header 🏆 A 승 · 1:1 · 13턴
 column '🔵 *A*\nP130 ▰▰▰▰▰▰▰▰▰▰ 100%'
 column '🔴 *B*\nP143 @클리어참 💥'
-card title='🏆 A 승' detail='1:1 · 12턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
+card title='🏆 A 승' detail='1:1 · 13턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', 'P130')
 card log Matchup(left=Portrait(form_id=130, shiny=False, name='P130'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 0
 card log None = turn 1
 card log None = turn 2
@@ -13544,32 +13582,35 @@ card log None = turn 9
 card log None = turn 10
 card log None = turn 11
 card log None = turn 12
+card log None = turn 13
 turn 0 🔵 P130 [위협]
 turn 0 🔴 P143 @클리어참 능력 하락을 막음
 turn 1 🔴 P143 › 몸통박치기 → P130 무효
-turn 1 🔵 P130 › 몸통박치기 → P143 92%
+turn 1 🔵 P130 › 몸통박치기 → P143 93%
 turn 2 🔴 P143 › 몸통박치기 → P130 무효
-turn 2 🔵 P130 › 몸통박치기 → P143 84%
+turn 2 🔵 P130 › 몸통박치기 → P143 85%
 turn 3 🔴 P143 › 몸통박치기 → P130 무효
-turn 3 🔵 P130 › 몸통박치기 → P143 72% 급소
+turn 3 🔵 P130 › 몸통박치기 → P143 77%
 turn 4 🔴 P143 › 몸통박치기 → P130 무효
-turn 4 🔵 P130 › 몸통박치기 → P143 60% 급소
+turn 4 🔵 P130 › 몸통박치기 → P143 65% 급소
 turn 5 🔴 P143 › 몸통박치기 → P130 무효
-turn 5 🔵 P130 › 몸통박치기 → P143 53%
+turn 5 🔵 P130 › 몸통박치기 → P143 58%
 turn 6 🔴 P143 › 몸통박치기 → P130 무효
-turn 6 🔵 P130 › 몸통박치기 → P143 42% 급소
+turn 6 🔵 P130 › 몸통박치기 → P143 51%
 turn 7 🔴 P143 › 몸통박치기 → P130 무효
-turn 7 🔵 P130 › 몸통박치기 → P143 34%
+turn 7 🔵 P130 › 몸통박치기 → P143 43%
 turn 8 🔴 P143 › 몸통박치기 → P130 무효
-turn 8 🔵 P130 › 몸통박치기 → P143 26%
+turn 8 🔵 P130 › 몸통박치기 → P143 32% 급소
 turn 9 🔴 P143 › 몸통박치기 → P130 무효
-turn 9 🔵 P130 › 몸통박치기 → P143 18%
+turn 9 🔵 P130 › 몸통박치기 → P143 25%
 turn 10 🔴 P143 › 몸통박치기 → P130 무효
-turn 10 🔵 P130 › 몸통박치기 → P143 11%
+turn 10 🔵 P130 › 몸통박치기 → P143 17%
 turn 11 🔴 P143 › 몸통박치기 → P130 무효
-turn 11 🔵 P130 › 몸통박치기 → P143 4%
+turn 11 🔵 P130 › 몸통박치기 → P143 10%
 turn 12 🔴 P143 › 몸통박치기 → P130 무효
-turn 12 🔵 P130 › 몸통박치기 → P143 💥
+turn 12 🔵 P130 › 몸통박치기 → P143 2%
+turn 13 🔴 P143 › 몸통박치기 → P130 무효
+turn 13 🔵 P130 › 몸통박치기 → P143 💥
 ## focus 254
 AbilityTrigger side=0 pokemon='P248' ability='sand-stream' weather='sandstorm'
 Action turn=1 side=1 attacker='P143' defender='P248' move='몸통박치기' defender_hp=91 move_id=33

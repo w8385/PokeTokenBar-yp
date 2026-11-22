@@ -93,12 +93,12 @@ Action turn=13 side=1 attacker='P724' defender='P871' move='리프스톰' multip
 Action turn=14 side=0 attacker='P871' defender='P724' move='미래예지' defender_hp=55 effect='delayed-hit' move_id=248
 Action turn=14 side=1 attacker='P724' defender='P871' move='리프스톰' multiplier=0 attacker_hp=55 ability='wonder-guard' move_id=437
 Action turn=15 side=0 attacker='P871' defender='P724' move='묵사발' multiplier=0 defender_hp=55 move_id=462
-Action turn=15 side=1 attacker='P724' defender='P871' move='리프스톰' missed=True multiplier=0.0 attacker_hp=55 move_id=437
+Action turn=15 side=1 attacker='P724' defender='P871' move='리프스톰' multiplier=0 attacker_hp=55 ability='wonder-guard' move_id=437
 Action turn=16 side=0 attacker='P871' defender='P724' move='묵사발' multiplier=0 defender_hp=55 move_id=462
 Action turn=16 side=1 attacker='P724' defender='P871' move='리프스톰' multiplier=0 attacker_hp=55 ability='wonder-guard' move_id=437
 Action turn=16 side=0 attacker='P871' defender='P724' move='미래예지' defender_hp=0 knockout=True
 result winner=0 turns=16 remaining=((0, 0, 0, 0, 0, 100), (0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-won=True carry=null body=404710aa1b7d32f972be32628bd7d68cf0943df88723852ab5e074e8fda561a2
+won=True carry=null body=2b5f70522fd19830c46b25e41ffd30989f58c30720f8f7a93b9b7990944d34d2
 ## alola-4 party 0 carried null
 Action turn=1 side=0 attacker='P670' defender='P752' move='씨폭탄' multiplier=0.25 defender_hp=95 move_id=402
 Action turn=1 side=1 attacker='P752' defender='P670' move='깨물어부수기' multiplier=2.0 defender_hp=57 attacker_hp=95 move_id=242
@@ -327,25 +327,25 @@ Action turn=17 side=0 attacker='P871' defender='P756' move='묵사발' defender_
 Action turn=17 side=1 attacker='P756' defender='P871' move='에너지볼' multiplier=0 attacker_hp=7 ability='wonder-guard' move_id=412
 Action turn=17 side=0 attacker='P871' defender='P756' move='미래예지' defender_hp=0 knockout=True
 SendOut turn=17 side=1 pokemon='P743' member=2
-Action turn=18 side=0 attacker='P871' defender='P743' move='묵사발' defender_hp=68 move_id=462
-Action turn=18 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=68 ability='wonder-guard' move_id=405
-Action turn=19 side=0 attacker='P871' defender='P743' move='묵사발' defender_hp=49 move_id=462
-Action turn=19 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=49 ability='wonder-guard' move_id=405
-Action turn=20 side=0 attacker='P871' defender='P743' move='묵사발' defender_hp=33 move_id=462
-Action turn=20 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=33 ability='wonder-guard' move_id=405
-Action turn=21 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=33 effect='delayed-hit' move_id=248
-Action turn=21 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=33 ability='wonder-guard' move_id=405
-Action turn=22 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=33 failed=True move_id=660
-Action turn=22 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=33 ability='wonder-guard' move_id=405
-Action turn=23 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=33 failed=True move_id=660
-Action turn=23 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=33 ability='wonder-guard' move_id=405
-Action turn=23 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=16
-Action turn=24 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=16 effect='delayed-hit' move_id=248
-Action turn=24 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=16 ability='wonder-guard' move_id=405
-Action turn=25 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=16 failed=True move_id=660
-Action turn=25 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=16 ability='wonder-guard' move_id=405
-Action turn=26 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=16 failed=True move_id=660
-Action turn=26 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=16 ability='wonder-guard' move_id=405
+Action turn=18 side=0 attacker='P871' defender='P743' move='묵사발' defender_hp=69 move_id=462
+Action turn=18 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=69 ability='wonder-guard' move_id=405
+Action turn=19 side=0 attacker='P871' defender='P743' move='묵사발' defender_hp=47 move_id=462
+Action turn=19 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=47 ability='wonder-guard' move_id=405
+Action turn=20 side=0 attacker='P871' defender='P743' move='묵사발' defender_hp=32 move_id=462
+Action turn=20 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=32 ability='wonder-guard' move_id=405
+Action turn=21 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=32 effect='delayed-hit' move_id=248
+Action turn=21 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=32 ability='wonder-guard' move_id=405
+Action turn=22 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=32 failed=True move_id=660
+Action turn=22 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=32 ability='wonder-guard' move_id=405
+Action turn=23 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=32 failed=True move_id=660
+Action turn=23 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=32 ability='wonder-guard' move_id=405
+Action turn=23 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=14
+Action turn=24 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=14 effect='delayed-hit' move_id=248
+Action turn=24 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=14 ability='wonder-guard' move_id=405
+Action turn=25 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=14 failed=True move_id=660
+Action turn=25 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=14 ability='wonder-guard' move_id=405
+Action turn=26 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=14 failed=True move_id=660
+Action turn=26 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=14 ability='wonder-guard' move_id=405
 Action turn=26 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=0 knockout=True
 SendOut turn=26 side=1 pokemon='P778' member=3
 Action turn=27 side=0 attacker='P871' defender='P778' move='미래예지' effect='delayed-hit' move_id=248
@@ -354,58 +354,58 @@ Action turn=28 side=0 attacker='P871' defender='P778' move='만나자마자' fai
 Action turn=28 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 ability='wonder-guard' move_id=421
 Action turn=29 side=0 attacker='P871' defender='P778' move='만나자마자' failed=True move_id=660
 Action turn=29 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 ability='wonder-guard' move_id=421
-Action turn=29 side=0 attacker='P871' defender='P778' move='미래예지' critical=True defender_hp=70
-Action turn=30 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=70 effect='delayed-hit' move_id=248
-Action turn=30 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=70 ability='wonder-guard' move_id=421
-Action turn=31 side=0 attacker='P871' defender='P778' move='만나자마자' defender_hp=70 failed=True move_id=660
-Action turn=31 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=70 ability='wonder-guard' move_id=421
-Action turn=32 side=0 attacker='P871' defender='P778' move='만나자마자' defender_hp=70 failed=True move_id=660
-Action turn=32 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=70 ability='wonder-guard' move_id=421
-Action turn=32 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=48
-Action turn=33 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=48 effect='delayed-hit' move_id=248
-Action turn=33 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=48 ability='wonder-guard' move_id=421
-Action turn=34 side=0 attacker='P871' defender='P778' move='만나자마자' defender_hp=48 failed=True move_id=660
-Action turn=34 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=48 ability='wonder-guard' move_id=421
-Action turn=35 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=48 failed=True move_id=248
-Action turn=35 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=48 ability='wonder-guard' move_id=421
-Action turn=35 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=30
-Action turn=36 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=30 effect='delayed-hit' move_id=248
-Action turn=36 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=30 ability='wonder-guard' move_id=421
-Action turn=37 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=30 failed=True move_id=248
-Action turn=37 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=30 ability='wonder-guard' move_id=421
-Action turn=38 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=30 failed=True move_id=248
-Action turn=38 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=30 ability='wonder-guard' move_id=421
-Action turn=38 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=9
-Action turn=39 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=39 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=421
-Action turn=40 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=40 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=421
-Action turn=41 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=41 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=421
-Action turn=42 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=42 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=583
-Action turn=43 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=43 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=583
-Action turn=44 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=44 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=583
-Action turn=45 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=45 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=583
-Action turn=46 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=46 side=1 attacker='P778' defender='P871' move='치근거리기' missed=True multiplier=0.0 attacker_hp=9 move_id=583
-Action turn=47 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=47 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=583
-Action turn=48 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=9 failed=True move_id=461
-Action turn=48 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=583
-Action turn=49 side=0 attacker='P871' defender='P778' move='발버둥' recoil=True defender_hp=0 knockout=True attacker_hp=75 move_id=165
-SendOut turn=49 side=1 pokemon='P764' member=4
-Action turn=50 side=1 attacker='P764' defender='P871' move='매지컬샤인' multiplier=0 defender_hp=75 ability='wonder-guard' move_id=605
-Action turn=50 side=0 attacker='P871' defender='P764' move='발버둥' recoil=True defender_hp=90 attacker_hp=50 move_id=165
-Action turn=51 side=1 attacker='P764' defender='P871' move='매지컬샤인' multiplier=0 defender_hp=50 attacker_hp=90 ability='wonder-guard' move_id=605
-Action turn=51 side=0 attacker='P871' defender='P764' move='발버둥' recoil=True defender_hp=82 attacker_hp=25 move_id=165
-Action turn=52 side=1 attacker='P764' defender='P871' move='매지컬샤인' multiplier=0 defender_hp=25 attacker_hp=82 ability='wonder-guard' move_id=605
-Action turn=52 side=0 attacker='P871' defender='P764' move='발버둥' recoil=True defender_hp=73 attacker_fainted=True attacker_hp=0 move_id=165
-result winner=1 turns=52 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 73, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=b954e0e7ddb5af724a9ce41aeb4ddf949fb53d5143425a5c83d742f6acce7ca0
+Action turn=29 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=80
+Action turn=30 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=80 effect='delayed-hit' move_id=248
+Action turn=30 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=80 ability='wonder-guard' move_id=421
+Action turn=31 side=0 attacker='P871' defender='P778' move='만나자마자' defender_hp=80 failed=True move_id=660
+Action turn=31 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=80 ability='wonder-guard' move_id=421
+Action turn=32 side=0 attacker='P871' defender='P778' move='만나자마자' defender_hp=80 failed=True move_id=660
+Action turn=32 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=80 ability='wonder-guard' move_id=421
+Action turn=32 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=58
+Action turn=33 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=58 effect='delayed-hit' move_id=248
+Action turn=33 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=58 ability='wonder-guard' move_id=421
+Action turn=34 side=0 attacker='P871' defender='P778' move='만나자마자' defender_hp=58 failed=True move_id=660
+Action turn=34 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=58 ability='wonder-guard' move_id=421
+Action turn=35 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=58 failed=True move_id=248
+Action turn=35 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=58 ability='wonder-guard' move_id=421
+Action turn=35 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=39
+Action turn=36 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=39 effect='delayed-hit' move_id=248
+Action turn=36 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=39 ability='wonder-guard' move_id=421
+Action turn=37 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=39 failed=True move_id=248
+Action turn=37 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=39 ability='wonder-guard' move_id=421
+Action turn=38 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=39 failed=True move_id=248
+Action turn=38 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=39 ability='wonder-guard' move_id=421
+Action turn=38 side=0 attacker='P871' defender='P778' move='미래예지' defender_hp=18
+Action turn=39 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=39 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=421
+Action turn=40 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=40 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=421
+Action turn=41 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=41 side=1 attacker='P778' defender='P871' move='섀도클로' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=421
+Action turn=42 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=42 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=583
+Action turn=43 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=43 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=583
+Action turn=44 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=44 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=583
+Action turn=45 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=45 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=583
+Action turn=46 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=46 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=583
+Action turn=47 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=47 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=583
+Action turn=48 side=0 attacker='P871' defender='P778' move='초승달춤' defender_hp=18 failed=True move_id=461
+Action turn=48 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=583
+Action turn=49 side=0 attacker='P871' defender='P778' move='발버둥' recoil=True defender_hp=5 attacker_hp=75 move_id=165
+Action turn=49 side=1 attacker='P778' defender='P871' move='치근거리기' multiplier=0 defender_hp=75 attacker_hp=5 ability='wonder-guard' move_id=583
+Action turn=50 side=0 attacker='P871' defender='P778' move='발버둥' recoil=True defender_hp=0 knockout=True attacker_hp=50 move_id=165
+SendOut turn=50 side=1 pokemon='P764' member=4
+Action turn=51 side=1 attacker='P764' defender='P871' move='매지컬샤인' multiplier=0 defender_hp=50 ability='wonder-guard' move_id=605
+Action turn=51 side=0 attacker='P871' defender='P764' move='발버둥' recoil=True defender_hp=90 attacker_hp=25 move_id=165
+Action turn=52 side=1 attacker='P764' defender='P871' move='매지컬샤인' multiplier=0 defender_hp=25 attacker_hp=90 ability='wonder-guard' move_id=605
+Action turn=52 side=0 attacker='P871' defender='P764' move='발버둥' critical=True recoil=True defender_hp=75 attacker_fainted=True attacker_hp=0 move_id=165
+result winner=1 turns=52 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 75, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
+won=False carry=null body=4988d6492e8042d5d3608c9257e4b1a5d21164c9771c7ac24009908de82d0e9e
 ## alola-elite-1 party 0 carried null
 Action turn=1 side=1 attacker='P776' defender='P670' move='오버히트' multiplier=2.0 changes=(Change(side=1, pokemon='P776', kind='special_attack', stages=-2),) defender_hp=0 knockout=True move_id=315
 SendOut turn=1 side=0 pokemon='P66' member=1
@@ -495,20 +495,20 @@ Action turn=20 side=0 attacker='P871' defender='P733' move='묵사발' multiplie
 Action turn=20 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=55 ability='wonder-guard' move_id=36
 Action turn=21 side=0 attacker='P871' defender='P733' move='묵사발' multiplier=0 defender_hp=55 move_id=462
 Action turn=21 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=55 ability='wonder-guard' move_id=36
-Action turn=21 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=39
-Action turn=22 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=39 effect='delayed-hit' move_id=248
-Action turn=22 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=39 ability='wonder-guard' move_id=36
-Action turn=23 side=0 attacker='P871' defender='P733' move='묵사발' multiplier=0 defender_hp=39 move_id=462
-Action turn=23 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=39 ability='wonder-guard' move_id=36
-Action turn=24 side=0 attacker='P871' defender='P733' move='만나자마자' defender_hp=39 failed=True move_id=660
-Action turn=24 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=39 ability='wonder-guard' move_id=36
-Action turn=24 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=25
-Action turn=25 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=25 effect='delayed-hit' move_id=248
-Action turn=25 side=1 attacker='P733' defender='P871' move='돌진' missed=True multiplier=0.0 attacker_hp=25 move_id=36
-Action turn=26 side=0 attacker='P871' defender='P733' move='만나자마자' defender_hp=25 failed=True move_id=660
-Action turn=26 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=25 ability='wonder-guard' move_id=36
-Action turn=27 side=0 attacker='P871' defender='P733' move='만나자마자' defender_hp=25 failed=True move_id=660
-Action turn=27 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=25 ability='wonder-guard' move_id=36
+Action turn=21 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=40
+Action turn=22 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=40 effect='delayed-hit' move_id=248
+Action turn=22 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=40 ability='wonder-guard' move_id=36
+Action turn=23 side=0 attacker='P871' defender='P733' move='묵사발' multiplier=0 defender_hp=40 move_id=462
+Action turn=23 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=40 ability='wonder-guard' move_id=36
+Action turn=24 side=0 attacker='P871' defender='P733' move='만나자마자' defender_hp=40 failed=True move_id=660
+Action turn=24 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=40 ability='wonder-guard' move_id=36
+Action turn=24 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=26
+Action turn=25 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=26 effect='delayed-hit' move_id=248
+Action turn=25 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=26 ability='wonder-guard' move_id=36
+Action turn=26 side=0 attacker='P871' defender='P733' move='만나자마자' defender_hp=26 failed=True move_id=660
+Action turn=26 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=26 ability='wonder-guard' move_id=36
+Action turn=27 side=0 attacker='P871' defender='P733' move='만나자마자' defender_hp=26 failed=True move_id=660
+Action turn=27 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=26 ability='wonder-guard' move_id=36
 Action turn=27 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=10
 Action turn=28 side=0 attacker='P871' defender='P733' move='미래예지' defender_hp=10 effect='delayed-hit' move_id=248
 Action turn=28 side=1 attacker='P733' defender='P871' move='돌진' multiplier=0 attacker_hp=10 ability='wonder-guard' move_id=36
@@ -531,26 +531,26 @@ Action turn=35 side=0 attacker='P871' defender='P738' move='만나자마자' def
 Action turn=35 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=83 ability='wonder-guard' move_id=405
 Action turn=36 side=0 attacker='P871' defender='P738' move='만나자마자' defender_hp=83 failed=True move_id=660
 Action turn=36 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=83 ability='wonder-guard' move_id=405
-Action turn=36 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=68
-Action turn=37 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=68 ability='wonder-guard' move_id=405
-Action turn=37 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=68 effect='delayed-hit' move_id=248
-Action turn=38 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=68 ability='wonder-guard' move_id=405
-Action turn=38 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=68 failed=True move_id=248
-Action turn=39 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=68 ability='wonder-guard' move_id=405
-Action turn=39 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=68 failed=True move_id=248
-Action turn=39 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=52
-Action turn=40 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=52 ability='wonder-guard' move_id=405
-Action turn=40 side=0 attacker='P871' defender='P738' move='초승달춤' defender_hp=52 attacker_fainted=True attacker_hp=0 effect='healing-wish' move_id=461
+Action turn=36 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=66
+Action turn=37 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=66 ability='wonder-guard' move_id=405
+Action turn=37 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=66 effect='delayed-hit' move_id=248
+Action turn=38 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=66 ability='wonder-guard' move_id=405
+Action turn=38 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=66 failed=True move_id=248
+Action turn=39 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=66 ability='wonder-guard' move_id=405
+Action turn=39 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=66 failed=True move_id=248
+Action turn=39 side=0 attacker='P871' defender='P738' move='미래예지' defender_hp=50
+Action turn=40 side=1 attacker='P738' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=50 ability='wonder-guard' move_id=405
+Action turn=40 side=0 attacker='P871' defender='P738' move='초승달춤' defender_hp=50 attacker_fainted=True attacker_hp=0 effect='healing-wish' move_id=461
 SendOut turn=40 side=0 pokemon='P957' member=2
 VolatileTick turn=40 side=0 pokemon='P957' kind='healing-wish'
-Action turn=41 side=1 attacker='P738' defender='P957' move='에너지볼' defender_hp=54 attacker_hp=52 move_id=412
-Action turn=41 side=0 attacker='P957' defender='P738' move='부식가스' defender_hp=52 attacker_hp=54 effect='corrosive-gas' move_id=810
+Action turn=41 side=1 attacker='P738' defender='P957' move='에너지볼' defender_hp=52 attacker_hp=50 move_id=412
+Action turn=41 side=0 attacker='P957' defender='P738' move='부식가스' defender_hp=50 attacker_hp=52 effect='corrosive-gas' move_id=810
 ItemEffect turn=41 side=1 pokemon='P738' item='focus-sash' effect='lost'
-Action turn=42 side=1 attacker='P738' defender='P957' move='에너지볼' defender_hp=11 attacker_hp=52 move_id=412
-Action turn=42 side=0 attacker='P957' defender='P738' move='다크스톰' defender_hp=26 attacker_hp=11 move_id=10010
-Action turn=43 side=1 attacker='P738' defender='P957' move='에너지볼' defender_hp=0 knockout=True attacker_hp=26 move_id=412
-result winner=1 turns=43 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 26, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=e6940a6d8bf549af46c5f7c54edd6bf041603b42e2d0495f5e1aa0dfda660de1
+Action turn=42 side=1 attacker='P738' defender='P957' move='에너지볼' changes=(Change(side=0, pokemon='P957', kind='special_defense', stages=-1),) defender_hp=5 attacker_hp=50 move_id=412
+Action turn=42 side=0 attacker='P957' defender='P738' move='다크스톰' defender_hp=20 attacker_hp=5 move_id=10010
+Action turn=43 side=1 attacker='P738' defender='P957' move='에너지볼' defender_hp=0 knockout=True attacker_hp=20 move_id=412
+result winner=1 turns=43 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 20, None, None)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
+won=False carry=null body=bc7adcd11ab36de8e4cda4a5416abc2a6f52687b5c4c31a18678899075f7787e
 ## alola-elite-3 party 0 carried null
 Action turn=1 side=1 attacker='P774' defender='P670' move='애크러뱃' multiplier=2.0 defender_hp=53 move_id=512
 Action turn=1 side=0 attacker='P670' defender='P774' move='씨폭탄' defender_hp=85 attacker_hp=53 move_id=402
@@ -590,20 +590,20 @@ Action turn=15 side=1 attacker='P748' defender='P774' move='더스트슈트' def
 SendOut turn=15 side=0 pokemon='P871' member=5
 Action turn=16 side=0 attacker='P871' defender='P748' move='묵사발' defender_hp=57 move_id=462
 Action turn=16 side=1 attacker='P748' defender='P871' move='더스트슈트' multiplier=0 attacker_hp=57 move_id=441
-Action turn=17 side=0 attacker='P871' defender='P748' move='묵사발' defender_hp=31 move_id=462
-Action turn=17 side=1 attacker='P748' defender='P871' move='더스트슈트' multiplier=0 attacker_hp=31 move_id=441
+Action turn=17 side=0 attacker='P871' defender='P748' move='묵사발' defender_hp=30 move_id=462
+Action turn=17 side=1 attacker='P748' defender='P871' move='더스트슈트' multiplier=0 attacker_hp=30 move_id=441
 Action turn=18 side=0 attacker='P871' defender='P748' move='묵사발' defender_hp=17 move_id=462
-Action turn=18 side=1 attacker='P748' defender='P871' move='더스트슈트' missed=True multiplier=0.0 attacker_hp=17 move_id=441
+Action turn=18 side=1 attacker='P748' defender='P871' move='더스트슈트' multiplier=0 attacker_hp=17 move_id=441
 Action turn=19 side=0 attacker='P871' defender='P748' move='묵사발' defender_hp=9 move_id=462
 Action turn=19 side=1 attacker='P748' defender='P871' move='더스트슈트' multiplier=0 attacker_hp=9 move_id=441
-Action turn=20 side=0 attacker='P871' defender='P748' move='묵사발' defender_hp=6 move_id=462
-Action turn=20 side=1 attacker='P748' defender='P871' move='아쿠아브레이크' multiplier=0 attacker_hp=6 ability='wonder-guard' move_id=710
-Action turn=21 side=0 attacker='P871' defender='P748' move='미래예지' defender_hp=6 effect='delayed-hit' move_id=248
-Action turn=21 side=1 attacker='P748' defender='P871' move='아쿠아브레이크' multiplier=0 attacker_hp=6 ability='wonder-guard' move_id=710
-Action turn=22 side=0 attacker='P871' defender='P748' move='만나자마자' defender_hp=6 failed=True move_id=660
-Action turn=22 side=1 attacker='P748' defender='P871' move='아쿠아브레이크' multiplier=0 attacker_hp=6 ability='wonder-guard' move_id=710
-Action turn=23 side=0 attacker='P871' defender='P748' move='만나자마자' defender_hp=6 failed=True move_id=660
-Action turn=23 side=1 attacker='P748' defender='P871' move='아쿠아브레이크' multiplier=0 attacker_hp=6 ability='wonder-guard' move_id=710
+Action turn=20 side=0 attacker='P871' defender='P748' move='묵사발' critical=True defender_hp=2 move_id=462
+Action turn=20 side=1 attacker='P748' defender='P871' move='아쿠아브레이크' multiplier=0 attacker_hp=2 ability='wonder-guard' move_id=710
+Action turn=21 side=0 attacker='P871' defender='P748' move='미래예지' defender_hp=2 effect='delayed-hit' move_id=248
+Action turn=21 side=1 attacker='P748' defender='P871' move='아쿠아브레이크' multiplier=0 attacker_hp=2 ability='wonder-guard' move_id=710
+Action turn=22 side=0 attacker='P871' defender='P748' move='만나자마자' defender_hp=2 failed=True move_id=660
+Action turn=22 side=1 attacker='P748' defender='P871' move='아쿠아브레이크' multiplier=0 attacker_hp=2 ability='wonder-guard' move_id=710
+Action turn=23 side=0 attacker='P871' defender='P748' move='만나자마자' defender_hp=2 failed=True move_id=660
+Action turn=23 side=1 attacker='P748' defender='P871' move='아쿠아브레이크' multiplier=0 attacker_hp=2 ability='wonder-guard' move_id=710
 Action turn=23 side=0 attacker='P871' defender='P748' move='미래예지' multiplier=0.5 defender_hp=0 knockout=True
 SendOut turn=23 side=1 pokemon='P763' member=5
 Action turn=24 side=0 attacker='P871' defender='P763' move='미래예지' effect='delayed-hit' move_id=248
@@ -612,51 +612,51 @@ Action turn=25 side=0 attacker='P871' defender='P763' move='만나자마자' fai
 Action turn=25 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 ability='wonder-guard' move_id=438
 Action turn=26 side=0 attacker='P871' defender='P763' move='만나자마자' failed=True move_id=660
 Action turn=26 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 ability='wonder-guard' move_id=438
-Action turn=26 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=86
-Action turn=27 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=86 effect='delayed-hit' move_id=248
-Action turn=27 side=1 attacker='P763' defender='P871' move='파워휩' missed=True multiplier=0.0 attacker_hp=86 move_id=438
-Action turn=28 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=86 failed=True move_id=660
-Action turn=28 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=86 ability='wonder-guard' move_id=438
-Action turn=29 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=86 failed=True move_id=660
-Action turn=29 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=86 ability='wonder-guard' move_id=438
-Action turn=29 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=72
-Action turn=30 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=72 effect='delayed-hit' move_id=248
-Action turn=30 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=72 ability='wonder-guard' move_id=438
-Action turn=31 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=72 failed=True move_id=660
-Action turn=31 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=72 ability='wonder-guard' move_id=438
-Action turn=32 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=72 failed=True move_id=660
-Action turn=32 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=72 ability='wonder-guard' move_id=438
-Action turn=32 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=56
-Action turn=33 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=56 effect='delayed-hit' move_id=248
-Action turn=33 side=1 attacker='P763' defender='P871' move='파워휩' missed=True multiplier=0.0 attacker_hp=56 move_id=438
-Action turn=34 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=56 failed=True move_id=660
-Action turn=34 side=1 attacker='P763' defender='P871' move='무릎차기' multiplier=0 changes=(Change(side=1, pokemon='P763', kind='crash', stages=0),) attacker_hp=6 ability='wonder-guard' move_id=136
-Action turn=35 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=6 failed=True move_id=660
+Action turn=26 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=84
+Action turn=27 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=84 effect='delayed-hit' move_id=248
+Action turn=27 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=84 ability='wonder-guard' move_id=438
+Action turn=28 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=84 failed=True move_id=660
+Action turn=28 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=84 ability='wonder-guard' move_id=438
+Action turn=29 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=84 failed=True move_id=660
+Action turn=29 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=84 ability='wonder-guard' move_id=438
+Action turn=29 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=69
+Action turn=30 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=69 effect='delayed-hit' move_id=248
+Action turn=30 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=69 ability='wonder-guard' move_id=438
+Action turn=31 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=69 failed=True move_id=660
+Action turn=31 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=69 ability='wonder-guard' move_id=438
+Action turn=32 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=69 failed=True move_id=660
+Action turn=32 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=69 ability='wonder-guard' move_id=438
+Action turn=32 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=55
+Action turn=33 side=0 attacker='P871' defender='P763' move='미래예지' defender_hp=55 effect='delayed-hit' move_id=248
+Action turn=33 side=1 attacker='P763' defender='P871' move='파워휩' multiplier=0 attacker_hp=55 ability='wonder-guard' move_id=438
+Action turn=34 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=55 failed=True move_id=660
+Action turn=34 side=1 attacker='P763' defender='P871' move='무릎차기' multiplier=0 changes=(Change(side=1, pokemon='P763', kind='crash', stages=0),) attacker_hp=5 ability='wonder-guard' move_id=136
+Action turn=35 side=0 attacker='P871' defender='P763' move='만나자마자' defender_hp=5 failed=True move_id=660
 Action turn=35 side=1 attacker='P763' defender='P871' move='무릎차기' multiplier=0 changes=(Change(side=1, pokemon='P763', kind='crash', stages=0),) attacker_fainted=True attacker_hp=0 ability='wonder-guard' move_id=136
 result winner=0 turns=35 remaining=((0, 0, 0, 0, 0, 100), (0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}] body=e9145c2726da8c9bd2623e6094b8aa33a2bb3c5d6d8058354b339f365ae4cd97
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}] body=9755efb0f5cf6c35ddef7dfc64db94a46129ecc37b565d4a2ec6579ecc1c6104
 ## alola-elite-4 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 100, "status": null}]
 Action turn=1 side=0 attacker='P871' defender='P777' move='묵사발' defender_hp=73 move_id=462
 Action turn=1 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=73 ability='wonder-guard' move_id=528
-Action turn=2 side=0 attacker='P871' defender='P777' move='묵사발' defender_hp=54 move_id=462
-Action turn=2 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=54 ability='wonder-guard' move_id=528
-Action turn=3 side=0 attacker='P871' defender='P777' move='묵사발' defender_hp=40 move_id=462
-Action turn=3 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=40 ability='wonder-guard' move_id=528
-Action turn=4 side=0 attacker='P871' defender='P777' move='묵사발' defender_hp=29 move_id=462
-Action turn=4 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=29 ability='wonder-guard' move_id=528
-Action turn=5 side=0 attacker='P871' defender='P777' move='미래예지' defender_hp=29 effect='delayed-hit' move_id=248
-Action turn=5 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=29 ability='wonder-guard' move_id=528
-Action turn=6 side=0 attacker='P871' defender='P777' move='묵사발' defender_hp=21 move_id=462
-Action turn=6 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=21 ability='wonder-guard' move_id=528
-Action turn=7 side=0 attacker='P871' defender='P777' move='만나자마자' defender_hp=21 failed=True move_id=660
-Action turn=7 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=21 ability='wonder-guard' move_id=528
-Action turn=7 side=0 attacker='P871' defender='P777' move='미래예지' defender_hp=7
-Action turn=8 side=0 attacker='P871' defender='P777' move='미래예지' defender_hp=7 effect='delayed-hit' move_id=248
-Action turn=8 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=7 ability='wonder-guard' move_id=528
-Action turn=9 side=0 attacker='P871' defender='P777' move='만나자마자' defender_hp=7 failed=True move_id=660
-Action turn=9 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=7 ability='wonder-guard' move_id=528
-Action turn=10 side=0 attacker='P871' defender='P777' move='만나자마자' defender_hp=7 failed=True move_id=660
-Action turn=10 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=7 ability='wonder-guard' move_id=528
+Action turn=2 side=0 attacker='P871' defender='P777' move='묵사발' critical=True defender_hp=43 move_id=462
+Action turn=2 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=43 ability='wonder-guard' move_id=528
+Action turn=3 side=0 attacker='P871' defender='P777' move='묵사발' defender_hp=32 move_id=462
+Action turn=3 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=32 ability='wonder-guard' move_id=528
+Action turn=4 side=0 attacker='P871' defender='P777' move='묵사발' defender_hp=24 move_id=462
+Action turn=4 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=24 ability='wonder-guard' move_id=528
+Action turn=5 side=0 attacker='P871' defender='P777' move='미래예지' defender_hp=24 effect='delayed-hit' move_id=248
+Action turn=5 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=24 ability='wonder-guard' move_id=528
+Action turn=6 side=0 attacker='P871' defender='P777' move='묵사발' defender_hp=18 move_id=462
+Action turn=6 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=528
+Action turn=7 side=0 attacker='P871' defender='P777' move='만나자마자' defender_hp=18 failed=True move_id=660
+Action turn=7 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=18 ability='wonder-guard' move_id=528
+Action turn=7 side=0 attacker='P871' defender='P777' move='미래예지' defender_hp=2
+Action turn=8 side=0 attacker='P871' defender='P777' move='미래예지' defender_hp=2 effect='delayed-hit' move_id=248
+Action turn=8 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=2 ability='wonder-guard' move_id=528
+Action turn=9 side=0 attacker='P871' defender='P777' move='만나자마자' defender_hp=2 failed=True move_id=660
+Action turn=9 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=2 ability='wonder-guard' move_id=528
+Action turn=10 side=0 attacker='P871' defender='P777' move='만나자마자' defender_hp=2 failed=True move_id=660
+Action turn=10 side=1 attacker='P777' defender='P871' move='와일드볼트' multiplier=0 attacker_hp=2 ability='wonder-guard' move_id=528
 Action turn=10 side=0 attacker='P871' defender='P777' move='미래예지' defender_hp=0 knockout=True
 SendOut turn=10 side=1 pokemon='P743' member=1
 Action turn=11 side=0 attacker='P871' defender='P743' move='미래예지' effect='delayed-hit' move_id=248
@@ -665,20 +665,20 @@ Action turn=12 side=0 attacker='P871' defender='P743' move='만나자마자' fai
 Action turn=12 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 ability='wonder-guard' move_id=405
 Action turn=13 side=0 attacker='P871' defender='P743' move='만나자마자' failed=True move_id=660
 Action turn=13 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 ability='wonder-guard' move_id=405
-Action turn=13 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=83
-Action turn=14 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=83 effect='delayed-hit' move_id=248
-Action turn=14 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=83 ability='wonder-guard' move_id=405
-Action turn=15 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=83 failed=True move_id=660
-Action turn=15 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=83 ability='wonder-guard' move_id=405
-Action turn=16 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=83 failed=True move_id=660
-Action turn=16 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=83 ability='wonder-guard' move_id=405
-Action turn=16 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=64
-Action turn=17 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=64 effect='delayed-hit' move_id=248
-Action turn=17 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=64 ability='wonder-guard' move_id=405
-Action turn=18 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=64 failed=True move_id=660
-Action turn=18 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=64 ability='wonder-guard' move_id=405
-Action turn=19 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=64 failed=True move_id=660
-Action turn=19 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=64 ability='wonder-guard' move_id=405
+Action turn=13 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=81
+Action turn=14 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=81 effect='delayed-hit' move_id=248
+Action turn=14 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=81 ability='wonder-guard' move_id=405
+Action turn=15 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=81 failed=True move_id=660
+Action turn=15 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=81 ability='wonder-guard' move_id=405
+Action turn=16 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=81 failed=True move_id=660
+Action turn=16 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=81 ability='wonder-guard' move_id=405
+Action turn=16 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=65
+Action turn=17 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=65 effect='delayed-hit' move_id=248
+Action turn=17 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=65 ability='wonder-guard' move_id=405
+Action turn=18 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=65 failed=True move_id=660
+Action turn=18 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=65 ability='wonder-guard' move_id=405
+Action turn=19 side=0 attacker='P871' defender='P743' move='만나자마자' defender_hp=65 failed=True move_id=660
+Action turn=19 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=65 ability='wonder-guard' move_id=405
 Action turn=19 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=47
 Action turn=20 side=0 attacker='P871' defender='P743' move='미래예지' defender_hp=47 effect='delayed-hit' move_id=248
 Action turn=20 side=1 attacker='P743' defender='P871' move='벌레의야단법석' multiplier=0 attacker_hp=47 ability='wonder-guard' move_id=405
@@ -716,13 +716,13 @@ Action turn=35 side=0 attacker='P871' defender='P743' move='초승달춤' defend
 Action turn=35 side=1 attacker='P743' defender='P871' move='사이코키네시스' multiplier=0 attacker_hp=12 ability='wonder-guard' move_id=94
 Action turn=36 side=0 attacker='P871' defender='P743' move='발버둥' recoil=True defender_hp=0 knockout=True attacker_hp=75 move_id=165
 SendOut turn=36 side=1 pokemon='P754' member=2
-Action turn=37 side=0 attacker='P871' defender='P754' move='발버둥' critical=True recoil=True defender_hp=67 attacker_hp=50 move_id=165
-Action turn=37 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=50 attacker_hp=67 ability='wonder-guard' move_id=348
-Action turn=38 side=0 attacker='P871' defender='P754' move='발버둥' recoil=True defender_hp=46 attacker_hp=25 move_id=165
-Action turn=38 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=25 attacker_hp=46 ability='wonder-guard' move_id=348
-Action turn=39 side=0 attacker='P871' defender='P754' move='발버둥' recoil=True defender_hp=23 attacker_fainted=True attacker_hp=0 move_id=165
-result winner=1 turns=39 remaining=((0,), (0, 0, 23, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
-won=False carry=null body=a3779a02cdb2ceff831e1aa531680e4ccf9a809fbacd3db20f7671106885de61
+Action turn=37 side=0 attacker='P871' defender='P754' move='발버둥' recoil=True defender_hp=79 attacker_hp=50 move_id=165
+Action turn=37 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=50 attacker_hp=79 ability='wonder-guard' move_id=348
+Action turn=38 side=0 attacker='P871' defender='P754' move='발버둥' recoil=True defender_hp=59 attacker_hp=25 move_id=165
+Action turn=38 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=25 attacker_hp=59 ability='wonder-guard' move_id=348
+Action turn=39 side=0 attacker='P871' defender='P754' move='발버둥' recoil=True defender_hp=35 attacker_fainted=True attacker_hp=0 move_id=165
+result winner=1 turns=39 remaining=((0,), (0, 0, 35, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
+won=False carry=null body=e068255228c7108dc684c2b5fb9ce9febada38e6b2227c255c08f890b45196d6
 ## alola-champion party 0 carried null
 MegaEvolution turn=1 side=1 pokemon='P768' ability='일렉트릭메이커' form_id=10316
 AbilityField side=1 pokemon='P768' ability='electric-surge' terrain='electric-terrain'
@@ -853,33 +853,23 @@ won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, 
 ## alola-hideout-3 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 42, "status": null}]
 Action turn=1 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 defender_hp=71 attacker_hp=42 move_id=462
 Action turn=1 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=71 ability='wonder-guard' move_id=348
-Action turn=2 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 defender_hp=51 attacker_hp=42 move_id=462
-Action turn=2 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=51 ability='wonder-guard' move_id=348
-Action turn=3 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 defender_hp=37 attacker_hp=42 move_id=462
-Action turn=3 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=37 ability='wonder-guard' move_id=348
-Action turn=4 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 defender_hp=28 attacker_hp=42 move_id=462
-Action turn=4 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=28 ability='wonder-guard' move_id=348
-Action turn=5 side=0 attacker='P871' defender='P754' move='미래예지' defender_hp=28 attacker_hp=42 effect='delayed-hit' move_id=248
-Action turn=5 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=28 ability='wonder-guard' move_id=348
-Action turn=6 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 defender_hp=21 attacker_hp=42 move_id=462
-Action turn=6 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=21 ability='wonder-guard' move_id=348
-Action turn=7 side=0 attacker='P871' defender='P754' move='만나자마자' defender_hp=21 failed=True attacker_hp=42 move_id=660
-Action turn=7 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=21 ability='wonder-guard' move_id=348
-Action turn=7 side=0 attacker='P871' defender='P754' move='미래예지' defender_hp=4 attacker_hp=42
-Action turn=8 side=0 attacker='P871' defender='P754' move='미래예지' defender_hp=4 attacker_hp=42 effect='delayed-hit' move_id=248
-Action turn=8 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=4 ability='wonder-guard' move_id=348
-Action turn=9 side=0 attacker='P871' defender='P754' move='만나자마자' defender_hp=4 failed=True attacker_hp=42 move_id=660
-Action turn=9 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=4 ability='wonder-guard' move_id=348
-Action turn=10 side=0 attacker='P871' defender='P754' move='만나자마자' defender_hp=4 failed=True attacker_hp=42 move_id=660
-Action turn=10 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=4 ability='wonder-guard' move_id=348
-Action turn=10 side=0 attacker='P871' defender='P754' move='미래예지' defender_hp=0 knockout=True attacker_hp=42
-SendOut turn=10 side=1 pokemon='P758' member=1
-Action turn=11 side=1 attacker='P758' defender='P871' move='오버히트' missed=True multiplier=2.0 defender_hp=42 move_id=315
-Action turn=11 side=0 attacker='P871' defender='P758' move='미래예지' attacker_hp=42 effect='delayed-hit' move_id=248
-Action turn=12 side=0 attacker='P871' defender='P758' move='만나자마자' failed=True attacker_hp=42 move_id=660
-Action turn=12 side=1 attacker='P758' defender='P871' move='오버히트' multiplier=2.0 changes=(Change(side=1, pokemon='P758', kind='special_attack', stages=-2),) defender_hp=0 knockout=True move_id=315
-result winner=1 turns=12 remaining=((0,), (0, 100, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
-won=False carry=null body=88953c4064e653fd00dd594b5f82fa8c131bb675545092e2765339fc15ebdb1c
+Action turn=2 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 critical=True defender_hp=41 attacker_hp=42 move_id=462
+Action turn=2 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=41 ability='wonder-guard' move_id=348
+Action turn=3 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 defender_hp=30 attacker_hp=42 move_id=462
+Action turn=3 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=30 ability='wonder-guard' move_id=348
+Action turn=4 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 defender_hp=22 attacker_hp=42 move_id=462
+Action turn=4 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=22 ability='wonder-guard' move_id=348
+Action turn=5 side=0 attacker='P871' defender='P754' move='미래예지' defender_hp=22 attacker_hp=42 effect='delayed-hit' move_id=248
+Action turn=5 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=22 ability='wonder-guard' move_id=348
+Action turn=6 side=0 attacker='P871' defender='P754' move='묵사발' multiplier=0.5 defender_hp=16 attacker_hp=42 move_id=462
+Action turn=6 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=16 ability='wonder-guard' move_id=348
+Action turn=7 side=0 attacker='P871' defender='P754' move='만나자마자' defender_hp=16 failed=True attacker_hp=42 move_id=660
+Action turn=7 side=1 attacker='P754' defender='P871' move='리프블레이드' multiplier=0 defender_hp=42 attacker_hp=16 ability='wonder-guard' move_id=348
+Action turn=7 side=0 attacker='P871' defender='P754' move='미래예지' defender_hp=0 knockout=True attacker_hp=42
+SendOut turn=7 side=1 pokemon='P758' member=1
+Action turn=8 side=1 attacker='P758' defender='P871' move='오버히트' multiplier=2.0 changes=(Change(side=1, pokemon='P758', kind='special_attack', stages=-2),) defender_hp=0 knockout=True move_id=315
+result winner=1 turns=8 remaining=((0,), (0, 100, None, None, None, None)) statuses=((None,), (None, None, None, None, None, None))
+won=False carry=null body=7e0fc3b954e99105101df6fc17293ca8c5a125cc78422f30da569b90ce099723
 ## alola-hideout-4 party 0 carried null
 Action turn=1 side=1 attacker='P758' defender='P670' move='오버히트' multiplier=2.0 changes=(Change(side=1, pokemon='P758', kind='special_attack', stages=-2),) defender_hp=0 knockout=True move_id=315
 SendOut turn=1 side=0 pokemon='P66' member=1
@@ -918,25 +908,24 @@ Action turn=14 side=1 attacker='P724' defender='P871' move='리프스톰' multip
 Action turn=15 side=0 attacker='P871' defender='P724' move='미래예지' defender_hp=61 effect='delayed-hit' move_id=248
 Action turn=15 side=1 attacker='P724' defender='P871' move='리프스톰' multiplier=0 attacker_hp=61 ability='wonder-guard' move_id=437
 Action turn=16 side=0 attacker='P871' defender='P724' move='묵사발' multiplier=0 defender_hp=61 move_id=462
-Action turn=16 side=1 attacker='P724' defender='P871' move='리프스톰' missed=True multiplier=0.0 attacker_hp=61 move_id=437
+Action turn=16 side=1 attacker='P724' defender='P871' move='리프스톰' multiplier=0 attacker_hp=61 ability='wonder-guard' move_id=437
 Action turn=17 side=0 attacker='P871' defender='P724' move='묵사발' multiplier=0 defender_hp=61 move_id=462
 Action turn=17 side=1 attacker='P724' defender='P871' move='리프스톰' multiplier=0 attacker_hp=61 ability='wonder-guard' move_id=437
-Action turn=17 side=0 attacker='P871' defender='P724' move='미래예지' defender_hp=9
-Action turn=18 side=0 attacker='P871' defender='P724' move='미래예지' defender_hp=9 effect='delayed-hit' move_id=248
-Action turn=18 side=1 attacker='P724' defender='P871' move='리프스톰' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=437
-Action turn=19 side=0 attacker='P871' defender='P724' move='묵사발' multiplier=0 defender_hp=9 move_id=462
-Action turn=19 side=1 attacker='P724' defender='P871' move='그림자꿰매기' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=662
-Action turn=20 side=0 attacker='P871' defender='P724' move='묵사발' multiplier=0 defender_hp=9 move_id=462
-Action turn=20 side=1 attacker='P724' defender='P871' move='그림자꿰매기' multiplier=0 attacker_hp=9 ability='wonder-guard' move_id=662
+Action turn=17 side=0 attacker='P871' defender='P724' move='미래예지' defender_hp=14
+Action turn=18 side=0 attacker='P871' defender='P724' move='미래예지' defender_hp=14 effect='delayed-hit' move_id=248
+Action turn=18 side=1 attacker='P724' defender='P871' move='리프스톰' multiplier=0 attacker_hp=14 ability='wonder-guard' move_id=437
+Action turn=19 side=0 attacker='P871' defender='P724' move='묵사발' multiplier=0 defender_hp=14 move_id=462
+Action turn=19 side=1 attacker='P724' defender='P871' move='그림자꿰매기' multiplier=0 attacker_hp=14 ability='wonder-guard' move_id=662
+Action turn=20 side=0 attacker='P871' defender='P724' move='묵사발' multiplier=0 defender_hp=14 move_id=462
+Action turn=20 side=1 attacker='P724' defender='P871' move='그림자꿰매기' multiplier=0 attacker_hp=14 ability='wonder-guard' move_id=662
 Action turn=20 side=0 attacker='P871' defender='P724' move='미래예지' defender_hp=0 knockout=True
 SendOut turn=20 side=1 pokemon='P727' member=3
 Action turn=21 side=0 attacker='P871' defender='P727' move='묵사발' multiplier=0.5 defender_hp=81 move_id=462
-Action turn=21 side=1 attacker='P727' defender='P871' move='플레어드라이브' multiplier=2.0 changes=(Change(side=0, pokemon='P871', kind='burn', stages=0),) recoil=True defender_hp=12 attacker_hp=38 attacker_item='life-orb' move_id=394
-StatusDamage turn=21 side=0 pokemon='P871' hp=6 fainted=False
-Action turn=22 side=0 attacker='P871' defender='P727' move='미래예지' defender_hp=38 attacker_hp=6 effect='delayed-hit' move_id=248
-Action turn=22 side=1 attacker='P727' defender='P871' move='플레어드라이브' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=26 attacker_item='life-orb' move_id=394
-result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 26, None, None)) statuses=((None, None, 'poison', None, None, 'burn'), (None, None, None, None, None, None))
-won=False carry=null body=1912b57c9b908cc48bb17078952e99b6896885f970806367c64b4621ddc357fa
+Action turn=21 side=1 attacker='P727' defender='P871' move='플레어드라이브' multiplier=2.0 recoil=True defender_hp=10 attacker_hp=38 attacker_item='life-orb' move_id=394
+Action turn=22 side=0 attacker='P871' defender='P727' move='미래예지' defender_hp=38 attacker_hp=10 effect='delayed-hit' move_id=248
+Action turn=22 side=1 attacker='P727' defender='P871' move='플레어드라이브' multiplier=2.0 recoil=True defender_hp=0 knockout=True attacker_hp=24 attacker_item='life-orb' move_id=394
+result winner=1 turns=22 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 24, None, None)) statuses=((None, None, 'poison', None, None, None), (None, None, None, None, None, None))
+won=False carry=null body=69908f54af73ebb49ae63a5ff1545aef8544a53c5462ec4af5f4758c3b3d5e87
 ## alola-hidden party 0 carried null
 Action turn=1 side=1 attacker='P730' defender='P670' move='냉동빔' multiplier=2.0 defender_hp=4 move_id=58
 ItemHeal turn=1 side=0 pokemon='P670' item='mago-berry' hp=37

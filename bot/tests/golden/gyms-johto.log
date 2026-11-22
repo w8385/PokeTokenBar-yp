@@ -339,22 +339,17 @@ SendOut turn=9 side=0 pokemon='P613' member=3
 Action turn=10 side=0 attacker='P613' defender='P154' move='제트펀치' multiplier=2.0 defender_hp=77 move_id=857
 Action turn=10 side=1 attacker='P154' defender='P613' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=77 move_id=89
 SendOut turn=10 side=0 pokemon='P524' member=4
-Action turn=11 side=1 attacker='P154' defender='P524' move='꽃잎댄스' multiplier=2.0 changes=(Change(side=1, pokemon='P154', kind='rampage', stages=0),) defender_hp=36 attacker_hp=77 move_id=80
-Action turn=11 side=0 attacker='P524' defender='P154' move='다크홀' changes=(Change(side=1, pokemon='P154', kind='sleep', stages=0),) defender_hp=77 attacker_hp=36 effect='inflict' move_id=464
-Action turn=12 side=1 attacker='P154' defender='P524' move='' defender_hp=36 blocked='sleep' attacker_hp=77
-Action turn=12 side=0 attacker='P524' defender='P154' move='문포스' multiplier=0.5 defender_hp=62 attacker_hp=36 move_id=585
-Action turn=13 side=1 attacker='P154' defender='P524' move='꽃잎댄스' multiplier=2.0 changes=(Change(side=1, pokemon='P154', kind='rampage', stages=0),) defender_hp=0 knockout=True recovered=('sleep',) attacker_hp=62 move_id=80
-SendOut turn=13 side=0 pokemon='P806' member=5
-Action turn=14 side=1 attacker='P154' defender='P806' move='꽃잎댄스' multiplier=0.25 defender_hp=91 attacker_hp=62 move_id=80
-Action turn=14 side=0 attacker='P806' defender='P154' move='벌크업' changes=(Change(side=0, pokemon='P806', kind='attack', stages=1), Change(side=0, pokemon='P806', kind='defense', stages=1)) defender_hp=62 attacker_hp=91 effect='stages' move_id=339
-Action turn=15 side=1 attacker='P154' defender='P806' move='꽃잎댄스' multiplier=0.25 changes=(Change(side=1, pokemon='P154', kind='fatigue', stages=0),) defender_hp=82 attacker_hp=62 move_id=80
-Action turn=15 side=0 attacker='P806' defender='P154' move='타오르는분노' multiplier=2.0 defender_hp=17 attacker_hp=82 move_id=822
-Action turn=16 side=1 attacker='P154' defender='P806' move='' defender_hp=82 blocked='confusion' attacker_hp=7
-Action turn=16 side=0 attacker='P806' defender='P154' move='타오르는분노' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=82 move_id=822
-SendOut turn=16 side=1 pokemon='P197' member=3
-Action turn=17 side=1 attacker='P197' defender='P806' move='매혹의보이스' multiplier=2.0 defender_hp=0 knockout=True move_id=914
-result winner=1 turns=17 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 100, None, None)) statuses=((None, None, 'burn', None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=dd709d791054c6d2f753b6ddfd62da8c9229508f730bcf995fe0d47bdcf2afbc
+Action turn=11 side=1 attacker='P154' defender='P524' move='꽃잎댄스' multiplier=2.0 changes=(Change(side=1, pokemon='P154', kind='rampage', stages=0),) defender_hp=31 attacker_hp=77 move_id=80
+Action turn=11 side=0 attacker='P524' defender='P154' move='다크홀' missed=True defender_hp=77 attacker_hp=31 move_id=464
+Action turn=12 side=1 attacker='P154' defender='P524' move='꽃잎댄스' multiplier=2.0 changes=(Change(side=1, pokemon='P154', kind='fatigue', stages=0),) defender_hp=0 knockout=True attacker_hp=77 move_id=80
+SendOut turn=12 side=0 pokemon='P806' member=5
+Action turn=13 side=1 attacker='P154' defender='P806' move='역린' multiplier=2.0 changes=(Change(side=1, pokemon='P154', kind='rampage', stages=0),) defender_hp=50 attacker_hp=77 move_id=200
+Action turn=13 side=0 attacker='P806' defender='P154' move='벌크업' changes=(Change(side=0, pokemon='P806', kind='attack', stages=1), Change(side=0, pokemon='P806', kind='defense', stages=1)) defender_hp=77 attacker_hp=50 effect='stages' move_id=339
+Action turn=14 side=1 attacker='P154' defender='P806' move='역린' multiplier=2.0 defender_hp=17 recovered=('confusion',) attacker_hp=77 move_id=200
+Action turn=14 side=0 attacker='P806' defender='P154' move='타오르는분노' multiplier=2.0 defender_hp=35 attacker_hp=17 move_id=822
+Action turn=15 side=1 attacker='P154' defender='P806' move='역린' multiplier=2.0 changes=(Change(side=1, pokemon='P154', kind='fatigue', stages=0),) defender_hp=0 knockout=True attacker_hp=35 move_id=200
+result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 35, None, None, None)) statuses=((None, None, 'burn', None, None, None), (None, None, None, None, None, None))
+won=False carry=null body=43545c2287d21f701aa7c64b0503b0d48d6b9c67fca4845d5258df4e72fcc8a5
 ## johto-elite-3 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability='철가시' form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P215' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=65 move_id=620

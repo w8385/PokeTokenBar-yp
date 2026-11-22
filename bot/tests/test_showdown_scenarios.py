@@ -14,9 +14,7 @@ from ypoke import battle, battle_data
 from ypoke.battle import BaseStats, Combatant, MegaForm, _Arena, _Team
 
 RECORDS = [json.loads(path.read_text()) for path in sorted((Path(__file__).parent / "showdown").glob("*.json"))]
-OPEN_DEFECTS = {
-    "blunder-policy-type-immune": 11,
-}
+OPEN_DEFECTS = {}
 LEVEL = 50
 PERFECT_IVS = BaseStats(31, 31, 31, 31, 31, 31)
 DOLL_HP = {"intact": 10_000, "fragile": 1}

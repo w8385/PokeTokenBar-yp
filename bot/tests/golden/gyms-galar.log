@@ -1143,11 +1143,11 @@ MegaEvolution turn=3 side=0 pokemon='P282' ability='무아지경' form_id=10051
 Action turn=3 side=1 attacker='P871' defender='P282' move='독찌르기' multiplier=0 attacker_hp=14 move_id=398
 Action turn=3 side=0 attacker='P282' defender='P871' move='속임수' defender_hp=0 knockout=True move_id=492
 SendOut turn=3 side=1 pokemon='P877' member=1
-Action turn=4 side=1 attacker='P877' defender='P282' move='속임수' defender_hp=64 move_id=492
-Action turn=4 side=0 attacker='P282' defender='P877' move='속임수' multiplier=2.0 defender_hp=41 attacker_hp=64 move_id=492
+Action turn=4 side=1 attacker='P877' defender='P282' move='속임수' defender_hp=65 move_id=492
+Action turn=4 side=0 attacker='P282' defender='P877' move='속임수' multiplier=2.0 defender_hp=41 attacker_hp=65 move_id=492
 ItemHeal turn=4 side=1 pokemon='P877' item='sitrus-berry' hp=65
-Action turn=5 side=1 attacker='P877' defender='P282' move='속임수' defender_hp=28 attacker_hp=65 move_id=492
-Action turn=5 side=0 attacker='P282' defender='P877' move='속임수' multiplier=2.0 defender_hp=1 attacker_hp=28 move_id=492
+Action turn=5 side=1 attacker='P877' defender='P282' move='속임수' defender_hp=30 attacker_hp=65 move_id=492
+Action turn=5 side=0 attacker='P282' defender='P877' move='속임수' multiplier=2.0 defender_hp=1 attacker_hp=30 move_id=492
 Action turn=6 side=1 attacker='P877' defender='P282' move='속임수' defender_hp=0 knockout=True attacker_hp=1 move_id=492
 SendOut turn=6 side=0 pokemon='P3' member=2
 Action turn=7 side=0 attacker='P3' defender='P877' move='록블라스트' defender_hp=0 knockout=True move_id=350
@@ -1185,7 +1185,7 @@ Action turn=20 side=1 attacker='P880' defender='P807' move='역린' changes=(Cha
 Action turn=20 side=0 attacker='P807' defender='P880' move='울음소리' changes=(Change(side=1, pokemon='P880', kind='attack', stages=-1),) defender_hp=56 attacker_hp=19 effect='stages' move_id=45
 Action turn=21 side=1 attacker='P880' defender='P807' move='역린' changes=(Change(side=1, pokemon='P880', kind='fatigue', stages=0),) defender_hp=0 knockout=True attacker_hp=56 move_id=200
 result winner=1 turns=21 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 56, None)) statuses=(('poison', None, None, None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=ee679ca17f46d67bd596a2834fbc5dde282c3e5abffbb3dec8feec9323b2434f
+won=False carry=null body=4b3e7af39dff9d99dcd9746799f825018aeb4b0ba0cd1d223ac3dd76a0f30f33
 ## galar-8 party 1 carried null
 Action turn=1 side=0 attacker='P93' defender='P886' move='껍질깨기' changes=(Change(side=0, pokemon='P93', kind='defense', stages=-1), Change(side=0, pokemon='P93', kind='special_defense', stages=-1), Change(side=0, pokemon='P93', kind='attack', stages=2), Change(side=0, pokemon='P93', kind='special_attack', stages=2), Change(side=0, pokemon='P93', kind='speed', stages=2)) effect='stages' move_id=504
 Action turn=1 side=1 attacker='P886' defender='P93' move='역린' changes=(Change(side=1, pokemon='P886', kind='rampage', stages=0),) defender_hp=39 move_id=200
