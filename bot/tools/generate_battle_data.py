@@ -7,6 +7,11 @@ are; a new entry gets an effect from `_default_effect` (inert by rule, plain dam
 PokéAPI has no contact flag. `python3 tools/generate_battle_data.py --showdown-contact <moves.ts>` sets the "contact"
 flag of every move from Pokémon Showdown's `data/moves.ts` (`flags.contact`, MIT, `data/battle/LICENSE-showdown`) at
 `SHOWDOWN_COMMIT`, matching Showdown's `num` to the move id.
+
+`python3 tools/generate_battle_data.py --showdown-events <showdown data dir>` writes `data/battle/showdown-events.json`
+from that commit's `moves.ts`, `items.ts` and `abilities.ts`: for each entry here that Showdown has, which of
+`SHOWDOWN_EVENTS` its Showdown entry or its `condition` handles, and for each move whether it has a `secondary` or
+`secondaries` (what Sheer Force boosts and suppresses). `bot/tests/test_showdown_events.py` reads it.
 """
 
 import json
@@ -25,6 +30,14 @@ from ypoke.store import Store  # noqa: E402
 HAND_FIELDS = ("effect", "args", "flags", "note", "bot_name", "pokeapi", "names_extra")
 SHOWDOWN_COMMIT = "5b88c476113d51a939bddbcd00b5cd182a5d8058"
 SHOWDOWN_ENTRY = re.compile(r"\n\t[a-z0-9]+: \{\n(.*?)\n\t\},?(?=\n)", re.DOTALL)
+SHOWDOWN_NAMED_ENTRY = re.compile(r"\n\t([a-z0-9]+): \{\n(.*?)\n\t\},?(?=\n)", re.DOTALL)
+SHOWDOWN_EVENTS = (
+    "onTryPrimaryHit", "onAfterSubDamage", "onDamage", "onDamagingHit", "onSourceDamagingHit", "onAfterHit",
+    "onAfterMoveSecondary", "onAfterMoveSecondarySelf", "onAfterMove",
+)
+SHOWDOWN_HANDLER = re.compile(r"^\t\t(on[A-Za-z]+)\(", re.MULTILINE)
+SHOWDOWN_CONDITION = re.compile(r"^\t\tcondition: \{\n(.*?)\n\t\t\},?$", re.MULTILINE | re.DOTALL)
+SHOWDOWN_CONDITION_HANDLER = re.compile(r"^\t\t\t(on[A-Za-z]+)\(", re.MULTILINE)
 FETCH_WORKERS = 4
 FETCH_ATTEMPTS = 5
 LANGUAGES = {"ko": ("ko",), "en": ("en",), "ja": ("ja-hrkt", "ja"), "es": ("es",), "fr": ("fr",), "de": ("de",),
@@ -138,6 +151,9 @@ def main() -> None:
     if sys.argv[1] == "--showdown-contact":
         _set_contact(Path(sys.argv[2]).read_text())
         return
+    if sys.argv[1] == "--showdown-events":
+        _write_events(Path(sys.argv[2]))
+        return
     store = Store(sys.argv[1])
     for kind, build in (("items", _items), ("abilities", _abilities), ("moves", _moves)):
         old = battle_data.read(kind) if battle_data.path(kind).exists() else {}
@@ -169,6 +185,44 @@ def _showdown_contact(showdown_moves: str) -> set[int]:
         if num and flags and re.search(r"\bcontact: 1\b", flags.group(1)):
             contact.add(int(num.group(1)))
     return contact
+
+
+def _write_events(showdown_data: Path) -> None:
+    tables = {kind: _showdown_events(kind, (showdown_data / f"{kind}.ts").read_text()) for kind in battle_data.KINDS}
+    sections = [f'"commit": {json.dumps(SHOWDOWN_COMMIT)}']
+    for kind, entries in tables.items():
+        lines = [f"{json.dumps(name)}: {json.dumps(entry)}" for name, entry in entries.items()]
+        sections.append(f"{json.dumps(kind)}: {{\n" + ",\n".join(lines) + "\n}")
+        print(f"{kind}: {len(entries)} entries", file=sys.stderr)
+    (battle_data.DATA_DIR / "showdown-events.json").write_text("{\n" + ",\n".join(sections) + "\n}\n")
+
+
+def _showdown_events(kind: str, source: str) -> dict:
+    """Each entry of `kind` that Showdown has, in data order: the `SHOWDOWN_EVENTS` its entry handles, those its
+    `condition` (the state it sets) handles, and for a move its slug and whether it has secondaries. A move matches by
+    Showdown's `num`, an item or ability by its slug without hyphens."""
+    showdown = {}
+    for showdown_id, body in SHOWDOWN_NAMED_ENTRY.findall(source):
+        num = re.search(r"^\t\tnum: (-?\d+),", body, re.MULTILINE)
+        condition = SHOWDOWN_CONDITION.search(body)
+        found = {
+            "events": _handled(SHOWDOWN_HANDLER, body),
+            "condition": _handled(SHOWDOWN_CONDITION_HANDLER, condition.group(1)) if condition else [],
+        }
+        if kind == "moves":
+            found["secondaries"] = bool(re.search(r"^\t\t(secondary: \{|secondaries: \[)", body, re.MULTILINE))
+        showdown.setdefault(num.group(1) if kind == "moves" and num else showdown_id, found)
+    entries = {}
+    for name, entry in battle_data.read(kind).items():
+        found = showdown.get(name if kind == "moves" else name.replace("-", ""))
+        if found is not None:
+            entries[name] = {"slug": entry["slug"], **found} if kind == "moves" else found
+    return entries
+
+
+def _handled(handler: re.Pattern, body: str) -> list[str]:
+    handled = set(handler.findall(body))
+    return [event for event in SHOWDOWN_EVENTS if event in handled]
 
 
 def _merged(fresh: dict, old: dict | None) -> dict:
