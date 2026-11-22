@@ -872,14 +872,8 @@ def _aim(attacker: _Fighter, defender: _Fighter, move: Move, weather: _Weather) 
 
 def _whiffed(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: Move, recovered: tuple[str, ...],
              aim: _Aim, rng: random.Random) -> Action | None:
-    """The accuracy roll misses, or the defender's type or ability takes nothing from the move."""
+    """The defender's type or ability takes nothing from the move, or else the accuracy roll misses."""
     names = (attacker.combatant.name, defender.combatant.name)
-    if aim.checks and rng.random() * 100 >= aim.accuracy:
-        _announce(attacker, hooks.item(attacker, "on_miss", attacker))
-        crash = _crash(attacker, move)
-        return Action(turn, side, *names, move.name, missed=True, multiplier=aim.multiplier, recovered=recovered,
-                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=crash,
-                      attacker_fainted=attacker.hp == 0)
     if aim.multiplier == 0:
         granted = hooks.ability(defender, "immune_to", move, defender, default=False) and effectiveness(
             move.type, defender.combatant.types) > 0
@@ -887,6 +881,12 @@ def _whiffed(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move:
         return Action(turn, side, *names, move.name, multiplier=0, recovered=recovered,
                       defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent,
                       ability=defender.ability if granted else None, changes=crash,
+                      attacker_fainted=attacker.hp == 0)
+    if aim.checks and rng.random() * 100 >= aim.accuracy:
+        _announce(attacker, hooks.item(attacker, "on_miss", attacker))
+        crash = _crash(attacker, move)
+        return Action(turn, side, *names, move.name, missed=True, multiplier=aim.multiplier, recovered=recovered,
+                      defender_hp=defender.hp_percent, attacker_hp=attacker.hp_percent, changes=crash,
                       attacker_fainted=attacker.hp == 0)
     return None
 

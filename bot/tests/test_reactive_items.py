@@ -1,4 +1,5 @@
 import random
+from dataclasses import replace
 
 import pytest
 from test_ability_items import holding
@@ -45,6 +46,13 @@ def test_blunder_policy_sharply_raises_speed_after_a_miss_only():
     assert holder.item == "blunder-policy"
     action = resolve(holder, foe, WILD_SHOT, arena)
     assert action.missed and holder.item is None and holder.stages["speed"] == items.BLUNDER_POLICY_STAGES
+
+
+def test_blunder_policy_stays_when_the_target_is_immune_before_any_accuracy_roll():
+    holder, foe, arena = holding(item="blunder-policy")
+    foe.combatant = replace(foe.combatant, types=("ghost",))
+    action = resolve(holder, foe, WILD_SHOT, arena)
+    assert action.multiplier == 0 and not action.missed and holder.item == "blunder-policy"
 
 
 def test_throat_spray_raises_special_attack_after_a_sound_move_only():
