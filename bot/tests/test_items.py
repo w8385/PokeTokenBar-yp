@@ -1,9 +1,12 @@
 from dataclasses import replace
 
 import pytest
+from attacks import attack
+from status_moves import put, resolve
 
 from ypoke import items
-from ypoke.battle import STRUGGLE, Action, BaseStats, Combatant, ItemHeal, Move, _Fighter, _unrolled_damage, simulate
+from ypoke.battle import (STRUGGLE, Action, BaseStats, Combatant, ItemHeal, MegaForm, Move, _Arena, _Fighter,
+                          _unrolled_damage, simulate)
 from ypoke.narration import battle_card, battle_log
 from ypoke.upload_server import PartyError, validate_party
 
@@ -110,6 +113,67 @@ def test_life_orb_boosts_damage_and_costs_a_tenth_of_max_hp():
     assert damage(orb, foe, TACKLE) == pytest.approx(damage(plain, foe, TACKLE) * 1.3)
     first = actions(simulate((replace(orb, level=100), foe), seed=4))[0]
     assert first.attacker_item == items.LIFE_ORB and first.attacker_hp < 100
+
+
+IRON_HEAD, GROWL, GIGA_DRAIN = attack(442), attack(45), attack(202)
+NEVER_HITS = Move("빗나감", "normal", 40, physical=True, accuracy=1)
+DOLL = 10_000
+SUBSTITUTE, PROTECT = {"substitute": DOLL}, {"protect": True}
+BUSTED = (MegaForm(("ghost", "fairy"), BaseStats(55, 90, 80, 50, 105, 96), form_id=10143, kind="busted"),)
+NOICE = (MegaForm(("ice",), BaseStats(75, 80, 70, 65, 50, 130), form_id=10185, kind="noice"),)
+
+
+@pytest.mark.parametrize(("move", "ability", "foe_types", "foe_ability", "foe_forms", "foe_volatiles", "recoil"), [
+    (TACKLE, None, ("normal",), None, (), {}, True),
+    (TACKLE, None, ("normal",), None, (), SUBSTITUTE, True),
+    (TACKLE, None, ("normal",), "disguise", BUSTED, {}, True),
+    (TACKLE, None, ("normal",), "ice-face", NOICE, {}, True),
+    (TACKLE, "magic-guard", ("normal",), None, (), SUBSTITUTE, False),
+    (IRON_HEAD, "sheer-force", ("normal",), None, (), SUBSTITUTE, False),
+    (IRON_HEAD, "sheer-force", ("normal",), None, (), {}, False),
+    (NEVER_HITS, None, ("normal",), None, (), {}, False),
+    (GROWL, None, ("normal",), None, (), {}, False),
+    (TACKLE, None, ("ghost",), None, (), {}, False),
+    (TACKLE, None, ("normal",), None, (), PROTECT, False),
+])
+def test_life_orb_costs_a_tenth_whenever_the_move_lands_even_on_a_substitute_or_disguise(
+        move, ability, foe_types, foe_ability, foe_forms, foe_volatiles, recoil):
+    user, foe, arena = facing(items.LIFE_ORB, ability, foe_types, foe_ability, foe_forms, foe_volatiles)
+    action = resolve(user, foe, move, arena, seed=1)
+    assert action.missed == (move is NEVER_HITS)
+    assert user.max_hp - user.hp == (user.max_hp // items.LIFE_ORB_RECOIL_FRACTION if recoil else 0)
+    assert action.attacker_item == (items.LIFE_ORB if recoil else "")
+
+
+@pytest.mark.parametrize(("foe_ability", "foe_forms", "foe_volatiles"), [
+    (None, (), SUBSTITUTE), ("disguise", BUSTED, {}),
+])
+def test_shell_bell_heals_nothing_from_a_hit_a_substitute_or_disguise_took(foe_ability, foe_forms, foe_volatiles):
+    user, foe, arena = facing(items.SHELL_BELL, foe_ability=foe_ability, foe_forms=foe_forms,
+                              foe_volatiles=foe_volatiles)
+    user.hp = user.max_hp // 2
+    action = resolve(user, foe, TACKLE, arena, seed=1)
+    assert action.hits == 1
+    assert (user.hp, action.attacker_item) == (user.max_hp // 2, "")
+
+
+def test_big_root_shows_its_boost_on_a_drain_that_hit_a_substitute():
+    user, foe, arena = facing(items.BIG_ROOT, foe_volatiles=SUBSTITUTE)
+    user.hp = 1
+    action = resolve(user, foe, GIGA_DRAIN, arena, seed=1)
+    taken = DOLL - foe.volatiles["substitute"]
+    assert user.hp == 1 + int(max(1, taken // 2) * items.BIG_ROOT_MULTIPLIER)
+    assert action.drained and action.attacker_item == items.BIG_ROOT
+
+
+def facing(item, ability=None, foe_types=("normal",), foe_ability=None, foe_forms=(), foe_volatiles=None):
+    """A level 100 holder of `item` (side 0) against a bulky foe (side 1)."""
+    arena = _Arena()
+    user = put(mon("보유자", level=100, hp=255), arena, item=item, ability=ability)
+    foe = put(replace(mon("상대", types=foe_types, hp=255, defense=255), forms=foe_forms), arena, 1,
+              ability=foe_ability)
+    foe.volatiles.update(foe_volatiles or {})
+    return user, foe, arena
 
 
 def test_expert_belt_boosts_only_super_effective_hits():
