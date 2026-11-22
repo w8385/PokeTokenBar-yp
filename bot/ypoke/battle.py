@@ -743,7 +743,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     volley = _land_hits(turn, side, attacker, defender, move, aim, weather, rng)
     changes, ability = _after_hits(turn, side, attacker, defender, move, volley, rng)
     recoil, drained = _recoil_or_drain(turn, side, attacker, defender, move, volley.dealt + volley.absorbed)
-    attacker_item = _attacker_item_effect(attacker, move, volley.dealt, drained)
+    attacker_item = _attacker_item_effect(attacker, move, volley, drained)
     defender_item = (volley.endured or _defender_item_effect(defender, attacker, move, aim.multiplier, volley.dealt)
                      or volley.berry or volley.resisted)
     with _ability_ignored(attacker, defender, move):
@@ -1037,12 +1037,14 @@ def _retyped(attacker: _Fighter, move: Move) -> Move:
     return move if kind is None else replace(move, type=kind)
 
 
-def _attacker_item_effect(attacker: _Fighter, move: Move, dealt: int, drained: bool) -> str:
-    """The user's item that acted after its move (Life Orb, Shell Bell, Big Root), or ""."""
+def _attacker_item_effect(attacker: _Fighter, move: Move, volley: _Volley, drained: bool) -> str:
+    """The user's item that acted after its damaging move landed, also on a Substitute or Disguise (Life Orb, Shell
+    Bell, Big Root), or ""."""
     item = attacker.item
-    if dealt <= 0 or move is STRUGGLE or item is None:
+    if not volley.hits or not move.damaging or move is STRUGGLE or item is None:
         return ""
-    return item if hooks.item(attacker, "after_move_as_user", attacker, move, dealt, drained, default=False) else ""
+    acted = hooks.item(attacker, "after_move_as_user", attacker, move, volley.dealt, drained, default=False)
+    return item if acted else ""
 
 
 def _defender_item_effect(defender: _Fighter, attacker: _Fighter, move: Move, multiplier: float, dealt: int) -> str:

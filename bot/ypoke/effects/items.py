@@ -268,7 +268,7 @@ class BigRoot(Handler):
 @register("items", "shell-bell")
 class ShellBell(Handler):
     def after_move_as_user(self, name, fighter, move, dealt, drained):
-        if not 0 < fighter.hp < fighter.max_hp:
+        if dealt <= 0 or not 0 < fighter.hp < fighter.max_hp:
             return False
         fighter.hp = min(fighter.max_hp, fighter.hp + max(1, dealt // items.SHELL_BELL_FRACTION))
         return True

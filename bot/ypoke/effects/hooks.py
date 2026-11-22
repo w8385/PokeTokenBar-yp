@@ -213,7 +213,8 @@ HOOKS = {
                  "event",
     "after_hit_as_user": "ability, then item: acts after its holder's damaging move hit (Magician, King's Rock); "
                          "returns an event",
-    "after_move_as_user": "item: acts after its holder's move dealt damage, after recoil and drain",
+    "after_move_as_user": "item: acts after its holder's damaging move landed, also on a Substitute or Disguise "
+                          "(`dealt` is then 0), after recoil and drain",
     "after_move_as_target": "item: acts after a move dealt damage to its holder",
     "after_move": "move: acts once the damage is dealt; may return more changes",
     "pays_hp": "move: its user pays HP once the move is used, hit or miss (Steel Beam); returns the change",
