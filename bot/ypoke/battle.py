@@ -748,6 +748,8 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
                      or volley.berry or volley.resisted)
     with _ability_ignored(attacker, defender, move):
         changes = (*changes, *(hooks.move(move, "after_move", attacker, defender, volley.dealt) or ()))
+        if volley.shielded:
+            changes = (*changes, *(hooks.move(move, "after_substitute_hit", attacker, defender) or ()))
     action = Action(
         turn, side, *names, move.name, multiplier=aim.multiplier, critical=volley.critical, changes=changes,
         recoil=recoil, defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,

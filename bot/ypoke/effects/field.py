@@ -367,7 +367,11 @@ class RapidSpin(Handler):
         return team.has_next and bool(arena.hazards[side]) and battle._multiplier(move, foes.active, weather) > 0
 
     def after_move(self, move, user, target, dealt):
-        if dealt > 0 and user.hp > 0:
+        if dealt > 0:
+            self.after_substitute_hit(move, user, target)
+
+    def after_substitute_hit(self, move, user, target):
+        if user.hp > 0:
             _spun_free(user, move)
 
 
@@ -378,7 +382,7 @@ class MortalSpin(RapidSpin):
     def after_move(self, move, user, target, dealt):
         if dealt <= 0:
             return None
-        _spun_free(user, move)
+        self.after_substitute_hit(move, user, target)
         if (target.hp == 0 or not battle._open_to("poison", target, not battle._infiltrates(user), user)
                 or battle._blocks_ailment(target, "poison")):
             return None
@@ -427,22 +431,34 @@ class SteelRoller(FieldMove):
         return power if _terrain(scene.user) else 0
 
     def after_move(self, move, user, target, dealt):
-        if dealt > 0 and user.arena is not None:
+        if dealt > 0:
+            self.after_substitute_hit(move, user, target)
+
+    def after_substitute_hit(self, move, user, target):
+        if user.arena is not None:
             _clear_terrain(user.arena, move.name)
 
 
 @register("moves", "ice-spinner")
 class IceSpinner(FieldMove):
     def after_move(self, move, user, target, dealt):
-        if dealt > 0 and user.hp > 0 and user.arena is not None:
+        if dealt > 0:
+            self.after_substitute_hit(move, user, target)
+
+    def after_substitute_hit(self, move, user, target):
+        if user.hp > 0 and user.arena is not None:
             _clear_terrain(user.arena, move.name)
 
 
 @register("moves", *fs.HAZARD_ON_HIT)
 class HazardOnHit(FieldMove):
     def after_move(self, move, user, target, dealt):
+        if dealt > 0:
+            self.after_substitute_hit(move, user, target)
+
+    def after_substitute_hit(self, move, user, target):
         arena, hazard = user.arena, fs.HAZARD_ON_HIT[self.key]
-        if dealt > 0 and user.hp > 0 and arena is not None and _lay(arena, target.side, hazard):
+        if user.hp > 0 and arena is not None and _lay(arena, target.side, hazard):
             arena.log.append(battle.FieldStart(arena.turn, target.side, hazard))
 
 
