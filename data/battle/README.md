@@ -9,6 +9,7 @@ Gen 9 singles has one entry, and every entry says what the bot does with it.
 | `abilities.json` | ability slug | `bot/ypoke/abilities.py` |
 | `moves.json` | move id | `bot/ypoke/move_effects.py`, `move_power.py`, `pokeapi.py`, `mega_stones.py` |
 | `coverage-baseline.json` | kind | `bot/tests/test_battle_data.py`, `BattleDataCoverageTests` |
+| `showdown-events.json` | kind, then entry | `bot/tests/test_showdown_events.py` |
 
 The bot reads these files through `bot/ypoke/battle_data.py`. Nothing reads PokéAPI for them at run time.
 
@@ -38,6 +39,8 @@ moves `slug`, `type`, `class`, `power`, `accuracy`, `priority`, `pp` and `meta`.
 The `"contact"` move flag comes from Pokémon Showdown's `data/moves.ts` (`flags.contact`), because PokéAPI has none:
 `bot/tools/generate_battle_data.py --showdown-contact <moves.ts>` sets it from the commit in `SHOWDOWN_COMMIT`.
 Showdown is MIT-licensed; its license is in `LICENSE-showdown`.
+
+`showdown-events.json` records, from the same Showdown commit, which hit events (onAfterSubDamage, onDamagingHit, onAfterHit, onAfterMoveSecondary[Self], onAfterMove, onDamage, onTryPrimaryHit) each entry and its condition handle, and whether each move has secondaries (what Sheer Force boosts). `bot/tools/generate_battle_data.py --showdown-events <showdown>/data` rewrites it; `test_showdown_events.py` checks the bot's hooks against it.
 
 Hand-set fields, kept on regeneration: `effect`, `args`, `flags` (`["punch"]`), `note`, `bot_name` (the bot's Korean
 name when it differs from the official one), `pokeapi` (the PokéAPI slug when it differs from the key; `null` for an
