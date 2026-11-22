@@ -3,6 +3,7 @@
 
 from ypoke import battle, items, moves, tera_forms
 from ypoke.effects import Handler, elsewhere, hooks, register
+from ypoke.effects.ability_damage import sheer_forced_by
 from ypoke.effects.changers import reshape
 from ypoke.move_effects import PUNCH_MOVES
 
@@ -159,7 +160,7 @@ class LifeOrb(Handler):
         return items.LIFE_ORB_MULTIPLIER
 
     def after_move_as_user(self, name, fighter, move, dealt, drained):
-        if battle._chip_free(fighter) or hooks.ability(fighter, "secondary_chance", move, default=1.0) == 0:
+        if battle._chip_free(fighter) or sheer_forced_by(fighter, move):
             return None
         fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // items.LIFE_ORB_RECOIL_FRACTION))
         return True
@@ -268,7 +269,7 @@ class BigRoot(Handler):
 @register("items", "shell-bell")
 class ShellBell(Handler):
     def after_move_as_user(self, name, fighter, move, dealt, drained):
-        if dealt <= 0 or not 0 < fighter.hp < fighter.max_hp:
+        if dealt <= 0 or not 0 < fighter.hp < fighter.max_hp or sheer_forced_by(fighter, move):
             return False
         fighter.hp = min(fighter.max_hp, fighter.hp + max(1, dealt // items.SHELL_BELL_FRACTION))
         return True

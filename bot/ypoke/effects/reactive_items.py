@@ -4,6 +4,7 @@ Room, a foe's stat raise, a move-limiting state or a charge turn. Their numbers 
 
 from ypoke import battle, items
 from ypoke.effects import Handler, register
+from ypoke.effects.ability_damage import sheer_forced_by
 
 MENTAL_STATES = ("taunt", "encore", "torment", "disable", "heal-block")
 
@@ -42,7 +43,7 @@ class BlunderPolicy(Handler):
 @register("items", "throat-spray")
 class ThroatSpray(Handler):
     def after_use(self, name, fighter, move, worked):
-        if not worked or not move.flagged("sound") or fighter.hp == 0:
+        if not worked or not move.flagged("sound") or fighter.hp == 0 or sheer_forced_by(fighter, move):
             return None
         return _spend(fighter, name, ("special_attack", 1))
 

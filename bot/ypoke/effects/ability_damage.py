@@ -303,6 +303,12 @@ def aura(name: str, move, user) -> float:
     return abilities.AURA_BROKEN if broken else abilities.AURA_POWER
 
 
+def sheer_forced_by(user, move) -> bool:
+    """The user's Sheer Force boosts the move, which also stops the user's answers to it (Showdown's
+    AfterMoveSecondarySelf: Life Orb, Shell Bell, Throat Spray)."""
+    return hooks.ability(user, "secondary_chance", move, default=1.0) == 0
+
+
 def sheer_forced(move) -> bool:
     if not move.damaging:
         return False
