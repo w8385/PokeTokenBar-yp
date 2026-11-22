@@ -91,13 +91,13 @@ class Download(Handler):
 @register("abilities", "hit-boost")
 class HitBoost(Handler):
     """Stamina, Weak Armor, Justified: each hit of a damaging move (of `args.types`, any when empty; physical only
-    with `args.physical`) moves `args.raises` once the move is over."""
+    with `args.physical`) moves `args.raises`."""
 
     def damaging_hit(self, name, hit):
         types, physical = abilities.HIT_TYPES[name], abilities.HIT_PHYSICAL[name]
         if (_unanswered(hit) or types and hit.move.type not in types or physical and not hit.move.physical):
             return None
-        return _raised(name, hit.target, abilities.HIT_RAISES[name], hit.hits)
+        return _raised(name, hit.target, abilities.HIT_RAISES[name])
 
 
 @register("abilities", "rattled")
@@ -166,7 +166,7 @@ class CottonDown(Handler):
         user, holder = hit.user, hit.target
         if hit.on_substitute or user.hp == 0:
             return None
-        change = battle.shift_stage(user, hit.side, "speed", -hit.hits, guarded=battle._stats_guarded(user),
+        change = battle.shift_stage(user, hit.side, "speed", -1, guarded=battle._stats_guarded(user),
                                     by=holder)
         return _act(name, holder, (change,) if change else ())
 
@@ -245,15 +245,14 @@ def _unanswered(hit) -> bool:
     return hit.on_substitute or hit.target.hp == 0
 
 
-def _raised(name, holder, raises, times=1):
-    """Moves the holder's own stages by `raises` ([stat, stages], `times` over); the `AbilityAct` when any moved."""
-    changes = _shifted(holder, raises, times)
+def _raised(name, holder, raises):
+    """Moves the holder's own stages by `raises` ([stat, stages]); the `AbilityAct` when any moved."""
+    changes = _shifted(holder, raises)
     return _act(name, holder, changes) if changes else None
 
 
-def _shifted(holder, raises, times=1) -> tuple:
-    return tuple(filter(None, (battle.shift_stage(holder, holder.side, stat, stages * times)
-                               for stat, stages in raises)))
+def _shifted(holder, raises) -> tuple:
+    return tuple(filter(None, (battle.shift_stage(holder, holder.side, stat, stages) for stat, stages in raises)))
 
 
 def _charged(name, holder):

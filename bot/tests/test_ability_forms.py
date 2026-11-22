@@ -12,7 +12,7 @@ from ypoke.effects import hooks
 
 TACKLE, SURF, EMBER, GROWL = attack(33), attack(57), attack(52), attack(45)
 KINGS_SHIELD, AURA_WHEEL, CLOSE_COMBAT, LICK = attack(588), attack(783), attack(370), attack(122)
-GIGA_DRAIN, DOUBLE_EDGE = attack(202), attack(38)
+GIGA_DRAIN, DOUBLE_EDGE, ROCK_SMASH = attack(202), attack(38), attack(249)
 FORM_BASE = BaseStats(80, 150, 50, 150, 50, 100)
 NO_CRIT = 0.5
 WEATHER_FORMS = ("sunny", "rainy", "snowy")
@@ -113,6 +113,14 @@ def test_disguise_takes_the_first_hit_for_an_eighth_of_its_hp(kinds, disguised):
     strike(foe, fighter, arena)
     assert before - fighter.hp > fighter.max_hp // abilities.DISGUISE_SHARE
     assert sum(isinstance(event, FormShift) for event in arena.log) == disguised
+
+
+@pytest.mark.parametrize("item", ["weakness-policy", "enigma-berry"])
+@pytest.mark.parametrize(("kinds", "answered"), [(("busted",), False), ((), True)])
+def test_a_super_effective_hit_the_disguise_takes_sets_off_no_held_answer(item, kinds, answered):
+    fighter, foe, arena = holder("disguise", *kinds, level=100, item=item)
+    strike(foe, fighter, arena, ROCK_SMASH)
+    assert fighter.hp > 0 and (fighter.item is None) == answered
 
 
 @pytest.mark.parametrize(("ability", "kinds", "move"), [

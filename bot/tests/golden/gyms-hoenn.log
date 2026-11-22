@@ -527,16 +527,16 @@ SendOut turn=8 side=1 pokemon='P373' member=1
 Action turn=9 side=0 attacker='P65' defender='P373' move='파워젬' defender_hp=79 attacker_hp=82 move_id=408
 Action turn=9 side=1 attacker='P373' defender='P65' move='더블윙' multiplier=2.0 defender_hp=0 knockout=True hits=2 attacker_hp=79 move_id=814
 SendOut turn=9 side=0 pokemon='P197' member=2
-Action turn=10 side=0 attacker='P197' defender='P373' move='불꽃튀기기' multiplier=2.0 defender_hp=30 move_id=481
-Action turn=10 side=1 attacker='P373' defender='P197' move='아이언헤드' multiplier=2.0 defender_hp=66 attacker_hp=30 move_id=442
-Action turn=11 side=0 attacker='P197' defender='P373' move='불꽃튀기기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=66 move_id=481
+Action turn=10 side=0 attacker='P197' defender='P373' move='불꽃튀기기' multiplier=2.0 defender_hp=24 move_id=481
+Action turn=10 side=1 attacker='P373' defender='P197' move='아이언헤드' multiplier=2.0 defender_hp=67 attacker_hp=24 move_id=442
+Action turn=11 side=0 attacker='P197' defender='P373' move='불꽃튀기기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=67 move_id=481
 SendOut turn=11 side=1 pokemon='P376' member=2
-Action turn=12 side=0 attacker='P197' defender='P376' move='불꽃튀기기' multiplier=2.0 defender_hp=32 attacker_hp=66 move_id=481
-Action turn=12 side=1 attacker='P376' defender='P197' move='코멧펀치' multiplier=2.0 defender_hp=20 attacker_hp=23 attacker_item='life-orb' move_id=309
-Action turn=13 side=0 attacker='P197' defender='P376' move='불꽃튀기기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=20 move_id=481
+Action turn=12 side=0 attacker='P197' defender='P376' move='불꽃튀기기' multiplier=2.0 defender_hp=32 attacker_hp=67 move_id=481
+Action turn=12 side=1 attacker='P376' defender='P197' move='코멧펀치' multiplier=2.0 defender_hp=22 attacker_hp=23 attacker_item='life-orb' move_id=309
+Action turn=13 side=0 attacker='P197' defender='P376' move='불꽃튀기기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=22 move_id=481
 SendOut turn=13 side=1 pokemon='P350' member=3
-Action turn=14 side=0 attacker='P197' defender='P350' move='에너지볼' multiplier=2.0 defender_hp=27 attacker_hp=20 move_id=412
-Action turn=14 side=1 attacker='P350' defender='P197' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=27 move_id=58
+Action turn=14 side=0 attacker='P197' defender='P350' move='에너지볼' multiplier=2.0 defender_hp=19 attacker_hp=22 move_id=412
+Action turn=14 side=1 attacker='P350' defender='P197' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=19 move_id=58
 SendOut turn=14 side=0 pokemon='P384' member=3
 Action turn=15 side=0 attacker='P384' defender='P350' move='화룡점정' changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=620
 SendOut turn=15 side=1 pokemon='P286' member=4
@@ -556,7 +556,7 @@ SendOut turn=20 side=1 pokemon='P383' member=6
 HazardHit turn=20 side=1 pokemon='P383' hazard='toxic-spikes' change=Change(side=1, pokemon='P383', kind='poison', stages=0)
 Action turn=21 side=0 attacker='P718' defender='P383' move='가위자르기' changes=(Change(side=1, pokemon='P383', kind='ohko', stages=0),) defender_hp=0 knockout=True attacker_hp=50 move_id=12
 result winner=0 turns=21 remaining=((0, 0, 0, 0, 50, None), (0, 0, 0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None, 'poison', 'poison'))
-won=True carry=null body=d4436f5b0749be1b5589dec9b5b86d1c62c2a20704ce7a387fde4deb08ba74be
+won=True carry=null body=ba54b22a83e0f582a2eec6fa63d1e56854e2bf4a07c4771729a7c097aa317d3f
 ## hoenn-hideout-1 party 0 carried null
 Action turn=1 side=0 attacker='P403' defender='P303' move='정신차리기' defender_hp=68 move_id=265
 Action turn=1 side=1 attacker='P303' defender='P403' move='깨뜨리다' defender_hp=76 attacker_hp=68 move_id=280

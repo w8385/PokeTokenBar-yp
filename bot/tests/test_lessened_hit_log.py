@@ -10,7 +10,7 @@ from ypoke import battle, narration
 from ypoke.battle import Action, FormShift, _Arena, _Team, simulate
 from ypoke.narration import battle_turns
 
-TACKLE, FLAMETHROWER, SEISMIC_TOSS = attack(33), attack(53), attack(69)
+TACKLE, FLAMETHROWER, SEISMIC_TOSS, DOUBLE_HIT = attack(33), attack(53), attack(69), attack(458)
 NO_CRIT = 0.5
 
 
@@ -109,6 +109,13 @@ def test_an_uploaded_dragonite_names_multiscale_on_the_first_hit_only():
     assert (first.ability, first.critical, second.ability) == ("multiscale", False, None)
     texts = [text for _, lines in battle_turns(result) for text in lines if "윈디 › 화염방사" in text]
     assert ["[멀티스케일]" in text for text in texts[:2]] == [True, False]
+
+
+def test_mold_breaker_ignores_the_foes_ability_on_every_hit():
+    _, broken = struck("fur-coat", "mold-breaker", DOUBLE_HIT)
+    _, plain = struck(None, "mold-breaker", DOUBLE_HIT)
+    _, coated = struck("fur-coat", None, DOUBLE_HIT)
+    assert broken == plain > coated
 
 
 def test_a_mold_breaker_foe_gets_no_multiscale_tag():

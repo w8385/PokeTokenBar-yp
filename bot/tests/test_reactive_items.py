@@ -15,15 +15,15 @@ EARTHQUAKE, GROWL, SOLAR_BEAM, HYPER_VOICE = data_move(89), data_move(45), data_
 WILD_SHOT = battle.Move("빗나감", "normal", 40, physical=True, accuracy=1)
 
 
-def test_an_air_balloon_floats_over_ground_moves_until_a_hit_pops_it():
+@pytest.mark.parametrize("doll", [False, True])
+def test_an_air_balloon_floats_over_ground_moves_until_a_hit_pops_it_even_on_its_substitute(doll):
     user, holder, arena = holding(foe_item="air-balloon")
     action = resolve(user, holder, EARTHQUAKE, arena)
     assert action.multiplier == 0 and holder.item == "air-balloon" and not battle._grounded(holder)
     resolve(user, holder, GROWL, arena)
-    holder.volatiles["substitute"] = holder.max_hp
-    resolve(user, holder, TACKLE, arena)
     assert holder.item == "air-balloon"
-    del holder.volatiles["substitute"]
+    if doll:
+        holder.volatiles["substitute"] = holder.max_hp
     resolve(user, holder, TACKLE, arena)
     assert holder.item is None and battle._grounded(holder)
     assert ItemEffect(1, 1, holder.combatant.name, "air-balloon", "popped") in arena.log

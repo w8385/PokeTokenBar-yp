@@ -15,12 +15,6 @@ from ypoke.battle import BaseStats, Combatant, MegaForm, _Arena, _Team
 
 RECORDS = [json.loads(path.read_text()) for path in sorted((Path(__file__).parent / "showdown").glob("*.json"))]
 OPEN_DEFECTS = {
-    "knock-off-disguise": 1, "thief-disguise": 1, "rocky-helmet-disguise": 1, "air-balloon-disguise": 1,
-    "kee-berry-disguise": 1,
-    "double-kick-stamina-breaks-doll": 5, "twineedle-breaks-doll": 5,
-    "air-balloon-substitute": 6,
-    "core-enforcer-substitute": 7,
-    "parental-bond-crunch": 10,
     "blunder-policy-type-immune": 11,
 }
 LEVEL = 50

@@ -1397,21 +1397,31 @@ SendOut turn=11 side=1 pokemon='P708' member=2
 Action turn=12 side=0 attacker='P588' defender='P708' move='대검돌격' defender_hp=47 move_id=862
 Action turn=12 side=1 attacker='P708' defender='P588' move='아이스스피너' defender_hp=67 attacker_hp=47 move_id=861
 AbilityAct turn=12 side=0 pokemon='P588' ability='seed-sower' effect='terrain' detail='grassy-terrain'
-TerrainHeal turn=12 side=0 pokemon='P588' hp=73
-TerrainHeal turn=12 side=1 pokemon='P708' hp=53
-Action turn=13 side=0 attacker='P588' defender='P708' move='대검돌격' defender_hp=0 knockout=True attacker_hp=73 move_id=862
-TerrainHeal turn=13 side=0 pokemon='P588' hp=79
+FieldEnd turn=12 kind='grassy-terrain' move='아이스스피너'
+Action turn=13 side=0 attacker='P588' defender='P708' move='대검돌격' defender_hp=0 knockout=True attacker_hp=67 move_id=862
 SendOut turn=13 side=1 pokemon='P837' member=3
-Action turn=14 side=0 attacker='P588' defender='P837' move='대검돌격' defender_hp=54 attacker_hp=79 move_id=862
-Action turn=14 side=1 attacker='P837' defender='P588' move='근원의파동' multiplier=2.0 defender_hp=34 attacker_hp=54 move_id=618
-TerrainHeal turn=14 side=0 pokemon='P588' hp=40
-Action turn=15 side=0 attacker='P588' defender='P837' move='대검돌격' defender_hp=7 attacker_hp=40 move_id=862
-Action turn=15 side=1 attacker='P837' defender='P588' move='근원의파동' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=7 move_id=618
-result winner=1 turns=15 remaining=((0, 0, 0), (0, 0, 0, 7, None)) statuses=((None, None, None), (None, None, None, None, None))
-header 🏆 B 승 · 3:5 · 15턴
+Action turn=14 side=0 attacker='P588' defender='P837' move='대검돌격' defender_hp=54 attacker_hp=67 move_id=862
+Action turn=14 side=1 attacker='P837' defender='P588' move='근원의파동' multiplier=2.0 defender_hp=22 attacker_hp=54 move_id=618
+AbilityAct turn=14 side=0 pokemon='P588' ability='seed-sower' effect='terrain' detail='grassy-terrain'
+ItemEffect turn=14 side=0 pokemon='P588' item='starf-berry' effect='eaten' changes=(Change(side=0, pokemon='P588', kind='special_defense', stages=2),)
+TerrainHeal turn=14 side=0 pokemon='P588' hp=28
+Action turn=15 side=0 attacker='P588' defender='P837' move='대검돌격' critical=True defender_hp=0 knockout=True attacker_hp=28 move_id=862
+TerrainHeal turn=15 side=0 pokemon='P588' hp=34
+SendOut turn=15 side=1 pokemon='P450' member=4
+Action turn=16 side=0 attacker='P588' defender='P450' move='깨뜨리다' multiplier=2.0 defender_hp=74 attacker_hp=34 move_id=280
+Action turn=16 side=1 attacker='P450' defender='P588' move='순풍' defender_hp=34 attacker_hp=74 effect='tailwind' move_id=366
+TerrainHeal turn=16 side=0 pokemon='P588' hp=40
+TerrainHeal turn=16 side=1 pokemon='P450' hp=79
+Action turn=17 side=1 attacker='P450' defender='P588' move='지구던지기' multiplier=2.0 defender_hp=12 attacker_hp=79 move_id=69
+Action turn=17 side=0 attacker='P588' defender='P450' move='깨뜨리다' multiplier=2.0 defender_hp=53 attacker_hp=12 move_id=280
+TerrainHeal turn=17 side=0 pokemon='P588' hp=18
+TerrainHeal turn=17 side=1 pokemon='P450' hp=59
+Action turn=18 side=1 attacker='P450' defender='P588' move='지구던지기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=69
+result winner=1 turns=18 remaining=((0, 0, 0), (0, 0, 0, 0, 59)) statuses=((None, None, None), (None, None, None, None, None))
+header 🏆 B 승 · 3:5 · 18턴
 column '🔵 *A*\nP1007 Lv40 @물방울플레이트 💥\nP531(메가) 💥\nP588 Lv49 @스타열매 💥'
-column '🔴 *B*\nP609(메가) 💥\nP986 @끈적끈적바늘 💥\nP708 @암석플레이트 💥\nP837 Lv43 @리체열매 ▰▱▱▱▱▱▱▱▱▱ 7%\nP450 대기'
-card title='🏆 B 승' detail='3:5 · 15턴' highlights=('💥 결정타 P837 근원의파동',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/837.png', 'P837')
+column '🔴 *B*\nP609(메가) 💥\nP986 @끈적끈적바늘 💥\nP708 @암석플레이트 💥\nP837 Lv43 @리체열매 💥\nP450 ▰▰▰▰▰▰▱▱▱▱ 59%'
+card title='🏆 B 승' detail='3:5 · 18턴' highlights=('💥 결정타 P450 지구던지기',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/450.png', 'P450')
 card log Matchup(left=Portrait(form_id=1007, shiny=False, name='P1007'), right=Portrait(form_id=10291, shiny=False, name='P609')) = turn 1
 card log None = turn 2
 card log None = turn 3
@@ -1427,6 +1437,9 @@ card log Matchup(left=Portrait(form_id=588, shiny=False, name='P588'), right=Por
 card log None = turn 13
 card log Matchup(left=Portrait(form_id=588, shiny=False, name='P588'), right=Portrait(form_id=837, shiny=False, name='P837')) = turn 14
 card log None = turn 15
+card log Matchup(left=Portrait(form_id=588, shiny=False, name='P588'), right=Portrait(form_id=450, shiny=False, name='P450')) = turn 16
+card log None = turn 17
+card log None = turn 18
 turn 1 🔴 P609 메가진화 [심술꾸러기]
 turn 1 🔴 P609 › 금속음 → 빗나감
 turn 1 🔵 P1007 › 객기 → P609 무효
@@ -1456,16 +1469,26 @@ turn 11 ↪ 🔴 P708 등장
 turn 12 🔵 P588 › 대검돌격 → P708 47%
 turn 12 🔴 P708 › 아이스스피너 → P588 67%
 turn 12 🔵 P588 [넘치는씨] 🌿그래스필드
-turn 12 🔵 P588 🌿그래스필드 73%
-turn 12 🔴 P708 🌿그래스필드 53%
+turn 12 🌿그래스필드 사라짐 (아이스스피너)
 turn 13 🔵 P588 › 대검돌격 → P708 💥
-turn 13 🔵 P588 🌿그래스필드 79%
 turn 13 ↪ 🔴 P837 등장
 turn 14 🔵 P588 › 대검돌격 → P837 54%
-turn 14 🔴 P837 › 근원의파동 → P588 34% 효과 굉장
-turn 14 🔵 P588 🌿그래스필드 40%
-turn 15 🔵 P588 › 대검돌격 → P837 7%
-turn 15 🔴 P837 › 근원의파동 → P588 💥 급소 효과 굉장
+turn 14 🔴 P837 › 근원의파동 → P588 22% 효과 굉장
+turn 14 🔵 P588 [넘치는씨] 🌿그래스필드
+turn 14 🔵 P588 @스타열매 먹음 특방↑↑
+turn 14 🔵 P588 🌿그래스필드 28%
+turn 15 🔵 P588 › 대검돌격 → P837 💥 급소
+turn 15 🔵 P588 🌿그래스필드 34%
+turn 15 ↪ 🔴 P450 등장
+turn 16 🔵 P588 › 깨뜨리다 → P450 74% 효과 굉장
+turn 16 🔴 P450 › 순풍 🍃순풍이 분다
+turn 16 🔵 P588 🌿그래스필드 40%
+turn 16 🔴 P450 🌿그래스필드 79%
+turn 17 🔴 P450 › 지구던지기 → P588 12% 효과 굉장
+turn 17 🔵 P588 › 깨뜨리다 → P450 53% 효과 굉장
+turn 17 🔵 P588 🌿그래스필드 18%
+turn 17 🔴 P450 🌿그래스필드 59%
+turn 18 🔴 P450 › 지구던지기 → P588 💥 효과 굉장
 ## pvp-080 14
 Action turn=1 side=1 attacker='P307' defender='P552' move='파워셰어' effect='stat-swap' move_id=471
 Action turn=1 side=0 attacker='P552' defender='P307' move='플레어드라이브' changes=(Change(side=1, pokemon='P307', kind='defense', stages=2),) failed=True blocked='well-baked-body' move_id=394
@@ -4112,14 +4135,14 @@ AbilityAct turn=11 side=1 pokemon='P607' ability='eelevate' changes=(Change(side
 SendOut turn=11 side=0 pokemon='P719' member=2
 Action turn=12 side=0 attacker='P719' defender='P607' move='더블펀처' critical=True defender_hp=0 knockout=True hits=2 move_id=742
 SendOut turn=12 side=1 pokemon='P526' member=1
-Action turn=13 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=65 hits=2 move_id=742
-Action turn=13 side=1 attacker='P526' defender='P719' move='메테오드라이브' multiplier=2.0 defender_hp=51 attacker_hp=65 move_id=713
-Action turn=14 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=29 hits=2 attacker_hp=51 move_id=742
-Action turn=14 side=1 attacker='P526' defender='P719' move='메테오드라이브' multiplier=2.0 defender_hp=1 attacker_hp=29 move_id=713
-Action turn=15 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=0 knockout=True hits=2 attacker_hp=1 move_id=742
+Action turn=13 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=66 hits=2 move_id=742
+Action turn=13 side=1 attacker='P526' defender='P719' move='' blocked='flinch' attacker_hp=66
+Action turn=14 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=31 hits=2 move_id=742
+Action turn=14 side=1 attacker='P526' defender='P719' move='메테오드라이브' multiplier=2.0 defender_hp=46 attacker_hp=31 move_id=713
+Action turn=15 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=0 knockout=True hits=2 attacker_hp=46 move_id=742
 SendOut turn=15 side=1 pokemon='P882' member=2
-Action turn=16 side=0 attacker='P719' defender='P882' move='더블펀처' defender_hp=51 hits=2 attacker_hp=1 move_id=742
-Action turn=16 side=1 attacker='P882' defender='P719' move='에어로블라스트' defender_hp=0 knockout=True attacker_hp=51 move_id=177
+Action turn=16 side=0 attacker='P719' defender='P882' move='더블펀처' defender_hp=51 hits=2 attacker_hp=46 move_id=742
+Action turn=16 side=1 attacker='P882' defender='P719' move='에어로블라스트' critical=True defender_hp=0 knockout=True attacker_hp=51 move_id=177
 result winner=1 turns=16 remaining=((0, 0, 0), (0, 0, 51, None, None, None)) statuses=((None, None, None), (None, None, None, None, None, None))
 header 🏆 B 승 · 3:6 · 16턴
 column '🔵 *A*\nP546 Lv40 @잔물결향로 💥\nP948 @약점보험 💥\nP719 💥'
@@ -4169,14 +4192,14 @@ turn 11 🔴 P607 [천정부지] 특방↑
 turn 11 ↪ 🔵 P719 등장
 turn 12 🔵 P719 › 더블펀처 → P607 💥 급소 2연타
 turn 12 ↪ 🔴 P526 등장
-turn 13 🔵 P719 › 더블펀처 → P526 65% 2연타
-turn 13 🔴 P526 › 메테오드라이브 → P719 51% 효과 굉장
-turn 14 🔵 P719 › 더블펀처 → P526 29% 2연타
-turn 14 🔴 P526 › 메테오드라이브 → P719 1% 효과 굉장
+turn 13 🔵 P719 › 더블펀처 → P526 66% 2연타
+turn 13 🔴 P526 😖풀죽어서 못 움직임
+turn 14 🔵 P719 › 더블펀처 → P526 31% 2연타
+turn 14 🔴 P526 › 메테오드라이브 → P719 46% 효과 굉장
 turn 15 🔵 P719 › 더블펀처 → P526 💥 2연타
 turn 15 ↪ 🔴 P882 등장
 turn 16 🔵 P719 › 더블펀처 → P882 51% 2연타
-turn 16 🔴 P882 › 에어로블라스트 → P719 💥
+turn 16 🔴 P882 › 에어로블라스트 → P719 💥 급소
 ## pvp-080 35
 MegaEvolution turn=1 side=1 pokemon='P181' ability='퍼코트' form_id=10045
 Action turn=1 side=0 attacker='P382' defender='P181' move='하이드로스팀' multiplier=2.0 defender_hp=31 move_id=876

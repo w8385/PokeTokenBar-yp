@@ -11,16 +11,18 @@ MENTAL_STATES = ("taunt", "encore", "torment", "disable", "heal-block")
 
 @register("items", "air-balloon")
 class AirBalloon(Handler):
-    """Floats over Ground moves and the ground until a damaging hit pops it."""
+    """Floats over Ground moves and the ground until a damaging hit pops it, also one on its holder's Substitute."""
 
     def floats(self, name):
         return True
 
+    def after_sub_damage(self, name, hit):
+        return self.damaging_hit(name, hit)
+
     def damaging_hit(self, name, hit):
         fighter = hit.target
-        if hit.reached:
-            fighter.item = None
-            battle._announce(fighter, _event(fighter, name, "popped"))
+        fighter.item = None
+        battle._announce(fighter, _event(fighter, name, "popped"))
         return False
 
 

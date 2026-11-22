@@ -49,6 +49,29 @@ def test_static_does_not_answer_a_hit_its_substitute_took(substitute, afflicted)
     assert (user.status == "paralysis") == afflicted
 
 
+class CountedRng(FixedRng):
+    def __init__(self, value):
+        super().__init__(value)
+        self.draws = 0
+
+    def random(self):
+        self.draws += 1
+        return super().random()
+
+
+def test_static_rolls_for_each_contact_hit():
+    assert draws_of_double_hit("static") - draws_of_double_hit(None) == 2
+
+
+def draws_of_double_hit(foe_ability):
+    user, foe, arena = facing(None, foe_ability, **WEAK)
+    user.combatant = replace(user.combatant, moves=(DOUBLE_HIT,))
+    user.pp = [DOUBLE_HIT.pp]
+    rng = CountedRng(MISSES)
+    battle._resolve(1, 0, (user, foe), 0, arena.weather, rng, arena)
+    return rng.draws
+
+
 @pytest.mark.parametrize(("move", "user_ability", "user_types", "draw", "status"), [
     (TACKLE, None, ("normal",), SURE, "sleep"), (TACKLE, None, ("normal",), 0.15, "paralysis"),
     (TACKLE, None, ("normal",), TRIGGERS, "poison"), (TACKLE, None, ("normal",), MISSES, None),

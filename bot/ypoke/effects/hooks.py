@@ -174,11 +174,11 @@ HOOKS = {
     "blocks_ohko": "ability: an OHKO move fails on its holder (Sturdy)",
     "endures":"state, then ability, then item: a hit that would knock its holder out leaves it 1 HP",
     "on_knocked_out": "state: acts as a foe's move knocks its holder out (Destiny Bond, Grudge)",
-    "on_fainted_by": "ability: acts as a foe's move knocks its holder out, after the states (Aftermath); `lost` is the "
-                     "HP the last hit took; returns an event",
+    "on_fainted_by": "ability: acts as a foe's hit knocks its holder out, before the states (Aftermath); `lost` is the "
+                     "HP that hit took; returns an event",
     "damps": "ability: nothing explodes while its holder is out, Aftermath included (Damp)",
-    "on_contact_hit": "item, ability: the HP each contact hit on its holder takes from the user (Rocky Helmet, Rough "
-                      "Skin)",
+    "on_contact_hit": "item, ability: the HP each contact hit on its holder takes from the user, a Disguise hit too "
+                      "(Rocky Helmet, Rough Skin)",
     "drops_contact": "ability, item: its holder's moves do not make contact (Long Reach, Punching Glove on punches, "
                      "Protective Pads)",
     "between_hits": "item: acts between the hits of a multi-hit move",
@@ -201,19 +201,21 @@ HOOKS = {
     "blocks_secondary": "ability, then item: a foe's move's added effects do not land on its holder (Shield Dust, "
                         "Covert Cloak)",
     "secondary_chance": "ability: multiplies the chance of its holder's move's added effects (Serene Grace)",
-    "secondary": "move: acts on a target the hits left standing, after the ailment and stat changes, unless a "
-                 "Substitute took them (flinch); returns the changes",
-    "on_contact": "ability: may hit back at a contact move's user once the move is over, unless a Substitute took it",
+    "secondary": "move: acts on a target each hit leaves standing, after the ailment and stat changes, unless a "
+                 "Substitute took the hit (flinch); returns the changes",
+    "on_contact": "ability: may hit back at the user of each contact hit its holder survives, unless a Substitute "
+                  "took it",
     "modify_drain": "item: the HP a draining move gives back",
     "inverts_drain": "ability: a draining move on its holder hurts its user by what it would heal (Liquid Ooze)",
     "blocks_recoil": "ability: its holder takes no recoil (Rock Head)",
     "blocks_indirect": "ability: only moves' hits hurt its holder: no status, weather, hazard, recoil or item chip "
                        "(Magic Guard)",
-    "damaging_hit": "ability, then item: answers a damaging move's hit on its holder, told by a `battle.Hit` "
-                    "(Showdown's onDamagingHit: Stamina, Weakness Policy); the ability returns an event, the item "
-                    "whether it acted",
+    "damaging_hit": "ability, then item: answers each hit of a damaging move that landed on its holder, a Disguise "
+                    "hit too, told by a `battle.Hit` (Showdown's onDamagingHit: Stamina, Weakness Policy); the "
+                    "ability returns an event, the item whether it acted",
     "after_move_secondary": "ability, then item: answers a damaging move that hit its holder once all its hits and "
-                            "their effects are over (Showdown's onAfterMoveSecondary: Color Change, Kee Berry)",
+                            "their effects are over, told by its last hit (Showdown's onAfterMoveSecondary: Color "
+                            "Change, Kee Berry)",
     "source_damaging_hit": "ability: acts on the target of its holder's damaging hit (Showdown's "
                            "onSourceDamagingHit: Poison Touch); returns an event",
     "adds_secondary": "ability, then item: adds a flinch chance to each hit of its holder's damaging move (Stench, "
@@ -228,8 +230,8 @@ HOOKS = {
                   "changes",
     "after_own_move": "state: acts once its holder tried a move, whether it worked, failed or could not be used "
                       "(Showdown's onAfterMove and onMoveAborted: Charge ends)",
-    "after_sub_damage":"move: acts when a hit landed on the target's Substitute (Showdown's onAfterSubDamage: Rapid "
-                        "Spin)",
+    "after_sub_damage": "move, item: acts when a hit landed on the target's Substitute (Showdown's onAfterSubDamage: "
+                        "Rapid Spin, Air Balloon)",
     "pays_hp": "move: its user pays HP once the move is used, hit or miss (Steel Beam); returns the change",
     "faints_user":"move: its user faints once it is used",
     "prevents_self_ko": "ability: a foe's self-KO move fails on its holder and does not faint its user (Damp)",
