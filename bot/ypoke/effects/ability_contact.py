@@ -152,7 +152,7 @@ class Stench(Handler):
         if hit.on_substitute or target.hp == 0 or target.acted or meta(move, "flinch_chance") > 0:
             return
         chance = abilities.STENCH_CHANCE * battle._chance_scale(move, hit.user, target)
-        if any(hit.rng.random() < chance for _ in range(hit.hits)) and not battle._blocks_ailment(target, "flinch"):
+        if hit.rng.random() < chance and not battle._blocks_ailment(target, "flinch"):
             target.volatiles["flinch"] = True
 
 

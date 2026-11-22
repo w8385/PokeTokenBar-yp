@@ -357,7 +357,7 @@ turn 40 🔵 P43 › 거품광선 → P600 💥
 ## pvp-000 2
 MegaEvolution turn=1 side=0 pokemon='P142' ability='복슬복슬' form_id=10042
 Action turn=1 side=1 attacker='P785' defender='P142' move='신통력' defender_hp=71 hits=2 move_id=326
-Action turn=1 side=0 attacker='P142' defender='P785' move='연옥' missed=True multiplier=2.0 attacker_hp=71 move_id=517
+Action turn=1 side=0 attacker='P142' defender='P785' move='' blocked='flinch' attacker_hp=71
 Action turn=2 side=1 attacker='P785' defender='P142' move='신통력' defender_hp=41 hits=2 move_id=326
 Action turn=2 side=0 attacker='P142' defender='P785' move='연옥' missed=True multiplier=2.0 attacker_hp=41 move_id=517
 Action turn=3 side=1 attacker='P785' defender='P142' move='신통력' defender_hp=9 hits=2 move_id=326
@@ -432,7 +432,7 @@ card log None = turn 19
 card log Matchup(left=Portrait(form_id=1, shiny=False, name='P1'), right=Portrait(form_id=216, shiny=False, name='P216')) = turn 20
 turn 1 🔵 P142 메가진화 [복슬복슬]
 turn 1 🔴 P785 › 신통력 → P142 71% 2연타
-turn 1 🔵 P142 › 연옥 → 빗나감
+turn 1 🔵 P142 😖풀죽어서 못 움직임
 turn 2 🔴 P785 › 신통력 → P142 41% 2연타
 turn 2 🔵 P142 › 연옥 → 빗나감
 turn 3 🔴 P785 › 신통력 → P142 9% 2연타
@@ -505,20 +505,21 @@ SendOut turn=9 side=1 pokemon='P559' member=3
 Action turn=10 side=1 attacker='P559' defender='P47' move='기어체인지' changes=(Change(side=1, pokemon='P559', kind='attack', stages=1), Change(side=1, pokemon='P559', kind='speed', stages=2)) defender_hp=71 effect='stages' move_id=508
 Action turn=10 side=0 attacker='P47' defender='P559' move='록커트' changes=(Change(side=0, pokemon='P47', kind='speed', stages=2),) attacker_hp=71 effect='stages' move_id=397
 Action turn=11 side=1 attacker='P559' defender='P47' move='기어소서' defender_hp=33 hits=2 move_id=544
-Action turn=11 side=0 attacker='P47' defender='P559' move='악의파동' multiplier=2.0 defender_hp=30 attacker_hp=33 move_id=399
-Action turn=12 side=1 attacker='P559' defender='P47' move='기어소서' missed=True defender_hp=33 attacker_hp=30 move_id=544
+Action turn=11 side=0 attacker='P47' defender='P559' move='악의파동' multiplier=2.0 defender_hp=37 attacker_hp=33 move_id=399
+Action turn=12 side=1 attacker='P559' defender='P47' move='기어소서' missed=True defender_hp=33 attacker_hp=37 move_id=544
 Action turn=12 side=0 attacker='P47' defender='P559' move='악의파동' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=33 move_id=399
 SendOut turn=12 side=1 pokemon='P983' member=4
-Action turn=13 side=0 attacker='P47' defender='P983' move='얼어붙은바람' missed=True multiplier=2.0 attacker_hp=33 move_id=196
-Action turn=13 side=1 attacker='P983' defender='P47' move='탁류' missed=True multiplier=2.0 defender_hp=33 move_id=330
-Action turn=14 side=0 attacker='P47' defender='P983' move='얼어붙은바람' multiplier=2.0 changes=(Change(side=1, pokemon='P983', kind='speed', stages=-1),) defender_hp=41 attacker_hp=33 move_id=196
-Action turn=14 side=1 attacker='P983' defender='P47' move='탁류' missed=True multiplier=2.0 defender_hp=33 attacker_hp=41 move_id=330
-Action turn=15 side=0 attacker='P47' defender='P983' move='얼어붙은바람' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=33 move_id=196
-result winner=0 turns=15 remaining=((0, 33, None, None), (0, 0, 0, 0, 0)) statuses=((None, None, None, None), (None, None, None, None, None))
-header 🏆 A 승 · 4:5 · 15턴
-column '🔵 *A*\nP11 @마코열매 💥\nP47 ▰▰▰▱▱▱▱▱▱▱ 33%\nP448 대기\nP54 @애슈열매 대기'
+Action turn=13 side=0 attacker='P47' defender='P983' move='얼어붙은바람' multiplier=2.0 changes=(Change(side=1, pokemon='P983', kind='speed', stages=-1),) defender_hp=43 attacker_hp=33 move_id=196
+Action turn=13 side=1 attacker='P983' defender='P47' move='탁류' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=43 move_id=330
+SendOut turn=13 side=0 pokemon='P448' member=2
+MegaEvolution turn=14 side=0 pokemon='P448' ability='수확' form_id=10059
+Action turn=14 side=1 attacker='P983' defender='P448' move='뼈다귀부메랑' critical=True defender_hp=60 hits=2 attacker_hp=43 move_id=155
+Action turn=14 side=0 attacker='P448' defender='P983' move='눈사태' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=60 move_id=419
+result winner=0 turns=14 remaining=((0, 0, 60, None), (0, 0, 0, 0, 0)) statuses=((None, None, None, None), (None, None, None, None, None))
+header 🏆 A 승 · 4:5 · 14턴
+column '🔵 *A*\nP11 @마코열매 💥\nP47 💥\nP448(메가) ▰▰▰▰▰▰▱▱▱▱ 60%\nP54 @애슈열매 대기'
 column '🔴 *B*\nP835 Lv47 @다크메모리 💥\nP303(메가) 💥\nP227 Lv40 💥\nP559 Lv48 @아쿠아카세트 💥\nP983 @용의플레이트 💥'
-card title='🏆 A 승' detail='4:5 · 15턴' highlights=('💥 결정타 P47 얼어붙은바람',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/47.png', 'P47')
+card title='🏆 A 승' detail='4:5 · 14턴' highlights=('💥 결정타 P448 눈사태',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10059.png', 'P448')
 card log Matchup(left=Portrait(form_id=11, shiny=False, name='P11'), right=Portrait(form_id=835, shiny=False, name='P835')) = turn 1
 card log None = turn 2
 card log None = turn 3
@@ -532,8 +533,7 @@ card log Matchup(left=Portrait(form_id=47, shiny=False, name='P47'), right=Portr
 card log None = turn 11
 card log None = turn 12
 card log Matchup(left=Portrait(form_id=47, shiny=False, name='P47'), right=Portrait(form_id=983, shiny=False, name='P983')) = turn 13
-card log None = turn 14
-card log None = turn 15
+card log Matchup(left=Portrait(form_id=10059, shiny=False, name='P448'), right=Portrait(form_id=983, shiny=False, name='P983')) = turn 14
 turn 1 🔴 P835 › 다크스톰 → P11 57%
 turn 1 🔵 P11 › 고민씨 → P835 😟특성이 불면이 됐다
 turn 2 🔴 P835 › 벌레의저항 → P11 37% 특공↓
@@ -556,15 +556,15 @@ turn 9 ↪ 🔴 P559 등장
 turn 10 🔴 P559 › 기어체인지 → 자신 공격↑ 자신 스피드↑↑
 turn 10 🔵 P47 › 록커트 → 자신 스피드↑↑
 turn 11 🔴 P559 › 기어소서 → P47 33% 2연타
-turn 11 🔵 P47 › 악의파동 → P559 30% 효과 굉장
+turn 11 🔵 P47 › 악의파동 → P559 37% 효과 굉장
 turn 12 🔴 P559 › 기어소서 → 빗나감
 turn 12 🔵 P47 › 악의파동 → P559 💥 효과 굉장
 turn 12 ↪ 🔴 P983 등장
-turn 13 🔵 P47 › 얼어붙은바람 → 빗나감
-turn 13 🔴 P983 › 탁류 → 빗나감
-turn 14 🔵 P47 › 얼어붙은바람 → P983 41% 효과 굉장 스피드↓
-turn 14 🔴 P983 › 탁류 → 빗나감
-turn 15 🔵 P47 › 얼어붙은바람 → P983 💥 효과 굉장
+turn 13 🔵 P47 › 얼어붙은바람 → P983 43% 효과 굉장 스피드↓
+turn 13 🔴 P983 › 탁류 → P47 💥 효과 굉장
+turn 13 ↪ 🔵 P448 등장 메가진화 [수확]
+turn 14 🔴 P983 › 뼈다귀부메랑 → P448 60% 급소 2연타
+turn 14 🔵 P448 › 눈사태 → P983 💥 효과 굉장
 ## pvp-000 4
 Action turn=1 side=0 attacker='P180' defender='P934' move='크로스플레임' multiplier=2.0 defender_hp=82 move_id=558
 Action turn=1 side=1 attacker='P934' defender='P180' move='V제너레이트' changes=(Change(side=1, pokemon='P934', kind='defense', stages=-1), Change(side=1, pokemon='P934', kind='special_defense', stages=-1), Change(side=1, pokemon='P934', kind='speed', stages=-1)) defender_hp=36 attacker_hp=82 move_id=557
@@ -3062,44 +3062,47 @@ WeatherDamage turn=10 side=1 pokemon='P628' hp=88 fainted=False weather='hail'
 WeatherEnd turn=10 weather='hail'
 SendOut turn=10 side=0 pokemon='P308' member=3
 MegaEvolution turn=11 side=0 pokemon='P308' ability='흑의울음' form_id=10054
-Action turn=11 side=1 attacker='P628' defender='P308' move='더블펀처' multiplier=0.5 defender_hp=86 hits=2 attacker_hp=88 move_id=742
-Action turn=11 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 defender_hp=75 attacker_hp=86 move_id=267 via='자연의힘'
-Action turn=12 side=1 attacker='P628' defender='P308' move='더블펀처' multiplier=0.5 defender_hp=73 hits=2 attacker_hp=75 move_id=742
-Action turn=12 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 critical=True defender_hp=57 attacker_hp=73 move_id=267 via='자연의힘'
-Action turn=13 side=1 attacker='P628' defender='P308' move='더블펀처' multiplier=0.5 critical=True defender_hp=56 hits=2 attacker_hp=57 move_id=742
-Action turn=13 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 changes=(Change(side=1, pokemon='P628', kind='freeze', stages=0),) defender_hp=43 attacker_hp=56 move_id=267 via='자연의힘'
-Action turn=14 side=1 attacker='P628' defender='P308' move='화염바퀴' multiplier=0.5 defender_hp=52 recovered=('freeze',) attacker_hp=43 move_id=172
-Action turn=14 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 defender_hp=29 attacker_hp=52 move_id=267 via='자연의힘'
-Action turn=15 side=1 attacker='P628' defender='P308' move='화염바퀴' multiplier=0.5 defender_hp=47 attacker_hp=29 move_id=172
-Action turn=15 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 changes=(Change(side=1, pokemon='P628', kind='burn', stages=0),) defender_hp=16 attacker_hp=47 move_id=267 via='자연의힘'
-StatusDamage turn=15 side=1 pokemon='P628' hp=10 fainted=False
-Action turn=16 side=1 attacker='P628' defender='P308' move='화염바퀴' multiplier=0.5 defender_hp=44 attacker_hp=10 move_id=172
-Action turn=16 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=44 move_id=267 via='자연의힘'
-AbilityAct turn=16 side=0 pokemon='P308' ability='grim-neigh' changes=(Change(side=0, pokemon='P308', kind='special_attack', stages=1),)
-SendOut turn=16 side=1 pokemon='P1018' member=2
-Action turn=17 side=0 attacker='P308' defender='P1018' move='트라이어택' defender_hp=61 attacker_hp=44 move_id=267 via='자연의힘'
-Action turn=17 side=1 attacker='P1018' defender='P308' move='자연의분노' multiplier=0.5 defender_hp=22 attacker_hp=61 move_id=717
-Action turn=18 side=0 attacker='P308' defender='P1018' move='트라이어택' changes=(Change(side=1, pokemon='P1018', kind='freeze', stages=0),) defender_hp=21 attacker_hp=22 move_id=267 via='자연의힘'
-Action turn=18 side=1 attacker='P1018' defender='P308' move='' defender_hp=22 blocked='freeze' attacker_hp=21
-Action turn=19 side=0 attacker='P308' defender='P1018' move='정신차리기' defender_hp=0 knockout=True attacker_hp=22 move_id=265
-AbilityAct turn=19 side=0 pokemon='P308' ability='grim-neigh' changes=(Change(side=0, pokemon='P308', kind='special_attack', stages=1),)
-SendOut turn=19 side=1 pokemon='P801' member=3
-Action turn=20 side=0 attacker='P308' defender='P801' move='트라이어택' changes=(Change(side=1, pokemon='P801', kind='paralysis', stages=0),) defender_hp=71 attacker_hp=22 move_id=267 via='자연의힘'
-Action turn=20 side=1 attacker='P801' defender='P308' move='' defender_hp=22 blocked='paralysis' attacker_hp=71
-Action turn=21 side=0 attacker='P308' defender='P801' move='트라이어택' defender_hp=44 attacker_hp=22 move_id=267 via='자연의힘'
-Action turn=21 side=1 attacker='P801' defender='P308' move='' defender_hp=22 blocked='paralysis' attacker_hp=44
-Action turn=22 side=0 attacker='P308' defender='P801' move='트라이어택' defender_hp=16 attacker_hp=22 move_id=267 via='자연의힘'
-ItemHeal turn=22 side=1 pokemon='P801' item='iapapa-berry' hp=49
-Action turn=22 side=1 attacker='P801' defender='P308' move='간지르기' changes=(Change(side=0, pokemon='P308', kind='attack', stages=-1), Change(side=0, pokemon='P308', kind='defense', stages=-1)) defender_hp=22 attacker_hp=49 effect='stages' move_id=321
-Action turn=23 side=0 attacker='P308' defender='P801' move='트라이어택' defender_hp=21 attacker_hp=22 move_id=267 via='자연의힘'
-Action turn=23 side=1 attacker='P801' defender='P308' move='간지르기' changes=(Change(side=0, pokemon='P308', kind='attack', stages=-1), Change(side=0, pokemon='P308', kind='defense', stages=-1)) defender_hp=22 attacker_hp=21 effect='stages' move_id=321
-Action turn=24 side=0 attacker='P308' defender='P801' move='트라이어택' defender_hp=0 knockout=True attacker_hp=22 move_id=267 via='자연의힘'
-AbilityAct turn=24 side=0 pokemon='P308' ability='grim-neigh' changes=(Change(side=0, pokemon='P308', kind='special_attack', stages=1),)
-result winner=0 turns=24 remaining=((0, 0, 0, 22), (0, 0, 0, 0)) statuses=((None, None, 'paralysis', None), (None, 'burn', 'freeze', 'paralysis'))
-header 🏆 A 승 · 4:4 · 24턴
-column '🔵 *A*\nP759 Lv40 💥\nP270 💥\nP59 Lv47 @땅주얼 💥\nP308(메가) Lv44 ▰▰▱▱▱▱▱▱▱▱ 22%'
-column '🔴 *B*\nP1007 💥\nP628 Lv43 @뜨거운바위 💥\nP1018 Lv46 @통굽부츠 💥\nP801 @파야열매 💥'
-card title='🏆 A 승' detail='4:4 · 24턴' highlights=('💥 결정타 P308 트라이어택',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10054.png', 'P308')
+Action turn=11 side=1 attacker='P628' defender='P308' move='더블펀처' multiplier=0.5 critical=True defender_hp=83 hits=2 attacker_hp=88 move_id=742
+Action turn=11 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 defender_hp=75 attacker_hp=83 move_id=267 via='자연의힘'
+Action turn=12 side=1 attacker='P628' defender='P308' move='더블펀처' multiplier=0.5 defender_hp=69 hits=2 attacker_hp=75 move_id=742
+Action turn=12 side=0 attacker='P308' defender='P628' move='' defender_hp=75 blocked='flinch' attacker_hp=69
+Action turn=13 side=1 attacker='P628' defender='P308' move='더블펀처' multiplier=0.5 defender_hp=55 hits=2 attacker_hp=75 move_id=742
+Action turn=13 side=0 attacker='P308' defender='P628' move='' defender_hp=75 blocked='flinch' attacker_hp=55
+Action turn=14 side=1 attacker='P628' defender='P308' move='화염바퀴' multiplier=0.5 defender_hp=50 attacker_hp=75 move_id=172
+Action turn=14 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 changes=(Change(side=1, pokemon='P628', kind='burn', stages=0),) defender_hp=62 attacker_hp=50 move_id=267 via='자연의힘'
+StatusDamage turn=14 side=1 pokemon='P628' hp=56 fainted=False
+Action turn=15 side=1 attacker='P628' defender='P308' move='화염바퀴' multiplier=0.5 defender_hp=48 attacker_hp=56 move_id=172
+Action turn=15 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 defender_hp=43 attacker_hp=48 move_id=267 via='자연의힘'
+StatusDamage turn=15 side=1 pokemon='P628' hp=37 fainted=False
+Action turn=16 side=1 attacker='P628' defender='P308' move='화염바퀴' multiplier=0.5 defender_hp=45 attacker_hp=37 move_id=172
+Action turn=16 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 defender_hp=25 attacker_hp=45 move_id=267 via='자연의힘'
+StatusDamage turn=16 side=1 pokemon='P628' hp=18 fainted=False
+Action turn=17 side=1 attacker='P628' defender='P308' move='화염바퀴' multiplier=0.5 defender_hp=43 attacker_hp=18 move_id=172
+Action turn=17 side=0 attacker='P308' defender='P628' move='트라이어택' multiplier=0.5 defender_hp=7 attacker_hp=43 move_id=267 via='자연의힘'
+StatusDamage turn=17 side=1 pokemon='P628' hp=1 fainted=False
+Action turn=18 side=1 attacker='P628' defender='P308' move='화염바퀴' multiplier=0.5 defender_hp=41 attacker_hp=1 move_id=172
+Action turn=18 side=0 attacker='P308' defender='P628' move='정신차리기' multiplier=0.5 defender_hp=0 knockout=True attacker_hp=41 move_id=265
+AbilityAct turn=18 side=0 pokemon='P308' ability='grim-neigh' changes=(Change(side=0, pokemon='P308', kind='special_attack', stages=1),)
+SendOut turn=18 side=1 pokemon='P1018' member=2
+Action turn=19 side=0 attacker='P308' defender='P1018' move='트라이어택' defender_hp=55 attacker_hp=41 move_id=267 via='자연의힘'
+Action turn=19 side=1 attacker='P1018' defender='P308' move='자연의분노' multiplier=0.5 defender_hp=20 attacker_hp=55 move_id=717
+Action turn=20 side=0 attacker='P308' defender='P1018' move='트라이어택' defender_hp=15 attacker_hp=20 move_id=267 via='자연의힘'
+Action turn=20 side=1 attacker='P1018' defender='P308' move='자연의분노' multiplier=0.5 defender_hp=11 attacker_hp=15 move_id=717
+Action turn=21 side=0 attacker='P308' defender='P1018' move='정신차리기' defender_hp=0 knockout=True attacker_hp=11 move_id=265
+AbilityAct turn=21 side=0 pokemon='P308' ability='grim-neigh' changes=(Change(side=0, pokemon='P308', kind='special_attack', stages=1),)
+SendOut turn=21 side=1 pokemon='P801' member=3
+Action turn=22 side=0 attacker='P308' defender='P801' move='트라이어택' defender_hp=72 attacker_hp=11 move_id=267 via='자연의힘'
+Action turn=22 side=1 attacker='P801' defender='P308' move='간지르기' changes=(Change(side=0, pokemon='P308', kind='attack', stages=-1), Change(side=0, pokemon='P308', kind='defense', stages=-1)) defender_hp=11 attacker_hp=72 effect='stages' move_id=321
+Action turn=23 side=0 attacker='P308' defender='P801' move='트라이어택' defender_hp=40 attacker_hp=11 move_id=267 via='자연의힘'
+Action turn=23 side=1 attacker='P801' defender='P308' move='간지르기' changes=(Change(side=0, pokemon='P308', kind='attack', stages=-1), Change(side=0, pokemon='P308', kind='defense', stages=-1)) defender_hp=11 attacker_hp=40 effect='stages' move_id=321
+Action turn=24 side=0 attacker='P308' defender='P801' move='트라이어택' changes=(Change(side=1, pokemon='P801', kind='burn', stages=0),) defender_hp=11 attacker_hp=11 move_id=267 via='자연의힘'
+ItemHeal turn=24 side=1 pokemon='P801' item='iapapa-berry' hp=45
+Action turn=24 side=1 attacker='P801' defender='P308' move='멀티어택' defender_hp=0 knockout=True attacker_hp=45 move_id=718
+result winner=1 turns=24 remaining=((0, 0, 0, 0), (0, 0, 0, 45)) statuses=((None, None, 'paralysis', None), (None, 'burn', None, 'burn'))
+header 🏆 B 승 · 4:4 · 24턴
+column '🔵 *A*\nP759 Lv40 💥\nP270 💥\nP59 Lv47 @땅주얼 💥\nP308(메가) Lv44 💥'
+column '🔴 *B*\nP1007 💥\nP628 Lv43 @뜨거운바위 💥\nP1018 Lv46 @통굽부츠 💥\nP801 @파야열매 ▰▰▰▰▰▱▱▱▱▱ 45%'
+card title='🏆 B 승' detail='4:4 · 24턴' highlights=('💥 결정타 P801 멀티어택',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/801.png', 'P801')
 card log Matchup(left=Portrait(form_id=759, shiny=False, name='P759'), right=Portrait(form_id=1007, shiny=False, name='P1007')) = turn 1
 card log Matchup(left=Portrait(form_id=270, shiny=False, name='P270'), right=Portrait(form_id=1007, shiny=False, name='P1007')) = turn 2
 card log None = turn 3
@@ -3116,12 +3119,12 @@ card log None = turn 13
 card log None = turn 14
 card log None = turn 15
 card log None = turn 16
-card log Matchup(left=Portrait(form_id=10054, shiny=False, name='P308'), right=Portrait(form_id=1018, shiny=False, name='P1018')) = turn 17
+card log None = turn 17
 card log None = turn 18
-card log None = turn 19
-card log Matchup(left=Portrait(form_id=10054, shiny=False, name='P308'), right=Portrait(form_id=801, shiny=False, name='P801')) = turn 20
+card log Matchup(left=Portrait(form_id=10054, shiny=False, name='P308'), right=Portrait(form_id=1018, shiny=False, name='P1018')) = turn 19
+card log None = turn 20
 card log None = turn 21
-card log None = turn 22
+card log Matchup(left=Portrait(form_id=10054, shiny=False, name='P308'), right=Portrait(form_id=801, shiny=False, name='P801')) = turn 22
 card log None = turn 23
 card log None = turn 24
 turn 1 🔴 P1007 › 바다의심포니 → P759 💥
@@ -3150,39 +3153,42 @@ turn 10 🔴 P628 › 더블펀처 → P59 💥
 turn 10 🔴 P628 🌨️ 88%
 turn 10 🌨️끝
 turn 10 ↪ 🔵 P308 등장 메가진화 [흑의울음]
-turn 11 🔴 P628 › 더블펀처 → P308 86% 효과 별로 2연타
+turn 11 🔴 P628 › 더블펀처 → P308 83% 급소 효과 별로
 turn 11 🔵 P308 › 자연의힘: 트라이어택 → P628 75% 효과 별로
-turn 12 🔴 P628 › 더블펀처 → P308 73% 효과 별로 2연타
-turn 12 🔵 P308 › 자연의힘: 트라이어택 → P628 57% 급소 효과 별로
-turn 13 🔴 P628 › 더블펀처 → P308 56% 급소 효과 별로
-turn 13 🔵 P308 › 자연의힘: 트라이어택 → P628 43% 효과 별로 🧊얼음
-turn 14 🔴 P628 🧊풀림 › 화염바퀴 → P308 52% 효과 별로
-turn 14 🔵 P308 › 자연의힘: 트라이어택 → P628 29% 효과 별로
-turn 15 🔴 P628 › 화염바퀴 → P308 47% 효과 별로
-turn 15 🔵 P308 › 자연의힘: 트라이어택 → P628 16% 효과 별로 🔥화상
-turn 15 🔴 P628 🔥 10%
-turn 16 🔴 P628 › 화염바퀴 → P308 44% 효과 별로
-turn 16 🔵 P308 › 자연의힘: 트라이어택 → P628 💥 효과 별로
-turn 16 🔵 P308 [흑의울음] 특공↑
-turn 16 ↪ 🔴 P1018 등장
-turn 17 🔵 P308 › 자연의힘: 트라이어택 → P1018 61%
-turn 17 🔴 P1018 › 자연의분노 → P308 22% 효과 별로
-turn 18 🔵 P308 › 자연의힘: 트라이어택 → P1018 21% 🧊얼음
-turn 18 🔴 P1018 🧊얼어서 못 움직임
-turn 19 🔵 P308 › 정신차리기 → P1018 💥
-turn 19 🔵 P308 [흑의울음] 특공↑
-turn 19 ↪ 🔴 P801 등장
-turn 20 🔵 P308 › 자연의힘: 트라이어택 → P801 71% ⚡마비
-turn 20 🔴 P801 ⚡몸이 저려 못 움직임
-turn 21 🔵 P308 › 자연의힘: 트라이어택 → P801 44%
-turn 21 🔴 P801 ⚡몸이 저려 못 움직임
-turn 22 🔵 P308 › 자연의힘: 트라이어택 → P801 16%
-turn 22 🔴 P801 @파야열매 49%
+turn 12 🔴 P628 › 더블펀처 → P308 69% 효과 별로 2연타
+turn 12 🔵 P308 😖풀죽어서 못 움직임
+turn 13 🔴 P628 › 더블펀처 → P308 55% 효과 별로 2연타
+turn 13 🔵 P308 😖풀죽어서 못 움직임
+turn 14 🔴 P628 › 화염바퀴 → P308 50% 효과 별로
+turn 14 🔵 P308 › 자연의힘: 트라이어택 → P628 62% 효과 별로 🔥화상
+turn 14 🔴 P628 🔥 56%
+turn 15 🔴 P628 › 화염바퀴 → P308 48% 효과 별로
+turn 15 🔵 P308 › 자연의힘: 트라이어택 → P628 43% 효과 별로
+turn 15 🔴 P628 🔥 37%
+turn 16 🔴 P628 › 화염바퀴 → P308 45% 효과 별로
+turn 16 🔵 P308 › 자연의힘: 트라이어택 → P628 25% 효과 별로
+turn 16 🔴 P628 🔥 18%
+turn 17 🔴 P628 › 화염바퀴 → P308 43% 효과 별로
+turn 17 🔵 P308 › 자연의힘: 트라이어택 → P628 7% 효과 별로
+turn 17 🔴 P628 🔥 1%
+turn 18 🔴 P628 › 화염바퀴 → P308 41% 효과 별로
+turn 18 🔵 P308 › 정신차리기 → P628 💥 효과 별로
+turn 18 🔵 P308 [흑의울음] 특공↑
+turn 18 ↪ 🔴 P1018 등장
+turn 19 🔵 P308 › 자연의힘: 트라이어택 → P1018 55%
+turn 19 🔴 P1018 › 자연의분노 → P308 20% 효과 별로
+turn 20 🔵 P308 › 자연의힘: 트라이어택 → P1018 15%
+turn 20 🔴 P1018 › 자연의분노 → P308 11% 효과 별로
+turn 21 🔵 P308 › 정신차리기 → P1018 💥
+turn 21 🔵 P308 [흑의울음] 특공↑
+turn 21 ↪ 🔴 P801 등장
+turn 22 🔵 P308 › 자연의힘: 트라이어택 → P801 72%
 turn 22 🔴 P801 › 간지르기 → 공격↓ 방어↓
-turn 23 🔵 P308 › 자연의힘: 트라이어택 → P801 21%
+turn 23 🔵 P308 › 자연의힘: 트라이어택 → P801 40%
 turn 23 🔴 P801 › 간지르기 → 공격↓ 방어↓
-turn 24 🔵 P308 › 자연의힘: 트라이어택 → P801 💥
-turn 24 🔵 P308 [흑의울음] 특공↑
+turn 24 🔵 P308 › 자연의힘: 트라이어택 → P801 11% 🔥화상
+turn 24 🔴 P801 @파야열매 45%
+turn 24 🔴 P801 › 멀티어택 → P308 💥
 ## pvp-000 27
 Action turn=1 side=1 attacker='P492' defender='P792' move='성스러운칼' multiplier=2.0 defender_hp=4 move_id=533
 Action turn=1 side=0 attacker='P792' defender='P492' move='파멸의소원' attacker_hp=4 effect='delayed-hit' move_id=353

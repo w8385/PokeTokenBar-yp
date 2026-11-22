@@ -9583,12 +9583,12 @@ turn 6 🔵 P875 › 몸통박치기 → P36 💥
 ## focus 186
 Action turn=1 side=0 attacker='P845' defender='P36' move='파도타기' defender_hp=65 attacker_hp=155 move_id=57
 FormShift turn=1 side=0 pokemon='P845' kind='gulping' form_id=10182
-Action turn=1 side=1 attacker='P36' defender='P845' move='몸통박치기' multiplier=0.5 defender_hp=138 attacker_hp=65 move_id=33
+Action turn=1 side=1 attacker='P36' defender='P845' move='몸통박치기' multiplier=0.5 defender_hp=125 attacker_hp=40 move_id=33
 AbilityAct turn=1 side=0 pokemon='P845' ability='gulp-missile' changes=(Change(side=1, pokemon='P36', kind='defense', stages=-1),) foe='P36' foe_hp=40 effect='spit'
 FormShift turn=1 side=0 pokemon='P845' kind='base' form_id=845
 Action turn=2 side=0 attacker='P845' defender='P36' move='파도타기' defender_hp=7 attacker_hp=194 move_id=57
 FormShift turn=2 side=0 pokemon='P845' kind='gulping' form_id=10182
-Action turn=2 side=1 attacker='P36' defender='P845' move='몸통박치기' multiplier=0.5 defender_hp=178 attacker_hp=7 move_id=33
+Action turn=2 side=1 attacker='P36' defender='P845' move='몸통박치기' multiplier=0.5 defender_hp=151 attacker_fainted=True attacker_hp=0 move_id=33
 AbilityAct turn=2 side=0 pokemon='P845' ability='gulp-missile' foe='P36' foe_hp=0 foe_fainted=True effect='spit'
 FormShift turn=2 side=0 pokemon='P845' kind='base' form_id=845
 result winner=0 turns=2 remaining=((151,), (0,)) statuses=((None,), (None,))
@@ -9600,24 +9600,25 @@ card log Matchup(left=Portrait(form_id=845, shiny=False, name='P845'), right=Por
 card log None = turn 2
 turn 1 🔵 P845 › 파도타기 → P36 65%
 turn 1 🔵 P845은(는) 찌로꼬를 문 모습이 되었다!
-turn 1 🔴 P36 › 몸통박치기 → P845 138% 효과 별로
+turn 1 🔴 P36 › 몸통박치기 → P845 125% 효과 별로
 turn 1 🔵 P845 [그대로꿀꺽미사일] 삼킨 것을 뱉었다 → P36 40%
 turn 1 🔵 P845은(는) 원래모습이 되었다!
 turn 2 🔵 P845 › 파도타기 → P36 7%
 turn 2 🔵 P845은(는) 찌로꼬를 문 모습이 되었다!
-turn 2 🔴 P36 › 몸통박치기 → P845 178% 효과 별로
+turn 2 🔴 P36 › 몸통박치기 → P845 151% 효과 별로
+turn 2 💥 P36 쓰러짐
 turn 2 🔵 P845 [그대로꿀꺽미사일] 삼킨 것을 뱉었다 → P36 0%
 turn 2 💥 P36 쓰러짐
 turn 2 🔵 P845은(는) 원래모습이 되었다!
 ## focus 187
 Action turn=1 side=0 attacker='P845' defender='P36' move='파도타기' defender_hp=72 attacker_hp=153 move_id=57
 FormShift turn=1 side=0 pokemon='P845' kind='gulping' form_id=10182
-Action turn=1 side=1 attacker='P36' defender='P845' move='몸통박치기' multiplier=0.5 defender_hp=136 attacker_hp=72 move_id=33
+Action turn=1 side=1 attacker='P36' defender='P845' move='몸통박치기' multiplier=0.5 defender_hp=124 attacker_hp=48 move_id=33
 AbilityAct turn=1 side=0 pokemon='P845' ability='gulp-missile' changes=(Change(side=1, pokemon='P36', kind='defense', stages=-1),) foe='P36' foe_hp=48 effect='spit'
 FormShift turn=1 side=0 pokemon='P845' kind='base' form_id=845
 Action turn=2 side=0 attacker='P845' defender='P36' move='파도타기' defender_hp=19 attacker_hp=189 move_id=57
 FormShift turn=2 side=0 pokemon='P845' kind='gulping' form_id=10182
-Action turn=2 side=1 attacker='P36' defender='P845' move='몸통박치기' multiplier=0.5 critical=True defender_hp=165 attacker_hp=19 move_id=33
+Action turn=2 side=1 attacker='P36' defender='P845' move='몸통박치기' multiplier=0.5 critical=True defender_hp=142 attacker_fainted=True attacker_hp=0 move_id=33
 AbilityAct turn=2 side=0 pokemon='P845' ability='gulp-missile' foe='P36' foe_hp=0 foe_fainted=True effect='spit'
 FormShift turn=2 side=0 pokemon='P845' kind='base' form_id=845
 result winner=0 turns=2 remaining=((142,), (0,)) statuses=((None,), (None,))
@@ -9629,12 +9630,13 @@ card log Matchup(left=Portrait(form_id=845, shiny=False, name='P845'), right=Por
 card log None = turn 2
 turn 1 🔵 P845 › 파도타기 → P36 72%
 turn 1 🔵 P845은(는) 찌로꼬를 문 모습이 되었다!
-turn 1 🔴 P36 › 몸통박치기 → P845 136% 효과 별로
+turn 1 🔴 P36 › 몸통박치기 → P845 124% 효과 별로
 turn 1 🔵 P845 [그대로꿀꺽미사일] 삼킨 것을 뱉었다 → P36 48%
 turn 1 🔵 P845은(는) 원래모습이 되었다!
 turn 2 🔵 P845 › 파도타기 → P36 19%
 turn 2 🔵 P845은(는) 찌로꼬를 문 모습이 되었다!
-turn 2 🔴 P36 › 몸통박치기 → P845 165% 급소 효과 별로
+turn 2 🔴 P36 › 몸통박치기 → P845 142% 급소 효과 별로
+turn 2 💥 P36 쓰러짐
 turn 2 🔵 P845 [그대로꿀꺽미사일] 삼킨 것을 뱉었다 → P36 0%
 turn 2 💥 P36 쓰러짐
 turn 2 🔵 P845은(는) 원래모습이 되었다!

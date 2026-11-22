@@ -1085,19 +1085,30 @@ SendOut turn=8 side=1 pokemon='P448' member=2
 Action turn=9 side=1 attacker='P448' defender='P915' move='인파이트' multiplier=2.0 changes=(Change(side=1, pokemon='P448', kind='defense', stages=-1), Change(side=1, pokemon='P448', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=370
 SendOut turn=9 side=0 pokemon='P245' member=4
 Action turn=10 side=0 attacker='P245' defender='P448' move='더블펀처' multiplier=0.5 defender_hp=74 hits=2 move_id=742
-Action turn=10 side=1 attacker='P448' defender='P245' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P448', kind='defense', stages=-1), Change(side=1, pokemon='P448', kind='special_defense', stages=-1)) defender_hp=85 attacker_hp=74 move_id=370
-AbilityAct turn=10 side=0 pokemon='P245' ability='color-change' effect='retype' detail='fighting'
-Action turn=11 side=0 attacker='P245' defender='P448' move='더블펀처' multiplier=0.5 defender_hp=41 hits=2 attacker_hp=85 move_id=742
-Action turn=11 side=1 attacker='P448' defender='P245' move='인파이트' changes=(Change(side=1, pokemon='P448', kind='defense', stages=-1), Change(side=1, pokemon='P448', kind='special_defense', stages=-1)) defender_hp=57 attacker_hp=41 move_id=370
-Action turn=12 side=0 attacker='P245' defender='P448' move='더블펀처' multiplier=0.5 defender_hp=0 knockout=True hits=2 attacker_hp=57 move_id=742
-SendOut turn=12 side=1 pokemon='P395' member=3
-Action turn=13 side=1 attacker='P395' defender='P245' move='지진' defender_hp=22 attacker_hp=90 attacker_item='life-orb' move_id=89
-AbilityAct turn=13 side=0 pokemon='P245' ability='color-change' effect='retype' detail='ground'
-Action turn=13 side=0 attacker='P245' defender='P395' move='더블펀처' multiplier=2.0 defender_hp=0 knockout=True hits=2 attacker_hp=22 move_id=742
-SendOut turn=13 side=1 pokemon='P462' member=4
-Action turn=14 side=0 attacker='P245' defender='P462' move='더블펀처' multiplier=2.0 defender_hp=0 knockout=True hits=2 attacker_hp=22 move_id=742
-result winner=0 turns=14 remaining=((0, 0, 0, 0, 22, None), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
-won=True carry=null body=f54d19db115b8ac9e48c27dbf6d0ed090b364ed0f64a67953dd55e9980651e57
+Action turn=10 side=1 attacker='P448' defender='P245' move='' blocked='flinch' attacker_hp=74
+Action turn=11 side=0 attacker='P245' defender='P448' move='더블펀처' multiplier=0.5 defender_hp=51 hits=2 move_id=742
+Action turn=11 side=1 attacker='P448' defender='P245' move='' blocked='flinch' attacker_hp=51
+Action turn=12 side=0 attacker='P245' defender='P448' move='더블펀처' multiplier=0.5 critical=True defender_hp=19 hits=2 move_id=742
+Action turn=12 side=1 attacker='P448' defender='P245' move='인파이트' multiplier=0.5 changes=(Change(side=1, pokemon='P448', kind='defense', stages=-1), Change(side=1, pokemon='P448', kind='special_defense', stages=-1)) defender_hp=87 attacker_hp=19 move_id=370
+AbilityAct turn=12 side=0 pokemon='P245' ability='color-change' effect='retype' detail='fighting'
+Action turn=13 side=0 attacker='P245' defender='P448' move='더블펀처' multiplier=0.5 defender_hp=0 knockout=True hits=2 attacker_hp=87 move_id=742
+SendOut turn=13 side=1 pokemon='P395' member=3
+Action turn=14 side=1 attacker='P395' defender='P245' move='지진' defender_hp=52 attacker_hp=90 attacker_item='life-orb' move_id=89
+AbilityAct turn=14 side=0 pokemon='P245' ability='color-change' effect='retype' detail='ground'
+Action turn=14 side=0 attacker='P245' defender='P395' move='더블펀처' multiplier=2.0 defender_hp=0 knockout=True hits=2 attacker_hp=52 move_id=742
+SendOut turn=14 side=1 pokemon='P462' member=4
+Action turn=15 side=0 attacker='P245' defender='P462' move='하이드로캐논' missed=True multiplier=2.0 attacker_hp=52 move_id=308
+Action turn=15 side=1 attacker='P462' defender='P245' move='러스터캐논' defender_hp=38 move_id=430
+AbilityAct turn=15 side=0 pokemon='P245' ability='color-change' effect='retype' detail='steel'
+Action turn=16 side=0 attacker='P245' defender='P462' move='하이드로캐논' multiplier=2.0 defender_hp=1 attacker_hp=38 defender_item='focus-sash' move_id=308
+Action turn=16 side=1 attacker='P462' defender='P245' move='바디프레스' multiplier=2.0 defender_hp=10 attacker_hp=1 move_id=776
+AbilityAct turn=16 side=0 pokemon='P245' ability='color-change' effect='retype' detail='fighting'
+Action turn=17 side=0 attacker='P245' defender='P462' move='' defender_hp=1 blocked='recharge' attacker_hp=10
+Action turn=17 side=1 attacker='P462' defender='P245' move='10만볼트' defender_hp=0 knockout=True attacker_hp=1 move_id=85
+SendOut turn=17 side=0 pokemon='P406' member=5
+Action turn=18 side=0 attacker='P406' defender='P462' move='잠재댄스' defender_hp=0 knockout=True move_id=686
+result winner=0 turns=18 remaining=((0, 0, 0, 0, 0, 100), (0, 0, 0, 0, 0)) statuses=((None, None, None, None, None, None), (None, None, None, None, None))
+won=True carry=null body=078516526ffe51c4671dd779b6b1b7710344d9304ca41a10cf5da2f9fccf18dd
 ## sinnoh-6 party 1 carried null
 Action turn=1 side=1 attacker='P400' defender='P307' move='폭포오르기' multiplier=2.0 defender_hp=19 move_id=127
 Action turn=1 side=0 attacker='P307' defender='P400' move='혼내기' multiplier=2.0 defender_hp=44 attacker_hp=19 move_id=386
@@ -1352,18 +1363,16 @@ AbilityAct turn=10 side=0 pokemon='P245' ability='color-change' effect='retype' 
 Action turn=11 side=0 attacker='P245' defender='P477' move='더블펀처' defender_hp=71 recovered=('freeze',) hits=2 attacker_hp=62 move_id=742
 Action turn=11 side=1 attacker='P477' defender='P245' move='깨뜨리다' multiplier=2.0 defender_hp=25 attacker_hp=71 move_id=280
 AbilityAct turn=11 side=0 pokemon='P245' ability='color-change' effect='retype' detail='fighting'
-Action turn=12 side=0 attacker='P245' defender='P477' move='더블펀처' defender_hp=41 hits=2 attacker_hp=25 move_id=742
-Action turn=12 side=1 attacker='P477' defender='P245' move='' defender_hp=25 blocked='flinch' attacker_hp=41
-Action turn=13 side=0 attacker='P245' defender='P477' move='더블펀처' defender_hp=10 hits=2 attacker_hp=25 move_id=742
-Action turn=13 side=1 attacker='P477' defender='P245' move='지진' defender_hp=0 knockout=True attacker_hp=10 move_id=89
-SendOut turn=13 side=0 pokemon='P406' member=5
-Action turn=14 side=0 attacker='P406' defender='P477' move='잠재댄스' defender_hp=0 knockout=True move_id=686
-SendOut turn=14 side=1 pokemon='P473' member=5
-Action turn=15 side=1 attacker='P473' defender='P406' move='지진' multiplier=2.0 defender_hp=38 move_id=89
-Action turn=15 side=0 attacker='P406' defender='P473' move='잠재댄스' defender_hp=50 attacker_hp=38 move_id=686
-Action turn=16 side=1 attacker='P473' defender='P406' move='지진' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=50 move_id=89
-result winner=1 turns=16 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 50)) statuses=((None, None, None, None, None, None), ('freeze', None, None, None, None, None))
-won=False carry=null body=5b76863e808af025ab543fa2c54ca9ed63e293e4f35987f5da5ab2c3b8f4a3dc
+Action turn=12 side=0 attacker='P245' defender='P477' move='더블펀처' defender_hp=40 hits=2 attacker_hp=25 move_id=742
+Action turn=12 side=1 attacker='P477' defender='P245' move='지진' defender_hp=0 knockout=True attacker_hp=40 move_id=89
+SendOut turn=12 side=0 pokemon='P406' member=5
+Action turn=13 side=0 attacker='P406' defender='P477' move='잠재댄스' defender_hp=0 knockout=True move_id=686
+SendOut turn=13 side=1 pokemon='P473' member=5
+Action turn=14 side=1 attacker='P473' defender='P406' move='지진' multiplier=2.0 defender_hp=41 move_id=89
+Action turn=14 side=0 attacker='P406' defender='P473' move='잠재댄스' defender_hp=48 attacker_hp=41 move_id=686
+Action turn=15 side=1 attacker='P473' defender='P406' move='지진' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=48 move_id=89
+result winner=1 turns=15 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 48)) statuses=((None, None, None, None, None, None), ('freeze', None, None, None, None, None))
+won=False carry=null body=0f38f1f2e6728e15811882051866c151152a0e52270a0c07d8725a5ad507dc30
 ## sinnoh-elite-4 party 1 carried null
 Action turn=1 side=1 attacker='P463' defender='P307' move='지진' multiplier=2.0 defender_hp=0 knockout=True move_id=89
 SendOut turn=1 side=0 pokemon='P75' member=1

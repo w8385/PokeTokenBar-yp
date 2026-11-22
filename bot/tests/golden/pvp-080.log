@@ -715,17 +715,27 @@ SendOut turn=11 side=1 pokemon='P708' member=2
 Action turn=12 side=0 attacker='P588' defender='P708' move='대검돌격' defender_hp=47 move_id=862
 Action turn=12 side=1 attacker='P708' defender='P588' move='아이스스피너' defender_hp=67 attacker_hp=47 move_id=861
 AbilityAct turn=12 side=0 pokemon='P588' ability='seed-sower' effect='terrain' detail='grassy-terrain'
-TerrainHeal turn=12 side=0 pokemon='P588' hp=73
-TerrainHeal turn=12 side=1 pokemon='P708' hp=53
-Action turn=13 side=0 attacker='P588' defender='P708' move='대검돌격' defender_hp=0 knockout=True attacker_hp=73 move_id=862
-TerrainHeal turn=13 side=0 pokemon='P588' hp=79
+FieldEnd turn=12 kind='grassy-terrain' move='아이스스피너'
+Action turn=13 side=0 attacker='P588' defender='P708' move='대검돌격' defender_hp=0 knockout=True attacker_hp=67 move_id=862
 SendOut turn=13 side=1 pokemon='P837' member=3
-Action turn=14 side=0 attacker='P588' defender='P837' move='대검돌격' defender_hp=54 attacker_hp=79 move_id=862
-Action turn=14 side=1 attacker='P837' defender='P588' move='근원의파동' multiplier=2.0 defender_hp=34 attacker_hp=54 move_id=618
-TerrainHeal turn=14 side=0 pokemon='P588' hp=40
-Action turn=15 side=0 attacker='P588' defender='P837' move='대검돌격' defender_hp=7 attacker_hp=40 move_id=862
-Action turn=15 side=1 attacker='P837' defender='P588' move='근원의파동' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=7 move_id=618
-result winner=1 turns=15 remaining=((0, 0, 0), (0, 0, 0, 7, None)) statuses=((None, None, None), (None, None, None, None, None))
+Action turn=14 side=0 attacker='P588' defender='P837' move='대검돌격' defender_hp=54 attacker_hp=67 move_id=862
+Action turn=14 side=1 attacker='P837' defender='P588' move='근원의파동' multiplier=2.0 defender_hp=22 attacker_hp=54 move_id=618
+AbilityAct turn=14 side=0 pokemon='P588' ability='seed-sower' effect='terrain' detail='grassy-terrain'
+ItemEffect turn=14 side=0 pokemon='P588' item='starf-berry' effect='eaten' changes=(Change(side=0, pokemon='P588', kind='special_defense', stages=2),)
+TerrainHeal turn=14 side=0 pokemon='P588' hp=28
+Action turn=15 side=0 attacker='P588' defender='P837' move='대검돌격' critical=True defender_hp=0 knockout=True attacker_hp=28 move_id=862
+TerrainHeal turn=15 side=0 pokemon='P588' hp=34
+SendOut turn=15 side=1 pokemon='P450' member=4
+Action turn=16 side=0 attacker='P588' defender='P450' move='깨뜨리다' multiplier=2.0 defender_hp=74 attacker_hp=34 move_id=280
+Action turn=16 side=1 attacker='P450' defender='P588' move='순풍' defender_hp=34 attacker_hp=74 effect='tailwind' move_id=366
+TerrainHeal turn=16 side=0 pokemon='P588' hp=40
+TerrainHeal turn=16 side=1 pokemon='P450' hp=79
+Action turn=17 side=1 attacker='P450' defender='P588' move='지구던지기' multiplier=2.0 defender_hp=12 attacker_hp=79 move_id=69
+Action turn=17 side=0 attacker='P588' defender='P450' move='깨뜨리다' multiplier=2.0 defender_hp=53 attacker_hp=12 move_id=280
+TerrainHeal turn=17 side=0 pokemon='P588' hp=18
+TerrainHeal turn=17 side=1 pokemon='P450' hp=59
+Action turn=18 side=1 attacker='P450' defender='P588' move='지구던지기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=59 move_id=69
+result winner=1 turns=18 remaining=((0, 0, 0), (0, 0, 0, 0, 59)) statuses=((None, None, None), (None, None, None, None, None))
 ## pvp 94
 side=0 P552 Lv50 ('rock',) item=None ability=tera-shift nature=quiet moves=[381, 382, 394, 545] mega=None
 side=0 P900 Lv43 ('normal',) item=throat-spray ability=tinted-lens nature=None moves=[388, 389, 706, 806] mega=None
@@ -2047,14 +2057,14 @@ AbilityAct turn=11 side=1 pokemon='P607' ability='eelevate' changes=(Change(side
 SendOut turn=11 side=0 pokemon='P719' member=2
 Action turn=12 side=0 attacker='P719' defender='P607' move='더블펀처' critical=True defender_hp=0 knockout=True hits=2 move_id=742
 SendOut turn=12 side=1 pokemon='P526' member=1
-Action turn=13 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=65 hits=2 move_id=742
-Action turn=13 side=1 attacker='P526' defender='P719' move='메테오드라이브' multiplier=2.0 defender_hp=51 attacker_hp=65 move_id=713
-Action turn=14 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=29 hits=2 attacker_hp=51 move_id=742
-Action turn=14 side=1 attacker='P526' defender='P719' move='메테오드라이브' multiplier=2.0 defender_hp=1 attacker_hp=29 move_id=713
-Action turn=15 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=0 knockout=True hits=2 attacker_hp=1 move_id=742
+Action turn=13 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=66 hits=2 move_id=742
+Action turn=13 side=1 attacker='P526' defender='P719' move='' blocked='flinch' attacker_hp=66
+Action turn=14 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=31 hits=2 move_id=742
+Action turn=14 side=1 attacker='P526' defender='P719' move='메테오드라이브' multiplier=2.0 defender_hp=46 attacker_hp=31 move_id=713
+Action turn=15 side=0 attacker='P719' defender='P526' move='더블펀처' defender_hp=0 knockout=True hits=2 attacker_hp=46 move_id=742
 SendOut turn=15 side=1 pokemon='P882' member=2
-Action turn=16 side=0 attacker='P719' defender='P882' move='더블펀처' defender_hp=51 hits=2 attacker_hp=1 move_id=742
-Action turn=16 side=1 attacker='P882' defender='P719' move='에어로블라스트' defender_hp=0 knockout=True attacker_hp=51 move_id=177
+Action turn=16 side=0 attacker='P719' defender='P882' move='더블펀처' defender_hp=51 hits=2 attacker_hp=46 move_id=742
+Action turn=16 side=1 attacker='P882' defender='P719' move='에어로블라스트' critical=True defender_hp=0 knockout=True attacker_hp=51 move_id=177
 result winner=1 turns=16 remaining=((0, 0, 0), (0, 0, 51, None, None, None)) statuses=((None, None, None), (None, None, None, None, None, None))
 ## pvp 115
 side=0 P382 Lv50 ('grass', 'ghost') item=ability-shield ability=harvest nature=jolly moves=[876, 877, 233, 5] mega=None

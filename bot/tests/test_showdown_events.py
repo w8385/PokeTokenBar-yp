@@ -22,7 +22,7 @@ EVENT_HOOKS = {
         "condition:onAfterMove": {"after_own_move"},
     },
     "items": {
-        "onAfterSubDamage": set(),
+        "onAfterSubDamage": {"after_sub_damage"},
         "onDamage": {"endures"},
         "onDamagingHit": {"on_contact_hit", "damaging_hit"},
         "onAfterMoveSecondary": {"after_move_secondary"},
@@ -37,10 +37,7 @@ EVENT_HOOKS = {
     },
 }
 
-KNOWN_GAPS = {
-    ("items", "air-balloon", "onAfterSubDamage"): "defect 6: a hit on a Substitute pops the balloon",
-    ("moves", "core-enforcer", "onAfterSubDamage"): "defect 7: a hit on a Substitute still suppresses the ability",
-}
+KNOWN_GAPS = {}
 
 NO_HOOK_NEEDED = {
     ("moves", "flame-burst", "onAfterSubDamage"): "splashes the target's allies: doubles only",

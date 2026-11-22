@@ -646,8 +646,8 @@ Action turn=2 side=1 attacker='P718' defender='P987' move='매혹의보이스' m
 Action turn=3 side=0 attacker='P987' defender='P718' move='바디프레스' multiplier=2.0 critical=True defender_hp=0 knockout=True attacker_hp=57 move_id=776
 SendOut turn=3 side=1 pokemon='P997' member=1
 Action turn=4 side=0 attacker='P987' defender='P997' move='비검천중파' defender_hp=44 attacker_hp=57 move_id=845
-FieldStart turn=4 side=1 kind='spikes'
 AbilityAct turn=4 side=1 pokemon='P997' ability='gooey' changes=(Change(side=0, pokemon='P987', kind='speed', stages=-1),)
+FieldStart turn=4 side=1 kind='spikes'
 Action turn=4 side=1 attacker='P997' defender='P987' move='칼춤' changes=(Change(side=1, pokemon='P997', kind='attack', stages=2),) defender_hp=57 attacker_hp=44 effect='swords-dance' move_id=14
 Action turn=5 side=0 attacker='P987' defender='P997' move='비검천중파' missed=True defender_hp=44 attacker_hp=57 move_id=845
 Action turn=5 side=1 attacker='P997' defender='P987' move='옛노래' defender_hp=46 attacker_hp=44 move_id=547
@@ -656,8 +656,8 @@ Action turn=6 side=1 attacker='P997' defender='P987' move='옛노래' defender_h
 Action turn=7 side=0 attacker='P987' defender='P997' move='비검천중파' missed=True defender_hp=44 attacker_hp=60 move_id=845
 Action turn=7 side=1 attacker='P997' defender='P987' move='옛노래' defender_hp=51 attacker_hp=44 move_id=547
 Action turn=8 side=0 attacker='P987' defender='P997' move='비검천중파' defender_hp=0 knockout=True attacker_hp=51 move_id=845
-FieldStart turn=8 side=1 kind='spikes'
 AbilityAct turn=8 side=1 pokemon='P997' ability='gooey' changes=(Change(side=0, pokemon='P987', kind='speed', stages=-1),)
+FieldStart turn=8 side=1 kind='spikes'
 SendOut turn=8 side=1 pokemon='P1014' member=2
 HazardHit turn=8 side=1 pokemon='P1014' hazard='spikes' hp=84
 Action turn=9 side=1 attacker='P1014' defender='P987' move='모래뿌리기' changes=(Change(side=0, pokemon='P987', kind='accuracy', stages=-1),) defender_hp=51 attacker_hp=84 effect='stages' move_id=28
@@ -1376,6 +1376,7 @@ Action turn=6 side=0 attacker='P620' defender='P899' move='오로라빔' multipl
 SendOut turn=6 side=1 pokemon='P557' member=1
 Action turn=7 side=0 attacker='P620' defender='P557' move='길동무' attacker_hp=34 effect='destiny-bond' move_id=194
 Action turn=7 side=1 attacker='P557' defender='P620' move='얼음엄니' defender_hp=0 knockout=True attacker_fainted=True attacker_hp=0 move_id=423
+AbilityAct turn=7 side=0 pokemon='P620' ability='cotton-down' changes=(Change(side=1, pokemon='P557', kind='speed', stages=-1),)
 VolatileEnd turn=7 side=0 pokemon='P620' kind='destiny-bond'
 SendOut turn=7 side=0 pokemon='P81' member=2
 SendOut turn=7 side=1 pokemon='P67' member=2

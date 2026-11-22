@@ -246,9 +246,12 @@ class EerieSpell(Handler):
 
 @register("moves", "core-enforcer")
 class CoreEnforcer(Handler):
-    """A target that already moved this turn loses its ability."""
+    """A target that already moved this turn loses its ability, also through its Substitute."""
 
     by_id = True
+
+    def after_sub_damage(self, move, user, target, hit):
+        return self.secondary(move, user, target, user.side, None)
 
     def secondary(self, move, user, target, side, rng):
         if not target.acted or target.ability is None or target.ability in FIXED_ABILITIES or shielded(target):

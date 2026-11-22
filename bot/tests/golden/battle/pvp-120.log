@@ -4146,17 +4146,15 @@ VolatileTick turn=20 side=0 pokemon='P867' kind='leech-seed' hp=42
 VolatileTick turn=20 side=1 pokemon='P976' kind='leech-seed-heal' hp=20
 Action turn=21 side=1 attacker='P976' defender='P867' move='쑥쑥봄버' defender_hp=0 knockout=True attacker_hp=20 move_id=738
 SendOut turn=21 side=0 pokemon='P755' member=5
-Action turn=22 side=1 attacker='P976' defender='P755' move='더블펀처' multiplier=2.0 defender_hp=29 hits=2 attacker_hp=20 move_id=742
-Action turn=22 side=0 attacker='P755' defender='P976' move='스피드스왑' defender_hp=20 attacker_hp=29 effect='stat-swap' move_id=683
+Action turn=22 side=1 attacker='P976' defender='P755' move='더블펀처' multiplier=2.0 defender_hp=34 hits=2 attacker_hp=20 move_id=742
+Action turn=22 side=0 attacker='P755' defender='P976' move='' defender_hp=20 blocked='flinch' attacker_hp=34
 AbilityAct turn=22 side=0 pokemon='P755' ability='bad-dreams' foe='P976' foe_hp=8
-Action turn=23 side=0 attacker='P755' defender='P976' move='은빛바람' defender_hp=0 knockout=True attacker_hp=29 move_id=318
-SendOut turn=23 side=1 pokemon='P542' member=3
-Action turn=24 side=1 attacker='P542' defender='P755' move='전격부리' multiplier=0.5 defender_hp=0 knockout=True move_id=754
-result winner=1 turns=24 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 100)) statuses=((None, None, None, None, None, None), (None, None, None, None))
-header 🏆 B 승 · 6:4 · 24턴
+Action turn=23 side=1 attacker='P976' defender='P755' move='더블펀처' multiplier=2.0 defender_hp=0 knockout=True hits=2 attacker_hp=8 move_id=742
+result winner=1 turns=23 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 8, None)) statuses=((None, None, None, None, None, None), (None, None, None, None))
+header 🏆 B 승 · 6:4 · 23턴
 column '🔵 *A*\nP890 Lv48 @구애안경 💥\nP257 Lv43 @로플열매 💥\nP312 Lv49 @클리어참 💥\nP150(메가) 💥\nP867 @마코열매 💥\nP755 Lv43 💥'
-column '🔴 *B*\nP895 @은밀망토 💥\nP888 @애슈열매 💥\nP976 Lv47 @축축한바위 💥\nP542 @악주얼 ▰▰▰▰▰▰▰▰▰▰ 100%'
-card title='🏆 B 승' detail='6:4 · 24턴' highlights=('💥 결정타 P542 전격부리',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/542.png', 'P542')
+column '🔴 *B*\nP895 @은밀망토 💥\nP888 @애슈열매 💥\nP976 Lv47 @축축한바위 ▰▱▱▱▱▱▱▱▱▱ 8%\nP542 @악주얼 대기'
+card title='🏆 B 승' detail='6:4 · 23턴' highlights=('💥 결정타 P976 더블펀처',) sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/976.png', 'P976')
 card log Matchup(left=Portrait(form_id=890, shiny=False, name='P890'), right=Portrait(form_id=895, shiny=False, name='P895')) = turn 1
 card log None = turn 2
 card log Matchup(left=Portrait(form_id=257, shiny=False, name='P257'), right=Portrait(form_id=895, shiny=False, name='P895')) = turn 3
@@ -4180,7 +4178,6 @@ card log None = turn 20
 card log None = turn 21
 card log Matchup(left=Portrait(form_id=755, shiny=False, name='P755'), right=Portrait(form_id=976, shiny=False, name='P976')) = turn 22
 card log None = turn 23
-card log Matchup(left=Portrait(form_id=755, shiny=False, name='P755'), right=Portrait(form_id=542, shiny=False, name='P542')) = turn 24
 turn 1 🔵 P890 › 포이즌테일 → P895 85%
 turn 1 🔴 P895 › 트랩셸 → P890 11% 효과 굉장
 turn 2 🔵 P890 › 포이즌테일 → P895 69%
@@ -4249,12 +4246,10 @@ turn 20 🔵 P867 🌱씨뿌리기 42%
 turn 20 🔴 P976 🌱씨뿌리기 흡수 20%
 turn 21 🔴 P976 › 쑥쑥봄버 → P867 💥
 turn 21 ↪ 🔵 P755 등장
-turn 22 🔴 P976 › 더블펀처 → P755 29% 효과 굉장 2연타
-turn 22 🔵 P755 › 스피드스왑 🔁능력치가 바뀌었다
+turn 22 🔴 P976 › 더블펀처 → P755 34% 효과 굉장 2연타
+turn 22 🔵 P755 😖풀죽어서 못 움직임
 turn 22 🔵 P755 [나이트메어] → P976 8%
-turn 23 🔵 P755 › 은빛바람 → P976 💥
-turn 23 ↪ 🔴 P542 등장
-turn 24 🔴 P542 › 전격부리 → P755 💥 효과 별로
+turn 23 🔴 P976 › 더블펀처 → P755 💥 효과 굉장 2연타
 ## pvp-120 37
 AbilityField side=1 pokemon='P358' ability='grassy-surge' terrain='grassy-terrain'
 MegaEvolution turn=1 side=1 pokemon='P358' ability='다운로드' form_id=10306

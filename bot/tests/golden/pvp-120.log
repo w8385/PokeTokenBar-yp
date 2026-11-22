@@ -2095,13 +2095,11 @@ VolatileTick turn=20 side=0 pokemon='P867' kind='leech-seed' hp=42
 VolatileTick turn=20 side=1 pokemon='P976' kind='leech-seed-heal' hp=20
 Action turn=21 side=1 attacker='P976' defender='P867' move='쑥쑥봄버' defender_hp=0 knockout=True attacker_hp=20 move_id=738
 SendOut turn=21 side=0 pokemon='P755' member=5
-Action turn=22 side=1 attacker='P976' defender='P755' move='더블펀처' multiplier=2.0 defender_hp=29 hits=2 attacker_hp=20 move_id=742
-Action turn=22 side=0 attacker='P755' defender='P976' move='스피드스왑' defender_hp=20 attacker_hp=29 effect='stat-swap' move_id=683
+Action turn=22 side=1 attacker='P976' defender='P755' move='더블펀처' multiplier=2.0 defender_hp=34 hits=2 attacker_hp=20 move_id=742
+Action turn=22 side=0 attacker='P755' defender='P976' move='' defender_hp=20 blocked='flinch' attacker_hp=34
 AbilityAct turn=22 side=0 pokemon='P755' ability='bad-dreams' foe='P976' foe_hp=8
-Action turn=23 side=0 attacker='P755' defender='P976' move='은빛바람' defender_hp=0 knockout=True attacker_hp=29 move_id=318
-SendOut turn=23 side=1 pokemon='P542' member=3
-Action turn=24 side=1 attacker='P542' defender='P755' move='전격부리' multiplier=0.5 defender_hp=0 knockout=True move_id=754
-result winner=1 turns=24 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 0, 100)) statuses=((None, None, None, None, None, None), (None, None, None, None))
+Action turn=23 side=1 attacker='P976' defender='P755' move='더블펀처' multiplier=2.0 defender_hp=0 knockout=True hits=2 attacker_hp=8 move_id=742
+result winner=1 turns=23 remaining=((0, 0, 0, 0, 0, 0), (0, 0, 8, None)) statuses=((None, None, None, None, None, None), (None, None, None, None))
 ## pvp 157
 side=0 P704 Lv47 ('water', 'fairy') item=None ability=dragons-maw nature=jolly moves=[805, 807, 506, 353] mega=None
 side=0 P256 Lv41 ('grass', 'ghost') item=douse-drive ability=earth-eater nature=None moves=[815, 816, 729, 63] mega=None
