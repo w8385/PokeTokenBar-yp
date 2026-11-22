@@ -125,7 +125,7 @@ class Magician(Handler):
     """An empty-handed holder takes the held item of the foe its damaging move hit."""
 
     def after_move_secondary_self(self, name, user, target, result):
-        return None if result.merged().on_substitute else _stolen(name, user, target)
+        return _stolen(name, user, target)
 
 
 @register("abilities", "hit-ailment")

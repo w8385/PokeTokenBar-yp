@@ -226,7 +226,9 @@ HOOKS = {
                  "Off); returns the changes",
     "after_move": "move: acts once the move is over, told by a `battle.MoveResult` (Rollout); may return more "
                   "changes",
-    "after_sub_damage": "move: acts when a hit landed on the target's Substitute (Showdown's onAfterSubDamage: Rapid "
+    "after_own_move": "state: acts once its holder tried a move, whether it worked, failed or could not be used "
+                      "(Showdown's onAfterMove and onMoveAborted: Charge ends)",
+    "after_sub_damage":"move: acts when a hit landed on the target's Substitute (Showdown's onAfterSubDamage: Rapid "
                         "Spin)",
     "pays_hp": "move: its user pays HP once the move is used, hit or miss (Steel Beam); returns the change",
     "faints_user":"move: its user faints once it is used",
