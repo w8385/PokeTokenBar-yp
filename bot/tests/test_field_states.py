@@ -5,7 +5,7 @@ import pytest
 from attacks import attack
 from test_battle import TACKLE, mon
 
-from ypoke import battle, move_power, narration
+from ypoke import abilities, battle, move_power, narration
 from ypoke import field_states as fs
 from ypoke.battle import (
     AbilityField, Action, Carry, Change, FieldEnd, FieldStart, HazardDamage, HazardHit, Move, SendOut, TerrainHeal,
@@ -345,6 +345,27 @@ def test_stone_axe_and_ceaseless_edge_lay_their_hazard_through_a_substitute(move
     action = resolve(user, target, move, arena)
     assert action.hits == 1 and target.hp == target.max_hp
     assert arena.hazards == [{}, {hazard: 1}] and FieldStart(0, 1, hazard) in arena.log
+
+
+@pytest.mark.parametrize("move", [STONE_AXE, CEASELESS_EDGE, MORTAL_SPIN, RAPID_SPIN])
+def test_sheer_force_boosts_the_spins_and_hazard_slashes(move):
+    arena = _Arena()
+    forced, plain = put(mon("도끼", ("bug", "rock")), arena, ability="sheer-force"), put(mon("맨몸", ("normal",)), arena)
+    target = put(wall("과녁"), arena, 1)
+    assert battle._power(forced, target, move, None, 1.0) == pytest.approx(
+        battle._power(plain, target, move, None, 1.0) * abilities.SHEER_FORCE_POWER)
+
+
+@pytest.mark.parametrize("doll", [False, True])
+@pytest.mark.parametrize("move", [RAPID_SPIN, MORTAL_SPIN, STONE_AXE, CEASELESS_EDGE])
+def test_sheer_force_drops_the_spins_and_hazard_slashes_effects(move, doll):
+    hazards = [{"spikes": 2, "stealth-rock": 1}, {"sticky-web": 1}]
+    arena = _Arena(hazards=[dict(side) for side in hazards])
+    user = put(mon("도끼", ("bug", "rock")), arena, ability="sheer-force")
+    target = behind_a_doll(arena) if doll else put(wall("과녁"), arena, 1)
+    action = resolve(user, target, move, arena)
+    assert action.hits == 1
+    assert arena.hazards == hazards and target.status is None and user.stages["speed"] == 0
 
 
 def test_knock_off_leaves_the_item_of_a_target_behind_a_substitute():

@@ -6,6 +6,9 @@ from ypoke import abilities, battle, battle_data
 from ypoke.effects import Handler, hooks, register
 from ypoke.effects.secondary import meta
 
+# Mortal Spin, Stone Axe, Ceaseless Edge: PokéAPI lists no added effect, Showdown gives each a secondary.
+SHEER_FORCE_ONLY_IN_SHOWDOWN = frozenset({866, 830, 845})
+
 
 @register("abilities", "flag-power")
 class FlagPower(Handler):
@@ -312,6 +315,8 @@ def sheer_forced_by(user, move) -> bool:
 def sheer_forced(move) -> bool:
     if not move.damaging:
         return False
+    if move.id in SHEER_FORCE_ONLY_IN_SHOWDOWN:
+        return True
     raises_user = move.stat_on_user and any(stages > 0 for _, stages in move.stat_changes)
     on_target = not move.stat_on_user and move.stat_chance > 0
     return move.ailment_chance > 0 or raises_user or on_target or meta(move, "flinch_chance") > 0
