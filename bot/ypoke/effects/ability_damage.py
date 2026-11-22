@@ -2,12 +2,14 @@
 how many times it hits and whether its added effects land. `user`, `target`, `holder` and `fighter` are
 `battle._Fighter`s; the numbers live in `ypoke.abilities`."""
 
+import json
+
 from ypoke import abilities, battle, battle_data
 from ypoke.effects import Handler, hooks, register
-from ypoke.effects.secondary import meta
 
-# Mortal Spin, Stone Axe, Ceaseless Edge: PokéAPI lists no added effect, Showdown gives each a secondary.
-SHEER_FORCE_ONLY_IN_SHOWDOWN = frozenset({866, 830, 845})
+SHOWDOWN_SECONDARIES = frozenset(
+    int(move_id) for move_id, found in json.loads(
+        (battle_data.DATA_DIR / "showdown-events.json").read_text())["moves"].items() if found["secondaries"])
 
 
 @register("abilities", "flag-power")
@@ -307,19 +309,14 @@ def aura(name: str, move, user) -> float:
 
 
 def sheer_forced_by(user, move) -> bool:
-    """The user's Sheer Force boosts the move, which also stops the user's answers to it (Showdown's
-    AfterMoveSecondarySelf: Life Orb, Shell Bell, Throat Spray)."""
+    """The user's Sheer Force boosts the move. The battle reads it once per damaging move (`MoveResult`); Throat
+    Spray reads it here, as it answers status moves too."""
     return hooks.ability(user, "secondary_chance", move, default=1.0) == 0
 
 
 def sheer_forced(move) -> bool:
-    if not move.damaging:
-        return False
-    if move.id in SHEER_FORCE_ONLY_IN_SHOWDOWN:
-        return True
-    raises_user = move.stat_on_user and any(stages > 0 for _, stages in move.stat_changes)
-    on_target = not move.stat_on_user and move.stat_chance > 0
-    return move.ailment_chance > 0 or raises_user or on_target or meta(move, "flinch_chance") > 0
+    """The move has added effects in Showdown (`secondaries`), which Sheer Force trades for power."""
+    return move.damaging and move.id in SHOWDOWN_SECONDARIES
 
 
 def data_type(move) -> str | None:

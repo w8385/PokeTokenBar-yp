@@ -9,7 +9,7 @@ from ypoke import battle, narration
 HIGH_JUMP_KICK, AXE_KICK, STEEL_BEAM, MIND_BLOWN, CHLOROBLAST = (attack(136), attack(853), attack(796), attack(720),
                                                                 attack(835))
 PROTECT = data_move(182)
-BRAVE_BIRD = attack(413)
+BRAVE_BIRD, FLARE_BLITZ, MATCHA_GOTCHA = attack(413), attack(394), attack(902)
 
 
 def misses(accuracy):
@@ -103,3 +103,23 @@ def test_the_chooser_weighs_recoil_and_a_likely_crash():
         assert 0.0 < battle._move_score(user, foe, move, None) < battle._move_score(user, foe, free, None), move.name
     user.hp = 1
     assert battle._move_score(user, foe, BRAVE_BIRD, None) == 0.0
+
+
+def test_sheer_force_drops_flare_blitzs_burn_but_keeps_its_recoil():
+    user, foe, arena = duel()
+    burns = first_seed(lambda seed: hit(user, foe, FLARE_BLITZ, arena, seed=seed) and foe.status == "burn")
+    forced, foe, arena = duel()
+    forced.combatant = replace(forced.combatant, ability="sheer-force")
+    hit(forced, foe, FLARE_BLITZ, arena, seed=burns)
+    assert foe.status is None and 0 < forced.hp < forced.max_hp
+
+
+def test_sheer_force_drops_matcha_gotchas_burn_but_keeps_its_drain():
+    user, foe, arena = duel()
+    user.hp = user.max_hp // 2
+    burns = first_seed(lambda seed: hit(user, foe, MATCHA_GOTCHA, arena, seed=seed) and foe.status == "burn")
+    forced, foe, arena = duel()
+    forced.combatant = replace(forced.combatant, ability="sheer-force")
+    forced.hp = forced.max_hp // 2
+    hit(forced, foe, MATCHA_GOTCHA, arena, seed=burns)
+    assert foe.status is None and forced.hp > forced.max_hp // 2

@@ -12016,17 +12016,17 @@ turn 14 🔴 P143 › 몸통박치기 → P143 47%
 turn 14 🔵 P143 › 몸통박치기 → P143 💥
 ## focus 230
 Action turn=1 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=25 move_id=58
-Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=90 attacker_hp=25 move_id=33
-Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=90 move_id=58
-result winner=0 turns=2 remaining=((90,), (0,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=89 attacker_hp=25 move_id=33
+Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=89 move_id=58
+result winner=0 turns=2 remaining=((89,), (0,)) statuses=((None,), (None,))
 header 🏆 A 승 · 1:1 · 2턴
-column '🔵 *A*\nP6 @생명의구슬 ▰▰▰▰▰▰▰▰▰▱ 90%'
+column '🔵 *A*\nP6 @생명의구슬 ▰▰▰▰▰▰▰▰▰▱ 89%'
 column '🔴 *B*\nP143 💥'
 card title='🏆 A 승' detail='1:1 · 2턴' highlights=() sprite=('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png', 'P6')
 card log Matchup(left=Portrait(form_id=6, shiny=False, name='P6'), right=Portrait(form_id=143, shiny=False, name='P143')) = turn 1
 card log None = turn 2
 turn 1 🔵 P6 › 냉동빔 → P143 25% 효과 굉장
-turn 1 🔴 P143 › 몸통박치기 → P6 90%
+turn 1 🔴 P143 › 몸통박치기 → P6 89%
 turn 2 🔵 P6 › 냉동빔 → P143 💥 효과 굉장
 ## focus 231
 Action turn=1 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=22 move_id=58

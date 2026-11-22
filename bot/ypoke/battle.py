@@ -796,18 +796,20 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     volley = _land_hits(turn, side, attacker, defender, move, aim, weather, rng, result)
     hit = Hit(side, turn, attacker, defender, move, result, result.merged(), aim.multiplier, rng)
     changes, ability = _after_hits(turn, side, attacker, defender, move, volley, rng)
+    added = not result.sheer_forced
     with _ability_ignored(attacker, defender, move):
-        changes = (*changes, *_answers(hooks.move(move, "after_hit", attacker, defender, hit.current),
-                                       hit.on_substitute
+        changes = (*changes, *_answers(added and hooks.move(move, "after_hit", attacker, defender, hit.current),
+                                       added and hit.on_substitute
                                        and hooks.move(move, "after_sub_damage", attacker, defender, hit.current)))
     recoil, drained = _recoil_or_drain(turn, side, attacker, defender, move, result.total_damage + result.absorbed)
     defender_item = volley.endured or _defender_item_effect(hit) or volley.berry or volley.resisted
-    if result.landed:
+    if result.landed and added:
         _announce(defender, hooks.ability(defender, "after_move_secondary", hit))
     with _ability_ignored(attacker, defender, move):
-        changes = (*changes, *_answers(hooks.move(move, "after_move_secondary_self", attacker, defender, result)))
+        changes = (*changes, *_answers(
+            added and hooks.move(move, "after_move_secondary_self", attacker, defender, result)))
     attacker_item = _attacker_item_effect(attacker, defender, result, drained)
-    if result.landed:
+    if result.landed and added:
         _announce(attacker, hooks.ability(attacker, "after_move_secondary_self", attacker, defender, result))
     with _ability_ignored(attacker, defender, move):
         changes = (*changes, *_answers(hooks.move(move, "after_move", attacker, defender, result)))
@@ -988,15 +990,15 @@ def _after_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, mo
         _field(defender, "on_knocked_out", attacker, move, turn, side)
         _announce(defender, hooks.ability(defender, "on_fainted_by", defender, attacker, move, volley.lost))
     changes, ability = (), defender.ability if volley.sturdy or volley.barbed else volley.lessened
-    shielded = volley.result.merged().on_substitute
+    shielded, added = volley.result.merged().on_substitute, not volley.result.sheer_forced
     if defender.hp > 0 and (not shielded or move.stat_on_user):
-        changes, blocked_by = _secondary_effects(side, move, attacker, defender, rng)
+        changes, blocked_by = _secondary_effects(side, move, attacker, defender, rng, added)
         defender.ability_ignored = False
         contact = None if shielded else _contact_effect(side, move, attacker, defender, rng)
         if contact:
             changes, ability = (*changes, contact), defender.ability
         ability = ability or blocked_by
-    elif move.stat_on_user and volley.result.reached:
+    elif move.stat_on_user and volley.result.reached and added:
         changes = tuple(_stat_changes(side, move, attacker, defender, rng))
     return changes, ability
 
@@ -1124,7 +1126,8 @@ def _attacker_item_effect(attacker: _Fighter, defender: _Fighter, result: MoveRe
     if not result.landed or not move.damaging or move is STRUGGLE or item is None:
         return ""
     rooted = hooks.item(attacker, "modify_drain", 0) is not None and drained and attacker.hp > 0
-    acted = rooted or hooks.item(attacker, "after_move_secondary_self", attacker, defender, result, default=False)
+    acted = rooted or not result.sheer_forced and hooks.item(attacker, "after_move_secondary_self", attacker, defender,
+                                                             result, default=False)
     return item if acted else ""
 
 
@@ -1132,7 +1135,7 @@ def _defender_item_effect(hit: Hit) -> str:
     """The target's item that answered the move (Rocky Helmet, whose chip already landed per hit; Weakness Policy;
     Kee Berry), or ""."""
     item = hit.target.item
-    acted = (hooks.item(hit.target, "after_move_secondary", hit, default=False)
+    acted = (not hit.result.sheer_forced and hooks.item(hit.target, "after_move_secondary", hit, default=False)
              or hooks.item(hit.target, "damaging_hit", hit, default=False))
     return item if acted else ""
 
@@ -1230,12 +1233,13 @@ def _infiltrates(fighter: _Fighter) -> bool:
     return hooks.ability(fighter, "infiltrates", default=False)
 
 
-def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fighter,
-                       rng: random.Random) -> tuple[tuple[Change, ...], str | None]:
-    """The effects that landed, and the defender's ability if it stopped the move's ailment."""
+def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fighter, rng: random.Random,
+                       added: bool) -> tuple[tuple[Change, ...], str | None]:
+    """The effects that landed, and the defender's ability if it stopped the move's ailment. Without its `added`
+    effects (Sheer Force) a move only thaws the defender."""
     changes: list[Change] = []
     blocked_by = None
-    if _ailment_lands(move, attacker, defender, rng):
+    if added and _ailment_lands(move, attacker, defender, rng):
         if _blocks_ailment(defender, move.ailment):
             blocked_by = defender.ability
         else:
@@ -1243,8 +1247,9 @@ def _secondary_effects(side: int, move: Move, attacker: _Fighter, defender: _Fig
     if defender.status == "freeze" and (move.type == "fire" or hooks.move(move, "thaws_user", default=False)):
         defender.status = None
         changes.append(Change(1 - side, defender.combatant.name, "thaw"))
-    changes.extend(_stat_changes(side, move, attacker, defender, rng))
-    changes.extend(hooks.move(move, "secondary", attacker, defender, side, rng, default=()))
+    if added:
+        changes.extend(_stat_changes(side, move, attacker, defender, rng))
+        changes.extend(hooks.move(move, "secondary", attacker, defender, side, rng, default=()))
     return tuple(changes), blocked_by
 
 
