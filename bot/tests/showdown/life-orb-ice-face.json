@@ -1,0 +1,67 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "life-orb-ice-face",
+    "attacker": {"species": "Snorlax", "item": "life-orb", "move": "tackle"},
+    "defender": {"species": "Eiscue", "ability": "ice-face"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Eiscue",
+      "types": ["ice"],
+      "weight": 890,
+      "base": [75, 80, 110, 65, 90, 50],
+      "forms": [
+        {
+          "kind": "noice",
+          "types": ["ice"],
+          "weight": 890,
+          "base": [75, 80, 70, 65, 50, 130]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "ability", "ability": "ice-face"},
+    {"side": 1, "kind": "forme", "species": "Eiscue-Noice"},
+    {"side": 0, "kind": "hp", "sign": -1, "from": "item: Life Orb"}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": -1,
+        "fainted": false,
+        "item": "life-orb",
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": "ice-face",
+        "types": ["ice"],
+        "form": "noice"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "throat-spray-snarl",
+    "attacker": {"species": "Snorlax", "item": "throat-spray", "move": "snarl"},
+    "defender": {"species": "Snorlax"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 1, "kind": "boost", "stat": "special_attack", "stages": -1, "from": null},
+    {"side": 0, "kind": "item", "item": null, "lost": "throat-spray", "from": null},
+    {"side": 0, "kind": "boost", "stat": "special_attack", "stages": 1, "from": "item: Throat Spray"}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {"special_attack": 1},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": -1,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {"special_attack": -1},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}

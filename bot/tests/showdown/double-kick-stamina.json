@@ -1,0 +1,65 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "double-kick-stamina",
+    "attacker": {"species": "Snorlax", "move": "double-kick"},
+    "defender": {"species": "Mudsdale", "ability": "stamina"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Mudsdale",
+      "types": ["ground"],
+      "weight": 9200,
+      "base": [100, 125, 100, 55, 85, 35],
+      "forms": []
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 1, "kind": "ability", "ability": "stamina"},
+    {"side": 1, "kind": "boost", "stat": "defense", "stages": 1, "from": null},
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 1, "kind": "ability", "ability": "stamina"},
+    {"side": 1, "kind": "boost", "stat": "defense", "stages": 1, "from": null}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": -1,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {"defense": 2},
+        "volatiles": [],
+        "ability": "stamina",
+        "types": ["ground"],
+        "form": "base"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}

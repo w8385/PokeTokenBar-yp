@@ -1,0 +1,67 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "shell-bell-disguise",
+    "attacker": {"species": "Snorlax", "item": "shell-bell", "move": "x-scissor", "hp": "half"},
+    "defender": {"species": "Mimikyu", "ability": "disguise"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Mimikyu",
+      "types": ["ghost", "fairy"],
+      "weight": 7,
+      "base": [55, 90, 80, 50, 105, 96],
+      "forms": [
+        {
+          "kind": "busted",
+          "types": ["ghost", "fairy"],
+          "weight": 7,
+          "base": [55, 90, 80, 50, 105, 96]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "ability", "ability": "disguise"},
+    {"side": 1, "kind": "forme", "species": "Mimikyu-Busted"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": "pokemon: Mimikyu-Busted"}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": "shell-bell",
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": -1,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": "disguise",
+        "types": ["ghost", "fairy"],
+        "form": "busted"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}

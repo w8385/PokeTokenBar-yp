@@ -1,0 +1,59 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "blunder-policy-type-immune",
+    "chance": false,
+    "attacker": {"species": "Snorlax", "item": "blunder-policy", "move": "focus-blast"},
+    "defender": {"species": "Gengar"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Gengar",
+      "types": ["ghost", "poison"],
+      "weight": 405,
+      "base": [60, 65, 60, 130, 75, 110],
+      "forms": []
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "immune"}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": "blunder-policy",
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["ghost", "poison"],
+        "form": "base"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}

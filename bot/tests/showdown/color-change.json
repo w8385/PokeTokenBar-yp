@@ -1,0 +1,61 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "color-change",
+    "attacker": {"species": "Snorlax", "move": "flamethrower"},
+    "defender": {"species": "Kecleon", "ability": "color-change"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Kecleon",
+      "types": ["normal"],
+      "weight": 220,
+      "base": [60, 90, 70, 60, 120, 40],
+      "forms": []
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 1, "kind": "status", "status": "burn", "from": null},
+    {"side": 1, "kind": "start", "volatile": "typechange"}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": -1,
+        "fainted": false,
+        "item": null,
+        "status": "burn",
+        "boosts": {},
+        "volatiles": [],
+        "ability": "color-change",
+        "types": ["fire"],
+        "form": "base"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}
