@@ -71,7 +71,7 @@ class Recharge(Handler):
 
     by_id = True
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         user.volatiles[self.key] = RECHARGE_TURNS
 
     def bans_move(self, name, move, fighter):

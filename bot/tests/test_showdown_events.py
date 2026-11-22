@@ -11,10 +11,10 @@ TABLE = json.loads((battle_data.DATA_DIR / "showdown-events.json").read_text())
 # The bot hooks that stand for a Showdown event today. "condition:" is a handler of the state the entry sets.
 EVENT_HOOKS = {
     "moves": {
-        "onAfterSubDamage": {"after_substitute_hit"},
+        "onAfterSubDamage": {"after_sub_damage"},
         "onDamage": {"spares"},
-        "onAfterHit": {"after_move"},
-        "onAfterMoveSecondarySelf": {"after_move"},
+        "onAfterHit": {"after_hit"},
+        "onAfterMoveSecondarySelf": {"after_move_secondary_self"},
         "onAfterMove": {"after_move"},
         "condition:onTryPrimaryHit": {"takes_hit"},
         "condition:onDamage": {"endures"},
@@ -24,16 +24,16 @@ EVENT_HOOKS = {
     "items": {
         "onAfterSubDamage": set(),
         "onDamage": {"endures"},
-        "onDamagingHit": {"on_contact_hit", "after_move_as_target"},
-        "onAfterMoveSecondary": {"after_move_as_target"},
-        "onAfterMoveSecondarySelf": {"after_move_as_user", "after_use"},
+        "onDamagingHit": {"on_contact_hit", "damaging_hit"},
+        "onAfterMoveSecondary": {"after_move_secondary"},
+        "onAfterMoveSecondarySelf": {"after_move_secondary_self", "after_use"},
     },
     "abilities": {
         "onDamage": {"takes_hit", "endures"},
-        "onDamagingHit": {"on_contact_hit", "on_contact", "after_hit", "on_fainted_by"},
-        "onSourceDamagingHit": {"after_hit_as_user"},
-        "onAfterMoveSecondary": {"after_hit"},
-        "onAfterMoveSecondarySelf": {"after_hit_as_user"},
+        "onDamagingHit": {"on_contact_hit", "on_contact", "damaging_hit", "on_fainted_by"},
+        "onSourceDamagingHit": {"source_damaging_hit"},
+        "onAfterMoveSecondary": {"after_move_secondary"},
+        "onAfterMoveSecondarySelf": {"after_move_secondary_self"},
     },
 }
 

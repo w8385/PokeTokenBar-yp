@@ -190,8 +190,8 @@ class WeatherBall(PowerRule):
 
 @register("moves", "knock-off")
 class KnockOff(PowerRule):
-    def after_move(self, move, user, target, dealt):
-        if dealt > 0 and user.hp > 0 and move_power.holds_removable_item(target) and not move_power.kept(target):
+    def after_hit(self, move, user, target, hit):
+        if hit.reached and user.hp > 0 and move_power.holds_removable_item(target) and not move_power.kept(target):
             target.item, target.item_lost, target.locked = None, True, None
 
 

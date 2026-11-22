@@ -57,10 +57,10 @@ class InnardsOut(Handler):
 class CursedBody(Handler):
     """A damaging move that hits the holder may be disabled for its user, as the move Disable does."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         user, holder = hit.user, hit.target
         index = next((i for i, known in enumerate(user.combatant.moves) if known.name == hit.move.name), None)
-        if (hit.shielded or user.hp == 0 or index is None or "disable" in user.volatiles
+        if (hit.on_substitute or user.hp == 0 or index is None or "disable" in user.volatiles
                 or hit.rng.random() >= abilities.CURSED_BODY_CHANCE or _blocks(user, "disable")):
             return None
         user.volatiles["disable"], user.memory["disable"] = Disable.turns, index
@@ -71,9 +71,9 @@ class CursedBody(Handler):
 class PerishBody(Handler):
     """A contact move starts Perish Song's count on its user and the holder, unless its user has one already."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         user, holder = hit.user, hit.target
-        if hit.shielded or not hit.contact or user.hp == 0 or PERISH in user.volatiles:
+        if hit.on_substitute or not hit.contact or user.hp == 0 or PERISH in user.volatiles:
             return None
         for fighter in (user, holder):
             if fighter.hp > 0:
@@ -85,9 +85,9 @@ class PerishBody(Handler):
 class AbilitySpread(Handler):
     """Mummy, Lingering Aroma: a contact move's user gets the holder's ability."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         user = hit.user
-        if (hit.shielded or not hit.contact or user.hp == 0 or user.combatant.ability == name
+        if (hit.on_substitute or not hit.contact or user.hp == 0 or user.combatant.ability == name
                 or user.combatant.ability in FIXED_ABILITIES or shielded(user)):
             return None
         reshape(user, ability=name)
@@ -98,10 +98,10 @@ class AbilitySpread(Handler):
 class WanderingSpirit(Handler):
     """A contact move's user swaps abilities with the holder."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         user, holder = hit.user, hit.target
         theirs = user.combatant.ability
-        if hit.shielded or not hit.contact or 0 in (user.hp, holder.hp) or theirs == name or theirs in FIXED_ABILITIES:
+        if hit.on_substitute or not hit.contact or 0 in (user.hp, holder.hp) or theirs == name or theirs in FIXED_ABILITIES:
             return None
         if shielded(user) or shielded(holder):
             return None
@@ -114,8 +114,8 @@ class WanderingSpirit(Handler):
 class Pickpocket(Handler):
     """An empty-handed holder takes the held item of a contact move's user."""
 
-    def after_hit(self, name, hit):
-        if hit.shielded or not hit.contact:
+    def after_move_secondary(self, name, hit):
+        if hit.on_substitute or not hit.contact:
             return None
         return _stolen(name, hit.target, hit.user)
 
@@ -124,8 +124,8 @@ class Pickpocket(Handler):
 class Magician(Handler):
     """An empty-handed holder takes the held item of the foe its damaging move hit."""
 
-    def after_hit_as_user(self, name, hit):
-        return None if hit.shielded else _stolen(name, hit.user, hit.target)
+    def after_move_secondary_self(self, name, user, target, result):
+        return None if result.merged().on_substitute else _stolen(name, user, target)
 
 
 @register("abilities", "hit-ailment")
@@ -133,9 +133,9 @@ class HitAilment(Handler):
     """Poison Touch, Toxic Chain: the holder's damaging move (only a contact one with `args.contact`) may give its
     target `args.ailment`."""
 
-    def after_hit_as_user(self, name, hit):
+    def source_damaging_hit(self, name, hit):
         user, target = hit.user, hit.target
-        if (hit.shielded or target.hp == 0 or abilities.HIT_AILMENT_CONTACT[name] and not hit.contact
+        if (hit.on_substitute or target.hp == 0 or abilities.HIT_AILMENT_CONTACT[name] and not hit.contact
                 or hooks.ability(target, "blocks_secondary", default=False)
                 or hit.rng.random() >= abilities.CONTACT_CHANCE):
             return None
@@ -147,9 +147,9 @@ class HitAilment(Handler):
 class Stench(Handler):
     """Each hit of the holder's damaging move that cannot flinch on its own may flinch a target that has not moved."""
 
-    def after_hit_as_user(self, name, hit):
+    def adds_secondary(self, name, hit):
         target, move = hit.target, hit.move
-        if hit.shielded or target.hp == 0 or target.acted or meta(move, "flinch_chance") > 0:
+        if hit.on_substitute or target.hp == 0 or target.acted or meta(move, "flinch_chance") > 0:
             return
         chance = abilities.STENCH_CHANCE * battle._chance_scale(move, hit.user, target)
         if any(hit.rng.random() < chance for _ in range(hit.hits)) and not battle._blocks_ailment(target, "flinch"):
@@ -171,9 +171,9 @@ class PoisonPuppeteer(Handler):
 class SpicySpray(Handler):
     """A damaging move that hits the holder burns its user."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         user, holder = hit.user, hit.target
-        if hit.shielded or user.hp == 0:
+        if hit.on_substitute or user.hp == 0:
             return None
         change = _afflicted("burn", user, hit.side, hit.rng, holder)
         return _act(name, holder, changes=(change,)) if change else None

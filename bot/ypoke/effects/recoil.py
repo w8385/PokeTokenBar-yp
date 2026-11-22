@@ -44,7 +44,7 @@ class HPCostOnHit(Handler):
     def hp_paid(self, move, user):
         return half_max_hp(user)
 
-    def after_move(self, move, user, target, dealt):
+    def after_move(self, move, user, target, result):
         return (pay(user, half_max_hp(user), "hp-cost"),)
 
 

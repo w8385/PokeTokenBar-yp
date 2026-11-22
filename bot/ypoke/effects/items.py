@@ -159,8 +159,8 @@ class LifeOrb(Handler):
     def modify_damage(self, name, move_type, effectiveness, physical, punch):
         return items.LIFE_ORB_MULTIPLIER
 
-    def after_move_as_user(self, name, fighter, move, dealt, drained):
-        if battle._chip_free(fighter) or sheer_forced_by(fighter, move):
+    def after_move_secondary_self(self, name, fighter, target, result):
+        if battle._chip_free(fighter) or sheer_forced_by(fighter, result.move):
             return None
         fighter.hp = max(0, fighter.hp - max(1, fighter.max_hp // items.LIFE_ORB_RECOIL_FRACTION))
         return True
@@ -253,8 +253,8 @@ class RockyHelmet(Handler):
     def on_contact_hit(self, name, user):
         return max(1, user.max_hp // items.ROCKY_HELMET_FRACTION)
 
-    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
-        return dealt > 0 and battle.makes_contact(attacker, move)
+    def damaging_hit(self, name, hit):
+        return hit.reached and hit.contact
 
 
 @register("items", "big-root")
@@ -262,14 +262,12 @@ class BigRoot(Handler):
     def modify_drain(self, name, healed):
         return int(healed * items.BIG_ROOT_MULTIPLIER)
 
-    def after_move_as_user(self, name, fighter, move, dealt, drained):
-        return drained and fighter.hp > 0
-
 
 @register("items", "shell-bell")
 class ShellBell(Handler):
-    def after_move_as_user(self, name, fighter, move, dealt, drained):
-        if dealt <= 0 or not 0 < fighter.hp < fighter.max_hp or sheer_forced_by(fighter, move):
+    def after_move_secondary_self(self, name, fighter, target, result):
+        dealt = result.total_damage
+        if dealt <= 0 or not 0 < fighter.hp < fighter.max_hp or sheer_forced_by(fighter, result.move):
             return False
         fighter.hp = min(fighter.max_hp, fighter.hp + max(1, dealt // items.SHELL_BELL_FRACTION))
         return True
@@ -277,8 +275,9 @@ class ShellBell(Handler):
 
 @register("items", "weakness-policy")
 class WeaknessPolicy(Handler):
-    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
-        if not (multiplier > 1 and dealt > 0 and fighter.hp > 0):
+    def damaging_hit(self, name, hit):
+        fighter = hit.target
+        if not (hit.multiplier > 1 and hit.reached and fighter.hp > 0):
             return False
         for key in ("attack", "special_attack"):
             battle.shift_stage(fighter, fighter.side, key, 2)

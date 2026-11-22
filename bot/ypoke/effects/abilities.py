@@ -58,9 +58,9 @@ class PrimalWeather(Handler):
 class WeatherOnHit(Handler):
     """Sand Spit: a damaging move that hits the holder starts `args.weather`."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         holder, kind = hit.target, abilities.WEATHER_ON_HIT[name]
-        if hit.shielded or holder.arena is None or not _start_weather(holder.arena.weather, kind, holder):
+        if hit.on_substitute or holder.arena is None or not _start_weather(holder.arena.weather, kind, holder):
             return None
         return battle.AbilityTrigger(holder.side, holder.combatant.name, name, weather=kind,
                                      cleared_by=holder.arena.weather.cleared_by)

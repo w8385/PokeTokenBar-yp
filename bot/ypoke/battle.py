@@ -703,18 +703,67 @@ class _Aim(NamedTuple):
 
 
 @dataclass
-class _Volley:
-    """What the hits of one move did. `lost` is the damage of the last hit; `endured` names the item that held the
-    defender on, `berry` the one it ate between hits, `resisted` its resist berry, and `lessened` the ability that
-    weakened a hit taken at full HP (Multiscale)."""
+class HitResult:
+    """One hit of a damaging move: `damage` is the HP the Pokémon itself lost, `absorbed` the HP its Substitute took
+    (`on_substitute`), and `blocked_by` the ability that took the hit for no HP (Disguise, Ice Face)."""
 
-    hits: int = 0
-    critical: bool = False
-    dealt: int = 0
+    damage: int = 0
     absorbed: int = 0
+    on_substitute: bool = False
+    blocked_by: str | None = None
+    critical: bool = False
+
+    @property
+    def reached(self) -> bool:
+        """The hit took HP from the Pokémon itself."""
+        return self.damage > 0
+
+
+@dataclass
+class MoveResult:
+    """What a damaging move did, hit by hit. `sheer_forced`: the user's Sheer Force boosts the move, read once as it
+    starts."""
+
+    move: Move
+    sheer_forced: bool = False
+    hits: list[HitResult] = field(default_factory=list)
+
+    @property
+    def landed(self) -> bool:
+        return bool(self.hits)
+
+    @property
+    def reached(self) -> bool:
+        return any(hit.reached for hit in self.hits)
+
+    @property
+    def total_damage(self) -> int:
+        """Showdown's `totalDamage`: the HP the Pokémon lost, a Substitute's share left out."""
+        return sum(hit.damage for hit in self.hits)
+
+    @property
+    def absorbed(self) -> int:
+        return sum(hit.absorbed for hit in self.hits)
+
+    @property
+    def critical(self) -> bool:
+        return any(hit.critical for hit in self.hits)
+
+    def merged(self) -> HitResult:
+        """The hits as one, for the answers that act once per move: a Substitute hit when any hit was one."""
+        return HitResult(self.total_damage, self.absorbed, any(hit.on_substitute for hit in self.hits),
+                         next((hit.blocked_by for hit in self.hits if hit.blocked_by), None), self.critical)
+
+
+@dataclass
+class _Volley:
+    """The hits of one move (`result`) and what the Action logs of them. `lost` is the damage of the last hit;
+    `endured` names the item that held the defender on, `berry` the one it ate between hits, `resisted` its resist
+    berry, and `lessened` the ability that weakened a hit taken at full HP (Multiscale)."""
+
+    result: MoveResult
     lost: int = 0
     sturdy: bool = False
-    shielded: bool = False
     barbed: bool = False
     endured: str = ""
     berry: str = ""
@@ -735,30 +784,40 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
         started = weather.current is not None and weather.current != before
         return Action(turn, side, *names, move.name, recovered=recovered, defender_hp=defender.hp_percent,
                       attacker_hp=attacker.hp_percent, cleared_by=weather.cleared_by if started else "", **used)
+    result = MoveResult(move, sheer_forced=hooks.ability(attacker, "secondary_chance", move, default=1.0) == 0)
     hooks.move(move, "before_hit", attacker, defender)
     aim = _aim(attacker, defender, move, weather)
     whiffed = _whiffed(turn, side, attacker, defender, move, recovered, aim, rng)
     if whiffed is not None:
         return whiffed
-    volley = _land_hits(turn, side, attacker, defender, move, aim, weather, rng)
+    volley = _land_hits(turn, side, attacker, defender, move, aim, weather, rng, result)
+    hit = Hit(side, turn, attacker, defender, move, result, result.merged(), aim.multiplier, rng)
     changes, ability = _after_hits(turn, side, attacker, defender, move, volley, rng)
-    recoil, drained = _recoil_or_drain(turn, side, attacker, defender, move, volley.dealt + volley.absorbed)
-    attacker_item = _attacker_item_effect(attacker, move, volley, drained)
-    defender_item = (volley.endured or _defender_item_effect(defender, attacker, move, aim.multiplier, volley.dealt)
-                     or volley.berry or volley.resisted)
+    recoil, drained = _recoil_or_drain(turn, side, attacker, defender, move, result.total_damage + result.absorbed)
+    attacker_item = _attacker_item_effect(attacker, defender, result, drained)
+    defender_item = volley.endured or _defender_item_effect(hit) or volley.berry or volley.resisted
     with _ability_ignored(attacker, defender, move):
-        changes = (*changes, *(hooks.move(move, "after_move", attacker, defender, volley.dealt) or ()))
-        if volley.shielded:
-            changes = (*changes, *(hooks.move(move, "after_substitute_hit", attacker, defender) or ()))
+        changes = (*changes, *_move_answers(move, attacker, defender, result))
     action = Action(
-        turn, side, *names, move.name, multiplier=aim.multiplier, critical=volley.critical, changes=changes,
+        turn, side, *names, move.name, multiplier=aim.multiplier, critical=result.critical, changes=changes,
         recoil=recoil, defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
-        recovered=recovered, hits=volley.hits, drained=drained, attacker_hp=attacker.hp_percent, ability=ability,
+        recovered=recovered, hits=len(result.hits), drained=drained, attacker_hp=attacker.hp_percent, ability=ability,
         attacker_item=attacker_item, defender_item=defender_item,
     )
-    if volley.hits:
-        _answer_hits(turn, side, attacker, defender, move, aim.multiplier, volley, rng)
+    if result.landed:
+        _answer_hits(hit)
     return action
+
+
+def _move_answers(move: Move, attacker: _Fighter, defender: _Fighter, result: MoveResult) -> tuple[Change, ...]:
+    """The move's own answers once its hits are over: on the Pokémon it hit (Knock Off), on the user (Fell Stinger),
+    once the move is over (Rollout), then on a Substitute it hit (Rapid Spin)."""
+    merged = result.merged()
+    answers = (hooks.move(move, "after_hit", attacker, defender, merged),
+               hooks.move(move, "after_move_secondary_self", attacker, defender, result),
+               hooks.move(move, "after_move", attacker, defender, result),
+               merged.on_substitute and hooks.move(move, "after_sub_damage", attacker, defender, merged))
+    return tuple(change for answer in answers if answer for change in answer)
 
 
 def _held_off(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: Move, recovered: tuple[str, ...],
@@ -828,10 +887,10 @@ def _whiffed(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move:
 
 
 def _land_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: Move, aim: _Aim,
-               weather: _Weather, rng: random.Random) -> _Volley:
+               weather: _Weather, rng: random.Random, result: MoveResult) -> _Volley:
     """Each hit rolls its critical hit and damage, then lands on the defender, its Substitute or an ability that takes
     it (Disguise). A move that rolls each hit stops at its first miss; any move stops once either side faints."""
-    volley = _Volley()
+    volley = _Volley(result)
     hooks.move(move, "draws", attacker, rng)
     fixed = hooks.move(move, "fixed_damage", attacker, defender, rng)
     volley.resisted = defender.item if fixed is None and hooks.item(defender, "resists", move.type, aim.multiplier,
@@ -865,11 +924,11 @@ def _land_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, mov
             use_berry(defender)
         shielded = _field(defender, "takes_hit", damage, attacker, defender, move)
         if shielded:
-            volley.hits, volley.critical, volley.shielded = volley.hits + 1, volley.critical or hit_critical, True
-            volley.absorbed += sum(shielded)
+            result.hits.append(HitResult(absorbed=sum(shielded), on_substitute=True, critical=hit_critical))
             continue
+        blocker = defender.ability
         if hooks.ability(defender, "takes_hit", damage, attacker, defender, move, default=False):
-            volley.hits, volley.critical = volley.hits + 1, volley.critical or hit_critical
+            result.hits.append(HitResult(blocked_by=blocker, critical=hit_critical))
             if defender.hp == 0:
                 break
             continue
@@ -880,8 +939,7 @@ def _land_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, mov
         defender.hp -= damage
         defender.times_hit += 1
         defender.hit_by_foe = defender.hit_by_foe or damage > 0
-        volley.critical, volley.hits = volley.critical or hit_critical, volley.hits + 1
-        volley.dealt += damage
+        result.hits.append(HitResult(damage=damage, critical=hit_critical))
         if damage > 0 and makes_contact(attacker, move) and not _chip_free(attacker):
             barbs = hooks.ability(defender, "on_contact_hit", attacker, default=0)
             volley.barbed = volley.barbed or barbs > 0
@@ -894,8 +952,8 @@ def _land_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, mov
     volley.lost = damage
     if spent is not None:
         attacker.primed = None
-    if volley.dealt > 0:
-        defender.hurt = Hurt(move.physical, volley.dealt, makes_contact(attacker, move))
+    if result.total_damage > 0:
+        defender.hurt = Hurt(move.physical, result.total_damage, makes_contact(attacker, move))
     return volley
 
 
@@ -924,14 +982,15 @@ def _after_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, mo
         _field(defender, "on_knocked_out", attacker, move, turn, side)
         _announce(defender, hooks.ability(defender, "on_fainted_by", defender, attacker, move, volley.lost))
     changes, ability = (), defender.ability if volley.sturdy or volley.barbed else volley.lessened
-    if defender.hp > 0 and (not volley.shielded or move.stat_on_user):
+    shielded = volley.result.merged().on_substitute
+    if defender.hp > 0 and (not shielded or move.stat_on_user):
         changes, blocked_by = _secondary_effects(side, move, attacker, defender, rng)
         defender.ability_ignored = False
-        contact = None if volley.shielded else _contact_effect(side, move, attacker, defender, rng)
+        contact = None if shielded else _contact_effect(side, move, attacker, defender, rng)
         if contact:
             changes, ability = (*changes, contact), defender.ability
         ability = ability or blocked_by
-    elif move.stat_on_user and volley.dealt > 0:
+    elif move.stat_on_user and volley.result.reached:
         changes = tuple(_stat_changes(side, move, attacker, defender, rng))
     return changes, ability
 
@@ -961,37 +1020,52 @@ def _recoil_or_drain(turn: int, side: int, attacker: _Fighter, defender: _Fighte
     return recoil, drained
 
 
-def _answer_hits(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: Move, multiplier: float,
-                 volley: _Volley, rng: random.Random) -> None:
+def _answer_hits(hit: "Hit") -> None:
     """The abilities and items that answer a move once its hits are over, the defender's first."""
+    attacker, defender = hit.user, hit.target
     defender.ability_ignored = False
-    hit = Hit(side, turn, attacker, defender, move, volley.dealt, volley.hits, volley.critical, multiplier,
-              volley.shielded, rng)
-    _announce(defender, hooks.ability(defender, "after_hit", hit))
-    _announce(attacker, hooks.ability(attacker, "after_hit_as_user", hit))
-    _announce(attacker, hooks.item(attacker, "after_hit_as_user", hit))
+    for hook in ("after_move_secondary", "damaging_hit"):
+        _announce(defender, hooks.ability(defender, hook, hit))
+    for hook in ("source_damaging_hit", "adds_secondary", "source_after_faint"):
+        _announce(attacker, hooks.ability(attacker, hook, hit))
+    _announce(attacker, hooks.ability(attacker, "after_move_secondary_self", attacker, defender, hit.result))
+    _announce(attacker, hooks.item(attacker, "adds_secondary", hit))
 
 
 @dataclass(frozen=True)
 class Hit:
-    """A damaging move that hit, for the abilities that answer it once the move is over: `side` is the user's,
-    `dealt` the damage past any Substitute (`shielded`), `hits` how many landed."""
+    """A damaging move's hit as the abilities and items that answer it see it: `side` is the user's, `result` the
+    move's hits and `current` the one answered."""
 
     side: int
     turn: int
     user: "_Fighter"
     target: "_Fighter"
     move: Move
-    dealt: int
-    hits: int
-    critical: bool
+    result: MoveResult
+    current: HitResult
     multiplier: float
-    shielded: bool
     rng: random.Random
 
     @property
     def contact(self) -> bool:
         return makes_contact(self.user, self.move)
+
+    @property
+    def on_substitute(self) -> bool:
+        return self.current.on_substitute
+
+    @property
+    def reached(self) -> bool:
+        return self.current.reached
+
+    @property
+    def critical(self) -> bool:
+        return self.current.critical
+
+    @property
+    def hits(self) -> int:
+        return len(self.result.hits)
 
 
 def use_berry(fighter: "_Fighter") -> None:
@@ -1039,20 +1113,23 @@ def _retyped(attacker: _Fighter, move: Move) -> Move:
     return move if kind is None else replace(move, type=kind)
 
 
-def _attacker_item_effect(attacker: _Fighter, move: Move, volley: _Volley, drained: bool) -> str:
+def _attacker_item_effect(attacker: _Fighter, defender: _Fighter, result: MoveResult, drained: bool) -> str:
     """The user's item that acted after its damaging move landed, also on a Substitute or Disguise (Life Orb, Shell
-    Bell, Big Root), or ""."""
-    item = attacker.item
-    if not volley.hits or not move.damaging or move is STRUGGLE or item is None:
+    Bell), or that added to what it drained (Big Root), or ""."""
+    item, move = attacker.item, result.move
+    if not result.landed or not move.damaging or move is STRUGGLE or item is None:
         return ""
-    acted = hooks.item(attacker, "after_move_as_user", attacker, move, volley.dealt, drained, default=False)
+    rooted = hooks.item(attacker, "modify_drain", 0) is not None and drained and attacker.hp > 0
+    acted = rooted or hooks.item(attacker, "after_move_secondary_self", attacker, defender, result, default=False)
     return item if acted else ""
 
 
-def _defender_item_effect(defender: _Fighter, attacker: _Fighter, move: Move, multiplier: float, dealt: int) -> str:
-    """The target's item that acted on the move (Rocky Helmet, already applied per hit; Weakness Policy), or ""."""
-    item = defender.item
-    acted = hooks.item(defender, "after_move_as_target", defender, attacker, move, multiplier, dealt, default=False)
+def _defender_item_effect(hit: Hit) -> str:
+    """The target's item that answered the move (Rocky Helmet, whose chip already landed per hit; Weakness Policy;
+    Kee Berry), or ""."""
+    item = hit.target.item
+    acted = (hooks.item(hit.target, "after_move_secondary", hit, default=False)
+             or hooks.item(hit.target, "damaging_hit", hit, default=False))
     return item if acted else ""
 
 

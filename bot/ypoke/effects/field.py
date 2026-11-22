@@ -367,11 +367,11 @@ class RapidSpin(Handler):
     def wanted(self, move, team, foes, side, arena, weather):
         return team.has_next and bool(arena.hazards[side]) and battle._multiplier(move, foes.active, weather) > 0
 
-    def after_move(self, move, user, target, dealt):
-        if dealt > 0:
-            self.after_substitute_hit(move, user, target)
+    def after_hit(self, move, user, target, hit):
+        if hit.reached:
+            self.after_sub_damage(move, user, target, hit)
 
-    def after_substitute_hit(self, move, user, target):
+    def after_sub_damage(self, move, user, target, hit):
         if user.hp > 0 and not sheer_forced_by(user, move):
             _spun_free(user, move)
 
@@ -380,10 +380,10 @@ class RapidSpin(Handler):
 class MortalSpin(RapidSpin):
     """Its poison is not in PokéAPI's data, so it lands here, after the hit."""
 
-    def after_move(self, move, user, target, dealt):
-        if dealt <= 0 or sheer_forced_by(user, move):
+    def after_hit(self, move, user, target, hit):
+        if not hit.reached or sheer_forced_by(user, move):
             return None
-        self.after_substitute_hit(move, user, target)
+        self.after_sub_damage(move, user, target, hit)
         if (target.hp == 0 or not battle._open_to("poison", target, not battle._infiltrates(user), user)
                 or battle._blocks_ailment(target, "poison")):
             return None
@@ -431,33 +431,33 @@ class SteelRoller(FieldMove):
     def base_power(self, move, power, scene):
         return power if _terrain(scene.user) else 0
 
-    def after_move(self, move, user, target, dealt):
-        if dealt > 0:
-            self.after_substitute_hit(move, user, target)
+    def after_hit(self, move, user, target, hit):
+        if hit.reached:
+            self.after_sub_damage(move, user, target, hit)
 
-    def after_substitute_hit(self, move, user, target):
+    def after_sub_damage(self, move, user, target, hit):
         if user.arena is not None:
             _clear_terrain(user.arena, move.name)
 
 
 @register("moves", "ice-spinner")
 class IceSpinner(FieldMove):
-    def after_move(self, move, user, target, dealt):
-        if dealt > 0:
-            self.after_substitute_hit(move, user, target)
+    def after_hit(self, move, user, target, hit):
+        if hit.reached:
+            self.after_sub_damage(move, user, target, hit)
 
-    def after_substitute_hit(self, move, user, target):
+    def after_sub_damage(self, move, user, target, hit):
         if user.hp > 0 and user.arena is not None:
             _clear_terrain(user.arena, move.name)
 
 
 @register("moves", *fs.HAZARD_ON_HIT)
 class HazardOnHit(FieldMove):
-    def after_move(self, move, user, target, dealt):
-        if dealt > 0:
-            self.after_substitute_hit(move, user, target)
+    def after_hit(self, move, user, target, hit):
+        if hit.reached:
+            self.after_sub_damage(move, user, target, hit)
 
-    def after_substitute_hit(self, move, user, target):
+    def after_sub_damage(self, move, user, target, hit):
         arena, hazard = user.arena, fs.HAZARD_ON_HIT[self.key]
         if user.hp > 0 and arena is not None and not sheer_forced_by(user, move) and _lay(arena, target.side, hazard):
             arena.log.append(battle.FieldStart(arena.turn, target.side, hazard))
@@ -485,9 +485,9 @@ class TerrainOnEntry(Handler):
 class TerrainOnHit(Handler):
     """Seed Sower: a damaging move that hits the holder sets `args.terrain`."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         holder, terrain = hit.target, abilities.TERRAIN_ON_HIT[name]
-        if hit.shielded or holder.arena is None or not _set_terrain(holder.arena, terrain, holder):
+        if hit.on_substitute or holder.arena is None or not _set_terrain(holder.arena, terrain, holder):
             return None
         return battle.AbilityAct(hit.turn, holder.side, holder.combatant.name, name, effect="terrain", detail=terrain)
 
@@ -496,9 +496,9 @@ class TerrainOnHit(Handler):
 class HazardOnFoeHit(Handler):
     """Toxic Debris: a physical move that hits the holder lays `args.hazard` on the user's side."""
 
-    def after_hit(self, name, hit):
+    def damaging_hit(self, name, hit):
         holder, hazard = hit.target, abilities.HAZARD_ON_HIT[name]
-        if hit.shielded or not hit.move.physical or holder.arena is None or not _lay(holder.arena, hit.side, hazard):
+        if hit.on_substitute or not hit.move.physical or holder.arena is None or not _lay(holder.arena, hit.side, hazard):
             return None
         return battle.AbilityAct(hit.turn, holder.side, holder.combatant.name, name, effect="hazard", detail=hazard)
 

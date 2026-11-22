@@ -16,8 +16,9 @@ class AirBalloon(Handler):
     def floats(self, name):
         return True
 
-    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
-        if dealt > 0:
+    def damaging_hit(self, name, hit):
+        fighter = hit.target
+        if hit.reached:
             fighter.item = None
             battle._announce(fighter, _event(fighter, name, "popped"))
         return False
@@ -27,9 +28,9 @@ class AirBalloon(Handler):
 class HitStatItem(Handler):
     """A damaging hit of its type raises one of its holder's stats (Absorb Bulb: Water, Special Attack)."""
 
-    def after_move_as_target(self, name, fighter, attacker, move, multiplier, dealt):
-        kind, stat = items.HIT_STAT_ITEMS[name]
-        if dealt > 0 and move.type == kind and fighter.hp > 0:
+    def damaging_hit(self, name, hit):
+        fighter, kind, stat = hit.target, *items.HIT_STAT_ITEMS[name]
+        if hit.reached and hit.move.type == kind and fighter.hp > 0:
             battle._announce(fighter, _spend(fighter, name, (stat, 1)))
         return False
 
