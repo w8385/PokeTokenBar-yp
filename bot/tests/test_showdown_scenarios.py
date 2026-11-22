@@ -17,7 +17,6 @@ OPEN_DEFECTS = {
     "knock-off-disguise": 1, "thief-disguise": 1, "rocky-helmet-disguise": 1, "air-balloon-disguise": 1,
     "kee-berry-disguise": 1,
     "life-orb-knock-off-last-hp": 2,
-    "rapid-spin-leech-seed": 3,
     "magician-substitute": 4,
     "double-kick-stamina-breaks-doll": 5, "twineedle-breaks-doll": 5,
     "air-balloon-substitute": 6,
