@@ -1,10 +1,11 @@
+import random
 from dataclasses import replace
 
 import pytest
 from attacks import attack
 from status_moves import put, resolve
 
-from ypoke import items
+from ypoke import battle, items
 from ypoke.battle import (STRUGGLE, Action, BaseStats, Combatant, ItemHeal, MegaForm, Move, _Arena, _Fighter,
                           _unrolled_damage, simulate)
 from ypoke.narration import battle_card, battle_log
@@ -155,6 +156,38 @@ def test_shell_bell_heals_nothing_from_a_hit_a_substitute_or_disguise_took(foe_a
     action = resolve(user, foe, TACKLE, arena, seed=1)
     assert action.hits == 1
     assert (user.hp, action.attacker_item) == (user.max_hp // 2, "")
+
+
+@pytest.mark.parametrize(("move", "ability", "heals"), [
+    (IRON_HEAD, "sheer-force", False),
+    (IRON_HEAD, None, True),
+    (TACKLE, "sheer-force", True),
+])
+def test_shell_bell_heals_nothing_when_sheer_force_drops_the_moves_added_effect(move, ability, heals):
+    user, foe, arena = facing(items.SHELL_BELL, ability)
+    user.hp = user.max_hp // 2
+    action = resolve(user, foe, move, arena, seed=1)
+    dealt = foe.max_hp - foe.hp
+    assert dealt > 0
+    assert user.hp == user.max_hp // 2 + (max(1, dealt // items.SHELL_BELL_FRACTION) if heals else 0)
+    assert action.attacker_item == (items.SHELL_BELL if heals else "")
+
+
+SNARL, HYPER_VOICE = attack(555), attack(304)
+
+
+@pytest.mark.parametrize(("move", "ability", "sprays"), [
+    (SNARL, "sheer-force", False),
+    (SNARL, None, True),
+    (HYPER_VOICE, "sheer-force", True),
+])
+def test_throat_spray_stays_unused_when_sheer_force_drops_the_sound_moves_added_effect(move, ability, sprays):
+    user, foe, arena = facing("throat-spray", ability)
+    user.combatant = replace(user.combatant, moves=(move,))
+    user.pp = [move.pp]
+    battle._act(1, 0, (user, foe), 0, arena.weather, random.Random(1), arena)
+    assert foe.hp < foe.max_hp
+    assert (user.item, user.stages["special_attack"]) == ((None, 1) if sprays else ("throat-spray", 0))
 
 
 def test_big_root_shows_its_boost_on_a_drain_that_hit_a_substitute():
