@@ -586,8 +586,10 @@ def _layers(arena, side):
 
 
 def _spun_free(user, move):
-    """Rapid Spin and Mortal Spin clear the hazards on the user's side and free it from a bind."""
+    """Rapid Spin and Mortal Spin clear the hazards on the user's side and free it from a bind and Leech Seed."""
     user.volatiles.pop("binding", None)
+    if user.volatiles.pop("leech-seed", None) is not None and user.arena is not None:
+        user.arena.log.append(battle.VolatileEnd(user.arena.turn, user.side, user.combatant.name, "leech-seed"))
     if user.arena is not None:
         _cleared(user.arena, user.side, fs.HAZARDS, move.name, "hazards")
 

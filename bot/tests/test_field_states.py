@@ -9,7 +9,7 @@ from ypoke import abilities, battle, move_power, narration
 from ypoke import field_states as fs
 from ypoke.battle import (
     AbilityField, Action, Carry, Change, FieldEnd, FieldStart, HazardDamage, HazardHit, Move, SendOut, TerrainHeal,
-    _Arena, _Fighter, _Team, _Weather, simulate,
+    VolatileEnd, VolatileTick, _Arena, _Fighter, _Team, _Weather, simulate,
 )
 from ypoke.effects import hooks
 from ypoke.narration import battle_turns
@@ -366,6 +366,64 @@ def test_sheer_force_drops_the_spins_and_hazard_slashes_effects(move, doll):
     action = resolve(user, target, move, arena)
     assert action.hits == 1
     assert arena.hazards == hazards and target.status is None and user.stages["speed"] == 0
+
+
+def seeded_spinner(arena, **rest):
+    spinner = put(mon("팽이", ("normal",)), arena, **rest)
+    spinner.volatiles["leech-seed"] = True
+    return spinner
+
+
+def upkeep(arena, *fighters):
+    events = []
+    battle._volatile_upkeep(1, fighters, events, random.Random(0))
+    return events
+
+
+@pytest.mark.parametrize("doll", [False, True])
+@pytest.mark.parametrize("move", [RAPID_SPIN, MORTAL_SPIN])
+def test_rapid_spin_and_mortal_spin_shed_leech_seed(move, doll):
+    arena = _Arena()
+    spinner = seeded_spinner(arena)
+    target = behind_a_doll(arena) if doll else put(wall("과녁"), arena, 1)
+    resolve(spinner, target, move, arena)
+    assert "leech-seed" not in spinner.volatiles
+    assert VolatileEnd(arena.turn, 0, "팽이", "leech-seed") in arena.log
+    hp = spinner.hp
+    assert not [event for event in upkeep(arena, spinner, target) if isinstance(event, VolatileTick)]
+    assert spinner.hp == hp
+
+
+def test_a_seed_on_the_user_stays_when_it_does_not_spin():
+    arena = _Arena()
+    spinner = seeded_spinner(arena)
+    resolve(spinner, put(wall("과녁"), arena, 1), TACKLE, arena)
+    assert "leech-seed" in spinner.volatiles
+    assert [event for event in upkeep(arena, spinner, put(wall("과녁"), arena, 1)) if isinstance(event, VolatileTick)]
+
+
+@pytest.mark.parametrize("doll", [False, True])
+@pytest.mark.parametrize("move", [RAPID_SPIN, MORTAL_SPIN])
+def test_sheer_force_keeps_the_spinners_leech_seed(move, doll):
+    arena = _Arena()
+    spinner = seeded_spinner(arena, ability="sheer-force")
+    target = behind_a_doll(arena) if doll else put(wall("과녁"), arena, 1)
+    resolve(spinner, target, move, arena)
+    assert "leech-seed" in spinner.volatiles and VolatileEnd(arena.turn, 0, "팽이", "leech-seed") not in arena.log
+
+
+@pytest.mark.parametrize("move", [RAPID_SPIN, MORTAL_SPIN])
+def test_a_fainted_spinner_does_not_shed_leech_seed(move):
+    arena = _Arena()
+    spinner, target = seeded_spinner(arena), put(wall("과녁"), arena, 1)
+    spinner.hp = 0
+    hooks.move(move, "after_move", spinner, target, 10)
+    assert "leech-seed" in spinner.volatiles and not arena.log
+
+
+def test_the_leech_seed_shed_line_reads_like_the_other_clears():
+    line = narration._event_lines(VolatileEnd(1, 0, "팽이", "leech-seed"))
+    assert "씨뿌리기" in line[0] and "팽이" in line[0]
 
 
 def test_knock_off_leaves_the_item_of_a_target_behind_a_substitute():
