@@ -586,6 +586,9 @@ def _act(turn: int, side: int, fighters: tuple[_Fighter, _Fighter], index: int |
     """One Pokémon's turn. A self-KO move (Explosion) faints its user once used, hit, miss or immune target, and an
     HP-cost move (Steel Beam) takes its share then too."""
     action = _resolve(turn, side, fighters, index, weather, rng, arena)
+    user = fighters[side]
+    tried = STRUGGLE if index is None else user.combatant.moves[index]
+    _field(user, "after_own_move", user, _retyped(user, move_power.typed(tried, weather.kind, user)))
     if action.move:
         used = STRUGGLE if index is None else fighters[side].combatant.moves[index]
         action = replace(action, move_id=used.id)
@@ -793,11 +796,21 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     volley = _land_hits(turn, side, attacker, defender, move, aim, weather, rng, result)
     hit = Hit(side, turn, attacker, defender, move, result, result.merged(), aim.multiplier, rng)
     changes, ability = _after_hits(turn, side, attacker, defender, move, volley, rng)
-    recoil, drained = _recoil_or_drain(turn, side, attacker, defender, move, result.total_damage + result.absorbed)
-    attacker_item = _attacker_item_effect(attacker, defender, result, drained)
-    defender_item = volley.endured or _defender_item_effect(hit) or volley.berry or volley.resisted
     with _ability_ignored(attacker, defender, move):
-        changes = (*changes, *_move_answers(move, attacker, defender, result))
+        changes = (*changes, *_answers(hooks.move(move, "after_hit", attacker, defender, hit.current),
+                                       hit.on_substitute
+                                       and hooks.move(move, "after_sub_damage", attacker, defender, hit.current)))
+    recoil, drained = _recoil_or_drain(turn, side, attacker, defender, move, result.total_damage + result.absorbed)
+    defender_item = volley.endured or _defender_item_effect(hit) or volley.berry or volley.resisted
+    if result.landed:
+        _announce(defender, hooks.ability(defender, "after_move_secondary", hit))
+    with _ability_ignored(attacker, defender, move):
+        changes = (*changes, *_answers(hooks.move(move, "after_move_secondary_self", attacker, defender, result)))
+    attacker_item = _attacker_item_effect(attacker, defender, result, drained)
+    if result.landed:
+        _announce(attacker, hooks.ability(attacker, "after_move_secondary_self", attacker, defender, result))
+    with _ability_ignored(attacker, defender, move):
+        changes = (*changes, *_answers(hooks.move(move, "after_move", attacker, defender, result)))
     action = Action(
         turn, side, *names, move.name, multiplier=aim.multiplier, critical=result.critical, changes=changes,
         recoil=recoil, defender_hp=defender.hp_percent, knockout=defender.hp == 0, attacker_fainted=attacker.hp == 0,
@@ -809,14 +822,7 @@ def _strike(turn: int, side: int, attacker: _Fighter, defender: _Fighter, move: 
     return action
 
 
-def _move_answers(move: Move, attacker: _Fighter, defender: _Fighter, result: MoveResult) -> tuple[Change, ...]:
-    """The move's own answers once its hits are over: on the Pokémon it hit (Knock Off), on the user (Fell Stinger),
-    once the move is over (Rollout), then on a Substitute it hit (Rapid Spin)."""
-    merged = result.merged()
-    answers = (hooks.move(move, "after_hit", attacker, defender, merged),
-               hooks.move(move, "after_move_secondary_self", attacker, defender, result),
-               hooks.move(move, "after_move", attacker, defender, result),
-               merged.on_substitute and hooks.move(move, "after_sub_damage", attacker, defender, merged))
+def _answers(*answers) -> tuple[Change, ...]:
     return tuple(change for answer in answers if answer for change in answer)
 
 
@@ -1024,11 +1030,9 @@ def _answer_hits(hit: "Hit") -> None:
     """The abilities and items that answer a move once its hits are over, the defender's first."""
     attacker, defender = hit.user, hit.target
     defender.ability_ignored = False
-    for hook in ("after_move_secondary", "damaging_hit"):
-        _announce(defender, hooks.ability(defender, hook, hit))
+    _announce(defender, hooks.ability(defender, "damaging_hit", hit))
     for hook in ("source_damaging_hit", "adds_secondary", "source_after_faint"):
         _announce(attacker, hooks.ability(attacker, hook, hit))
-    _announce(attacker, hooks.ability(attacker, "after_move_secondary_self", attacker, defender, hit.result))
     _announce(attacker, hooks.item(attacker, "adds_secondary", hit))
 
 

@@ -90,7 +90,6 @@ HIT_PHYSICAL = battle_data.args("abilities", "hit-boost", "physical")
 HALF_HP_RAISES = battle_data.args("abilities", "half-hp-boost", "raises")
 CHARGE_FLAG = battle_data.args("abilities", "charge-on-hit", "flag")
 CHARGE_STATE = "charge"
-CHARGE_TURNS = 2
 TAILWIND = "tailwind"
 TAILWIND_RAISES = battle_data.args("abilities", "tailwind-boost", "raises")
 STEADFAST_BAN = "flinch"

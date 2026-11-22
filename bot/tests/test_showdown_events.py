@@ -19,7 +19,7 @@ EVENT_HOOKS = {
         "condition:onTryPrimaryHit": {"takes_hit"},
         "condition:onDamage": {"endures"},
         "condition:onDamagingHit": set(),
-        "condition:onAfterMove": set(),
+        "condition:onAfterMove": {"after_own_move"},
     },
     "items": {
         "onAfterSubDamage": set(),
@@ -40,8 +40,6 @@ EVENT_HOOKS = {
 KNOWN_GAPS = {
     ("items", "air-balloon", "onAfterSubDamage"): "defect 6: a hit on a Substitute pops the balloon",
     ("moves", "core-enforcer", "onAfterSubDamage"): "defect 7: a hit on a Substitute still suppresses the ability",
-    ("moves", "charge", "condition:onAfterMove"): "defect 13: Charge lasts until its user's next Electric move, the "
-                                                  "bot counts two turn ends",
 }
 
 NO_HOOK_NEEDED = {

@@ -1,3 +1,6 @@
+import random
+from dataclasses import replace
+
 from status_moves import choose, data_move, pair, put, resolve, weather
 from test_battle import TACKLE, mon
 
@@ -67,14 +70,31 @@ def test_stockpile_stacks_three_times_and_no_retreat_once_per_entry():
     assert not resolve(user, foe, STOCKPILE, arena).failed
 
 
-def test_charge_doubles_electric_moves_until_the_end_of_the_next_turn():
+def test_charge_doubles_electric_moves_across_turn_ends_until_its_user_tries_one():
     user, foe, arena = fighters()
-    resolve(user, foe, CHARGE, arena)
+    act(user, foe, CHARGE, arena)
+    for _ in range(3):
+        battle._volatile_upkeep(1, (user, foe), [], None)
     assert battle._power(user, foe, THUNDERBOLT, None, 1.0) == 180
     assert battle._power(user, foe, TACKLE, None, 1.0) == TACKLE.power
-    for _ in range(2):
-        battle._volatile_upkeep(1, (user, foe), [], None)
+    act(user, foe, TACKLE, arena)
+    assert battle._power(user, foe, THUNDERBOLT, None, 1.0) == 180
+    act(user, foe, THUNDERBOLT, arena)
     assert battle._power(user, foe, THUNDERBOLT, None, 1.0) == 90
+
+
+def test_charge_ends_when_its_users_electric_move_cannot_be_used():
+    user, foe, arena = fighters()
+    act(user, foe, CHARGE, arena)
+    user.volatiles["flinch"] = True
+    assert act(user, foe, THUNDERBOLT, arena).blocked
+    assert battle._power(user, foe, THUNDERBOLT, None, 1.0) == 90
+
+
+def act(user, target, move, arena):
+    user.combatant = replace(user.combatant, moves=(move, *user.combatant.moves[1:]))
+    user.pp = [move.pp, *user.pp[1:]]
+    return battle._act(1, user.side, (user, target), 0, arena.weather, random.Random(0), arena)
 
 
 def test_take_heart_cures_and_plus_minus_needs_its_ability():

@@ -94,13 +94,17 @@ AbilityAct turn=8 side=0 pokemon='P322' ability='electromorphosis' effect='charg
 Action turn=8 side=0 attacker='P322' defender='P189' move='오버드라이브' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=80 move_id=786
 ItemEffect turn=8 side=0 pokemon='P322' item='flame-orb' effect='burn'
 SendOut turn=8 side=1 pokemon='P182' member=3
-Action turn=9 side=0 attacker='P322' defender='P182' move='오버드라이브' multiplier=2.0 defender_hp=21 attacker_hp=80 move_id=786
-Action turn=9 side=1 attacker='P182' defender='P322' move='드레인펀치' defender_hp=53 drained=True attacker_hp=33 move_id=409
+Action turn=9 side=0 attacker='P322' defender='P182' move='오버드라이브' multiplier=2.0 defender_hp=60 attacker_hp=80 move_id=786
+Action turn=9 side=1 attacker='P182' defender='P322' move='드레인펀치' defender_hp=53 drained=True attacker_hp=72 move_id=409
 AbilityAct turn=9 side=0 pokemon='P322' ability='electromorphosis' effect='charge'
 StatusDamage turn=9 side=0 pokemon='P322' hp=47 fainted=False
-Action turn=10 side=0 attacker='P322' defender='P182' move='오버드라이브' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=47 move_id=786
-result winner=0 turns=10 remaining=((0, 0, 47, None, None, None), (0, 0, 0, 0)) statuses=((None, None, 'burn', None, None, None), (None, None, None, None))
-won=True carry=null body=fce34b62e43e5006b38f63da369ad9783653bf621b53146a3de61e50d0b5a375
+Action turn=10 side=0 attacker='P322' defender='P182' move='오버드라이브' multiplier=2.0 defender_hp=3 attacker_hp=47 move_id=786
+Action turn=10 side=1 attacker='P182' defender='P322' move='드레인펀치' defender_hp=18 drained=True attacker_hp=17 move_id=409
+AbilityAct turn=10 side=0 pokemon='P322' ability='electromorphosis' effect='charge'
+StatusDamage turn=10 side=0 pokemon='P322' hp=12 fainted=False
+Action turn=11 side=0 attacker='P322' defender='P182' move='오버드라이브' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=12 move_id=786
+result winner=0 turns=11 remaining=((0, 0, 12, None, None, None), (0, 0, 0, 0)) statuses=((None, None, 'burn', None, None, None), (None, None, None, None))
+won=True carry=null body=fc21f8ee5a3ed0855132ae72ac8955ac0ef3e202be50d7789f95cf4ab1b6ecd3
 ## johto-5 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability='철가시' form_id=10079
 Action turn=1 side=0 attacker='P384' defender='P185' move='라이트닝드라이브' multiplier=2.0 defender_hp=15 move_id=879
@@ -513,31 +517,33 @@ AbilityAct turn=9 side=0 pokemon='P322' ability='electromorphosis' effect='charg
 Action turn=9 side=0 attacker='P322' defender='P171' move='오버드라이브' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=74 move_id=786
 ItemEffect turn=9 side=0 pokemon='P322' item='flame-orb' effect='burn'
 SendOut turn=9 side=1 pokemon='P181' member=5
-Action turn=10 side=0 attacker='P322' defender='P181' move='오버드라이브' defender_hp=49 attacker_hp=74 move_id=786
-Action turn=10 side=1 attacker='P181' defender='P322' move='10만볼트' defender_hp=58 attacker_hp=49 move_id=85
+Action turn=10 side=0 attacker='P322' defender='P181' move='탁쳐서떨구기' multiplier=2.0 defender_hp=72 attacker_hp=74 move_id=282
+Action turn=10 side=1 attacker='P181' defender='P322' move='10만볼트' defender_hp=58 attacker_hp=72 move_id=85
 AbilityAct turn=10 side=0 pokemon='P322' ability='electromorphosis' effect='charge'
 StatusDamage turn=10 side=0 pokemon='P322' hp=52 fainted=False
-Action turn=11 side=0 attacker='P322' defender='P181' move='오버드라이브' defender_hp=0 knockout=True attacker_hp=52 move_id=786
-result winner=0 turns=11 remaining=((0, 0, 52, None, None, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, 'burn', None, None, None), (None, None, None, None, None, None))
-won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 52, "status": "burn"}, {"hp": 100, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}] body=1ed7e5073b6853fae8395a76794e6274c98bfbd3d6fcb106209f73b5d5b8a7bc
-## johto-hideout-3 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 52, "status": "burn"}, {"hp": 100, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}]
-Action turn=1 side=1 attacker='P171' defender='P322' move='파도타기' defender_hp=21 move_id=57
-AbilityAct turn=1 side=0 pokemon='P322' ability='electromorphosis' effect='charge'
-Action turn=1 side=0 attacker='P322' defender='P171' move='죽기살기' defender_hp=20 attacker_hp=21 move_id=283
-StatusDamage turn=1 side=0 pokemon='P322' hp=15 fainted=False
-Action turn=2 side=1 attacker='P171' defender='P322' move='파도타기' defender_hp=0 knockout=True attacker_hp=20 move_id=57
-SendOut turn=2 side=0 pokemon='P613' member=1
-Action turn=3 side=1 attacker='P171' defender='P613' move='파도타기' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=20 move_id=57
-SendOut turn=3 side=0 pokemon='P524' member=2
-Action turn=4 side=1 attacker='P171' defender='P524' move='10만볼트' multiplier=2.0 defender_hp=37 attacker_hp=20 move_id=85
-Action turn=4 side=0 attacker='P524' defender='P171' move='다크홀' missed=True defender_hp=20 attacker_hp=37 move_id=464
-Action turn=5 side=1 attacker='P171' defender='P524' move='10만볼트' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=20 move_id=85
+Action turn=11 side=0 attacker='P322' defender='P181' move='오버드라이브' defender_hp=18 attacker_hp=52 move_id=786
+Action turn=11 side=1 attacker='P181' defender='P322' move='10만볼트' defender_hp=36 attacker_hp=18 move_id=85
+AbilityAct turn=11 side=0 pokemon='P322' ability='electromorphosis' effect='charge'
+StatusDamage turn=11 side=0 pokemon='P322' hp=30 fainted=False
+Action turn=12 side=0 attacker='P322' defender='P181' move='오버드라이브' defender_hp=0 knockout=True attacker_hp=30 move_id=786
+result winner=0 turns=12 remaining=((0, 0, 30, None, None, None), (0, 0, 0, 0, 0, 0)) statuses=((None, None, 'burn', None, None, None), (None, None, None, None, None, None))
+won=True carry=[{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 30, "status": "burn"}, {"hp": 100, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}] body=59b7af2ad20ed5fa21346acfe595582122322cd30da64eaa3f342fef73fe6eed
+## johto-hideout-3 party 0 carried [{"hp": 0, "status": null}, {"hp": 0, "status": null}, {"hp": 30, "status": "burn"}, {"hp": 100, "status": null}, {"hp": 100, "status": null}, {"hp": 100, "status": null}]
+Action turn=1 side=1 attacker='P171' defender='P322' move='파도타기' defender_hp=0 knockout=True move_id=57
+SendOut turn=1 side=0 pokemon='P613' member=1
+Action turn=2 side=1 attacker='P171' defender='P613' move='파도타기' multiplier=2.0 critical=True defender_hp=0 knockout=True move_id=57
+SendOut turn=2 side=0 pokemon='P524' member=2
+Action turn=3 side=1 attacker='P171' defender='P524' move='10만볼트' multiplier=2.0 defender_hp=33 move_id=85
+Action turn=3 side=0 attacker='P524' defender='P171' move='다크홀' changes=(Change(side=1, pokemon='P171', kind='sleep', stages=0),) attacker_hp=33 effect='inflict' move_id=464
+Action turn=4 side=1 attacker='P171' defender='P524' move='' defender_hp=33 blocked='sleep'
+Action turn=4 side=0 attacker='P524' defender='P171' move='문포스' defender_hp=86 attacker_hp=33 move_id=585
+Action turn=5 side=1 attacker='P171' defender='P524' move='10만볼트' multiplier=2.0 defender_hp=0 knockout=True recovered=('sleep',) attacker_hp=86 move_id=85
 SendOut turn=5 side=0 pokemon='P806' member=3
-Action turn=6 side=1 attacker='P171' defender='P806' move='냉동빔' multiplier=2.0 defender_hp=31 attacker_hp=20 move_id=58
-Action turn=6 side=0 attacker='P806' defender='P171' move='벌크업' changes=(Change(side=0, pokemon='P806', kind='attack', stages=1), Change(side=0, pokemon='P806', kind='defense', stages=1)) defender_hp=20 attacker_hp=31 effect='stages' move_id=339
-Action turn=7 side=1 attacker='P171' defender='P806' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=20 move_id=58
-result winner=1 turns=7 remaining=((0, 0, 0, 0), (20, None, None, None, None, None)) statuses=(('burn', None, None, None), (None, None, None, None, None, None))
-won=False carry=null body=9a5944df35cc201f4de94e2b7197d15322dca5c2feb14702a96de10608316688
+Action turn=6 side=1 attacker='P171' defender='P806' move='냉동빔' multiplier=2.0 defender_hp=31 attacker_hp=86 move_id=58
+Action turn=6 side=0 attacker='P806' defender='P171' move='벌크업' changes=(Change(side=0, pokemon='P806', kind='attack', stages=1), Change(side=0, pokemon='P806', kind='defense', stages=1)) defender_hp=86 attacker_hp=31 effect='stages' move_id=339
+Action turn=7 side=1 attacker='P171' defender='P806' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=86 move_id=58
+result winner=1 turns=7 remaining=((0, 0, 0, 0), (86, None, None, None, None, None)) statuses=(('burn', None, None, None), (None, None, None, None, None, None))
+won=False carry=null body=a33305056f60c5cccd9523d1f417a9a8173f9fe6b28c7e20fbe4dd6db0f078d8
 ## johto-hideout-4 party 0 carried null
 MegaEvolution turn=1 side=0 pokemon='P384' ability='철가시' form_id=10079
 Action turn=1 side=1 attacker='P171' defender='P384' move='냉동빔' multiplier=2.0 defender_hp=66 move_id=58

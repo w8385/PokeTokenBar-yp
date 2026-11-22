@@ -257,7 +257,7 @@ def _shifted(holder, raises, times=1) -> tuple:
 
 
 def _charged(name, holder):
-    holder.volatiles[abilities.CHARGE_STATE] = abilities.CHARGE_TURNS
+    holder.volatiles[abilities.CHARGE_STATE] = True
     return _act(name, holder, (), effect="charge")
 
 

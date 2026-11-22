@@ -137,7 +137,8 @@ class Stockpile(Stages):
 
 @register("moves", "charge")
 class Charge(Stages):
-    """Also doubles the user's Electric moves until the end of the next turn."""
+    """Also doubles the user's next Electric move: the charge ends once the user tries an Electric move, whether it
+    worked or not."""
 
     def wanted(self, move, team, foes, side, arena, weather):
         user = team.active
@@ -145,17 +146,15 @@ class Charge(Stages):
             other.damaging and other.type == "electric" for other in user.combatant.moves)
 
     def _after(self, move, user, side):
-        user.volatiles[self.key] = 2
+        user.volatiles[self.key] = True
         return ()
 
     def field_power(self, name, move, user, target):
         return CHARGE_POWER if move.type == "electric" else None
 
-    def volatile_end(self, name, fighter, side, turn, rng):
-        fighter.volatiles[name] -= 1
-        if fighter.volatiles[name] <= 0:
+    def after_own_move(self, name, fighter, move):
+        if move.type == "electric" and move.effect != name:
             del fighter.volatiles[name]
-        return None
 
 
 @register("moves", "no-retreat")
