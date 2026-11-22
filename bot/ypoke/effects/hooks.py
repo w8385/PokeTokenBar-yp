@@ -217,6 +217,8 @@ HOOKS = {
                           "(`dealt` is then 0), after recoil and drain",
     "after_move_as_target": "item: acts after a move dealt damage to its holder",
     "after_move": "move: acts once the damage is dealt; may return more changes",
+    "after_substitute_hit": "move: acts after `after_move` when a hit landed on the target's Substitute, which "
+                            "`dealt` leaves out (Showdown's onAfterSubDamage: Rapid Spin)",
     "pays_hp": "move: its user pays HP once the move is used, hit or miss (Steel Beam); returns the change",
     "faints_user":"move: its user faints once it is used",
     "prevents_self_ko": "ability: a foe's self-KO move fails on its holder and does not faint its user (Damp)",

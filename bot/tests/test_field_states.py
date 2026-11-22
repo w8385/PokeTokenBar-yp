@@ -2,6 +2,7 @@ import random
 from dataclasses import replace
 
 import pytest
+from attacks import attack
 from test_battle import TACKLE, mon
 
 from ypoke import battle, move_power, narration
@@ -36,6 +37,9 @@ BRICK_BREAK = Move("깨뜨리다", "fighting", 75, physical=True, accuracy=100, 
 RAPID_SPIN = Move("고속스핀", "normal", 50, physical=True, accuracy=100, effect="rapid-spin", id=229,
                   stat_changes=(("speed", 1),), stat_on_user=True, stat_chance=100)
 MORTAL_SPIN = Move("킬러스핀", "poison", 30, physical=True, accuracy=100, effect="mortal-spin", id=866)
+CEASELESS_EDGE = Move("비검천중파", "dark", 65, physical=True, accuracy=100, id=845)
+KNOCK_OFF = attack(282)
+DOLL = 10_000
 
 
 def status(name, key, kind="normal"):
@@ -188,11 +192,12 @@ def test_steel_roller_fails_with_no_terrain_and_ends_one_like_ice_spinner():
         assert (arena.terrain, arena.log[-1]) == (None, FieldEnd(0, "grassy-terrain", -1, move.name))
 
 
-def test_stone_axe_lays_stealth_rock_on_the_targets_side():
+@pytest.mark.parametrize(("move", "hazard"), [(STONE_AXE, "stealth-rock"), (CEASELESS_EDGE, "spikes")])
+def test_stone_axe_and_ceaseless_edge_lay_their_hazard_on_the_targets_side(move, hazard):
     arena = _Arena()
     user, target = put(mon("도끼", ("rock",)), arena), put(wall("과녁"), arena, 1)
-    resolve(user, target, STONE_AXE, arena)
-    assert arena.hazards == [{}, {"stealth-rock": 1}] and arena.log == [FieldStart(0, 1, "stealth-rock")]
+    resolve(user, target, move, arena)
+    assert arena.hazards == [{}, {hazard: 1}] and arena.log == [FieldStart(0, 1, hazard)]
 
 
 @pytest.mark.parametrize(("screen", "physical", "special"), [("reflect", 0.5, 1.0), ("light-screen", 1.0, 0.5),
@@ -307,6 +312,47 @@ def test_rapid_spin_and_mortal_spin_clear_their_users_hazards():
     arena.hazards[0]["sticky-web"] = 1
     action = resolve(spinner, target, MORTAL_SPIN, arena)
     assert arena.hazards == [{}, {"spikes": 1}] and Change(1, "과녁", "poison") in action.changes
+
+
+def behind_a_doll(arena, **rest):
+    target = put(wall("과녁", **rest), arena, 1)
+    target.volatiles["substitute"] = DOLL
+    return target
+
+
+@pytest.mark.parametrize("move", [RAPID_SPIN, MORTAL_SPIN])
+def test_rapid_spin_and_mortal_spin_clear_their_users_hazards_through_a_substitute(move):
+    arena = _Arena(hazards=[{"spikes": 2, "stealth-rock": 1}, {"spikes": 1}])
+    spinner, target = put(mon("팽이", ("normal",)), arena), behind_a_doll(arena)
+    action = resolve(spinner, target, move, arena)
+    assert action.hits == 1 and target.hp == target.max_hp and target.volatiles["substitute"] < DOLL
+    assert arena.hazards == [{}, {"spikes": 1}] and target.status is None
+
+
+@pytest.mark.parametrize("move", [STEEL_ROLLER, ICE_SPINNER])
+def test_steel_roller_and_ice_spinner_end_the_terrain_through_a_substitute(move):
+    arena = _Arena(terrain="grassy-terrain", terrain_turns=5)
+    user, target = put(mon("롤러", ("steel",)), arena), behind_a_doll(arena)
+    action = resolve(user, target, move, arena)
+    assert action.hits == 1 and target.hp == target.max_hp
+    assert (arena.terrain, arena.log[-1]) == (None, FieldEnd(0, "grassy-terrain", -1, move.name))
+
+
+@pytest.mark.parametrize(("move", "hazard"), [(STONE_AXE, "stealth-rock"), (CEASELESS_EDGE, "spikes")])
+def test_stone_axe_and_ceaseless_edge_lay_their_hazard_through_a_substitute(move, hazard):
+    arena = _Arena()
+    user, target = put(mon("도끼", ("rock",)), arena), behind_a_doll(arena)
+    action = resolve(user, target, move, arena)
+    assert action.hits == 1 and target.hp == target.max_hp
+    assert arena.hazards == [{}, {hazard: 1}] and FieldStart(0, 1, hazard) in arena.log
+
+
+def test_knock_off_leaves_the_item_of_a_target_behind_a_substitute():
+    arena = _Arena()
+    user, target = put(mon("도둑", ("dark",)), arena), behind_a_doll(arena)
+    target.item = "leftovers"
+    action = resolve(user, target, KNOCK_OFF, arena)
+    assert action.hits == 1 and target.item == "leftovers"
 
 
 def test_defog_clears_the_targets_side_states_both_sides_hazards_and_the_terrain():
