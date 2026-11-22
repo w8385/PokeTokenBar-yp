@@ -1,0 +1,67 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "scale-shot",
+    "attacker": {"species": "Snorlax", "move": "scale-shot"},
+    "defender": {"species": "Snorlax"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 0, "kind": "boost", "stat": "defense", "stages": -1, "from": null},
+    {"side": 0, "kind": "boost", "stat": "speed", "stages": 1, "from": null}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {"defense": -1, "speed": 1},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": -1,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}

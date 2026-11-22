@@ -1,0 +1,59 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "air-balloon-substitute",
+    "attacker": {"species": "Snorlax", "move": "tackle"},
+    "defender": {"species": "Snorlax", "substitute": "intact", "item": "air-balloon"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "item", "item": null, "lost": "air-balloon", "from": null}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": ["substitute"],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}

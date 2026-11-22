@@ -1,0 +1,12 @@
+{
+  "name": "ypoke-showdown-recorder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build-showdown": "cd node_modules/pokemon-showdown && node build",
+    "record": "node record.mjs"
+  },
+  "dependencies": {
+    "pokemon-showdown": "https://codeload.github.com/smogon/pokemon-showdown/tar.gz/5b88c476113d51a939bddbcd00b5cd182a5d8058"
+  }
+}

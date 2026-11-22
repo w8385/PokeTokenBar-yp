@@ -1,0 +1,61 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "blunder-policy-miss",
+    "chance": false,
+    "attacker": {"species": "Snorlax", "item": "blunder-policy", "move": "focus-blast"},
+    "defender": {"species": "Snorlax"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    }
+  ],
+  "events": [
+    {"side": 0, "kind": "miss"},
+    {"side": 0, "kind": "item", "item": null, "lost": "blunder-policy", "from": null},
+    {"side": 0, "kind": "boost", "stat": "speed", "stages": 2, "from": null}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {"speed": 2},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": 0,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}

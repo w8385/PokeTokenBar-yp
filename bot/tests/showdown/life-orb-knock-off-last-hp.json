@@ -1,0 +1,62 @@
+{
+  "showdown": "5b88c476113d51a939bddbcd00b5cd182a5d8058",
+  "scenario": {
+    "name": "life-orb-knock-off-last-hp",
+    "attacker": {"species": "Snorlax", "item": "life-orb", "move": "knock-off", "hp": 1},
+    "defender": {"species": "Snorlax", "item": "leftovers"}
+  },
+  "pokemon": [
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    },
+    {
+      "name": "Snorlax",
+      "types": ["normal"],
+      "weight": 4600,
+      "base": [160, 110, 65, 65, 110, 30],
+      "forms": []
+    }
+  ],
+  "events": [
+    {"side": 1, "kind": "crit"},
+    {"side": 1, "kind": "hp", "sign": -1, "from": null},
+    {"side": 1, "kind": "item", "item": null, "lost": "leftovers", "from": "move: Knock Off"},
+    {"side": 0, "kind": "hp", "sign": -1, "from": "item: Life Orb"},
+    {"side": 0, "kind": "faint"}
+  ],
+  "end": {
+    "sides": [
+      {
+        "hp": -1,
+        "fainted": true,
+        "item": "life-orb",
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      },
+      {
+        "hp": -1,
+        "fainted": false,
+        "item": null,
+        "status": null,
+        "boosts": {},
+        "volatiles": [],
+        "ability": null,
+        "types": ["normal"],
+        "form": "base"
+      }
+    ],
+    "hazards": [
+      {},
+      {}
+    ],
+    "terrain": null
+  }
+}
