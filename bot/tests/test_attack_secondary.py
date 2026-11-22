@@ -90,5 +90,5 @@ def test_scald_thaws_its_frozen_user_where_surf_stays_frozen():
 def test_scald_thaws_a_frozen_target():
     user, foe, arena = duel()
     foe.status = "freeze"
-    changes = battle._secondary_effects(0, SCALD, user, foe, draws())[0]
+    changes = battle._secondary_effects(0, SCALD, user, foe, draws(), True)[0]
     assert foe.status is None and [change.kind for change in changes] == ["thaw"]

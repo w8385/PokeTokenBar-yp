@@ -20,8 +20,6 @@ OPEN_DEFECTS = {
     "double-kick-stamina-breaks-doll": 5, "twineedle-breaks-doll": 5,
     "air-balloon-substitute": 6,
     "core-enforcer-substitute": 7,
-    "kee-berry-sheer-force": 8, "color-change-sheer-force": 8,
-    "tri-attack-sheer-force": 9, "scale-shot-sheer-force": 9,
     "parental-bond-crunch": 10,
     "blunder-policy-type-immune": 11,
 }

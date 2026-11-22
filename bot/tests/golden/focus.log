@@ -21853,9 +21853,9 @@ result winner=0 turns=17 remaining=((32,), (0,)) statuses=((None,), (None,))
 side=0 P6 Lv50 ('fighting',) item=life-orb ability=sheer-force nature=None moves=[53, 58] mega=None
 side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
 Action turn=1 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=25 move_id=58
-Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=90 attacker_hp=25 move_id=33
-Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=90 move_id=58
-result winner=0 turns=2 remaining=((90,), (0,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=89 attacker_hp=25 move_id=33
+Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=89 move_id=58
+result winner=0 turns=2 remaining=((89,), (0,)) statuses=((None,), (None,))
 ## focus sheer-force 1
 side=0 P6 Lv50 ('fighting',) item=life-orb ability=sheer-force nature=None moves=[53, 58] mega=None
 side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
@@ -21874,16 +21874,16 @@ result winner=0 turns=2 remaining=((91,), (0,)) statuses=((None,), (None,))
 side=0 P6 Lv50 ('fighting',) item=life-orb ability=sheer-force nature=None moves=[53, 58] mega=None
 side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
 Action turn=1 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=20 move_id=58
-Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=92 attacker_hp=20 move_id=33
-Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=92 move_id=58
-result winner=0 turns=2 remaining=((92,), (0,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=91 attacker_hp=20 move_id=33
+Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=91 move_id=58
+result winner=0 turns=2 remaining=((91,), (0,)) statuses=((None,), (None,))
 ## focus sheer-force 4
 side=0 P6 Lv50 ('fighting',) item=life-orb ability=sheer-force nature=None moves=[53, 58] mega=None
 side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
 Action turn=1 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=10 move_id=58
-Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' critical=True defender_hp=86 attacker_hp=10 move_id=33
-Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=86 move_id=58
-result winner=0 turns=2 remaining=((86,), (0,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=92 attacker_hp=10 move_id=33
+Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=92 move_id=58
+result winner=0 turns=2 remaining=((92,), (0,)) statuses=((None,), (None,))
 ## focus sheer-force 5
 side=0 P6 Lv50 ('fighting',) item=life-orb ability=sheer-force nature=None moves=[53, 58] mega=None
 side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
@@ -21895,16 +21895,16 @@ result winner=0 turns=2 remaining=((91,), (0,)) statuses=((None,), (None,))
 side=0 P6 Lv50 ('fighting',) item=life-orb ability=sheer-force nature=None moves=[53, 58] mega=None
 side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
 Action turn=1 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=14 move_id=58
-Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=90 attacker_hp=14 move_id=33
-Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=90 move_id=58
-result winner=0 turns=2 remaining=((90,), (0,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' critical=True defender_hp=87 attacker_hp=14 move_id=33
+Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=87 move_id=58
+result winner=0 turns=2 remaining=((87,), (0,)) statuses=((None,), (None,))
 ## focus sheer-force 7
 side=0 P6 Lv50 ('fighting',) item=life-orb ability=sheer-force nature=None moves=[53, 58] mega=None
 side=1 P143 Lv50 ('fairy', 'dragon') item=None ability=None nature=None moves=[33] mega=None
 Action turn=1 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=34 move_id=58
-Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=91 attacker_hp=34 move_id=33
-Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=91 move_id=58
-result winner=0 turns=2 remaining=((91,), (0,)) statuses=((None,), (None,))
+Action turn=1 side=1 attacker='P143' defender='P6' move='몸통박치기' defender_hp=89 attacker_hp=34 move_id=33
+Action turn=2 side=0 attacker='P6' defender='P143' move='냉동빔' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=89 move_id=58
+result winner=0 turns=2 remaining=((89,), (0,)) statuses=((None,), (None,))
 ## focus gems 0
 side=0 P143 Lv50 ('fairy', 'dragon') item=normal-gem ability=None nature=None moves=[33, 52] mega=None
 side=0 P6 Lv50 ('fighting',) item=fire-gem ability=None nature=None moves=[53, 33] mega=None

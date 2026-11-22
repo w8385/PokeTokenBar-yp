@@ -60,15 +60,6 @@ NO_HOOK_NEEDED = {
     ("abilities", "rock-head", "onDamage"): "recoil: `blocks_recoil`",
 }
 
-SHEER_FORCE_GAPS = {
-    "scale-shot": "defect 9: Showdown's selfBoost is no secondary, so Sheer Force does not boost it",
-    **{slug: "defect 9: Showdown's secondary, so Sheer Force boosts it and drops the effect" for slug in (
-        "alluring-voice", "anchor-shot", "barb-barrage", "burning-jealousy", "dire-claw", "eerie-spell",
-        "psychic-noise", "salt-cure", "secret-power", "sparkling-aria", "spirit-shackle", "syrup-bomb",
-        "throat-chop", "tri-attack", "zippy-zap",
-    )},
-}
-
 NOT_IN_SHOWDOWN = {
     ("items", "stellar-crystal"), ("items", "teal-mask"), ("abilities", "embody-aspect"),
 }
@@ -108,7 +99,7 @@ def test_sheer_force_boosts_the_moves_with_showdown_secondaries():
             bot.add(found["slug"])
         if found["secondaries"]:
             showdown.add(found["slug"])
-    assert bot ^ showdown == set(SHEER_FORCE_GAPS)
+    assert bot == showdown
 
 
 def _events():

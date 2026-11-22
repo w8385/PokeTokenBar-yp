@@ -8,7 +8,6 @@ from dataclasses import replace
 from ypoke import abilities, battle, items
 from ypoke import field_states as fs
 from ypoke.effects import Handler, hooks, register, stats
-from ypoke.effects.ability_damage import sheer_forced_by
 from ypoke.effects.item_moves import burdens
 from ypoke.effects.moves import StatusMove
 from ypoke.type_chart import effectiveness
@@ -372,7 +371,7 @@ class RapidSpin(Handler):
             self.after_sub_damage(move, user, target, hit)
 
     def after_sub_damage(self, move, user, target, hit):
-        if user.hp > 0 and not sheer_forced_by(user, move):
+        if user.hp > 0:
             _spun_free(user, move)
 
 
@@ -381,7 +380,7 @@ class MortalSpin(RapidSpin):
     """Its poison is not in PokéAPI's data, so it lands here, after the hit."""
 
     def after_hit(self, move, user, target, hit):
-        if not hit.reached or sheer_forced_by(user, move):
+        if not hit.reached:
             return None
         self.after_sub_damage(move, user, target, hit)
         if (target.hp == 0 or not battle._open_to("poison", target, not battle._infiltrates(user), user)
@@ -459,7 +458,7 @@ class HazardOnHit(FieldMove):
 
     def after_sub_damage(self, move, user, target, hit):
         arena, hazard = user.arena, fs.HAZARD_ON_HIT[self.key]
-        if user.hp > 0 and arena is not None and not sheer_forced_by(user, move) and _lay(arena, target.side, hazard):
+        if user.hp > 0 and arena is not None and _lay(arena, target.side, hazard):
             arena.log.append(battle.FieldStart(arena.turn, target.side, hazard))
 
 
