@@ -5,16 +5,32 @@ extension CompanionStore {
 
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
-        ItemKind.listOrder
+        let sold = ItemKind.listOrder
             .filter { $0.shopPrice != nil && !$0.isEvolutionStone && !$0.isEvolutionHeld && !$0.isLinkingCord
                 && $0.category != .megaStone }
-            .sorted { a, b in
-                // 구매 완료한 보유형(이로치 부적 등)은 맨 아래로 — 재구매 불가라 위에 있을 이유가 없다.
-                let aDone = a.isBoughtOnce && itemCount(a) > 0
-                let bDone = b.isBoughtOnce && itemCount(b) > 0
-                if aDone != bDone { return !aDone }
-                return (a.shopPrice ?? 0) < (b.shopPrice ?? 0)   // 나머지는 가격 저렴한 순
-            }
+        return shopOrdered(sold.map { ShopEntry.item($0) }).compactMap { entry in
+            if case .item(let kind) = entry { kind } else { nil }
+        }
+    }
+
+    /// Price order, except that a family (`ItemKind.shopFamilies`) stays together where its cheapest member would sit,
+    /// the members in table order. Price ties and the order inside a family follow the order `entries` come in.
+    /// A bought-once item already owned (the Shiny Charm) goes last: it cannot be bought again.
+    private func shopOrdered(_ entries: [ShopEntry]) -> [ShopEntry] {
+        func family(_ entry: ShopEntry) -> Int? {
+            if case .item(let kind) = entry { kind.shopFamily } else { nil }
+        }
+        var cheapest: [Int: (price: Int, index: Int)] = [:]
+        for (index, entry) in entries.enumerated() {
+            guard let id = family(entry) else { continue }
+            let known = cheapest[id] ?? (entry.price, index)
+            cheapest[id] = (min(known.price, entry.price), min(known.index, index))
+        }
+        let keys = entries.enumerated().map { index, entry -> [Int] in
+            let anchor = family(entry).flatMap { cheapest[$0] } ?? (entry.price, index)
+            return [isPurchasedPassive(entry) ? 1 : 0, anchor.price, anchor.index, index]
+        }
+        return entries.indices.sorted { keys[$0].lexicographicallyPrecedes(keys[$1]) }.map { entries[$0] }
     }
 
     /// Every battle item by effect group. Metal Coat, Razor Claw and the Stellar Crystal also stay in their own tab.
@@ -32,7 +48,8 @@ extension CompanionStore {
     var shopAllViewEvolutionItems: [ItemKind] { shopEvolutionItems.filter { $0.battleGroup == nil } }
 
     /// 상점 표시 순서 — 판매 아이템 + 알 3종을 하나의 가격 오름차순 목록으로 병합.
-    /// 정렬 규칙은 purchasableItems 와 동일: 구매 완료한 보유형은 맨 아래, 나머지는 가격 저렴한 순.
+    /// 정렬 규칙은 purchasableItems 와 동일(`shopOrdered`): 구매 완료한 보유형은 맨 아래, 나머지는 가격 저렴한 순이고
+    /// 가족(특성캡슐·특성패치, 은색·금색 병뚜껑 등)은 가장 싼 멤버 자리에 붙는다.
     /// 알은 즉시 액션이라 '보유' 개념이 없어 가격 순서에만 참여한다.
     ///
     /// 알은 활성 포켓몬이 없어도(알 상태) 목록에 남는다 — 구매는 `canBuyEgg` 의 `hasActive` 게이트가
@@ -46,12 +63,7 @@ extension CompanionStore {
     var shopEntries: [ShopEntry] {
         var entries: [ShopEntry] = purchasableItems.map { ShopEntry.item($0) }
         entries += FreshEgg.shopTiers.map { ShopEntry.egg($0) }
-        return entries.sorted { a, b in
-            let aDone = isPurchasedPassive(a)
-            let bDone = isPurchasedPassive(b)
-            if aDone != bDone { return !aDone }
-            return price(of: a) < price(of: b)
-        }
+        return shopOrdered(entries)
     }
 
     /// 분류 탭 필터 — nil 은 전체. 순서는 shopEntries 그대로다(가격 오름차순 규칙 유지). 진화의 돌은

@@ -37,6 +37,11 @@ final class ItemOrderShotTests: XCTestCase {
         try await capture(OrderMap(l: l, blocks: [(l.categoryAll, bagFlat)]
                 + store.ownedBattleSections.map { (l.battleItemGroupName($0.group), $0.kinds) }, columns: 1),
                           width: 300, height: 420, to: dir.appendingPathComponent("bag-order.png"))
+        let growth = store.shopEntries(in: .growth).compactMap { entry -> ItemKind? in
+            if case .item(let kind) = entry { kind } else { nil }
+        }
+        try await capture(OrderMap(l: l, blocks: [(l.categoryName(.growth), growth)], columns: 1),
+                          width: 300, height: 260, to: dir.appendingPathComponent("shop-growth-order.png"))
         try await capture(OrderMap(l: l, blocks: [(l.categoryName(.evolution), store.shopEvolutionItems)], columns: 3),
                           width: 720, height: 420, to: dir.appendingPathComponent("shop-evolution-order.png"))
         let sections = store.shopBattleSections

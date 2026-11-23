@@ -42,6 +42,8 @@ final class ShopCategoryScreenshotTests: XCTestCase {
 
         try await capture(ShopView(store: store, nav: nav).environment(store),
                           to: directory.appendingPathComponent("shop-all.png"))
+        try await capture(ShopView(store: store, nav: nav, initialCategory: ItemCategory.growth).environment(store),
+                          to: directory.appendingPathComponent("shop-growth.png"))
         try await capture(ShopView(store: store, nav: nav, initialCategory: ItemCategory.egg).environment(store),
                           to: directory.appendingPathComponent("shop-eggs.png"))
         try await capture(ShopView(store: store, nav: nav, initialCategory: ItemCategory.evolution).environment(store),
