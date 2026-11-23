@@ -123,7 +123,7 @@ extension CompanionStore {
 
     /// Draws only for lines with forms, so other species keep their random sequence.
     func rollLineForm(baseID: Int) -> PokemonForm? {
-        let forms = PokemonForm.lineForms(baseID: baseID)
+        let forms = PokemonForm.hatchForms(baseID: baseID)
         guard !forms.isEmpty else { return nil }
         return PokemonForm.roll(rng.next(), among: forms, collected: state.collectedLineForms(baseID: baseID))
     }

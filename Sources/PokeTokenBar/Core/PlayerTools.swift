@@ -84,6 +84,7 @@ struct FormBattleData: Sendable, Equatable {
         10249: .init(["fairy", "flying"], [74, 115, 110, 135, 100, 46], ability: "overcoat"),
         10022: .init(["dragon", "ice"], [125, 170, 100, 120, 90, 95], ability: "teravolt"),
         10023: .init(["dragon", "ice"], [125, 120, 90, 170, 100, 95], ability: "turboblaze"),
+        10191: .init(["fighting", "water"], [100, 130, 100, 63, 60, 97], ability: "unseen-fist"),
         10193: .init(["psychic", "ice"], [100, 165, 150, 85, 130, 50], ability: "as-one-glastrier"),
         10194: .init(["psychic", "ghost"], [100, 85, 80, 165, 100, 150], ability: "as-one-spectrier"),
     ]

@@ -1339,6 +1339,8 @@ struct CompanionState: Codable, Sendable {
     var idleHintDismissed = false
     /// A new save never had the leftovers; one without the field decodes as false.
     var leftoverEvolutionItemsReturned = true
+    /// A save from before evolution kept Urshifu's style lacks the field and decodes as false.
+    var urshifuStylesRepaired = true
     /// Gym badges, Hall of Fame and hideout marks; a save from before gyms has none.
     var gymBadges = GymBadges()
 
@@ -1413,6 +1415,7 @@ struct CompanionState: Codable, Sendable {
         lastUsageAt        = c.lenientOptional(Date.self, forKey: .lastUsageAt)
         idleHintDismissed  = c.lenient(Bool.self, forKey: .idleHintDismissed, default: false)
         leftoverEvolutionItemsReturned = c.lenient(Bool.self, forKey: .leftoverEvolutionItemsReturned, default: false)
+        urshifuStylesRepaired = c.lenient(Bool.self, forKey: .urshifuStylesRepaired, default: false)
         gymBadges          = c.lenient(GymBadges.self, forKey: .gymBadges, default: GymBadges())
     }
 
@@ -1465,6 +1468,25 @@ struct CompanionState: Codable, Sendable {
             heldItems[id] = nil
             inventory[key, default: 0] += 1
         }
+    }
+
+    /// Once per save from before evolution kept Urshifu's style. Only a spent Scroll of Waters, no Scroll of Darkness
+    /// ever owned and a single Urshifu settle it: that Urshifu is Rapid Strike. Anything else stays as it was.
+    mutating func repairUrshifuStyles() {
+        guard !urshifuStylesRepaired else { return }
+        urshifuStylesRepaired = true
+        let urshifu = 892
+        guard inventory[ItemKind.scrollOfWaters.rawValue] == 0, inventory[ItemKind.scrollOfDarkness.rawValue] == nil,
+              let rapid = EvolutionRules.rule(for: urshifu)?.itemForms[.scrollOfWaters] else { return }
+        func reached(_ mon: MonState) -> Bool { mon.pathIDs.prefix(mon.stageIndex + 1).contains(urshifu) }
+        var ids = Set(dex.filter { $0.finalID == urshifu }.map(\.id))
+        ids.formUnion(storedLines.filter { reached($0.value.mon) }.keys)
+        let activeID = active.flatMap { reached($0) ? $0.profile?.instanceID ?? "" : nil }
+        if let activeID { ids.insert(activeID) }
+        guard ids.count == 1, let id = ids.first else { return }
+        if id == activeID { active?.form = rapid }
+        storedLines[id]?.mon.form = rapid
+        for index in dex.indices where dex[index].id == id && dex[index].finalID == urshifu { dex[index].form = rapid }
     }
 
     /// A released, traded-away or repeated holder gives its Exp. Share back to the bag.

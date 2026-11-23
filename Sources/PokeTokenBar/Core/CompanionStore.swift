@@ -354,6 +354,7 @@ final class CompanionStore {
         // (디코드는 *성공*하므로 위의 .corrupt 복구도 발동하지 않는다). 여기서 걸면 자가 복구된다.
         state = SaveTransfer.sanitized(s)
         state.returnLeftoverEvolutionItems()
+        state.repairUrshifuStyles()
     }
     func save() {
         if deferTimeSaves {

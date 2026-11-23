@@ -89,7 +89,7 @@ Steps the games list with no condition at all keep growing by XP: Manaphy (#490)
 | Runerigus (#867) | Take at least 49 damage in battle, then level up | Lose 1 battles **or** Fill the growth bar to 200% | Mapped |
 | Alcremie (#869) | Level up while holding Strawberry Sweet; Hold a sweet and spin around | Hold Strawberry Sweet + Spin the Home sprite (right-click it) | Mapped (form not drawn in the dex) |
 | Frosmoth (#873) | Level up with high friendship; Level up at night | Pet it 30 times + At night | Mapped |
-| Urshifu (#892) | Clear the Tower of Darkness or the Tower of Waters; Use Scroll of Darkness; Use Scroll of Waters | Choose a tower **or** Use Scroll of Darkness **or** Use Scroll of Waters | Mapped (form not drawn in the dex) |
+| Urshifu (#892) | Clear the Tower of Darkness or the Tower of Waters; Use Scroll of Darkness; Use Scroll of Waters | Choose a tower **or** Use Scroll of Darkness **or** Use Scroll of Waters | Mapped |
 | Wyrdeer (#899) | Use Psyshield Bash 20 times, then level up | Fight 20 battles **or** Fill the growth bar to 200% | Mapped |
 | Kleavor (#900) | Use Black Augurite | Use Black Augurite | Mapped |
 | Ursaluna (#901) | Use Peat Block; Use it on a full-moon night | Use Peat Block + At night | Mapped |

@@ -252,7 +252,7 @@ extension CompanionStore {
         spendEvolutionRequirements(of: rest, into: next.speciesID, instanceID: a.profile?.instanceID)
         state.inventory[kind.rawValue] = itemCount(kind) - 1
         replanEvolution(from: node, to: next, base: a)
-        completeEvolution(of: a, to: next, in: line, usedAtStage: a.usedAtStage)
+        completeEvolution(of: a, to: next, through: rest + [.bag(kind)], in: line, usedAtStage: a.usedAtStage)
         applyUsage(0)   // 이어받은 XP가 다음 임계를 넘었으면 이어서 진화하고, 저장한다.
         return .evolved
     }

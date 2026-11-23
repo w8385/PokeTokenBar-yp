@@ -49,7 +49,7 @@ extension CompanionStore {
         isHatchRetryDelayed = false
         state.eggTier = tier          // 등급 보증(nil = 보증 없음)
         state.pendingHatchID = pendingHatchID   // nil 이면 새 보증으로 처음부터 롤(활성 포켓몬이 있는 동안엔 원래 비어 있다)
-        state.pendingForm = pendingHatchID.flatMap { shiny ? PokemonForm.lineForms(baseID: $0).first : rollLineForm(baseID: $0) }
+        state.pendingForm = pendingHatchID.flatMap { shiny ? PokemonForm.hatchForms(baseID: $0).first : rollLineForm(baseID: $0) }
         state.scoutedEgg = pendingHatchID != nil
         state.shinyEgg = shiny
         prefetchedLineID = nil

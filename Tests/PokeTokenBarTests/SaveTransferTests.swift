@@ -569,7 +569,7 @@ final class SaveTransferTests: XCTestCase {
                                      "collectedFinals", "inventory", "heldItems",
                                      "notifiedDexCompletions", "dexCompletionsSeeded", "clickGrowth",
                                      "friendEntryIDs", "rewardedDexRegions", "scoutDraws", "scoutedEgg",
-                                     "shinyEgg", "leftoverEvolutionItemsReturned",
+                                     "shinyEgg", "leftoverEvolutionItemsReturned", "urshifuStylesRepaired",
                                      "raisedEntryID", "parkedSpentTokens",
                                      // growthMode·timeCredit = 산 지갑과 같은 진행. tokenModeSince·lastUsageAt·idleHintDismissed 는
                                      // 안내 문구 타이밍뿐이라 따라가도 해가 없다.

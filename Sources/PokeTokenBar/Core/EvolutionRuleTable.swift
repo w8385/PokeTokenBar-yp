@@ -114,12 +114,21 @@ extension EvolutionRules {
              [[.bag(.unremarkableTeacup)], [.bag(.masterpieceTeacup)]]),
         make(901, ["use-item:peat-block+time_of_day"], [.useItem("peat-block"), .fullMoon],
              [[.bag(.peatBlock), .time(.night)]]),
-        make(892, ["tower-of-darkness", "tower-of-waters", "use-item:scroll-of-darkness", "use-item:scroll-of-waters"],
-             [.tower, .useItem("scroll-of-darkness"), .useItem("scroll-of-waters")],
-             [[.towerChosen], [.bag(.scrollOfDarkness)], [.bag(.scrollOfWaters)]], formNotShown: true),
+        urshifu,
         make(809, ["meltan-candies"], [.candies(400)], [[.candies(5)]]),
         make(1000, ["gimmighoul-coins"], [.coins(999)], [[.spent(PokemonBalance.Price.gimmighoulSpend)]]),
     ]
+
+    private static let urshifu: EvolutionRule = {
+        var rule = make(892, ["tower-of-darkness", "tower-of-waters", "use-item:scroll-of-darkness",
+                              "use-item:scroll-of-waters"],
+                        [.tower, .useItem("scroll-of-darkness"), .useItem("scroll-of-waters")],
+                        [[.towerChosen], [.bag(.scrollOfDarkness)], [.bag(.scrollOfWaters)]])
+        let single = PokemonForm("single-strike"), rapid = PokemonForm("rapid-strike")
+        rule.itemForms = [.scrollOfDarkness: single, .scrollOfWaters: rapid]
+        rule.towerForms = ["darkness": single, "waters": rapid]
+        return rule
+    }()
 
     private static let battles: [EvolutionRule] = [
         make(865, ["three-critical-hits"], [.criticalHits(3)], [[.battles(.won, 3)], stretch]),

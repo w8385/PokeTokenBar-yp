@@ -321,12 +321,14 @@ extension CompanionStore {
 
     /// The same individual (id, profile, shininess, held item) becomes the next species; the old one stays in
     /// its chain, so the Pokédex still counts it.
-    func evolveGraduate(at index: Int, to speciesID: Int, in line: EvoLine, progress: EvolutionProgress,
-                                celebrate: Bool) {
+    func evolveGraduate(at index: Int, to speciesID: Int, through path: [EvolutionRequirement], in line: EvoLine,
+                        progress: EvolutionProgress, celebrate: Bool) {
         var entry = state.dex[index]
         let fromID = entry.finalID
+        let fromForm = entry.form
         if !entry.chainOrder.contains(speciesID) { entry.chainOrder.append(speciesID) }
         entry.finalID = speciesID
+        if let form = EvolutionRules.rule(for: speciesID)?.form(through: path, progress: progress) { entry.form = form }
         Self.mergeNames(of: line, into: &entry)
         if let details = pokemonDetailsByID[speciesID] {
             entry.profile?.enrich(with: details)
@@ -337,7 +339,7 @@ extension CompanionStore {
         state.collectedFinals.insert("\(entry.baseID):\(speciesID)")
         state.graduateEvolution[entry.id] = progress.nextForm(spentBaseline: state.spentTokens)
         state.reconcileRepresentativeSelection()
-        let oldName = formDisplayName(line.localizedName(fromID, state.language), speciesID: fromID, form: entry.form)
+        let oldName = formDisplayName(line.localizedName(fromID, state.language), speciesID: fromID, form: fromForm)
         let newName = formDisplayName(line.localizedName(speciesID, state.language), speciesID: speciesID, form: entry.form)
         if celebrate {
             justEvolvedTo = newName
