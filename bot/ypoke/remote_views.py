@@ -130,8 +130,7 @@ def _bag(view: View) -> Screen:
         lines.append(OLD_APP_BAG)
     else:
         lines.append(f"쓸 수 있는 토큰: {view.wallet:,}" if view.wallet is not None else "쓸 수 있는 토큰: 알 수 없음")
-        items = sorted(view.bag, key=lambda line: line["name"])
-        lines += [f"• {line['name']} ×{line['count']}" for line in items] or ["가방이 비어 있어요."]
+        lines += [f"• {line['name']} ×{line['count']}" for line in view.bag] or ["가방이 비어 있어요."]
     lines.append("*대기 중인 슬랙 작업*")
     lines += [f"{index}. {describe(op.kind, op.payload)}" for index, op in enumerate(view.pending, 1)] or ["없어요."]
     return text_screen(lines, view)

@@ -391,6 +391,16 @@ def test_bag_view_shows_the_wallet_after_pending_spends_the_bag_and_the_pending_
     assert "*대기 중인 슬랙 작업*\n1. 레벨 +3" in text
 
 
+def test_bag_view_keeps_the_apps_item_order_not_the_alphabet(store):
+    bag = [{"key": "rareCandy", "name": "이상한사탕", "count": 3}, {"key": "expShare", "name": "학습장치", "count": 1},
+           {"key": "mint", "name": "민트", "count": 2}, {"key": "fireStone", "name": "불꽃의돌", "count": 1}]
+    store.issue_token("UA")
+    store.save_party("UA", [member(7, 20)], remote=normalize_remote({**REMOTE, "bag": bag}))
+    text = text_of(handler(store).handle("UA", "", BAG_COMMAND))
+    shown = [line.removeprefix("• ").split(" ×")[0] for line in text.split("\n") if line.startswith("• ")]
+    assert shown == [line["name"] for line in bag]
+
+
 @pytest.mark.parametrize("command", REMOTE_COMMANDS)
 def test_every_remote_command_before_any_upload_says_what_is_missing(store, command):
     assert handler(store).handle("UA", "", command).text == NOT_LINKED
