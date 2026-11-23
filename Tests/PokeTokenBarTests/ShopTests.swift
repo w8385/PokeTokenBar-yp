@@ -211,11 +211,10 @@ final class ShopTests: XCTestCase {
 
     // MARK: 정렬 (가격 저렴한 순 + 구매 완료 보유형 맨 아래)
 
-    /// 상점 목록은 가격 오름차순.
-    static let cheapItems: [ItemKind] = [.mint, .mirrorHerb, .abilityCapsule, .bottleCap, .rareCandy, .revealGlass,
-                                         .dnaSplicers, .reinsOfUnity, .abilityPatch, .goldBottleCap]
-    static let cheapEntries: [ShopEntry] = cheapItems.dropLast().map { .item($0) }
-        + [.egg(nil), .item(.goldBottleCap), .egg(.uncommon)]
+    /// 상점 목록은 가격 오름차순이고, 가족(`ItemKind.shopFamilies`)은 가장 싼 멤버 자리에 붙어 있다.
+    static let cheapItems: [ItemKind] = [.mint, .mirrorHerb, .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap,
+                                         .rareCandy, .revealGlass, .dnaSplicers, .reinsOfUnity]
+    static let cheapEntries: [ShopEntry] = cheapItems.map { .item($0) } + [.egg(nil), .egg(.uncommon)]
 
     func testItemsSortedByPriceAscending() {
         let items = store(used: 0).purchasableItems
@@ -224,8 +223,33 @@ final class ShopTests: XCTestCase {
         XCTAssertEqual(Array(others.dropFirst(Self.cheapItems.count)), [.expShare, .shinyCharm],
                        "the charm and the first Exp. Share tie on price")
         XCTAssertEqual(Set(items.filter { $0.category == .heldItem }), Set(ItemKind.allCases.filter { $0.category == .heldItem }))
-        let prices = items.compactMap(\.shopPrice)
-        XCTAssertEqual(prices, prices.sorted(), "shopPrice 오름차순 — 가격 상수가 바뀌어도 정렬 불변식 유지")
+        assertPriceOrderKeepsFamilies(items.map { ShopEntry.item($0) })
+    }
+
+    /// Without families the list is by price. A family sits at its cheapest member's price, so the prices step down
+    /// only inside a family.
+    private func assertPriceOrderKeepsFamilies(_ entries: [ShopEntry], file: StaticString = #filePath, line: UInt = #line) {
+        let familyOf = { (entry: ShopEntry) -> Int? in if case .item(let kind) = entry { kind.shopFamily } else { nil } }
+        var anchors: [Int: Int] = [:]
+        for entry in entries { if let id = familyOf(entry) { anchors[id] = min(anchors[id] ?? entry.price, entry.price) } }
+        let steps = entries.map { familyOf($0).flatMap { anchors[$0] } ?? $0.price }
+        XCTAssertEqual(steps, steps.sorted(), "family at its cheapest member's price", file: file, line: line)
+        for (id, family) in ItemKind.shopFamilies.enumerated() {
+            let places = entries.indices.filter { familyOf(entries[$0]) == id }
+            XCTAssertEqual(places.count, family.count, "family \(id) is in the list", file: file, line: line)
+            XCTAssertEqual(places.last! - places.first!, family.count - 1, "family \(id) is split", file: file, line: line)
+        }
+    }
+
+    func testEveryShopListKeepsItsFamiliesTogether() {
+        let s = store(used: 0)
+        assertPriceOrderKeepsFamilies(s.shopEntries)
+        assertPriceOrderKeepsFamilies(s.shopEntries(in: .growth))
+        let remote = s.remoteShop.compactMap { ItemKind(rawValue: $0.key) }
+        for family in ItemKind.shopFamilies {
+            let places = remote.indices.filter { family.contains(remote[$0]) }
+            XCTAssertEqual(places.last! - places.first!, family.count - 1, "the bot's shop splits \(family)")
+        }
     }
 
     /// 구매 완료한 보유형(이로치 부적)은 맨 아래로. 재구매 불가라 상단에 둘 이유 없음.
@@ -258,8 +282,7 @@ final class ShopTests: XCTestCase {
                        + [.item(.expShare), .item(.shinyCharm)]   // ties keep ItemKind.listOrder
                        + [.egg(.rare)])
         XCTAssertEqual(Set(s.shopEntries).subtracting(withoutHeldItems(s.shopEntries)), Set(heldItemEntries))
-        let prices = s.shopEntries.map(\.price)
-        XCTAssertEqual(prices, prices.sorted(), "가격 상수가 바뀌어도 오름차순 불변식 유지")
+        assertPriceOrderKeepsFamilies(s.shopEntries)
     }
 
     /// 활성 포켓몬이 없어도(알 상태) 알 3종은 목록에 **남는다** — 숨기면 "상점에 알이 원래 없다"로

@@ -9,10 +9,21 @@ extension ItemKind {
 
     var listRank: Int { ItemKind.listRank[self] ?? ItemKind.listOrder.count }
 
-    private static let training: [ItemKind] = [
-        .rareCandy, .expShare, .mint, .mirrorHerb, .abilityCapsule, .abilityPatch, .bottleCap, .goldBottleCap,
-        .shinyCharm, .revealGlass, .dnaSplicers, .reinsOfUnity,
-    ]
+    static let abilityItems: [ItemKind] = [.abilityCapsule, .abilityPatch]
+    static let bottleCaps: [ItemKind] = [.bottleCap, .goldBottleCap]
+    static let formTools: [ItemKind] = [.revealGlass, .dnaSplicers, .reinsOfUnity]
+
+    /// Items the shop's price-sorted list keeps side by side. `listOrder` is built from the same arrays.
+    static let shopFamilies: [[ItemKind]] = [abilityItems, bottleCaps, formTools]
+
+    /// The position of this item's family in `shopFamilies`.
+    var shopFamily: Int? { ItemKind.shopFamilyIndex[self] }
+
+    private static let shopFamilyIndex: [ItemKind: Int] = Dictionary(
+        uniqueKeysWithValues: shopFamilies.enumerated().flatMap { index, family in family.map { ($0, index) } })
+
+    private static let training: [ItemKind] = [.rareCandy, .expShare, .mint, .mirrorHerb] + abilityItems + bottleCaps
+        + [.shinyCharm] + formTools
 
     /// Stones in the games' order, the other used-up items and the held ones by the Pokédex number they evolve.
     private static let evolution: [ItemKind] = [

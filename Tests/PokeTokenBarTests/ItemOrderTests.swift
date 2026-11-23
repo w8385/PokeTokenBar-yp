@@ -36,8 +36,8 @@ final class ItemOrderTests: XCTestCase {
             ("apples", [.tartApple, .sweetApple, .syrupyApple]),
             ("pots", [.crackedPot, .chippedPot]), ("teacups", [.unremarkableTeacup, .masterpieceTeacup]),
             ("Galarica", [.galaricaCuff, .galaricaWreath]), ("armors", [.auspiciousArmor, .maliciousArmor]),
-            ("bottle caps", [.bottleCap, .goldBottleCap]), ("ability items", [.abilityCapsule, .abilityPatch]),
-            ("form key items", [.revealGlass, .dnaSplicers, .reinsOfUnity]),
+            ("bottle caps", ItemKind.bottleCaps), ("ability items", ItemKind.abilityItems),
+            ("form key items", ItemKind.formTools),
             ("type items", ItemKind.allCases.filter { $0.boostedType != nil }),
             ("plates", ItemKind.plates), ("gems", ItemKind.gems), ("incenses", ItemKind.typeIncenses),
             ("resist berries", ItemKind.resistBerries), ("cure berries", ItemKind.cureBerries),
@@ -95,11 +95,15 @@ final class ItemOrderTests: XCTestCase {
         assertInOrder(store.remoteBag.compactMap { ItemKind(rawValue: $0.key) }, "bag sent to the bot")
     }
 
-    func testTheShopsMainListStaysByPriceWithTiesInTableOrder() throws {
+    func testTheShopsMainListKeepsFamiliesTogetherAndTiesInTableOrder() throws {
         let kinds = try makeStore(inventory: [:]).purchasableItems
-        let prices = kinds.map { $0.shopPrice ?? 0 }
-        XCTAssertEqual(prices, prices.sorted())
-        for (a, b) in zip(kinds, kinds.dropFirst()) where a.shopPrice == b.shopPrice {
+        for family in ItemKind.shopFamilies {
+            let places = kinds.indices.filter { family.contains(kinds[$0]) }
+            XCTAssertEqual(places.map { kinds[$0] }, family, "\(family) are split or out of table order")
+            XCTAssertEqual(places.last! - places.first!, family.count - 1, "\(family) are split")
+        }
+        let plain = kinds.filter { $0.shopFamily == nil }
+        for (a, b) in zip(plain, plain.dropFirst()) where a.shopPrice == b.shopPrice {
             XCTAssertLessThan(a.listRank, b.listRank, "\(a) before \(b)")
         }
     }
