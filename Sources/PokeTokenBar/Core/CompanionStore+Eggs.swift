@@ -85,7 +85,7 @@ extension CompanionStore {
         return ids
     }
 
-    /// 후보를 돌려준다 — 이미 뽑아 둔 게 있으면 그대로, 없으면 알이 쓰는 가중치로 10종을 뽑아 저장한다.
+    /// 후보를 돌려준다 — 이미 뽑아 둔 게 있으면 그대로, 없으면 잡기 쉬움 값의 제곱근 가중치로 10종을 뽑아 저장한다.
     /// 티켓은 여기서 쓰지 않는다(고를 때 쓴다). 종 인덱스를 못 받으면 nil — 티켓은 그대로다.
     func drawScout(_ pool: ScoutPool) async -> [Int]? {
         guard scoutTicketCount(pool) > 0 else { return nil }
@@ -95,7 +95,7 @@ extension CompanionStore {
         guard scoutTicketCount(pool) > 0 else { return nil }
         if let existing = scoutDraw(for: pool) { return existing }
         let candidates = full.filter { pool.dexRange.contains($0.id) && PokemonAssets.isSupported(speciesID: $0.id) }
-        let drawn = SpeciesRoll.drawDistinct(from: candidates, count: ScoutTicket.drawSize,
+        let drawn = SpeciesRoll.drawDistinct(from: candidates, count: ScoutTicket.drawSize, weighting: .sqrtCaptureRate,
                                              isCollected: { state.hasCollectedFinal(forBaseID: $0) }, rng: &rng)
         guard !drawn.isEmpty else { return nil }
         state.scoutDraws[pool.key] = drawn
