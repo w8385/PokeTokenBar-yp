@@ -1899,6 +1899,17 @@ struct PokemonDetailView: View {
             ?? forms.first ?? species
     }
 
+    var details: PokemonDetails? { store.pokemonDetails(speciesID: species.id, form: displayedSpecies.form) }
+    private var showsAlternateForm: Bool { !PokemonForm.isDefault(displayedSpecies.form, speciesID: species.id) }
+    /// Such a form shows its own types, stats and abilities; its height, weight and moves are still the species'.
+    private var hasFormBattleData: Bool { FormBattleData.of(speciesID: species.id, form: displayedSpecies.form) != nil }
+
+    private var defaultFormNote: some View {
+        Text(store.l.defaultFormDataNote)
+            .font(.caption2).foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
     private var allIndividuals: [DexEntry] {
         store.pokemonIndividuals(speciesID: species.id, form: displayedSpecies.form)
     }
@@ -1935,7 +1946,7 @@ struct PokemonDetailView: View {
                     if !hasDisplayedAppearance {
                         Text(store.l.dexAppearancePreview).font(.callout).foregroundStyle(.secondary)
                     }
-                    if let details = store.pokemonDetailsByID[species.id] {
+                    if let details {
                         baseStatsSection(details)
                         speciesSection(details)
                         movesSection(details)
@@ -2046,14 +2057,10 @@ struct PokemonDetailView: View {
                 Text(store.l.rarityLabel(species.rarity))
                     .font(.callout.weight(.semibold)).foregroundStyle(.secondary)
             }
-            if let details = store.pokemonDetailsByID[species.id] {
+            if let details {
                 TypeBadges(types: details.types, language: store.language, size: 11,
                            horizontalPadding: 7, verticalPadding: 2)
-                if !PokemonForm.isDefault(species.form, speciesID: species.id) {
-                    Text(store.l.defaultFormDataNote)
-                        .font(.caption2).foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                if showsAlternateForm && !hasFormBattleData { defaultFormNote }
             }
             if displayedShiny { Text("✨ \(store.l.dexShinyLabel)").font(.callout) }
             let isRepresentative = store.isRepresentative(species)
@@ -2086,7 +2093,7 @@ struct PokemonDetailView: View {
         .detailCard()
     }
 
-    private func speciesSection(_ details: PokemonDetails) -> some View {
+    func speciesSection(_ details: PokemonDetails) -> some View {
         VStack(alignment: .leading, spacing: 7) {
             DetailTitle(store.l.speciesData)
             HStack(spacing: 14) {
@@ -2094,6 +2101,7 @@ struct PokemonDetailView: View {
                 DetailValuePair(store.l.weight, String(format: "%.1f kg", Double(details.weight) / 10))
                 DetailValuePair(store.l.baseStatTotal, "\(details.baseStatTotal)")
             }
+            if showsAlternateForm && hasFormBattleData { defaultFormNote }
             DetailTitle(store.l.possibleAbilities)
             PokemonNameLabel(items: details.abilities.map { option in
                 PokemonNameItem(resource: .init(kind: .ability, name: option.name),
@@ -2104,9 +2112,10 @@ struct PokemonDetailView: View {
         .detailCard()
     }
 
-    private func movesSection(_ details: PokemonDetails) -> some View {
+    func movesSection(_ details: PokemonDetails) -> some View {
         LazyVStack(alignment: .leading, spacing: 6) {
             DetailTitle(store.l.completeMoveList(details.moves.count))
+            if showsAlternateForm && hasFormBattleData { defaultFormNote }
             ForEach(details.moves) { move in
                 HStack(alignment: .firstTextBaseline) {
                     PokemonNameLabel(.move, move.name, language: store.language)
