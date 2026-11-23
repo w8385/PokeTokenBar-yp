@@ -45,7 +45,7 @@ extension CompanionStore {
             context.friendCount += 1
             context.friendLines.formUnion(entry.chainOrder)
             context.friendLines.insert(entry.finalID)
-            context.friendTypes.formUnion(speciesTypes(entry.finalID))
+            context.friendTypes.formUnion(types(speciesID: entry.finalID, form: entry.form))
         }
         context.spentTokens = state.spentTokens
         context.stageXP = stageXP
@@ -53,7 +53,11 @@ extension CompanionStore {
         return context
     }
 
-    func speciesTypes(_ id: Int) -> [String] {
+    func types(speciesID: Int, form: PokemonForm?) -> [String] {
+        FormBattleData.of(speciesID: speciesID, form: form)?.types ?? speciesTypes(speciesID)
+    }
+
+    private func speciesTypes(_ id: Int) -> [String] {
         speciesIndex?.entry(id)?.types ?? pokemonDetailsByID[id]?.types ?? []
     }
 
