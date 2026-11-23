@@ -8,9 +8,9 @@ extension CompanionStore {
     /// 이로치 부적 보유 여부 — 보유형이라 개수>0 = 소유(부화 shiny 분모를 낮춘다).
     var ownsShinyCharm: Bool { itemCount(.shinyCharm) > 0 }
 
-    /// 소유 아이템(개수>0) — 가방 목록. 정렬은 ItemKind.allCases 순서.
+    /// 소유 아이템(개수>0) — 가방 목록. 정렬은 ItemKind.listOrder 순서.
     var ownedItems: [(kind: ItemKind, count: Int)] {
-        ItemKind.allCases.compactMap { k in
+        ItemKind.listOrder.compactMap { k in
             let c = itemCount(k)
             return c > 0 ? (k, c) : nil
         }

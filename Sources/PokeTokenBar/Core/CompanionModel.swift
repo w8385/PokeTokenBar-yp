@@ -537,34 +537,13 @@ extension ItemKind {
 enum BattleItemGroup: String, CaseIterable, Sendable {
     case attack, typeBoost, bulk, speed, status, weather, signature, other
 
-    /// `kinds` split into non-empty groups. Type items follow the type chart; the rest follow `listedOrder`.
+    /// `kinds` split into non-empty groups, each in `ItemKind.listOrder`.
     static func sections(of kinds: [ItemKind]) -> [BattleItemSection] {
-        allCases.compactMap { group in
-            let members = kinds.filter { $0.battleGroup == group }.sorted { rank($0) < rank($1) }
+        let ordered = kinds.sorted { $0.listRank < $1.listRank }
+        return allCases.compactMap { group in
+            let members = ordered.filter { $0.battleGroup == group }
             return members.isEmpty ? nil : BattleItemSection(group: group, kinds: members)
         }
-    }
-
-    private static let listedOrder: [ItemKind] = [
-        .choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses, .punchingGlove,
-        .assaultVest, .eviolite, .leftovers, .blackSludge, .sitrusBerry, .shellBell, .bigRoot, .focusSash, .focusBand,
-        .choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder,
-    ] + ItemKind.resistBerries + [
-        .lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb,
-        .heatRock, .dampRock, .smoothRock, .icyRock,
-        .tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
-    ] + ItemKind.primalOrbs + [.ultranecroziumZ] + ItemKind.originItems + ItemKind.crownedItems + [
-        .everstone, .kingsRock, .razorFang, .deepSeaTooth, .deepSeaScale,
-    ] + ItemKind.moreBattleItems
-
-    private static func rank(_ kind: ItemKind) -> Int {
-        let types = PokemonType.allCases.count
-        func typeIndex(_ type: String?) -> Int? { PokemonType.allCases.firstIndex { $0.rawValue == type } }
-        if let index = typeIndex(kind.boostedType) { return index }
-        if let index = typeIndex(kind.plateType) { return types + index }
-        if let index = typeIndex(kind.gemType) { return 2 * types + index }
-        if let index = ItemKind.typeIncenses.firstIndex(of: kind) { return 3 * types + index }
-        return 4 * types + (listedOrder.firstIndex(of: kind) ?? listedOrder.count)
     }
 }
 

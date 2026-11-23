@@ -285,7 +285,7 @@ final class TradeEvolutionTests: XCTestCase {
     func testCordIsSoldBesideTheStonesAtTheStonePrice() throws {
         let store = try makeStore { $0.usedSinceInstall = 3_000_000_000 }
         XCTAssertEqual(store.shopEvolutionItems,
-                       store.evolutionStoneItems + [.linkingCord] + ItemKind.allCases.filter(\.isEvolutionHeld))
+                       store.evolutionStoneItems + [.linkingCord] + ItemKind.listOrder.filter(\.isEvolutionHeld))
         XCTAssertFalse(store.purchasableItems.contains(.linkingCord))
         XCTAssertEqual(store.price(of: .linkingCord), EvolutionStone.price)
         XCTAssertTrue(store.buy(.linkingCord, count: 1))
