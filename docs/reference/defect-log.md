@@ -2399,3 +2399,6 @@ read_when:
   Class: a two-phase refresh value read between the phases (see "2단계 갱신에서 파생 상태는…" above),
   here with the carried value looking valid instead of empty. Not covered: if the series is shorter
   than the gap (more than 21 days without a refresh), the days before it are not credited.
+
+## Evolution result form lost
+An evolution whose result form depends on how it evolved (item, tower, time of day, gender, nature, size) must set that form at the evolution step: the raised line (completeEvolution), the raised graduate (evolveGraduate) and the bag item path. The form is the PokéAPI variety the party upload sends, so a lost form silently becomes the default variety in the sprite, the types, the dex and the bot's battle data. A `formNotShown`-style flag must never stand in for "form not kept". `EvolutionRulesTests.testEveryStepWhoseResultFormDependsOnHowItEvolvedKeepsThatFormOrIsListedAsNotKept` lists every such step from the PokéAPI fixture as kept (checked per detail) or open with a reason. Fixing a save that lost one needs a record of the path. The tower is reset at evolution, so only the bag record (a spent scroll at 0, the other never owned) can settle it. Case: Urshifu from the Scroll of Waters came out Single Strike (2026-11-23).
