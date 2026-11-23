@@ -73,7 +73,7 @@ final class PokemonFormTests: XCTestCase {
     // MARK: Catalog
 
     func testCatalogListsDefaultFirstWithinTheHatchableRange() {
-        XCTAssertEqual(PokemonForm.catalog.count, 25)
+        XCTAssertEqual(PokemonForm.catalog.count, 26)
         for (speciesID, entries) in PokemonForm.catalog {
             XCTAssertTrue(PokemonAssets.supportedSpeciesIDs.contains(speciesID))
             XCTAssertGreaterThanOrEqual(entries.count, 2, "#\(speciesID)")

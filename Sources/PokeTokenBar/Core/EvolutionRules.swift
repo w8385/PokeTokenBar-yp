@@ -121,6 +121,18 @@ struct EvolutionRule: Sendable {
     var trade: EvolutionTrade?
     /// The species this step grows from, so the card also shows on that species' own page.
     var from: Int?
+    /// The form each way into this step gives: the bag item used, or the tower picked (`EvolutionProgress.tower`).
+    var itemForms: [ItemKind: PokemonForm] = [:]
+    var towerForms: [String: PokemonForm] = [:]
+
+    /// The form the step gives through `path`; nil keeps the individual's own.
+    func form(through path: [EvolutionRequirement], progress: EvolutionProgress) -> PokemonForm? {
+        for requirement in path {
+            if case .bag(let kind) = requirement, let form = itemForms[kind] { return form }
+            if requirement == .towerChosen, let tower = progress.tower, let form = towerForms[tower] { return form }
+        }
+        return nil
+    }
 
     /// Reached only by using an item: left out of the plan while a sibling can be reached by growth.
     var isItemOnly: Bool {

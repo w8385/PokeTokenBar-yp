@@ -272,7 +272,8 @@ extension CompanionStore {
             }.first
             guard let step else { break }
             spendEvolutionRequirements(of: step.path, into: step.speciesID, instanceID: entry.id)
-            evolveGraduate(at: index, to: step.speciesID, in: line, progress: context.progress, celebrate: celebrate)
+            evolveGraduate(at: index, to: step.speciesID, through: step.path, in: line, progress: context.progress,
+                           celebrate: celebrate)
             evolved = true
         }
         return evolved

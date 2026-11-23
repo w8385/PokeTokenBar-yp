@@ -4,6 +4,7 @@ import XCTest
 private struct FixtureStep {
     let species: Int
     let name: String
+    let parent: Int?
     let details: [[String: Any]]
 
     var signatures: [String?] {
@@ -24,7 +25,7 @@ private func loadSteps() throws -> [FixtureStep] {
     let raw = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [[String: Any]] ?? []
     return raw.map {
         FixtureStep(species: $0["species"] as? Int ?? 0, name: $0["name"] as? String ?? "",
-                    details: $0["details"] as? [[String: Any]] ?? [])
+                    parent: $0["parent"] as? Int, details: $0["details"] as? [[String: Any]] ?? [])
     }
 }
 
@@ -48,6 +49,46 @@ final class EvolutionRulesTests: XCTestCase {
             }
         }
         XCTAssertEqual(unmapped, [], "special evolution steps without an app condition")
+    }
+
+    func testEveryStepWhoseResultFormDependsOnHowItEvolvedKeepsThatFormOrIsListedAsNotKept() throws {
+        let notKept: [Int: String] = [
+            678: "open: gender picks the variety", 902: "open: gender picks the variety",
+            916: "open: gender picks the variety", 745: "open: time of day picks the variety",
+            849: "open: nature picks the variety", 711: "open: size picks the variety",
+            665: "cosmetic only", 666: "cosmetic only", 670: "cosmetic only", 671: "cosmetic only",
+            855: "cosmetic only", 869: "cosmetic only", 925: "cosmetic only", 982: "cosmetic only", 1013: "cosmetic only",
+        ]
+        var unlisted: [String] = [], wrong: [String] = []
+        var multiForm: Set<Int> = []
+        for step in try loadSteps() {
+            let results = Set(step.details.compactMap { $0["evolved_pokemon_form"] as? String })
+            guard results.count > 1 else { continue }
+            multiForm.insert(step.species)
+            let rule = EvolutionRules.rule(for: step.species)
+            let catalog = Set(PokemonForm.forms(speciesID: step.species).map { "\(step.name)-\($0.rawValue)" })
+            if let rule, !rule.itemForms.isEmpty || !rule.towerForms.isEmpty {
+                for detail in step.details {
+                    let item = (detail["item"] as? String).flatMap { slug in
+                        ItemKind.allCases.first { $0.evolutionItemName == slug }
+                    }
+                    let tower = (detail["trigger"] as? String)?.replacingOccurrences(of: "tower-of-", with: "")
+                    let form = item.flatMap { rule.itemForms[$0] } ?? tower.flatMap { rule.towerForms[$0] }
+                    let given = form.map { "\(step.name)-\($0.rawValue)" }
+                    if given != detail["evolved_pokemon_form"] as? String || !catalog.contains(given ?? "") {
+                        wrong.append("\(step.name): \(detail) gives \(given ?? "nothing")")
+                    }
+                }
+                if !PokemonForm.hatchForms(baseID: step.parent ?? 0).isEmpty {
+                    wrong.append("\(step.name): its eggs draw a form the evolution then replaces")
+                }
+            } else if !results.isSubset(of: catalog), notKept[step.species] == nil {
+                unlisted.append("\(step.species) \(step.name): \(results.sorted())")
+            }
+        }
+        XCTAssertEqual(wrong, [])
+        XCTAssertEqual(unlisted, [], "steps whose result form is lost; pick it in the rule or list why not")
+        XCTAssertEqual(Set(notKept.keys).subtracting(multiForm), [], "listed steps the fixture no longer has")
     }
 
     func testEveryStepKnowsItsParentAndEveryTradeItsHeldItemOrPartner() throws {

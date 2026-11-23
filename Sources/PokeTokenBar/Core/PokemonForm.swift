@@ -85,6 +85,7 @@ struct PokemonForm: RawRepresentable, Codable, Hashable, Sendable {
             648: [.init("aria", formID: 648), .init("pirouette", formID: 10074, pokemonID: 10018)],
             649: [.init("normal", formID: 649), .init("douse", formID: 10075), .init("shock", formID: 10076),
                   .init("burn", formID: 10077), .init("chill", formID: 10078)],
+            892: [.init("single-strike", formID: 892), .init("rapid-strike", formID: 10360, pokemonID: 10191)],
             898: [.init("normal", formID: 898), .init("ice", formID: 10362, pokemonID: 10193),
                   .init("shadow", formID: 10363, pokemonID: 10194)],
             905: [.init("incarnate", formID: 905), .init("therian", formID: 10418, pokemonID: 10249)],
@@ -93,7 +94,15 @@ struct PokemonForm: RawRepresentable, Codable, Hashable, Sendable {
 
     /// Catalogued species whose line starts elsewhere. The individual's form is chosen at hatch,
     /// so Cherubi and Darumaka eggs already know which Cherrim or Darmanitan they will become.
-    private static let lineBaseIDs: [Int: Int] = [413: 412, 421: 420, 423: 422, 555: 554, 586: 585]
+    private static let lineBaseIDs: [Int: Int] = [413: 412, 421: 420, 423: 422, 555: 554, 586: 585, 892: 891]
+
+    /// Lines whose form the evolution step picks (`EvolutionRule.itemForms`/`towerForms`), so their eggs draw none.
+    private static let pickedAtEvolution: Set<Int> = [891]
+
+    /// The forms an egg of this line may hatch in; empty when the line has none or its evolution picks the form.
+    static func hatchForms(baseID: Int) -> [PokemonForm] {
+        pickedAtEvolution.contains(baseID) ? [] : lineForms(baseID: baseID)
+    }
 
     static func entries(speciesID: Int) -> [Entry] { catalog[speciesID] ?? [] }
 

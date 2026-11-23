@@ -214,7 +214,8 @@ extension CompanionStore {
                     AppLog.write("evolve: replanned path for base \(a.baseID)")
                 }
                 spendEvolutionRequirements(of: openPath, into: next.speciesID, instanceID: a.profile?.instanceID)
-                completeEvolution(of: a, to: next, in: line, usedAtStage: a.usedAtStage - thr)   // 초과분 이월
+                completeEvolution(of: a, to: next, through: openPath, in: line,
+                                  usedAtStage: a.usedAtStage - thr)   // 초과분 이월
             }
         }
         reconcileActiveProfileGrowth()
@@ -277,10 +278,13 @@ extension CompanionStore {
     }
 
     /// 다음 형태로 넘어가는 공통 처리 — 경로·단계·프로필·연출·알림. 저장은 호출부가 한다.
-    func completeEvolution(of a: MonState, to next: EvoNode, in line: EvoLine, usedAtStage: Int) {
+    func completeEvolution(of a: MonState, to next: EvoNode, through path: [EvolutionRequirement], in line: EvoLine,
+                           usedAtStage: Int) {
+        let form = EvolutionRules.rule(for: next.speciesID)?.form(through: path, progress: a.evolution) ?? a.form
         state.active!.pathIDs = Array(a.pathIDs.prefix(a.stageIndex + 1)) + [next.speciesID]
         state.active!.stageIndex += 1
         state.active!.usedAtStage = usedAtStage
+        state.active!.form = form
         state.active!.evolution = a.evolution.nextForm(spentBaseline: state.spentTokens)
         if let details = pokemonDetailsByID[next.speciesID] {
             state.active!.profile?.enrich(with: details)
@@ -290,7 +294,7 @@ extension CompanionStore {
         let oldName = formDisplayName(line.localizedName(a.currentID, state.language),
                                       speciesID: a.currentID, form: a.form)
         let newName = formDisplayName(line.localizedName(next.speciesID, state.language),
-                                      speciesID: next.speciesID, form: a.form)
+                                      speciesID: next.speciesID, form: form)
         if let companion = EvolutionRules.companions[next.speciesID] {
             registerCompanion(companion, evolvedFrom: a, in: line)
         }
