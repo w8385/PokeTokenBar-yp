@@ -25,6 +25,11 @@ private struct ZeroRNG: RandomNumberGenerator {
     mutating func next() -> UInt64 { 0 }
 }
 
+private struct FixedRNG: RandomNumberGenerator {
+    let value: UInt64
+    mutating func next() -> UInt64 { value }
+}
+
 @MainActor
 final class ScoutTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
@@ -101,9 +106,9 @@ final class ScoutTests: XCTestCase {
         XCTAssertNil(drawn)
     }
 
-    // MARK: 알과 같은 확률
+    // MARK: 알은 잡기 쉬움 값 그대로, 스카우트는 제곱근
 
-    /// The scout and the egg share `SpeciesRoll.pick`; the first pick follows the capture-rate weights.
+    /// An egg rolls with `SpeciesRoll.pick`'s default weighting; the first pick follows the capture-rate weights.
     func testFirstPickFollowsCaptureRateWeights() {
         let candidates = [BaseSpecies(id: 1, captureRate: 255), BaseSpecies(id: 2, captureRate: 100),
                           BaseSpecies(id: 3, captureRate: 30)]
@@ -121,6 +126,69 @@ final class ScoutTests: XCTestCase {
         }
     }
 
+    private var spread: [BaseSpecies] {
+        [BaseSpecies(id: 1, captureRate: 255), BaseSpecies(id: 2, captureRate: 45), BaseSpecies(id: 3, captureRate: 3)]
+    }
+
+    private func picked(_ weighting: SpeciesRoll.Weighting, _ value: UInt64, collected: Set<Int> = []) -> Int? {
+        var rng: any RandomNumberGenerator = FixedRNG(value: value)
+        return SpeciesRoll.pick(from: spread, weighting: weighting, isCollected: { collected.contains($0) }, rng: &rng)?.id
+    }
+
+    func testEggWeightsStayLinearInCaptureRate() {
+        XCTAssertEqual(SpeciesRoll.Weighting.captureRate.base(255), 255)
+        XCTAssertEqual(SpeciesRoll.Weighting.captureRate.base(3), 3)
+        for (value, id) in [(0, 1), (254, 1), (255, 2), (299, 2), (300, 3), (302, 3)] as [(UInt64, Int)] {
+            XCTAssertEqual(picked(.captureRate, value), id, "roll \(value)")
+        }
+    }
+
+    func testScoutWeightsAreTheSquareRootOfCaptureRate() {
+        // sqrt(255), sqrt(45), sqrt(3) scaled by 1000: 15969, 6708, 1732.
+        for (value, id) in [(0, 1), (15_968, 1), (15_969, 2), (22_676, 2), (22_677, 3), (24_408, 3)] as [(UInt64, Int)] {
+            XCTAssertEqual(picked(.sqrtCaptureRate, value), id, "roll \(value)")
+        }
+    }
+
+    func testScoutSharesFollowTheSquareRoot() {
+        var rng: any RandomNumberGenerator = SeededRNG(seed: 42)
+        var counts: [Int: Int] = [:]
+        let rolls = 40_000
+        for _ in 0..<rolls {
+            let id = SpeciesRoll.pick(from: spread, weighting: .sqrtCaptureRate, isCollected: { _ in false }, rng: &rng)!.id
+            counts[id, default: 0] += 1
+        }
+        let roots = spread.map { Double($0.captureRate).squareRoot() }
+        for (c, root) in zip(spread, roots) {
+            XCTAssertEqual(Double(counts[c.id] ?? 0) / Double(rolls), root / roots.reduce(0, +), accuracy: 0.01, "id \(c.id)")
+        }
+    }
+
+    func testScoutStillHalvesCollectedLines() {
+        // Species 1 collected: 15969 / 2 = 7984, then species 2 holds 6708.
+        XCTAssertEqual(picked(.sqrtCaptureRate, 7_983, collected: [1]), 1)
+        XCTAssertEqual(picked(.sqrtCaptureRate, 7_984, collected: [1]), 2)
+    }
+
+    /// The scout draw is `drawDistinct` with the square-root weighting, not the egg weighting.
+    func testScoutDrawUsesTheSquareRootWeighting() async throws {
+        let index = try await ScoutProvider().baseSpeciesIndex()
+        let kanto = index.filter { (1...151).contains($0.id) && PokemonAssets.isSupported(speciesID: $0.id) }
+        var differsFromEgg = false
+        for seed in UInt64(1)...20 {
+            let s = store(seed: seed)
+            let drawn = try XCTUnwrapAsync(await s.drawScout(.region(.kanto)))
+            var rng: any RandomNumberGenerator = SeededRNG(seed: seed)
+            let root = SpeciesRoll.drawDistinct(from: kanto, count: 10, weighting: .sqrtCaptureRate,
+                                                isCollected: { _ in false }, rng: &rng)
+            rng = SeededRNG(seed: seed)
+            let egg = SpeciesRoll.drawDistinct(from: kanto, count: 10, isCollected: { _ in false }, rng: &rng)
+            XCTAssertEqual(drawn, root, "seed \(seed)")
+            if drawn != egg { differsFromEgg = true }
+        }
+        XCTAssertTrue(differsFromEgg, "the two weightings must give different draws for this test to mean anything")
+    }
+
     func testCollectedLinesWeighHalf() {
         let candidates = [BaseSpecies(id: 1, captureRate: 100), BaseSpecies(id: 2, captureRate: 100)]
         var rng: any RandomNumberGenerator = SeededRNG(seed: 9)
@@ -132,9 +200,8 @@ final class ScoutTests: XCTestCase {
         XCTAssertEqual(Double(first) / Double(rolls), 1.0 / 3.0, accuracy: 0.01)
     }
 
-    /// With the same generator state an egg hatches the species `SpeciesRoll.pick` names, so the scout
-    /// cannot drift from the egg odds without this failing.
-    func testEggHatchUsesTheSharedRoll() async throws {
+    /// With the same generator state an egg hatches the species `SpeciesRoll.pick` names with the default weighting.
+    func testEggHatchUsesTheDefaultRoll() async throws {
         let provider = ScoutProvider(ids: Array(1...60))
         let index = try await provider.baseSpeciesIndex()
         for seed in UInt64(1)...12 {
