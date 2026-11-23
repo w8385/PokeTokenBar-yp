@@ -5,7 +5,7 @@ extension CompanionStore {
 
     /// 상점 판매 아이템 — shopPrice 있는 것만. 가격 저렴한 순, 단 구매 완료한 보유형은 맨 아래로.
     var purchasableItems: [ItemKind] {
-        ItemKind.allCases
+        ItemKind.listOrder
             .filter { $0.shopPrice != nil && !$0.isEvolutionStone && !$0.isEvolutionHeld && !$0.isLinkingCord
                 && $0.category != .megaStone }
             .sorted { a, b in
@@ -18,14 +18,14 @@ extension CompanionStore {
     }
 
     /// Every battle item by effect group. Metal Coat, Razor Claw and the Stellar Crystal also stay in their own tab.
-    var shopBattleSections: [BattleItemSection] { BattleItemGroup.sections(of: ItemKind.allCases) }
+    var shopBattleSections: [BattleItemSection] { BattleItemGroup.sections(of: ItemKind.listOrder) }
 
     /// 상점 "진화" 구역의 돌 — 별도 구역이라 `shopEntries` 의 가격순 목록에는 넣지 않는다.
-    var evolutionStoneItems: [ItemKind] { ItemKind.allCases.filter(\.isEvolutionStone) }
+    var evolutionStoneItems: [ItemKind] { ItemKind.listOrder.filter(\.isEvolutionStone) }
 
     /// The shop's evolution section: what is used up, the Linking Cord, then what is held.
     var shopEvolutionItems: [ItemKind] {
-        evolutionStoneItems + [.linkingCord] + ItemKind.allCases.filter(\.isEvolutionHeld)
+        ItemKind.listOrder.filter { $0.isEvolutionStone || $0.isLinkingCord || $0.isEvolutionHeld }
     }
 
     /// The evolution section of the all view; battle items are already listed in `shopBattleSections` there.

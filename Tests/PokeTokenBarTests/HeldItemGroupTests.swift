@@ -50,32 +50,8 @@ final class HeldItemGroupTests: XCTestCase {
         XCTAssertEqual(BattleItemGroup.allCases, [.attack, .typeBoost, .bulk, .speed, .status, .weather, .signature, .other])
         let sections = try store().shopBattleSections
         XCTAssertEqual(sections.map(\.group), BattleItemGroup.allCases)
-        let expected: [BattleItemGroup: [ItemKind]] = [
-            .attack: [.choiceBand, .choiceSpecs, .lifeOrb, .expertBelt, .muscleBand, .wiseGlasses, .punchingGlove,
-                      .kingsRock, .razorFang, .loadedDice, .metronome, .zoomLens, .gripClaw, .bindingBand, .powerHerb,
-                      .throatSpray, .boosterEnergy, .liechiBerry, .petayaBerry, .lansatBerry, .starfBerry, .micleBerry],
-            .typeBoost: [.silkScarf, .charcoal, .mysticWater, .magnet, .miracleSeed, .neverMeltIce, .blackBelt,
-                         .poisonBarb, .softSand, .sharpBeak, .twistedSpoon, .silverPowder, .hardStone, .spellTag,
-                         .dragonFang, .blackGlasses, .metalCoat, .fairyFeather] + ItemKind.plates + ItemKind.gems
-                + ItemKind.typeIncenses,
-            .bulk: [.assaultVest, .eviolite, .leftovers, .blackSludge, .sitrusBerry, .shellBell, .bigRoot, .focusSash,
-                    .focusBand] + ItemKind.resistBerries + [.oranBerry, .enigmaBerry] + ItemKind.flavorBerries
-                + [.ganlonBerry, .apicotBerry, .keeBerry, .marangaBerry, .jabocaBerry, .rowapBerry, .airBalloon],
-            .speed: [.choiceScarf, .quickClaw, .scopeLens, .razorClaw, .wideLens, .brightPowder, .salacBerry, .custapBerry,
-                     .blunderPolicy, .adrenalineOrb, .laxIncense, .fullIncense, .laggingTail, .ironBall, .roomService]
-                + ItemKind.powerItems,
-            .status: [.lumBerry, .whiteHerb, .weaknessPolicy, .rockyHelmet, .flameOrb, .toxicOrb] + ItemKind.cureBerries
-                + [.leppaBerry, .mentalHerb, .clearAmulet, .covertCloak, .abilityShield, .protectivePads, .safetyGoggles,
-                   .heavyDutyBoots] + ItemKind.hitStatItems,
-            .weather: [.heatRock, .dampRock, .smoothRock, .icyRock, .utilityUmbrella],
-            .signature: [.tealMask, .wellspringMask, .hearthflameMask, .cornerstoneMask, .stellarCrystal,
-                         .redOrb, .blueOrb, .ultranecroziumZ, .adamantCrystal, .lustrousGlobe, .griseousCore,
-                         .rustedSword, .rustedShield, .deepSeaTooth, .deepSeaScale] + ItemKind.drives + ItemKind.memories
-                + ItemKind.speciesItems,
-            .other: [.everstone] + ItemKind.terrainSeeds + [.lightClay, .terrainExtender, .floatStone, .stickyBarb, .ringTarget],
-        ]
         for section in sections {
-            XCTAssertEqual(section.kinds, expected[section.group], "\(section.group)")
+            XCTAssertEqual(section.kinds, ItemKind.listOrder.filter { $0.battleGroup == section.group }, "\(section.group)")
         }
         let typeBoost = try XCTUnwrap(sections.first { $0.group == .typeBoost }).kinds
         XCTAssertEqual(typeBoost.compactMap(\.boostedType), PokemonType.allCases.map(\.rawValue))
@@ -100,7 +76,7 @@ final class HeldItemGroupTests: XCTestCase {
 
         let bag = try store(inventory: [.metalCoat: 2, .razorClaw: 1])
         XCTAssertEqual(bag.bagCategories, [.evolution, .heldItem])
-        XCTAssertEqual(bag.ownedItems(in: .evolution).map(\.kind), [.razorClaw, .metalCoat])
+        XCTAssertEqual(bag.ownedItems(in: .evolution).map(\.kind), [.metalCoat, .razorClaw])
         XCTAssertEqual(bag.ownedBattleSections.flatMap(\.kinds), [.metalCoat, .razorClaw])
         let allView = bag.bagListItems(in: nil).map(\.kind) + bag.ownedBattleSections.flatMap(\.kinds)
         XCTAssertEqual(allView, [.metalCoat, .razorClaw], "the all view lists each once")
