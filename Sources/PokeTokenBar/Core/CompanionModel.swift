@@ -709,22 +709,18 @@ enum PokemonAssets {
     static func hasAnimatedSprite(speciesID: Int) -> Bool {
         isSupported(speciesID: speciesID) && !missingShowdownIDs.contains(speciesID)
             || MegaStone.animatedSpriteIDs.contains(speciesID)
+            || GenderVariety.species(ofPokemonID: speciesID) != nil
     }
 
-    /// Species with a `female/` sprite in the PokéAPI sprite set (animated Showdown/Black-White GIFs).
-    static let femaleAnimatedSpriteIDs: Set<Int> = [
+    /// Species with a `female/` sprite in every still and animated folder (front, back, shiny), minus the gender
+    /// varieties, which draw their own variety id.
+    static let femaleSpriteIDs: Set<Int> = [
         3, 12, 19, 20, 25, 26, 41, 42, 44, 45, 64, 65, 84, 85, 97, 111, 112, 118, 119, 123, 129, 130, 154, 165,
         166, 178, 185, 186, 190, 194, 195, 198, 202, 203, 207, 208, 212, 214, 215, 217, 221, 224, 229, 232, 255,
         256, 257, 267, 269, 272, 274, 275, 307, 308, 315, 316, 317, 322, 323, 332, 350, 369, 396, 397, 398, 399,
         400, 401, 402, 403, 404, 405, 407, 415, 417, 418, 419, 424, 443, 444, 445, 449, 450, 453, 454, 456, 457,
-        459, 460, 461, 464, 465, 473, 521, 592, 593, 668, 678, 876, 902, 916,
+        459, 460, 461, 464, 465, 473, 521, 592, 593, 668,
     ]
-    /// The static PNG set matches, except Eevee has a female PNG and Basculegion does not.
-    static let femaleStaticSpriteIDs: Set<Int> = femaleAnimatedSpriteIDs.subtracting([902]).union([133])
-
-    static func hasFemaleSprite(speciesID: Int, animated: Bool) -> Bool {
-        (animated ? femaleAnimatedSpriteIDs : femaleStaticSpriteIDs).contains(speciesID)
-    }
 }
 
 /// PokéAPI evolution-chain 을 파싱한 트리. 분기(evolves_to 다수)를 children 으로.
@@ -1593,12 +1589,14 @@ struct CompanionState: Codable, Sendable {
     }
 
     /// The species, shininess and form to show for this save: the raised graduate, else the line Pokémon.
-    var currentPokemonPreview: (speciesID: Int?, isShiny: Bool, form: PokemonForm?) {
+    var currentPokemonPreview: (speciesID: Int?, isShiny: Bool, form: PokemonForm?, isFemale: Bool) {
         if let graduate = raisedEntry {
-            return (graduate.finalID, graduate.isShiny, PokemonForm.resolved(speciesID: graduate.finalID, form: graduate.form))
+            return (graduate.finalID, graduate.isShiny, PokemonForm.resolved(speciesID: graduate.finalID, form: graduate.form),
+                    graduate.profile?.gender == .female)
         }
-        guard let line = active else { return (nil, false, nil) }
-        return (line.currentID, line.displaysShiny, PokemonForm.resolved(speciesID: line.currentID, form: line.form))
+        guard let line = active else { return (nil, false, nil, false) }
+        return (line.currentID, line.displaysShiny, PokemonForm.resolved(speciesID: line.currentID, form: line.form),
+                line.profile?.gender == .female)
     }
 
     /// The pointer only means something while its entry is an owned graduate. Call wherever the dex can change.

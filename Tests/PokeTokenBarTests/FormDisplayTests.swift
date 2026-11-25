@@ -79,8 +79,9 @@ final class FormDisplayTests: XCTestCase {
         LayoutMeasure.size(view.frame(width: PopoverMetrics.contentWidth), width: PopoverMetrics.contentWidth).height
     }
 
-    func testEveryFormWithBattleDataIsReachableFromTheFormCatalog() {
-        XCTAssertEqual(Set(Self.formCases.map(\.pokemonID)), Set(FormBattleData.byPokemonID.keys))
+    func testEveryVarietyWithBattleDataIsReachableFromTheFormCatalogOrAGender() {
+        XCTAssertEqual(Set(Self.formCases.map(\.pokemonID)).union(GenderVariety.femalePokemonIDs.values),
+                       Set(FormBattleData.byPokemonID.keys))
     }
 
     func testTheDexPageShowsTheGraduatesFormTypesStatsAndAbility() async throws {
@@ -125,8 +126,41 @@ final class FormDisplayTests: XCTestCase {
             let label = "#\(formCase.speciesID) \(formCase.form.rawValue)"
             let store = try await graduateStore(formCase.speciesID, form: formCase.form)
             let individual = try XCTUnwrap(store.boxIndividuals.first { $0.id == "graduate" }, label)
-            XCTAssertEqual(store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form)?.types,
+            XCTAssertEqual(store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form,
+                                                gender: individual.entry.profile?.gender)?.types,
                            formCase.data.types, label)
+        }
+    }
+
+    func testTheBoxPageShowsAFemaleVarietysTypesStatsAndAbilitiesAndAMaleTheSpecies() async throws {
+        for (speciesID, pokemonID) in GenderVariety.femalePokemonIDs.sorted(by: { $0.key < $1.key }) {
+            let data = try XCTUnwrap(FormBattleData.byPokemonID[pokemonID], "#\(pokemonID)")
+            for gender in [PokemonGender.female, .male] {
+                let label = "#\(speciesID) \(gender)"
+                var profile = PokemonProfile.generate(seed: UInt64(speciesID), instanceID: "graduate")
+                profile.gender = gender
+                let entry = DexEntry(id: "graduate", baseID: speciesID, finalID: speciesID, chainOrder: [speciesID],
+                                     rarity: .rare, caughtAt: Date(timeIntervalSince1970: 1_700_000_000),
+                                     profile: profile, names: [speciesID: try SpeciesFacts.names(speciesID)])
+                var state = CompanionState()
+                state.dex = [entry]
+                let store = try await store(state, loading: [speciesID])
+                let individual = try XCTUnwrap(store.boxIndividuals.first { $0.id == "graduate" }, label)
+                let details = try XCTUnwrap(store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form,
+                                                                 gender: individual.entry.profile?.gender), label)
+                let species = try XCTUnwrap(store.pokemonDetailsByID[speciesID], label)
+                XCTAssertEqual(details.baseStats, gender == .female ? data.baseStats : species.baseStats, label)
+                XCTAssertEqual(details.abilities, gender == .female ? data.abilities : species.abilities, label)
+                let trainable = try XCTUnwrap(store.trainable(id: "graduate"), label)
+                XCTAssertEqual(store.abilityOptions(of: trainable), details.abilities, label)
+                let fighter = try XCTUnwrap(BattleEntry.candidates(in: store.state).first { $0.id == "graduate" }, label)
+                XCTAssertEqual(fighter.member.pokemonID, gender == .female ? pokemonID : speciesID, label)
+                let previewSpecies = BattleStatPreview.speciesID(of: fighter, in: store)
+                XCTAssertEqual(BattleStatPreview.details(for: fighter, speciesID: previewSpecies, in: store)?.baseStats,
+                               details.baseStats, label)
+                XCTAssertEqual(BattleStatPreview.types(for: fighter, speciesID: previewSpecies, in: store),
+                               details.types, label)
+            }
         }
     }
 

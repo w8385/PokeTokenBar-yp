@@ -65,7 +65,8 @@ extension CompanionStore {
 
     /// The abilities of the individual's current form, or nil until the species details are loaded.
     func abilityOptions(of individual: TrainableIndividual) -> [PokemonAbilityOption]? {
-        if let form = FormBattleData.of(speciesID: individual.speciesID, form: individual.form) { return form.abilities }
+        if let form = FormBattleData.of(speciesID: individual.speciesID, form: individual.form,
+                                        gender: individual.profile.gender) { return form.abilities }
         return pokemonDetailsByID[individual.speciesID]?.abilities
     }
 
@@ -83,8 +84,8 @@ extension CompanionStore {
     }
 
     /// The loaded species details with the types, base stats and abilities of the individual's form.
-    func pokemonDetails(speciesID: Int, form: PokemonForm?) -> PokemonDetails? {
-        pokemonDetailsByID[speciesID]?.applying(FormBattleData.of(speciesID: speciesID, form: form))
+    func pokemonDetails(speciesID: Int, form: PokemonForm?, gender: PokemonGender?) -> PokemonDetails? {
+        pokemonDetailsByID[speciesID]?.applying(FormBattleData.of(speciesID: speciesID, form: form, gender: gender))
     }
 
     /// The key item that switches this species' forms, when the player owns it.

@@ -8,6 +8,7 @@ struct RecapContent {
     let companionSpeciesID: Int?
     let companionShiny: Bool
     let companionForm: PokemonForm?
+    let companionFemale: Bool
     let graduates: [(entry: DexEntry, name: String)]
     private let calendar: Calendar
     /// Built once per read: a `DateFormatter` is expensive and the card asks for a label per meter.
@@ -28,6 +29,7 @@ struct RecapContent {
         companionSpeciesID = companion.currentSpeciesID
         companionShiny = companion.currentIsShiny
         companionForm = companion.currentForm
+        companionFemale = companion.currentIsFemale
         graduates = recap.graduated.prefix(4).map { entry in
             let name = companion.dexStoredChainNames(entry)?[entry.finalID] ?? "#\(entry.finalID)"
             // Four chips share a row: only Unown's letter fits, the sprite already shows other forms.
@@ -308,7 +310,7 @@ struct RecapCard: View {
     private var graduateStrip: some View {
         HStack(spacing: 5) {
             SpriteView(speciesID: content.companionSpeciesID, size: 18, animated: false,
-                       shiny: content.companionShiny, form: content.companionForm)
+                       shiny: content.companionShiny, form: content.companionForm, female: content.companionFemale)
             Rectangle().fill(.white.opacity(0.35)).frame(width: 1, height: 14)
             if content.graduates.isEmpty {
                 Text(content.l.recapNoGraduates)

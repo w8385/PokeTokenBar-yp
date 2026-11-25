@@ -115,8 +115,7 @@ enum PartyBuilder {
 
     static func member(speciesID: Int, form: PokemonForm?, shiny: Bool, profile: PokemonProfile?,
                        nature: PokemonNature? = nil, heldItem: String? = nil) -> PartyMember {
-        let resolved = PokemonForm.resolved(speciesID: speciesID, form: form)
-        let variety = PokemonForm.entries(speciesID: speciesID).first { $0.form == resolved }?.pokemonID
+        let variety = PokemonForm.varietyID(speciesID: speciesID, form: form, gender: profile?.gender)
         return PartyMember(pokemonID: variety ?? speciesID,
                            level: min(100, max(1, profile?.level ?? 1)),
                            shiny: shiny,

@@ -59,7 +59,7 @@ final class UrshifuFormTests: XCTestCase {
         XCTAssertEqual(s.currentSpeciesID, 892, file: file, line: line)
         XCTAssertEqual(s.currentForm, form, file: file, line: line)
         XCTAssertEqual(PartyBuilder.party(from: s.state).first?.pokemonID, pokemonID, file: file, line: line)
-        let battleTypes = FormBattleData.of(speciesID: 892, form: s.currentForm)?.types ?? ["fighting", "dark"]
+        let battleTypes = FormBattleData.of(speciesID: 892, form: s.currentForm, gender: s.currentGender)?.types ?? ["fighting", "dark"]
         XCTAssertEqual(battleTypes, types, file: file, line: line)
         XCTAssertEqual(PokemonForm.staticAssetName(speciesID: 892, form: s.currentForm), String(pokemonID),
                        file: file, line: line)

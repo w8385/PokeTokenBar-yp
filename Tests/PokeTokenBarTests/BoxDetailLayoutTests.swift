@@ -120,7 +120,8 @@ final class BoxDetailFixture {
                                 recorder: recorder),
             size: size, appearance: .aqua)
         try await OffscreenRender.settle(host) {
-            store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form) != nil
+            store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form,
+                                 gender: individual.entry.profile?.gender) != nil
                 && recorder.marks[.header] != nil && ready(recorder)
         }
         return recorder
@@ -261,7 +262,8 @@ final class BoxDetailShotTests: XCTestCase {
                         .environment(\.animatesSprites, false),
                     size: size, appearance: .darkAqua)
                 try await OffscreenRender.settle(host) {
-                    fixture.store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form) != nil
+                    fixture.store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form,
+                                                 gender: individual.entry.profile?.gender) != nil
                 }
                 try OffscreenRender.writePNG(of: host, to: directory.appendingPathComponent(
                     "box-detail-\(name)-\(language.rawValue).png"), scale: 2)

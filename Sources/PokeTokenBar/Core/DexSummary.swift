@@ -20,9 +20,9 @@ struct DexSummary: Encodable, Equatable, Sendable {
         shiny = national.shinyOwned
         regions = Dictionary(uniqueKeysWithValues: completions.map { ($0.region.rawValue, $0.owned) })
         self.representative = representative.speciesID.map {
-            let member = PartyBuilder.member(speciesID: $0, form: representative.form,
-                                             shiny: representative.isShiny, profile: nil)
-            return Representative(pokemonID: member.pokemonID, shiny: representative.isShiny)
+            let pokemonID = PokemonForm.varietyID(speciesID: $0, form: representative.form,
+                                                  gender: representative.isFemale ? .female : nil) ?? $0
+            return Representative(pokemonID: pokemonID, shiny: representative.isShiny)
         }
     }
 

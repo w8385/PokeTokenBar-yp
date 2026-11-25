@@ -388,7 +388,7 @@ struct TrainingTargetPicker: View {
         } label: {
             HStack(spacing: Spacing.sm) {
                 SpriteView(speciesID: target.speciesID, size: 26, animated: false, shiny: target.entry.isShiny,
-                           form: target.entry.form)
+                           form: target.entry.form, female: target.entry.profile?.gender == .female)
                     .frame(width: 26, height: 26)
                 Text(store.dexEntryName(target.entry)).font(.callout).lineLimit(1)
                 if kind == .mint, let nature = target.entry.nature {

@@ -104,21 +104,11 @@ final class GenderEvolutionDataTests: XCTestCase {
 
 @MainActor
 final class FemaleSpriteTests: XCTestCase {
-    func testSpriteSetsFollowTheSpriteRepo() {
-        XCTAssertTrue(PokemonAssets.hasFemaleSprite(speciesID: 592, animated: true))
-        XCTAssertTrue(PokemonAssets.hasFemaleSprite(speciesID: 592, animated: false))
-        XCTAssertFalse(PokemonAssets.hasFemaleSprite(speciesID: 133, animated: true), "Eevee: static only")
-        XCTAssertTrue(PokemonAssets.hasFemaleSprite(speciesID: 133, animated: false))
-        XCTAssertTrue(PokemonAssets.hasFemaleSprite(speciesID: 902, animated: true), "animated only")
-        XCTAssertFalse(PokemonAssets.hasFemaleSprite(speciesID: 902, animated: false))
-        XCTAssertFalse(PokemonAssets.hasFemaleSprite(speciesID: 1, animated: true))
-    }
-
     func testFemaleWithAFemaleSpriteResolvesItAndOthersShareTheDefault() {
         let female = SpriteStore.spriteURL(speciesID: 592, animated: true, shiny: false, female: true)
         XCTAssertTrue(female.absoluteString.hasSuffix("black-white/animated/female/592.gif"), female.absoluteString)
-        let showdown = SpriteStore.spriteURL(speciesID: 902, animated: true, shiny: false, female: true)
-        XCTAssertTrue(showdown.absoluteString.hasSuffix("other/showdown/female/902.gif"), showdown.absoluteString)
+        let showdown = SpriteStore.spriteURL(speciesID: 668, animated: true, shiny: false, female: true)
+        XCTAssertTrue(showdown.absoluteString.hasSuffix("other/showdown/female/668.gif"), showdown.absoluteString)
         let shiny = SpriteStore.spriteURL(speciesID: 592, animated: false, shiny: true, female: true)
         XCTAssertTrue(shiny.absoluteString.hasSuffix("/shiny/female/592.png"), shiny.absoluteString)
         let male = SpriteStore.spriteURL(speciesID: 592, animated: true, shiny: false)
@@ -132,10 +122,9 @@ final class FemaleSpriteTests: XCTestCase {
                           SpriteStore.cacheKey(speciesID: 592, animated: true, shiny: false))
         XCTAssertEqual(SpriteStore.cacheKey(speciesID: 1, animated: true, shiny: false, female: true),
                        SpriteStore.cacheKey(speciesID: 1, animated: true, shiny: false))
-        XCTAssertNotEqual(SpriteStore.cacheKey(speciesID: 133, animated: false, shiny: false, female: true),
-                          SpriteStore.cacheKey(speciesID: 133, animated: false, shiny: false))
-        XCTAssertEqual(SpriteStore.cacheKey(speciesID: 133, animated: true, shiny: false, female: true),
-                       SpriteStore.cacheKey(speciesID: 133, animated: true, shiny: false))
+        XCTAssertEqual(SpriteStore.cacheKey(speciesID: 133, animated: false, shiny: false, female: true),
+                       SpriteStore.cacheKey(speciesID: 133, animated: false, shiny: false))
+        XCTAssertEqual(SpriteStore.cacheKey(speciesID: 876, animated: true, shiny: false, female: true), "10186-a")
     }
 
     func testFemaleIsPartOfEverySpriteIdentity() {

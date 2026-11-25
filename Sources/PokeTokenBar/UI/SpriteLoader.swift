@@ -26,16 +26,28 @@ actor SpriteStore {
     /// `back` sprites (the companion turned away) get their own `-back` segment; front keys are unchanged.
     static func cacheKey(speciesID: Int, animated: Bool, shiny: Bool, form: PokemonForm? = nil,
                          back: Bool = false, female: Bool = false) -> String {
-        let name = PokemonForm.assetName(speciesID: speciesID, form: form)
-        let sex = usesFemaleSprite(speciesID: speciesID, animated: animated, female: female) ? "f-" : ""
+        let art = art(speciesID: speciesID, form: form, female: female)
+        let name = PokemonForm.assetName(speciesID: art.speciesID, form: art.form)
+        let sex = art.femaleFolder ? "f-" : ""
         return "\(name)-\(back ? "back-" : "")\(sex)\(shiny ? "sh" : "")\(animated ? "a" : "s")"
     }
 
-    /// A female individual only has its own sprite where the sprite set ships one; everywhere else
-    /// (and for species with forms) it shares the default sprite file.
-    static func usesFemaleSprite(speciesID: Int, animated: Bool, female: Bool) -> Bool {
-        female && !PokemonForm.hasForms(speciesID: speciesID)
-            && PokemonAssets.hasFemaleSprite(speciesID: speciesID, animated: animated)
+    /// The sprite an individual is drawn with, the same for the still and the animated sprite: a female of a
+    /// gender variety draws the variety's own id; another female uses the `female/` folder where the species has one.
+    static func art(speciesID: Int, form: PokemonForm?, female: Bool)
+        -> (speciesID: Int, form: PokemonForm?, femaleFolder: Bool) {
+        if female, let variety = GenderVariety.pokemonID(speciesID: speciesID, gender: .female) {
+            return (variety, nil, false)
+        }
+        let folder = female && !PokemonForm.hasForms(speciesID: speciesID)
+            && PokemonAssets.femaleSpriteIDs.contains(speciesID)
+        return (speciesID, form, folder)
+    }
+
+    /// Whether a female is drawn differently from the default sprite, which is her fallback while hers loads.
+    static func usesFemaleSprite(speciesID: Int, female: Bool) -> Bool {
+        let art = art(speciesID: speciesID, form: nil, female: female)
+        return art.femaleFolder || art.speciesID != speciesID
     }
 
     /// PokeAPI names form GIFs `201-b`/`492-sky`; static PNGs of separate varieties use the variety
@@ -43,6 +55,8 @@ actor SpriteStore {
     /// Back sprites sit in a `back/` folder in front of `shiny/`, for both GIFs and PNGs.
     static func spriteURL(speciesID: Int, animated: Bool, shiny: Bool, form: PokemonForm? = nil,
                           back: Bool = false, female: Bool = false) -> URL {
+        let art = art(speciesID: speciesID, form: form, female: female)
+        let speciesID = art.speciesID, form = art.form
         let blackWhite = PokemonAssets.blackWhiteAnimatedIDs.contains(speciesID)
         let name = animated && blackWhite ? PokemonForm.assetName(speciesID: speciesID, form: form)
                                           : PokemonForm.staticAssetName(speciesID: speciesID, form: form)
@@ -56,14 +70,15 @@ actor SpriteStore {
         }
         let facing = back ? "back/" : ""
         let color = shiny ? "shiny/" : ""
-        let sex = usesFemaleSprite(speciesID: speciesID, animated: animated, female: female) ? "female/" : ""
+        let sex = art.femaleFolder ? "female/" : ""
         let ext = animated ? "gif" : "png"
         return URL(string: "\(base)/\(path)\(facing)\(color)\(sex)\(name).\(ext)")!
     }
 
     func data(speciesID: Int, animated: Bool, shiny: Bool = false, form: PokemonForm? = nil,
               back: Bool = false, female: Bool = false) async -> Data? {
-        if animated, !PokemonAssets.hasAnimatedSprite(speciesID: speciesID) { return nil }
+        if animated, !PokemonAssets.hasAnimatedSprite(speciesID: Self.art(speciesID: speciesID, form: form,
+                                                                          female: female).speciesID) { return nil }
         let key = Self.cacheKey(speciesID: speciesID, animated: animated, shiny: shiny, form: form,
                                 back: back, female: female)
         if let d = mem[key] { touch(key); return d }
@@ -182,7 +197,7 @@ enum SpriteLoader {
             return front
         }
         // A female sprite that is not cached yet shows the default one meanwhile.
-        guard SpriteStore.usesFemaleSprite(speciesID: speciesID, animated: animated, female: female) else { return nil }
+        guard SpriteStore.usesFemaleSprite(speciesID: speciesID, female: female) else { return nil }
         return cachedImage(speciesID: speciesID, animated: animated, shiny: shiny,
                            directory: directory, form: form, back: back, female: false)
     }
@@ -221,7 +236,7 @@ enum SpriteLoader {
     static func animationFrames(speciesID: Int, shiny: Bool, store: SpriteStore = .shared,
                                 form: PokemonForm? = nil, back: Bool = false, female: Bool = false) async
         -> [(image: NSImage, delay: TimeInterval)] {
-        let wantsFemale = SpriteStore.usesFemaleSprite(speciesID: speciesID, animated: true, female: female)
+        let wantsFemale = SpriteStore.usesFemaleSprite(speciesID: speciesID, female: female)
         var femaleFailedTransiently = false
         for sex in wantsFemale ? [true, false] : [false] {
             // Like a back failure, a transient female failure returns [] so the retry loop asks again
@@ -326,7 +341,7 @@ enum SpriteLoader {
                                          form: form, female: female) {
             return front
         }
-        guard SpriteStore.usesFemaleSprite(speciesID: speciesID, animated: animated, female: female) else {
+        guard SpriteStore.usesFemaleSprite(speciesID: speciesID, female: female) else {
             return nil
         }
         return await image(speciesID: speciesID, animated: animated, shiny: shiny, store: store,

@@ -72,9 +72,16 @@ struct FormBattleData: Sendable, Equatable {
     let abilities: [PokemonAbilityOption]
 
     private init(_ types: [String], _ stats: [Int], ability: String) {
+        self.init(types, stats, abilities: [ability])
+    }
+
+    /// `abilities` in PokéAPI slot order; with three, the third is the hidden one.
+    private init(_ types: [String], _ stats: [Int], abilities: [String]) {
         self.types = types
         baseStats = Dictionary(uniqueKeysWithValues: zip(PokemonStatCalculator.order, stats))
-        abilities = [PokemonAbilityOption(name: ability, slot: 1, isHidden: false)]
+        self.abilities = abilities.enumerated().map { index, name in
+            PokemonAbilityOption(name: name, slot: index + 1, isHidden: abilities.count == 3 && index == 2)
+        }
     }
 
     static let byPokemonID: [Int: FormBattleData] = [
@@ -87,18 +94,21 @@ struct FormBattleData: Sendable, Equatable {
         10191: .init(["fighting", "water"], [100, 130, 100, 63, 60, 97], ability: "unseen-fist"),
         10193: .init(["psychic", "ice"], [100, 165, 150, 85, 130, 50], ability: "as-one-glastrier"),
         10194: .init(["psychic", "ghost"], [100, 85, 80, 165, 100, 150], ability: "as-one-spectrier"),
+        10025: .init(["psychic"], [74, 48, 76, 83, 81, 104], abilities: ["keen-eye", "infiltrator", "competitive"]),
+        10186: .init(["psychic", "normal"], [70, 55, 65, 95, 105, 85],
+                     abilities: ["own-tempo", "synchronize", "psychic-surge"]),
+        10248: .init(["water", "ghost"], [120, 92, 65, 100, 75, 78],
+                     abilities: ["swift-swim", "adaptability", "mold-breaker"]),
+        10254: .init(["normal"], [115, 90, 70, 59, 90, 65], abilities: ["aroma-veil", "gluttony", "thick-fat"]),
     ]
 
-    static func of(speciesID: Int, form: PokemonForm?) -> FormBattleData? {
-        let resolved = PokemonForm.resolved(speciesID: speciesID, form: form)
-        guard let pokemonID = PokemonForm.entries(speciesID: speciesID).first(where: { $0.form == resolved })?.pokemonID
-        else { return nil }
-        return byPokemonID[pokemonID]
+    static func of(speciesID: Int, form: PokemonForm?, gender: PokemonGender?) -> FormBattleData? {
+        PokemonForm.varietyID(speciesID: speciesID, form: form, gender: gender).flatMap { byPokemonID[$0] }
     }
 
     /// The ability this individual has in its current form: the form's option with the same slot, else its first.
     static func abilityName(speciesID: Int, form: PokemonForm?, profile: PokemonProfile) -> String? {
-        guard let data = of(speciesID: speciesID, form: form) else { return profile.abilityName }
+        guard let data = of(speciesID: speciesID, form: form, gender: profile.gender) else { return profile.abilityName }
         let option = data.abilities.first { $0.slot == profile.abilitySlot && $0.isHidden == profile.abilityIsHidden }
             ?? data.abilities.first
         return option?.name

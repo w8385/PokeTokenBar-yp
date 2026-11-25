@@ -186,7 +186,7 @@ struct TradeArrivalBanner: View {
             let l = store.l
             HStack(spacing: 10) {
                 SpriteView(speciesID: arrival.evolvedID ?? arrival.receivedID, size: 44, animated: true,
-                           shiny: arrival.isShiny)
+                           shiny: arrival.isShiny, female: arrival.isFemale)
                     .frame(width: 44, height: 44)
                 VStack(alignment: .leading, spacing: 2) {
                     if let sender = arrival.fromName {

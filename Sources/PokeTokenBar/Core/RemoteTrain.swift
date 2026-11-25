@@ -130,7 +130,8 @@ enum RemoteTrain {
             case .partner(let species): return partners.contains(species)
             }
         }) else { return nil }
-        let pokemonID = PartyBuilder.member(speciesID: rule.species, form: entry.form, shiny: false, profile: nil).pokemonID
+        let pokemonID = PokemonForm.varietyID(speciesID: rule.species, form: entry.form, gender: entry.profile?.gender)
+            ?? rule.species
         var evolution = RemoteEvolution(item: ItemKind.linkingCord.rawValue, pokemonID: pokemonID)
         if case .holding? = rule.trade { evolution.heldItem = state.heldItemSlug(of: id) }
         return evolution
@@ -249,7 +250,8 @@ extension PartyMember {
         ownAbility = profile.abilityName
         forms = PokemonForm.entries(speciesID: speciesID).map { entry in
             RemoteFormOption(form: entry.form.rawValue, pokemonID: entry.pokemonID ?? speciesID,
-                             ability: FormBattleData.of(speciesID: speciesID, form: entry.form)?.abilities.first?.name)
+                             ability: FormBattleData.of(speciesID: speciesID, form: entry.form,
+                                                        gender: profile.gender)?.abilities.first?.name)
         }
     }
 }

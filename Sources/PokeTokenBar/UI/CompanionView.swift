@@ -911,10 +911,11 @@ struct CompanionHeader: View {
                         }
                     }
                     if store.hasRaisedPokemon, let id = store.currentSpeciesID,
-                       let details = store.pokemonDetails(speciesID: id, form: store.currentForm) {
+                       let details = store.pokemonDetails(speciesID: id, form: store.currentForm,
+                                                          gender: store.currentGender) {
                         TypeBadges(types: details.types, language: store.language)
                         if !PokemonForm.isDefault(store.currentForm, speciesID: id),
-                           FormBattleData.of(speciesID: id, form: store.currentForm) == nil {
+                           FormBattleData.of(speciesID: id, form: store.currentForm, gender: store.currentGender) == nil {
                             Text(store.l.defaultFormDataNote)
                                 .font(.caption2).foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -1899,10 +1900,15 @@ struct PokemonDetailView: View {
             ?? forms.first ?? species
     }
 
-    var details: PokemonDetails? { store.pokemonDetails(speciesID: species.id, form: displayedSpecies.form) }
+    private var displayedGender: PokemonGender? { displayedSpecies.isFemale ? .female : nil }
+    var details: PokemonDetails? {
+        store.pokemonDetails(speciesID: species.id, form: displayedSpecies.form, gender: displayedGender)
+    }
     private var showsAlternateForm: Bool { !PokemonForm.isDefault(displayedSpecies.form, speciesID: species.id) }
     /// Such a form shows its own types, stats and abilities; its height, weight and moves are still the species'.
-    private var hasFormBattleData: Bool { FormBattleData.of(speciesID: species.id, form: displayedSpecies.form) != nil }
+    private var hasFormBattleData: Bool {
+        FormBattleData.of(speciesID: species.id, form: displayedSpecies.form, gender: displayedGender) != nil
+    }
 
     private var defaultFormNote: some View {
         Text(store.l.defaultFormDataNote)
@@ -2002,7 +2008,7 @@ struct PokemonDetailView: View {
                     } label: {
                         VStack(spacing: 0) {
                             SpriteView(speciesID: species.id, size: 36,
-                                       shiny: owned?.isShiny == true, form: form)
+                                       shiny: owned?.isShiny == true, form: form, female: owned?.isFemale == true)
                                 .frame(width: 36, height: 36)
                                 .overlay(alignment: .topTrailing) {
                                     if owned?.isShiny == true { Text("✨").font(.ptb(.body)) }
@@ -2041,7 +2047,8 @@ struct PokemonDetailView: View {
     private var identityHeader: some View {
         HStack(spacing: 14) {
             SpriteView(speciesID: displayedSpecies.id, size: 104, animated: true,
-                       shiny: displayedShiny, spriteStore: spriteStore, form: displayedSpecies.form)
+                       shiny: displayedShiny, spriteStore: spriteStore, form: displayedSpecies.form,
+                       female: displayedSpecies.isFemale)
                 .frame(width: 104, height: 104)
             identityText
                 .frame(maxWidth: .infinity, alignment: .leading)

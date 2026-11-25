@@ -53,8 +53,7 @@ final class EvolutionRulesTests: XCTestCase {
 
     func testEveryStepWhoseResultFormDependsOnHowItEvolvedKeepsThatFormOrIsListedAsNotKept() throws {
         let notKept: [Int: String] = [
-            678: "open: gender picks the variety", 902: "open: gender picks the variety",
-            916: "open: gender picks the variety", 745: "open: time of day picks the variety",
+            745: "open: time of day picks the variety",
             849: "open: nature picks the variety", 711: "open: size picks the variety",
             665: "cosmetic only", 666: "cosmetic only", 670: "cosmetic only", 671: "cosmetic only",
             855: "cosmetic only", 869: "cosmetic only", 925: "cosmetic only", 982: "cosmetic only", 1013: "cosmetic only",
@@ -66,7 +65,10 @@ final class EvolutionRulesTests: XCTestCase {
             guard results.count > 1 else { continue }
             multiForm.insert(step.species)
             let rule = EvolutionRules.rule(for: step.species)
-            let catalog = Set(PokemonForm.forms(speciesID: step.species).map { "\(step.name)-\($0.rawValue)" })
+            var catalog = Set(PokemonForm.forms(speciesID: step.species).map { "\(step.name)-\($0.rawValue)" })
+            if GenderVariety.femalePokemonIDs[step.species] != nil {
+                catalog.formUnion(["\(step.name)-male", "\(step.name)-female"])
+            }
             if let rule, !rule.itemForms.isEmpty || !rule.towerForms.isEmpty {
                 for detail in step.details {
                     let item = (detail["item"] as? String).flatMap { slug in

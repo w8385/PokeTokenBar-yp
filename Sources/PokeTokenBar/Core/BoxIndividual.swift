@@ -158,7 +158,8 @@ extension CompanionStore {
                 return false
             }
             if !types.isEmpty,
-               !self.types(speciesID: individual.speciesID, form: individual.entry.form).contains(where: { PokemonType(apiName: $0).map(types.contains) ?? false }) {
+               !self.types(speciesID: individual.speciesID, form: individual.entry.form,
+                           gender: individual.entry.profile?.gender).contains(where: { PokemonType(apiName: $0).map(types.contains) ?? false }) {
                 return false
             }
             return true
