@@ -44,14 +44,16 @@ struct BoxDetailView: View {
                     }
                     .boxDetailMark(.heldItem)
                     moveTraining
-                    if store.pokemonDetails(speciesID: individual.speciesID, form: entry.form) != nil,
+                    if store.pokemonDetails(speciesID: individual.speciesID, form: entry.form,
+                                            gender: entry.profile?.gender) != nil,
                        let profile = entry.profile {
                         activeMoves(profile).boxDetailMark(.activeMoves)
                     }
                     if store.showsExpShareSlot(for: individual) {
                         ExpShareSlot(store: store, individual: individual).boxDetailMark(.expShare)
                     }
-                    if let details = store.pokemonDetails(speciesID: individual.speciesID, form: entry.form),
+                    if let details = store.pokemonDetails(speciesID: individual.speciesID, form: entry.form,
+                                                          gender: entry.profile?.gender),
                        let profile = entry.profile {
                         individualSection(profile: profile, details: details).boxDetailMark(.individual)
                     } else if entry.profile != nil {
@@ -108,7 +110,8 @@ struct BoxDetailView: View {
                 if let types = stone?.types ?? tera?.types {
                     TypeBadges(types: types, language: store.language, size: 11,
                                horizontalPadding: 7, verticalPadding: 2)
-                } else if let details = store.pokemonDetails(speciesID: individual.speciesID, form: entry.form) {
+                } else if let details = store.pokemonDetails(speciesID: individual.speciesID, form: entry.form,
+                                                             gender: entry.profile?.gender) {
                     TypeBadges(types: details.types, language: store.language, size: 11,
                                horizontalPadding: 7, verticalPadding: 2)
                 }

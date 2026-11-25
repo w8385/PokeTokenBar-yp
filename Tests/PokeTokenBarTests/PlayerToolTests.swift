@@ -142,11 +142,11 @@ final class PlayerToolTests: XCTestCase {
         let profile = TrainingFixture.profile("p-landorus", slot: 3, hidden: true, ability: "sheer-force")
         let landorus = TrainingFixture.graduate("landorus", speciesID: 645, profile: profile)
         let s = try await store([landorus], inventory: ["revealGlass": 1], species: [645])
-        XCTAssertEqual(s.pokemonDetails(speciesID: 645, form: nil)?.types, ["ground", "flying"])
+        XCTAssertEqual(s.pokemonDetails(speciesID: 645, form: nil, gender: profile.gender)?.types, ["ground", "flying"])
         XCTAssertEqual(s.changeForm(of: "landorus", to: PokemonForm("therian")), .changed)
         let form = s.trainable(id: "landorus")?.form
         XCTAssertEqual(FormBattleData.abilityName(speciesID: 645, form: form, profile: profile), "intimidate")
-        XCTAssertEqual(s.pokemonDetails(speciesID: 645, form: form)?.baseStats["attack"], 145)
+        XCTAssertEqual(s.pokemonDetails(speciesID: 645, form: form, gender: profile.gender)?.baseStats["attack"], 145)
         let member = PartyBuilder.member(speciesID: 645, form: form, shiny: false, profile: profile)
         XCTAssertEqual(member.ability, "intimidate")
         XCTAssertEqual(member.pokemonID, 10021)

@@ -32,10 +32,11 @@ struct BattleInfo: Codable, Equatable, Sendable {
 
     /// The sprite for a bot-side Pokémon id: the species itself, or the species and form that own an
     /// alternate-form id. Nil for ids the app has no sprite for.
-    static func spriteTarget(pokemonID: Int) -> (speciesID: Int, form: PokemonForm?)? {
-        if (1...1025).contains(pokemonID) { return (pokemonID, nil) }
+    static func spriteTarget(pokemonID: Int) -> (speciesID: Int, form: PokemonForm?, female: Bool)? {
+        if (1...1025).contains(pokemonID) { return (pokemonID, nil, false) }
+        if let speciesID = GenderVariety.species(ofPokemonID: pokemonID) { return (speciesID, nil, true) }
         for (speciesID, entries) in PokemonForm.catalog {
-            if let entry = entries.first(where: { $0.pokemonID == pokemonID }) { return (speciesID, entry.form) }
+            if let entry = entries.first(where: { $0.pokemonID == pokemonID }) { return (speciesID, entry.form, false) }
         }
         return nil
     }

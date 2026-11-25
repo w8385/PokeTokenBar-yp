@@ -84,7 +84,7 @@ struct BattleInfoSections: View {
     @ViewBuilder
     private func sprite(_ pokemonID: Int?, size: CGFloat, shiny: Bool = false) -> some View {
         if let pokemonID, let target = BattleInfo.spriteTarget(pokemonID: pokemonID) {
-            SpriteView(speciesID: target.speciesID, size: size, shiny: shiny, form: target.form)
+            SpriteView(speciesID: target.speciesID, size: size, shiny: shiny, form: target.form, female: target.female)
                 .frame(width: size, height: size)
         } else {
             Image(systemName: "questionmark")

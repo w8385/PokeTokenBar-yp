@@ -10,6 +10,7 @@ struct SaveSnapshot: Identifiable, Sendable, Equatable {
     let currentSpeciesID: Int?
     let currentIsShiny: Bool
     let currentForm: PokemonForm?
+    let currentIsFemale: Bool
 }
 
 enum SaveSnapshotManager {
@@ -79,7 +80,8 @@ enum SaveSnapshotManager {
                     lifetimeTokens: st.usedSinceInstall,
                     currentSpeciesID: st.currentPokemonPreview.speciesID,
                     currentIsShiny: st.currentPokemonPreview.isShiny,
-                    currentForm: st.currentPokemonPreview.form
+                    currentForm: st.currentPokemonPreview.form,
+                    currentIsFemale: st.currentPokemonPreview.isFemale
                 ))
             } else if let st = try? JSONDecoder().decode(CompanionState.self, from: data) {
                 let date = parseStamp(file) ?? (try? url.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date()
@@ -91,7 +93,8 @@ enum SaveSnapshotManager {
                     lifetimeTokens: st.usedSinceInstall,
                     currentSpeciesID: st.currentPokemonPreview.speciesID,
                     currentIsShiny: st.currentPokemonPreview.isShiny,
-                    currentForm: st.currentPokemonPreview.form
+                    currentForm: st.currentPokemonPreview.form,
+                    currentIsFemale: st.currentPokemonPreview.isFemale
                 ))
             }
         }
@@ -160,7 +163,8 @@ enum SaveSnapshotManager {
             lifetimeTokens: state.usedSinceInstall,
             currentSpeciesID: state.currentPokemonPreview.speciesID,
             currentIsShiny: state.currentPokemonPreview.isShiny,
-            currentForm: state.currentPokemonPreview.form
+            currentForm: state.currentPokemonPreview.form,
+            currentIsFemale: state.currentPokemonPreview.isFemale
         )
     }
 

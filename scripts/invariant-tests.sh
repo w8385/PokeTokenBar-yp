@@ -43,7 +43,7 @@ CLASSES=(
   RarityNameTests                  # tier names in every language and the READMEs
   RemoteOpsContractTests           # remote op kinds, actions, reasons match bot/contract/remote_ops.json
   WalletLedgerScanTests            # spentTokens is written only by CompanionStore.spend and refund
-  FormDisplayScanTests             # screens read details through the individual's form
+  FormDisplayScanTests             # screens read details through the individual's form and draw its gender
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).

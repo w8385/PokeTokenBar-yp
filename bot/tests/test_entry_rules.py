@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pytest
 from fixed_clock import fixed_now
 from test_commands import CHANNEL, handler, lineups, member
@@ -87,6 +90,13 @@ def test_forms_of_one_species_count_once(store, fought):
 @pytest.mark.parametrize("pokemon_id, species", [(10100, 26), (10190, ETERNATUS), (10999, 10999), (PIKACHU, PIKACHU)])
 def test_a_form_id_maps_to_its_species_and_an_unknown_one_to_itself(pokemon_id, species):
     assert entry_rules.species_id(pokemon_id) == species
+
+
+def test_every_female_variety_the_app_uploads_maps_to_its_species():
+    varieties = json.loads((Path(__file__).resolve().parents[2] / "data/gender-differences.json").read_text())
+    assert varieties["femaleVarieties"]
+    for variety in varieties["femaleVarieties"]:
+        assert entry_rules.species_id(variety["pokemonID"]) == variety["speciesID"], variety["name"]
 
 
 def test_a_later_holder_of_the_same_item_fights_without_it(store, fought):

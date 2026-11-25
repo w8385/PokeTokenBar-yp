@@ -44,10 +44,12 @@ enum BattleStatPreview {
     /// The details of the form the member is uploaded as; nil for a variety the app has no battle data for.
     @MainActor
     static func details(for fighter: BattleCandidate, speciesID: Int, in store: CompanionStore) -> PokemonDetails? {
-        let form = store.dexEntry(for: fighter)?.form
-        guard fighter.member.pokemonID == speciesID || FormBattleData.of(speciesID: speciesID, form: form) != nil
+        let entry = store.dexEntry(for: fighter)
+        let form = entry?.form, gender = entry?.profile?.gender
+        guard fighter.member.pokemonID == speciesID
+                || FormBattleData.of(speciesID: speciesID, form: form, gender: gender) != nil
         else { return nil }
-        return store.pokemonDetails(speciesID: speciesID, form: form)
+        return store.pokemonDetails(speciesID: speciesID, form: form, gender: gender)
     }
 
     /// `details` must be the default form the member fights in; a row whose starting form the app has no base

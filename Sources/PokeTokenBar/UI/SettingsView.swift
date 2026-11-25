@@ -571,7 +571,7 @@ struct SettingsView: View {
             HStack(spacing: 8) {
                 if let speciesID = snapshot.currentSpeciesID {
                     SpriteView(speciesID: speciesID, size: 28, shiny: snapshot.currentIsShiny,
-                               form: snapshot.currentForm)
+                               form: snapshot.currentForm, female: snapshot.currentIsFemale)
                         .frame(width: 28, height: 28)
                 } else {
                     SpriteView(speciesID: nil, size: 28)

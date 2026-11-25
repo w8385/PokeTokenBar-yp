@@ -15,6 +15,7 @@ extension CompanionStore {
         var evolvedID: Int?
         var evolvedName: String?
         let isShiny: Bool
+        var isFemale = false
     }
 
     func dismissTradeArrival() { tradeArrival = nil }
@@ -97,7 +98,8 @@ extension CompanionStore {
             tradeArrivalSeq += 1
             let name = delivery.receive.name
             tradeArrival = TradeArrival(id: tradeArrivalSeq, entryID: arrived.id, fromName: sender,
-                                        receivedID: arrived.finalID, receivedName: name, isShiny: arrived.isShiny)
+                                        receivedID: arrived.finalID, receivedName: name, isShiny: arrived.isShiny,
+                                        isFemale: arrived.profile?.gender == .female)
             notifyCompanionEvent(l.notifTradeTitle, l.notifTradeBody(name, from: sender))
         }
         guard changed else { return settled }
