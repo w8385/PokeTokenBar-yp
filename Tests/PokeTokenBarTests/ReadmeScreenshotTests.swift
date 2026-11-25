@@ -694,6 +694,59 @@ final class ReadmeScreenshotTests: XCTestCase {
             .environment(\.locale, language.displayLocale)
     }
 
+    func testDrawUsageRecapImages() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_README_SHOT_DIR"] else {
+            throw XCTSkip("Set PTB_README_SHOT_DIR to draw the README images")
+        }
+        let dir = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let suite = "readme-recap-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("readme-recap-\(UUID()).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        try await preloadSprites()
+        moveNames = PokemonNameDisplayStore()
+
+        let now = Self.pinnedNow
+        let calendar = Calendar.current
+        let formatter = LocalUsageReader.localDayFormatter()
+        func key(_ daysAgo: Int) -> String {
+            formatter.string(from: calendar.date(byAdding: .day, value: -daysAgo, to: now)!)
+        }
+        func usage(_ date: String, _ tokens: Int) -> DailyUsage {
+            DailyUsage(date: date, inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0,
+                       totalTokens: tokens, totalCost: 0, costCoverage: .source)
+        }
+        let pattern = [9, 7, 0, 8, 6, 10, 5, 3, 0, 4, 7, 6, 2, 8, 9, 4, 0, 6, 5, 7, 3, 8, 9, 6, 4, 7, 5, 2, 6, 8]
+        var ledger = UsageLedger()
+        ledger.merge([usage(key(pattern.count), 0)]
+                     + pattern.enumerated().map { usage(key(pattern.count - 1 - $0.offset), $0.element * 100_000) })
+        ledger.save(to: defaults)
+        let store = UsageStore.offline(providers: [], defaults: defaults, pinnedNow: now)
+
+        let graduates: [(Int, [String: String])] = [
+            (6, ["en": "Charizard", "ko": "리자몽", "ja": "リザードン"]),
+            (25, ["en": "Pikachu", "ko": "피카츄", "ja": "ピカチュウ"]),
+            (133, ["en": "Eevee", "ko": "이브이", "ja": "イーブイ"]),
+        ]
+        let dex = graduates.enumerated().map { index, graduate in
+            DexEntry(baseID: graduate.0, finalID: graduate.0, chainOrder: [graduate.0], rarity: .common,
+                     caughtAt: calendar.date(byAdding: .day, value: -index, to: now), names: [graduate.0: graduate.1])
+        }
+        let dexJSON = String(decoding: try JSONEncoder().encode(dex), as: UTF8.self)
+        try Data(#"{"installBaselineSet":true,"usedSinceInstall":1000,"lastDate":"d","dex":\#(dexJSON)}"#.utf8)
+            .write(to: file)
+
+        for (language, suffix) in languages {
+            let companion = CompanionStore(fileURL: file, defaults: defaults)
+            companion.setLanguage(language)
+            try await shot(RecapScreen(store: store, companion: companion, onBack: {}, now: now)
+                .environment(\.locale, language.displayLocale),
+                           "screenshot-usage-recap\(suffix)", in: dir, height: nil)
+        }
+    }
+
     /// `height: nil` draws the view at its own height.
     private func shot<V: View>(_ view: V, _ name: String, in dir: URL, height: CGFloat?) async throws {
         let host = try await hosted(view, name, height: height)

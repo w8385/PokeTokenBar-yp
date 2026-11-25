@@ -351,6 +351,7 @@ struct RecapScreen: View {
     let store: UsageStore
     let companion: CompanionStore
     let onBack: () -> Void
+    var now: Date = Date()
 
     @State private var scope: RecapScope = .week
     /// 0 is the running period, -1 the one before it. Never positive: the future has no usage.
@@ -358,7 +359,7 @@ struct RecapScreen: View {
 
     var body: some View {
         let l = companion.l
-        let content = RecapContent(store: store, companion: companion, scope: scope, offset: offset)
+        let content = RecapContent(store: store, companion: companion, scope: scope, offset: offset, now: now)
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Button { onBack() } label: {
