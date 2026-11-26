@@ -339,8 +339,7 @@ extension CompanionStore {
         isHatching = true
         defer { isHatching = false }
         if let fullLine = try? await provider.line(baseSpeciesID: a.baseID) {
-            let line = a.tradeGated == true
-                ? fullLine.prunedTradeOnly(keeping: Set(a.pathIDs + a.plannedPathIDs)) : fullLine
+            let line = a.tradeGated == true ? fullLine.prunedTradeOnly(keeping: Set(a.reachedIDs)) : fullLine
             // await 중 사용량·민트 등 활성 상태는 계속 바뀔 수 있다. 요청 당시 스냅샷을 다시 쓰지 말고
             // 같은 개체가 아직 활성인 경우에만 최신 상태를 정규화한다.
             guard activeGeneration == generation,

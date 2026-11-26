@@ -355,6 +355,7 @@ final class CompanionStore {
         state = SaveTransfer.sanitized(s)
         state.returnLeftoverEvolutionItems()
         state.repairUrshifuStyles()
+        state.revertUnearnedTradeSteps()
     }
     func save() {
         if deferTimeSaves {

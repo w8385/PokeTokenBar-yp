@@ -755,11 +755,14 @@ struct EvoNode: Codable, Sendable {
     /// Every way into this species is a trade: plain, with a held item, or for a partner species.
     var viaAnyTrade: Bool { !methods.isEmpty && methods.allSatisfy { $0.trigger == "trade" } }
 
+    /// Growth never reaches it: the app's rule says trade or cord only, whatever else PokéAPI lists.
+    var isTradeOnly: Bool { EvolutionRules.rule(for: speciesID)?.isTradeOnly ?? viaAnyTrade }
+
     /// The tree growth follows: a trade-only evolution and everything past it are left out, except the species
     /// in `keeping` (an individual that already took the step or planned it keeps it).
     func prunedTradeOnly(keeping: Set<Int> = []) -> EvoNode {
         EvoNode(speciesID: speciesID,
-                children: children.filter { !$0.viaAnyTrade || keeping.contains($0.speciesID) }
+                children: children.filter { !$0.isTradeOnly || keeping.contains($0.speciesID) }
                     .map { $0.prunedTradeOnly(keeping: keeping) },
                 methods: methods, requiredGender: requiredGender)
     }
@@ -999,6 +1002,7 @@ struct MonState: Codable, Sendable {
     var displaysShiny: Bool { isShiny && (dittoDisguise == nil || dittoRevealed) }
     // pathIDs 가 비면(손상된 상태 파일) baseID 로 폴백 — 렌더마다 읽히므로 out-of-bounds 크래시 방지.
     var currentID: Int { pathIDs.isEmpty ? baseID : pathIDs[min(stageIndex, pathIDs.count - 1)] }
+    var reachedIDs: [Int] { Array(pathIDs.prefix(stageIndex + 1)) }
     var phaseThreshold: Int {
         PokemonBalance.phaseThreshold(
             rarity: rarity,
@@ -1316,6 +1320,8 @@ struct CompanionState: Codable, Sendable {
     var leftoverEvolutionItemsReturned = true
     /// A save from before evolution kept Urshifu's style lacks the field and decodes as false.
     var urshifuStylesRepaired = true
+    /// A save from before growth skipped held-item trade steps lacks the field and decodes as false.
+    var unearnedTradeStepsReverted = true
     /// Gym badges, Hall of Fame and hideout marks; a save from before gyms has none.
     var gymBadges = GymBadges()
 
@@ -1391,6 +1397,7 @@ struct CompanionState: Codable, Sendable {
         idleHintDismissed  = c.lenient(Bool.self, forKey: .idleHintDismissed, default: false)
         leftoverEvolutionItemsReturned = c.lenient(Bool.self, forKey: .leftoverEvolutionItemsReturned, default: false)
         urshifuStylesRepaired = c.lenient(Bool.self, forKey: .urshifuStylesRepaired, default: false)
+        unearnedTradeStepsReverted = c.lenient(Bool.self, forKey: .unearnedTradeStepsReverted, default: false)
         gymBadges          = c.lenient(GymBadges.self, forKey: .gymBadges, default: GymBadges())
     }
 

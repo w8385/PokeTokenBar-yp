@@ -203,7 +203,7 @@ extension CompanionStore {
     /// The forms the graduate's current form can grow into, resolved for the clock and its traits now.
     func graduateOptions(_ entry: DexEntry, in line: EvoLine) -> [EvoNode] {
         guard let node = line.tree.node(withID: entry.finalID) else { return [] }
-        let options = growthOptions(of: node, gender: entry.profile?.gender)
+        let options = growthOptions(of: node, gender: entry.profile?.gender).filter { !$0.isTradeOnly }
         let traits = entry.profile.map { EvolutionTraits(seed: $0.seed, ivs: $0.ivs, nature: entry.nature) }
         return EvolutionRules.plannable(options, traits: traits).map { option in
             let timed = EvoNode.resolvingTimeOfDay(option, among: options, at: DayPeriod.at(clock()))

@@ -139,6 +139,7 @@ final class SaveFormatPinTests: XCTestCase {
         state.idleHintDismissed = true
         state.leftoverEvolutionItemsReturned = true
         state.urshifuStylesRepaired = true
+        state.unearnedTradeStepsReverted = true
         state.gymBadges = badges
         return state
     }

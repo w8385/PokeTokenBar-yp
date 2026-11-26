@@ -354,6 +354,7 @@ enum SaveFormatFixture {
   },
   "timeCredit" : 5000000,
   "tokenModeSince" : 721692800,
+  "unearnedTradeStepsReverted" : true,
   "urshifuStylesRepaired" : true,
   "usedSinceInstall" : 900000000
 }
@@ -707,6 +708,7 @@ enum SaveFormatFixture {
   },
   "timeCredit" : 5000000,
   "tokenModeSince" : 721692800,
+  "unearnedTradeStepsReverted" : true,
   "urshifuStylesRepaired" : true,
   "usedSinceInstall" : 900000000
 }

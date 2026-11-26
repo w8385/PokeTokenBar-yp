@@ -154,14 +154,27 @@ final class TradeEvolutionTests: XCTestCase {
         XCTAssertEqual(store.state.active?.plannedPathIDs, [95])
     }
 
-    func testTradeGatedCompanionThatPlannedThroughSteelixKeepsItsPlan() async throws {
+    func testTradeGatedCompanionThatPlannedThroughSteelixDropsThatStep() async throws {
         let store = try makeStore { state in
             state.active = MonState(baseID: 95, pathIDs: [95], plannedPathIDs: [95, 208], stageIndex: 0,
                                     usedAtStage: 0, rarity: .common, totalForms: 2,
                                     profile: PokemonProfile.generate(seed: 5, instanceID: "o"), tradeGated: true)
         }
         try await waitForLine(store)
-        XCTAssertEqual(store.currentLine?.totalForms, 2)
+        XCTAssertEqual(store.currentLine?.totalForms, 1)
+        XCTAssertEqual(store.state.active?.plannedPathIDs, [95])
+        growToEnd(store)
+        XCTAssertEqual(store.state.dex.last?.finalID, 95)
+    }
+
+    func testTradeGatedCompanionThatAlreadyBecameSteelixStaysSteelix() async throws {
+        let store = try makeStore { state in
+            state.active = MonState(baseID: 95, pathIDs: [95, 208], plannedPathIDs: [95, 208], stageIndex: 1,
+                                    usedAtStage: 0, rarity: .common, totalForms: 2,
+                                    profile: PokemonProfile.generate(seed: 5, instanceID: "o"), tradeGated: true)
+        }
+        try await waitForLine(store)
+        XCTAssertEqual(store.state.active?.currentID, 208)
         growToEnd(store)
         XCTAssertEqual(store.state.dex.last?.finalID, 208)
     }
