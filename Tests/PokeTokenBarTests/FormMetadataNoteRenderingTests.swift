@@ -8,22 +8,21 @@ private struct FormMetadataProvider: PokeProviding, PokemonDetailProviding {
 
     func line(baseSpeciesID: Int) async throws -> EvoLine {
         EvoLine(baseID: baseSpeciesID, tree: EvoNode(speciesID: baseSpeciesID, children: []),
-                rarity: .legendary, names: [baseSpeciesID: ["en": "Shaymin"]])
+                rarity: .legendary, names: [baseSpeciesID: ["en": "Shellos"]])
     }
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
     func pokemonDetails(speciesID: Int) async throws -> PokemonDetails {
         guard detailsAvailable else { throw URLError(.notConnectedToInternet) }
-        // Default Shaymin types, stats and ability. Alternate forms deliberately keep this data.
-        let natural = speciesID == 492 ? [PokemonAbilityOption(name: "natural-cure", slot: 1, isHidden: false)] : []
-        return try SpeciesFacts.details(speciesID, abilities: natural)
+        let ability = speciesID == 422 ? [PokemonAbilityOption(name: "sticky-hold", slot: 1, isHidden: false)] : []
+        return try SpeciesFacts.details(speciesID, abilities: ability)
     }
 }
 
 /// Measures the real Home header and Pokédex identity header: a helper-only test would miss either call site.
 @MainActor
 final class FormMetadataNoteRenderingTests: XCTestCase {
-    private func store(form: PokemonForm?, speciesID: Int = 492, egg: Bool = false,
+    private func store(form: PokemonForm?, speciesID: Int = 422, egg: Bool = false,
                        detailsAvailable: Bool = true) async throws -> CompanionStore {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("form-note-\(UUID())")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -37,11 +36,11 @@ final class FormMetadataNoteRenderingTests: XCTestCase {
         if !egg {
             state.active = MonState(baseID: speciesID, pathIDs: [speciesID], stageIndex: 0,
                 usedAtStage: 0, rarity: .legendary, totalForms: 1, form: form)
-            let forms: [PokemonForm?] = speciesID == 492 ? [PokemonForm("land"), PokemonForm("sky")] : [nil]
+            let forms: [PokemonForm?] = speciesID == 422 ? [PokemonForm("west"), PokemonForm("east")] : [nil]
             state.dex = forms.map {
                 DexEntry(baseID: speciesID, finalID: speciesID, chainOrder: [speciesID], rarity: .legendary,
                          caughtAt: Date(timeIntervalSince1970: 1_700_000_000),
-                         names: [speciesID: ["en": "Shaymin"]], form: $0)
+                         names: [speciesID: ["en": "Shellos"]], form: $0)
             }
             state.representativeSpeciesID = speciesID
             state.representativeForm = form
@@ -62,36 +61,36 @@ final class FormMetadataNoteRenderingTests: XCTestCase {
     }
 
     private func detailHeaderHeight(_ store: CompanionStore) throws -> CGFloat {
-        let species = try XCTUnwrap(store.dexSpecies.first { $0.id == 492 })
+        let species = try XCTUnwrap(store.dexSpecies.first { $0.id == 422 })
         let header = PokemonDetailView(store: store, species: species, onBack: {}).identityText
         return LayoutMeasure.size(header.frame(width: PopoverMetrics.contentWidth),
                                   width: PopoverMetrics.contentWidth).height
     }
 
     func testHomeExplainsLoadedAlternateMetadataOnly() async throws {
-        let sky = try await store(form: PokemonForm("sky"))
-        let land = try await store(form: PokemonForm("land"))
-        XCTAssertGreaterThanOrEqual(homeHeight(sky) - homeHeight(land), noteLine,
+        let east = try await store(form: PokemonForm("east"))
+        let west = try await store(form: PokemonForm("west"))
+        XCTAssertGreaterThanOrEqual(homeHeight(east) - homeHeight(west), noteLine,
                                     "an alternate form must add the default-form note to Home")
 
         // Where the form is the default one, or the details are not loaded, the header gains no line.
-        let skyOnPikachu = try await store(form: PokemonForm("sky"), speciesID: 25)
+        let eastOnPikachu = try await store(form: PokemonForm("east"), speciesID: 25)
         let plainPikachu = try await store(form: nil, speciesID: 25)
-        XCTAssertTrue(PokemonForm.isDefault(PokemonForm("sky"), speciesID: 25))
-        XCTAssertEqual(homeHeight(skyOnPikachu), homeHeight(plainPikachu), accuracy: 0.5)
-        let skyUnloaded = try await store(form: PokemonForm("sky"), detailsAvailable: false)
-        let landUnloaded = try await store(form: PokemonForm("land"), detailsAvailable: false)
-        XCTAssertNil(skyUnloaded.pokemonDetailsByID[492])
-        XCTAssertEqual(homeHeight(skyUnloaded), homeHeight(landUnloaded), accuracy: 0.5)
+        XCTAssertTrue(PokemonForm.isDefault(PokemonForm("east"), speciesID: 25))
+        XCTAssertEqual(homeHeight(eastOnPikachu), homeHeight(plainPikachu), accuracy: 0.5)
+        let eastUnloaded = try await store(form: PokemonForm("east"), detailsAvailable: false)
+        let westUnloaded = try await store(form: PokemonForm("west"), detailsAvailable: false)
+        XCTAssertNil(eastUnloaded.pokemonDetailsByID[422])
+        XCTAssertEqual(homeHeight(eastUnloaded), homeHeight(westUnloaded), accuracy: 0.5)
         let egg = try await store(form: nil, egg: true, detailsAvailable: false)
         XCTAssertFalse(egg.hasActive)
     }
 
     func testDexExplainsTheDisplayedFormRatherThanTheOriginalSelection() async throws {
-        // Pass the aggregate/default species, as CollectionView does; the representative is Sky.
-        let land = try await store(form: PokemonForm("land"))
-        let sky = try await store(form: PokemonForm("sky"))
-        XCTAssertGreaterThanOrEqual(try detailHeaderHeight(sky) - detailHeaderHeight(land), noteLine,
-                                    "the displayed Sky form must add the default-form note to the Pokédex page")
+        // Pass the aggregate/default species, as CollectionView does; the representative is East.
+        let west = try await store(form: PokemonForm("west"))
+        let east = try await store(form: PokemonForm("east"))
+        XCTAssertGreaterThanOrEqual(try detailHeaderHeight(east) - detailHeaderHeight(west), noteLine,
+                                    "the displayed East form must add the default-form note to the Pokédex page")
     }
 }
