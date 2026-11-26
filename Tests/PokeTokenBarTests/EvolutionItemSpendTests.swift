@@ -125,7 +125,7 @@ final class EvolutionItemSpendTests: XCTestCase {
         state.installBaselineSet = true
         state.active = MonState(baseID: 95, pathIDs: [95], plannedPathIDs: [95, 208], stageIndex: 0, usedAtStage: 0,
                                 rarity: .common, totalForms: 2,
-                                profile: PokemonProfile.generate(seed: 5, instanceID: "o"), tradeGated: true)
+                                profile: PokemonProfile.generate(seed: 5, instanceID: "o"))
         state.heldItems["o"] = ItemKind.metalCoat.rawValue
         let s = try store(tree: onix, file: saveFile(JSONEncoder().encode(state)))
         try await waitUntil("the line to load") {

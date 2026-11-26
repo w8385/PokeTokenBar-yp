@@ -175,7 +175,7 @@ extension CompanionStore {
 
     func isKnownFinalForm(_ mon: MonState) -> Bool {
         guard !mon.plannedPathIDs.indices.contains(mon.stageIndex + 1),
-              let node = expShareLines[mon.baseID]?.tree.node(withID: mon.currentID) else { return false }
+              let node = expShareLines[mon.baseID].flatMap({ growthNode(of: mon, in: $0) }) else { return false }
         return growthOptions(of: node, gender: mon.profile?.gender).isEmpty
     }
 
@@ -212,7 +212,7 @@ extension CompanionStore {
     func isIdleExpShareHolder(_ id: String) -> Bool {
         if let stored = state.storedLines[id] {
             let mon = stored.mon
-            guard let line = expShareLines[mon.baseID], let node = line.tree.node(withID: mon.currentID),
+            guard let line = expShareLines[mon.baseID], let node = growthNode(of: mon, in: line),
                   mon.dittoDisguise == nil || mon.dittoRevealed, !holdsEverstone(id) else { return false }
             let options = growthOptions(of: node, gender: mon.profile?.gender)
             guard !options.isEmpty, mon.usedAtStage >= stageThreshold(for: mon) else { return false }

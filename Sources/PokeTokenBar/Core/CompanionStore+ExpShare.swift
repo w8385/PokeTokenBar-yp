@@ -200,7 +200,7 @@ extension CompanionStore {
         let mon = stored.mon
         let threshold = stageThreshold(for: mon)
         guard line.baseID == mon.baseID, mon.usedAtStage >= threshold, mon.dittoDisguise == nil || mon.dittoRevealed,
-              !holdsEverstone(mon.profile?.instanceID), let node = line.tree.node(withID: mon.currentID) else { return nil }
+              !holdsEverstone(mon.profile?.instanceID), let node = growthNode(of: mon, in: line) else { return nil }
         let options = growthOptions(of: node, gender: mon.profile?.gender)
         guard !options.isEmpty else { return nil }
         let step = lineStep(of: mon, at: node, among: options)
@@ -215,7 +215,7 @@ extension CompanionStore {
     private func isStoredLineGraduating(id: String, in line: EvoLine) -> Bool {
         guard let mon = state.storedLines[id]?.mon, line.baseID == mon.baseID, !isTradeLocked(id),
               mon.dittoDisguise == nil || mon.dittoRevealed, mon.usedAtStage >= stageThreshold(for: mon),
-              let node = line.tree.node(withID: mon.currentID) else { return false }
+              let node = growthNode(of: mon, in: line) else { return false }
         return growthOptions(of: node, gender: mon.profile?.gender).isEmpty
     }
 
@@ -290,7 +290,7 @@ extension CompanionStore {
     func storedLineGate(id: String) -> (rule: EvolutionRule, context: EvolutionContext)? {
         guard let stored = state.storedLines[id] else { return nil }
         guard holdsExpShare(id), let line = expShareLines[stored.mon.baseID],
-              let node = line.tree.node(withID: stored.mon.currentID) else {
+              let node = growthNode(of: stored.mon, in: line) else {
             guard let rule = plannedStoredStep(stored.mon), !rule.paths.isEmpty else { return nil }
             return (rule, storedLineContext(stored))
         }
@@ -453,6 +453,13 @@ extension CompanionStore {
         if requirements.contains(.flipped), !progress.flipped { gestures.append(.flip) }
         if requirements.contains(.spun), !progress.spun { gestures.append(.spin) }
         return gestures
+    }
+
+    /// Where a line waiting in the Box stands in its line. A gated line leaves out the trade steps it hasn't taken,
+    /// as the raised line does (`loadCurrentLine`).
+    func growthNode(of mon: MonState, in line: EvoLine) -> EvoNode? {
+        let tree = mon.tradeGated == true ? line.tree.prunedTradeOnly(keeping: Set(mon.reachedIDs)) : line.tree
+        return tree.node(withID: mon.currentID)
     }
 
     /// Children growth reaches by itself. Item-only forms (an apple, an armor) are reached by using the item.

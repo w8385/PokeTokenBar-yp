@@ -139,6 +139,9 @@ struct EvolutionRule: Sendable {
         !paths.isEmpty && paths.allSatisfy { path in path.contains { if case .bag = $0 { return true } else { return false } } }
     }
 
+    /// Reached only by a trade or the Linking Cord, whatever other ways PokéAPI lists.
+    var isTradeOnly: Bool { trade != nil && paths.isEmpty }
+
     /// Held items any way into this species names. Evolving here uses one up, whichever way opened.
     var heldItemsUsed: Set<ItemKind> {
         var items = Set(paths.joined().compactMap { requirement -> ItemKind? in
