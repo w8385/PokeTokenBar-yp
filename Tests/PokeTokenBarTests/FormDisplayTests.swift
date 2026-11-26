@@ -42,7 +42,6 @@ final class FormDisplayTests: XCTestCase {
         var data: FormBattleData? { FormBattleData.of(speciesID: speciesID, form: form, gender: nil) }
     }
 
-    /// Every catalogued form, default and not, with and without battle data, plus a save written before forms.
     private static var catalogCases: [CatalogCase] {
         PokemonForm.catalog.keys.sorted().flatMap { speciesID in
             ([nil] + PokemonForm.forms(speciesID: speciesID)).map { CatalogCase(speciesID: speciesID, form: $0) }

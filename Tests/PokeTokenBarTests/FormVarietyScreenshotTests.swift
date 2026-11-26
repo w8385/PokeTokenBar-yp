@@ -12,9 +12,7 @@ private struct FormVarietyShotProvider: PokeProviding, PokemonDetailProviding {
     }
 }
 
-/// Opt-in captures for the PR: a synthetic save with a Land and a Sky Shaymin, the real views.
-///
-///     PTB_FORM_VARIETY_SCREENSHOT_DIR=/tmp/shots swift test --filter FormVarietyScreenshotTests
+/// Writes captures only when `PTB_FORM_VARIETY_SCREENSHOT_DIR` is set.
 @MainActor
 final class FormVarietyScreenshotTests: XCTestCase {
     private func shaymin(id: String, form: String) -> DexEntry {
