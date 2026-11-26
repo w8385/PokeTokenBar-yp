@@ -109,7 +109,7 @@ final class BattleStatPreviewTests: XCTestCase {
         XCTAssertEqual(BattleStatPreview.types(for: fighter, speciesID: speciesID, in: store), ["psychic", "ice"])
     }
 
-    func testVarietyWithoutBattleDataShowsNoLine() async throws {
+    func testSkyShayminRowShowsSkyStats() async throws {
         var entry = DexEntry(baseID: 492, finalID: 492, chainOrder: [492], rarity: .rare,
                              caughtAt: Date(timeIntervalSince1970: 1_700_000_000),
                              profile: PokemonProfile.generate(seed: 492, instanceID: "sky"),
@@ -122,7 +122,9 @@ final class BattleStatPreviewTests: XCTestCase {
         let fighter = try XCTUnwrap(BattleEntry.candidates(in: store.state).first)
 
         XCTAssertEqual(fighter.member.pokemonID, 10006)
-        XCTAssertEqual(BattleStatPreview.lines(for: fighter, speciesID: 492, in: store), [])
+        XCTAssertEqual(BattleStatPreview.lines(for: fighter, speciesID: 492, in: store).map(\.form), [.normal])
+        XCTAssertEqual(BattleStatPreview.details(for: fighter, speciesID: 492, in: store)?.baseStats["speed"], 127)
+        XCTAssertEqual(BattleStatPreview.types(for: fighter, speciesID: 492, in: store), ["grass", "flying"])
     }
 
     func testStellarCrystalRowShowsOnlyTheStellarLine() async throws {

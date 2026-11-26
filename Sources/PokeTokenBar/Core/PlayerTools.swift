@@ -75,6 +75,13 @@ struct FormBattleData: Sendable, Equatable {
         self.init(types, stats, abilities: [ability])
     }
 
+    private init(_ types: [String], _ stats: [Int], ability: String, hidden: String) {
+        self.types = types
+        baseStats = Dictionary(uniqueKeysWithValues: zip(PokemonStatCalculator.order, stats))
+        abilities = [PokemonAbilityOption(name: ability, slot: 1, isHidden: false),
+                     PokemonAbilityOption(name: hidden, slot: 3, isHidden: true)]
+    }
+
     /// `abilities` in PokéAPI slot order; with three, the third is the hidden one.
     private init(_ types: [String], _ stats: [Int], abilities: [String]) {
         self.types = types
@@ -85,6 +92,25 @@ struct FormBattleData: Sendable, Equatable {
     }
 
     static let byPokemonID: [Int: FormBattleData] = [
+        10001: .init(["psychic"], [50, 180, 20, 180, 20, 150], ability: "pressure"),
+        10002: .init(["psychic"], [50, 70, 160, 70, 160, 90], ability: "pressure"),
+        10003: .init(["psychic"], [50, 95, 90, 95, 90, 180], ability: "pressure"),
+        10004: .init(["bug", "ground"], [60, 79, 105, 59, 85, 36], ability: "anticipation", hidden: "overcoat"),
+        10005: .init(["bug", "steel"], [60, 69, 95, 69, 95, 36], ability: "anticipation", hidden: "overcoat"),
+        10006: .init(["grass", "flying"], [100, 103, 75, 120, 75, 127], ability: "serene-grace"),
+        10007: .init(["ghost", "dragon"], [150, 120, 100, 120, 100, 90], ability: "levitate"),
+        10008: .init(["electric", "fire"], [50, 65, 107, 105, 107, 86], ability: "levitate"),
+        10009: .init(["electric", "water"], [50, 65, 107, 105, 107, 86], ability: "levitate"),
+        10010: .init(["electric", "ice"], [50, 65, 107, 105, 107, 86], ability: "levitate"),
+        10011: .init(["electric", "flying"], [50, 65, 107, 105, 107, 86], ability: "levitate"),
+        10012: .init(["electric", "grass"], [50, 65, 107, 105, 107, 86], ability: "levitate"),
+        10013: .init(["fire"], [70, 70, 70, 70, 70, 70], ability: "forecast"),
+        10014: .init(["water"], [70, 70, 70, 70, 70, 70], ability: "forecast"),
+        10015: .init(["ice"], [70, 70, 70, 70, 70, 70], ability: "forecast"),
+        10016: .init(["water"], [70, 92, 65, 80, 55, 98], abilities: ["rock-head", "adaptability", "mold-breaker"]),
+        10017: .init(["fire", "psychic"], [105, 30, 105, 140, 105, 55], ability: "sheer-force", hidden: "zen-mode"),
+        10018: .init(["normal", "fighting"], [100, 128, 90, 77, 77, 128], ability: "serene-grace"),
+        10024: .init(["water", "fighting"], [91, 72, 90, 129, 90, 108], ability: "justified"),
         10019: .init(["flying"], [79, 100, 80, 110, 90, 121], ability: "regenerator"),
         10020: .init(["electric", "flying"], [79, 105, 70, 145, 80, 101], ability: "volt-absorb"),
         10021: .init(["ground", "flying"], [89, 145, 90, 105, 80, 91], ability: "intimidate"),

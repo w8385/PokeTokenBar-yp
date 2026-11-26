@@ -34,8 +34,115 @@ final class FormDisplayTests: XCTestCase {
         }.sorted { ($0.speciesID, $0.form.rawValue) < ($1.speciesID, $1.form.rawValue) }
     }
 
+    private struct CatalogCase {
+        let speciesID: Int
+        let form: PokemonForm?
+        var label: String { "#\(speciesID) \(form?.rawValue ?? "nil")" }
+        var isDefault: Bool { PokemonForm.isDefault(form, speciesID: speciesID) }
+        var data: FormBattleData? { FormBattleData.of(speciesID: speciesID, form: form, gender: nil) }
+    }
+
+    /// Every catalogued form, default and not, with and without battle data, plus a save written before forms.
+    private static var catalogCases: [CatalogCase] {
+        PokemonForm.catalog.keys.sorted().flatMap { speciesID in
+            ([nil] + PokemonForm.forms(speciesID: speciesID)).map { CatalogCase(speciesID: speciesID, form: $0) }
+        }
+    }
+
+    private static func lineBase(of speciesID: Int) -> Int {
+        (1...speciesID).first { PokemonForm.formSpecies(baseID: $0).contains(speciesID) } ?? speciesID
+    }
+
+    private func assertComplete(_ details: PokemonDetails?, _ catalogCase: CatalogCase, _ screen: String,
+                                file: StaticString = #filePath, line: UInt = #line) throws {
+        let label = "\(catalogCase.label) \(screen)"
+        guard let details else { return XCTFail("no details: \(label)", file: file, line: line) }
+        XCTAssertFalse(details.types.isEmpty, label, file: file, line: line)
+        XCTAssertEqual(Set(details.baseStats.keys), Set(PokemonStatCalculator.order), label, file: file, line: line)
+        XCTAssertTrue(details.baseStats.values.allSatisfy { $0 > 0 }, label, file: file, line: line)
+        XCTAssertFalse(details.abilities.isEmpty, label, file: file, line: line)
+        let species = try SpeciesFacts.details(catalogCase.speciesID)
+        XCTAssertEqual(details.types, catalogCase.data?.types ?? species.types, label, file: file, line: line)
+        XCTAssertEqual(details.baseStats, catalogCase.data?.baseStats ?? species.baseStats, label, file: file, line: line)
+    }
+
+    func testEveryCatalogFormShowsTypesStatsAndAbilityAsAGraduateOnEveryScreen() async throws {
+        for catalogCase in Self.catalogCases {
+            let speciesID = catalogCase.speciesID
+            let store = try await graduateStore(speciesID, form: catalogCase.form)
+            let page = try detailView(store, speciesID)
+            try assertComplete(page.details, catalogCase, "dex page")
+            let individual = try XCTUnwrap(store.boxIndividuals.first { $0.id == "graduate" }, catalogCase.label)
+            let profile = try XCTUnwrap(individual.entry.profile, catalogCase.label)
+            try assertComplete(store.pokemonDetails(speciesID: individual.speciesID, form: individual.entry.form,
+                                                    gender: profile.gender), catalogCase, "box")
+            XCTAssertNotNil(FormBattleData.abilityName(speciesID: speciesID, form: individual.entry.form,
+                                                       profile: profile), catalogCase.label)
+            XCTAssertFalse(store.types(speciesID: speciesID, form: individual.entry.form, gender: profile.gender).isEmpty,
+                           catalogCase.label)
+            let fighter = try XCTUnwrap(BattleEntry.candidates(in: store.state).first { $0.id == "graduate" },
+                                        catalogCase.label)
+            XCTAssertEqual(fighter.member.pokemonID,
+                           PokemonForm.varietyID(speciesID: speciesID, form: catalogCase.form, gender: nil) ?? speciesID,
+                           catalogCase.label)
+            let previewSpecies = BattleStatPreview.speciesID(of: fighter, in: store)
+            try assertComplete(BattleStatPreview.details(for: fighter, speciesID: previewSpecies, in: store),
+                               catalogCase, "battle preview")
+            XCTAssertEqual(BattleStatPreview.types(for: fighter, speciesID: previewSpecies, in: store)?.isEmpty, false,
+                           catalogCase.label)
+        }
+    }
+
+    func testEveryCatalogFormShowsTypesStatsAndAbilityWhileRaised() async throws {
+        for catalogCase in Self.catalogCases {
+            let speciesID = catalogCase.speciesID
+            let baseID = Self.lineBase(of: speciesID)
+            let path = baseID == speciesID ? [speciesID] : [baseID, speciesID]
+            var state = CompanionState()
+            state.active = MonState(baseID: baseID, pathIDs: path, stageIndex: path.count - 1, usedAtStage: 0,
+                                    rarity: .legendary, totalForms: path.count,
+                                    profile: PokemonProfile.generate(seed: UInt64(speciesID), instanceID: "raised"),
+                                    form: catalogCase.form)
+            let store = try await store(state, loading: [speciesID])
+            XCTAssertEqual(store.currentSpeciesID, speciesID, catalogCase.label)
+            try assertComplete(store.pokemonDetails(speciesID: speciesID, form: store.currentForm,
+                                                    gender: store.currentGender), catalogCase, "raised")
+        }
+    }
+
+    func testTheDexPageNotesTheDefaultFormsDataOnlyForAFormWithoutBattleData() async throws {
+        for catalogCase in Self.catalogCases where catalogCase.speciesID != PokemonForm.unownSpeciesID {
+            let defaultForm = PokemonForm.forms(speciesID: catalogCase.speciesID).first
+            let shown = try await graduateStore(catalogCase.speciesID, form: catalogCase.form)
+            let plain = try await graduateStore(catalogCase.speciesID, form: defaultForm)
+            let difference = height(try detailView(shown, catalogCase.speciesID).identityText)
+                - height(try detailView(plain, catalogCase.speciesID).identityText)
+            if catalogCase.isDefault || catalogCase.data != nil {
+                XCTAssertEqual(difference, 0, accuracy: 0.5, catalogCase.label)
+            } else {
+                XCTAssertGreaterThanOrEqual(difference, 8, catalogCase.label)
+            }
+        }
+    }
+
+    func testADefaultFormDrawsThePlainSpeciesArt() {
+        for catalogCase in Self.catalogCases {
+            let speciesID = catalogCase.speciesID
+            for animated in [false, true] {
+                let file = SpriteStore.spriteURL(speciesID: speciesID, animated: animated, shiny: false,
+                                                 form: catalogCase.form).lastPathComponent
+                let plain = "\(speciesID).\(animated ? "gif" : "png")"
+                if catalogCase.isDefault {
+                    XCTAssertEqual(file, plain, catalogCase.label)
+                } else {
+                    XCTAssertNotEqual(file, plain, catalogCase.label)
+                }
+            }
+        }
+    }
+
     private func graduate(_ speciesID: Int, form: PokemonForm?, id: String = "graduate") throws -> DexEntry {
-        let baseID = [892: 891][speciesID] ?? speciesID
+        let baseID = Self.lineBase(of: speciesID)
         XCTAssertTrue(PokemonForm.formSpecies(baseID: baseID).contains(speciesID), "#\(speciesID) needs its line base")
         var entry = DexEntry(id: id, baseID: baseID, finalID: speciesID,
                              chainOrder: baseID == speciesID ? [speciesID] : [baseID, speciesID],
