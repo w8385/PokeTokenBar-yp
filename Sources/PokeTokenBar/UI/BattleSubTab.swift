@@ -2,17 +2,18 @@ import Foundation
 
 /// What the Battle tab can show. `BattleView` renders them through an exhaustive switch.
 enum BattleSection: Equatable {
-    case entry, gyms, recent, linkLine
+    case entry, gyms, tower, recent, linkLine
 }
 
 enum BattleSubTab: String, CaseIterable {
-    case entry, battle, history
+    case entry, battle, tower, history
 
     /// `linked` is a saved token and a server address; a rejected token still counts, as it did before sub-tabs.
     func sections(linked: Bool, hasEntry: Bool) -> [BattleSection] {
         switch self {
         case .entry: linked ? (hasEntry ? [.entry] : []) : [.linkLine]
         case .battle: hasEntry ? [.gyms] : []
+        case .tower: hasEntry ? [.tower] : []
         case .history: linked ? [.recent] : [.linkLine]
         }
     }

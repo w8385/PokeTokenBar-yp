@@ -1324,6 +1324,8 @@ struct CompanionState: Codable, Sendable {
     var unearnedTradeStepsReverted = true
     /// Gym badges, Hall of Fame and hideout marks; a save from before gyms has none.
     var gymBadges = GymBadges()
+    /// Battle tower BP, entry and records; a save from before the tower has none.
+    var tower = TowerProgress()
 
     init() {}
 
@@ -1399,6 +1401,7 @@ struct CompanionState: Codable, Sendable {
         urshifuStylesRepaired = c.lenient(Bool.self, forKey: .urshifuStylesRepaired, default: false)
         unearnedTradeStepsReverted = c.lenient(Bool.self, forKey: .unearnedTradeStepsReverted, default: false)
         gymBadges          = c.lenient(GymBadges.self, forKey: .gymBadges, default: GymBadges())
+        tower              = c.lenient(TowerProgress.self, forKey: .tower, default: TowerProgress())
     }
 
     /// 지금 가진(놓아주지 않은) 개체의 instanceID — 지닌 도구를 달 수 있는 대상.

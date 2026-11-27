@@ -87,13 +87,16 @@ struct GymResultView: View {
     let busy: Bool
     let onPrimary: () -> Void
     let onClose: () -> Void
+    /// Lines shown with the outcome once the replay ends (the tower's BP and trophy).
+    let notes: [String]
     @State private var showsLog = false
     /// Nil when the bot sent no events; the result shows at once.
     @State private var replay: GymReplayPlayer?
 
     init(record: GymFightRecord, language: AppLanguage, l: L, regionName: String, tmName: @escaping (Int) -> String?,
          primaryTitle: String?, busy: Bool, onPrimary: @escaping () -> Void, onClose: @escaping () -> Void,
-         replayShown: Int? = nil) {
+         replayShown: Int? = nil, notes: [String] = []) {
+        self.notes = notes
         self.record = record
         self.language = language
         self.l = l
@@ -152,6 +155,7 @@ struct GymResultView: View {
             Text(l.gymTurnCount(outcome.turns)).font(.caption).foregroundStyle(.secondary)
         }
         if let reward = record.reward { rewardLines(reward) }
+        ForEach(notes, id: \.self) { Text($0).font(.caption.weight(.semibold)) }
         if outcome.won, outcome.run != nil, outcome.run?.next == nil { Text(l.gymRunCleared).font(.caption) }
         if !outcome.won, outcome.run != nil { Text(l.gymRunLostHint).font(.caption2).foregroundStyle(.secondary) }
         let forms = replay?.replay.last.form ?? []

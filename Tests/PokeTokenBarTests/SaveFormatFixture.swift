@@ -354,6 +354,30 @@ enum SaveFormatFixture {
   },
   "timeCredit" : 5000000,
   "tokenModeSince" : 721692800,
+  "tower" : {
+    "bp" : 120,
+    "entry" : [
+      "grad-1",
+      "grad-2",
+      "stored-1"
+    ],
+    "records" : {
+      "entry" : {
+        "best" : 25,
+        "streak" : 3,
+        "trophies" : [
+          "silver"
+        ]
+      },
+      "rental" : {
+        "best" : 4,
+        "streak" : 0,
+        "trophies" : [
+
+        ]
+      }
+    }
+  },
   "unearnedTradeStepsReverted" : true,
   "urshifuStylesRepaired" : true,
   "usedSinceInstall" : 900000000
@@ -708,6 +732,30 @@ enum SaveFormatFixture {
   },
   "timeCredit" : 5000000,
   "tokenModeSince" : 721692800,
+  "tower" : {
+    "bp" : 120,
+    "entry" : [
+      "grad-1",
+      "grad-2",
+      "stored-1"
+    ],
+    "records" : {
+      "entry" : {
+        "best" : 25,
+        "streak" : 3,
+        "trophies" : [
+          "silver"
+        ]
+      },
+      "rental" : {
+        "best" : 4,
+        "streak" : 0,
+        "trophies" : [
+
+        ]
+      }
+    }
+  },
   "unearnedTradeStepsReverted" : true,
   "urshifuStylesRepaired" : true,
   "usedSinceInstall" : 900000000
