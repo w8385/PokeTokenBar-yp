@@ -121,6 +121,17 @@ final class TowerScreenshotTests: XCTestCase {
                 "team": TowerTests.rentals([112, 149, 9]), "beaten": TowerTests.rentals([143, 130, 65], item: "leftovers")])
             swap.bot.replies["/v1/tower/record"] = [(record(entry: TowerFixtures.run(streak: 0, best: 31), rental: rental), 200)]
             try await shot(swap, height: 560, to: directory.appendingPathComponent("tower-rental-swap-\(language.rawValue).png"))
+
+            let exchange = try rig(language, bp: 1_240)
+            exchange.store.state.dex.append(TowerFixtures.entry(6, id: "d"))
+            let host = TowerExchangeView(store: exchange.store, onClose: {}).ptbCard()
+                .padding(.horizontal, 12).padding(.top, 8).frame(maxHeight: .infinity, alignment: .top)
+            let size = NSSize(width: PopoverMetrics.contentWidth, height: 1100)
+            try await OffscreenRender.capture(
+                host.frame(width: size.width, height: size.height).background(Color.white)
+                    .environment(\.colorScheme, .light).environment(\.locale, language.displayLocale),
+                size: size, appearance: .aqua,
+                to: directory.appendingPathComponent("tower-exchange-\(language.rawValue).png"))
         }
     }
 }

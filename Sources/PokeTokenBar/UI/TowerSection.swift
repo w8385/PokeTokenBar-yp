@@ -10,6 +10,7 @@ struct TowerSection: View {
     /// Opens the picker for tower entry slot `slot` (0-based).
     let onPickSlot: (Int) -> Void
 
+    @State private var showsExchange = false
     @State private var picked: [Int] = []
     @State private var give: Int?
     @State private var take: Int?
@@ -28,6 +29,8 @@ struct TowerSection: View {
                 unavailableRow(reason)
             } else if let outcome = service.last {
                 result(outcome)
+            } else if showsExchange {
+                TowerExchangeView(store: store, onClose: { showsExchange = false })
             } else if service.runs.isEmpty {
                 Text(l.towerLoading).font(.caption).foregroundStyle(.secondary)
                     .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
@@ -75,7 +78,10 @@ struct TowerSection: View {
             .pickerStyle(.segmented).labelsHidden().fixedSize().controlSize(.small)
             .disabled(service.busy)
             Spacer()
-            Text(l.towerBP(tower.bp)).font(.callout.weight(.semibold)).monospacedDigit()
+            Button { showsExchange = true } label: {
+                Text(l.towerBP(tower.bp)).font(.callout.weight(.semibold)).monospacedDigit()
+            }
+            .buttonStyle(.bordered).controlSize(.small).help(l.towerExchange)
         }
     }
 
@@ -270,13 +276,17 @@ struct TowerSection: View {
         if !outcome.battle.won { notes.append(l.towerStreakEnded(outcome.gain.battle - 1)) }
         if outcome.run.beaten != nil { notes.append(l.towerSwapNote) }
         let team = TowerEntry.team(state: store.state, ids: tower.entry, moveChoices: entry.moveChoices)
-        let primary: String? = outcome.battle.won ? l.towerNextBattle : (mode == .entry && team != nil ? l.gymRematch : nil)
+        let swapOpen = outcome.run.beaten != nil
+        let primary: String? = swapOpen ? l.towerSwap
+            : outcome.battle.won ? l.towerNextBattle : (mode == .entry && team != nil ? l.gymRematch : nil)
         return VStack(alignment: .leading, spacing: 0) {
             GymResultView(
                 record: GymFightRecord(opponent: outcome.opponent, outcome: outcome.battle, reward: nil),
                 language: language, l: l, regionName: l.towerTitle,
                 tmName: { _ in nil }, primaryTitle: primary, busy: service.busy,
-                onPrimary: { Task { await service.fight(mode, team: team) } },
+                onPrimary: {
+                    if swapOpen { service.dismissResult() } else { Task { await service.fight(mode, team: team) } }
+                },
                 onClose: { service.dismissResult() }, notes: notes)
             .id("\(outcome.battle.gymId)-\(outcome.battle.seed)")
             if let failure = service.failure {
