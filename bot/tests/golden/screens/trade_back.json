@@ -11,7 +11,7 @@
      "type": "section"
     },
     {
-     "block_id": "to:0000000000000001",
+     "block_id": "to:0000000000000002",
      "elements": [
       {
        "action_id": "offer_give",
@@ -21,21 +21,21 @@
           "text": "피카츄 Lv.30 대담",
           "type": "plain_text"
          },
-         "value": "to:0000000000000001|b2"
+         "value": "to:0000000000000002|b2"
         },
         {
          "text": {
           "text": "발챙이 Lv.30 대담",
           "type": "plain_text"
          },
-         "value": "to:0000000000000001|b3"
+         "value": "to:0000000000000002|b3"
         },
         {
          "text": {
           "text": "콘치 Lv.30 대담",
           "type": "plain_text"
          },
-         "value": "to:0000000000000001|b4"
+         "value": "to:0000000000000002|b4"
         }
        ],
        "placeholder": {
@@ -62,7 +62,7 @@
        "type": "plain_text"
       },
       "type": "button",
-      "value": "00000000000000080000000000000008"
+      "value": "00000000000000090000000000000009"
      },
      "text": {
       "text": "내 고라파덕 Lv.30 → 밥님 · 상대가 고르는 중이에요",
