@@ -175,11 +175,14 @@ extension CompanionStore {
     /// 토큰 증분을 현재 포켓몬에 적용 — 임계 도달 시 진화/졸업.
     /// 라인 미로딩(재시작 직후·오프라인)이어도 사용량은 항상 적립한다 — 여기서 드롭하면
     /// 프로바이더별 ledger 는 이미 전진해 델타가 영구 유실된다. 진화 판정만 라인 로드 후로 미룬다.
-    func applyUsage(_ delta: Int) {
-        guard state.active != nil, !isLineParked else { return }
+    /// Returns the XP past the last stage when the line graduates; the line itself keeps none of it.
+    @discardableResult
+    func applyUsage(_ delta: Int) -> Int {
+        guard state.active != nil, !isLineParked else { return 0 }
         state.active!.usedAtStage += delta
         reconcileActiveProfileGrowth()
-        guard let line = currentLine else { save(); return }
+        guard let line = currentLine else { save(); return 0 }
+        var graduationOverflow = 0
         var guardCount = 0
         while state.active != nil, guardCount < 50 {
             guardCount += 1
@@ -196,6 +199,7 @@ extension CompanionStore {
             let gender = a.profile?.gender
             let options = growthOptions(of: node, gender: gender)
             if options.isEmpty {
+                graduationOverflow = a.usedAtStage - thr
                 graduate(); break
             } else if holdsEverstone(a.profile?.instanceID) {
                 break
@@ -220,6 +224,7 @@ extension CompanionStore {
         }
         reconcileActiveProfileGrowth()
         save()
+        return graduationOverflow
     }
 
     /// Tells the player once per blocking reason that the form is ready but a condition is unmet. Time is one

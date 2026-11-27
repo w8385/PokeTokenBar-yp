@@ -2140,6 +2140,29 @@ struct L {
           "Beim Trainingsabschluss verfallen \(xp) überschüssige EP.",
           "При выпуске сгорит остаток: \(xp) XP.")
     }
+    func candyLeftoverToExpShare(_ xp: String, holders: Int) -> String {
+        t("졸업 시 남는 경험치 \(xp) XP → 학습장치 \(holders)마리",
+          "On graduation, leftover \(xp) XP → \(expShareHolderCount(holders))",
+          "卒業時の余り経験値 \(xp) XP → がくしゅうそうち \(holders)匹",
+          "Al graduarse, \(xp) XP sobrantes → Repartir Exp (\(holders))",
+          "À la fin de la croissance, \(xp) XP restants → Multi Exp (\(holders))",
+          "Ao se formar, \(xp) XP restantes → Compart. Exp. (\(holders))",
+          "Beim Trainingsabschluss: \(xp) überschüssige EP → EP-Teiler (\(holders))",
+          "При выпуске остаток \(xp) XP → Общий опыт (\(holders))")
+    }
+    func candyLeftoverShared(_ xp: String, holders: Int) -> String {
+        t("남은 경험치 \(xp) XP를 학습장치 \(holders)마리에게 나눠줬어요.",
+          "Leftover \(xp) XP went to \(expShareHolderCount(holders)).",
+          "余った経験値 \(xp) XPをがくしゅうそうちの\(holders)匹に分けました。",
+          "\(xp) XP sobrantes repartidos con Repartir Exp (\(holders)).",
+          "\(xp) XP restants partagés via Multi Exp (\(holders)).",
+          "\(xp) XP restantes divididos pelo Compart. Exp. (\(holders)).",
+          "\(xp) überschüssige EP über den EP-Teiler verteilt (\(holders)).",
+          "Остаток \(xp) XP разделён через Общий опыт (\(holders)).")
+    }
+    private func expShareHolderCount(_ n: Int) -> String {
+        n == 1 ? "1 Exp. Share holder" : "\(n) Exp. Share holders"
+    }
 
     /// 아이템 표시명 — species 처럼 공식 현지명.
     func itemName(_ kind: ItemKind) -> String {

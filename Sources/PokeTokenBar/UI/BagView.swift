@@ -206,9 +206,14 @@ private struct ItemCard: View {
                 if preview.graduates {
                     Text(l.candyGraduates).font(.caption2).foregroundStyle(.secondary)
                 }
-                if preview.discardedXP > 0 {
-                    Text(l.candyDiscardedXP(TokenFormatter.compact(preview.discardedXP)))
-                        .font(.caption2).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+                if let leftover = store.candyLeftoverLine(for: preview) {
+                    if leftover.wasted {
+                        Text(leftover.text)
+                            .font(.caption2).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text(leftover.text)
+                            .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
                 } else if preview.evolves && !preview.graduates {
                     Text(l.candyCarryoverXP(TokenFormatter.compact(preview.carryoverXP)))
                         .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)

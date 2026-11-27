@@ -394,6 +394,37 @@ final class DittoRevealTests: XCTestCase {
         }
     }
 
+    func testDisguisedCandyBatchGivesExpShareHoldersNothingAtTheReveal() async throws {
+        let s = seedDisguise()
+        await drainReveal(s)
+        var profile = PokemonProfile.generate(seed: 11, instanceID: "holder")
+        profile.level = 30
+        s.state.dex.append(DexEntry(id: "holder", baseID: 25, finalID: 25, chainOrder: [25], rarity: .common,
+                                    caughtAt: dNow, profile: profile, names: [25: ["en": "Pikachu"]]))
+        s.state.expShareHolders = ["holder"]
+        s.grantCandies(from: [], limitsReady: true)
+        for i in 0..<4 {
+            s.grantCandies(from: [CandyWindow(key: "batch.\(i)", name: "Test", kind: .weekly,
+                                             utilization: 100)], limitsReady: true)
+        }
+        let preview = try XCTUnwrap(s.planRareCandyUse(count: 20))
+        XCTAssertTrue(preview.graduates, "Preview must use the apparent path")
+        XCTAssertGreaterThan(preview.discardedXP, 0)
+        XCTAssertEqual(s.candyLeftoverRecipientCount, 1)
+        let line = try XCTUnwrap(s.candyLeftoverLine(for: preview))
+        XCTAssertEqual(line.text, s.l.candyLeftoverToExpShare(TokenFormatter.compact(preview.discardedXP), holders: 1),
+                       "the picker reads like the apparent Pokémon's")
+        XCTAssertFalse(line.wasted)
+        let before = try XCTUnwrap(s.state.dex.first { $0.id == "holder" }?.profile?.growthTokens)
+
+        _ = s.useRareCandy(count: 20)
+        await drainReveal(s)
+
+        XCTAssertEqual(s.currentSpeciesID, PokemonOdds.dittoSpeciesID)
+        XCTAssertEqual(s.state.dex.first { $0.id == "holder" }?.profile?.growthTokens, before)
+        XCTAssertNil(s.candyLeftoverShared)
+    }
+
     func testCandyBatchStopsAtTheRevealAndCarriesOnlyThatCandy() async throws {
         let s = seedDisguise()
         await drainReveal(s)

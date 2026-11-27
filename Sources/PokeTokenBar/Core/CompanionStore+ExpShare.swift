@@ -111,15 +111,35 @@ extension CompanionStore {
     /// its stage and takes the steps that open by themselves (`evolveStoredLineIfReady`).
     func creditExpShareHolders(_ share: Int, skipping raisingIDs: Set<String>) {
         guard share > 0 else { return }
-        for id in state.expShareHolders where !raisingIDs.contains(id) {
-            if let stored = state.storedLines[id] {
-                var mon = stored.mon
-                mon.usedAtStage = min(SaveTransfer.maxTokenValue, mon.usedAtStage + share)
-                state.storedLines[id]?.mon = reconciledProfileGrowth(mon)
-                if let line = expShareLines[mon.baseID] { _ = evolveStoredLineIfReady(id: id, in: line) }
-            } else if let index = state.dex.firstIndex(where: { $0.id == id && !$0.isReleased }) {
-                creditExpShareGraduate(at: index, share)
-            }
+        for id in state.expShareHolders where !raisingIDs.contains(id) { creditExpShareHolder(id, share) }
+    }
+
+    /// The holders a share goes to now, in holder order: not the Pokémon being raised, not `excluded`.
+    func expShareRecipients(excluding excluded: Set<String> = []) -> [String] {
+        let skipped = Set([state.raisedEntry?.id, state.active?.profile?.instanceID].compactMap { $0 }).union(excluded)
+        return state.expShareHolders.filter { !skipped.contains($0) }
+    }
+
+    /// Splits `xp` evenly over `recipients`, the remainder to the first. Returns how many took a part.
+    @discardableResult
+    func splitAcrossExpShareHolders(_ xp: Int, recipients: [String]) -> Int {
+        guard xp > 0, !recipients.isEmpty else { return 0 }
+        let part = xp / recipients.count
+        for (index, id) in recipients.enumerated() {
+            creditExpShareHolder(id, part + (index == 0 ? xp % recipients.count : 0))
+        }
+        return recipients.count
+    }
+
+    private func creditExpShareHolder(_ id: String, _ share: Int) {
+        guard share > 0 else { return }
+        if let stored = state.storedLines[id] {
+            var mon = stored.mon
+            mon.usedAtStage = min(SaveTransfer.maxTokenValue, mon.usedAtStage + share)
+            state.storedLines[id]?.mon = reconciledProfileGrowth(mon)
+            if let line = expShareLines[mon.baseID] { _ = evolveStoredLineIfReady(id: id, in: line) }
+        } else if let index = state.dex.firstIndex(where: { $0.id == id && !$0.isReleased }) {
+            creditExpShareGraduate(at: index, share)
         }
     }
 
@@ -555,6 +575,7 @@ extension CompanionStore {
         let name = formDisplayName(currentLine?.localizedName(finalID, state.language) ?? "",
                                    speciesID: finalID, form: a.form)
         justGraduated = name
+        candyLeftoverShared = nil
         notifyCompanionEvent(l.notifGraduateTitle, l.notifGraduateBody(name))
         eventUntil = clock().addingTimeInterval(6)
         state.active = nil
