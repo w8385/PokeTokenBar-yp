@@ -83,6 +83,9 @@ enum SaveFormatFixture {
   "collectedFinals" : [
     "4-6"
   ],
+  "coworkerTrophies" : [
+    "coworker-a"
+  ],
   "dex" : [
     {
       "baseID" : 4,
@@ -467,6 +470,9 @@ enum SaveFormatFixture {
   "clickGrowth" : 77,
   "collectedFinals" : [
     "4-6"
+  ],
+  "coworkerTrophies" : [
+    "coworker-a"
   ],
   "dex" : [
     {

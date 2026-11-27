@@ -577,7 +577,9 @@ final class SaveTransferTests: XCTestCase {
         // expShareHolders = 진행 — 달아 둔 학습장치는 inventory 밖에 있으니 같이 가야 사라지지 않는다.
         // stuckWatch·keepWaiting·expShareTakenOff = 진행 — 개체에 대한 플레이어의 선택이라 개체와 함께 간다.
         // tower = 진행 — BP 는 통화라 inventory 처럼 옮겨 가고, 기록은 봇이 다시 알려 준다.
+        // coworkerTrophies = 진행 — 동료 고스트를 처음 이겨 받은 트로피라 배지처럼 따라간다.
         let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs", "gymBadges", "tower",
+                                     "coworkerTrophies",
                                      "graduateEvolution", "storedLines", "expShareHolders", "expShareTakenOff", "stuckWatch", "keepWaiting",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",
@@ -648,7 +650,7 @@ final class SaveTransferTests: XCTestCase {
         XCTAssertEqual(s.state.dex.count, imported.dex.count, "진행은 그대로 들어와야 한다")
     }
 
-    func testImportCarriesGymBadges() throws {
+    func testImportCarriesGymBadgesAndCoworkerTrophies() throws {
         let today = "2026-08-03"
         let url = tempURL("gym")
         var mine = CompanionState()
@@ -658,11 +660,13 @@ final class SaveTransferTests: XCTestCase {
 
         var imported = oldMacState(today: today)
         imported.gymBadges.update("kanto") { $0.gyms = [1, 2, 3]; $0.hallOfFame = true }
+        imported.coworkerTrophies = ["coworker-a"]
         let data = try SaveTransfer.encode(state: imported, appVersion: "2.5.0", deviceName: "Old Mac", now: transferNow)
         try s.applySave(try SaveTransfer.decode(data), todayTokensByProvider: ["test": 1],
                         todayDate: today, hasUsageData: true)
 
         XCTAssertEqual(s.state.gymBadges, imported.gymBadges)
+        XCTAssertEqual(s.state.coworkerTrophies, ["coworker-a"])
     }
 
     /// [딥리뷰 M-e] 사탕 지급 원장은 계정 전역(한도 창 key)이라 통째 교체하면 안 된다.

@@ -48,6 +48,47 @@ extension L {
           "Вся команда (до шести) сражается на Ур50 или ниже. В Slack ничего не публикуется.")
     }
 
+    // MARK: Coworker ghosts
+
+    var ghostTitle: String { t("네임드", "Named", "ネームド", "Rivales", "Rivaux", "Rivais", "Rivalen", "Соперники") }
+    var ghostHint: String {
+        t("동료가 마지막으로 올린 파티와 Lv50으로 겨뤄요. 상대에게 알림이 가지 않고 전적에도 남지 않아요. 처음 이기면 트로피를 받아요.",
+          "Battle a coworker's last uploaded party at Lv50. They aren't told and no record is kept. Your first win earns their trophy.",
+          "同僚が最後にアップロードしたパーティとLv50で対戦します。相手に通知されず、戦績にも残りません。初勝利でトロフィーがもらえます。",
+          "Combate contra el último equipo que subió un compañero, a Nv50. No se le avisa ni queda registro. Tu primera victoria te da su trofeo.",
+          "Affronte la dernière équipe envoyée par un collègue, au N50. Il n'est pas prévenu et rien n'est enregistré. Ta première victoire rapporte son trophée.",
+          "Lute contra a última equipe enviada por um colega, no Nv50. Ele não é avisado e nada fica registrado. A primeira vitória dá o troféu dele.",
+          "Kämpfe gegen das zuletzt hochgeladene Team eines Kollegen auf Lv50. Er wird nicht benachrichtigt, nichts wird gespeichert. Dein erster Sieg bringt seine Trophäe.",
+          "Сразитесь с последней загруженной командой коллеги на Ур50. Коллега не узнает, запись не сохраняется. Первая победа даёт его трофей.")
+    }
+    var ghostLine: String {
+        t("마지막으로 올린 파티 · Lv50", "Last uploaded party · Lv50", "最後にアップロードしたパーティ · Lv50",
+          "Último equipo subido · Nv50", "Dernière équipe envoyée · N50", "Última equipe enviada · Nv50",
+          "Zuletzt hochgeladenes Team · Lv50", "Последняя загруженная команда · Ур50")
+    }
+    var ghostEmpty: String {
+        t("아직 겨룰 동료가 없어요. 최근 30일 안에 파티를 올린 동료가 여기 보여요.",
+          "No coworkers to battle yet. Coworkers who uploaded a party in the last 30 days show here.",
+          "まだ対戦できる同僚がいません。30日以内にパーティをアップロードした同僚がここに表示されます。",
+          "Aún no hay compañeros. Aquí salen los que subieron un equipo en los últimos 30 días.",
+          "Aucun collègue pour l'instant. Ceux qui ont envoyé une équipe ces 30 derniers jours s'affichent ici.",
+          "Ainda não há colegas. Quem enviou uma equipe nos últimos 30 dias aparece aqui.",
+          "Noch keine Kollegen. Hier erscheint, wer in den letzten 30 Tagen ein Team hochgeladen hat.",
+          "Пока нет коллег. Здесь появятся те, кто загрузил команду за последние 30 дней.")
+    }
+    var ghostBotTooOld: String {
+        t("봇이 업데이트되면 동료와 겨룰 수 있어요.", "Coworker battles open once the bot is updated.",
+          "ボットが更新されると同僚と対戦できます。", "Los combates con compañeros llegan cuando se actualice el bot.",
+          "Les combats entre collègues arrivent avec la mise à jour du bot.", "As batalhas com colegas chegam quando o bot for atualizado.",
+          "Kämpfe gegen Kollegen gibt es, sobald der Bot aktualisiert ist.", "Бои с коллегами появятся после обновления бота.")
+    }
+    func ghostTrophyEarned(_ name: String) -> String {
+        t("\(name) 트로피를 받았어요!", "You earned \(name)'s trophy!", "\(name)のトロフィーを獲得!",
+          "¡Ganaste el trofeo de \(name)!", "Tu as gagné le trophée de \(name) !", "Você ganhou o troféu de \(name)!",
+          "Du hast die Trophäe von \(name) gewonnen!", "Вы получили трофей: \(name)!")
+    }
+    var ghostTrophy: String { t("트로피", "Trophy", "トロフィー", "Trofeo", "Trophée", "Troféu", "Trophäe", "Трофей") }
+
     // MARK: Elite Four
 
     var gymEliteTitle: String { t("사천왕", "Elite Four", "四天王", "Alto Mando", "Conseil des 4", "Elite dos Quatro", "Top Vier", "Элитная четвёрка") }
@@ -118,6 +159,15 @@ extension L {
             return t("봇이 이 대결을 받지 않았어요\(suffix).", "The bot refused this battle\(suffix).", "ボットがこの対戦を受け付けませんでした\(suffix)。",
                      "El bot rechazó este combate\(suffix).", "Le bot a refusé ce combat\(suffix).", "O bot recusou esta batalha\(suffix).",
                      "Der Bot hat diesen Kampf abgelehnt\(suffix).", "Бот отклонил этот бой\(suffix).")
+        case .unknownCoworker:
+            return t("지금은 이 동료와 겨룰 수 없어요. 동료 목록이 바뀌었을 수 있어요.",
+                     "You can't battle this coworker now. The coworker list may have changed.",
+                     "今はこの同僚と対戦できません。同僚リストが変わったかもしれません。",
+                     "Ahora no puedes combatir con este compañero. La lista puede haber cambiado.",
+                     "Impossible d'affronter ce collègue pour l'instant. La liste a peut-être changé.",
+                     "Não dá para enfrentar este colega agora. A lista pode ter mudado.",
+                     "Gegen diesen Kollegen kannst du gerade nicht kämpfen. Die Liste hat sich vielleicht geändert.",
+                     "Сейчас нельзя сразиться с этим коллегой. Список мог измениться.")
         case .unreachable:
             return gymUnavailable(.unreachable)
         case .botTooOld:

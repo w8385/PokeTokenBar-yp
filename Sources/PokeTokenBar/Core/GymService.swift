@@ -30,6 +30,25 @@ struct GymFightRecord: Equatable, Sendable {
     let opponent: GymOpponent
     let outcome: GymBattleOutcome
     let reward: GymReward?
+    /// The coworker whose ghost this was; nil for a trainer.
+    var coworkerID: String? = nil
+    /// The win earned that coworker's trophy for the first time.
+    var trophy = false
+}
+
+extension GymOpponent {
+    /// The bot's `gym_id` and `kind` for a coworker's ghost party.
+    static let ghostID = "ghost"
+
+    /// A coworker's ghost as the gym views show an opponent: the Coworkers-list name, a fixed line, Lv50.
+    static func ghost(_ coworker: BattleInfo.Coworker, l: L) -> GymOpponent {
+        let name = coworker.label(l)
+        let line = l.ghostLine
+        return GymOpponent(id: ghostID, kind: ghostID, index: 0, types: [], level: 50,
+                           trainer: GymTrainer(name: ["ko": name, "en": name, "ja": name],
+                                               line: ["ko": line, "en": line, "ja": line]),
+                           team: [], run: nil)
+    }
 }
 
 /// Talks to the bot's gym endpoints and keeps where a run stands. Rewards are handed to `applyReward` with the
@@ -44,6 +63,8 @@ final class GymService {
     enum Failure: Equatable, Sendable {
         case rateLimited(retryAfter: Double)
         case refused(String)
+        /// The coworker is no longer on the bot's Coworkers list for this user.
+        case unknownCoworker
         case unreachable
         case botTooOld
         case failed
@@ -68,6 +89,7 @@ final class GymService {
     @ObservationIgnored private let badges: @MainActor () -> GymBadges
     @ObservationIgnored private let ownedTMs: @MainActor () -> Set<Int>
     @ObservationIgnored private let applyReward: @MainActor (GymReward, GymOpponent, GymRegion) -> Void
+    @ObservationIgnored private let claimCoworkerTrophy: @MainActor (String) -> Bool
     @ObservationIgnored let session: GymSession
 
     init(link: @escaping @MainActor () -> Link?,
@@ -75,12 +97,14 @@ final class GymService {
          badges: @escaping @MainActor () -> GymBadges,
          ownedTMs: @escaping @MainActor () -> Set<Int>,
          applyReward: @escaping @MainActor (GymReward, GymOpponent, GymRegion) -> Void,
+         claimCoworkerTrophy: @escaping @MainActor (String) -> Bool = { _ in false },
          session: GymSession = .shared) {
         self.link = link
         self.exchange = exchange
         self.badges = badges
         self.ownedTMs = ownedTMs
         self.applyReward = applyReward
+        self.claimCoworkerTrophy = claimCoworkerTrophy
         self.session = session
     }
 
@@ -147,31 +171,54 @@ final class GymService {
         failure = nil
     }
 
-    private func fight(_ opponent: GymOpponent, region: GymRegion, team: GymTeam.Team) async {
-        guard inFlight == nil, let link = link(),
-              let request = Self.battleRequest(link, GymBattleRequest(gymId: opponent.id, team: team.members))
+    /// Fights a coworker's last uploaded party at full health. The first win keeps their trophy; rematches give
+    /// nothing. A coworker without an `id` (a bot before ghosts) cannot be fought.
+    func fightCoworker(_ coworker: BattleInfo.Coworker, l: L, team: GymTeam.Team) async {
+        guard let id = coworker.id else { return }
+        let opponent = GymOpponent.ghost(coworker, l: l)
+        guard let outcome = await send(GymBattleRequest(coworkerId: id, team: team.members), expecting: opponent.id)
         else { return }
-        inFlight = opponent.id
+        let trophy = outcome.won && claimCoworkerTrophy(id)
+        last = GymFightRecord(opponent: opponent, outcome: outcome, reward: nil, coworkerID: id, trophy: trophy)
+    }
+
+    private func fight(_ opponent: GymOpponent, region: GymRegion, team: GymTeam.Team) async {
+        guard let outcome = await send(GymBattleRequest(gymId: opponent.id, team: team.members), expecting: opponent.id)
+        else { return }
+        finish(outcome, opponent: opponent, region: region, team: team)
+    }
+
+    /// The battle the bot fought, or nil with `failure` set. `expecting` is the `gym_id` the reply must carry.
+    private func send(_ body: GymBattleRequest, expecting battleID: String) async -> GymBattleOutcome? {
+        guard inFlight == nil, let link = link(), let request = Self.battleRequest(link, body) else { return nil }
+        inFlight = battleID
         failure = nil
         defer { inFlight = nil }
         guard let (data, status) = try? await exchange(request) else {
             failure = .unreachable
-            return
+            return nil
         }
         switch status {
         case 200:
-            guard let outcome = try? GymBattleOutcome.decode(data), outcome.gymId == opponent.id else {
+            guard let outcome = try? GymBattleOutcome.decode(data), outcome.gymId == battleID else {
                 failure = .failed
-                return
+                return nil
             }
-            finish(outcome, opponent: opponent, region: region, team: team)
-        case 400: failure = .refused(Self.message(in: data) ?? "")
+            return outcome
+        case 400:
+            let message = Self.message(in: data) ?? ""
+            failure = body.coworkerId != nil && message == Self.gymIDMissing ? .botTooOld : .refused(message)
         case 401: unavailable = .rejected; failure = .failed
-        case 404: failure = .botTooOld
+        case 404: failure = Self.message(in: data) == Self.unknownCoworker ? .unknownCoworker : .botTooOld
         case 429: failure = .rateLimited(retryAfter: Self.retryAfter(in: data))
         default: failure = .failed
         }
+        return nil
     }
+
+    /// What a bot from before ghosts answers a coworker battle with.
+    nonisolated static let gymIDMissing = "gym_id must be a string"
+    nonisolated static let unknownCoworker = "unknown_coworker"
 
     private func finish(_ outcome: GymBattleOutcome, opponent: GymOpponent, region: GymRegion, team: GymTeam.Team) {
         if let run = opponent.run {
