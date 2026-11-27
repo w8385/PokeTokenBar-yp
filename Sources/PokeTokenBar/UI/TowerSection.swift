@@ -204,6 +204,11 @@ struct TowerSection: View {
     }
 
     private func rentalRow(_ members: [TowerRental], selected: [Int], onTap: @escaping (Int) -> Void) -> some View {
+        rentalGrid(members, selected: selected, onTap: onTap)
+            .task { await store.loadSpeciesIndexIfNeeded() }
+    }
+
+    private func rentalGrid(_ members: [TowerRental], selected: [Int], onTap: @escaping (Int) -> Void) -> some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.sm), count: TowerProgress.teamSize),
                   spacing: Spacing.sm) {
             ForEach(Array(members.enumerated()), id: \.offset) { index, member in
@@ -218,6 +223,9 @@ struct TowerSection: View {
             ZStack(alignment: .bottomTrailing) {
                 SpriteView(speciesID: member.pokemonId, size: 40, shiny: false).frame(width: 40, height: 40)
                 if let item = member.item { HeldItemBadge(ref: item, size: 16) }
+            }
+            if let name = store.speciesIndex?.entry(member.pokemonId).flatMap({ language.resolveName($0.names) }) {
+                Text(name).font(.caption.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.7)
             }
             ForEach(member.moves.prefix(4), id: \.self) { move in
                 MoveNameLabel(id: move, botName: "", language: language)

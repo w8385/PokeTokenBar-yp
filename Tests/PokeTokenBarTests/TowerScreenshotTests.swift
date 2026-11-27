@@ -3,10 +3,15 @@ import SwiftUI
 import XCTest
 @testable import PokeTokenBar
 
-private struct OfflineProvider: PokeProviding {
+private struct OfflineProvider: PokeProviding, SpeciesIndexProviding {
+    static let rentalIDs = [3, 6, 9, 65, 68, 112, 130, 143, 149]
+
     func line(baseSpeciesID: Int) async throws -> EvoLine { throw URLError(.notConnectedToInternet) }
     func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
+    func speciesIndex() async throws -> SpeciesIndex {
+        SpeciesIndex(entries: try Self.rentalIDs.map { try SpeciesFacts.indexEntry($0) })
+    }
 }
 
 /// Opt-in captures for the PR: a synthetic save and a stubbed bot, the real views.
@@ -71,7 +76,10 @@ final class TowerScreenshotTests: XCTestCase {
                 .background(Color.white).environment(\.colorScheme, .light)
                 .environment(\.locale, rig.store.language.displayLocale)
                 .environment(\.pokemonNameProvider, StubMoveNames()).environment(\.pokemonNameStore, moveNames),
-            size: size, appearance: .aqua, to: file, until: { !rig.service.runs.isEmpty || rig.service.last != nil })
+            size: size, appearance: .aqua, to: file, until: {
+                (!rig.service.runs.isEmpty || rig.service.last != nil)
+                    && (rig.service.mode == .entry || rig.store.speciesIndex != nil)
+            })
     }
 
     private func record(entry: [String: Any], rental: [String: Any] = TowerFixtures.run("rental", streak: 0, best: 0)) -> Data {
@@ -100,7 +108,7 @@ final class TowerScreenshotTests: XCTestCase {
 
             let offer = try rig(language)
             offer.service.mode = .rental
-            let six = TowerTests.rentals([248, 149, 376, 9, 6, 3])
+            let six = TowerTests.rentals([112, 149, 68, 9, 6, 3])
             offer.bot.replies["/v1/tower/record"] = [(record(entry: TowerFixtures.run(streak: 0, best: 31),
                                                              rental: TowerFixtures.run("rental", streak: 0, best: 12,
                                                                                        extra: ["offer": six])), 200)]
@@ -110,7 +118,7 @@ final class TowerScreenshotTests: XCTestCase {
             swap.service.mode = .rental
             swap.store.state.tower.records["rental"] = TowerModeRecord(streak: 4, best: 12)
             let rental = TowerFixtures.run("rental", streak: 4, best: 12, extra: [
-                "team": TowerTests.rentals([248, 149, 9]), "beaten": TowerTests.rentals([143, 130, 65], item: "leftovers")])
+                "team": TowerTests.rentals([112, 149, 9]), "beaten": TowerTests.rentals([143, 130, 65], item: "leftovers")])
             swap.bot.replies["/v1/tower/record"] = [(record(entry: TowerFixtures.run(streak: 0, best: 31), rental: rental), 200)]
             try await shot(swap, height: 560, to: directory.appendingPathComponent("tower-rental-swap-\(language.rawValue).png"))
         }
