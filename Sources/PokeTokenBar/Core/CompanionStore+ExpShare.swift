@@ -572,6 +572,7 @@ extension CompanionStore {
         let finalID = record.finalID
         let entryID = record.id
         state.dex.append(record)
+        AppLog.write("graduate: base=\(record.baseID) final=\(finalID) rarity=\(record.rarity) shiny=\(record.isShiny)")
         let name = formDisplayName(currentLine?.localizedName(finalID, state.language) ?? "",
                                    speciesID: finalID, form: a.form)
         justGraduated = name
