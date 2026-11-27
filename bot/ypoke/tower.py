@@ -9,7 +9,7 @@ import random
 from dataclasses import dataclass
 from functools import cache
 
-from ypoke import foe_items, foe_moves, items
+from ypoke import foe_items, foe_moves, tower_teams
 from ypoke.battle import BATTLE_LEVEL
 from ypoke.entry_rules import species_id
 from ypoke.gyms import (
@@ -35,6 +35,7 @@ TIERS = ((430, 12), (460, 16), (490, 20), (520, 24), (550, 28), (580, 31), (610,
 LEGEND_SET = 5
 LEGEND_MIN_TOTAL = 570
 OWNER_BATTLES = {20: "silver", 50: "gold"}
+OWNER_IVS = 31
 MODE_NAMES = {"entry": "내 엔트리", "rental": "대여"}
 TROPHY_NAMES = {"silver": "은", "gold": "금"}
 TROPHY_EMOJI = {"silver": "🥈", "gold": "🥇"}
@@ -68,20 +69,23 @@ OWNER_LINES = {
 
 @dataclass(frozen=True)
 class Member:
-    """A Pokémon of the tower at Lv50: the trainer's, the owner's or a rental. `ivs` is every stat's IV."""
+    """A Pokémon of the tower at Lv50: the trainer's, the owner's or a rental. `ivs` is every stat's IV. The ability
+    stays with the trainer: a rental swapped in from a beaten trainer fights without it."""
 
     pokemon_id: int
     moves: tuple[int, ...]
     item: str
     ivs: int
     nature: str | None = None
+    ability: str | None = None
 
     def battle_member(self) -> dict:
         """The party member the battle builds; `learned_at` lets it use moves learned above Lv50, like a gym foe."""
         member = {"pokemon_id": self.pokemon_id, "level": BATTLE_LEVEL, "learned_at": 100, "shiny": False,
                   "ivs": dict.fromkeys(IV_KEYS, self.ivs), "moves": list(self.moves), "held_item": self.item,
                   "can_evolve": can_evolve(species_id(self.pokemon_id))}
-        return member | ({"nature": self.nature} if self.nature else {})
+        return (member | ({"nature": self.nature} if self.nature else {})
+                | ({"ability": self.ability} if self.ability else {}))
 
     def to_json(self) -> dict:
         return {"pokemon_id": self.pokemon_id, "moves": list(self.moves), "held_item": self.item, "ivs": self.ivs,
@@ -101,6 +105,7 @@ class Opponent:
     trainer: Trainer
     members: tuple[Member, ...]
     trophy: str | None = None
+    family: str | None = None
 
     @property
     def kind(self) -> str:
@@ -122,15 +127,22 @@ def bp_for(battle: int) -> int:
 
 def opponent(run: int, battle: int) -> Opponent:
     """The trainer of battle `battle` in the run seeded `run`: the owner at 20 and 50, else three species near the
-    set's target total, one or two of them legendary from set `LEGEND_SET` on."""
+    set's target total, one or two of them legendary from set `LEGEND_SET` on. From set `tower_teams.FIRST_SET` the
+    three are an archetype team (`family`) instead of three random species."""
     if trophy := OWNER_BATTLES.get(battle):
         return Opponent(battle, OWNER_ID, Trainer(_languages(OWNER), _languages(OWNER_LINES[trophy])), owner_team(trophy),
-                        trophy)
+                        trophy, tower_teams.OWNER_FAMILIES[trophy])
     rng = random.Random(f"tower-{run}-{battle}")
-    picked = _pick(rng, battle, TEAM_SIZE, _legend_count(rng, battle))
+    family = None
+    if set_of(battle) >= tower_teams.FIRST_SET:
+        family, builds = tower_teams.team(rng, tier(battle)[0], _legend_count(rng, battle))
+        members = _built(builds, tier(battle)[1])
+    else:
+        members = _armed(_pick(rng, battle, TEAM_SIZE, _legend_count(rng, battle)), battle)
     index = rng.randrange(len(TRAINERS))
     row = TRAINERS[index]
-    return Opponent(battle, f"tower-{index + 1}", Trainer(_languages(row[:3]), _languages(row[3:])), _armed(picked, battle))
+    return Opponent(battle, f"tower-{index + 1}", Trainer(_languages(row[:3]), _languages(row[3:])), members,
+                    family=family)
 
 
 def offer(run: int, battle: int) -> tuple[Member, ...]:
@@ -141,8 +153,12 @@ def offer(run: int, battle: int) -> tuple[Member, ...]:
 
 def rentable(pokemon_id: int, battle: int) -> bool:
     """Whether a rental of this species could have reached a team by battle `battle`: offered or beaten up to then."""
-    allowed = _pool() | (_legends() if set_of(battle) >= LEGEND_SET else frozenset())
-    return pokemon_id in {species.id for species in allowed}
+    legends = set_of(battle) >= LEGEND_SET
+    allowed = {species.id for species in _pool() | (_legends() if legends else frozenset())}
+    if set_of(battle) >= tower_teams.FIRST_SET:
+        allowed |= {build.species for build in tower_teams.BUILDS
+                    if legends or not tower_teams.legendary(build.species)}
+    return pokemon_id in allowed
 
 
 def rental_member(pokemon_id: int, battle: int, moves: tuple[int, ...], item: str) -> Member:
@@ -152,13 +168,9 @@ def rental_member(pokemon_id: int, battle: int, moves: tuple[int, ...], item: st
 
 @cache
 def owner_team(trophy: str) -> tuple[Member, ...]:
-    """The owner's fixed three: strong non-legendaries for silver, a Mega and two legendaries for gold."""
-    entries = {
-        "silver": ((376, items.ASSAULT_VEST, "adamant"), (149, items.LIFE_ORB, "adamant"), (248, items.LEFTOVERS, "adamant")),
-        "gold": ((376, "metagrossite", "adamant"), (381, items.CHOICE_SPECS, "timid"), (384, items.LIFE_ORB, "adamant")),
-    }[trophy]
-    return tuple(Member(pokemon_id, foe_moves.species(pokemon_id).picked, item, 31, nature)
-                 for pokemon_id, item, nature in entries)
+    """The owner's fixed three at IV 31: a non-legendary archetype team for silver, one with two legendaries for
+    gold."""
+    return _built(tower_teams.OWNER_TEAMS[trophy], OWNER_IVS)
 
 
 def team_key(members: list[dict]) -> str:
@@ -193,6 +205,10 @@ def _armed(picked: list[Species], battle: int) -> tuple[Member, ...]:
     held = foe_items.assign([holder(species.id, picked_moves) for species, picked_moves in zip(picked, moves)])
     ivs = tier(battle)[1]
     return tuple(Member(species.id, picked_moves, item, ivs) for species, picked_moves, item in zip(picked, moves, held))
+
+
+def _built(builds: tuple[tower_teams.Build, ...], ivs: int) -> tuple[Member, ...]:
+    return tuple(Member(build.species, build.moves, build.item, ivs, build.nature, build.ability) for build in builds)
 
 
 @cache
