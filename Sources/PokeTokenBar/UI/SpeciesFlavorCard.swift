@@ -15,7 +15,7 @@ struct SpeciesFlavorCard: View {
     var body: some View {
         let genus = flavor?.genus(in: language)
         let text = flavor?.flavorText(in: language)
-        Group {
+        VStack(spacing: 0) {
             if genus != nil || text != nil || cryEnabled {
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
