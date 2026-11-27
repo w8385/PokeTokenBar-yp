@@ -9,21 +9,17 @@ struct TowerRankingCard: View {
     private var modes: [TowerMode] { TowerMode.allCases.filter { !(service.ranking[$0] ?? []).isEmpty } }
 
     var body: some View {
-        Group {
-            if modes.isEmpty {
-                Color.clear.frame(height: 0)
-            } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(l.towerRankingTitle)
-                        .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
-                        .textCase(.uppercase).padding(.leading, 4)
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        ForEach(modes, id: \.self) { modeList($0) }
-                    }
-                    .padding(.horizontal, 12).padding(.vertical, 8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .ptbCard()
+        VStack(alignment: .leading, spacing: 6) {
+            if !modes.isEmpty {
+                Text(l.towerRankingTitle)
+                    .font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
+                    .textCase(.uppercase).padding(.leading, 4)
+                VStack(alignment: .leading, spacing: Spacing.md) {
+                    ForEach(modes, id: \.self) { modeList($0) }
                 }
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .ptbCard()
             }
         }
         .task { await service.load() }

@@ -112,6 +112,20 @@ final class SaveTransferTests: XCTestCase {
         XCTAssertEqual(envelope.state.representativeSpeciesID, 2, "대표 포켓몬 선택도 세이브와 함께 이동")
     }
 
+    func testRoundTripCarriesTheTowerAndALegendaryScoutTicket() throws {
+        var original = oldMacState(today: "2026-08-03")
+        original.tower.bp = 1_234
+        original.tower.entry = ["a", "b", "c"]
+        original.tower.boast = false
+        original.inventory[ScoutPool.legendary.inventoryKey] = 2
+        let data = try SaveTransfer.encode(state: original, appVersion: "3.38.0", deviceName: "Old Mac", now: transferNow)
+        let state = try SaveTransfer.decode(data).state
+        XCTAssertEqual(state.tower.bp, 1_234)
+        XCTAssertEqual(state.tower.entry, ["a", "b", "c"])
+        XCTAssertFalse(state.tower.boast)
+        XCTAssertEqual(state.inventory[ScoutPool.legendary.inventoryKey], 2)
+    }
+
     /// A hand-edited or imported save with a repeated species id in `chainOrder` / `pathIDs` decodes
     /// fine, but the Pokédex name lookup and release/graduation build
     /// `Dictionary(uniqueKeysWithValues:)` from those arrays, which traps on the duplicate.
