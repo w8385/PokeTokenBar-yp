@@ -19,6 +19,7 @@ from ypoke.gyms import (
     Trainer,
     _ranked,
     _related,
+    can_evolve,
     holder,
     species_table,
     usable_species,
@@ -78,7 +79,8 @@ class Member:
     def battle_member(self) -> dict:
         """The party member the battle builds; `learned_at` lets it use moves learned above Lv50, like a gym foe."""
         member = {"pokemon_id": self.pokemon_id, "level": BATTLE_LEVEL, "learned_at": 100, "shiny": False,
-                  "ivs": dict.fromkeys(IV_KEYS, self.ivs), "moves": list(self.moves), "held_item": self.item}
+                  "ivs": dict.fromkeys(IV_KEYS, self.ivs), "moves": list(self.moves), "held_item": self.item,
+                  "can_evolve": can_evolve(species_id(self.pokemon_id))}
         return member | ({"nature": self.nature} if self.nature else {})
 
     def to_json(self) -> dict:
