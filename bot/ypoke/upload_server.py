@@ -69,6 +69,9 @@ class GymApi(Protocol):
         """The battle result body, or None for an unknown gym. Raises OSError when PokéAPI is down and PartyError
         for a request the battle cannot take."""
 
+    def ghost(self, team: list[dict], party: list[dict], name: str | None) -> dict:
+        """The battle result body against a coworker's stored `party`. Raises OSError when PokéAPI is down."""
+
 
 class TowerApi(Protocol):
     def battle(self, user_id: str, mode: str, team: list[dict] | None, boast: bool = True) -> dict: ...
@@ -207,9 +210,10 @@ def with_battle_members(raw_pool: object) -> object:
     return pool
 
 
-def battle_overview(store: Store, user_id: str, name_for: NameFor, remote: RemoteOps, now: Clock) -> dict:
+def battle_overview(store: Store, user_id: str, name_for: NameFor, remote: RemoteOps, now: Clock,
+                    handle_for: Callable[[str], str] | None = None) -> dict:
     """The uploader's last battles and the other users' current lead Pokémon (with their Slack ops replayed), with
-    display names and no Slack ids."""
+    display names and no Slack ids. With `handle_for`, each coworker carries the opaque `id` a ghost battle takes."""
     recent = [
         {
             "opponent_name": name_for(battle.opponent_id),
@@ -222,10 +226,16 @@ def battle_overview(store: Store, user_id: str, name_for: NameFor, remote: Remot
         for battle in store.recent_battles(user_id, RECENT_BATTLE_LIMIT)
     ]
     coworkers = [
-        {"name": name_for(lead.user_id), "pokemon_id": lead.pokemon_id, "level": lead.level, "shiny": lead.shiny}
-        for lead in remote.leads_except(user_id, now() - COWORKER_WINDOW, COWORKER_LIMIT)
+        {"name": name_for(lead.user_id), "pokemon_id": lead.pokemon_id, "level": lead.level, "shiny": lead.shiny,
+         **({"id": handle_for(lead.user_id)} if handle_for else {})}
+        for lead in coworker_leads(remote, user_id, now)
     ]
     return {"recent_battles": recent, "coworkers": coworkers}
+
+
+def coworker_leads(remote: RemoteOps, user_id: str, now: Clock) -> list:
+    """Who the Coworkers list shows the user: the other recent uploaders, newest first."""
+    return remote.leads_except(user_id, now() - COWORKER_WINDOW, COWORKER_LIMIT)
 
 
 class _UploadHandler(BaseHTTPRequestHandler):
@@ -347,7 +357,8 @@ class _UploadHandler(BaseHTTPRequestHandler):
                     self.miracle.pool_changed(user_id)
             body["trades"] = {"deliveries": self.trades.deliveries(user_id), "locked_ids": self.trades.locked_ids(user_id)}
         self.on_upload(user_id, party)
-        self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for, self.remote, self.now)})
+        handle_for = self.trades.handle if self.trades is not None else None
+        self._reply(200, {**body, **battle_overview(self.store, user_id, self.name_for, self.remote, self.now, handle_for)})
 
     def _gym_battle(self, user_id: str, payload: object) -> None:
         """A practice-style fight: nothing is stored, nothing is posted, and the stored party stays as it is."""
@@ -358,6 +369,9 @@ class _UploadHandler(BaseHTTPRequestHandler):
         if wait > 0:
             self._reply(429, {"ok": False, "error": "rate_limited", "retry_after": round(wait, 1)},
                         {"Retry-After": str(math.ceil(wait))})
+            return
+        if isinstance(payload, dict) and "coworker_id" in payload:
+            self._ghost_battle(user_id, payload)
             return
         gym_id = payload.get("gym_id") if isinstance(payload, dict) else None
         if not isinstance(gym_id, str):
@@ -377,6 +391,38 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(404, {"ok": False, "error": "unknown_gym"})
             return
         self._reply(200, {"ok": True, **body})
+
+    def _ghost_battle(self, user_id: str, payload: dict) -> None:
+        """The user's team against a coworker's last upload; the coworker is never told and nothing is kept."""
+        coworker_id = payload["coworker_id"]
+        if not isinstance(coworker_id, str):
+            self._reply(400, {"ok": False, "error": "coworker_id must be a string"})
+            return
+        other = self._coworker(coworker_id)
+        if other == user_id:
+            self._reply(400, {"ok": False, "error": "coworker_id is your own"})
+            return
+        if other is None or other not in {lead.user_id for lead in coworker_leads(self.remote, user_id, self.now)}:
+            self._reply(404, {"ok": False, "error": "unknown_coworker"})
+            return
+        try:
+            team = validate_members(payload.get("team"), "team")
+            check_moves(team, self.moves_for, "team")
+            body = self.gyms.ghost(team, self.remote.party(other).party, self.name_for(other))
+        except PartyError as error:
+            self._reply(400, {"ok": False, "error": str(error)})
+            return
+        except OSError:
+            self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
+            return
+        self._reply(200, {"ok": True, **body})
+
+    def _coworker(self, coworker_id: str) -> str | None:
+        """The user behind an id from the Coworkers list; None for anything else, a Slack id included."""
+        if self.trades is None:
+            return None
+        other = self.trades.user_for(coworker_id)
+        return None if other == coworker_id else other
 
     def _tower(self, path: str, user_id: str, payload: object) -> None:
         if self.tower is None:

@@ -136,7 +136,7 @@ that do not know these fields ignore them, and an old bot omits them.
      "result": "win", "turns": 6, "at": "2026-11-13T05:20:11+00:00"}
   ],
   "coworkers": [
-    {"name": "은정", "pokemon_id": 6, "level": 55, "shiny": true}
+    {"name": "은정", "pokemon_id": 6, "level": 55, "shiny": true, "id": "3f9c2a71d04b8e65"}
   ]
 }
 ```
@@ -150,6 +150,7 @@ that do not know these fields ignore them, and an old bot omits them.
 | `at` | ISO 8601 UTC |
 | `coworkers` | The first Pokémon of every other user's latest upload from the last 30 days, newest upload first, at most 30 |
 | `name`, `pokemon_id`, `level`, `shiny` | `name` is the Slack display name or `null`; `level` is the real level, not the battle level |
+| `id` | An opaque id for the coworker, the same one the trade endpoints use; send it as `coworker_id` for a [ghost battle](#coworker-ghosts). Older bots and bots without trades leave it out |
 
 ## `GET /v1/party`
 
@@ -637,8 +638,8 @@ carried. The app decides what is locked (a gym stands alone; the Elite Four run 
 `badges_needed` asks for) and the bot does not check, nor does it check that `carried` came from the last
 battle, so the app owns the run's integrity.
 
-The wire format has room to grow: a later opponent `kind` (a coworker's ghost party) and another request field
-are added next to the current ones, so a client that ignores unknown fields and unknown `kind`s keeps working.
+The wire format has room to grow: a new opponent `kind` (like `ghost` below) or request field is added next to the
+current ones, so a client that ignores unknown fields and unknown `kind`s keeps working.
 
 | Status | Body |
 |---|---|
@@ -651,6 +652,32 @@ are added next to the current ones, so a client that ignores unknown fields and 
 
 The first battle against a trainer fetches its foes' learnsets from PokéAPI, so allow the request a longer timeout
 (10 seconds) than the others; later ones are cached.
+
+### Coworker ghosts
+
+The same endpoint fights a coworker's last uploaded party instead of a trainer. Send `coworker_id` (a coworker `id`
+from the [upload reply](#battle-info-in-the-200-body)) in place of `gym_id`:
+
+```json
+{"coworker_id": "3f9c2a71d04b8e65", "team": [{"pokemon_id": 25, "level": 42, "moves": [85, 87]}]}
+```
+
+`team` follows the rules above. The coworker's side is their stored party with their pending Slack edits replayed,
+the same party `/대결` uses: up to six, the lineup rules applied, every member at Lv50 (lower ones raised, higher
+ones capped) with the moves of its real level, its own items, abilities, natures and IVs. A rental in it fights like
+the rest. Both sides start at full HP; it is one battle, never part of a run, so `carried` is not taken.
+Nothing is posted, the coworker is not told, nothing is stored and no record or ranking changes. There is no
+limit on rematches beyond the rate limit; rewards, like the app's coworker trophies, live in the app.
+
+The reply is the body above with `gym_id` and `kind` both `"ghost"`, `run` and `carry` `null`, and `trainer.name`
+the coworker's Slack display name in every language (an empty string when Slack cannot be asked); apps show the
+name their Coworkers list shows instead. `trainer.line` is a fixed line.
+
+| Status | Body |
+|---|---|
+| `400` | `coworker_id must be a string`, `coworker_id is your own`, or a `team` rule broken |
+| `404` | `{"ok": false, "error": "unknown_coworker"}`: an id the caller's Coworkers list does not show now (unknown, a Slack id, no upload in the last 30 days) |
+| other | as above; a bot from before ghosts answers `400 gym_id must be a string` |
 
 ## Battle tower (PvE)
 

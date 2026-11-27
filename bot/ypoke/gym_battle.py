@@ -11,7 +11,7 @@ from functools import partial
 
 from ypoke import entry_rules, gyms
 from ypoke.battle import (
-    CARRIED_STATUSES, AbilityAct, AbilityTransform, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage,
+    BATTLE_LEVEL, CARRIED_STATUSES, AbilityAct, AbilityTransform, Action, BattleResult, Carry, Combatant, FormShift, HazardDamage,
     HazardHit, ItemEffect, ItemHeal, MegaEvolution, SendOut, StatusDamage, TerrainHeal, VolatileTick, WeatherDamage,
     YawnSleep, simulate,
 )
@@ -22,6 +22,9 @@ from ypoke.pokeapi import PokeAPIService
 from ypoke.upload_server import PartyError
 
 WORKERS = 6
+GHOST_ID = "ghost"
+GHOST_LINE = {"ko": "동료가 마지막으로 올린 파티예요.", "en": "A coworker's last uploaded party.",
+              "ja": "同僚が最後にアップロードしたパーティです。"}
 
 
 class GymBattles:
@@ -73,6 +76,35 @@ class GymBattles:
             "events": _events(result, (awake, list(range(len(foes)))), [starts[index] for index in awake], finale),
             "run": _run(opponent, following),
             "carry": carry if following else None,
+        }
+
+    def ghost(self, team: list[dict], party: list[dict], name: str | None) -> dict:
+        """`team` against a coworker's stored `party`, both at full HP, one battle outside any run. The coworker's
+        fighters pass the lineup rules and come in at Lv50 with the moves of their own level; `name` is theirs."""
+        entry = entry_rules.lineup(team)
+        mine = [{**member, "level": BATTLE_LEVEL} if member.get("rental") else member for member in entry.members]
+        rivals = [{**member, "level": BATTLE_LEVEL, "learned_at": member["level"], "rental": False}
+                  for member in entry_rules.lineup(party).fighters]
+        with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+            fighters = list(pool.map(partial(combatant, self._pokeapi), [*mine, *rivals]))
+        player, foes = fighters[:len(mine)], tuple(fighters[len(mine):])
+        kept = list(entry.kept)
+        seed = self._new_seed()
+        result = simulate((tuple(player[index] for index in kept), foes), seed, [None] * len(kept))
+        shown, _ = _outcomes([None] * len(mine), kept, result, entry.kept)
+        return {
+            "gym_id": GHOST_ID,
+            "kind": GHOST_ID,
+            "trainer": {"name": dict.fromkeys(GHOST_LINE, name or ""), "line": dict(GHOST_LINE)},
+            "won": result.winner == 0,
+            "turns": result.turns,
+            "seed": seed,
+            "player_team": _roster(player, shown),
+            "foe_team": _roster(foes, result.remaining[1]),
+            "log": _log(result),
+            "events": _events(result, (kept, list(range(len(foes)))), [None] * len(kept)),
+            "run": None,
+            "carry": None,
         }
 
 
