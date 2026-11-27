@@ -656,15 +656,17 @@ The first battle against a trainer fetches its foes' learnsets from PokéAPI, so
 
 Endless 3-on-3 streaks. Every Pokémon fights at Lv50 (lower ones are raised, higher ones capped). Battles come in
 sets of ten; each set's trainers field stronger species (and higher IVs), and from set 5 (battle 41) one or two of
-the three are legendary, mythical, Ultra Beasts or Paradox Pokémon. Battle 20 and battle 50 are the tower owner;
+the three are legendary, mythical, Ultra Beasts or Paradox Pokémon. From set 3 (battle 21) a trainer fields a built
+team of one style (fast hard hitters, a lead that sets the field before setup sweepers, bulky pivots, Trick Room, or
+rain, sun, sand or snow) with set moves, items, abilities and natures. Battle 20 and battle 50 are the tower owner;
 beating it the first time in a mode earns the `silver` and then the `gold` trophy. A loss ends the run: the streak
 goes back to 0 and the best stays. Each mode has its own run, streak, best and trophies:
 
 - `entry`: the app sends its three Pokémon (different species, legendaries allowed). The first battle of a run locks
   the team's species until the run ends.
 - `rental`: the bot offers six rentals of the first set's tier, the player picks three, and after each win may swap
-  one of them for one of the three just beaten. A rental keeps its moves and item and fights with the IVs of the
-  battle's set.
+  one of them for one of the three just beaten. A rental keeps its moves (status moves of a built team included) and
+  item and fights with the IVs of the battle's set, without the trainer's ability or nature.
 
 The bot owns every run, so a reply lost on the way or a restored save cannot move the record: the app mirrors what the
 replies say. Teams are full HP and status every battle. The trainers and the owner are original characters; their art

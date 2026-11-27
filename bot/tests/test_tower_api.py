@@ -5,7 +5,10 @@ import urllib.request
 import pytest
 from fixed_clock import fixed_now
 
+from ypoke import pokeapi as pokeapi_module
 from ypoke import tower
+from ypoke.combatants import combatant
+from ypoke.move_effects import wants_status_moves
 from ypoke.store import Store
 from ypoke.tower_battle import TowerBattles
 from ypoke.upload_server import serve
@@ -212,6 +215,28 @@ def test_after_a_rental_win_one_member_may_be_swapped_for_one_just_beaten(server
     swapped = rental(base, token, swap={"give": 1, "take": 2})[1]
     assert swapped["team"] == [team[0], beaten[2], team[2]] and swapped["beaten"] is None
     assert rental(base, token, swap={"give": 0, "take": 0})[1]["error"] == "nothing_to_swap"
+
+
+def test_a_member_swapped_in_from_a_built_team_fights_the_next_battle_with_its_status_moves(server, pokeapi):
+    store, base, clock = server
+    token = store.issue_token("U1")
+    beaten = [member.to_json() for member in tower.opponent(RUN, 21).members]
+    take = next(index for index, member in enumerate(beaten) if wants_status_moves(member["moves"]))
+    team = [tower.Member(900 + index, (33,), item, 12).to_json()
+            for index, item in enumerate(("lagging-tail", "iron-ball", "ring-target"))]
+    at_streak(store, "U1", "rental", 21, rental=team, beaten=beaten)
+    swapped = rental(base, token, swap={"give": 0, "take": take})[1]["team"][0]
+    lookups = []
+
+    def attacking_moves(pokemon_id, level, machine_ids=(), status=False, egg=False):
+        lookups.append((pokemon_id, tuple(machine_ids), status))
+        return [{**pokeapi_module.data_move(move_id), "level": 1, "source": "level"} for move_id in machine_ids]
+
+    pokeapi.attacking_moves = attacking_moves
+    assert fight(base, token, clock, mode="rental", team=None)[0] == 200
+    assert (swapped["pokemon_id"], tuple(swapped["moves"]), True) in lookups
+    member = tower.rental_member(swapped["pokemon_id"], 22, tuple(swapped["moves"]), swapped["held_item"])
+    assert [move.id for move in combatant(pokeapi, member.battle_member()).moves] == swapped["moves"]
 
 
 def test_a_swap_may_not_repeat_a_species_already_on_the_team(server, pokeapi):
