@@ -15,6 +15,7 @@ from ypoke.clock import system_clock
 from ypoke.commands import COMMAND_NAMES, REGISTER_ACTION_ID, REMATCH_ACTION_ID, CommandHandler
 from ypoke.editor import Route, checked
 from ypoke.gym_battle import GymBattles
+from ypoke.tower_battle import TowerBattles
 from ypoke.lineup_editor import ACTION_PREFIX, ITEM_ACTION, SET_MOVES_ACTION, SWAP_ACTION
 from ypoke.miracle import ACCEPT_ACTION_ID as MIRACLE_ACCEPT_ACTION_ID
 from ypoke.miracle import CANCEL_ACTION_ID as MIRACLE_CANCEL_ACTION_ID
@@ -92,6 +93,7 @@ def main() -> None:
         miracle=miracle,
         remote=remote,
         now=now,
+        tower=TowerBattles(store, pokeapi),
     )
     threading.Thread(target=_warm_stored_parties, args=(pokeapi, store, remote), daemon=True).start()
     threading.Thread(target=_sweep_miracle_offers, args=(miracle,), daemon=True).start()

@@ -60,6 +60,14 @@ CREATE TABLE IF NOT EXISTS rematch_claims (
     claimed_at TEXT NOT NULL,
     PRIMARY KEY (channel_id, card_ts)
 );
+CREATE TABLE IF NOT EXISTS tower_runs (
+    slack_user_id TEXT NOT NULL,
+    mode TEXT NOT NULL,
+    best INTEGER NOT NULL DEFAULT 0,
+    state_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (slack_user_id, mode)
+);
 """
 
 
@@ -361,6 +369,31 @@ class Store:
         with closing(self._connect()) as connection:
             row = connection.execute("SELECT data_json FROM api_cache WHERE cache_key = ?", (cache_key,)).fetchone()
         return json.loads(row[0]) if row else None
+
+    def tower_run(self, slack_user_id: str, mode: str) -> dict | None:
+        with closing(self._connect()) as connection:
+            row = connection.execute(
+                "SELECT state_json FROM tower_runs WHERE slack_user_id = ? AND mode = ?", (slack_user_id, mode),
+            ).fetchone()
+        return None if row is None else json.loads(row[0])
+
+    def save_tower_run(self, slack_user_id: str, mode: str, state: dict) -> None:
+        """`state["best"]` is copied to its own column for the ranking."""
+        with closing(self._connect()) as connection, connection:
+            connection.execute(
+                "INSERT OR REPLACE INTO tower_runs (slack_user_id, mode, best, state_json, updated_at) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (slack_user_id, mode, state.get("best", 0), json.dumps(state), _timestamp(self._now())),
+            )
+
+    def tower_bests(self, mode: str, limit: int) -> list[tuple[str, int]]:
+        """(user, best streak) of everyone with a win in `mode`, best first."""
+        with closing(self._connect()) as connection:
+            rows = connection.execute(
+                "SELECT slack_user_id, best FROM tower_runs WHERE mode = ? AND best > 0 "
+                "ORDER BY best DESC, slack_user_id LIMIT ?", (mode, limit),
+            ).fetchall()
+        return [(user_id, best) for user_id, best in rows]
 
     def cache(self, cache_key: str, data: object) -> None:
         with closing(self._connect()) as connection, connection:

@@ -39,6 +39,17 @@ class TrainerSpriteTests(unittest.TestCase):
                     stored = Image.open(ROOT / "assets" / "trainers" / f"{battle_id}.png").convert("RGBA")
                     self.assertEqual(stored.tobytes(), image.tobytes())
 
+    def test_the_committed_tower_assets_match_the_generator_and_differ_from_each_other(self):
+        sprites = generator.tower_sprites()
+        self.assertEqual(set(sprites), {f"tower-{i}" for i in range(1, len(generator.tower.TRAINERS) + 1)} | {"tower-owner"})
+        for battle_id, image in sprites.items():
+            with self.subTest(battle_id):
+                stored = Image.open(ROOT / "assets" / "trainers" / f"{battle_id}.png").convert("RGBA")
+                self.assertEqual(stored.tobytes(), image.tobytes())
+        for (a, first), (b, second) in itertools.combinations(sprites.items(), 2):
+            with self.subTest(pair=(a, b)):
+                self.assertGreaterEqual(different_share(first, second), MIN_DIFFERENT_SHARE)
+
     def test_no_two_trainers_of_a_region_look_alike(self):
         for region in self.regions:
             sprites = generator.sprites(region)
@@ -53,7 +64,7 @@ class TrainerSpriteTests(unittest.TestCase):
                 subprocess.run([sys.executable, str(SCRIPT), "--out", out], check=True)
             names = sorted(path.name for path in Path(first).iterdir())
             self.assertEqual(names, sorted(path.name for path in Path(second).iterdir()))
-            self.assertEqual(len(names), 9 * 18)
+            self.assertEqual(len(names), 9 * 18 + len(generator.tower.TRAINERS) + 1)
             for name in names:
                 with self.subTest(name):
                     self.assertEqual((Path(first) / name).read_bytes(), (Path(second) / name).read_bytes())

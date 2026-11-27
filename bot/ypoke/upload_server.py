@@ -33,6 +33,9 @@ RECENT_BATTLE_LIMIT = 5
 COWORKER_LIMIT = 30
 COWORKER_WINDOW = timedelta(days=30)
 GYM_BATTLE_INTERVAL = 3.0
+TOWER_POSTS = ("/v1/tower/battle", "/v1/tower/rental", "/v1/tower/quit")
+TOWER_MODES = ("entry", "rental")
+TOWER_RANKING_LIMIT = 10
 ABILITY_NAME = re.compile(r"[a-z][a-z-]{0,39}")
 INDIVIDUAL_ID = re.compile(r"[^|\s]{1,64}")
 FORM_KEY = re.compile(r"[a-zA-Z][a-zA-Z0-9-]{0,39}")
@@ -51,12 +54,32 @@ class PartyError(ValueError):
     pass
 
 
+class TowerConflict(Exception):
+    """A tower request the run as the bot has it does not allow; `code` is the error the reply names."""
+
+    def __init__(self, code: str):
+        super().__init__(code)
+        self.code = code
+
+
 class GymApi(Protocol):
     def catalog(self) -> dict: ...
 
     def battle(self, gym_id: str, team: list[dict], carried: list[dict | None] | None) -> dict | None:
         """The battle result body, or None for an unknown gym. Raises OSError when PokéAPI is down and PartyError
         for a request the battle cannot take."""
+
+
+class TowerApi(Protocol):
+    def battle(self, user_id: str, mode: str, team: list[dict] | None) -> dict: ...
+
+    def rental(self, user_id: str, pick: list[int] | None = None, swap: tuple[int, int] | None = None) -> dict: ...
+
+    def quit(self, user_id: str, mode: str) -> dict: ...
+
+    def record(self, user_id: str) -> dict: ...
+
+    def ranking(self, mode: str, limit: int) -> list[tuple[str, int]]: ...
 
 
 class RateLimit:
@@ -88,6 +111,7 @@ def serve(
     trades: TradeService | None = None, notify: Notify = lambda messages: None,
     gyms: GymApi | None = None, clock: Callable[[], float] = time.monotonic,
     miracle: MiracleService | None = None, remote: RemoteOps | None = None, *, now: Clock,
+    tower: TowerApi | None = None,
 ) -> ThreadingHTTPServer:
     """Start the upload server on a daemon thread and return it.
 
@@ -95,7 +119,7 @@ def serve(
     `moves_for(pokemon_id, level, machine_ids, status=..., egg=...)` returns the attacking moves usable at that level (`machine_ids` is `None` for every machine move), with `egg` also the attacking egg moves, with `status` also the battle's status moves, and raises OSError when offline.
     `name_for(user_id)` returns a Slack display name, or None when it cannot be found.
     With `trades`, the trade endpoints are served and `notify` sends the DMs a new offer produces.
-    With `gyms`, the gym endpoints are served; `clock` times their rate limit.
+    With `gyms`, the gym endpoints are served; `clock` times their rate limit. With `tower`, the tower endpoints are.
     With an available `miracle`, the miracle trade endpoints are served; otherwise they answer `unavailable`.
     The remote-ops endpoints are always served; `notify` sends the DM an ack produces.
     """
@@ -103,7 +127,7 @@ def serve(
         "store": store, "on_upload": staticmethod(on_upload), "moves_for": staticmethod(moves_for),
         "name_for": staticmethod(name_for), "trades": trades, "notify": staticmethod(notify),
         "gyms": gyms, "gym_limit": RateLimit(GYM_BATTLE_INTERVAL, clock), "miracle": miracle,
-        "remote": remote or RemoteOps(store, now), "now": staticmethod(now),
+        "remote": remote or RemoteOps(store, now), "now": staticmethod(now), "tower": tower,
     })
     server = ThreadingHTTPServer((host, port), handler)
     threading.Thread(target=server.serve_forever, name="upload-server", daemon=True).start()
@@ -215,6 +239,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
     gym_limit: RateLimit
     miracle: MiracleService | None
     now: Clock
+    tower: TowerApi | None
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
@@ -222,7 +247,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(200, {"ok": True})
             return
         if url.path not in ("/v1/party", "/v1/moves", "/v1/coworkers", "/v1/trades", "/v1/gyms", "/v1/miracle",
-                            "/v1/ops"):
+                            "/v1/ops", "/v1/tower/record"):
             self._reply(404, {"ok": False, "error": "not_found"})
             return
         user_id = self._authenticated_user()
@@ -236,6 +261,12 @@ class _UploadHandler(BaseHTTPRequestHandler):
         if url.path == "/v1/miracle":
             if self._miracle_available():
                 self._reply(200, {"ok": True, "offer": self.miracle.status(user_id)})
+            return
+        if url.path == "/v1/tower/record":
+            if self.tower is None:
+                self._reply(404, {"ok": False, "error": "not_found"})
+            else:
+                self._reply(200, {"ok": True, "modes": self.tower.record(user_id), "ranking": self._tower_ranking()})
             return
         if url.path == "/v1/gyms":
             if self.gyms is None:
@@ -257,7 +288,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         if self.path not in ("/v1/party", "/v1/trades", "/v1/trades/ack", "/v1/gym/battle", "/v1/miracle",
-                             "/v1/miracle/cancel", "/v1/ops/ack"):
+                             "/v1/miracle/cancel", "/v1/ops/ack", *TOWER_POSTS):
             self._reply(404, {"ok": False, "error": "not_found"})
             return
         user_id = self._authenticated_user()
@@ -272,6 +303,8 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._cancel_miracle(user_id)
         elif self.path == "/v1/gym/battle":
             self._gym_battle(user_id, payload)
+        elif self.path in TOWER_POSTS:
+            self._tower(self.path, user_id, payload)
         elif self.path == "/v1/trades":
             self._propose(user_id, payload)
         elif self.path == "/v1/trades/ack":
@@ -344,6 +377,52 @@ class _UploadHandler(BaseHTTPRequestHandler):
             self._reply(404, {"ok": False, "error": "unknown_gym"})
             return
         self._reply(200, {"ok": True, **body})
+
+    def _tower(self, path: str, user_id: str, payload: object) -> None:
+        if self.tower is None:
+            self._reply(404, {"ok": False, "error": "not_found"})
+            return
+        if not isinstance(payload, dict):
+            self._reply(400, {"ok": False, "error": "body must be a JSON object"})
+            return
+        mode = payload.get("mode", "rental" if path == "/v1/tower/rental" else None)
+        if mode not in TOWER_MODES:
+            self._reply(400, {"ok": False, "error": f"mode must be one of {', '.join(TOWER_MODES)}"})
+            return
+        if path == "/v1/tower/battle":
+            wait = self.gym_limit.retry_after(f"tower:{user_id}")
+            if wait > 0:
+                self._reply(429, {"ok": False, "error": "rate_limited", "retry_after": round(wait, 1)},
+                            {"Retry-After": str(math.ceil(wait))})
+                return
+        try:
+            if path == "/v1/tower/battle":
+                team = None
+                if mode == "entry":
+                    team = validate_members(payload.get("team"), "team")
+                    check_moves(team, self.moves_for, "team")
+                body = self.tower.battle(user_id, mode, team)
+            elif path == "/v1/tower/rental":
+                body = self.tower.rental(user_id, *_rental_change(payload))
+            else:
+                body = self.tower.quit(user_id, mode)
+        except PartyError as error:
+            self._reply(400, {"ok": False, "error": str(error)})
+            return
+        except OSError:
+            self._reply(503, {"ok": False, "error": "pokeapi_unavailable"})
+            return
+        except TowerConflict as conflict:
+            self._reply(409, {"ok": False, "error": conflict.code})
+            return
+        self._reply(200, {"ok": True, **body})
+
+    def _tower_ranking(self) -> dict:
+        return {
+            mode: [{"name": self.name_for(user_id), "best": best}
+                   for user_id, best in self.tower.ranking(mode, TOWER_RANKING_LIMIT)]
+            for mode in TOWER_MODES
+        }
 
     def _trade_read(self, path: str, user_id: str) -> None:
         if self.trades is None:
@@ -588,6 +667,20 @@ def _form_option(form: object) -> dict | None:
     if ability is not None and not (isinstance(ability, str) and ABILITY_NAME.fullmatch(ability)):
         return None
     return {"form": form["form"], "pokemon_id": form["pokemon_id"], "ability": ability}
+
+
+def _rental_change(payload: dict) -> tuple[list[int] | None, tuple[int, int] | None]:
+    """The `pick` or `swap` of a rental request, or PartyError."""
+    pick, swap = payload.get("pick"), payload.get("swap")
+    if pick is not None and swap is not None:
+        raise PartyError("send pick or swap, not both")
+    if pick is not None and not (isinstance(pick, list) and all(_is_int(index) for index in pick)):
+        raise PartyError("pick must be a list of offer indexes")
+    if swap is None:
+        return pick, None
+    if not isinstance(swap, dict) or not _is_int(swap.get("give")) or not _is_int(swap.get("take")):
+        raise PartyError("swap must be an object with integer give and take")
+    return None, (swap["give"], swap["take"])
 
 
 def _valid_pokemon_id(pokemon_id: int) -> bool:

@@ -19,7 +19,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "bot"))
 
-from ypoke import gym_data, gyms  # noqa: E402
+from ypoke import gym_data, gyms, tower  # noqa: E402
 
 SIZE = 64
 CX = 32
@@ -82,6 +82,10 @@ GYM_THEMES = {
     "steel": (("overalls", "coat"), "gloves", "goggles"),
     "fairy": (("dress", "cardigan"), "belt", "ribbon"),
 }
+# One per `tower.TRAINERS` row, in order: the trade each trainer dresses for.
+TOWER_THEMES = ("rock", "grass", "steel", "fire", "psychic", "flying", "fairy", "water", "ground", "ghost", "normal",
+                "electric")
+TOWER_OWNER_COAT = 5
 CHAMPION_COLORS = (
     ((238, 232, 214), GOLD), ((36, 112, 116), SILVER), ((128, 34, 52), GOLD), ((40, 96, 64), GOLD),
     ((44, 70, 150), SILVER), ((100, 58, 120), SILVER), ((200, 176, 128), (40, 132, 136)), ((70, 80, 98), (204, 120, 70)),
@@ -189,6 +193,8 @@ def main() -> None:
     for region in gyms.regions():
         for battle_id, image in sprites(region).items():
             image.save(args.out / f"{battle_id}.png", optimize=True)
+    for battle_id, image in tower_sprites().items():
+        image.save(args.out / f"{battle_id}.png", optimize=True)
 
 
 def sprites(region: gyms.Region) -> dict[str, Image.Image]:
@@ -262,6 +268,33 @@ def cast(region: gyms.Region) -> dict[str, Look]:
                         poses[index], mirrors[index], headwear[index])
         age = ages[battle.kind].pop() if battle.kind in ages else ("adult" if battle.kind != "grunt" else "teen")
         looks[battle.id] = dress(battle, person, age, region.id, region_index)
+    return looks
+
+
+def tower_sprites() -> dict[str, Image.Image]:
+    """The battle tower's trainers and its owner, mapped to their sprites."""
+    return {battle_id: draw(look) for battle_id, look in tower_cast().items()}
+
+
+def tower_cast() -> dict[str, Look]:
+    """The tower's trainers dressed like a gym leader of their trade's theme, and the owner in a champion's coat."""
+    battles = [Battle(f"tower-{index}", "gym", (theme,), row[0])
+               for index, (row, theme) in enumerate(zip(tower.TRAINERS, TOWER_THEMES), 1)]
+    battles.append(Battle(tower.OWNER_ID, "champion", (), tower.OWNER[0]))
+    deck = random.Random("trainer-sprites:tower")
+    count = len(battles)
+    genders, skins, hairs = dealt(deck, ("f", "m"), count), dealt(deck, SKINS, count), dealt(deck, HAIR_COLORS, count)
+    eyes, builds, poses = dealt(deck, EYE_COLORS, count), dealt(deck, tuple(SHOULDERS), count), dealt(deck, tuple(POSES), count)
+    mirrors, headwear = dealt(deck, (False, True), count), dealt(deck, (False, True), count)
+    styles = {"f": dealt(deck, FEMALE_HAIR, count), "m": dealt(deck, MALE_HAIR, count)}
+    ages = dealt(deck, ("teen", "adult", "adult", "elder"), count)
+    looks = {}
+    for index, battle in enumerate(battles):
+        gender = genders[index]
+        person = Person(gender, skins[index], hairs[index], styles[gender].pop(), eyes[index], builds[index],
+                        poses[index], mirrors[index], headwear[index])
+        age = "adult" if battle.kind == "champion" else ages[index]
+        looks[battle.id] = dress(battle, person, age, "kanto", TOWER_OWNER_COAT)
     return looks
 
 
