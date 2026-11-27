@@ -2140,6 +2140,10 @@ read_when:
   `enumerator(at:`; a fixture-only match goes in `NOT_INVARIANT` with its reason. Delisting each of
   the five classes above, or `GymTermGuardTests`, fails the drift check; the old check missed three
   of those six. The scan fails loudly if it finds nothing.
+- **A new saved field, even a nested one, changes the save fixture.** Train 73 went red on
+  `SaveFormatPinTests` when the tower added `boast` inside `TowerProgress`. Only
+  `testTheFixtureSetsEveryField` was listed, and it checks top-level fields, so the three tests that
+  compare the encoded JSON ran only on CI. The whole class is now listed.
 
 ## Rendering tests that read text with OCR
 

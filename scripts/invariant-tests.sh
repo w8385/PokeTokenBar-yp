@@ -44,6 +44,7 @@ CLASSES=(
   RemoteOpsContractTests           # remote op kinds, actions, reasons match bot/contract/remote_ops.json
   WalletLedgerScanTests            # spentTokens is written only by CompanionStore.spend and refund
   FormDisplayScanTests             # screens read details through the individual's form and draw its gender
+  SaveFormatPinTests               # every saved field, nested ones too, is in the save fixture
 )
 
 # Single methods of classes that are otherwise unrelated (Class/method).
@@ -65,7 +66,6 @@ METHODS=(
   AntigravityUsageTests/testEntriesWithoutRootsGoesThroughResolvedRoots
   CredentialSwitchCacheTests/testAntigravityUserRefreshAlsoBypassesStillValidCache
   SaveTransferTests/testEveryCompanionStateFieldIsClassifiedForTransfer
-  SaveFormatPinTests/testTheFixtureSetsEveryField
   GymModelTests/testGymViewsNeverShowTheBotsRegionName
   GymModelTests/testRegionNamesFollowTheAppLanguageNotTheBotsKoreanName
   # Read the bot's caps from bot/ypoke, so a bot-only change can break them.
