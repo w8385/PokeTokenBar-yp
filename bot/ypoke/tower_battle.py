@@ -183,9 +183,10 @@ class TowerBattles:
 
 
 def _run_best(state: dict) -> int | None:
-    """The streak of a run that is ending, when it beat the best the player had when it began and may be boasted."""
+    """The streak of a run that is ending, when it is a full set or more, beat the best the player had when it began
+    and may be boasted."""
     streak = state["streak"]
-    beaten = streak > state.get("start_best", state["best"])
+    beaten = streak >= tower.SET_SIZE and streak > state.get("start_best", state["best"])
     return streak if beaten and state.get("boast", True) else None
 
 

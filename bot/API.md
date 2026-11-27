@@ -696,7 +696,7 @@ The ranking is the ten best streaks of each mode, by Slack display name (null wh
 Auth as above. `{"mode": "entry", "team": [<member>, <member>, <member>]}`; `team` has the schema and move check of
 `party` in [`POST /v1/party`](#post-v1party) and is ignored in `rental`. `boast` (optional, default true) lets the bot
 post to the battle channel a trophy this battle earns for the first time, and, when the run ends (a loss or
-`quit`), a streak past the best the player had when the run began; `false` keeps them out, and the last battle's
+`quit`), a streak of 10 or more past the best the player had when the run began; `false` keeps them out, and the last battle's
 choice holds for a `quit`. The reply is the
 [`POST /v1/gym/battle`](#post-v1gymbattle) body (`gym_id` is the trainer's art id, `kind` `tower` or `tower-owner`,
 `run` null), plus:

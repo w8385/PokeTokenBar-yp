@@ -84,8 +84,13 @@ def test_a_rental_keeps_its_moves_and_item_and_takes_the_ivs_of_the_battle_it_fi
     assert member.battle_member() == {
         "pokemon_id": 149, "level": 50, "learned_at": 100, "shiny": False, "ivs": dict.fromkeys(
             ("hp", "attack", "defense", "special_attack", "special_defense", "speed"), 28),
-        "moves": [200, 89], "held_item": "life-orb",
+        "moves": [200, 89], "held_item": "life-orb", "can_evolve": False,
     }
+
+
+def test_a_tower_member_answers_can_evolve_itself_so_eviolite_needs_no_lookup():
+    assert tower.rental_member(147, 1, (33,), "eviolite").battle_member()["can_evolve"] is True
+    assert tower.rental_member(149, 1, (33,), "eviolite").battle_member()["can_evolve"] is False
 
 
 def test_bp_climbs_by_set_and_the_owner_pays_more():

@@ -288,13 +288,23 @@ def best_line(user_id, mode, streak):
 def test_a_climb_posts_nothing_until_its_run_ends_past_the_best_it_started_from(server, pokeapi, board):
     store, base, clock = server
     token = store.issue_token("U1")
-    at_streak(store, "U1", "entry", 0, best=3)
+    at_streak(store, "U1", "entry", 8, start_best=3)
     for _ in range(4):
         assert fight(base, token, clock)[1]["won"] is True
     assert board.lines == []
-    pokeapi.strong = foes(5)
+    pokeapi.strong = foes(13)
     assert fight(base, token, clock)[1]["won"] is False
-    assert board.lines == [best_line("U1", "entry", 4)]
+    assert board.lines == [best_line("U1", "entry", 12)]
+
+
+def test_a_run_end_posts_only_from_a_full_set_of_wins(server, board):
+    store, base, clock = server
+    for user_id, streak in (("U1", 8), ("U2", 9)):
+        token = store.issue_token(user_id)
+        at_streak(store, user_id, "entry", streak, start_best=0)
+        assert fight(base, token, clock)[1]["won"] is True
+        call(f"{base}/v1/tower/quit", "POST", token, {"mode": "entry"})
+    assert board.lines == [best_line("U2", "entry", 10)]
 
 
 def test_a_run_that_ends_at_or_below_the_old_best_posts_nothing(server, pokeapi, board):
@@ -311,11 +321,11 @@ def test_a_run_that_ends_at_or_below_the_old_best_posts_nothing(server, pokeapi,
 def test_quitting_a_run_past_the_old_best_posts_it_once(server, board):
     store, base, clock = server
     token = store.issue_token("U1")
-    fight(base, token, clock)
+    at_streak(store, "U1", "entry", 10, start_best=0)
     fight(base, token, clock)
     call(f"{base}/v1/tower/quit", "POST", token, {"mode": "entry"})
     call(f"{base}/v1/tower/quit", "POST", token, {"mode": "entry"})
-    assert board.lines == [best_line("U1", "entry", 2)]
+    assert board.lines == [best_line("U1", "entry", 11)]
 
 
 def test_a_run_from_before_boasts_existed_is_not_posted_when_it_ends(server, board):
