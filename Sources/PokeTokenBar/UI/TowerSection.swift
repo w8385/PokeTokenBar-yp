@@ -10,6 +10,10 @@ struct TowerSection: View {
     /// Opens the picker for tower entry slot `slot` (0-based).
     let onPickSlot: (Int) -> Void
 
+    @State private var picked: [Int] = []
+    @State private var give: Int?
+    @State private var take: Int?
+
     private var l: L { store.l }
     private var language: AppLanguage { store.language }
     private var tower: TowerProgress { store.state.tower }
@@ -51,7 +55,10 @@ struct TowerSection: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             header
             recordLines(service.mode)
-            entryPanel
+            switch service.mode {
+            case .entry: entryPanel
+            case .rental: rentalPanel
+            }
             if let failure = service.failure {
                 Text(l.towerFailure(failure)).font(.caption2).foregroundStyle(.orange)
                     .fixedSize(horizontal: false, vertical: true)
@@ -62,7 +69,11 @@ struct TowerSection: View {
 
     private var header: some View {
         HStack(spacing: Spacing.md) {
-            Text(l.towerModeName(service.mode)).font(.callout.weight(.semibold))
+            Picker("", selection: Binding(get: { service.mode }, set: { service.mode = $0 })) {
+                ForEach(TowerMode.allCases, id: \.self) { Text(l.towerModeName($0)).tag($0) }
+            }
+            .pickerStyle(.segmented).labelsHidden().fixedSize().controlSize(.small)
+            .disabled(service.busy)
             Spacer()
             Text(l.towerBP(tower.bp)).font(.callout.weight(.semibold)).monospacedDigit()
         }
@@ -116,6 +127,110 @@ struct TowerSection: View {
         }
     }
 
+    private var rentalPanel: some View {
+        let run = service.runs[.rental]
+        let next = run?.next.battle ?? tower.record(.rental).streak + 1
+        return VStack(alignment: .leading, spacing: Spacing.md) {
+            if let team = run?.team {
+                rentalRow(team, selected: run?.beaten == nil ? [] : [give].compactMap { $0 }) { slot in
+                    guard run?.beaten != nil else { return }
+                    give = give == slot ? nil : slot
+                }
+                if let beaten = run?.beaten {
+                    Text(l.towerSwapTheirs).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                    rentalRow(beaten, selected: [take].compactMap { $0 }) { slot in take = take == slot ? nil : slot }
+                }
+                Text(run?.beaten == nil ? l.towerRentalNote : l.towerSwapNote).font(.caption2).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    if tower.record(.rental).streak > 0 {
+                        Button(l.towerQuit) { Task { await service.quit(.rental) } }
+                            .controlSize(.small).disabled(service.busy)
+                    }
+                    Spacer()
+                    if run?.beaten != nil {
+                        Button(l.towerSwap) {
+                            guard let give, let take else { return }
+                            Task {
+                                await service.rental(.swap(give: give, take: take))
+                                clearSwap()
+                            }
+                        }
+                        .controlSize(.small).disabled(give == nil || take == nil || service.busy)
+                    }
+                    Button(service.busy ? l.gymFighting : l.towerChallenge(next)) {
+                        clearSwap()
+                        Task { await service.fight(.rental, team: nil) }
+                    }
+                    .controlSize(.small).buttonStyle(.borderedProminent).disabled(service.busy)
+                }
+            } else if let offer = run?.offer {
+                rentalRow(offer, selected: picked) { index in
+                    if let at = picked.firstIndex(of: index) {
+                        picked.remove(at: at)
+                    } else if picked.count < TowerProgress.teamSize {
+                        picked.append(index)
+                    }
+                }
+                Text(l.towerRentalNote).font(.caption2).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    Spacer()
+                    Button(l.towerRentalStart(picked.count)) {
+                        let choice = picked
+                        Task {
+                            await service.rental(.pick(choice))
+                            picked = []
+                        }
+                    }
+                    .controlSize(.small).buttonStyle(.borderedProminent)
+                    .disabled(picked.count != TowerProgress.teamSize || service.busy)
+                }
+            } else {
+                Text(l.towerRentalNote).font(.caption2).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    Spacer()
+                    Button(l.towerRentalGet) { Task { await service.rental() } }
+                        .controlSize(.small).buttonStyle(.borderedProminent).disabled(service.busy)
+                }
+            }
+        }
+    }
+
+    private func clearSwap() {
+        give = nil
+        take = nil
+    }
+
+    private func rentalRow(_ members: [TowerRental], selected: [Int], onTap: @escaping (Int) -> Void) -> some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.sm), count: TowerProgress.teamSize),
+                  spacing: Spacing.sm) {
+            ForEach(Array(members.enumerated()), id: \.offset) { index, member in
+                Button { onTap(index) } label: { rentalCard(member, selected: selected.contains(index)) }
+                    .buttonStyle(.plain).disabled(service.busy)
+            }
+        }
+    }
+
+    private func rentalCard(_ member: TowerRental, selected: Bool) -> some View {
+        VStack(spacing: Spacing.xxs) {
+            ZStack(alignment: .bottomTrailing) {
+                SpriteView(speciesID: member.pokemonId, size: 40, shiny: false).frame(width: 40, height: 40)
+                if let item = member.item { HeldItemBadge(ref: item, size: 16) }
+            }
+            ForEach(member.moves.prefix(4), id: \.self) { move in
+                MoveNameLabel(id: move, botName: "", language: language)
+                    .font(.caption2).lineLimit(1).minimumScaleFactor(0.8)
+            }
+        }
+        .frame(maxWidth: .infinity).padding(.vertical, Spacing.sm).padding(.horizontal, Spacing.xs)
+        .contentShape(Rectangle())
+        .ptbPanel()
+        .overlay(RoundedRectangle(cornerRadius: Radius.card).strokeBorder(Color.accentColor, lineWidth: 2)
+            .opacity(selected ? 1 : 0))
+    }
+
     private func slotCard(_ member: BattleCandidate?, slot: Int, locked: Bool) -> some View {
         Button { onPickSlot(slot) } label: {
             VStack(spacing: Spacing.xxs) {
@@ -145,6 +260,7 @@ struct TowerSection: View {
         if outcome.gain.bp > 0 { notes.append(l.towerEarned(outcome.gain.bp)) }
         if let trophy = outcome.gain.trophy { notes.append(l.towerTrophyEarned(trophy)) }
         if !outcome.battle.won { notes.append(l.towerStreakEnded(outcome.gain.battle - 1)) }
+        if outcome.run.beaten != nil { notes.append(l.towerSwapNote) }
         let team = TowerEntry.team(state: store.state, ids: tower.entry, moveChoices: entry.moveChoices)
         let primary: String? = outcome.battle.won ? l.towerNextBattle : (mode == .entry && team != nil ? l.gymRematch : nil)
         return VStack(alignment: .leading, spacing: 0) {

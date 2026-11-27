@@ -70,6 +70,12 @@ struct TowerRental: Decodable, Equatable, Sendable {
     let heldItem: String?
     let ivs: Int
     let nature: String?
+
+    var item: HeldItemRef? {
+        guard let heldItem else { return nil }
+        if let kind = ItemKind.allCases.first(where: { $0.heldItemSlug == heldItem }) { return .item(kind) }
+        return MegaStone.stone(slug: heldItem).map { .stone($0) }
+    }
 }
 
 /// A run as every tower reply carries it.

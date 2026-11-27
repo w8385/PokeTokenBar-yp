@@ -71,6 +71,26 @@ final class TowerService {
         last = outcome
     }
 
+    enum RentalChange: Equatable, Sendable {
+        /// Three different indexes of the offer.
+        case pick([Int])
+        /// Team slot `give` takes the just-beaten trainer's member `take`.
+        case swap(give: Int, take: Int)
+    }
+
+    /// The rental run after `change`; with none, a run without a team gets its offer of six.
+    func rental(_ change: RentalChange? = nil) async {
+        var body: [String: Any] = [:]
+        switch change {
+        case .pick(let indexes): body["pick"] = indexes
+        case .swap(let give, let take): body["swap"] = ["give": give, "take": take]
+        case nil: break
+        }
+        guard let data = await send("v1/tower/rental", body: try? JSONSerialization.data(withJSONObject: body)),
+              let run = try? TowerRun.decode(data) else { return }
+        take(run, gain: nil)
+    }
+
     /// Ends the mode's run: the streak goes back to 0 and the entry can change again.
     func quit(_ mode: TowerMode) async {
         let body = try? JSONEncoder().encode(["mode": mode.rawValue])
