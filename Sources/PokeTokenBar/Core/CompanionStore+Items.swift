@@ -265,7 +265,25 @@ extension CompanionStore {
     /// 사탕 사용 결과 — UI 피드백 분기용.
     enum CandyUseResult: Equatable { case evolved, graduated, progressed, unavailable }
 
+    /// How many Exp. Share holders would split a batch's XP past graduation.
+    var candyLeftoverRecipientCount: Int { expShareRecipients().count }
+
+    /// The Bag's line about a batch's XP past graduation; `wasted` when no holder takes it.
+    func candyLeftoverLine(for plan: RareCandyUsePlan) -> (text: String, wasted: Bool)? {
+        guard plan.discardedXP > 0 else { return nil }
+        let xp = TokenFormatter.compact(plan.discardedXP)
+        let holders = candyLeftoverRecipientCount
+        return holders > 0 ? (l.candyLeftoverToExpShare(xp, holders: holders), false) : (l.candyDiscardedXP(xp), true)
+    }
+
+    /// The home line under the graduation banner after a candy batch shared its leftover.
+    var candyLeftoverHomeLine: String? {
+        guard justGraduated != nil, let shared = candyLeftoverShared else { return nil }
+        return l.candyLeftoverShared(TokenFormatter.compact(shared.xp), holders: shared.holders)
+    }
+
     /// Spend only the candies needed by the current growth plan, preserving unused inventory.
+    /// XP past graduation goes in full to the Exp. Share holders.
     /// 사탕 XP 는 usedAtStage(진화 진행)에만 반영 — usedSinceInstall/오늘 토큰(실사용 통계)엔 안 잡힌다.
     @discardableResult
     func useRareCandy(count: Int = 1) -> CandyUseResult {
@@ -285,7 +303,13 @@ extension CompanionStore {
         // 진화 안 될 때(부분 진행)도 즉시 "+XP" 피드백 — CompanionHeader 가 연출과 별개로 표시.
         candyFeedbackAmount = xp
         candyFeedbackSeq += 1
-        applyUsage(xp)   // Saves inventory and growth together, with existing evolution effects.
+        let raisedID = state.active?.profile?.instanceID
+        let overflow = applyUsage(xp)   // Saves inventory and growth together, with existing evolution effects.
+        let recipients = expShareRecipients(excluding: Set([raisedID].compactMap { $0 }))
+        if splitAcrossExpShareHolders(overflow, recipients: recipients) > 0 {
+            candyLeftoverShared = (overflow, recipients.count)
+            save()
+        }
         if state.active == nil { return .graduated }
         if state.active!.stageIndex > beforeStage { return .evolved }
         return .progressed
