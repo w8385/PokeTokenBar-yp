@@ -606,27 +606,32 @@ enum FreshEgg {
 enum ScoutPool: Hashable, Sendable {
     case region(PokedexRegion)
     case national
+    /// Legendary and Mythical base species; only the tower's BP exchange hands these tickets out.
+    case legendary
 
+    /// The pools the token shop sells.
     static var all: [ScoutPool] { PokedexRegion.allCases.map { .region($0) } + [.national] }
+    static var every: [ScoutPool] { all + [.legendary] }
 
     /// 티켓 개수 키(`inventoryKey`)와 후보 목록 키(`CompanionState.scoutDraws`)에 저장되므로 바꾸지 않는다.
     var key: String {
         switch self {
         case .region(let region): return region.rawValue
         case .national: return "national"
+        case .legendary: return "legendary"
         }
     }
     var inventoryKey: String { "scout.\(key)" }
 
     init?(key: String) {
-        guard let pool = Self.all.first(where: { $0.key == key }) else { return nil }
+        guard let pool = Self.every.first(where: { $0.key == key }) else { return nil }
         self = pool
     }
 
     var dexRange: ClosedRange<Int> {
         switch self {
         case .region(let region): return region.dexRange
-        case .national: return PokedexRegion.nationalRange
+        case .national, .legendary: return PokedexRegion.nationalRange
         }
     }
 }

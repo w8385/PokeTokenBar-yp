@@ -65,7 +65,7 @@ extension CompanionStore {
 
     /// 가방에 든 티켓 — 지역 순서(전국 마지막).
     var ownedScoutTickets: [(pool: ScoutPool, count: Int)] {
-        ScoutPool.all.compactMap { pool in
+        ScoutPool.every.compactMap { pool in
             let count = scoutTicketCount(pool)
             return count > 0 ? (pool, count) : nil
         }
@@ -91,10 +91,19 @@ extension CompanionStore {
         guard scoutTicketCount(pool) > 0 else { return nil }
         if let existing = scoutDraw(for: pool) { return existing }
         guard let full = try? await provider.baseSpeciesIndex() else { return nil }
+        var legendaries: Set<Int>?
+        if pool == .legendary {
+            await loadSpeciesIndexIfNeeded()
+            guard let index = speciesIndex else { return nil }
+            legendaries = Set(index.all.filter { $0.evolvesFromID == nil && index.rarity(of: $0.id) == .legendary }.map(\.id))
+        }
         // await 사이에 다른 호출이 먼저 뽑았거나 티켓이 줄었을 수 있다.
         guard scoutTicketCount(pool) > 0 else { return nil }
         if let existing = scoutDraw(for: pool) { return existing }
-        let candidates = full.filter { pool.dexRange.contains($0.id) && PokemonAssets.isSupported(speciesID: $0.id) }
+        let candidates = full.filter {
+            pool.dexRange.contains($0.id) && PokemonAssets.isSupported(speciesID: $0.id)
+                && legendaries?.contains($0.id) != false
+        }
         let drawn = SpeciesRoll.drawDistinct(from: candidates, count: ScoutTicket.drawSize, weighting: .sqrtCaptureRate,
                                              isCollected: { state.hasCollectedFinal(forBaseID: $0) }, rng: &rng)
         guard !drawn.isEmpty else { return nil }

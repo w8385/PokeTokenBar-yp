@@ -78,6 +78,33 @@ struct TowerRental: Decodable, Equatable, Sendable {
     }
 }
 
+enum TowerGood: Hashable, Sendable {
+    case item(ItemKind)
+    case stone(MegaStone)
+    case legendaryScout
+
+    var inventoryKey: String {
+        switch self {
+        case .item(let kind): kind.rawValue
+        case .stone(let stone): stone.inventoryKey
+        case .legendaryScout: ScoutPool.legendary.inventoryKey
+        }
+    }
+}
+
+/// BP prices: a good the token shop sells costs at least its token price at `tokensPerBP`.
+enum TowerExchange {
+    static let tokensPerBP = 50_000
+    static let legendaryScoutBP = 1_000
+    static let items: [ItemKind] = [
+        .rareCandy, .mint, .abilityCapsule, .bottleCap, .abilityPatch, .goldBottleCap,
+        .leftovers, .lifeOrb, .choiceBand, .choiceSpecs, .choiceScarf, .focusSash, .assaultVest, .expertBelt,
+        .weaknessPolicy,
+    ]
+
+    static func bp(forTokens tokens: Int) -> Int { (tokens + tokensPerBP - 1) / tokensPerBP }
+}
+
 /// A run as every tower reply carries it.
 struct TowerRun: Decodable, Equatable, Sendable {
     struct Next: Decodable, Equatable, Sendable {

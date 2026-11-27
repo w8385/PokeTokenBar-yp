@@ -2479,6 +2479,7 @@ struct L {
         switch pool {
         case .region(let region): return regionName(region)
         case .national: return t("전국", "National", "全国", "Nacional", "National", "Nacional", "National", "Все регионы")
+        case .legendary: return t("전설", "Legendary", "伝説", "Legendario", "Légendaire", "Lendário", "Legendär", "Легендарные")
         }
     }
     func scoutTicketName(_ pool: ScoutPool) -> String {

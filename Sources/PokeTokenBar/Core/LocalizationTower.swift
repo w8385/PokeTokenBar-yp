@@ -154,6 +154,27 @@ extension L {
         t("교체", "Swap", "入れ替え", "Cambiar", "Échanger", "Trocar", "Tauschen", "Обменять")
     }
 
+    // MARK: Exchange
+
+    var towerExchange: String {
+        t("BP 교환소", "BP Exchange", "BP交換所", "Canje de BP", "Échange de BP", "Troca de BP", "BP-Tausch", "Обмен BP")
+    }
+
+    var towerExchangeAction: String {
+        t("교환", "Exchange", "交換", "Canjear", "Échanger", "Trocar", "Tauschen", "Обменять")
+    }
+
+    var towerExchangeNote: String {
+        t("배틀 타워에서 모은 BP로 바꿔요. 전설 스카우트 티켓은 여기서만 받을 수 있어요.",
+          "Spend the BP you won in the tower. The Legendary Scout Ticket is only found here.",
+          "バトルタワーで集めたBPと交換します。伝説スカウトチケットはここでしか手に入りません。",
+          "Canjea los BP ganados en la torre. El boleto de exploración legendario solo está aquí.",
+          "Dépense les BP gagnés dans la tour. Le ticket de recrutement légendaire ne se trouve qu'ici.",
+          "Troque os BP ganhos na torre. O bilhete de recrutamento lendário só existe aqui.",
+          "Tausche die im Turm gewonnenen BP. Das legendäre Scouting-Ticket gibt es nur hier.",
+          "Обменивайте BP, заработанные в башне. Легендарный билет разведки есть только здесь.")
+    }
+
     func towerFailure(_ failure: GymService.Failure) -> String {
         guard case .refused(let code) = failure else { return gymFailure(failure) }
         switch code {
