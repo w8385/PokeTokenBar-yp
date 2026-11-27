@@ -694,6 +694,54 @@ final class ReadmeScreenshotTests: XCTestCase {
             .environment(\.locale, language.displayLocale)
     }
 
+    func testDrawTowerReadmeImage() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_README_SHOT_DIR"] else {
+            throw XCTSkip("Set PTB_README_SHOT_DIR to draw the README images")
+        }
+        let dir = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("readme-tower-\(UUID())")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        for id in [448, 445, 373] {
+            _ = await SpriteLoader.image(speciesID: id)
+            _ = await SpriteLoader.image(speciesID: id, back: true)
+        }
+        let moveNames = PokemonNameDisplayStore()
+        await MoveName.load(ids: StubMoveNames.table.keys, store: moveNames, provider: StubMoveNames())
+        self.moveNames = moveNames
+        for (language, suffix) in languages {
+            var state = CompanionState()
+            state.language = language
+            state.installBaselineSet = true
+            state.dex = [TowerFixtures.entry(448, id: "a"), TowerFixtures.entry(445, id: "b"), TowerFixtures.entry(373, id: "c")]
+            state.tower.bp = 37
+            state.tower.entry = ["a", "b", "c"]
+            state.tower.records["entry"] = TowerModeRecord(streak: 23, best: 31, trophies: ["silver"])
+            let file = scratch.appendingPathComponent("state-\(UUID()).json")
+            try JSONEncoder().encode(state).write(to: file)
+            let store = CompanionStore(provider: ReadmeTowerProvider(), fileURL: file)
+            let bot = TowerFakeBot()
+            bot.replies["/v1/tower/record"] = [(TowerFixtures.record(
+                entry: TowerFixtures.run(streak: 23, best: 31, trophies: ["silver"]),
+                rental: TowerFixtures.run("rental", streak: 0, best: 12)), 200)]
+            let service = TowerService(link: { GymService.Link(server: Self.server, token: "synthetic") },
+                                       exchange: bot.exchange, apply: { run, gain in store.applyTower(run, gain: gain) })
+            await service.load()
+            XCTAssertFalse(service.runs.isEmpty)
+            let defaults = try XCTUnwrap(UserDefaults(suiteName: "readme-tower-\(UUID())"))
+            let tower = VStack(alignment: .leading, spacing: 6) {
+                Text(store.l.towerTitle).font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
+                    .textCase(.uppercase).padding(.leading, 4)
+                TowerSection(store: store, entry: BattleEntryStore(defaults: defaults), service: service,
+                             onPickSlot: { _ in }).ptbCard()
+            }
+            .padding(PopoverMetrics.padding)
+            .environment(\.locale, language.displayLocale)
+            try await shot(tower, "screenshot-tower\(suffix)", in: dir, height: nil)
+        }
+    }
+
     func testDrawUsageRecapImages() async throws {
         guard let output = ProcessInfo.processInfo.environment["PTB_README_SHOT_DIR"] else {
             throw XCTSkip("Set PTB_README_SHOT_DIR to draw the README images")
@@ -993,4 +1041,10 @@ private struct ReplayCast {
             GymFixtures.event(5, "faint", side: 1, member: 1),
         ]
     }
+}
+
+private struct ReadmeTowerProvider: PokeProviding {
+    func line(baseSpeciesID: Int) async throws -> EvoLine { throw URLError(.notConnectedToInternet) }
+    func baseSpeciesIndex() async throws -> [BaseSpecies] { [] }
+    func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
 }
