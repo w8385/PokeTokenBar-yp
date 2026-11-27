@@ -55,6 +55,7 @@ SCREENS = (
     ("GymResultView.swift", ("screenshot-gym-replay", "screenshot-hidden-boss")),
     ("Gym*.swift", ("screenshot-gyms",)),
     ("Battle*.swift", ("screenshot-battle",)),
+    ("Tower*.swift", ("screenshot-tower",)),
     ("SettingsView.swift", ("settings", "screenshot-provider-settings")),
     ("SettingsTab.swift", ("settings", "screenshot-provider-settings")),
     ("GrowthModeSection.swift", ("screenshot-growth-mode",)),
