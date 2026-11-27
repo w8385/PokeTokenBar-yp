@@ -64,10 +64,13 @@ final class TowerScreenshotTests: XCTestCase {
         .padding(.horizontal, 12).padding(.top, 8)
         .frame(maxHeight: .infinity, alignment: .top)
         let size = NSSize(width: PopoverMetrics.contentWidth, height: height)
+        let moveNames = PokemonNameDisplayStore()
+        await MoveName.load(ids: StubMoveNames.table.keys, store: moveNames, provider: StubMoveNames())
         try await OffscreenRender.capture(
             section.frame(width: size.width, height: size.height)
                 .background(Color.white).environment(\.colorScheme, .light)
-                .environment(\.locale, rig.store.language.displayLocale),
+                .environment(\.locale, rig.store.language.displayLocale)
+                .environment(\.pokemonNameProvider, StubMoveNames()).environment(\.pokemonNameStore, moveNames),
             size: size, appearance: .aqua, to: file, until: { !rig.service.runs.isEmpty || rig.service.last != nil })
     }
 
@@ -94,6 +97,22 @@ final class TowerScreenshotTests: XCTestCase {
             await owner.service.fight(.entry, team: team)
             XCTAssertNotNil(owner.service.last)
             try await shot(owner, height: 520, to: directory.appendingPathComponent("tower-owner-win-\(language.rawValue).png"))
+
+            let offer = try rig(language)
+            offer.service.mode = .rental
+            let six = TowerTests.rentals([248, 149, 376, 9, 6, 3])
+            offer.bot.replies["/v1/tower/record"] = [(record(entry: TowerFixtures.run(streak: 0, best: 31),
+                                                             rental: TowerFixtures.run("rental", streak: 0, best: 12,
+                                                                                       extra: ["offer": six])), 200)]
+            try await shot(offer, height: 520, to: directory.appendingPathComponent("tower-rental-offer-\(language.rawValue).png"))
+
+            let swap = try rig(language)
+            swap.service.mode = .rental
+            swap.store.state.tower.records["rental"] = TowerModeRecord(streak: 4, best: 12)
+            let rental = TowerFixtures.run("rental", streak: 4, best: 12, extra: [
+                "team": TowerTests.rentals([248, 149, 9]), "beaten": TowerTests.rentals([143, 130, 65], item: "leftovers")])
+            swap.bot.replies["/v1/tower/record"] = [(record(entry: TowerFixtures.run(streak: 0, best: 31), rental: rental), 200)]
+            try await shot(swap, height: 560, to: directory.appendingPathComponent("tower-rental-swap-\(language.rawValue).png"))
         }
     }
 }

@@ -110,6 +110,50 @@ extension L {
           "Серия закончилась на \(streak) победах.")
     }
 
+    // MARK: Rental
+
+    var towerRentalGet: String {
+        t("대여 포켓몬 받기", "Get rentals", "レンタルを受け取る", "Recibir alquileres", "Recevoir les locations",
+          "Receber aluguéis", "Leihgaben holen", "Получить аренду")
+    }
+
+    var towerRentalNote: String {
+        t("6마리 중 3마리를 골라요. 이기면 방금 이긴 상대의 포켓몬 1마리와 바꿀 수 있어요.",
+          "Pick three of six. After a win you may swap one for a Pokémon of the trainer you just beat.",
+          "6匹から3匹を選びます。勝つと、倒した相手のポケモン1匹と入れ替えられます。",
+          "Elige tres de seis. Tras ganar puedes cambiar uno por un Pokémon del entrenador vencido.",
+          "Choisis trois sur six. Après une victoire, tu peux en échanger un contre un Pokémon du Dresseur battu.",
+          "Escolha três de seis. Depois de vencer, pode trocar um por um Pokémon do treinador derrotado.",
+          "Wähle drei von sechs. Nach einem Sieg darfst du eins gegen ein Pokémon des besiegten Trainers tauschen.",
+          "Выберите трёх из шести. После победы можно обменять одного на покемона побеждённого тренера.")
+    }
+
+    func towerRentalStart(_ picked: Int) -> String {
+        t("이 3마리로 시작 (\(picked)/3)", "Start with these (\(picked)/3)", "この3匹で始める (\(picked)/3)",
+          "Empezar con estos (\(picked)/3)", "Commencer avec eux (\(picked)/3)", "Começar com estes (\(picked)/3)",
+          "Mit diesen starten (\(picked)/3)", "Начать с ними (\(picked)/3)")
+    }
+
+    var towerSwapNote: String {
+        t("내 포켓몬 1마리와 방금 이긴 상대의 포켓몬 1마리를 골라 바꿀 수 있어요.",
+          "Pick one of yours and one of the trainer you just beat to swap them.",
+          "自分のポケモン1匹と、倒した相手のポケモン1匹を選んで入れ替えられます。",
+          "Elige uno tuyo y uno del entrenador vencido para cambiarlos.",
+          "Choisis un des tiens et un du Dresseur battu pour les échanger.",
+          "Escolha um seu e um do treinador derrotado para trocá-los.",
+          "Wähle eins von dir und eins des besiegten Trainers, um sie zu tauschen.",
+          "Выберите своего покемона и покемона побеждённого тренера, чтобы обменять их.")
+    }
+
+    var towerSwapTheirs: String {
+        t("방금 이긴 상대", "Just beaten", "倒した相手", "Recién vencido", "Tout juste battu", "Recém-derrotado",
+          "Gerade besiegt", "Только что побеждён")
+    }
+
+    var towerSwap: String {
+        t("교체", "Swap", "入れ替え", "Cambiar", "Échanger", "Trocar", "Tauschen", "Обменять")
+    }
+
     func towerFailure(_ failure: GymService.Failure) -> String {
         guard case .refused(let code) = failure else { return gymFailure(failure) }
         switch code {

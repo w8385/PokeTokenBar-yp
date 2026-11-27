@@ -248,6 +248,73 @@ final class TowerTests: XCTestCase {
         XCTAssertFalse(store.state.tower.entryLocked)
     }
 
+    // MARK: Rental
+
+    static func rentals(_ ids: [Int], item: String? = "life-orb") -> [[String: Any]] {
+        ids.map { ["pokemon_id": $0, "moves": [85, 89], "held_item": item ?? NSNull(), "ivs": 15, "nature": NSNull()] }
+    }
+
+    private func reply(_ run: [String: Any]) throws -> Data {
+        try JSONSerialization.data(withJSONObject: run)
+    }
+
+    func testARentalRunGetsSixPicksThreeAndSwapsOneAfterAWin() async throws {
+        let store = try store()
+        let bot = TowerFakeBot()
+        let offer = Self.rentals([25, 6, 9, 3, 143, 130])
+        bot.replies["/v1/tower/rental"] = [
+            (try reply(TowerFixtures.run("rental", streak: 0, best: 0, extra: ["offer": offer])), 200),
+            (try reply(TowerFixtures.run("rental", streak: 0, best: 0, extra: ["team": Self.rentals([6, 143, 9])])), 200),
+            (try reply(TowerFixtures.run("rental", streak: 1, best: 1, extra: ["team": Self.rentals([65, 143, 9])])), 200),
+        ]
+        let service = service(bot, store: store)
+        await service.rental()
+        XCTAssertEqual(service.runs[.rental]?.offer?.map(\.pokemonId), [25, 6, 9, 3, 143, 130])
+        XCTAssertEqual(try bot.body(of: 0).count, 0)
+
+        await service.rental(.pick([1, 4, 2]))
+        XCTAssertEqual(try bot.body(of: 1)["pick"] as? [Int], [1, 4, 2])
+        XCTAssertNil(service.runs[.rental]?.offer)
+        XCTAssertEqual(service.runs[.rental]?.team?.map(\.pokemonId), [6, 143, 9])
+
+        await service.rental(.swap(give: 0, take: 2))
+        XCTAssertEqual(try bot.body(of: 2)["swap"] as? [String: Int], ["give": 0, "take": 2])
+        XCTAssertEqual(service.runs[.rental]?.team?.first?.pokemonId, 65)
+        XCTAssertEqual(store.state.tower.record(.rental).streak, 1)
+    }
+
+    func testAWonRentalBattleOpensTheSwapWithTheBeatenTrainersTeam() throws {
+        let data = TowerFixtures.battle(won: true, battle: 3, best: 3, bp: 1, mode: "rental",
+                                        extra: ["team": Self.rentals([6, 143, 9]), "beaten": Self.rentals([65, 130, 3])])
+        let outcome = try TowerOutcome.decode(data)
+        XCTAssertEqual(outcome.run.beaten?.map(\.pokemonId), [65, 130, 3])
+    }
+
+    func testARentalsHeldItemIsTheAppsItemOrMegaStoneByItsSlug() throws {
+        let decode = { (item: String?) throws -> HeldItemRef? in
+            let data = try JSONSerialization.data(withJSONObject: Self.rentals([25], item: item)[0])
+            return try TowerJSON.decoder.decode(TowerRental.self, from: data).item
+        }
+        XCTAssertEqual(try decode("life-orb"), .item(.lifeOrb))
+        XCTAssertEqual(try decode("metagrossite"), MegaStone.stone(slug: "metagrossite").map { .stone($0) })
+        XCTAssertNotNil(try decode("metagrossite"))
+        XCTAssertNil(try decode(nil))
+        XCTAssertNil(try decode("not-an-item"))
+    }
+
+    func testEveryItemTheBotCanHandARentalHasAnAppIcon() throws {
+        let items = GymRepo.trainerAssets.deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("bot/ypoke/items.py")
+        let source = try String(contentsOf: items, encoding: .utf8)
+        let slugs = source.split(separator: "\n").compactMap { line -> String? in
+            guard let match = line.firstMatch(of: /^[A-Z_]+ = "([a-z0-9-]+)"$/) else { return nil }
+            return String(match.1)
+        }
+        XCTAssertFalse(slugs.isEmpty)
+        let known = Set(ItemKind.allCases.compactMap(\.heldItemSlug))
+        XCTAssertEqual(slugs.filter { !known.contains($0) && MegaStone.stone(slug: $0) == nil }, [])
+    }
+
     func testABotWithoutTheTowerSaysSo() async throws {
         let store = try store()
         let bot = TowerFakeBot()

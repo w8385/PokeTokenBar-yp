@@ -19,6 +19,7 @@ final class FormDisplayScanTests: XCTestCase {
         "GymResultView.swift|speciesID: spriteID, size: 36, shiny: fighter.shiny",
         "SettingsView.swift|speciesID: nil, size: 28",
         "ShopView.swift|speciesID: nil, size: 26",
+        "TowerSection.swift|speciesID: member.pokemonId, size: 40, shiny: false",
         "UnownedSpeciesDetailView.swift|speciesID: species.id, size: 104, animated: true, spriteStore: spriteStore",
     ]
 
