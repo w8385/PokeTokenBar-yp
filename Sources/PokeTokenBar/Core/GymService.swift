@@ -214,12 +214,12 @@ final class GymService {
         return request
     }
 
-    private nonisolated static func message(in data: Data) -> String? {
+    nonisolated static func message(in data: Data) -> String? {
         struct Body: Decodable { let error: String? }
         return (try? JSONDecoder().decode(Body.self, from: data))?.error
     }
 
-    private nonisolated static func retryAfter(in data: Data) -> Double {
+    nonisolated static func retryAfter(in data: Data) -> Double {
         struct Body: Decodable { let retryAfter: Double? }
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase

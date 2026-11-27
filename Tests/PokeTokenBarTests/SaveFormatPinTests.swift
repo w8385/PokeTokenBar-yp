@@ -141,6 +141,10 @@ final class SaveFormatPinTests: XCTestCase {
         state.urshifuStylesRepaired = true
         state.unearnedTradeStepsReverted = true
         state.gymBadges = badges
+        state.tower.bp = 120
+        state.tower.entry = ["grad-1", "grad-2", "stored-1"]
+        state.tower.records = ["entry": TowerModeRecord(streak: 3, best: 25, trophies: ["silver"]),
+                               "rental": TowerModeRecord(best: 4)]
         return state
     }
 }

@@ -86,6 +86,7 @@ final class BattleSubTabsTests: XCTestCase {
         let uploader = try rig(linked: true).uploader
         XCTAssertEqual(BattleView.layout(.entry, uploader: uploader, hasEntry: true), .init(sections: [.entry], bottomLinkLine: false))
         XCTAssertEqual(BattleView.layout(.battle, uploader: uploader, hasEntry: true), .init(sections: [.gyms], bottomLinkLine: false))
+        XCTAssertEqual(BattleView.layout(.tower, uploader: uploader, hasEntry: true), .init(sections: [.tower], bottomLinkLine: false))
         XCTAssertEqual(BattleView.layout(.history, uploader: uploader, hasEntry: true), .init(sections: [.recent], bottomLinkLine: false))
     }
 

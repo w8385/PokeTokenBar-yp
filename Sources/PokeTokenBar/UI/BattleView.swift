@@ -12,6 +12,9 @@ struct BattleView: View {
     private let initialPickerQuery: String
     /// One gym service for the whole tab, so a result on screen survives a trip to another sub-tab.
     @State private var gym = GymServiceHolder()
+    @State private var tower = ServiceHolder<TowerService>()
+    /// The tower entry slot being picked for, 0-based.
+    @State private var towerSlot: Int?
 
     private var l: L { store.l }
 
@@ -22,7 +25,9 @@ struct BattleView: View {
     }
 
     var body: some View {
-        if let target = navigation.battlePicker, let entry, let uploader {
+        if let slot = towerSlot {
+            towerPicker(slot)
+        } else if let target = navigation.battlePicker, let entry, let uploader {
             let lineup = BattleEntry.lineup(state: store.state, slots: entry.slots)
             let current = currentID(of: target)
             BattleFighterPicker(
@@ -93,6 +98,14 @@ struct BattleView: View {
                                service: gym.resolve { GymSection.makeService(store: store, uploader: uploader) })
                 }
             }
+        case .tower:
+            if let entry, let uploader {
+                self.section(l.towerTitle) {
+                    TowerSection(store: store, entry: entry,
+                                 service: tower.resolve { TowerSection.makeService(store: store, uploader: uploader) },
+                                 onPickSlot: { towerSlot = $0 })
+                }
+            }
         case .recent:
             if let uploader {
                 BattleInfoSections(info: uploader.battleInfo, l: l, parts: [.recent])
@@ -115,6 +128,23 @@ struct BattleView: View {
     static func needsConnection(_ uploader: PartyUploader?) -> Bool {
         guard let uploader else { return false }
         return !uploader.hasToken || uploader.tokenRejected || !uploader.hasServer
+    }
+
+    private func towerPicker(_ slot: Int) -> some View {
+        let ids = store.state.tower.entry
+        let current = TowerEntry.members(state: store.state, ids: ids).map(\.id)
+        let replacing = slot < current.count ? current[slot] : nil
+        return BattleFighterPicker(
+            store: store, current: replacing,
+            excluding: Set(current).subtracting(replacing.map { [$0] } ?? []),
+            sameSpecies: TowerEntry.sameSpecies(state: store.state, ids: current, replacing: replacing),
+            allowsAuto: false,
+            onPick: { id in
+                store.setTowerEntry(id, at: slot)
+                towerSlot = nil
+            },
+            onBack: { towerSlot = nil })
+        .frame(height: 520)
     }
 
     private func currentID(of target: BattlePickerTarget) -> String? {
@@ -145,11 +175,14 @@ struct BattleView: View {
     }
 }
 
-@MainActor
-final class GymServiceHolder {
-    private var service: GymService?
+typealias GymServiceHolder = ServiceHolder<GymService>
 
-    func resolve(_ make: () -> GymService) -> GymService {
+/// Makes a service once and keeps it, so what it holds survives a trip to another sub-tab.
+@MainActor
+final class ServiceHolder<Service: AnyObject> {
+    private var service: Service?
+
+    func resolve(_ make: () -> Service) -> Service {
         if let service { return service }
         let made = make()
         service = made

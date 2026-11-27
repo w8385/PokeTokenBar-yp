@@ -562,7 +562,8 @@ final class SaveTransferTests: XCTestCase {
         // storedLines = 진행 — 박스에 보관한 키우던 포켓몬이라 그 기록(dex)과 함께 간다.
         // expShareHolders = 진행 — 달아 둔 학습장치는 inventory 밖에 있으니 같이 가야 사라지지 않는다.
         // stuckWatch·keepWaiting·expShareTakenOff = 진행 — 개체에 대한 플레이어의 선택이라 개체와 함께 간다.
-        let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs", "gymBadges",
+        // tower = 진행 — BP 는 통화라 inventory 처럼 옮겨 가고, 기록은 봇이 다시 알려 준다.
+        let progress: Set<String> = ["economyVersion", "usedSinceInstall", "spentTokens", "eggUsage", "eggTier", "appliedTradeIDs", "gymBadges", "tower",
                                      "graduateEvolution", "storedLines", "expShareHolders", "expShareTakenOff", "stuckWatch", "keepWaiting",
                                      "pendingHatchID", "pendingForm", "eggPrayers", "active",
                                      "representativeSpeciesID", "representativeForm", "dex",

@@ -5,6 +5,7 @@ extension L {
         switch tab {
         case .entry: battleSubTabEntry
         case .battle: battleSubTabBattle
+        case .tower: battleSubTabTower
         case .history: battleSubTabHistory
         }
     }
@@ -18,7 +19,7 @@ extension L {
     }
 
     var battleSubTabHistory: String {
-        t("기록", "History", "履歴", "Historial", "Historique", "Histórico", "Verlauf", "История")
+        t("기록", "History", "履歴", "Historial", "Journal", "Histórico", "Verlauf", "История")
     }
 
     var battleSpeciesClause: String {
