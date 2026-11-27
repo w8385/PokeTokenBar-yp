@@ -80,6 +80,12 @@ final class TowerExchangeTests: XCTestCase {
         XCTAssertEqual(poor.state.tower.bp, TowerExchange.legendaryScoutBP - 1)
     }
 
+    func testTheLegendaryScoutCostsAtLeastAGuaranteedLegendaryEgg() {
+        XCTAssertEqual(TowerExchange.legendaryScoutBP, 3_200)
+        XCTAssertGreaterThanOrEqual(TowerExchange.legendaryScoutBP * 50_000, FreshEgg.price(guaranteeing: .legendary))
+        XCTAssertGreaterThan(TowerExchange.legendaryScoutBP * 50_000, ScoutTicket.price)
+    }
+
     func testTheLegendaryScoutTicketIsNeverSoldForTokens() throws {
         XCTAssertFalse(ScoutPool.all.contains(.legendary))
         XCTAssertEqual(ScoutPool(key: "legendary"), .legendary)

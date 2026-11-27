@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 @testable import PokeTokenBar
 
@@ -128,6 +129,25 @@ final class TowerTests: XCTestCase {
         await service.fight(.rental, team: nil)
         XCTAssertEqual(try bot.body(of: 0)["boast"] as? Bool, true)
         XCTAssertEqual(try bot.body(of: 1)["boast"] as? Bool, false)
+    }
+
+    func testARentalWinWithASwapOpenLeadsToTheSwapNotTheNextBattle() {
+        XCTAssertEqual(TowerSection.resultAction(won: true, swapOpen: true, canRematch: false), .swap)
+        XCTAssertEqual(TowerSection.resultAction(won: true, swapOpen: false, canRematch: true), .nextBattle)
+        XCTAssertEqual(TowerSection.resultAction(won: false, swapOpen: false, canRematch: true), .rematch)
+        XCTAssertNil(TowerSection.resultAction(won: false, swapOpen: false, canRematch: false))
+    }
+
+    func testTheRankingCardLoadsTheRecordOnceThoughItStartsEmpty() async throws {
+        let store = try store()
+        let bot = TowerFakeBot()
+        bot.replies["/v1/tower/record"] = [(TowerFixtures.record(
+            entry: TowerFixtures.run(streak: 0, best: 0), rental: TowerFixtures.run("rental", streak: 0, best: 0)), 200)]
+        let service = service(bot, store: store)
+        let tab = VStack { Text("friends"); TowerRankingCard(service: service, l: store.l) }
+        let host = OffscreenRender.host(tab, size: CGSize(width: 320, height: 300))
+        try await OffscreenRender.settle(host) { !service.ranking.isEmpty }
+        XCTAssertEqual(bot.requests.count, 1)
     }
 
     func testTheRankingMarksTheCallersRowAndAnOlderBotsRowsDecodeUnmarked() throws {

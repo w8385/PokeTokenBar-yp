@@ -98,7 +98,7 @@ enum TowerGood: Hashable, Sendable {
 /// BP prices: a good the token shop sells costs at least its token price at `tokensPerBP`.
 enum TowerExchange {
     static let tokensPerBP = 50_000
-    static let legendaryScoutBP = 1_000
+    static let legendaryScoutBP = bp(forTokens: FreshEgg.price(guaranteeing: .legendary))
     static let items: [ItemKind] = [
         .rareCandy, .mint, .abilityCapsule, .bottleCap, .abilityPatch, .goldBottleCap,
         .leftovers, .lifeOrb, .choiceBand, .choiceSpecs, .choiceScarf, .focusSash, .assaultVest, .expertBelt,

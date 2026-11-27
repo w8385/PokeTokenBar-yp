@@ -101,6 +101,32 @@ final class TowerScreenshotTests: XCTestCase {
         TowerFixtures.record(entry: entry, rental: rental)
     }
 
+    func testCaptureTheSubTabRow() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_TOWER_SCREENSHOT_DIR"] else {
+            throw XCTSkip("Set PTB_TOWER_SCREENSHOT_DIR to write the PR screenshots")
+        }
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        for language in [AppLanguage.ko, .en, .fr] {
+            let l = L(language)
+            let tabs: [BattleSubTab] = [.entry, .battle, .history]
+            let before = tabs.map { language == .fr && $0 == .history ? "Historique" : l.title(of: $0) }
+            let after = BattleSubTab.allCases.map { l.title(of: $0) }
+            for (name, labels) in [("before", before), ("after", after)] {
+                let row = Picker("", selection: .constant(0)) {
+                    ForEach(Array(labels.enumerated()), id: \.offset) { Text($0.element).tag($0.offset) }
+                }
+                .pickerStyle(.segmented).labelsHidden().padding(12)
+                let size = NSSize(width: PopoverMetrics.contentWidth, height: 48)
+                try await OffscreenRender.capture(
+                    row.frame(width: size.width, height: size.height).background(Color.white)
+                        .environment(\.colorScheme, .light),
+                    size: size, appearance: .aqua,
+                    to: directory.appendingPathComponent("subtabs-\(name)-\(language.rawValue).png"))
+            }
+        }
+    }
+
     func testCaptureTheTower() async throws {
         guard let output = ProcessInfo.processInfo.environment["PTB_TOWER_SCREENSHOT_DIR"] else {
             throw XCTSkip("Set PTB_TOWER_SCREENSHOT_DIR to write the PR screenshots")
