@@ -23,7 +23,8 @@ DEFENSES = ("defense", "special_defense")
 @register("moves", "stages")
 class Stages(StatusMove):
     """Raises the user's stages or lowers the foe's. A self-boost is picked once per entry while the user is above
-    its cost (or half HP) and a raised stat helps; a drop while the foe's stage is above -2 and the stat matters."""
+    its cost (or half HP), a raised stat helps and the foe cannot surely knock it out first; a drop while the foe's
+    stage is above -2 and the stat matters."""
 
     snatchable = True
 
@@ -37,7 +38,8 @@ class Stages(StatusMove):
         cost = arg(move, "cost", 0)
         floor = user.max_hp // (cost or 2)
         return (not user.danced and user.hp > floor and self._ready(move, user, foe)
-                and boost_wanted(self._changes(move, user, arena), user, foe, weather))
+                and boost_wanted(self._changes(move, user, arena), user, foe, weather)
+                and battle._safe_to_boost(user, foe, weather))
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         if not self._ready(move, user, foe):
