@@ -355,6 +355,7 @@ enum SaveFormatFixture {
   "timeCredit" : 5000000,
   "tokenModeSince" : 721692800,
   "tower" : {
+    "boast" : true,
     "bp" : 120,
     "entry" : [
       "grad-1",
@@ -733,6 +734,7 @@ enum SaveFormatFixture {
   "timeCredit" : 5000000,
   "tokenModeSince" : 721692800,
   "tower" : {
+    "boast" : true,
     "bp" : 120,
     "entry" : [
       "grad-1",
