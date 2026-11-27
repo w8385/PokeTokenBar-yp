@@ -45,6 +45,7 @@ PokeTokenBar turns the AI coding tokens you're already burning — Claude Code, 
 5. 🍬 **Max out, get a candy.** Fill a 5-hour or weekly usage limit and you earn **Rare Candy** — spend it from the **Bag** to grow your current Pokémon.
 6. 🛒 **Spend at the Shop.** Every token you've used is spendable currency — buy **Rare Candy**, a **Mint** that sets your Pokémon's nature to the one you pick, a **Shiny Charm** that permanently raises your shiny odds, or an egg to send off your current companion and start over. Eggs come in three grades: a plain **Pokémon Egg**, a **Rare Egg** guaranteed to hatch Rare or better, and an **Epic Egg** guaranteed to hatch Epic or better. A **Scout Ticket** for each region (or all of them) shows 10 random Pokémon from it so you can pick the egg you want.
 7. 🔁 **Trade with coworkers.** Swap graduated Pokémon with a linked coworker from the Friends tab (the other side accepts in Slack), or send a graduated Pokémon straight from its Box detail. Or put one up for **Miracle Trade** in the battle channel: the first coworker to pick one of theirs trades with you at once. Pokémon that evolve by trade, like Haunter or Kadabra, now stop there until they're traded — or until you use a **Linking Cord** from the Shop on one in your Box. Trade evolutions that also need a held item (Onix with Metal Coat, Seadra with Dragon Scale, …) need that item equipped on the Pokémon first, in its Box detail; Karrablast and Shelmet evolve when traded for each other, or with a Linking Cord while the other one is your friend.
+8. 🗼 **Climb the Battle Tower.** Once YPoke is linked, take three Pokémon at Lv50 up a streak of battles, with your own team or three rentals. Win tower owner trophies at battles 20 and 50, spend the BP you earn at the exchange, and see how your coworkers rank.
 
 ## Tour
 
@@ -267,6 +268,15 @@ A gym fight plays back turn by turn: moves, damage, HP bars, and each side's rem
 <td width="45%" align="center"><img src="assets/screenshot-gym-replay.png" width="300" alt="A gym battle replay stopped mid-fight"></td>
 </tr>
 <tr>
+<td width="45%" align="center"><img src="assets/screenshot-tower.png" width="300" alt="Battle tab, Tower sub-tab — a streak of 23 with the entry's three Pokémon, 37 BP and the Fight button"></td>
+<td width="55%" valign="middle">
+<h3>🗼 The Battle Tower</h3>
+The <b>Tower</b> sub-tab in the Battle tab is a streak of 3-on-3 battles at Lv50. Pick <b>My team</b> or <b>Rental</b>: your own three, or three rented Pokémon with their moves set for you. Battles come in sets of 10. A win moves you to the next battle; a loss ends the run, and your best streak stays. At battles <b>20</b> and <b>50</b> the tower owner waits, and beating them earns a trophy. With rentals, each win lets you swap in one of the Pokémon you beat.
+<br><br>
+Wins pay <b>BP</b>. Spend them at the exchange in the Tower, where the <b>Legendary Scout Ticket</b> is sold. The Coworkers tab shows a Tower ranking of your linked coworkers. In Slack, <code>/타워</code> posts the best-streak ranking to the channel, or one coworker's record when you add their name. Your first owner win and new bests are posted to the battle channel too; turn that off with the checkbox under the Fight button.
+</td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-champion-finale.png" width="300" alt="The Elite Four run with the champion's hidden partner, and the replay as it comes out"></td>
 <td width="55%" valign="middle">
 <h3>👑 The champion's hidden partner</h3>
@@ -328,7 +338,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 
 <img src="assets/screenshot-usage-recap.png" width="360" alt="Usage recap for a selected period">
 
-<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, gym, replay, champion, floating-friends, stored-friends, growth-mode, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
+<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, Tower, gym, replay, champion, floating-friends, stored-friends, growth-mode, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
 
 ## Agent activity
 
