@@ -20,12 +20,15 @@ final class TowerService {
     @ObservationIgnored private let link: @MainActor () -> GymService.Link?
     @ObservationIgnored private let exchange: GymService.Exchange
     @ObservationIgnored private let apply: Apply
+    @ObservationIgnored private let boast: @MainActor () -> Bool
 
     init(link: @escaping @MainActor () -> GymService.Link?,
          exchange: @escaping GymService.Exchange = PartyUploader.urlSessionFetch,
+         boast: @escaping @MainActor () -> Bool = { true },
          apply: @escaping Apply) {
         self.link = link
         self.exchange = exchange
+        self.boast = boast
         self.apply = apply
     }
 
@@ -61,7 +64,7 @@ final class TowerService {
 
     /// Fights the run's next battle. `team` is the entry in `entry` mode; the bot keeps the rentals.
     func fight(_ mode: TowerMode, team: [PartyMember]?) async {
-        let body = try? TowerBattleRequest(mode: mode.rawValue, team: mode == .entry ? team : nil).encoded()
+        let body = try? TowerBattleRequest(mode: mode.rawValue, team: mode == .entry ? team : nil, boast: boast()).encoded()
         guard let data = await send("v1/tower/battle", body: body) else { return }
         guard let outcome = try? TowerOutcome.decode(data) else {
             failure = .failed

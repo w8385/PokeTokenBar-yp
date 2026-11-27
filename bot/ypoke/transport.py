@@ -239,7 +239,7 @@ def miracle_listener(miracle: MiracleService, kind: str):
 
 
 class SlackBoard:
-    """The battle channel where miracle cards are posted and edited."""
+    """The battle channel where miracle cards are posted and edited and tower records are boasted."""
 
     def __init__(self, client: WebClient, channel: str):
         self._client = client
@@ -258,6 +258,12 @@ class SlackBoard:
             kit.send(self._client.chat_update, "miracle card", channel=self._channel, ts=ts, text=text, blocks=blocks)
         except Exception:
             log.warning("could not edit a miracle card")
+
+    def say(self, text: str) -> None:
+        try:
+            kit.send(self._client.chat_postMessage, "tower boast", channel=self._channel, text=text)
+        except Exception:
+            log.warning("could not post a tower boast")
 
 
 def send_direct_messages(client: WebClient, reply: Reply) -> None:

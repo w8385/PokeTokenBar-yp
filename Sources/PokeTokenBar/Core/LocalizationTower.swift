@@ -10,6 +10,27 @@ extension L {
         t("배틀 타워", "Battle Tower", "バトルタワー", "Torre de Combate", "Tour de Combat", "Torre de Batalha", "Kampfturm", "Боевая башня")
     }
 
+    var towerBoast: String {
+        t("처음 타워 주인을 이기거나 최고 기록을 세우면 대결 채널에 알리기",
+          "Post my first owner win and new bests to the battle channel",
+          "初めてタワーの主に勝ったときと最高記録をバトルチャンネルに投稿",
+          "Publicar en el canal de combates mi primera victoria ante el dueño y mis nuevos récords",
+          "Publier ma première victoire contre le maître et mes records dans le canal des combats",
+          "Publicar no canal de batalhas minha primeira vitória contra o dono e novos recordes",
+          "Ersten Sieg gegen den Turmherrn und neue Rekorde im Kampfkanal posten",
+          "Сообщать в канал боёв о первой победе над хозяином и новых рекордах")
+    }
+
+    var towerRankingTitle: String {
+        t("배틀 타워 순위", "Battle Tower ranking", "バトルタワーランキング", "Clasificación de la Torre", "Classement de la Tour",
+          "Ranking da Torre", "Turm-Rangliste", "Рейтинг башни")
+    }
+
+    func towerBestStreak(_ wins: Int) -> String {
+        t("\(wins)연승", "\(wins) wins", "\(wins)連勝", "\(wins) victorias", "\(wins) victoires", "\(wins) vitórias",
+          "\(wins) Siege", "\(wins) побед")
+    }
+
     var towerLoading: String {
         t("타워 기록을 불러오는 중…", "Loading the tower…", "タワーの記録を読み込み中…", "Cargando la torre…",
           "Chargement de la tour…", "Carregando a torre…", "Turm wird geladen…", "Загрузка башни…")

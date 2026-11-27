@@ -16,6 +16,7 @@ from ypoke.commands import (
     HELP_TEXT,
     LINK_COMMAND,
     RANKING_COMMAND,
+    TOWER_COMMAND,
     RECORD_COMMAND,
     UMBRELLA_COMMAND,
     CommandHandler,
@@ -622,7 +623,7 @@ def test_manifest_registers_exactly_the_handled_commands():
 
 def test_help_points_gyms_to_the_app_without_splitting_entry_slots():
     assert "앞의 그 수만큼 순서대로 나가요." in HELP_TEXT
-    assert "체육관·아지트·사천왕 도전은 앱 대결 탭에서 해요." in HELP_TEXT
+    assert "체육관·아지트·사천왕·배틀 타워 도전은 앱 대결 탭에서 해요." in HELP_TEXT
     assert "출전 칸" not in HELP_TEXT and "4~6번" not in HELP_TEXT
     assert "도장" not in HELP_TEXT
 
@@ -649,6 +650,24 @@ def test_week_starts_monday_midnight_kst(now, expected):
 
 def ranking(store):
     return handler(store, now=lambda: NOW).handle("UA", "", RANKING_COMMAND)
+
+
+def test_tower_lists_each_modes_best_streaks_in_the_channel(store):
+    store.save_tower_run("UA", "entry", {"streak": 0, "best": 12})
+    store.save_tower_run("UB", "entry", {"streak": 3, "best": 30})
+    store.save_tower_run("UB", "rental", {"streak": 0, "best": 4})
+    reply = handler(store).handle("UA", "", TOWER_COMMAND)
+    assert reply.in_channel
+    assert reply.text.splitlines() == ["🏯 배틀 타워 최고 연승", "*내 엔트리*", "1. <@UB> 30연승", "2. <@UA> 12연승",
+                                       "*대여*", "1. <@UB> 4연승"]
+
+
+def test_tower_with_no_runs_says_so_and_a_mention_shows_that_players_record(store):
+    assert handler(store).handle("UA", "", TOWER_COMMAND).text == "아직 배틀 타워 기록이 없어요."
+    store.save_tower_run("UB", "entry", {"streak": 23, "best": 31, "trophies": ["silver"]})
+    reply = handler(store).handle_mention("UA", "<@UBOT> 타워 <@UB>")
+    assert reply.in_channel
+    assert reply.text == "<@UB> 배틀 타워: 내 엔트리 최고 31연승 (지금 23연승)🥈 · 대여 최고 0연승 (지금 0연승)"
 
 
 def test_ranking_counts_only_battles_since_monday_kst(store):

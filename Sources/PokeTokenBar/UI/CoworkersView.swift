@@ -8,6 +8,7 @@ struct CoworkersView: View {
     let navigation: PopoverNavigation
     @Environment(PartyUploader.self) private var uploader: PartyUploader?
     @Environment(BattleEntryStore.self) private var entry: BattleEntryStore?
+    @State private var tower = ServiceHolder<TowerService>()
 
     private var l: L { store.l }
     private var connected: Bool { (uploader?.hasToken ?? false) && (uploader?.hasServer ?? false) }
@@ -26,6 +27,8 @@ struct CoworkersView: View {
                     if connected, let uploader {
                         if entry != nil { tradeSection }
                         BattleInfoSections(info: uploader.battleInfo, l: l, parts: [.coworkers])
+                        TowerRankingCard(service: tower.resolve { TowerSection.makeService(store: store, uploader: uploader) },
+                                         l: l)
                     } else {
                         notConnected
                     }

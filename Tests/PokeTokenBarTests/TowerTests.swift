@@ -111,7 +111,32 @@ final class TowerTests: XCTestCase {
 
     private func service(_ bot: TowerFakeBot, store: CompanionStore) -> TowerService {
         TowerService(link: { GymService.Link(server: "http://bot-host:8790", token: "synthetic") }, exchange: bot.exchange,
-                     apply: { run, gain in store.applyTower(run, gain: gain) })
+                     boast: { store.state.tower.boast }, apply: { run, gain in store.applyTower(run, gain: gain) })
+    }
+
+    func testTheBoastChoiceIsSavedOnByDefaultAndSentWithEveryBattle() async throws {
+        let store = try store()
+        XCTAssertTrue(store.state.tower.boast)
+        let bot = TowerFakeBot()
+        bot.replies["/v1/tower/battle"] = [(TowerFixtures.battle(won: true, battle: 1, best: 1, bp: 1), 200),
+                                           (TowerFixtures.battle(won: true, battle: 2, best: 2, bp: 1), 200)]
+        let service = service(bot, store: store)
+        await service.fight(.rental, team: nil)
+        store.setTowerBoast(false)
+        XCTAssertFalse(reload(store).state.tower.boast)
+        service.dismissResult()
+        await service.fight(.rental, team: nil)
+        XCTAssertEqual(try bot.body(of: 0)["boast"] as? Bool, true)
+        XCTAssertEqual(try bot.body(of: 1)["boast"] as? Bool, false)
+    }
+
+    func testTheRankingMarksTheCallersRowAndAnOlderBotsRowsDecodeUnmarked() throws {
+        let record = try TowerRecord.decode(TowerFixtures.record(
+            entry: TowerFixtures.run(streak: 0, best: 0), rental: TowerFixtures.run("rental", streak: 0, best: 0),
+            ranking: ["entry": [["name": "두리", "best": 30, "me": false], ["name": "하나", "best": 12, "me": true]],
+                      "rental": [["name": "세나", "best": 4]]]))
+        XCTAssertEqual(record.ranking["entry"]?.map(\.me), [false, true])
+        XCTAssertEqual(record.ranking["rental"]?.map(\.me), [nil])
     }
 
     private func reload(_ store: CompanionStore) -> CompanionStore {

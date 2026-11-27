@@ -56,13 +56,31 @@ def clock():
     return Clock()
 
 
+class Board:
+    """The battle channel as a list; `fail` makes posting raise like a Slack outage."""
+
+    def __init__(self):
+        self.lines = []
+        self.fail = False
+
+    def __call__(self, text):
+        if self.fail:
+            raise RuntimeError("slack is down")
+        self.lines.append(text)
+
+
 @pytest.fixture
-def server(tmp_path, pokeapi, clock):
+def board():
+    return Board()
+
+
+@pytest.fixture
+def server(tmp_path, pokeapi, clock, board):
     store = Store(str(tmp_path / "bot.sqlite3"), fixed_now)
     names = {"U1": "하나", "U2": "두리", "U3": "세나"}
     http_server = serve(
         store, "127.0.0.1", 0, lambda user_id, party: None, pokeapi.attacking_moves, names.get, clock=clock,
-        now=fixed_now, tower=TowerBattles(store, pokeapi, new_seed=lambda: RUN),
+        now=fixed_now, tower=TowerBattles(store, pokeapi, new_seed=lambda: RUN, boast=board),
     )
     yield store, f"http://127.0.0.1:{http_server.server_address[1]}", clock
     http_server.shutdown()
@@ -81,9 +99,9 @@ def call(url, method="GET", token=None, body=None):
         return error.code, json.load(error)
 
 
-def fight(base, token, clock, mode="entry", team=ENTRY):
+def fight(base, token, clock, mode="entry", team=ENTRY, **extra):
     clock.now += 10
-    return call(f"{base}/v1/tower/battle", "POST", token, {"mode": mode, "team": team})
+    return call(f"{base}/v1/tower/battle", "POST", token, {"mode": mode, "team": team, **extra})
 
 
 def rental(base, token, **change):
@@ -236,8 +254,8 @@ def test_the_record_ranks_bests_per_mode_with_display_names(server):
     at_streak(store, "U3", "rental", 4)
     status, body = call(f"{base}/v1/tower/record", token=store.issue_token("U1"))
     assert status == 200
-    assert body["ranking"] == {"entry": [{"name": "두리", "best": 30}, {"name": "하나", "best": 12}],
-                               "rental": [{"name": "세나", "best": 4}]}
+    assert body["ranking"] == {"entry": [{"name": "두리", "best": 30, "me": False}, {"name": "하나", "best": 12, "me": True}],
+                               "rental": [{"name": "세나", "best": 4, "me": False}]}
     assert body["modes"]["entry"] == {"mode": "entry", "streak": 12, "best": 12, "trophies": [],
                                       "next": {"battle": 13, "set": 2, "owner": False}}
     assert body["modes"]["rental"]["offer"] is None
@@ -261,3 +279,80 @@ def test_tower_battles_share_the_gym_rate_limit_interval(server):
     assert fight(base, token, clock)[0] == 200
     status, body = call(f"{base}/v1/tower/battle", "POST", token, {"mode": "entry", "team": ENTRY})
     assert (status, body["error"]) == (429, "rate_limited")
+
+
+def best_line(user_id, mode, streak):
+    return f"🏯 <@{user_id}>님이 배틀 타워 {tower.MODE_NAMES[mode]} 모드에서 {streak}연승으로 최고 기록을 세웠어요!"
+
+
+def test_a_climb_posts_nothing_until_its_run_ends_past_the_best_it_started_from(server, pokeapi, board):
+    store, base, clock = server
+    token = store.issue_token("U1")
+    at_streak(store, "U1", "entry", 0, best=3)
+    for _ in range(4):
+        assert fight(base, token, clock)[1]["won"] is True
+    assert board.lines == []
+    pokeapi.strong = foes(5)
+    assert fight(base, token, clock)[1]["won"] is False
+    assert board.lines == [best_line("U1", "entry", 4)]
+
+
+def test_a_run_that_ends_at_or_below_the_old_best_posts_nothing(server, pokeapi, board):
+    store, base, clock = server
+    token = store.issue_token("U1")
+    at_streak(store, "U1", "entry", 0, best=2)
+    fight(base, token, clock)
+    fight(base, token, clock)
+    pokeapi.strong = foes(3)
+    fight(base, token, clock)
+    assert board.lines == []
+
+
+def test_quitting_a_run_past_the_old_best_posts_it_once(server, board):
+    store, base, clock = server
+    token = store.issue_token("U1")
+    fight(base, token, clock)
+    fight(base, token, clock)
+    call(f"{base}/v1/tower/quit", "POST", token, {"mode": "entry"})
+    call(f"{base}/v1/tower/quit", "POST", token, {"mode": "entry"})
+    assert board.lines == [best_line("U1", "entry", 2)]
+
+
+def test_a_run_from_before_boasts_existed_is_not_posted_when_it_ends(server, board):
+    store, base, _ = server
+    at_streak(store, "U1", "entry", 7)
+    call(f"{base}/v1/tower/quit", "POST", store.issue_token("U1"), {"mode": "entry"})
+    assert board.lines == []
+
+
+def test_the_first_owner_win_posts_at_once_and_a_repeat_does_not(server, board):
+    store, base, clock = server
+    token = store.issue_token("U1")
+    at_streak(store, "U1", "entry", 19)
+    fight(base, token, clock)
+    assert board.lines == [f"🥈 <@U1>님이 배틀 타워 내 엔트리 모드 20번째 배틀에서 {tower.OWNER[0]}에게 이겨 은 트로피를 받았어요!"]
+    at_streak(store, "U1", "entry", 19, trophies=["silver"])
+    fight(base, token, clock)
+    assert len(board.lines) == 1
+
+
+def test_boast_false_keeps_the_trophy_and_the_run_end_out_of_the_channel(server, pokeapi, board):
+    store, base, clock = server
+    token = store.issue_token("U1")
+    at_streak(store, "U1", "entry", 19)
+    assert fight(base, token, clock, boast=False)[1]["tower"]["trophy"] == "silver"
+    pokeapi.strong = foes(21)
+    fight(base, token, clock, boast=False)
+    call(f"{base}/v1/tower/quit", "POST", token, {"mode": "entry"})
+    assert board.lines == []
+    assert fight(base, token, clock, boast="no")[0] == 400
+
+
+def test_a_channel_that_fails_to_post_still_returns_the_saved_battle(server, board):
+    store, base, clock = server
+    board.fail = True
+    token = store.issue_token("U1")
+    at_streak(store, "U1", "entry", 19)
+    status, body = fight(base, token, clock)
+    assert (status, body["tower"]["trophy"]) == (200, "silver")
+    assert store.tower_run("U1", "entry")["streak"] == 20

@@ -39,6 +39,7 @@ from ypoke.trade_editor import TradeEditor
 from ypoke.trades import TradeService
 from ypoke.training_editor import TrainingEditor
 from ypoke.store import PendingChallenge, Record, Store
+from ypoke.tower import MODE_NAMES, TROPHY_EMOJI
 from ypoke.upload_server import MAX_PARTY_SIZE
 
 REGISTER_LINK = "poketokenbar://ypoke-register"
@@ -73,9 +74,11 @@ LINK_COMMAND = "/포켓몬연결"
 RECORD_COMMAND = "/전적"
 RANKING_COMMAND = "/랭킹"
 DEX_COMMAND = "/도감"
+TOWER_COMMAND = "/타워"
 UMBRELLA_COMMAND = "/ypoke"
 COMMAND_NAMES = (
-    BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, DEX_COMMAND, UMBRELLA_COMMAND, *REMOTE_COMMANDS,
+    BATTLE_COMMAND, LINK_COMMAND, RECORD_COMMAND, RANKING_COMMAND, DEX_COMMAND, TOWER_COMMAND, UMBRELLA_COMMAND,
+    *REMOTE_COMMANDS,
 )
 MENTION_WORDS = {
     "대결": BATTLE_COMMAND,
@@ -84,6 +87,7 @@ MENTION_WORDS = {
     "랭킹": RANKING_COMMAND,
     "연결": LINK_COMMAND,
     "도감": DEX_COMMAND,
+    "타워": TOWER_COMMAND,
     **REMOTE_WORDS,
 }
 HELP_WORDS = frozenset({"", "help", "도움말"})
@@ -100,6 +104,7 @@ HELP_TEXT = (
     f"`{RECORD_COMMAND} [@누구]` 승패를 이 채널에 올려요.\n"
     f"`{RANKING_COMMAND}` 이번 주(월요일 0시부터) 승리 순위를 이 채널에 올려요.\n"
     f"`{DEX_COMMAND} [@누구]` 도감 수·이로치 수·지역별 진행·대표 포켓몬을 이 채널에 올려요. 앱을 켜 둬야 도감이 올라가요.\n"
+    f"`{TOWER_COMMAND} [@누구]` 배틀 타워 최고 연승 순위를, 누구를 붙이면 그 사람의 모드별 기록을 이 채널에 올려요.\n"
     "위 명령 결과는 누가 어떤 명령을 썼는지와 함께 채널에 올라가요. 연결 링크·토큰과 잘못 쓴 명령의 안내는 나만 봐요.\n"
     "*내 포켓몬 (나만 봐요)*\n"
     "앱이 회사에서 마지막으로 동기화한 내용에 슬랙에서 한 작업을 더해서 보여 줘요.\n"
@@ -121,7 +126,9 @@ HELP_TEXT = (
     f"`{UMBRELLA_COMMAND}` 이 도움말이에요. `{UMBRELLA_COMMAND} 도감`·`{UMBRELLA_COMMAND} 파티`처럼 뒤에 명령을 붙여도 돼요.\n"
     "스레드에서는 `@YPoke 대결 @상대`처럼 멘션으로 불러요. `@YPoke 전적`·`@YPoke 랭킹`·`@YPoke 도감`·`@YPoke 연결`·`@YPoke 파티`도 돼요.\n"
     "*앱 대결 탭*\n"
-    "체육관·아지트·사천왕 도전은 앱 대결 탭에서 해요. 슬랙 명령은 없어요.\n"
+    "체육관·아지트·사천왕·배틀 타워 도전은 앱 대결 탭에서 해요. 슬랙 명령은 없어요. "
+    f"배틀 타워 기록은 `{TOWER_COMMAND}`로 봐요. 처음 타워 주인을 이기거나 연승 도전이 최고 기록으로 끝나면 "
+    "대결 채널에 올라가요. 앱 타워 화면에서 끌 수 있어요.\n"
     "*교환*\n"
     "대결로는 포켓몬이 오가지 않아요. 졸업한 포켓몬은 앱 친구 탭이나 박스 상세의 교환 제안, "
     f"또는 `{TRADE_COMMAND}`로 연결한 동료와 맞바꿔요. "
@@ -300,6 +307,8 @@ class CommandHandler:
             return self._dex(user_id, mention.group(1) if mention else user_id)
         if command == RANKING_COMMAND:
             return self._ranking()
+        if command == TOWER_COMMAND:
+            return self._tower(mention.group(1)) if mention else self._tower_ranking()
         if command in REMOTE_COMMANDS:
             screens = {PARTY_COMMAND: self.editor, BOX_COMMAND: self.editor, SHOP_COMMAND: self.shop,
                        TRAINING_COMMAND: self.training, TRADE_COMMAND: self.trading, MIRACLE_COMMAND: self.trading}
@@ -383,6 +392,25 @@ class CommandHandler:
                 f"{rank}. <@{user_id}> {record.wins}승 {record.losses}패 ({round(_win_rate(record) * 100)}%)"
             )
         return Reply("\n".join(lines), in_channel=True)
+
+    def _tower_ranking(self) -> Reply:
+        lines = ["🏯 배틀 타워 최고 연승"]
+        for mode, name in MODE_NAMES.items():
+            bests = self._store.tower_bests(mode, RANKING_SIZE)
+            if bests:
+                lines.append(f"*{name}*")
+                lines += [f"{rank}. <@{user_id}> {best}연승" for rank, (user_id, best) in enumerate(bests, start=1)]
+        if len(lines) == 1:
+            return Reply("아직 배틀 타워 기록이 없어요.", in_channel=True)
+        return Reply("\n".join(lines), in_channel=True)
+
+    def _tower(self, user_id: str) -> Reply:
+        parts = []
+        for mode, name in MODE_NAMES.items():
+            run = self._store.tower_run(user_id, mode) or {}
+            trophies = "".join(TROPHY_EMOJI[trophy] for trophy in run.get("trophies", []) if trophy in TROPHY_EMOJI)
+            parts.append(f"{name} 최고 {run.get('best', 0)}연승 (지금 {run.get('streak', 0)}연승){trophies}")
+        return Reply(f"<@{user_id}> 배틀 타워: " + " · ".join(parts), in_channel=True)
 
     def _start(
         self, challenger_id: str, opponent_id: str, where: Where | None, echo: str | None = None, size: int = 1

@@ -687,13 +687,17 @@ once swapped or after the next battle). Each is a member as the battle builds it
 
 ### `GET /v1/tower/record`
 
-Auth as above. `{"ok": true, "modes": {"entry": <run>, "rental": <run>}, "ranking": {"entry": [{"name": "…", "best": 30}], "rental": […]}}`.
-The ranking is the ten best streaks of each mode, by Slack display name (null when it cannot be found), best first.
+Auth as above. `{"ok": true, "modes": {"entry": <run>, "rental": <run>}, "ranking": {"entry": [{"name": "…", "best": 30, "me": false}], "rental": […]}}`.
+The ranking is the ten best streaks of each mode, by Slack display name (null when it cannot be found), best first;
+`me` marks the caller's own row.
 
 ### `POST /v1/tower/battle`
 
 Auth as above. `{"mode": "entry", "team": [<member>, <member>, <member>]}`; `team` has the schema and move check of
-`party` in [`POST /v1/party`](#post-v1party) and is ignored in `rental`. The reply is the
+`party` in [`POST /v1/party`](#post-v1party) and is ignored in `rental`. `boast` (optional, default true) lets the bot
+post to the battle channel a trophy this battle earns for the first time, and, when the run ends (a loss or
+`quit`), a streak past the best the player had when the run began; `false` keeps them out, and the last battle's
+choice holds for a `quit`. The reply is the
 [`POST /v1/gym/battle`](#post-v1gymbattle) body (`gym_id` is the trainer's art id, `kind` `tower` or `tower-owner`,
 `run` null), plus:
 
@@ -705,7 +709,7 @@ Auth as above. `{"mode": "entry", "team": [<member>, <member>, <member>]}`; `tea
 | Status | Body |
 |---|---|
 | `200` | the body above |
-| `400` | an unknown `mode`; in `entry` a `team` that is not three members of different species, or a broken member rule |
+| `400` | an unknown `mode`, a `boast` that is not a boolean; in `entry` a `team` that is not three members of different species, or a broken member rule |
 | `401` | unauthorized |
 | `404` | `not_found` from a bot that predates the tower |
 | `409` | `team_locked` (an `entry` run is live with other species), `no_rental` (`rental` without three picked) |
