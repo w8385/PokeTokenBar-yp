@@ -28,6 +28,11 @@ struct BattleInfo: Codable, Equatable, Sendable {
         var pokemonId: Int
         var level: Int
         var shiny: Bool = false
+        /// The bot's opaque id for a ghost battle; nil from a bot before ghosts.
+        var id: String? = nil
+
+        /// The name the Coworkers list shows; every screen that names a coworker uses it.
+        func label(_ l: L) -> String { name ?? l.battleUnnamed }
     }
 
     /// The sprite for a bot-side Pokémon id: the species itself, or the species and form that own an

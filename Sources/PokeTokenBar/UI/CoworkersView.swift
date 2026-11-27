@@ -26,7 +26,8 @@ struct CoworkersView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     if connected, let uploader {
                         if entry != nil { tradeSection }
-                        BattleInfoSections(info: uploader.battleInfo, l: l, parts: [.coworkers])
+                        BattleInfoSections(info: uploader.battleInfo, l: l, parts: [.coworkers],
+                                           trophies: store.state.coworkerTrophies)
                         TowerRankingCard(service: tower.resolve { TowerSection.makeService(store: store, uploader: uploader) },
                                          l: l)
                     } else {

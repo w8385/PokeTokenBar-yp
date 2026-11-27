@@ -1,9 +1,21 @@
 import Foundation
 
-/// The body of `POST /v1/gym/battle`. It never sends `carried`, so every battle of a run starts fully healed.
+/// The body of `POST /v1/gym/battle`: a trainer's `gymId` or a coworker's `coworkerId`, never both. It never
+/// sends `carried`, so every battle of a run starts fully healed.
 struct GymBattleRequest: Encodable, Equatable, Sendable {
-    let gymId: String
+    var gymId: String?
+    var coworkerId: String?
     let team: [PartyMember]
+
+    init(gymId: String, team: [PartyMember]) {
+        self.gymId = gymId
+        self.team = team
+    }
+
+    init(coworkerId: String, team: [PartyMember]) {
+        self.coworkerId = coworkerId
+        self.team = team
+    }
 
     func encoded() throws -> Data {
         let encoder = JSONEncoder()

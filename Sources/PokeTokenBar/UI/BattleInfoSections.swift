@@ -9,6 +9,8 @@ struct BattleInfoSections: View {
     let info: BattleInfo?
     let l: L
     var parts: [Part] = [.recent, .coworkers]
+    /// Coworker ids whose ghost has been beaten; they get a trophy mark.
+    var trophies: Set<String> = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -74,7 +76,8 @@ struct BattleInfoSections: View {
     private func coworkerRow(_ coworker: BattleInfo.Coworker) -> some View {
         row {
             sprite(coworker.pokemonId, size: 32, shiny: coworker.shiny)
-            Text(coworker.name ?? l.battleUnnamed).lineLimit(1)
+            Text(coworker.label(l)).lineLimit(1)
+            if let id = coworker.id, trophies.contains(id) { CoworkerTrophyMark(l: l) }
             Spacer(minLength: 4)
             Text("\(coworker.shiny ? "✨ " : "")Lv\(coworker.level)")
                 .font(.caption).monospacedDigit().foregroundStyle(.secondary)

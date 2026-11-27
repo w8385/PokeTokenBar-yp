@@ -392,6 +392,13 @@ final class CompanionStore {
         notifyCompanionEvent(l.gymRewardTitle(reward.kind), body)
     }
 
+    /// Records the first win against a coworker's ghost; false when the trophy was already there.
+    func claimCoworkerTrophy(_ coworkerID: String) -> Bool {
+        guard state.coworkerTrophies.insert(coworkerID).inserted else { return false }
+        save()
+        return true
+    }
+
     /// Adds the prize to the bag and returns what it paid as display lines. A single-copy item already owned
     /// is skipped. Mutates state only; the caller saves.
     private func grantPrize(_ prize: HiddenBossPrize) -> [String] {

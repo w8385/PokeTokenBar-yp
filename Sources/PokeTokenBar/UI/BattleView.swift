@@ -12,6 +12,7 @@ struct BattleView: View {
     private let initialPickerQuery: String
     /// One gym service for the whole tab, so a result on screen survives a trip to another sub-tab.
     @State private var gym = GymServiceHolder()
+    @State private var ghosts = GymServiceHolder()
     @State private var tower = ServiceHolder<TowerService>()
     /// The tower entry slot being picked for, 0-based.
     @State private var towerSlot: Int?
@@ -96,6 +97,14 @@ struct BattleView: View {
                 self.section(l.gymSectionTitle) {
                     GymSection(store: store, uploader: uploader, entry: entry,
                                service: gym.resolve { GymSection.makeService(store: store, uploader: uploader) })
+                }
+            }
+        case .ghosts:
+            if let entry, let uploader {
+                self.section(l.ghostTitle) {
+                    CoworkerGhostSection(
+                        store: store, info: uploader.battleInfo, entry: entry,
+                        service: ghosts.resolve { CoworkerGhostSection.makeService(store: store, uploader: uploader) })
                 }
             }
         case .tower:

@@ -1331,6 +1331,8 @@ struct CompanionState: Codable, Sendable {
     var gymBadges = GymBadges()
     /// Battle tower BP, entry and records; a save from before the tower has none.
     var tower = TowerProgress()
+    /// Coworker ids (`BattleInfo.Coworker.id`) beaten at least once in a ghost battle; a save from before has none.
+    var coworkerTrophies: Set<String> = []
 
     init() {}
 
@@ -1407,6 +1409,7 @@ struct CompanionState: Codable, Sendable {
         unearnedTradeStepsReverted = c.lenient(Bool.self, forKey: .unearnedTradeStepsReverted, default: false)
         gymBadges          = c.lenient(GymBadges.self, forKey: .gymBadges, default: GymBadges())
         tower              = c.lenient(TowerProgress.self, forKey: .tower, default: TowerProgress())
+        coworkerTrophies   = c.lenient(Set<String>.self, forKey: .coworkerTrophies, default: [])
     }
 
     /// 지금 가진(놓아주지 않은) 개체의 instanceID — 지닌 도구를 달 수 있는 대상.

@@ -116,6 +116,7 @@ final class SaveFormatPinTests: XCTestCase {
         state.keepWaiting = ["grad-1": 6]
         state.dex = [graduate, stored, unown]
         state.collectedFinals = ["4-6"]
+        state.coworkerTrophies = ["coworker-a"]
         state.language = .ko
         state.inventory = ["rareCandy": 3, "mint": 1]
         state.scoutDraws = ["kanto": [1, 4, 7]]
