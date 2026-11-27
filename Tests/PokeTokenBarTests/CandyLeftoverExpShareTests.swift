@@ -24,7 +24,7 @@ private struct LeftoverProvider: PokeProviding {
     func baseSpecies(id: Int) async throws -> BaseSpecies? { nil }
 }
 
-/// Rare Candy XP past graduation goes in full to the Exp. Share holders instead of being discarded.
+/// XP past graduation, from Rare Candy or usage, goes in full to the Exp. Share holders instead of being discarded.
 @MainActor
 final class CandyLeftoverExpShareTests: XCTestCase {
     nonisolated(unsafe) private var paths: [URL] = []
@@ -50,8 +50,8 @@ final class CandyLeftoverExpShareTests: XCTestCase {
         state.usedSinceInstall = 90_000_000_000
         var profile = PokemonProfile.generate(seed: 4, instanceID: Self.lineID)
         profile.level = 20
-        state.active = MonState(baseID: 4, pathIDs: [4, 5, 6], stageIndex: 1, usedAtStage: usedAtStage, rarity: .common,
-                                totalForms: 3, profile: profile)
+        state.active = MonState(baseID: 4, pathIDs: [4, 5], plannedPathIDs: [4, 5, 6], stageIndex: 1,
+                                usedAtStage: usedAtStage, rarity: .common, totalForms: 3, profile: profile)
         var pikachu = PokemonProfile.generate(seed: 11, instanceID: Self.pikachuID)
         pikachu.level = 30
         var sliggoo = PokemonProfile.generate(seed: 12, instanceID: Self.sliggooID)
@@ -112,16 +112,62 @@ final class CandyLeftoverExpShareTests: XCTestCase {
 
         XCTAssertEqual(try growth(store, Self.pikachuID), before + leftover, "not halved by the share divisor")
         XCTAssertEqual(store.rareCandyCount, plain.rareCandyCount, "the holder takes no extra candy")
-        XCTAssertEqual(store.candyLeftoverShared?.xp, leftover)
-        XCTAssertEqual(store.candyLeftoverShared?.holders, 1)
+        XCTAssertEqual(store.graduationLeftoverShared?.xp, leftover)
+        XCTAssertEqual(store.graduationLeftoverShared?.holders, 1)
+    }
+
+    private func lastFormStore(holders: [String]) async throws -> (store: CompanionStore, threshold: Int) {
+        var lastForm = state(holders: holders)
+        lastForm.active?.pathIDs = [4, 5, 6]
+        lastForm.active?.stageIndex = 2
+        let store = try await makeStore(lastForm)
+        return (store, store.stageThreshold(for: try XCTUnwrap(store.state.active)))
+    }
+
+    func testUsageThatGraduatesTheLineSplitsItsOverflowOverTheHolders() async throws {
+        let (store, threshold) = try await lastFormStore(holders: [Self.pikachuID, Self.sliggooID])
+        let pikachu = try growth(store, Self.pikachuID)
+        let sliggoo = try growth(store, Self.sliggooID)
+        let delta = threshold + 5_000_001
+        let share = delta / ExpShare.shareDivisor
+
+        store.creditUsage(delta)
+
+        XCTAssertNil(store.state.active)
+        XCTAssertNotNil(store.justGraduated)
+        XCTAssertEqual(try growth(store, Self.pikachuID), pikachu + share + 2_500_001)
+        XCTAssertEqual(try growth(store, Self.sliggooID), sliggoo + share + 2_500_000)
+        XCTAssertEqual(store.graduationLeftoverShared?.xp, 5_000_001)
+        XCTAssertEqual(store.graduationLeftoverShared?.holders, 2)
+        XCTAssertEqual(store.graduationLeftoverLine, "Leftover 5M XP went to 2 Exp. Share holders.")
+    }
+
+    func testUsageAfterTheGraduationGoesToTheEggAsBefore() async throws {
+        let (store, threshold) = try await lastFormStore(holders: [Self.pikachuID])
+        store.creditUsage(threshold + 7)
+        XCTAssertNil(store.state.active)
+        let pikachu = try growth(store, Self.pikachuID)
+
+        store.creditUsage(1_000)
+
+        XCTAssertEqual(store.state.eggUsage, 1_000)
+        XCTAssertEqual(try growth(store, Self.pikachuID), pikachu + 1_000 / ExpShare.shareDivisor)
+    }
+
+    func testUsageThatGraduatesWithoutHoldersSharesNothing() async throws {
+        let (store, threshold) = try await lastFormStore(holders: [])
+        store.creditUsage(threshold + 5_000_001)
+        XCTAssertNotNil(store.justGraduated)
+        XCTAssertNil(store.graduationLeftoverShared)
+        XCTAssertNil(store.graduationLeftoverLine)
     }
 
     func testThePickerNamesTheHoldersAndWarnsOnlyWithoutThem() async throws {
         let expected: [AppLanguage: (shared: String, wasted: String)] = [
-            .ko: ("졸업 시 남는 경험치 12.5M XP → 학습장치 2마리", "졸업 시 남는 12.5M XP는 사라져요."),
-            .en: ("On graduation, leftover 12.5M XP → 2 Exp. Share holders",
-                  "On graduation, 12.5M leftover XP will be discarded."),
-            .ja: ("卒業時の余り経験値 12.5M XP → がくしゅうそうち 2匹", "卒業時、余った12.5M XPは失われます。"),
+            .ko: ("졸업 시 남는 경험치 7.5M XP → 학습장치 2마리", "졸업 시 남는 7.5M XP는 사라져요."),
+            .en: ("On graduation, leftover 7.5M XP → 2 Exp. Share holders",
+                  "On graduation, 7.5M leftover XP will be discarded."),
+            .ja: ("卒業時の余り経験値 7.5M XP → がくしゅうそうち 2匹", "卒業時、余った7.5M XPは失われます。"),
         ]
         for (language, lines) in expected {
             let shared = try await makeStore(state(holders: [Self.pikachuID, Self.sliggooID], language: language))
@@ -145,37 +191,37 @@ final class CandyLeftoverExpShareTests: XCTestCase {
 
     func testTheHomeLineSaysWhereTheLeftoverWentUntilTheEventEnds() async throws {
         let expected: [AppLanguage: String] = [
-            .ko: "남은 경험치 12.5M XP를 학습장치 2마리에게 나눠줬어요.",
-            .en: "Leftover 12.5M XP went to 2 Exp. Share holders.",
-            .ja: "余った経験値 12.5M XPをがくしゅうそうちの2匹に分けました。",
+            .ko: "남은 경험치 7.5M XP를 학습장치 2마리에게 나눠줬어요.",
+            .en: "Leftover 7.5M XP went to 2 Exp. Share holders.",
+            .ja: "余った経験値 7.5M XPをがくしゅうそうちの2匹に分けました。",
         ]
         for (language, line) in expected {
             let store = try await makeStore(state(holders: [Self.pikachuID, Self.sliggooID], language: language))
-            XCTAssertNil(store.candyLeftoverHomeLine)
+            XCTAssertNil(store.graduationLeftoverLine)
             XCTAssertEqual(store.useRareCandy(count: 3), .graduated)
-            XCTAssertEqual(store.candyLeftoverHomeLine, line)
+            XCTAssertEqual(store.graduationLeftoverLine, line)
 
             now = now.addingTimeInterval(60)
             XCTAssertTrue(store.expireEventWindow())
-            XCTAssertNil(store.candyLeftoverHomeLine)
+            XCTAssertNil(store.graduationLeftoverLine)
         }
     }
 
-    func testTheNextGraduationWithoutCandyClearsTheLeftoverLine() async throws {
+    func testAGraduationWithNoLeftoverClearsTheLastLeftoverLine() async throws {
         let store = try await makeStore(state(holders: [Self.pikachuID]))
         XCTAssertEqual(store.useRareCandy(count: 3), .graduated)
-        XCTAssertNotNil(store.candyLeftoverShared)
+        XCTAssertNotNil(store.graduationLeftoverShared)
 
         var profile = PokemonProfile.generate(seed: 6, instanceID: "next")
         profile.level = 20
         store.state.active = MonState(baseID: 4, pathIDs: [4, 5, 6], stageIndex: 2, usedAtStage: 0, rarity: .common,
                                       totalForms: 3, profile: profile)
         await store.loadCurrentLine()
-        store.applyUsage(PokemonBalance.graduationTotal(.common))
+        store.applyUsage(store.stageThreshold(for: try XCTUnwrap(store.state.active)))
 
         XCTAssertNil(store.state.active)
         XCTAssertNotNil(store.justGraduated)
-        XCTAssertNil(store.candyLeftoverShared)
+        XCTAssertNil(store.graduationLeftoverShared)
     }
 
     func testAnOddLeftoverSplitsEvenlyWithTheRemainderToTheFirstHolder() async throws {
@@ -189,7 +235,7 @@ final class CandyLeftoverExpShareTests: XCTestCase {
 
             XCTAssertEqual(try growth(store, order[0]), before[0] + leftover / 2 + 1)
             XCTAssertEqual(try growth(store, order[1]), before[1] + leftover / 2)
-            XCTAssertEqual(store.candyLeftoverShared?.holders, 2)
+            XCTAssertEqual(store.graduationLeftoverShared?.holders, 2)
         }
     }
 
@@ -202,7 +248,7 @@ final class CandyLeftoverExpShareTests: XCTestCase {
         XCTAssertEqual(store.useRareCandy(count: 3), .graduated)
 
         XCTAssertEqual(try [Self.pikachuID, Self.sliggooID].map { try growth(store, $0) }, before)
-        XCTAssertNil(store.candyLeftoverShared)
+        XCTAssertNil(store.graduationLeftoverShared)
     }
 
     func testAHolderAtTheTokenCapLosesItsPartWithoutPassingItOn() async throws {
@@ -230,7 +276,7 @@ final class CandyLeftoverExpShareTests: XCTestCase {
         XCTAssertEqual(store.useRareCandy(count: 1), .progressed)
 
         XCTAssertEqual(try growth(store, Self.pikachuID), before)
-        XCTAssertNil(store.candyLeftoverShared)
+        XCTAssertNil(store.graduationLeftoverShared)
     }
 
     func testAHolderWhosePartRoundsToZeroIsLeftUntouched() async throws {

@@ -58,6 +58,32 @@ final class BoxGraduationTests: StoredLineHarness {
                        [store.l.boxGraduatedLine(name), store.l.expShareMovedLine(name, to: "#4")].joined(separator: "\n"))
     }
 
+    func testTheXPPastABoxGraduationSplitsOverTheOtherHolders() async throws {
+        var state = graduatedState(short: -5_000_001, near: false)
+        state.expShareHolders += [Self.gradID, Self.otherGradID]
+        let store = try makeStore(state)
+        let growth = { (id: String) in store.state.dex.first { $0.id == id }?.profile?.growthTokens ?? -1 }
+        let grad = growth(Self.gradID)
+        let otherGrad = growth(Self.otherGradID)
+
+        await store.checkExpShareEvolution()
+
+        XCTAssertNotNil(graduate(store, Self.zardID))
+        XCTAssertEqual(growth(Self.gradID), grad + 2_500_001)
+        XCTAssertEqual(growth(Self.otherGradID), otherGrad + 2_500_000, "the graduate takes no part of its own")
+        XCTAssertNil(store.graduationLeftoverShared, "Home belongs to the raised Pokémon")
+    }
+
+    func testABoxGraduationAtExactlyFullXPSharesNothing() async throws {
+        var state = graduatedState(near: false)
+        state.expShareHolders += [Self.gradID]
+        let store = try makeStore(state)
+        let grad = store.state.dex.first { $0.id == Self.gradID }?.profile?.growthTokens
+        await store.checkExpShareEvolution()
+        XCTAssertNotNil(graduate(store, Self.zardID))
+        XCTAssertEqual(store.state.dex.first { $0.id == Self.gradID }?.profile?.growthTokens, grad)
+    }
+
     func testWithNoCandidateTheGraduatesCopyGoesBackToTheBag() async throws {
         let store = try makeStore(graduatedState(near: false))
         await store.checkExpShareEvolution()

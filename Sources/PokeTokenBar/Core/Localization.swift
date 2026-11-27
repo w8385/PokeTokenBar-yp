@@ -2150,7 +2150,7 @@ struct L {
           "Beim Trainingsabschluss: \(xp) überschüssige EP → EP-Teiler (\(holders))",
           "При выпуске остаток \(xp) XP → Общий опыт (\(holders))")
     }
-    func candyLeftoverShared(_ xp: String, holders: Int) -> String {
+    func leftoverShared(_ xp: String, holders: Int) -> String {
         t("남은 경험치 \(xp) XP를 학습장치 \(holders)마리에게 나눠줬어요.",
           "Leftover \(xp) XP went to \(expShareHolderCount(holders)).",
           "余った経験値 \(xp) XPをがくしゅうそうちの\(holders)匹に分けました。",

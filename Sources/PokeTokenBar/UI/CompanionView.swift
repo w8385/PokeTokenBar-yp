@@ -1029,7 +1029,7 @@ struct CompanionHeader: View {
             if let g = store.justGraduated {
                 Text(store.l.graduated(g))
                     .font(.caption2).foregroundStyle(.orange)
-                if let line = store.candyLeftoverHomeLine {
+                if let line = store.graduationLeftoverLine {
                     Text(line)
                         .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }

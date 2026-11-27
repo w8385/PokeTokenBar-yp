@@ -29,8 +29,8 @@ final class CompanionStore {
     var isRevealingDitto = false   // 메타몽 리빌 비동기 중복 방지(isHatching 자매)
     var justEvolvedTo: String?     // 이름(연출/문구)
     var justGraduated: String?
-    /// Shown under `justGraduated`: the candy XP past graduation and how many Exp. Share holders took it.
-    var candyLeftoverShared: (xp: Int, holders: Int)?
+    /// Shown under `justGraduated`: the XP past graduation and how many Exp. Share holders took it.
+    var graduationLeftoverShared: (xp: Int, holders: Int)?
     var eventUntil: Date?
 
     /// 부화/진화 연출 트리거 — seq 증가로 UI 가 감지, 팝오버가 닫혀 있었어도 다음 오픈에 1회 재생.
