@@ -742,6 +742,51 @@ final class ReadmeScreenshotTests: XCTestCase {
         }
     }
 
+    func testDrawNamedReadmeImage() async throws {
+        guard let output = ProcessInfo.processInfo.environment["PTB_README_SHOT_DIR"] else {
+            throw XCTSkip("Set PTB_README_SHOT_DIR to draw the README images")
+        }
+        let dir = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let scratch = FileManager.default.temporaryDirectory.appendingPathComponent("readme-named-\(UUID())")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        for id in [448, 445, 373, 6, 94, 130] { _ = await SpriteLoader.image(speciesID: id) }
+        let coworkers = """
+        {"ok": true, "recent_battles": [],
+         "coworkers": [
+           {"id": "c1", "name": "Alex", "pokemon_id": 6, "level": 55, "shiny": true},
+           {"id": "c2", "name": "Sam", "pokemon_id": 94, "level": 38, "shiny": false},
+           {"id": "c3", "name": "Jo", "pokemon_id": 130, "level": 33, "shiny": false}]}
+        """
+        let info = try XCTUnwrap(BattleInfo.decode(Data(coworkers.utf8)))
+        for (language, suffix) in languages {
+            var state = CompanionState()
+            state.language = language
+            state.installBaselineSet = true
+            state.dex = [TowerFixtures.entry(448, id: "a"), TowerFixtures.entry(445, id: "b"), TowerFixtures.entry(373, id: "c")]
+            state.coworkerTrophies = ["c2"]
+            let file = scratch.appendingPathComponent("state-\(UUID()).json")
+            try JSONEncoder().encode(state).write(to: file)
+            let store = CompanionStore(provider: ReadmeTowerProvider(), fileURL: file)
+            let defaults = try XCTUnwrap(UserDefaults(suiteName: "readme-named-\(UUID())"))
+            let entry = BattleEntryStore(defaults: defaults)
+            for id in ["a", "b", "c"] { entry.add(id) }
+            let service = GymService(link: { nil }, badges: { GymBadges() }, ownedTMs: { [] },
+                                     applyReward: { _, _, _ in }, session: GymSession())
+            let named = VStack(alignment: .leading, spacing: 6) {
+                Text(store.l.ghostTitle).font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
+                    .textCase(.uppercase).padding(.leading, 4)
+                VStack(spacing: 0) {
+                    CoworkerGhostSection(store: store, info: info, entry: entry, service: service)
+                }.ptbCard()
+            }
+            .padding(PopoverMetrics.padding)
+            .environment(\.locale, language.displayLocale)
+            try await shot(named, "screenshot-named\(suffix)", in: dir, height: nil)
+        }
+    }
+
     func testDrawUsageRecapImages() async throws {
         guard let output = ProcessInfo.processInfo.environment["PTB_README_SHOT_DIR"] else {
             throw XCTSkip("Set PTB_README_SHOT_DIR to draw the README images")

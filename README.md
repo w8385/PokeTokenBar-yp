@@ -277,6 +277,13 @@ Wins pay <b>BP</b>. Spend them at the exchange in the Tower, where the <b>Legend
 </td>
 </tr>
 <tr>
+<td width="45%" align="center"><img src="assets/screenshot-named.png" width="300" alt="Battle tab, Named card — linked coworkers with a Challenge button, and a trophy beside one"></td>
+<td width="55%" valign="middle">
+<h3>🎯 Named ghosts</h3>
+Under <b>Named</b> on the Battle sub-tab, pick a linked coworker and fight their last uploaded party at Lv50. They aren't told and no record is kept. The result and the replay look like a gym fight. Your first win against a coworker earns their trophy, which then shows beside their name in the Coworkers tab.
+</td>
+</tr>
+<tr>
 <td width="45%" align="center"><img src="assets/screenshot-champion-finale.png" width="300" alt="The Elite Four run with the champion's hidden partner, and the replay as it comes out"></td>
 <td width="55%" valign="middle">
 <h3>👑 The champion's hidden partner</h3>
@@ -338,7 +345,7 @@ Reset countdowns include the clock time, and the colored percentage stays aligne
 
 <img src="assets/screenshot-usage-recap.png" width="360" alt="Usage recap for a selected period">
 
-<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, Tower, gym, replay, champion, floating-friends, stored-friends, growth-mode, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
+<small>The Home, Settings, form, Shop, Bag, Pokédex, next-evolution, Box, profile, Exp. Share, Battle, Tower, Named, gym, replay, champion, floating-friends, stored-friends, growth-mode, activity, regional Pokédex, pet-interaction, and recap images above are local renders of the production UI with sample data; the gym images use the YPoke bot's Kanto gym list. The regional and pet boards combine separate native UI component renders. Animated GIFs are illustrative demonstrations and may show an earlier layout.</small>
 
 ## Agent activity
 
