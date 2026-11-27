@@ -652,6 +652,78 @@ are added next to the current ones, so a client that ignores unknown fields and 
 The first battle against a trainer fetches its foes' learnsets from PokéAPI, so allow the request a longer timeout
 (10 seconds) than the others; later ones are cached.
 
+## Battle tower (PvE)
+
+Endless 3-on-3 streaks. Every Pokémon fights at Lv50 (lower ones are raised, higher ones capped). Battles come in
+sets of ten; each set's trainers field stronger species (and higher IVs), and from set 5 (battle 41) one or two of
+the three are legendary, mythical, Ultra Beasts or Paradox Pokémon. Battle 20 and battle 50 are the tower owner;
+beating it the first time in a mode earns the `silver` and then the `gold` trophy. A loss ends the run: the streak
+goes back to 0 and the best stays. Each mode has its own run, streak, best and trophies:
+
+- `entry`: the app sends its three Pokémon (different species, legendaries allowed). The first battle of a run locks
+  the team's species until the run ends.
+- `rental`: the bot offers six rentals of the first set's tier, the player picks three, and after each win may swap
+  one of them for one of the three just beaten. A rental keeps its moves and item and fights with the IVs of the
+  battle's set.
+
+The bot owns every run, so a reply lost on the way or a restored save cannot move the record: the app mirrors what the
+replies say. Teams are full HP and status every battle. The trainers and the owner are original characters; their art
+is `assets/trainers/<id>.png` like the gyms'. Nothing is posted and nothing counts toward the `/대결` record or
+ranking.
+
+A run, as every tower reply carries it (`record` below):
+
+```json
+{"mode": "rental", "streak": 3, "best": 12, "trophies": ["silver"],
+ "next": {"battle": 4, "set": 1, "owner": false},
+ "offer": null,
+ "team": [{"pokemon_id": 149, "moves": [200, 17, 89, 442], "held_item": "life-orb", "ivs": 12, "nature": null}],
+ "beaten": null}
+```
+
+`next` is the battle the next `POST /v1/tower/battle` fights. `offer`, `team` and `beaten` come in `rental` only:
+the six on offer before a pick (else null), the three picked, and the three just beaten while a swap is open (null
+once swapped or after the next battle). Each is a member as the battle builds it (`ivs` is every stat's IV).
+
+### `GET /v1/tower/record`
+
+Auth as above. `{"ok": true, "modes": {"entry": <run>, "rental": <run>}, "ranking": {"entry": [{"name": "…", "best": 30}], "rental": […]}}`.
+The ranking is the ten best streaks of each mode, by Slack display name (null when it cannot be found), best first.
+
+### `POST /v1/tower/battle`
+
+Auth as above. `{"mode": "entry", "team": [<member>, <member>, <member>]}`; `team` has the schema and move check of
+`party` in [`POST /v1/party`](#post-v1party) and is ignored in `rental`. The reply is the
+[`POST /v1/gym/battle`](#post-v1gymbattle) body (`gym_id` is the trainer's art id, `kind` `tower` or `tower-owner`,
+`run` null), plus:
+
+- `opponent`: the trainer in the shape of a `GET /v1/gyms` opponent (`index` is the battle number).
+- `tower`: the run after the battle, plus `battle` and `set` (the one fought), `bp` (battle points won: 1, 2, 3, 3,
+  4, 4, then 5 per win by set; 10 for the owner at 20 and 20 at 50; 0 after a loss) and `trophy` (the trophy this win
+  earned for the first time, else null).
+
+| Status | Body |
+|---|---|
+| `200` | the body above |
+| `400` | an unknown `mode`; in `entry` a `team` that is not three members of different species, or a broken member rule |
+| `401` | unauthorized |
+| `404` | `not_found` from a bot that predates the tower |
+| `409` | `team_locked` (an `entry` run is live with other species), `no_rental` (`rental` without three picked) |
+| `429` | as for gyms; tower and gym battles each allow one per user every 3 seconds |
+| `503` | `pokeapi_unavailable` |
+
+### `POST /v1/tower/rental`
+
+Auth as above. `{}` returns the rental run, first making the offer of six when the run has no team.
+`{"pick": [0, 2, 5]}` takes three different offer indexes as the team (`409 no_offer` once a team is picked).
+`{"swap": {"give": 1, "take": 2}}` puts the beaten trainer's member `take` in team slot `give` (`409 nothing_to_swap`
+when no swap is open, `400` for an index out of range or a species the team already has). The reply is
+`{"ok": true, <run>}`.
+
+### `POST /v1/tower/quit`
+
+Auth as above. `{"mode": "entry"}` ends that mode's run (streak 0, the entry or rentals let go) and replies with the run.
+
 ## `GET /v1/health`
 
 No auth. `200 {"ok": true}`.
