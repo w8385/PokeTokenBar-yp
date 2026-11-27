@@ -422,7 +422,7 @@ final class DittoRevealTests: XCTestCase {
 
         XCTAssertEqual(s.currentSpeciesID, PokemonOdds.dittoSpeciesID)
         XCTAssertEqual(s.state.dex.first { $0.id == "holder" }?.profile?.growthTokens, before)
-        XCTAssertNil(s.candyLeftoverShared)
+        XCTAssertNil(s.graduationLeftoverShared)
     }
 
     func testCandyBatchStopsAtTheRevealAndCarriesOnlyThatCandy() async throws {

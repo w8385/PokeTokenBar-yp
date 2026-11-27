@@ -131,6 +131,12 @@ extension CompanionStore {
         return recipients.count
     }
 
+    /// Splits the XP past a graduation over the Exp. Share holders, never back to the graduate. Returns how many took a part.
+    @discardableResult
+    func shareGraduationLeftover(_ xp: Int, excluding graduateID: String?) -> Int {
+        splitAcrossExpShareHolders(xp, recipients: expShareRecipients(excluding: Set([graduateID].compactMap { $0 })))
+    }
+
     private func creditExpShareHolder(_ id: String, _ share: Int) {
         guard share > 0 else { return }
         if let stored = state.storedLines[id] {
@@ -247,6 +253,7 @@ extension CompanionStore {
         var record = graduateRecord(of: stored.mon, in: line)
         record.id = id
         state.dex.append(record)
+        shareGraduationLeftover(stored.mon.usedAtStage - stageThreshold(for: stored.mon), excluding: id)
         let storedKey = CompanionState.friendKey(storedLine: id)
         state.friendEntryIDs = state.friendEntryIDs.map { $0 == storedKey ? id : $0 }
         return formDisplayName(line.localizedName(record.finalID, state.language), speciesID: record.finalID,
@@ -576,7 +583,7 @@ extension CompanionStore {
         let name = formDisplayName(currentLine?.localizedName(finalID, state.language) ?? "",
                                    speciesID: finalID, form: a.form)
         justGraduated = name
-        candyLeftoverShared = nil
+        graduationLeftoverShared = nil
         notifyCompanionEvent(l.notifGraduateTitle, l.notifGraduateBody(name))
         eventUntil = clock().addingTimeInterval(6)
         state.active = nil
