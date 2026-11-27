@@ -76,7 +76,8 @@ class SwordsDance(StatusMove):
     def wanted(self, move, team, foes, side, arena, weather):
         user = team.active
         return (not user.danced and user.hp * 2 > user.max_hp and user.stages["attack"] < battle.MAX_STAGE
-                and hooks.ability(user, "stage_factor", default=1) > 0)
+                and hooks.ability(user, "stage_factor", default=1) > 0
+                and battle._safe_to_boost(user, foes.active, weather))
 
     def _apply(self, move, user, foe, side, turn, arena, rng):
         user.danced = True

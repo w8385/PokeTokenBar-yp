@@ -1410,7 +1410,8 @@ def _status_of(fighter: _Fighter) -> str | None:
 def _choose(teams: tuple["_Team", "_Team"], side: int, arena: _Arena, weather: str | None) -> int | None:
     """The move `side`'s active Pokémon uses this turn, by one rule for both sides. First an effect move whose moment
     has come: Trick Room on its first turn in when its team is slower than the foe and none has been set, Stealth Rock
-    once while the foe has members to come, Swords Dance once per entry above half HP and below +6 Attack, Yawn on a
+    once while the foe has members to come, Swords Dance once per entry above half HP and below +6 Attack when the foe
+    cannot surely knock it out first (`_safe_to_boost`), Yawn on a
     foe with no status, Thunder Wave on a faster foe it can
     paralyze, then the field and side moves by their own `wanted` (a screen once on entry, each hazard until its
     layers are full, a terrain that helps it, Rapid Spin or Defog to clear its own hazards). A self-KO move only when it surely knocks the foe out (and no other move does) or the user is at 1/3 HP
@@ -1460,6 +1461,15 @@ def _paralyzable(move: Move, fighter: _Fighter, by_foe: bool = True) -> bool:
 def _yawnable(fighter: _Fighter, by_foe: bool = True) -> bool:
     return (_open_to("sleep", fighter, by_foe) and not fighter.drowsy_at
             and not _blocks_ailment(fighter, "sleep"))
+
+
+def _safe_to_boost(fighter: _Fighter, foe: _Fighter, weather: str | None) -> bool:
+    """Whether a self-boost can pay off: no damaging move of the foe surely knocks `fighter` out, or a Focus Sash
+    holds it at full HP."""
+    if fighter.hp == fighter.max_hp and fighter.item == items.FOCUS_SASH:
+        return True
+    return not any(_surely_finishes(foe, fighter, move, weather) for index, move in enumerate(foe.combatant.moves)
+                   if foe.pp[index] > 0 and move.damaging)
 
 
 def _blocks_ailment(fighter: _Fighter, ailment: str) -> bool:

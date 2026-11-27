@@ -985,9 +985,9 @@ Action turn=9 side=1 attacker='P982' defender='P948' move='단애의칼' multipl
 Action turn=9 side=0 attacker='P948' defender='P982' move='플뢰르캐논' multiplier=0.5 changes=(Change(side=0, pokemon='P948', kind='special_attack', stages=-2),) defender_hp=35 attacker_hp=3 move_id=705
 Action turn=10 side=1 attacker='P982' defender='P948' move='단애의칼' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=35 move_id=619
 SendOut turn=10 side=0 pokemon='P443' member=4
-Action turn=11 side=0 attacker='P443' defender='P982' move='기어체인지' changes=(Change(side=0, pokemon='P443', kind='attack', stages=1), Change(side=0, pokemon='P443', kind='speed', stages=2)) defender_hp=35 effect='stages' move_id=508
-Action turn=11 side=1 attacker='P982' defender='P443' move='크로스플레임' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=35 move_id=558
-result winner=1 turns=11 remaining=((0, 0, 0, 0, 0), (0, 35, None)) statuses=((None, None, None, None, None), (None, None, None))
+Action turn=11 side=0 attacker='P443' defender='P982' move='구슬던지기' defender_hp=19 hits=5 move_id=140
+Action turn=11 side=1 attacker='P982' defender='P443' move='크로스플레임' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=19 move_id=558
+result winner=1 turns=11 remaining=((0, 0, 0, 0, 0), (0, 19, None)) statuses=((None, None, None, None, None), (None, None, None))
 ## pvp 138
 side=0 P384 Lv50 ('fighting',) item=draco-plate ability=desolate-land nature=adamant moves=[620, 910, 907] mega=('mega', 10079, 'iron-barbs')
 side=0 P267 Lv50 ('dark',) item=dragon-fang ability=drizzle nature=timid moves=[664, 666, 60, 866] mega=None
@@ -1008,12 +1008,12 @@ Action turn=1 side=1 attacker='P742' defender='P384' move='타르샷' changes=(C
 Action turn=2 side=1 attacker='P742' defender='P384' move='마법가루' attacker_hp=33 effect='magic-powder' move_id=750
 Action turn=2 side=0 attacker='P384' defender='P742' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=620
 SendOut turn=2 side=1 pokemon='P4' member=1
-Action turn=3 side=1 attacker='P4' defender='P384' move='소울비트' changes=(Change(side=1, pokemon='P4', kind='attack', stages=1), Change(side=1, pokemon='P4', kind='defense', stages=1), Change(side=1, pokemon='P4', kind='special_attack', stages=1), Change(side=1, pokemon='P4', kind='special_defense', stages=1), Change(side=1, pokemon='P4', kind='speed', stages=1)) attacker_hp=67 effect='stages' move_id=775
-Action turn=3 side=0 attacker='P384' defender='P4' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True move_id=620
+Action turn=3 side=1 attacker='P4' defender='P384' move='쥐어짜기' defender_hp=51 attacker_hp=88 ability='iron-barbs' move_id=378
+Action turn=3 side=0 attacker='P384' defender='P4' move='화룡점정' multiplier=2.0 changes=(Change(side=0, pokemon='P384', kind='defense', stages=-1), Change(side=0, pokemon='P384', kind='special_defense', stages=-1)) defender_hp=0 knockout=True attacker_hp=51 move_id=620
 SendOut turn=3 side=1 pokemon='P26' member=2
 MegaEvolution turn=4 side=1 pokemon='P26' ability='탈' form_id=10305
-Action turn=4 side=1 attacker='P26' defender='P384' move='집게해머' critical=True defender_hp=22 attacker_hp=88 ability='iron-barbs' move_id=152
-Action turn=4 side=0 attacker='P384' defender='P26' move='파워풀에지' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=22 move_id=910
+Action turn=4 side=1 attacker='P26' defender='P384' move='집게해머' defender_hp=3 attacker_hp=88 ability='iron-barbs' move_id=152
+Action turn=4 side=0 attacker='P384' defender='P26' move='파워풀에지' multiplier=2.0 defender_hp=0 knockout=True attacker_hp=3 move_id=910
 SendOut turn=4 side=1 pokemon='P143' member=3
 Action turn=5 side=1 attacker='P143' defender='P384' move='수다' defender_hp=0 knockout=True move_id=448
 SendOut turn=5 side=0 pokemon='P267' member=1
