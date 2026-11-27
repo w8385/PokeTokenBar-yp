@@ -44,9 +44,15 @@
         "should_escape": true
       },
       {
+        "command": "/타워",
+        "description": "배틀 타워 최고 연승 순위, 또는 누구의 모드별 기록 보기",
+        "usage_hint": "[@누구]",
+        "should_escape": true
+      },
+      {
         "command": "/ypoke",
         "description": "YPoke 도움말. 뒤에 명령을 붙여도 돼요",
-        "usage_hint": "[대결 @상대 | 전적 | 랭킹 | 도감 | 연결 | 파티 | 박스 | 가방]",
+        "usage_hint": "[대결 @상대 | 전적 | 랭킹 | 도감 | 타워 | 연결 | 파티 | 박스 | 가방]",
         "should_escape": true
       },
       {

@@ -36,6 +36,8 @@ struct TowerProgress: Codable, Equatable, Sendable {
     /// Instance ids of the tower entry, apart from the Slack and gym entry.
     var entry: [String] = []
     var records: [String: TowerModeRecord] = [:]
+    /// Lets the bot post a first owner win and a run's new best to the battle channel.
+    var boast = true
 
     init() {}
 
@@ -46,9 +48,10 @@ struct TowerProgress: Codable, Equatable, Sendable {
         let ids = (try? c.decode([String].self, forKey: .entry)) ?? []
         entry = Array(ids.filter { seen.insert($0).inserted }.prefix(Self.teamSize))
         records = (try? c.decode([String: TowerModeRecord].self, forKey: .records)) ?? [:]
+        boast = (try? c.decode(Bool.self, forKey: .boast)) ?? true
     }
 
-    private enum CodingKeys: String, CodingKey { case bp, entry, records }
+    private enum CodingKeys: String, CodingKey { case bp, entry, records, boast }
 
     func record(_ mode: TowerMode) -> TowerModeRecord { records[mode.rawValue] ?? TowerModeRecord() }
 
@@ -157,6 +160,8 @@ struct TowerOutcome: Equatable, Sendable {
 struct TowerRank: Decodable, Equatable, Hashable, Sendable {
     let name: String?
     let best: Int
+    /// The caller's own row; nil from a bot that predates the flag.
+    var me: Bool? = nil
 }
 
 /// The reply of `GET /v1/tower/record`.
@@ -170,6 +175,7 @@ struct TowerRecord: Decodable, Equatable, Sendable {
 struct TowerBattleRequest: Encodable, Equatable, Sendable {
     let mode: String
     let team: [PartyMember]?
+    var boast = true
 
     func encoded() throws -> Data { try TowerJSON.encoder.encode(self) }
 }

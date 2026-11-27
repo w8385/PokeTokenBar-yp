@@ -82,6 +82,21 @@ final class TowerScreenshotTests: XCTestCase {
             })
     }
 
+    private func coworkerShot(_ rig: Rig, ranking: Bool, to file: URL) async throws {
+        let info = BattleInfo(coworkers: [.init(name: "두리", pokemonId: 445, level: 52),
+                                          .init(name: "세나", pokemonId: 149, level: 47, shiny: true)])
+        let tab = VStack(alignment: .leading, spacing: 18) {
+            BattleInfoSections(info: info, l: rig.store.l, parts: [.coworkers])
+            if ranking { TowerRankingCard(service: rig.service, l: rig.store.l) }
+        }
+        .padding(.horizontal, 12).padding(.top, 8).frame(maxHeight: .infinity, alignment: .top)
+        let size = NSSize(width: PopoverMetrics.contentWidth, height: 400)
+        try await OffscreenRender.capture(
+            tab.frame(width: size.width, height: size.height).background(Color.white)
+                .environment(\.colorScheme, .light).environment(\.locale, rig.store.language.displayLocale),
+            size: size, appearance: .aqua, to: file, until: { !ranking || !rig.service.ranking.isEmpty })
+    }
+
     private func record(entry: [String: Any], rental: [String: Any] = TowerFixtures.run("rental", streak: 0, best: 0)) -> Data {
         TowerFixtures.record(entry: entry, rental: rental)
     }
@@ -132,6 +147,17 @@ final class TowerScreenshotTests: XCTestCase {
                     .environment(\.colorScheme, .light).environment(\.locale, language.displayLocale),
                 size: size, appearance: .aqua,
                 to: directory.appendingPathComponent("tower-exchange-\(language.rawValue).png"))
+
+            let friends = try rig(language)
+            friends.bot.replies["/v1/tower/record"] = [(TowerFixtures.record(
+                entry: TowerFixtures.run(streak: 0, best: 12), rental: TowerFixtures.run("rental", streak: 0, best: 4),
+                ranking: ["entry": [["name": "두리", "best": 30, "me": false], ["name": "하나", "best": 12, "me": true],
+                                    ["name": "세나", "best": 7, "me": false]],
+                          "rental": [["name": "세나", "best": 9, "me": false], ["name": "하나", "best": 4, "me": true]]]), 200)]
+            try await coworkerShot(friends, ranking: false,
+                                   to: directory.appendingPathComponent("coworkers-before-\(language.rawValue).png"))
+            try await coworkerShot(friends, ranking: true,
+                                   to: directory.appendingPathComponent("coworkers-after-\(language.rawValue).png"))
         }
     }
 }

@@ -68,7 +68,8 @@ def main() -> None:
     names = DisplayNames(app.client)
     names.warm(store.linked_user_ids())
     trades = TradeService(store, now, name_for=names, bot_user_id=bot_user_id, holds=remote.holds)
-    miracle = MiracleService(trades, SlackBoard(app.client, home_channel) if home_channel else None, now)
+    board = SlackBoard(app.client, home_channel) if home_channel else None
+    miracle = MiracleService(trades, board, now)
     handler = CommandHandler(
         store,
         pokeapi,
@@ -93,7 +94,7 @@ def main() -> None:
         miracle=miracle,
         remote=remote,
         now=now,
-        tower=TowerBattles(store, pokeapi),
+        tower=TowerBattles(store, pokeapi, boast=board.say if board else None),
     )
     threading.Thread(target=_warm_stored_parties, args=(pokeapi, store, remote), daemon=True).start()
     threading.Thread(target=_sweep_miracle_offers, args=(miracle,), daemon=True).start()

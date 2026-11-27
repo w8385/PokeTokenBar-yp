@@ -71,7 +71,7 @@ class GymApi(Protocol):
 
 
 class TowerApi(Protocol):
-    def battle(self, user_id: str, mode: str, team: list[dict] | None) -> dict: ...
+    def battle(self, user_id: str, mode: str, team: list[dict] | None, boast: bool = True) -> dict: ...
 
     def rental(self, user_id: str, pick: list[int] | None = None, swap: tuple[int, int] | None = None) -> dict: ...
 
@@ -266,7 +266,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
             if self.tower is None:
                 self._reply(404, {"ok": False, "error": "not_found"})
             else:
-                self._reply(200, {"ok": True, "modes": self.tower.record(user_id), "ranking": self._tower_ranking()})
+                self._reply(200, {"ok": True, "modes": self.tower.record(user_id), "ranking": self._tower_ranking(user_id)})
             return
         if url.path == "/v1/gyms":
             if self.gyms is None:
@@ -389,6 +389,10 @@ class _UploadHandler(BaseHTTPRequestHandler):
         if mode not in TOWER_MODES:
             self._reply(400, {"ok": False, "error": f"mode must be one of {', '.join(TOWER_MODES)}"})
             return
+        boast = payload.get("boast", True)
+        if not isinstance(boast, bool):
+            self._reply(400, {"ok": False, "error": "boast must be true or false"})
+            return
         if path == "/v1/tower/battle":
             wait = self.gym_limit.retry_after(f"tower:{user_id}")
             if wait > 0:
@@ -401,7 +405,7 @@ class _UploadHandler(BaseHTTPRequestHandler):
                 if mode == "entry":
                     team = validate_members(payload.get("team"), "team")
                     check_moves(team, self.moves_for, "team")
-                body = self.tower.battle(user_id, mode, team)
+                body = self.tower.battle(user_id, mode, team, boast)
             elif path == "/v1/tower/rental":
                 body = self.tower.rental(user_id, *_rental_change(payload))
             else:
@@ -417,10 +421,10 @@ class _UploadHandler(BaseHTTPRequestHandler):
             return
         self._reply(200, {"ok": True, **body})
 
-    def _tower_ranking(self) -> dict:
+    def _tower_ranking(self, user_id: str) -> dict:
         return {
-            mode: [{"name": self.name_for(user_id), "best": best}
-                   for user_id, best in self.tower.ranking(mode, TOWER_RANKING_LIMIT)]
+            mode: [{"name": self.name_for(other), "best": best, "me": other == user_id}
+                   for other, best in self.tower.ranking(mode, TOWER_RANKING_LIMIT)]
             for mode in TOWER_MODES
         }
 

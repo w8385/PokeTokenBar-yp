@@ -1,6 +1,7 @@
 """A player's run in the battle tower. The bot owns each run: the streak, the locked entry, the rentals offered, picked
 and last beaten, so the record and the ranking cannot run ahead of the battles fought. The app mirrors the replies."""
 
+import logging
 import secrets
 import threading
 from collections.abc import Callable
@@ -15,23 +16,31 @@ from ypoke.pokeapi import PokeAPIService
 from ypoke.store import Store
 from ypoke.upload_server import PartyError, TowerConflict
 
+log = logging.getLogger(__name__)
+
 
 class TowerBattles:
     def __init__(self, store: Store, pokeapi: PokeAPIService,
-                 new_seed: Callable[[], int] = lambda: secrets.randbits(31)):
+                 new_seed: Callable[[], int] = lambda: secrets.randbits(31),
+                 boast: Callable[[str], None] | None = None):
+        """`boast` posts a line to the battle channel: a first owner win at once, a new best when its run ends."""
         self._store = store
         self._pokeapi = pokeapi
         self._new_seed = new_seed
+        self._boast = boast
         self._locks: dict[str, threading.Lock] = {}
         self._guard = threading.Lock()
 
-    def battle(self, user_id: str, mode: str, team: list[dict] | None) -> dict:
+    def battle(self, user_id: str, mode: str, team: list[dict] | None, boast: bool = True) -> dict:
         """The next battle of the user's run in `mode`. `team` is the validated entry (entry mode; ignored for
-        rental). Raises PartyError for an entry the tower does not take, TowerConflict when the run does not allow
-        the battle, OSError when PokéAPI is down."""
+        rental). `boast` false keeps this run out of the channel. Raises PartyError for an entry the tower does not
+        take, TowerConflict when the run does not allow the battle, OSError when PokéAPI is down."""
         with self._lock(user_id):
             state = self._state(user_id, mode)
             battle = state["streak"] + 1
+            if battle == 1:
+                state["start_best"] = state["best"]
+            state["boast"] = boast
             mine = self._team(state, mode, team, battle)
             opponent = tower.opponent(state["run"], battle)
             with ThreadPoolExecutor(max_workers=WORKERS) as pool:
@@ -41,10 +50,11 @@ class TowerBattles:
             seed = self._new_seed()
             result = simulate((tuple(player), foes), seed, [None] * len(player))
             won = result.winner == 0
+            ended_best = _run_best(state) if not won else None
             trophy = self._settle(state, mode, battle, won, opponent)
             self._store.save_tower_run(user_id, mode, state)
             positions = list(range(len(player))), list(range(len(foes)))
-            return {
+            reply = {
                 "gym_id": opponent.sprite,
                 "kind": opponent.kind,
                 "trainer": {"name": opponent.trainer.name, "line": opponent.trainer.line},
@@ -60,6 +70,12 @@ class TowerBattles:
                 "tower": {**_record_json(mode, state), "battle": battle, "set": tower.set_of(battle),
                           "bp": tower.bp_for(battle) if won else 0, "trophy": trophy},
             }
+        if boast and trophy:
+            self._post(f"{tower.TROPHY_EMOJI[trophy]} <@{user_id}>님이 배틀 타워 {tower.MODE_NAMES[mode]} 모드 "
+                       f"{battle}번째 배틀에서 {tower.OWNER[0]}에게 이겨 {tower.TROPHY_NAMES[trophy]} 트로피를 받았어요!")
+        elif ended_best:
+            self._post(_best_line(user_id, mode, ended_best))
+        return reply
 
     def rental(self, user_id: str, pick: list[int] | None = None, swap: tuple[int, int] | None = None) -> dict:
         """The rental run as it stands, after picking three of the offer or swapping one member (`give`, `take`) for
@@ -97,9 +113,13 @@ class TowerBattles:
         """Ends the run in `mode`: the streak goes back to 0 and the entry or rentals are let go."""
         with self._lock(user_id):
             state = self._state(user_id, mode)
+            ended_best = _run_best(state)
             _end_run(state)
             self._store.save_tower_run(user_id, mode, state)
-            return _record_json(mode, state)
+            record = _record_json(mode, state)
+        if ended_best:
+            self._post(_best_line(user_id, mode, ended_best))
+        return record
 
     def record(self, user_id: str) -> dict:
         """The user's run and record in each mode."""
@@ -152,6 +172,25 @@ class TowerBattles:
     def _lock(self, user_id: str) -> threading.Lock:
         with self._guard:
             return self._locks.setdefault(user_id, threading.Lock())
+
+    def _post(self, text: str) -> None:
+        if self._boast is None:
+            return
+        try:
+            self._boast(text)
+        except Exception:
+            log.warning("could not post a tower boast")
+
+
+def _run_best(state: dict) -> int | None:
+    """The streak of a run that is ending, when it beat the best the player had when it began and may be boasted."""
+    streak = state["streak"]
+    beaten = streak > state.get("start_best", state["best"])
+    return streak if beaten and state.get("boast", True) else None
+
+
+def _best_line(user_id: str, mode: str, streak: int) -> str:
+    return f"🏯 <@{user_id}>님이 배틀 타워 {tower.MODE_NAMES[mode]} 모드에서 {streak}연승으로 최고 기록을 세웠어요!"
 
 
 def _end_run(state: dict) -> None:

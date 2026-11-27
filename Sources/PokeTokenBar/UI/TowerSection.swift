@@ -20,7 +20,8 @@ struct TowerSection: View {
     private var tower: TowerProgress { store.state.tower }
 
     static func makeService(store: CompanionStore, uploader: PartyUploader) -> TowerService {
-        TowerService(link: { uploader.gymLink }, apply: { run, gain in store.applyTower(run, gain: gain) })
+        TowerService(link: { uploader.gymLink }, boast: { store.state.tower.boast },
+                     apply: { run, gain in store.applyTower(run, gain: gain) })
     }
 
     var body: some View {
@@ -66,6 +67,8 @@ struct TowerSection: View {
                 Text(l.towerFailure(failure)).font(.caption2).foregroundStyle(.orange)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            Toggle(l.towerBoast, isOn: Binding(get: { tower.boast }, set: { store.setTowerBoast($0) }))
+                .toggleStyle(.checkbox).font(.caption2).foregroundStyle(.secondary)
         }
         .padding(.horizontal, Spacing.lg).padding(.vertical, Spacing.md)
     }

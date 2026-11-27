@@ -34,6 +34,9 @@ TIERS = ((430, 12), (460, 16), (490, 20), (520, 24), (550, 28), (580, 31), (610,
 LEGEND_SET = 5
 LEGEND_MIN_TOTAL = 570
 OWNER_BATTLES = {20: "silver", 50: "gold"}
+MODE_NAMES = {"entry": "내 엔트리", "rental": "대여"}
+TROPHY_NAMES = {"silver": "은", "gold": "금"}
+TROPHY_EMOJI = {"silver": "🥈", "gold": "🥇"}
 OWNER_ID = "tower-owner"
 # BP for a win, per set (sets past the last keep its value), and for beating the owner.
 SET_BP = (1, 2, 3, 3, 4, 4, 5)

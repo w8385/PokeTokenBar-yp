@@ -22,6 +22,12 @@ extension CompanionStore {
         save()
     }
 
+    func setTowerBoast(_ on: Bool) {
+        guard state.tower.boast != on else { return }
+        state.tower.boast = on
+        save()
+    }
+
     // MARK: BP exchange
 
     /// The growth and battle items, then the Mega Stones of species in the Box, then the legendary scout ticket.
